@@ -1,0 +1,1 @@
+{"profile":"active_task","mode":"standalone","action":"recover","task_id":"demo","task_ref":".trellis/tasks/demo","lifecycle_generation":0,"expected_status":"planning","recovery":{"expected_epoch":1,"expected_revision":0,"expected_branch_name":"task/demo","expected_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}

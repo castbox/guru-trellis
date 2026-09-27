@@ -17,9 +17,17 @@ The normal transaction has three independently confirmed mutations: local
 archive projection, bookkeeping commit/push/PR publication, and expected-head
 merge. The executor recovers only that exact transaction and returns `success`
 only after the remote target baseline contains the final archive and no active
-copy. The archive locator belongs in finish-summary, not in the retired
+copy. Before moving the task out of the active tree, the archive projection
+uses the Fixed Fork session API to retire only pointers for this exact TaskId
+and generation. A projected but unsealed archive resumes the original Finish
+transaction by explicit identity; it is not a Reactivate candidate. The archive
+locator belongs in finish-summary, not in the retired
 `task.json.archive_dir` metadata field. The reviewed payload forbids
-Issue-closing keywords and Delivery trailers.
+Issue-closing keywords and both legacy `Guru-Delivery-Task` /
+`Guru-Delivery-Cycle` and current `Guru-Task-Identity` /
+`Guru-Delivery-Schema` / `Guru-Delivery-Head` trailers. Validate the current
+semantic payload before local archive projection and on every successful
+re-entry, including an already open bookkeeping PR before its merge.
 Only after remote target verification does Finish seal the current generation
 and exact result in the common-dir resource ledger against the bookkeeping PR
 head (the cleanup refs' actual HEAD), then retire its branch binding. The
@@ -30,8 +38,7 @@ manual route records the minimal terminal identity in Git common-dir so it
 survives removal of the original checkout;
 Reactivate requires its matching completed manual Cleanup receipt before using
 the archived generation. The Finish bookkeeping commit and target merge commit
-remain distinct identities.
-This canonical
-package major is not active until the separate graph activation.
+remain distinct identities. The active graph invokes this package only after
+Completion and Closure.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.

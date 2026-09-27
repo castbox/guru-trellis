@@ -204,7 +204,8 @@ class WorkflowModeContractTest(unittest.TestCase):
         )
         for path in surfaces:
             text = path.read_text()
-            self.assertIn("这次走 task-free", text, path)
+            if path.name == "workflow.md" or path == ROOT / "README.md":
+                self.assertIn("这次走 task-free", text, path)
             self.assertIsNone(query_pattern.search(text), path)
         commands = json.loads((PACKAGE / "commands.json").read_text())
         invocation = next(

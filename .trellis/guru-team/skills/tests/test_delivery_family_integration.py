@@ -67,7 +67,7 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
         authoring = read_json(package / contract["authoring_example"]["path"])
         return {**seed, **authoring}, contract
 
-    def test_packages_are_active_deferred_without_production_markers(self) -> None:
+    def test_packages_are_active_integrated_with_production_markers(self) -> None:
         registry = read_json(SKILLS / "registry.json")
         entries = {item["id"]: item for item in registry["skills"]}
         workflow = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(
@@ -75,8 +75,8 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
         )
         for skill_id in PACKAGE_IDS:
             self.assertEqual(entries[skill_id]["state"], "active")
-            self.assertEqual(entries[skill_id]["workflow_integration_state"], "deferred")
-            self.assertNotIn(f'"skill":"{skill_id}"', workflow)
+            self.assertEqual(entries[skill_id].get("workflow_integration_state", "integrated"), "integrated")
+            self.assertIn(f'"skill":"{skill_id}"', workflow)
 
     def test_review_ready_projects_to_publish_review_ready(self) -> None:
         payload, contract = self.project_seed(

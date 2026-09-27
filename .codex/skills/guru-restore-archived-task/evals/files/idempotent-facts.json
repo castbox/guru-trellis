@@ -1,1 +1,0 @@
-{"scenario":"idempotent","owner_staging":{"recipe":"restore-idempotent"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

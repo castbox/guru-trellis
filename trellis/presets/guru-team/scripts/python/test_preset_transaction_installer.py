@@ -170,7 +170,12 @@ class PresetTransactionInstallerTest(unittest.TestCase):
                 and not (self.repo / relative).is_symlink()
             }
             self.assertEqual(preimage["file_count"], len(regular_files))
-            self.assertEqual(missing, set())
+            retired_targets = {
+                Path(".trellis/guru-team") / relative
+                for relative in preset.LEGACY_MANAGED_ASSET_HASHES
+            }
+            self.assertTrue(missing)
+            self.assertLessEqual(missing, retired_targets)
             for platform_root in (".agents", ".claude", ".cursor"):
                 self.assertNotIn(
                     Path(platform_root)

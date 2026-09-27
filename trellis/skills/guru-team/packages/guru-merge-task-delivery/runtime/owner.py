@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 
 
 DIMENSIONS = (
@@ -178,17 +179,16 @@ def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.") from exc
     if not isinstance(task, dict):
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.")
-    branch = git(root, "branch", "--show-current")
+    try:
+        checkout = resolve_active_task_checkout(root, public["task_ref"])
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+    branch = checkout.branch_name
     head = git(root, "rev-parse", "HEAD")
     if task.get("status") != "in_progress":
         raise CommandError("stale_identity", "task.status", "Use the current active task.", 3)
-    if task.get("branch") != branch:
-        raise CommandError("stale_identity", "task.branch", "Use the task's current bound branch.", 3)
-    configured_worktree = task.get("worktree_path")
-    if configured_worktree and Path(configured_worktree).resolve() != root:
-        raise CommandError("stale_identity", "task.worktree_path", "Use the task's current bound worktree.", 3)
     stable_id = task.get("id")
-    if not isinstance(stable_id, str) or not stable_id:
+    if stable_id != checkout.artifact.task_id:
         raise CommandError("invalid_arguments", "task.id", "Repair the stable task identity.")
     base_branch = task.get("base_branch")
     if not isinstance(base_branch, str) or not base_branch:
@@ -196,6 +196,7 @@ def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
     return {
         "task_ref": public["task_ref"],
         "stable_task_id": stable_id,
+        "lifecycle_generation": checkout.artifact.lifecycle_generation,
         "status": task["status"],
         "branch": branch,
         "base_branch": base_branch,
@@ -460,7 +461,7 @@ def project_nonmerge(package_root: Path, public: dict[str, Any], review: dict[st
     return output
 
 
-def terminal_output(package_root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], pre_base: str) -> dict[str, Any]:
+def terminal_output(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], pre_base: str) -> dict[str, Any]:
     validate_route(public, facts, review)
     pr, commit = facts["pr"], facts["merge_commit"]
     if pr["state"] != "MERGED" or not isinstance(commit, dict) or pr["merge_commit_sha"] != commit["sha"]:
@@ -471,18 +472,36 @@ def terminal_output(package_root: Path, public: dict[str, Any], facts: dict[str,
         raise CommandError("stale_identity", "github.merge_commit.message", "The merge commit message differs from the reviewed exact bytes.", 3)
     if commit["parents"] != [pre_base, public["expected_head_sha"]]:
         raise CommandError("stale_identity", "github.merge_commit.parents", "The merge commit parents do not carry the reviewed base and head.", 3)
-    if facts["base_ref"]["head_sha"] != commit["sha"]:
-        raise CommandError("stale_identity", "github.base_ref", "The target base does not point to the reviewed merge commit.", 3)
+    base_head = facts["base_ref"]["head_sha"]
+    if base_head != commit["sha"]:
+        comparison = gh_json(
+            root,
+            ["api", f"repos/{public['repo_ref']}/compare/{commit['sha']}...{base_head}"],
+            "target base ancestry",
+        )
+        if (not isinstance(comparison, dict)
+                or comparison.get("status") != "ahead"
+                or not isinstance(comparison.get("merge_base_commit"), dict)
+                or comparison["merge_base_commit"].get("sha") != commit["sha"]
+                or not isinstance(comparison.get("head_commit"), dict)
+                or comparison["head_commit"].get("sha") != base_head):
+            raise CommandError("stale_identity", "github.base_ref", "The target base no longer descends from the reviewed merge commit.", 3)
     validate_message(public, facts, review)
-    output = {
-        "exit_id": "delivered",
+    task_artifact = {
+        "task_id": facts["task"]["stable_task_id"],
         "task_ref": public["task_ref"],
+        "lifecycle_generation": facts["task"]["lifecycle_generation"],
+    }
+    merge_result = {
+        **task_artifact,
         "delivery_cycle_ref": public["delivery_cycle_ref"],
         "repo_ref": public["repo_ref"],
         "pr_number": public["pr_number"],
         "reviewed_head": public["expected_head_sha"],
         "merge_commit_sha": commit["sha"],
+        "result_id": "merge:" + commit["sha"],
     }
+    output = {"exit_id": "delivered", "task_artifact": task_artifact, "merge_result": merge_result}
     validate_json(output, package_root / "schemas/public-delivered-output.schema.json", "stdout")
     return output
 
@@ -525,9 +544,9 @@ def cmd_record(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     return {"status": "recorded", "typed_exit": review["route"]["typed_exit"], "gate": path.relative_to(root).as_posix(), "action_sha256": action_sha(public, facts, review)}
 
 
-def _check_gate_current(package_root: Path, public: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any]) -> None:
+def _check_gate_current(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any]) -> None:
     if gate["semantic_review"]["route"]["typed_exit"] == "delivered" and facts["pr"]["state"] == "MERGED":
-        terminal_output(package_root, public, facts, gate["semantic_review"], gate["pre_merge_base_head"])
+        terminal_output(package_root, root, public, facts, gate["semantic_review"], gate["pre_merge_base_head"])
         return
     if facts["facts_sha256"] != gate["pre_merge_facts"]["facts_sha256"]:
         raise CommandError("stale_identity", "gate.pre_merge_facts", "Repeat the semantic review for current live facts.", 3)
@@ -542,25 +561,25 @@ def cmd_check(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     validate_public(package_root, public)
     _path, gate = load_gate(package_root, root, public, args.gate)
     facts = live_facts(root, package_root, public)
-    _check_gate_current(package_root, public, facts, gate)
+    _check_gate_current(package_root, root, public, facts, gate)
     return {"status": "checked", "typed_exit": gate["semantic_review"]["route"]["typed_exit"], "action_sha256": gate["action_sha256"]}
 
 
 def _execute_with_gate(package_root: Path, root: Path, public: dict[str, Any], path: Path, gate: dict[str, Any], facts: dict[str, Any]) -> dict[str, Any]:
     review = gate["semantic_review"]
-    _check_gate_current(package_root, public, facts, gate)
+    _check_gate_current(package_root, root, public, facts, gate)
     if review["route"]["typed_exit"] != "delivered":
         output = project_nonmerge(package_root, public, review)
         retire_gate(path)
         return output
     if facts["pr"]["state"] == "MERGED":
-        output = terminal_output(package_root, public, facts, review, gate["pre_merge_base_head"])
+        output = terminal_output(package_root, root, public, facts, review, gate["pre_merge_base_head"])
         retire_gate(path)
         return output
     body_path = path.with_suffix(".body")
     run_merge(root, public, review, body_path)
     post = live_facts(root, package_root, public)
-    output = terminal_output(package_root, public, post, review, gate["pre_merge_base_head"])
+    output = terminal_output(package_root, root, public, post, review, gate["pre_merge_base_head"])
     retire_gate(path)
     return output
 
@@ -592,7 +611,7 @@ def cmd_invoke(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
         commit = facts["merge_commit"]
         if not isinstance(commit, dict) or len(commit["parents"]) != 2:
             raise CommandError("stale_identity", "github.merge_commit.parents", "Reread the exact terminal merge commit.", 3)
-        return terminal_output(package_root, public, facts, review, commit["parents"][0])
+        return terminal_output(package_root, root, public, facts, review, commit["parents"][0])
     gate = build_gate(public, facts, review)
     path = write_gate(package_root, root, gate)
     return _execute_with_gate(package_root, root, public, path, gate, facts)

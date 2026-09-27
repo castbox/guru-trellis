@@ -13,11 +13,47 @@ and the six stable error facts defined by `workflow-contract.md`.
 It never infers semantic readiness, severity, scope, issue disposition, close
 semantics, or workflow route and never falls back to an App, MCP, connector, or
 browser. Extension verification is standalone source-repository work and is not
-a GitHub-error or business Finalizer route.
+a GitHub-error or business Delivery/Completion route.
 
 ## Script Boundaries
 
-### Issue #180 Current Finish And Merge Commands
+### Current Delivery And Task Closeout Commands (#434)
+
+`guru-review-task-delivery` owns each active-task slice's semantic readiness and
+exact Chinese `Refs`-only PR payload. Its normal public entry is
+`invoke-guru-review-task-delivery`; record/check are owner-local diagnostic and
+test commands. A checked `ready` goes only to `guru-publish-task-delivery`.
+That owner previews the exact remote/PR action with
+`preview-task-delivery-publication`, obtains current-dialogue confirmation for
+remote mutation, and invokes `invoke-guru-publish-task-delivery`. Its private
+transaction binds push, PR metadata and Draft/Ready recovery without archiving
+the task or closing the Issue. Only `ready_for_merge` enters
+`guru-merge-task-delivery`, which owns `preview-task-delivery-merge`, exact-head
+merge confirmation, `invoke-guru-merge-task-delivery`, and same-result recovery.
+The `delivered` result is a Delivery fact, not Completion or Issue closure.
+
+`guru-review-task-completion` alone reviews the entire accepted task scope,
+all Delivery facts and fresh evidence (including evidence-only refresh). Its
+`completed` ResultRefDTO alone enters `guru-complete-task-closure` for the exact
+source disposition and separately confirmed Issue mutation, if any. Closure's
+current result enters `guru-finish-task`, which alone archives the generation,
+publishes and merges its separately reviewed bookkeeping PR, and verifies the
+archive on the target baseline before `success`. The bookkeeping PR is not a
+business Delivery. Only that generation's Finish ResourceSealRefDTO enters
+`guru-cleanup-task-resources` for a separate exact-resource review and
+confirmation. Cleanup does not roll back Completion, Closure, or Finish.
+`guru-reactivate-task` is a separate post-Finish owner for a normally archived
+TaskId; old-generation results cannot authorize a new generation. These five
+owners use their own package `invoke-<skill-id>` public commands, not the
+retired Finalizer/Merge/Restore commands or a caller-authored DTO.
+
+### Retired Issue #180 Finalizer And Merge Commands (historical only)
+
+The following pre-#434 transaction, Publication, Finalizer, verifier and merge
+details document the retired graph for pinned-old diagnosis. Words such as
+"current", "must" and "remains" in this subsection describe that historical
+contract only. They are not production entrypoints, migration adapters, or
+requirements on the #434 Delivery/Completion graph.
 
 Current Finalizer commands use the ignored owner-private
 `finalization-transaction.json`. Preview rebuilds live publication/archive facts; record/check own
@@ -95,9 +131,10 @@ Keep deterministic argument parsing and command behavior in the owning
 package's `runtime/` modules. Semantic workflow logic remains in `SKILL.md` and
 `references/contract.md`. Shared kernel modules may contain only primitives
 with at least two identical consumers and never branch on Skill/profile/exit.
-Compatibility `prepare-task.sh` is owned by
-`guru-create-task-workspace/runtime/prepare.py`; it must not place reviewed-base,
-issue, task, or workspace proposal behavior in the shared kernel. Kernel boundary
+Historical `prepare-task.sh` was owned by the retired
+`guru-create-task-workspace/runtime/prepare.py`; it did not place reviewed-base,
+issue, task, or workspace proposal behavior in the shared kernel. Current
+Intake uses the #434 identity/checkout/task owners. Kernel boundary
 validation requires the exact approved neutral module inventory, folds constant
 string expressions, and checks forbidden business entry points so split literals
 cannot hide Skill-specific ownership. Workflow compatibility wrappers that route
@@ -327,8 +364,8 @@ limited to `direct|select|rename|normalize`.
 
 ## Current Intake Public Invocation Runtime
 
-Each current Intake package in the active registry owns one dispatcher-only
-public wrapper declared by Interface 1.4 `public_contracts.invocation`. The
+Each active Intake package in the live registry owns one dispatcher-only
+public wrapper declared by its current `public_contracts.invocation`. The
 wrapper passes its package root, fixed `public_invocation` validator id, and
 public argv to `run-skill-command`; it contains no local business logic,
 semantic route selection, private artifact parser, fallback runtime, or
@@ -336,8 +373,8 @@ typed-output fixture. Only the live registry and current package contracts are
 valid invocation authority.
 
 `guru-sync-base` binds its declared scalar CLI arguments through the closed
-deterministic invocation envelope. The other five packages accept the declared
-call-local envelope through stdin using exactly `--invocation -` (the public CLI
+deterministic invocation envelope. The other current Intake packages accept
+their declared call-local envelope through stdin using `--invocation -` (the public CLI
 does not combine it with `--input` or any `--owner-*` locator). The
 envelope keeps caller-owned public input, exactly one workflow transition, and
 the current Skill owner result structurally separate. Runtime validates each
@@ -384,11 +421,11 @@ transcript must have zero references to them.
 
 ## Production Public Invocation Runtime
 
-`guru-approve-task-plan`, `guru-check-task`, and `guru-create-task-commit` use
-the same dispatcher-only wrapper template as the Intake packages. Each package
-owns one globally unique `invoke-<skill-id>` command. Invocation identity is
-resolved from the active registry, each row's exact Interface schema selector,
-and the sole current `production-current-v4` contract manifest; the retired
+`guru-approve-task-plan`, `guru-check-task`, `guru-create-task-commit`, and the
+active Delivery/Completion owners use dispatcher-only public wrappers. Each
+package owns its declared invocation command. Resolve invocation identity
+from the live active registry, exact Interface selector and installed current
+manifest rather than a historical fixed package count; the retired
 workflow-level `invoke-stage0-skill.sh` compatibility entry does not own or
 dispatch a package command.
 
@@ -684,7 +721,11 @@ matrix mismatch, and any exit/consumer mismatch. Expected failures use stable
 non-secret error codes and never echo raw payloads, local absolute paths, or
 credentials.
 
-### Task Workspace Record, Execute, And Check
+### Retired Task Workspace Record, Execute, And Check (historical only)
+
+The following `guru-create-task-workspace` recorder/executor/mapping contract
+is pre-#434 history, not an active Intake command or fallback. Current Issue,
+TaskId, checkout and branch-binding owners use their own declared interfaces.
 
 `record-task-workspace-plan`, `create-task-workspace`, and
 `check-task-workspace-result` are the deterministic commands published for
@@ -874,7 +915,8 @@ schema, task, HEAD, complete dirty snapshot, path classification, exact stage
 set, message, parser, and Git-operation-state validation. `create-task-commit`
 accepts only the current schema 3.0 candidate; every other shape fails closed.
 The range form of `check-commit-messages` is standalone diagnostics only;
-Branch Review, Publication, and Finalizer do not consume it or use commit
+Branch Review, Delivery Review/Publish/Merge, Completion, and Finish do not
+consume it or use commit
 subject/body/`Refs` as a freshness gate.
 
 The executor materializes exact reviewed blobs/modes in an isolated index and
@@ -997,7 +1039,7 @@ validates source identity, schema, capability evidence, redaction, and the actua
 `verified|blocked` exit. Public invocation reruns the checker, selects the actual
 exit schema, emits the minimal DTO, and retires owner state after direct
 standalone consumption. No path under `.trellis/tasks/**`, verifier cache/index,
-Finalizer projection, or task-work route is permitted.
+Delivery/Completion projection, or task-work route is permitted.
 
 ## Skill Eval Discovery And Runner
 
@@ -1192,7 +1234,38 @@ validated projection. This read-only profile does not restore the task or
 mutate the archive, PR, or Issue. It does not loosen ordinary gate schema 7.0
 validation, blocked semantics, or re-entry behavior.
 
-## Task Publication Recorder, Checker, And Invocation
+## Delivery Review, Publish, And Merge Invocation
+
+The active review owner uses `record-task-delivery-review` and
+`check-task-delivery-review` only after its AI semantic gate; the normal wrapper
+is `invoke-guru-review-task-delivery`. Review owns the current independently
+deliverable slice, remaining task work, evidence, findings, PR title/body and
+`Refs`-only effect. The checker validates objective freshness without selecting
+semantic sufficiency. A checked `ready` hands the minimal DTO to Publish; it
+does not push, create a PR, or inspect another owner's private checkpoint.
+
+Publish owns `preview-task-delivery-publication`,
+`record-task-delivery-publication-gate`,
+`check-task-delivery-publication-gate`, `execute-task-delivery-publication`,
+and the normal `invoke-guru-publish-task-delivery` wrapper. Its private
+same-plan transaction precedes external mutation and recovers exact push,
+Open-PR binding, metadata convergence, and Ready transition without repeating
+completed actions. Stale review returns to Delivery Review; resume/reprepare
+stay with Publish. Only its checked `ready_for_merge` enters Merge.
+
+Merge owns `preview-task-delivery-merge`, `record-task-delivery-merge`,
+`check-task-delivery-merge`, `discover-task-deliveries`,
+`execute-task-delivery-merge`, and the normal
+`invoke-guru-merge-task-delivery` wrapper. It reviews the exact PR/head and
+merges under separate current-dialogue confirmation. Output loss is recovered
+against the same merge identity. Only `delivered` enters whole-task Completion;
+merge does not close the source Issue or archive the task.
+
+### Retired Publication recorder/checker/invocation (historical only)
+
+The following schemas, diagnostic codes and DTO fields describe the retired
+`guru-review-task-publication` package. They are not accepted as current
+Delivery Review, Publish, or Merge inputs and do not impose an active gate.
 
 Stable commands are `record-task-publication-review` and
 `check-task-publication-review`. The recorder accepts only a caller-authored,
@@ -1271,7 +1344,11 @@ or invalid classification fails closed as `internal_error`. The mapping lives
 once in `runtime/common.py` and is used by recorder, checker, invoke, and
 dry-run so entry points cannot drift.
 
-## Task Finalization Recorder, Checker, Executor, And Invocation
+## Retired Task Finalization Recorder, Checker, Executor, And Invocation
+
+This section preserves the pre-#434 Finalizer transaction/recovery and
+verifier split as historical-only behavior. Its "current" schemas, exits,
+commands and publication effects must not route an active Delivery or Finish.
 
 Stable commands are `preview-finalization`, `record-finalization-gate`,
 `check-finalization-gate`, `execute-finalization-transition`, and the package
@@ -1426,7 +1503,12 @@ closed exits without choosing any of them. They do not receive or persist user
 authorization. Current consumer completion removes the private result; failed
 validation retains it only for same-owner repair.
 
-## Closeout Original Public Commands
+## Retired Closeout Original Public Commands (historical only)
+
+The following original-entry command and performance contract applies only to
+the retired Publication -> Finalizer -> PR Merge graph. Current production
+uses the package public invocations named above and the Completion -> Closure
+-> Finish -> Cleanup chain; old compatibility arguments do not select it.
 
 Merge package errors must reach the shared dispatcher as explicit classified
 diagnostics with safe code/field/remediation. Package-local input, identity,

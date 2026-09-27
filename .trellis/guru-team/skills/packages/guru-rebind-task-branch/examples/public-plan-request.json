@@ -1,0 +1,1 @@
+{"route":"same_checkout_new_ref","task_id":"demo","task_ref":".trellis/tasks/demo","lifecycle_generation":0,"expected_status":"in_progress","current_checkout":"/tmp/task-demo","target_branch_name":"task/new","selected_base_ref":"main","reviewed_base_head":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}

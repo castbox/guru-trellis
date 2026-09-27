@@ -28,13 +28,12 @@ The positive matrix includes a parent-tree gitlink plus unrelated
 staged/unstaged/untracked state, and both positive and negative paths assert
 that transaction worktree registrations and isolated indexes are cleaned up.
 
-Finish-work quality evidence must distinguish the reviewed-content identity and
-its `branch_review_commit` anchor from the current metadata tail and the final
-archive metadata commit. A dry-run pass is valid only when formal execution
-rebuilds the same canonical plan digest.
-Successful closeout has one final summary, one archive metadata commit, no
-post-archive artifact rewrite, a clean worktree, matching local/remote/PR HEAD,
-and a non-draft PR. Any unverified stage must be reported explicitly.
+Delivery quality evidence distinguishes the reviewed-content identity and
+`branch_review_commit` from each Delivery PR/merge result. A merge alone never
+passes whole-task Completion or closes the source Issue. Finish evidence binds
+the current Closure result, unique archive and separately merged bookkeeping
+PR on the target baseline; its success seals the generation for Cleanup. A
+bookkeeping PR is not a business Delivery. Report each unverified stage.
 
 ## Source-Backed Changes
 
@@ -74,14 +73,12 @@ When standard Intake is selected, the deterministic base and workspace helpers
 remain:
 
 - `.trellis/guru-team/scripts/bash/check-env.sh --json`
-- compatibility-only `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
 
-Normal Phase 0 does not call `prepare-task`; an explicit diagnostic supplies
-complete reviewed base provenance and blocks locally when it is missing.
-Phase 1.0 must not leave bare `task.py create` or `prepare-task` mutation
-flags as an active source-checkout path. It mandatory invokes
-`guru-create-task-workspace`; only its checker-validated `created` exit enters
-planning.
+The retired `prepare-task.sh` is not installed and is not a current diagnostic.
+Phase 1.0 must not leave bare `task.py create` or retired prepare mutation
+flags as an active source-checkout path. Current Intake routes through the
+declared #434 Issue, TaskId, checkout and branch-binding owners; no retired
+`guru-create-task-workspace` result enters Planning.
 
 Search before editing a phrase, command, marker, or config key:
 
@@ -119,7 +116,7 @@ its own accepted scope. Validation ownership is split as follows:
 
 Changes to the reviewed-content identity contract require one real Git fixture
 at one exact `HEAD` that calls the production package wrappers for Branch
-Review, Publication, Finalizer, and Verification. The test obtains identities
+Review, Delivery Review, Publish and Merge. The test obtains identities
 from wrapper output or normal owner/checker flow and compares those observed
 values; it must not copy an expected digest, import a test-only algorithm, or
 replace a wrapper call with a direct package-local helper test.
@@ -179,8 +176,11 @@ ordered profile schema references, discriminator fields are required constants,
 and scalar examples prove ordered flags, declared value types, binding order,
 and public-input/invocation argv equality.
 
-For current Intake activation, run the Interface 1.4 matrix over the live
-six-package/23-exit contract rather than only a representative fixture. Every
+For current Intake, run the Interface 1.4 matrix over the live
+`guru-review-change-request:ready` target-kind projection, independent
+`guru-create-issue`, and `guru-create-task` owners rather than only a
+representative fixture. The six-package/23-exit Workspace graph is pinned-old
+history, not a current activation gate. Every
 structurally distinct input profile/signature must have an
 executable public invocation probe, every exit/profile must have a non-empty
 current eval case binding, and all output fields must resolve to direct consumer
@@ -191,7 +191,7 @@ unconsumed/private fields, unsupported projections, and wrapper-local logic.
 Real public-invocation probes must also reject missing owner locators,
 checker-failed owner results, and public-input/owner mode or fixed-profile
 mismatches. They prove repo-relative caller input works, route selection comes
-from the checker-passed owner result, workspace `created` cannot be serialized
+from the checker-passed owner result, task `created` cannot be serialized
 from an example or unchecked executor result, and output examples are not read
 as production serializer input. The live registry and current package graph are
 the complete source, schema, example, eval, and fixture inventory.
@@ -202,8 +202,11 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at 32 active Skills, 142 external exits, and 102 commands, while the integrated business
-workflow projection is 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Negative tests cover missing, extra,
+at 34 active Skills, 155 external exits, and 104 commands, while the integrated business
+workflow projection is 33 invokes and 153 exits. Derive workflow and stop target
+cardinalities from the current registry and Interface declarations. The older
+32/142/102 and 22/98 counts are pinned-old, not alternate current selectors.
+Negative tests cover missing, extra,
 duplicate, renamed, case-mismatched, unknown, or non-current entries; missing
 profile/output/consumer/projection assets; private or unconsumed output fields;
 invalid discriminator unions; absolute paths; and partial Intake/production
@@ -399,10 +402,10 @@ issue-create executor and that recorder/checker do not generate semantic
 decisions.
 When changing Branch Review recording or gate validation, add or update tests
 that prove the semantic owner records only one compact owner-private checkpoint
-under ignored runtime. Publication consumes the minimal typed exit and live
+under ignored runtime. Delivery Review consumes the minimal typed exit and live
 facts, not that checkpoint. The Branch Review public wrapper must delete its own
 checkpoint only after the selected typed output passes schema validation; tests
-must prove Publication succeeds without it. Routine independent-agent assignment, liveness,
+must prove Delivery Review succeeds without it. Routine independent-agent assignment, liveness,
 per-round raw reports, final rollups, reviewer metadata, and Git-derived facts
 must not be persisted. Tracked `review-gate.json`, `agent-assignment.json`,
 `reviews/*.md`, and `review.md` are invalid current owner inputs; no recorder,
@@ -473,97 +476,60 @@ memory. Check initial installation and reapply, zero repository/input-file
 residue, unchanged fixed scope, actual checker receipts, and live title/body
 drift rejection. Mock remote responses only at the fixture GitHub boundary;
 do not replace the installed dispatcher or synthesize a successful receipt.
-The #389 installed regression consumes actual `readiness_current` through the
-published recorder authoring input, then runs executor, result checker and public
-invoke to `created` inside disposable repositories. Verify workspace/task/runtime
-mapping identity, unchanged source state before mutation, and exact
-diagnostic paths for ordinary missing envelope/authoring fields. Do not use the
-private transcript helper to construct the final plan in this acceptance test.
-When changing workspace boundary behavior, also run
-`.trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task
-<task-dir>` from the selected task worktree and add regression tests for wrong
-cwd, worktree mode without a matching `task.json`, ignored runtime mapping, and
-live Git worktree identity, source checkout same-task artifacts, wrong private
-gate/check checkpoint locators, planner-only prepare no-write behavior, and
-controlled `create_task` cwd. The source-checkout matrix must distinguish
-current-base-tracked and path-clean ordinary task/planning files (accepted
-projection) from untracked or staged/unstaged/deleted/renamed files (blocked),
-while tracked-clean review/check metadata and `reviews/**` remain blocked;
-unrelated dirty paths must not be misclassified. `--allow-source-clean` must
-not bypass any artifact blocker.
+### Current Task Checkout Boundary
 
-For `guru-create-task-workspace`, tests must cover workflow/standalone
-precondition parity; every missing/stale/wrong-exit/target-mismatched
-prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
-and workspace/task dialogue-only confirmations; proof that refusal stops before
-recorder/executor and that plan/result/runtime/public DTO contain no
-authorization fields; draft-created issue live binding plus exact
-reviewed title/body/labels bytes without adapter trimming or newline insertion;
-immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
-create success followed by immediate reread failure and same-plan retry with
-exactly one remote issue; exact recovery candidate cardinality 0/1/>1;
-checker-passed created-issue result carryover into a complete Intake rerun;
-missing/partial carryover, result/binding digest drift, reviewed draft or
-created-issue identity mismatch, and fresh live existing-issue identity or null
-`issue_binding` mismatch;
-target/disposition change `refresh_review` and blocked zero-write results; explicit, one
-issue assignee, zero issue assignees/current-login, multiple/user-choice, and
-unresolved assignee cases; isolated official `common.task_store.cmd_create`
-adapter with explicit creator and assignee; missing-owner failure before writes; exact
-`task.json.creator=task.json.assignee=reviewed login`; preservation of existing
-identity bytes; exact object reuse/conflict blocking; no Guru-owned tracked
-task-local Intake aggregate; task identity derived only from current `task.json`,
-ignored runtime mappings, and live Git worktree
-facts; source and target with no `.trellis/.developer` or
-`.trellis/workspace/**`; preservation
-of existing official identity/journal bytes; exactly three typed exits and unique
-consumers; source/installed/platform distribution; removed prepare mutation
-flags remaining zero-write; and clean throwaway update/reapply.
+For current checkout-boundary changes, run
+`.trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh --json --task
+<task-dir>` from the selected task checkout. Cover exact TaskId and lifecycle
+generation, Git common-dir branch binding, the unique registered checkout,
+wrong invocation root, missing/mismatched binding, stale generation and
+unrelated active tasks. The old task/workspace runtime mapping is not an input
+or expected projection. Current Issue and Task creation tests use their own
+active package interfaces and may not synthesize an old Workspace result.
 
-Route tests require `created`, `refresh_review`, or `blocked`; refusal has no
-recorder/result/DTO route. Public plan/result schema, examples, and stdout must
-reject authorization fields and absolute machine-local paths.
+### Retired #389 Task Workspace Fixture (historical only)
 
-Mutation-boundary tests use a real remote whose base advances after the initial
-checker-passed evidence while the local remote-tracking ref remains stale. They
-prove the executor detects the advance with read-only `git ls-remote`, never
-calls the base-sync executor, leaves the decision HEAD plus local and
-remote-tracking refs unchanged, returns `refresh_review`, and creates no issue,
-branch, worktree, task, artifact, or runtime mapping. The unchanged-remote case
-still completes the reviewed mutation path.
+The #389 `guru-create-task-workspace` corpus belongs to the complete pinned-old
+graph. It recorded old `readiness_current` -> workspace `created` routing,
+runtime mapping, source-checkout preconditions, issue creation carryover,
+mutation/recovery, and two independent task merge orders. Its old plan/result
+schemas, three exits, `task.json.branch`-era fixtures and script entrypoints do
+not define current Intake behavior or required checks on a #434 installation.
+Historical regression may run only against a pinned complete old graph; the
+current Issue, TaskId, branch binding, registered checkout and lifecycle routes
+are verified with their active package interfaces and the current checkout
+boundary above. No old Workspace result is synthesized to make the current
+graph pass.
 
-The real A/B fixture must use one clean base, production
-record/executor/checker, independent worktrees/tasks, task-local closeout and
-archive, complete commits, then both A -> B and B -> A local merge orders. The
-second merge in each order must have no Guru metadata conflict, tracked Guru
-metadata path intersection must be empty, and neither diff may contain a fixed
-handoff, `.trellis/workspace/**`, `.trellis/.developer`, shared tracked runtime,
-index, or cache. It uses no remote PR or concurrent process and does not expand
-into locks, TOCTOU, stress, cross-OS, hostile-input, or extra fault injection.
+### Current Delivery Publish And Closeout Checks
 
-When changing PR publish behavior, include tests or dry-runs for both a blocked
+When changing Delivery PR publish behavior, include tests or dry-runs for both a blocked
 low-information body and an accepted reviewer-readable body. The accepted body
 must contain concrete `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
-`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步` sections. The Docs
+`Issue 引用范围`, `安全说明`, and `Docs SSOT` / `文档同步` sections. The Docs
 SSOT check remains objective section/key presence only; the AI readiness review
 owns whether the strategy, durable docs update/no-update reason, merged delta,
 task-history-only content, and follow-up/limitation are true and sufficient.
 The blocked case should cover phrases such as `当前 Trellis task`,
 `已提交实现与文档更新`, or `详见 artifact`, plus a missing Docs SSOT section.
-When changing commit, finish, publish, or merge behavior, add tests for the
+When changing commit, Finish, Delivery Publish, or Merge behavior, add tests for the
 Chinese Conventional Commits contract: reject GitHub default merge subjects,
 Chinese PR-title-as-subject squash messages, issue ids before the prefix or in
 scope, missing issue ids, and English `Update ...` subjects; accept issue-bearing
 work/metadata subjects and `chore(merge)` subjects; verify work body fixed
 sections plus `Refs`, empty metadata body, fixed merge body, finish metadata
-subject, and publish dry-run/formal `merge_commit` payloads. Merge Skill tests
-also bind active 2.0 input/gate selection while freezing 1.0 bytes, exact
+subject, and publish dry-run/formal `merge_commit` payloads. Delivery Merge
+tests bind current input/gate selection from its live Interface, exact
 `--merge --subject --body-file` argv/body bytes and cleanup, pre-merge base head,
 two commit parents, post-merge subject/body, remote base identity, terminal
 recovery without repeated mutation, and rejection of Issue close-keyword
 references at any position in the subject, summary, or body.
 
-Transactional finish tests must inject failure at prepare, reviewed-content
+The following transactional Finalizer finish matrix is historical-only; current
+Finish tests cover Closure-result binding, unique archive projection, separate
+bookkeeping commit/PR/merge, target-baseline verification, ledger seal and
+same-transaction recovery without a business Delivery or Issue close effect.
+Historical transactional finish tests injected failure at prepare, reviewed-content
 push, verifier, draft create/reuse, final projection, archive move, archive
 commit, archive push, remote/PR HEAD check, and draft-to-ready. Every case also
 asserts that no separate pre-draft metadata commit/push occurs, plus active/archive locator and task status,
@@ -594,7 +560,7 @@ recorder, checker, fixture, or re-entry route.
 
 ### Phase 0 Public Transition Gate
 
-The six-package/23-exit Phase 0 graph requires one stateful clean-install
+The current Phase 0 graph requires one stateful clean-install
 transcript in addition to package-local contract tests. The harness runs the
 installed production wrappers and feeds each producer's actual stdout through
 the declared projection into the next call-local envelope. It must not handwrite
@@ -602,8 +568,8 @@ an intermediate transition, import/read `guru_team_trellis.py`, create a hidden
 owner/prerequisite locator, or compare `expected_exit` until the runtime has
 validated and emitted the actual typed output.
 
-The transcript covers the existing Open Issue happy path through real
-workspace/task creation; reviewed draft creation and full refresh/re-entry;
+The transcript covers the existing Open Issue happy path through the active
+TaskId, checkout and branch-binding owners; reviewed draft creation and full refresh/re-entry;
 duplicate retain and retarget; wording `content_changed`; readiness reroute and
 ready; every structurally distinct stop/refresh/re-entry family; and explicit
 base provenance followed by a compatibility prepare call with omitted base.
@@ -612,8 +578,8 @@ evidence is rejected. Before workspace creation, repository scans assert zero
 owner-result, prerequisite, transition, task, workspace, and ignored-runtime
 files.
 
-Source validation, preset staging, and installed validation treat the six
-packages, five transition schemas, call-local envelope schemas, consumer
+Source validation, preset staging, and installed validation treat the active
+packages and transition schemas from the live registry/interfaces, call-local envelope schemas, consumer
 projections, package runtimes, minimal shared kernel, registry/extension inventory, and activation
 manifest as one versioned unit. Mixed old/new bytes, missing assets, or a
 partially activated graph fail closed and preserve the prior complete
@@ -670,17 +636,13 @@ committed `HEAD`; hash mismatch, unknown path, or invalid/missing provenance
 must not suppress applicable findings, and path escape, invalid UTF-8, or
 invalid JSON must still block.
 
-Publication regression coverage must additionally reject missing stale reason,
-missing or mismatched `branch_review_commit`, checked-owner commit mismatch, and
-continuity drift on any exit other than `return_to_task_work`, public inputs
-that carry Branch Review private identities, any `ready`
-gate with a failed one of the eight transient entry preconditions or failed
-shared Finalizer preflight, open objects hidden by the private schema, duplicate
-finding refs that remain schema-valid, and empty finding
-scope/evidence/affected/closure fields. Source and installed real-wrapper cases
-must prove stale replacement and durable-drift return behavior without allowing
-the runtime to choose the semantic route or Publication to read Branch Review
-private checkpoints.
+Delivery regressions must reject stale/mismatched Branch Review identity,
+unapproved or ambiguous Delivery policy, stale slice/remaining-work evidence,
+non-`Refs` or Issue-closing PR payloads, and any attempt to read the Branch
+Review private checkpoint. Source and installed wrapper cases prove fresh
+semantic review, objective freshness, Publish same-plan resume/reprepare,
+exact-head Merge recovery and `delivered` projection to Completion. Neither
+deterministic runtime nor a passing merge chooses whole-task Completion.
 
 Before Branch Review Gate, obtain an independent Agent review of the full branch
 diff from the task's intake base branch, then record the result with
@@ -723,11 +685,11 @@ cannot pass the gate. Include:
   add custom locks, atomic replacement, rollback, concurrency stress, or
   linearization assertions outside the #161 normal-path scope
 - commit message contract: `guru-create-task-commit` reviews and validates the
-  work commit it creates; Branch Review, Publication, and Finalizer prove
+  work commit it creates; Branch Review, Delivery Review/Publish/Merge prove
   ancestry/diff/reviewed-content identity without treating subject/body/`Refs`
   as cross-Skill freshness authority or creating message-only metadata commits;
-  close keywords remain PR-body-only and publish/merge avoids GitHub's default
-  merge subject
+  Delivery and Finish PR bodies contain no Issue-closing keyword, and
+  publish/merge avoids GitHub's default merge subject
 - Trellis task artifacts
 - generated or installed-copy expectations
 - Phase 0 scope and authority evidence, or the current semantic task-free
@@ -742,13 +704,14 @@ cannot pass the gate. Include:
   invalid and are never read. When a manual editing tool has no
   explicit working directory, use a worktree-local absolute path
 - Branch Review retains only its compact owner-private ignored-runtime
-  checkpoint and returns the minimal typed exit consumed by Publication. Raw
+  checkpoint and returns the minimal typed exit consumed by Delivery Review. Raw
   reports, per-round review files, assignment/liveness logs, and final Markdown
   rollups are routine conversation context and must not be created as task
   artifacts.
-- PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
+- Delivery PR body readiness must include reviewer-readable Docs SSOT / 文档同步 result
   text: plan strategy, durable docs updated or no-update reason, merged task
-  deltas, task-history-only content, and follow-up/current PR limitation.
+  deltas, task-history-only content, remaining work and follow-up/current PR
+  limitation; Issue-backed Delivery uses `Refs` only.
 - deployment asset impact
 
 For `Docs SSOT Plan` changes, check that the contract is expressed in
@@ -762,7 +725,7 @@ Python or shell.
 - Making shell scripts detect AI runtime capabilities such as MCP availability.
   Treat those as AI runtime/tool capabilities and express the decision in
   workflow or prompt text.
-- Relying on chat memory for Publication payload effect, base branch, or `branch_review_commit`.
+- Relying on chat memory for Delivery PR effect, base branch, or `branch_review_commit`.
 - Treating one phrase, Issue presence, file count, or path as an independent
   task-free classifier instead of applying the complete semantic decision in
   `guru-select-workflow-mode`.
@@ -821,11 +784,13 @@ Python or shell.
   digest-mismatched report, round gap, stale HEAD, unfinished replacement, open
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
-+ Source, installed, shared/Codex/Claude/Cursor and throwaway validation prove a
-  32-Skill/142-exit/102-command current package closure while the production activation
-  unit remains three Skills/11 exits and business markers remain integrated at
-  22 invokes, 98 exits, 35 workflow targets, and 24 stop targets. Update and preset reapply must reproduce
-  that closure with zero unresolved `.new` or `.bak`.
++ Source, installed, shared/Codex/Claude/Cursor and representative local throwaway
+  validation prove the 34-Skill/155-exit/104-command current package closure
+  and the integrated business graph at 33 invokes and 153 exits. Derive target
+  cardinalities from the current registry and Interface declarations. The older
+  32/142/102 and 22/98 counts are pinned-old, not current acceptance. Update
+  and preset reapply must reproduce the current closure with zero unresolved
+  `.new` or `.bak`.
 
 ## Normal Scenario Qualification Quality
 
@@ -884,7 +849,49 @@ authenticity through deterministic/no-model evidence, pressure corpus coverage,
 absence of keyword classification, zero residue, and the bounded publication
 wording before readiness may pass.
 
-## Task Publication Review Quality
+## Task Delivery And Completion Quality (#434)
+
+Run the current public wrappers in graph order: Branch Review `passed` ->
+`guru-review-task-delivery:ready` ->
+`guru-publish-task-delivery:ready_for_merge` ->
+`guru-merge-task-delivery:delivered` -> `guru-review-task-completion`.
+The review must independently assess one approved slice and remaining scope,
+produce an exact Chinese `Refs`-only PR payload, and report validation limits.
+Publish must bind its preview, dialogue-local remote confirmation, exact branch
+and PR, metadata/Ready convergence, and same-transaction output-loss recovery.
+Merge requires a separate expected-head confirmation and must verify the same
+PR/merge identity without treating a successful merge as Task Completion.
+
+Exercise at least two independent Delivery cycles on one TaskId: after the
+first merge the task remains active and Issue Open with explicit remaining
+work; only fresh whole-task Completion after the required further Delivery
+may emit `completed`. Evidence-only changes enter Completion's evidence-refresh
+profile, never a fabricated Delivery. Exercise all seven Completion exits and
+their unique consumers: `remaining_work` stays active, `evidence_pending`
+refreshes Completion, `additional_delivery_required` returns to Delivery
+planning, `requirements_revision_required` and
+`implementation_revision_required` return to their respective owners,
+`blocked` stops, and only `completed` enters Closure.
+
+Closure alone applies the reviewed source Issue disposition, with its own
+confirmation where mutation is needed. Finish then archives this lifecycle
+generation and merges an independently reviewed bookkeeping PR; success
+requires the unique archive on the target baseline and a sealed current
+ResourceSealRefDTO. Cleanup independently confirms exact owned resources;
+its failure cannot undo Completion, Closure or Finish. Reactivate tests bind
+the normally finished archived TaskId, source, terminal Git identity and new
+generation, and reject stale prior-generation receipts. Tests cover the
+declared recovery exits and unique workflow/stop consumers, source/installed
+parity, no mixed old/new graph, and no old Publication, Finalizer, PR Merge or
+Restore DTO accepted by the active graph. Derive cardinalities from the live
+registry/interfaces/markers rather than historical fixed counts.
+
+### Retired Task Publication Review Quality (historical only)
+
+The following pre-#434 Publication/Finalizer corpus, schema, count, and
+transaction details are retained for historical or pinned-old validation only.
+Their imperative wording does not define current production acceptance or
+allow an old DTO to enter the active Delivery graph.
 
 Phase 3 publication review uses active semantic
 `guru-review-task-publication`. The AI reviews diff/outcome consistency, Issue
@@ -1031,10 +1038,12 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/throwaway checks assert 32 active Skills, 142 package
-exits, and 102 commands, exactly one selected `production-current-v4`
-four-Skill/15-exit current manifest, and business workflow markers of 22
-invokes, 98 exits, 35 workflow targets, and 24 stop targets.
+Source/installed/platform/representative local clean checks assert 34 active Skills,
+155 package exits, and 104 commands, exactly one selected `production-current-v4`
+four-Skill/15-exit current manifest, and business workflow markers of 33 invokes
+and 153 exits. Workflow/stop targets are derived from the current registry and
+Interface graph, not predecessor fixed counts. Full multi-platform Release matrix
+belongs to the dedicated gate; remote marketplace installation is unused.
 
 ## Extension Installation Verification Quality
 
@@ -1076,7 +1085,12 @@ canonical corpus and package bytes. Actual exit chooses the output schema before
 private verification state. Remote-ref acceptance and production eval remain
 independent evidence surfaces.
 
-## Task Finalization Quality
+## Retired Task Finalization Quality (historical only)
+
+The following Finalizer, Publication, legacy Merge and archive-before-merge
+fixtures describe the pre-#434 graph. They are not mandatory current
+Delivery/Completion/Finish gates; old "current" labels and inventory counts
+are historical snapshots, not live authority.
 
 Archive identity regressions must exercise the normal task/mapping producer
 and Finalizer archive or exact committed recovery path. Verify the same task's
@@ -1156,11 +1170,11 @@ Publication, Finalizer, and Merge public wrappers in one shared owner repository
 actual stdout and declared projections bind every edge. It explicitly excludes a
 verifier hop and scans terminal task/runtime state for verifier residue.
 
-Canonical, installed shared, Codex, Claude, and Cursor package/corpus bytes and
-script modes match after fresh install, update, and preset reapply. Package
-closure is 32 active Skills, 142 exits, and 102 commands; business global markers remain 22
-invokes, 98 exits, 35 workflow targets, and 24 stop targets. Upstream Finish
-assets remain unchanged.
+The historical #174 pinned-old replay compared canonical, installed shared,
+Codex, Claude, and Cursor package/corpus bytes and script modes after its
+install/update/reapply. Its predecessor graph had 32 active Skills, 142 exits,
+102 commands and 22 invokes/98 exits; those numbers are not current acceptance.
+Upstream Finish assets remain unchanged.
 
 Canonical package tests must execute in the source repository, where the
 canonical `trellis/**` package tree is available. A clean installed business
@@ -1206,18 +1220,17 @@ Bounded continuity tests prove the existing task semantic review is not replayed
 when task content is unchanged. They bind the prior complete review commit and
 current committed reconciliation HEAD independently, verify the reconciliation
 commit has both required ancestors and the reviewed candidate tree, and prove
-that `continuity_passed` supplies the current HEAD to Publication without
+that `continuity_passed` supplies the current HEAD to Delivery Review without
 claiming a second complete Branch Review. A required task or authority change
 still performs fresh implementation, Phase 2, commit, and Branch Review.
-One real cross-Skill Git regression must cover Finalizer base-mismatch seed,
-reconcile continuity route, confirmed persistent local reconciliation commit,
-bounded continuity, and Publication `ready`; its negative path must prove that
-an unreviewed base merge remains stale. Finalizer and Publication tests keep
-`base_reconciliation_required` distinct from `publication_review_stale`, and
-Publication runtime/schema remain strict rather than accepting a base-only
-bypass. Current-runtime replays for the historical #132 and #161 scenarios must
-reconstruct valid live facts without treating old HEADs, digests, or fabricated
-state as authority.
+One real cross-Skill Git regression must cover a post-review base-mismatch
+seed, reconcile continuity route, confirmed persistent local reconciliation
+commit, bounded continuity, and Delivery Review `ready`; its negative path
+must prove that an unreviewed base merge remains stale. Reconcile and Delivery
+Review tests keep base reconciliation distinct from stale Delivery review and
+must not accept a base-only bypass. Historical #132/#161 replays remain
+diagnostic; they cannot use old HEADs, digests or fabricated state as current
+authority.
 
 Distribution acceptance covers canonical and installed specs, package/runtime
 inventory, complete descriptor-bound canonical projections, exact
@@ -1312,10 +1325,12 @@ callers it must prove the actual invocation path maps from
 `interface.json.public_contracts.invocation.wrapper` to the canonical wrapper's
 fixed `commands.json` command and reaches the installed
 `runtime/launch.sh -> resolve-python.sh` chain. Python-entering wrappers,
-including installed `finish-work.sh`, compatibility `prepare-task.sh`, package
-validators, and any Interface-declared platform public wrapper, must reach their
+including current package validators, public wrappers, and any Interface-declared
+platform public wrapper, must reach their
 package runtime only through the checkout-local resolver. The review must not
 infer `scripts/invoke.sh` when a package declares another safe relative wrapper.
+Retired `finish-work.sh` and `prepare-task.sh` must be absent from the current
+installed inventory; pinned-old verification is a separate version boundary.
 It must additionally inspect the package-runtime closure and confirm every
 registered Python second hop in the real `run`, `run_stdout`, `subprocess.run`,
 and `owner.run` call shapes, plus the current dynamic validation helper, remains
@@ -1328,7 +1343,11 @@ the full capability suite, marketplace matrix, official Trellis update, complete
 platform throwaway matrix, and business-repository upgrade smoke remain separate
 cumulative release evidence.
 
-## Closeout Original-Entry Validation
+## Retired Closeout Original-Entry Validation (historical only)
+
+The old four-stage Publication/Finalizer/PR Merge command budget below is
+historical. Current acceptance uses each #434 owner's public invocation and
+the Delivery cycles plus post-Completion chain specified above.
 
 Run each original public command's Happy Path and compatibility argument branch
 against the same sanitized fixture and compare typed exit, public DTO, semantic

@@ -1,7 +1,0 @@
-{
-  "profile": "publication_review",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/07-24-example-publication",
-  "branch_review_commit": "0123456789abcdef0123456789abcdef01234567",
-  "review_intent": "initial_review"
-}

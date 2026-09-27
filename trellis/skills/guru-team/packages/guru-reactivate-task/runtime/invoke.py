@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -19,6 +20,7 @@ from runtime.task_lifecycle.git_facts import commit_path_bytes, discover_worktre
 from runtime.task_lifecycle.identity import resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.results import reason, task_artifact, transaction_ref
+from runtime.task_lifecycle.source import legacy_archive_source, task_source
 from runtime.task_lifecycle.schema import validate_dto
 from runtime.task_lifecycle.session_adapter import resolve_session
 
@@ -73,11 +75,93 @@ def archived_identity(root: Path, key: TaskLifecycleKey) -> str:
     if not summary_path.is_file():
         raise LifecycleContractError("finish_result_unsealed", "finish-summary", "Finish must persist the terminal archive before Reactivate.")
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    if (summary.get("schema_version") != 2 or summary.get("task", {}).get("archive_dir") != identity.task_ref
+    if (summary.get("schema_version") not in (1, 2) or summary.get("task", {}).get("archive_dir") != identity.task_ref
             or summary.get("task", {}).get("status") != "completed"):
         raise LifecycleContractError("finish_result_unsealed", "finish-summary", "Use the exact normally finished archive.")
-    verify_finish_seal(inspect_repository(root), key, identity.task_ref)
+    repository = inspect_repository(root)
+    if legacy_archive(metadata, summary, identity.task_ref):
+        verify_legacy_archive(repository, key, identity.task_ref, metadata, summary)
+    else:
+        verify_finish_seal(repository, key, identity.task_ref)
     return identity.task_ref
+
+
+def legacy_archive(task: dict[str, Any], summary: dict[str, Any], archive_ref: str) -> bool:
+    return summary.get("schema_version") == 1 or (
+        summary.get("schema_version") == 2 and (
+            "lifecycle_generation" not in task or (
+                task.get("lifecycle_generation") == 0 and task.get("archive_dir") == archive_ref
+            )
+        )
+    )
+
+
+def verify_legacy_archive(repository: Any, key: TaskLifecycleKey, archive_ref: str,
+                          metadata: dict[str, Any] | None = None, summary: dict[str, Any] | None = None,
+                          archive_head: str = "HEAD") -> None:
+    if ResourceLedgerStore(repository).read(key) is not None:
+        raise LifecycleContractError("finish_result_unsealed", "resource_ledger", "Use the current Finish seal for this generation.")
+    summary_ref = f"{archive_ref}/finish-summary.json"
+    task_ref = f"{archive_ref}/task.json"
+    result = subprocess.run(
+        ["git", "log", "--format=%H", "--diff-filter=A", archive_head, "--", summary_ref],
+        cwd=repository.context_path, text=True, capture_output=True, check=False,
+    )
+    commits = result.stdout.splitlines()
+    if result.returncode != 0 or len(commits) != 1:
+        raise LifecycleContractError("finish_result_unsealed", "archive_head", "Review the unique committed legacy archive identity.")
+    committed_task = commit_path_bytes(repository, archive_head, task_ref)
+    committed_summary = commit_path_bytes(repository, archive_head, summary_ref)
+    if (committed_task is None or committed_summary is None
+            or commit_path_bytes(repository, commits[0], task_ref) is None):
+        raise LifecycleContractError("finish_result_unsealed", "archive_head", "Use the exact committed terminal archive.")
+    if summary is not None and committed_summary != (repository.context_path / summary_ref).read_bytes():
+        raise LifecycleContractError("finish_result_unsealed", "archive_head", "Use the exact committed terminal archive.")
+    terminal_task = json.loads(committed_task)
+    committed_result = json.loads(committed_summary)
+    legacy_version = committed_result.get("schema_version")
+    if (terminal_task.get("id") != key.task_id or terminal_task.get("lifecycle_generation", 0) != key.lifecycle_generation
+            or terminal_task.get("status") != "completed" or legacy_version not in (1, 2)
+            or not legacy_archive(terminal_task, committed_result, archive_ref)
+            or committed_result.get("task", {}).get("archive_dir") != archive_ref
+            or committed_result.get("task", {}).get("status") != "completed"):
+        raise LifecycleContractError("finish_result_unsealed", "archive_head", "Use the exact completed TaskLifecycleKey.")
+    correction_path = source_transaction_path(repository, key)
+    if metadata is not None and metadata != terminal_task:
+        corrected = dict(terminal_task)
+        corrected["source"] = metadata.get("source")
+        if corrected != metadata or not correction_path.is_file():
+            raise LifecycleContractError("finish_result_unsealed", "archive_head", "Review changes to the committed archive.")
+        correction = json.loads(correction_path.read_text(encoding="utf-8"))
+        validate_json(correction, Path(__file__).resolve().parents[1] / "schemas/source-correction-transaction.schema.json", "source_correction")
+        if (correction["task_id"], correction["lifecycle_generation"], correction["task_ref"],
+                correction["current_source"], correction["reviewed_source"]) != (
+                key.task_id, key.lifecycle_generation, archive_ref,
+                legacy_archive_source(terminal_task, committed_result, archive_ref,
+                                      repo_ref=correction["current_source"].get("repo_ref")),
+                task_source(metadata, repo_ref=correction["current_source"].get("repo_ref"))):
+            raise LifecycleContractError("finish_result_unsealed", "source_correction", "Use the reviewed legacy source correction.")
+    for checkout in discover_worktree_facts(repository):
+        runtime = checkout.path / ".trellis/.runtime/guru-team"
+        for path in (runtime / "finish").glob("*.json"):
+            transaction = json.loads(path.read_text(encoding="utf-8"))
+            if transaction.get("task_id") == key.task_id and transaction.get("lifecycle_generation") == key.lifecycle_generation:
+                raise LifecycleContractError("finish_transaction_unfinished", "finish_transaction", "Resolve the in-flight Finish before Reactivate.")
+        for path in (runtime / "finalization-transaction").glob("*/finalization-transaction.json"):
+            transaction = json.loads(path.read_text(encoding="utf-8"))
+            if transaction.get("task_ref") in {archive_ref, committed_result["task"].get("artifact_dir")}:
+                raise LifecycleContractError("finish_transaction_unfinished", "finalization_transaction", "Resolve the in-flight legacy Finalizer before Reactivate.")
+
+
+def verify_archived_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str, archive_head: str) -> None:
+    committed = commit_path_bytes(repository, archive_head, f"{archive_ref}/finish-summary.json")
+    committed_task = commit_path_bytes(repository, archive_head, f"{archive_ref}/task.json")
+    summary = json.loads(committed) if committed is not None else {}
+    task = json.loads(committed_task) if committed_task is not None else {}
+    if legacy_archive(task, summary, archive_ref):
+        verify_legacy_archive(repository, key, archive_ref, archive_head=archive_head)
+    else:
+        verify_finish_seal(repository, key, archive_ref)
 
 
 def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str) -> None:
@@ -144,8 +228,6 @@ def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str)
 
 
 def correct_source(root: Path, key: TaskLifecycleKey, archive_ref: str, correction: dict[str, Any]) -> None:
-    from runtime.task_lifecycle.source import normalize_source
-
     repository = inspect_repository(root)
     if transaction_path(repository, key).exists():
         raise LifecycleContractError("source_correction_stale", "transaction", "Do not correct an archive after its next generation exists.")
@@ -153,7 +235,9 @@ def correct_source(root: Path, key: TaskLifecycleKey, archive_ref: str, correcti
     metadata_path = root / archive_ref / "task.json"
     original = metadata_path.read_bytes()
     metadata = json.loads(original)
-    current = normalize_source(metadata.get("source"))
+    summary = json.loads((root / archive_ref / "finish-summary.json").read_text(encoding="utf-8"))
+    current = legacy_archive_source(metadata, summary, archive_ref,
+                                    repo_ref=correction["current_source"].get("repo_ref"))
     receipt = {"schema_version": "1.0", **correction}
     schema = Path(__file__).resolve().parents[1] / "schemas/source-correction-transaction.schema.json"
     validate_json(receipt, schema, "source_correction_transaction")
@@ -249,7 +333,7 @@ def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, se
             or any(record[k] != value for k, value in expected.items())):
         raise LifecycleContractError("reactivation_transaction_conflict", "transaction", "Resume only the exact Reactivate transaction.")
     validate_json(record, Path(__file__).resolve().parents[1] / "schemas/reactivation-transaction.schema.json", "transaction")
-    verify_finish_seal(repository, key, record["archive_ref"])
+    verify_archived_seal(repository, key, record["archive_ref"], plan.decision_head)
     next_key = TaskLifecycleKey(key.task_id, key.lifecycle_generation + 1)
     binding = BranchBindingStore(repository).read(next_key)
     ledger = ResourceLedgerStore(repository)
@@ -312,14 +396,20 @@ def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan,
             raise LifecycleContractError("reactivation_target_conflict", "task_ref", "Do not replace an active task.")
         original = (source / "task.json").read_bytes()
         correction = semantic.get("source_correction")
+        if correction is None:
+            summary = json.loads((source / "finish-summary.json").read_text(encoding="utf-8"))
+            metadata = json.loads(original)
+            if "source" not in metadata and legacy_archive_source(metadata, summary, archive_ref) == {"kind": "no_issue"}:
+                raise LifecycleContractError("source_review_required", "task.json.source",
+                                             "Review and correct the legacy archive source before Reactivate.")
         if correction is not None:
-            from runtime.task_lifecycle.source import normalize_source
-
             correction = validate_dto("SourceCorrectionReadyDTO", correction)
             if (correction["task_id"], correction["lifecycle_generation"], correction["task_ref"]) != (
                     key.task_id, key.lifecycle_generation, archive_ref):
                 raise LifecycleContractError("source_correction_stale", "source_correction", "Apply only a correction for the exact archived incarnation.")
-            actual_source = normalize_source(json.loads(original).get("source"))
+            summary = json.loads((source / "finish-summary.json").read_text(encoding="utf-8"))
+            actual_source = legacy_archive_source(json.loads(original), summary, archive_ref,
+                                                  repo_ref=correction["current_source"].get("repo_ref"))
             if actual_source not in (correction["current_source"], correction["reviewed_source"]):
                 raise LifecycleContractError("source_correction_stale", "current_source", "Review the actual source in the acquired checkout.")
         elif source_transaction_path(repository, key).exists():

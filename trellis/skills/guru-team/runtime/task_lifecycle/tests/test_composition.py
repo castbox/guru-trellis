@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -13,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.checkout_acquisition import CheckoutAcquisitionPlan, acquire_checkout
 from runtime.task_lifecycle.composition import (
-    bind_created_session, establish_created_control_state, prepare_activation_inputs, prepare_creation_inputs,
+    activate_task_status, bind_created_session, establish_created_control_state, prepare_activation_inputs, prepare_creation_inputs, recover_activation_inputs,
     recover_created_control_state,
 )
 from runtime.task_lifecycle.errors import LifecycleContractError
@@ -299,9 +300,35 @@ class CompositionTests(unittest.TestCase):
         path = self.repo / TASK_REF
         path.mkdir(parents=True)
         (path / "task.json").write_text(json.dumps({"id": TASK_ID, "status": "planning", "lifecycle_generation": 0, "base_branch": "base"}), encoding="utf-8")
+        for name in ("prd.md", "design.md", "implement.md"):
+            (path / name).write_text(f"# {name}\n", encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-m", "task")
         self.head = self.git("rev-parse", "HEAD")
+        paths = [f"{TASK_REF}/{name}" for name in ("prd.md", "design.md", "implement.md")]
+        files = [
+            {"path": relative, "content_sha256": hashlib.sha256((self.repo / relative).read_bytes()).hexdigest()}
+            for relative in paths
+        ]
+        self.planning_digest = hashlib.sha256(
+            json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+        ).hexdigest()
+        approval_source = (
+            Path(__file__).resolve().parents[3]
+            / "packages/guru-approve-task-plan/examples/planning-approval.json"
+        )
+        approval = json.loads(approval_source.read_text(encoding="utf-8"))
+        approval.update({
+            "task_ref": TASK_REF,
+            "planning_paths": paths,
+            "reviewed_content_sha256": self.planning_digest,
+        })
+        checkpoint = (
+            self.repo / ".trellis/.runtime/guru-team/owner-checkpoints"
+            / Path(TASK_REF).name / "planning-approval.json"
+        )
+        checkpoint.parent.mkdir(parents=True, exist_ok=True)
+        checkpoint.write_text(json.dumps(approval), encoding="utf-8")
         repository = inspect_repository(self.repo)
         key = TaskLifecycleKey(TASK_ID, 0)
         BranchBindingStore(repository).establish(key, "main", binding_epoch=7)
@@ -313,7 +340,7 @@ class CompositionTests(unittest.TestCase):
     def activation(self) -> dict:
         return {
             "task_id": TASK_ID, "task_ref": TASK_REF, "lifecycle_generation": 0,
-            "planning_result_id": "planning:1", "selected_base_ref": "base",
+            "planning_result_id": f"planning:{self.planning_digest}", "selected_base_ref": "base",
             "continuity": {"kind": "base_current", "task_head": self.head, "base_head": self.base_head},
             "session_mode": "explicit_task_mode",
         }
@@ -337,6 +364,23 @@ class CompositionTests(unittest.TestCase):
         )
         self.assertEqual(json.loads((self.repo / TASK_REF / "task.json").read_text())["status"], "planning")
 
+    def test_activation_changes_only_status_and_recovery_is_read_only(self) -> None:
+        self.planning_task()
+        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
+        payload = self.activation()
+        before = json.loads((self.repo / TASK_REF / "task.json").read_text())
+        inputs = prepare_activation_inputs(self.repo, payload, session)
+        activate_task_status(self.repo, inputs)
+        task_path = self.repo / TASK_REF / "task.json"
+        activated_bytes = task_path.read_bytes()
+        self.assertEqual(json.loads(activated_bytes), {**before, "status": "in_progress"})
+        self.assertNotIn("branch", json.loads(activated_bytes))
+        self.assertEqual(recover_activation_inputs(self.repo, payload, session), inputs)
+        self.assertEqual(task_path.read_bytes(), activated_bytes)
+        with self.assertRaises(LifecycleContractError) as raised:
+            activate_task_status(self.repo, inputs)
+        self.assertEqual(raised.exception.code, "activation_status_mismatch")
+
     def test_activation_rejects_stale_head_session_and_status(self) -> None:
         self.planning_task()
         session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
@@ -356,6 +400,19 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaises(LifecycleContractError) as raised:
             prepare_activation_inputs(self.repo, self.activation(), session)
         self.assertEqual(raised.exception.code, "activation_status_mismatch")
+
+    def test_activation_rejects_unverifiable_planning_result(self) -> None:
+        self.planning_task()
+        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
+        payload = self.activation()
+        payload["planning_result_id"] = f"planning:{'b' * 64}"
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_activation_inputs(self.repo, payload, session)
+        self.assertEqual(raised.exception.code, "activation_approval_stale")
+        (self.repo / TASK_REF / "prd.md").write_text("changed\n", encoding="utf-8")
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_activation_inputs(self.repo, self.activation(), session)
+        self.assertEqual(raised.exception.code, "activation_approval_stale")
 
     def test_activation_rejects_selected_base_drift_and_unrelated_reconcile(self) -> None:
         self.planning_task()

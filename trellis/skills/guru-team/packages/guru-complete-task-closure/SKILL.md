@@ -20,6 +20,5 @@ state, and closes only actions with reviewed close authority.
 recovery. A changed frozen authority or reopened required-closed Issue returns
 `external_change_conflict` for fresh Closure semantic re-entry; Finish must
 not repair or replay that disposition. `closed|no_mutation` carry only the
-Closure `ResultRefDTO`. This canonical package is not a production graph
-activation; downstream Finish and workflow projection migration belong to
-the later activation owner.
+Closure `ResultRefDTO`. The current graph sends these results to Finish; this
+package does not decide Completion or own the workflow projection.

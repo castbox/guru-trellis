@@ -14,9 +14,6 @@ HEADING = "### Manual Git/GitHub Operations"
 REFERENCE = ".trellis/workflow.md#manual-gitgithub-operations"
 OWNERS = (
     "guru-create-task-commit",
-    "guru-review-task-publication",
-    "guru-finalize-task",
-    "guru-merge-task-pr",
 )
 ENTRIES = (
     ".codex/prompts/guru-finish-work.md",
@@ -95,8 +92,8 @@ class ManualGitFallbackContractTest(unittest.TestCase):
     def test_operation_result_never_claims_lifecycle_completion(self) -> None:
         for phrase in (
             "**Git/GitHub result**", "**Workflow residue**",
-            "runtime, Finalizer and archive state",
-            "Do not write Phase 2, Branch Review, Publication, Finalizer, Merge or archive completion markers",
+            "runtime, Delivery, Completion, Closure, Finish and archive state",
+            "Do not write Phase 2, Branch Review, Delivery, Completion, Closure, Finish or Cleanup results",
             "not automatic Guru re-entry",
             "original current entry preconditions and declared routes",
             "not a new workflow node, Skill, typed exit, executor, or recovery path",
@@ -127,18 +124,18 @@ class ManualGitFallbackContractTest(unittest.TestCase):
     def test_existing_public_inventory_is_unchanged(self) -> None:
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 23)
+        self.assertEqual(len(active), 34)
         exits = commands = 0
         for row in active:
             interface = json.loads((SKILLS / row["interface"]).read_text(encoding="utf-8"))
             exits += len(interface["external_exits"])
             package_commands = SKILLS / row["package"] / "commands.json"
             commands += len(json.loads(package_commands.read_text(encoding="utf-8"))["commands"])
-        self.assertEqual((exits, commands), (97, 78))
-        self.assertEqual(self.workflow.count("<!-- guru-skill-invoke:"), 22)
-        self.assertEqual(self.workflow.count("<!-- guru-skill-exit:"), 95)
-        self.assertEqual(self.workflow.count("<!-- guru-workflow-target:"), 35)
-        self.assertEqual(self.workflow.count("<!-- guru-stop-target:"), 24)
+        self.assertEqual((exits, commands), (155, 104))
+        self.assertEqual(self.workflow.count("<!-- guru-skill-invoke:"), 33)
+        self.assertEqual(self.workflow.count("<!-- guru-skill-exit:"), 153)
+        self.assertEqual(self.workflow.count("<!-- guru-workflow-target:"), 62)
+        self.assertEqual(self.workflow.count("<!-- guru-stop-target:"), 36)
 
 
 if __name__ == "__main__":

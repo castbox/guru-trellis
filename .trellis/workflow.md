@@ -11,7 +11,7 @@ This marketplace workflow is the global Guru Team route. It owns only:
 - every external typed exit, its one declared consumer, and every workflow or
   stop target;
 - workspace and task boundary selection, plus task activation;
-- Docs SSOT and external-work-item publication integration points;
+- Docs SSOT and post-Completion external-work-item Closure integration points;
 - human-readable artifact presentation;
 - user interaction, external side-effect boundaries, and the authenticated repo-bound `gh`-only GitHub I/O contract in `workflow-contract.md`.
 
@@ -42,7 +42,7 @@ Classify the initial request before repository or network semantic reads:
   for information remain non-file-changing and are answered directly;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` invokes `guru-execute-task-free-change`;
-- only guru-create-task-workspace:created enters task planning;
+- only guru-create-task:created enters task planning; Issue creation returns to fresh Intake;
 - `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
   request is `这次走 task-free` and routes directly. Without explicit intent,
   high-confidence bounded, reversible, low-risk work routes automatically to
@@ -78,8 +78,8 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The installed graph is exactly 23 active Skills and 100 package exits. The
-business-task workflow is exactly 22 mandatory invokes and 98 external exits.
+The candidate graph has 34 active Skills and 155 package exits. The
+business-task workflow has 33 mandatory invokes and 153 external exits.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
@@ -125,22 +125,59 @@ business-task workflow is exactly 22 mandatory invokes and 98 external exits.
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"content_changed","consumer":{"kind":"workflow","id":"guru-contract-wording-change-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-contract-wording","exit":"blocked","consumer":{"kind":"stop","id":"contract-wording-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-change-request","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"skill","id":"guru-create-task-workspace"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"ready","consumer":{"kind":"workflow","id":"guru-task-intake-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"clarify_requirements","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"review_wording","consumer":{"kind":"skill","id":"guru-review-contract-wording"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"refresh_context","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-change-request","exit":"blocked","consumer":{"kind":"stop","id":"change-request-review-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-create-task-workspace","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"created","consumer":{"kind":"workflow","id":"guru-task-workspace-created"}} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"refresh_review","consumer":{"kind":"skill","id":"guru-sync-base"}} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"blocked","consumer":{"kind":"stop","id":"task-workspace-blocked"}} -->
-<!-- guru-skill-exit: {"skill":"guru-create-task-workspace","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-create-issue","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"created","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-issue","exit":"blocked","consumer":{"kind":"stop","id":"issue-creation-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-create-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task","exit":"created","consumer":{"kind":"workflow","id":"guru-task-created"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-sync-base"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task","exit":"blocked","consumer":{"kind":"stop","id":"task-creation-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-establish-task-identity","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-identity","exit":"identity_established","consumer":{"kind":"workflow","id":"guru-current-task-identity-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-identity","exit":"source_review_required","consumer":{"kind":"workflow","id":"guru-task-source-review-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-identity","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-identity","exit":"blocked","consumer":{"kind":"stop","id":"task-identity-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-establish-task-branch-binding","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"binding_established","consumer":{"kind":"workflow","id":"guru-task-branch-established-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"selection_required","consumer":{"kind":"workflow","id":"guru-task-branch-selection-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-exit: {"skill":"guru-establish-task-branch-binding","exit":"blocked","consumer":{"kind":"stop","id":"task-branch-binding-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-ensure-task-checkout","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"checkout_resolved","consumer":{"kind":"workflow","id":"guru-current-task-checkout-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"binding_required","consumer":{"kind":"workflow","id":"guru-task-branch-binding-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"checkout_required","consumer":{"kind":"workflow","id":"guru-task-checkout-acquisition-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-ensure-task-checkout","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-rebind-task-branch","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-rebind-task-branch","exit":"rebound","consumer":{"kind":"workflow","id":"guru-task-branch-rebound-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-rebind-task-branch","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-task-branch-rebind-refresh-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-rebind-task-branch","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-exit: {"skill":"guru-rebind-task-branch","exit":"blocked","consumer":{"kind":"stop","id":"task-branch-rebind-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-bind-task-session","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"session_resumed","consumer":{"kind":"workflow","id":"guru-bind-task-session-resume-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"session_rebound","consumer":{"kind":"workflow","id":"guru-bind-task-session-rebind-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"task_switched","consumer":{"kind":"workflow","id":"guru-bind-task-session-switch-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"reactivate_rebound","consumer":{"kind":"workflow","id":"guru-bind-task-session-reactivate-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"session_manually_recovered","consumer":{"kind":"workflow","id":"guru-bind-task-session-manual-recovery-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"explicit_task_mode","consumer":{"kind":"workflow","id":"guru-current-phase-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-bind-task-session","exit":"binding_blocked","consumer":{"kind":"stop","id":"task-session-binding-blocked"}} -->
 ### Phase 1 owner
 <!-- guru-skill-invoke: {"skill":"guru-approve-task-plan","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"approved","consumer":{"kind":"workflow","id":"phase-1-task-activation"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"revision_required","consumer":{"kind":"skill","id":"guru-approve-task-plan"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"clarify_scope","consumer":{"kind":"workflow","id":"guru-task-plan-clarify-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-activate-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"activated","consumer":{"kind":"workflow","id":"guru-task-activated-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-task-activation-refresh-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
+<!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"blocked","consumer":{"kind":"stop","id":"task-activation-blocked"}} -->
 ### Active-task base evolution owner
 <!-- guru-skill-invoke: {"skill":"guru-reconcile-task-base","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-reconcile-task-base","exit":"reconciled","consumer":{"kind":"workflow","id":"guru-base-reconciliation-router"}} -->
@@ -161,33 +198,62 @@ business-task workflow is exactly 22 mandatory invokes and 98 external exits.
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"revision-required","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"stop","id":"legacy-archived-review-disposition-required"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"continuity_passed","consumer":{"kind":"workflow","id":"guru-base-continuity-passed-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-branch-review-implementation-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-branch-review-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"blocked","consumer":{"kind":"stop","id":"branch-review-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-review-task-publication","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"archived_ready","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"return_to_task_work","consumer":{"kind":"workflow","id":"guru-task-publication-work-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-review-task-publication","exit":"blocked","consumer":{"kind":"stop","id":"task-publication-review-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-finalize-task","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"base_reconciliation_required","consumer":{"kind":"skill","id":"guru-reconcile-task-base"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"publication_review_stale","consumer":{"kind":"skill","id":"guru-review-task-publication"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"resume_finalization","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-finalize-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"ready_for_merge","consumer":{"kind":"skill","id":"guru-merge-task-pr"}} -->
-<!-- guru-skill-exit: {"skill":"guru-finalize-task","exit":"blocked","consumer":{"kind":"stop","id":"task-finalization-blocked"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-merge-task-pr","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merged","consumer":{"kind":"workflow","id":"guru-finalization-finish-response"}} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"review_refresh_required","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-pr-merge-blocked"}} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"phase2_reentry_required","consumer":{"kind":"skill","id":"guru-restore-archived-task"}} -->
-<!-- guru-skill-exit: {"skill":"guru-merge-task-pr","exit":"closure_mismatch","consumer":{"kind":"stop","id":"task-pr-closure-mismatch"}} -->
-<!-- guru-skill-invoke: {"skill":"guru-restore-archived-task","required":true} -->
-<!-- guru-skill-exit: {"skill":"guru-restore-archived-task","exit":"restored_to_phase2","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
-<!-- guru-skill-exit: {"skill":"guru-restore-archived-task","exit":"restore_blocked","consumer":{"kind":"stop","id":"task-pr-phase2-reentry-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-review-task-delivery","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"ready","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"planning_revision_required","consumer":{"kind":"workflow","id":"guru-task-delivery-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-delivery-scope-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"blocked","consumer":{"kind":"stop","id":"task-delivery-review-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-publish-task-delivery","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"ready_for_merge","consumer":{"kind":"skill","id":"guru-merge-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"review_stale","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"resume_publication","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"reprepare_required","consumer":{"kind":"skill","id":"guru-publish-task-delivery"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"blocked","consumer":{"kind":"stop","id":"task-delivery-publication-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-merge-task-delivery","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"delivered","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"merge_blocked","consumer":{"kind":"stop","id":"task-delivery-merge-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"review_refresh_required","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-review-task-completion","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"remaining_work","consumer":{"kind":"workflow","id":"active-task-continuation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"evidence_pending","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"additional_delivery_required","consumer":{"kind":"workflow","id":"task-delivery-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"requirements_revision_required","consumer":{"kind":"workflow","id":"task-requirements-revision-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"implementation_revision_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"completed","consumer":{"kind":"skill","id":"guru-complete-task-closure"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-task-completion","exit":"blocked","consumer":{"kind":"stop","id":"task-completion-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-complete-task-closure","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-complete-task-closure","exit":"no_mutation","consumer":{"kind":"skill","id":"guru-finish-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-complete-task-closure","exit":"closed","consumer":{"kind":"skill","id":"guru-finish-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-complete-task-closure","exit":"resume_closure","consumer":{"kind":"skill","id":"guru-complete-task-closure"}} -->
+<!-- guru-skill-exit: {"skill":"guru-complete-task-closure","exit":"external_change_conflict","consumer":{"kind":"skill","id":"guru-complete-task-closure"}} -->
+<!-- guru-skill-exit: {"skill":"guru-complete-task-closure","exit":"blocked","consumer":{"kind":"stop","id":"task-closure-blocked"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-finish-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"success","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"resume_finish","consumer":{"kind":"skill","id":"guru-finish-task"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"blocked","consumer":{"kind":"stop","id":"task-finish-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"closure_refresh_required","consumer":{"kind":"workflow","id":"task-closure-refresh-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"manual_cleanup_required","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-cleanup-task-resources","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"cleaned","consumer":{"kind":"stop","id":"task-cleanup-complete"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"remaining_resources","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"blocked","consumer":{"kind":"stop","id":"task-cleanup-blocked"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"manual_selection_required","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"handoff_cleanup_complete","consumer":{"kind":"stop","id":"task-handoff-cleanup-await-destination"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"handoff_cleanup_remaining","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-invoke: {"skill":"guru-reactivate-task","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivated_to_planning","consumer":{"kind":"workflow","id":"task-planning-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"session_binding_recovery_required","consumer":{"kind":"workflow","id":"task-session-recovery-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"resume_reactivation","consumer":{"kind":"workflow","id":"task-reactivation-resume-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"source_correction_required","consumer":{"kind":"workflow","id":"task-source-correction-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivate_blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"}} -->
 ## Workflow And Stop Targets
 <!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-completed-router"} -->
 <!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-baseline-incomplete-router"} -->
@@ -201,7 +267,7 @@ business-task workflow is exactly 22 mandatory invokes and 98 external exits.
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-requirements-design-test-ssot-bootstrap-router"} -->
 <!-- guru-stop-target: {"id":"requirements-design-test-ssot-blocked"} -->
-The graph contains exactly 35 workflow targets and 24 stop targets.
+The graph declares every workflow and stop consumer from the active package interfaces.
 <!-- guru-workflow-target: {"id":"original-request-route"} -->
 <!-- guru-workflow-target: {"id":"guru-workflow-standard-intake-router"} -->
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-classified-router"} -->
@@ -215,9 +281,28 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 <!-- guru-workflow-target: {"id":"guru-full-task-intake-chain"} -->
 <!-- guru-workflow-target: {"id":"guru-contract-wording-pass-router"} -->
 <!-- guru-workflow-target: {"id":"guru-contract-wording-change-router"} -->
-<!-- guru-workflow-target: {"id":"guru-task-workspace-created"} -->
+<!-- guru-workflow-target: {"id":"guru-task-intake-router"} -->
+<!-- guru-workflow-target: {"id":"guru-sync-base"} -->
+<!-- guru-workflow-target: {"id":"guru-task-created"} -->
+<!-- guru-workflow-target: {"id":"guru-current-task-identity-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-source-review-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-branch-established-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-branch-selection-router"} -->
+<!-- guru-workflow-target: {"id":"guru-current-task-checkout-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-branch-binding-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-checkout-acquisition-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-branch-rebound-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-branch-rebind-refresh-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bind-task-session-resume-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bind-task-session-rebind-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bind-task-session-switch-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bind-task-session-reactivate-router"} -->
+<!-- guru-workflow-target: {"id":"guru-bind-task-session-manual-recovery-router"} -->
+<!-- guru-workflow-target: {"id":"guru-current-phase-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
 <!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
+<!-- guru-workflow-target: {"id":"guru-task-activated-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-activation-refresh-router"} -->
 <!-- guru-workflow-target: {"id":"guru-base-reconciliation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-base-continuity-passed-router"} -->
 <!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
@@ -226,8 +311,16 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 <!-- guru-workflow-target: {"id":"guru-task-check-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-branch-review-implementation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-branch-review-scope-router"} -->
-<!-- guru-workflow-target: {"id":"guru-task-publication-work-router"} -->
-<!-- guru-workflow-target: {"id":"guru-finalization-finish-response"} -->
+<!-- guru-workflow-target: {"id":"guru-task-delivery-planning-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-delivery-scope-router"} -->
+<!-- guru-workflow-target: {"id":"active-task-continuation"} -->
+<!-- guru-workflow-target: {"id":"task-delivery-planning-router"} -->
+<!-- guru-workflow-target: {"id":"task-requirements-revision-router"} -->
+<!-- guru-workflow-target: {"id":"task-closure-refresh-router"} -->
+<!-- guru-workflow-target: {"id":"task-planning-router"} -->
+<!-- guru-workflow-target: {"id":"task-session-recovery-router"} -->
+<!-- guru-workflow-target: {"id":"task-reactivation-resume-router"} -->
+<!-- guru-workflow-target: {"id":"task-source-correction-router"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"solution-mechanism-qualification-blocked"} -->
@@ -237,22 +330,34 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 <!-- guru-stop-target: {"id":"requirements-clarification-blocked"} -->
 <!-- guru-stop-target: {"id":"contract-wording-blocked"} -->
 <!-- guru-stop-target: {"id":"change-request-review-blocked"} -->
-<!-- guru-stop-target: {"id":"task-workspace-blocked"} -->
+<!-- guru-stop-target: {"id":"issue-creation-blocked"} -->
+<!-- guru-stop-target: {"id":"task-creation-blocked"} -->
+<!-- guru-stop-target: {"id":"task-identity-blocked"} -->
+<!-- guru-stop-target: {"id":"task-branch-binding-blocked"} -->
+<!-- guru-stop-target: {"id":"task-branch-rebind-blocked"} -->
+<!-- guru-stop-target: {"id":"task-session-binding-blocked"} -->
+<!-- guru-stop-target: {"id":"task-activation-blocked"} -->
 <!-- guru-stop-target: {"id":"invalid-task-state"} -->
 <!-- guru-stop-target: {"id":"task-plan-approval-blocked"} -->
 <!-- guru-stop-target: {"id":"task-base-reconciliation-blocked"} -->
 <!-- guru-stop-target: {"id":"task-check-blocked"} -->
 <!-- guru-stop-target: {"id":"task-commit-blocked"} -->
 <!-- guru-stop-target: {"id":"branch-review-blocked"} -->
-<!-- guru-stop-target: {"id":"task-publication-review-blocked"} -->
-<!-- guru-stop-target: {"id":"task-finalization-blocked"} -->
-<!-- guru-stop-target: {"id":"task-pr-merge-blocked"} -->
-<!-- guru-stop-target: {"id":"task-pr-phase2-reentry-blocked"} -->
-<!-- guru-stop-target: {"id":"task-pr-closure-mismatch"} -->
+<!-- guru-stop-target: {"id":"task-delivery-review-blocked"} -->
+<!-- guru-stop-target: {"id":"task-delivery-publication-blocked"} -->
+<!-- guru-stop-target: {"id":"task-delivery-merge-blocked"} -->
+<!-- guru-stop-target: {"id":"task-completion-blocked"} -->
+<!-- guru-stop-target: {"id":"task-closure-blocked"} -->
+<!-- guru-stop-target: {"id":"task-finish-blocked"} -->
+<!-- guru-stop-target: {"id":"task-cleanup-complete"} -->
+<!-- guru-stop-target: {"id":"task-cleanup-blocked"} -->
+<!-- guru-stop-target: {"id":"task-handoff-cleanup-await-destination"} -->
+<!-- guru-stop-target: {"id":"task-reactivate-blocked"} -->
+<!-- guru-stop-target: {"id":"legacy-archived-review-disposition-required"} -->
 ### Workflow target behavior
 | Target | Global behavior |
 | --- | --- |
-| guru-architecture-baseline-current-router | Validate the current constitution status/file and dispatch a fresh `baseline_current` by source profile: task impact may resume only its matching stage, bootstrap/repair reruns that stage's task impact, and promotion returns through fresh Phase 2/commit/review; Publication and Acceptance/Finish additionally require `promotion_state=no_change` or `promotion_state=reviewed_promoted`. |
+| guru-architecture-baseline-current-router | Validate the current constitution status/file and dispatch a fresh `baseline_current` by source profile: task impact may resume only its matching stage, bootstrap/repair reruns that stage's task impact, and promotion returns through fresh Phase 2/commit/review; Delivery Review and Completion/Finish additionally require `promotion_state=no_change` or `promotion_state=reviewed_promoted`. |
 | guru-architecture-baseline-bootstrap-router | Enter Architecture foundation bootstrap or bounded repair for the exact missing authority without expanding task scope. |
 | guru-architecture-baseline-planning-router | Return `architecture_conflict` to Planning and `contract_incomplete` to its declared Planning/repair owner; never reinterpret either as current evidence. |
 | guru-architecture-baseline-check-router | Return `fitness_regression` to implementation/check and require the affected downstream stages again. |
@@ -270,9 +375,28 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 | guru-full-task-intake-chain | Start a separately reviewed task intake from the returned draft. |
 | guru-contract-wording-pass-router | Route the checked profile to change-request review, planning approval, or the standalone caller. |
 | guru-contract-wording-change-router | Re-enter the affected wording route and any required upstream refresh. |
-| guru-task-workspace-created | Resolve the created task worktree and enter Phase 1. |
+| guru-task-intake-router | Project `ready.transition.target.kind` exactly once: `proposed_draft` invokes `guru-create-issue`, while `existing_issue` and `standalone_request` invoke `guru-create-task`; never turn an Issue creation result into task creation without fresh Sync and Intake. |
+| guru-sync-base | Re-enter `guru-sync-base` and then fresh Intake. `guru-create-issue:created` supplies the newly created exact source Issue and continues as a live Issue, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target. |
+| guru-task-created | Resolve the new TaskId, generation, binding and checkout from live facts, then enter Phase 1; never reuse the creation checkout path as durable identity. |
+| guru-current-task-identity-router | Resume the current task owner only after exact TaskId, generation and source authority validation. |
+| guru-task-source-review-router | Return ambiguous legacy source to fresh semantic review; do not guess Issue disposition from branch or PR text. |
+| guru-task-branch-established-router | Re-resolve the active checkout with the established branch binding. |
+| guru-task-branch-selection-router | Present current candidates for explicit choice, then revalidate through the binding owner. |
+| guru-current-task-checkout-router | Resume the exact current lifecycle owner with the live resolved checkout. |
+| guru-task-branch-binding-router | Invoke `guru-establish-task-branch-binding` for the exact active task. |
+| guru-task-checkout-acquisition-router | Acquire the reviewed checkout through its task owner and re-resolve the same TaskId. |
+| guru-task-branch-rebound-router | Re-resolve the task checkout at the new binding revision; do not carry an old session receipt. |
+| guru-task-branch-rebind-refresh-router | Return to the rebind owner's fresh target review. |
+| guru-bind-task-session-resume-router | Resume the exact TaskId/generation current phase after session validation. |
+| guru-bind-task-session-rebind-router | Resume the exact task after current session binding recovery and phase revalidation. |
+| guru-bind-task-session-switch-router | Switch only to the explicitly selected TaskId/generation and freshly resolve its phase. |
+| guru-bind-task-session-reactivate-router | Resume the reactivated generation; old Finish/Cleanup receipts remain historical. |
+| guru-bind-task-session-manual-recovery-router | Recheck the restored binding and current task boundary before phase routing. |
+| guru-current-phase-router | Use explicit task mode without inventing a session context or binding record. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
-| phase-1-task-activation | Present the current approved plan, wait at the dialogue-local review boundary when required, then validate the approved DTO and run the official task start transition. |
+| phase-1-task-activation | Present the current approved plan, apply its current pair guard, then invoke `guru-activate-task` for the status-only transition. |
+| guru-task-activated-router | Re-resolve the active task and enter fresh Phase 2. |
+| guru-task-activation-refresh-router | Refresh Planning approval or binding evidence before another activation attempt. |
 | guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
 | guru-base-continuity-passed-router | Consume bounded continuity for the exact pair, project the current continuity-reviewed reconciliation commit as the downstream review anchor, and resume its closed `resume_target`. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
@@ -281,20 +405,22 @@ The graph contains exactly 35 workflow targets and 24 stop targets.
 | guru-task-check-planning-router | Route the declared planning action to plan approval or requirements clarification. |
 | guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
-| guru-task-publication-work-router | Resume Phase 2 for task-content findings. |
-| guru-finalization-finish-response | Return the canonical merged PR URL and merge commit identity. |
-| task-pr-merge-blocked | Stop before merge and report the exact live readiness remediation. |
-| task-pr-phase2-reentry-blocked | Stop before restoration and report the exact archived-task identity or workspace remediation. |
-| task-pr-closure-mismatch | Stop after merge and report the exact GitHub Issue closure mismatch without hand-closing it. |
-The Finalizer stale projection supplies exactly `task_ref`,
-`branch_review_commit`, and `stale_reason`; the Publication caller authors only
-its declared profile, mode, and review intent. Inputs outside the current stale
-profile stop fail closed. When live reviewed content advances beyond that
-commit, Publication may return a checked task-work finding to the existing Phase
-2 router, while `ready` remains continuity-strict. This stale route never
-consumes a base-only mismatch: Finalizer projects that condition only as
-`base_reconciliation_required`, and the reconciliation/continuity chain must
-produce a current reviewed-content anchor before Publication can run again.
+| guru-task-delivery-planning-router | Return the precise Delivery policy gap to Planning; preserve the task's total accepted scope. |
+| guru-task-delivery-scope-router | Enter fresh requirements clarification for the exact disputed slice. |
+| active-task-continuation | Keep the task active and resume the earliest affected work owner for remaining work. |
+| task-delivery-planning-router | Plan the next independent Delivery slice under the same TaskId. |
+| task-requirements-revision-router | Enter `guru-clarify-requirements` for the exact authority revision, then refresh affected Planning and downstream gates. |
+| task-closure-refresh-router | Refresh the exact source Issue closure fact before resuming Finish. |
+| task-planning-router | Resume Planning for the reactivated generation without reusing prior approvals. |
+| task-session-recovery-router | Enter `guru-bind-task-session` with current generation and checkout identity. |
+| task-reactivation-resume-router | Re-enter the same Reactivate transaction's recovery path without duplicating mutation. |
+| task-source-correction-router | Freshly review the legacy source identity before another Reactivate attempt. |
+
+`guru-publish-task-delivery` owns the current PR and its output-loss recovery;
+`guru-merge-task-delivery` owns one expected-head merge and emits only a Delivery
+result. A stale review returns to Delivery Review, a base evolution returns
+through Reconcile/continuity, and a task-content finding returns to Phase 2.
+Neither PR state nor merge status is a Completion approval.
 
 Every stop target returns the owning Skill result and safe remediation, then
 waits for changed authority or external state. A stop never guesses another
@@ -304,32 +430,14 @@ independently requested operation under
 
 ### Mandatory Architecture stage routing
 
-The archived read-only route uses the same mandatory owners and new
-target-owned profiles, not an alternate lifecycle or a reinterpretation of
-`merge_blocked`:
-
-| Producer exit | Architecture stage/source_exit | Consumer profile |
-| --- | --- | --- |
-| Merge `review_refresh_required` | `branch_review` / `review_refresh_required` | Branch Review `archived_review` |
-| Branch Review `archived_review_passed` | `publication` / `archived_review_passed` | Publication `archived_publication_review` |
-| Publication `archived_ready` | `acceptance_finish` / `archived_ready` | Finalizer `archived_review_refresh` |
-
-Use each producer's actual public DTO and its Interface projection. At every
-row invoke Architecture freshly and consume only a matching
-`task_impact_sync:baseline_current` with current/no-change or already-promoted
-authority. The Architecture semantic owner selects `blocked` when the
-read-only scope lacks current evidence or would require a write. Its validator
-rejects writing continuations for those exact source/stage pairs; no caller
-converts a different exit into pass or starts promotion/repair. Ordinary
-Architecture sources below retain their original routes.
-
-Only Finalizer's fresh `ready_for_merge` rejoins the original Merge path, with
-its independent live gate and expected-head confirmation. New profiles never
-rewrite a completed task, archive, PR, Issue, branch or source mapping.
-Missing or stale required review may enter Merge `archived_review_request`
-through its own semantic contract; normal checkpoint retirement is not a
-reason to re-enter. Step-local input, findings and recovery rules remain owned
-by the corresponding Skill contracts.
+The old archived read-only Finalizer route has no new-graph consumer.
+`archived_review_passed` stops at `legacy-archived-review-disposition-required`.
+For an old in-flight task, read the exact task/PR/local/remote/base/Finalizer
+facts and use a pinned compatible old version or per-case manual disposition;
+never project old Finalizer or Merge DTOs into Delivery, Completion or Finish.
+`castbox/ai-chat-roleplay-backend#154` / PR #156 is a terminal merged-PR example:
+a prepared old preview is not permission to push or create another PR, and
+the old execution preflight must reject the same terminal condition.
 
 Every standard task invokes the one stable
 `guru-maintain-architecture-baseline` owner through `task_impact_sync` at each
@@ -342,8 +450,8 @@ stage calls are fresh invocations, not duplicated markers or reusable results.
 | Qualified implementation expansion | `task_impact_sync(stage=implementation_discovery)` | `guru-phase2-implementation-coordinator` |
 | Phase 2 | `task_impact_sync(stage=phase2)` | `guru-check-task` |
 | Branch Review | `task_impact_sync(stage=branch_review)` over the committed full diff | `guru-review-branch` |
-| Publication | `task_impact_sync(stage=publication)` | `guru-review-task-publication` |
-| Acceptance/Finish | `task_impact_sync(stage=acceptance_finish)` | `guru-finalize-task` |
+| Delivery Review | `task_impact_sync(stage=publication)` | `guru-review-task-delivery` |
+| Completion/Finish | `task_impact_sync(stage=acceptance_finish)` | `guru-review-task-completion` / `guru-finish-task` after Closure |
 
 Every `baseline_current` carries `constitution_status=current` and its exact
 source profile. Only `source_profile=task_impact_sync` may resume the matching
@@ -361,15 +469,15 @@ serialized promotion route; baseline/constitution advance or other stale
 authority is repaired or resynchronized by that owner and the affected stage
 is rerun.
 
-Publication rejects missing or stale Architecture evidence, every conflict,
+Delivery Review rejects missing or stale Architecture evidence, every conflict,
 incomplete contract, fitness regression, and `promotion_state=reviewed_candidate`.
-Acceptance/Finish accepts a long-term Architecture change only as
+Completion/Finish accepts a long-term Architecture change only as
 `reviewed_promoted`, or accepts a current `no_change` proof when shared current
 does not change. A promotion-created shared-current diff returns to fresh Phase
 2, a new task commit, and independent committed full-diff Branch Review before
-Publication and Acceptance/Finish rerun. This router establishes Architecture
-eligibility only; it does not absorb PR-publication or Finalizer business
-semantics from their owning packages.
+Delivery Review and Completion/Finish rerun. This router establishes Architecture
+eligibility only; it does not absorb Delivery publication, whole-task Completion,
+or post-Completion Closure/Finish judgments from their owning packages.
 
 ### Mandatory qualification profiles
 
@@ -391,7 +499,7 @@ exits from each owner.
 | `base_impact_candidate_set` | base-impact finding, validation obligation, or route | `guru-reconcile-task-base` |
 | `phase2_candidate_set` | Phase 2 severity, finding, planning-stale, or implementation route | `guru-check-task` |
 | `branch_review_candidate_set` | Branch Review severity, finding, scope route, or blocker | `guru-review-branch` |
-| `publication_candidate_set` | Publication finding, task-work return, or blocker | `guru-review-task-publication` |
+| `publication_candidate_set` | Delivery Review finding, task-work return, or blocker | `guru-review-task-delivery` |
 
 For every row above, the caller invokes `guru-qualify-solution-mechanism` with
 the same profile before promoting a proposed mechanism into that stage's
@@ -416,18 +524,18 @@ target is the existing `guru-resume-implementation` workflow API.
 ## Phase Index
 
 ```text
-Phase 0: Intake  -> issue-backed base sync, context, clarification, review, workspace
+Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
 Phase 1: Plan    -> planning artifacts, Architecture impact, plan approval, plan review pause, task activation
 Phase 2: Execute -> implementation discovery re-entry, Architecture candidate check, task check
-Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, publication/finish eligibility, finalization
+Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycles, Completion, Closure, Finish, Cleanup
 ```
 
 | State | Route |
 | --- | --- |
-| no relevant active task and no bound incomplete closeout | Invoke guru-select-workflow-mode; consume task_free or standard_intake. |
+| no relevant active task and no archived incomplete closeout identity | Invoke guru-select-workflow-mode; consume task_free or standard_intake. |
 | planning / planning-inline | Load the single continuation contract below and resume its Phase 1 owner. |
-| in_progress / in_progress-inline | Load the single continuation contract below and resume its Phase 2-to-Finalizer owner. |
-| completed | Load the single continuation contract below and enter canonical guru-finish-work. |
+| in_progress / in_progress-inline | Load the single continuation contract below and resume its current Delivery or Completion owner. |
+| completed | Load the single continuation contract below and resume the current Finish or Cleanup consumer. |
 | invalid task identity or state | Load the single continuation contract below and stop at `invalid-task-state`. |
 
 ## Active Task Continuation
@@ -435,17 +543,17 @@ Phase 3: Finish  -> docs reconciliation, commit, Architecture full-diff review, 
 [trellis-continuation]
 ### Guru active-task continuation
 
-Use only the exact current-session task binding supplied by the upstream active-task resolver. Re-read its task identity, task workspace, repository identity, current workflow, and `task.json.status` before choosing an owner. Project inventory, task counts, assignee, invocation checkout, filenames, old summaries, missing checkpoints, and previous dialogue must not select a task or prove a semantic result. A stale, conflicting, corrupt, ambiguous, missing, or unsupported identity/state stops at `invalid-task-state`; do not enter Intake, select another task, rebuild mappings, migrate state, or infer a route.
+Use the current TaskId/generation session binding when present. Resolve its current task_ref, TaskBranchBinding and checkout from live Git facts, then reread `task.json.status` before choosing an owner. In explicit-task mode, require an explicitly selected and validated TaskId; an invocation checkout or directory name never establishes identity. Missing branch binding enters `guru-establish-task-branch-binding`; ambiguous or conflicting identity stops at `invalid-task-state`. Do not infer identity from old mappings or previous dialogue.
 
-The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block for the exact bound task. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Phase 2-to-Finalizer owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
+The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block for the exact bound task. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Delivery/Completion owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
 
 #### Closed state dispatch
 
 | Bound status | Continuation owner family |
 | --- | --- |
 | `planning` or `planning-inline` | Apply the Phase 1 recovery matrix below. |
-| `in_progress` or `in_progress-inline` | Apply the Phase 2-to-Finalizer recovery matrix below. |
-| `completed` | Enter canonical `guru-finish-work`; upstream `trellis-finish-work` is not a Guru consumer. |
+| `in_progress` or `in_progress-inline` | Apply the Phase 2-to-Completion recovery matrix below. |
+| `completed` | Validate current Closure/Finish generation and enter its declared Finish or Cleanup consumer; upstream `trellis-finish-work` is not a Guru consumer. |
 | anything else | Stop at `invalid-task-state`. |
 
 #### Phase 1 recovery matrix
@@ -454,17 +562,17 @@ Apply the first matching row from current live evidence. Artifact presence is ev
 
 | Current fact | Required owner/action |
 | --- | --- |
-| The adjacent checked `guru-create-task-workspace:created` DTO is still current | Consume it through `guru-task-workspace-created`. |
-| The created DTO was lost across a turn/session | Return to the original `guru-create-task-workspace` recovery/rematerialization path for the exact workspace/task; never create a second Issue, branch, worktree, or task. |
+| The adjacent checked `guru-create-task:created` DTO is still current | Consume it through `guru-task-created`. |
+| The created DTO was lost across a turn/session | Return to `guru-create-task` read-only result recovery for the exact TaskId and generation; never create a second Issue, branch, worktree, or task. |
 | Any required planning artifact or Docs SSOT Plan is incomplete | Return to the current planning author, reread live Issue/task authority, and complete `prd.md`, `design.md`, and `implement.md`; do not infer a gate from file existence. |
 | Planning wording is absent or stale | Freshly invoke `guru-review-contract-wording:planning_artifacts`. |
 | Planning Architecture is absent or stale | Freshly invoke `guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`. |
 | Plan approval output is absent, stale, or lost | Freshly invoke `guru-approve-task-plan`; never reconstruct `approved` from task status, files, prior prose, or an old presentation. |
 | The current approved plan has not been accepted in this dialogue, including lost confirmation after presentation | Present the current approved plan and activation side effect again and obtain a fresh dialogue-local confirmation. Never persist or reuse confirmation. |
-| The exact task is still `planning` after current approval and confirmation | Invoke `start-task.sh --mode initial <task-path>` once. Its checked `activated` result enters Phase 2. |
-| Activation mutation succeeded but its result was lost and the exact task is already `in_progress` | Invoke `start-task.sh --mode recovery <task-path>`. Recovery verifies the boundary/current binding and rematerializes `activated` without calling `task.py start` again. |
+| The exact task is still `planning` after current approval and confirmation | Invoke `guru-activate-task` once with current C6 planning input. Its checked `activated` result enters Phase 2 without writing legacy branch metadata. |
+| Activation mutation succeeded but its result was lost and the exact task is already `in_progress` | Invoke `guru-activate-task` read-only recovery for the same TaskId/generation; never repeat the status mutation. |
 
-#### Phase 2-to-Finalizer recovery matrix
+#### Phase 2-to-Completion recovery matrix
 
 An adjacent current public DTO goes directly to its declared unique consumer. If it is absent, stale, tied to another identity, or lost across a turn/session, return to the original producer as follows. Never hand-author a typed exit from task status, Git history, checkpoint names, artifact presence, or old prose.
 
@@ -476,9 +584,13 @@ An adjacent current public DTO goes directly to its declared unique consumer. If
 | Task Commit output was lost after its mutation | Re-enter the existing `guru-create-task-commit` same-candidate/receipt recovery. It must recover the same commit and must not create a second, empty, amended, or same-content commit. |
 | The adjacent current `guru-create-task-commit:committed` DTO is still held | Pass it through the task-commit pair guard. An unchanged pair enters fresh Branch Review Architecture and `guru-review-branch`; a compatible new pair is committed by Reconcile and returns to fresh Phase 2. |
 | Branch Review DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=branch_review)` over the complete current committed `origin/<base>...HEAD` range, then freshly invoke `guru-review-branch`. Do not reuse Phase 2. |
-| The adjacent current `guru-review-branch:passed` DTO is still held | Pass it through the pair guard to `guru-review-task-publication`. |
-| Publication DTO is absent/stale/lost or its producer checkpoint retired | Freshly invoke `task_impact_sync(stage=publication)`, then freshly invoke `guru-review-task-publication` against live Issue/PR/payload authority. |
-| The adjacent current Publication `ready` DTO is still held | Enter the existing `guru-finalize-task` formal entry. Continuation stops delegating recovery once that package owns the active Finalizer transaction. |
+| The adjacent current `guru-review-branch:passed` DTO is still held | Pass it through the pair guard to `guru-review-task-delivery`. |
+| Delivery Review DTO is absent/stale/lost | Freshly invoke `task_impact_sync(stage=publication)`, then `guru-review-task-delivery` against current slice, Issue, PR and Refs-only payload. |
+| Delivery Review `ready` is current | Invoke `guru-publish-task-delivery`; only its checked `ready_for_merge` enters `guru-merge-task-delivery`. |
+| Delivery publication or merge result is lost | Re-enter the original owner against exact remote PR/HEAD and its current transaction; never create a second PR or merge twice. |
+| A checked Delivery result is current | Invoke `guru-review-task-completion`; incomplete exits retain the same active task and only `completed` enters Closure. |
+| Evidence changed after Delivery, without another business Delivery | Enter Completion's Delivery evidence-refresh input with its current-generation merge result and fresh evidence. |
+| Reactivated task needs only validation, without business changes or new Delivery | After the Reactivate planning route and current task/accepted-scope review, enter Completion's `reactivation_validation` profile with the preceding archived generation's verified Git identity and current-generation `reactivation`/`validation` evidence. Its `evidence_pending` re-enters Reactivate-based `evidence_refresh`; never project the old merge or closeout lineage into the new generation. |
 
 When a unique, complete, current side-effect plan is already displayed, `确认继续` authorizes only that exact plan. Run its original executor, verify live results, and emit the formal typed exit only on success. The workflow automatically consumes mapped transitions until a new independent side effect, material choice, or fail-closed stop appears. A changed target, payload, authority, or scope invalidates the old confirmation and requires a new display/confirmation. Authorization remains dialogue-local and never enters tracked files, ignored runtime, checkpoints, DTOs, schemas, or archives.
 [/trellis-continuation]
@@ -489,20 +601,32 @@ in this workflow; missing context is not proof of no task.
 Every file-changing request first resolves task identity for the current
 workspace and requested Issue. Unrelated `in_progress` tasks in the repository
 inventory are not current-task conflicts, even for the same user; do not ask
-the user to select one or switch to task-free because they exist. A mapping's
-`source_checkout` alone does not bind its task to that checkout.
-A task bound to the current workspace must be validated; an incomplete or
+the user to select one or switch to task-free because they exist. A checkout
+path alone does not bind its task identity to that checkout.
+A task bound to the current repository and TaskId must be validated; an incomplete or
 conflicting identity stops at `invalid-task-state`. An unfinished task for the
 same Issue must resolve to its existing identity rather than create a duplicate;
 missing or conflicting bindings stop at `invalid-task-state`.
-Only when no relevant active task or bound archived incomplete-closeout identity exists does the request
+An archive projected by the current Finish but not yet verified on the target
+base is an incomplete closeout, not a Reactivate candidate. Resolve its exact
+TaskId/generation and original Closure/Finish transaction, then re-enter
+`guru-finish-task:finish_reentry` when those inputs are current. If the
+transaction cannot be recovered uniquely, stop for the documented per-case
+manual disposition; never create a replacement task or treat the projection
+as a normally finished archive.
+For a request to continue the original accepted scope, discover relevant
+normally finished archives by source Issue or explicit original TaskId before
+mode selection. Prove one TaskId, source, accepted scope and terminal Git
+identity, then invoke `guru-reactivate-task` for that archive; an ambiguous
+or conflicting identity stops at `invalid-task-state`, not new task creation.
+Legacy archives discovered by Issue are only candidates until this check.
+An old Finalizer residue is not a normally completed archive: keep the task
+and PR facts unchanged and route to pinned-old or per-case manual disposition.
+Only when no relevant active task, archived incomplete-closeout identity, or
+normally finished original-task Reactivate candidate exists does the request
 invoke `guru-select-workflow-mode`, including requests without an Issue or
-task-free wording. Before treating an archived task as complete, read the live
-branch, workspace mapping, archived task, PR, and Finalizer facts. If they bind
-the current workspace to a task whose Finalizer has not completed, return the
-zero-write `incomplete_closeout` form of `invalid-task-state`: do not enter
-Intake, move the task, edit task metadata, archive again, reconstruct a recovery
-route, or claim that no workflow step remains. `这次走 task-free` is direct.
+task-free wording.
+`这次走 task-free` is direct.
 Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
 evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
 and same-scope retries do not ask again. Task-free still requires checkout
@@ -522,13 +646,13 @@ execution carrier.
 
 [workflow-state:in_progress]
 Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
-resume its Phase 2-to-Finalizer owner for the exact bound task. Do not create
+resume its Phase 2-to-Completion owner for the exact bound task. Do not create
 implementation-handoff.md.
 [/workflow-state:in_progress]
 
 [workflow-state:in_progress-inline]
 Lifecycle breadcrumb only. Load the current `[trellis-continuation]` block and
-resume the same Phase 2-to-Finalizer owner as `in_progress`; inline execution
+resume the same Phase 2-to-Completion owner as `in_progress`; inline execution
 changes only the execution carrier.
 [/workflow-state:in_progress-inline]
 
@@ -557,16 +681,20 @@ Invoke guru-review-contract-wording and consume only its declared exit.
 
 Invoke guru-review-change-request and consume only its declared exit.
 
-#### 0.5 Task workspace creation
+#### 0.5 Issue and task creation
 
 The normal repo-changing route is:
 
 guru-sync-base -> guru-discover-change-context ->
 guru-clarify-requirements -> guru-review-contract-wording ->
-guru-review-change-request -> guru-create-task-workspace.
+guru-review-change-request -> `guru-task-intake-router` ->
+`guru-create-issue` or `guru-create-task` by `ready.transition.target.kind`.
 
-Only the created exit enters planning. The workflow does not create the issue,
-branch, worktree, or task directly. A Scope Change Gate during any active phase
+Only `guru-create-task:created` enters planning. `guru-create-issue:created`
+returns to Sync and fresh Intake with the live created Issue as `kind=issue`;
+`guru-create-issue:refresh_review` returns with the proposed draft, without
+inventing an Issue number. The workflow does not create the issue, branch,
+worktree, or task directly. A Scope Change Gate during any active phase
 uses guru-clarify-requirements and returns only through its mapped router.
 
 ## Phase 1: Plan
@@ -597,7 +725,10 @@ constitution locator resolves to a regular project-owned file.
 
 #### 1.5 Task activation
 
-Only approved is eligible for plan presentation. Before the active-task pair
+Only approved is eligible for plan presentation. Carry its checked
+`planning_result_id` unchanged into `guru-activate-task`; do not recompute the
+identity from the current files when constructing Activation input. A changed
+planning identity requires a fresh Planning Approval. Before the active-task pair
 guard or any task activation action, resolve the current human artifacts and
 show clickable links to `prd.md`, `design.md`, and `implement.md`, together with
 the AI semantic conclusion, key design choices, important alternatives and
@@ -635,18 +766,12 @@ the active-task pair guard with
 `resume_target=task_activation`. An unchanged pair resumes activation; a
 current pair consumes and routes its recorded exact typed output; a new pair
 invokes guru-reconcile-task-base and follows only its declared exit.
-After the checked pair route resolves, require workspace-boundary success,
-validate the approved DTO, and run:
-
-    ./.trellis/guru-team/scripts/bash/start-task.sh --mode initial <task-path>
-
-If the activation mutation succeeded but its stdout was lost, use the same
-owner's recovery entry exactly once:
-
-    ./.trellis/guru-team/scripts/bash/start-task.sh --mode recovery <task-path>
-
-Recovery verifies the current boundary/task/session identity and rematerializes
-the structured `activated` result without calling upstream `task.py start`.
+After the checked pair route resolves, validate the approved DTO and invoke
+`guru-activate-task` with its current public input. This owner performs the
+status-only `planning -> in_progress` transition after fresh task, binding,
+checkout and approval checks. If output is lost, use its read-only result
+recovery on the same TaskId/generation; do not rerun the mutation or call
+upstream `task.py start`.
 The status write is not a second planning judgment. Revision and scope exits
 return only to their declared consumers.
 
@@ -663,12 +788,12 @@ candidate shape for qualification and owner routing.
 Before the first edit, and again immediately before every subsequent source,
 test, or task-artifact write, validate the live boundary:
 
-    .trellis/guru-team/scripts/bash/check-workspace-boundary.sh --json --task <task-path>
+    .trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh --json --task <task-path>
 
 The check is read-only at this boundary. Missing or stale task/runtime/worktree
 identity is a fail-closed stop; do not rebuild mappings, switch directories,
 stash, copy, migrate, clean, or continue writing. A `created` result from
-`guru-create-task-workspace` is required before planning or implementation may
+`guru-create-task:created` is required before planning or implementation may
 write anything.
 
 Read the planning artifacts, curated specs, and live diff from that worktree.
@@ -734,10 +859,10 @@ planning findings return through their declared workflow targets.
 
 ## Phase 3: Finish
 
-For a Guru task, `guru-finish-work` is the exclusive finish entry. Never invoke
-the upstream-owned `trellis-finish-work` Skill: it is not a consumer in this
-workflow graph. Before Finalizer starts, no caller may invoke direct task
-archival or any retired session-recording executor.
+For a Guru task, `guru-finish-work` is the explicit finish launcher, not the
+archive owner. Never invoke upstream-owned `trellis-finish-work`: it is not a
+consumer in this graph. Only `guru-finish-task` may archive after Completion
+and Closure; no caller invokes direct archival or retired session recording.
 
 #### 3.3 Docs SSOT reconciliation
 
@@ -779,99 +904,87 @@ conclusion. That conclusion remains provisional: only after the official
 checker and the public wrapper both return `passed` for the same current
 identity may the caller declare that Branch Review passed. Normal `passed` has
 exactly one next consumer: it enters the pair guard with
-`resume_target=publication_review`; no finish, archive, or journal route may
-intervene.
+`resume_target=publication_review`; the target resumes Delivery Review, and no
+Finish, archive, or journal route may intervene.
 The `base_continuity` profile binds the prior complete Branch Review commit
 separately from the current committed reconciliation HEAD. It reviews only the
 reconciliation-selected base delta, conflict resolution, resulting tree, and
 affected validation; it never represents itself as a new complete Branch
 Review. Its distinct `continuity_passed` exit projects the current
 continuity-reviewed reconciliation commit as `branch_review_commit` for the
-downstream Publication input, preserves the prior task-content review as private
-evidence, and resumes the original closed target. This profile accepts only
-Reconcile outputs from `post_branch_review`, `post_publication`, or
-`finalizer_base_mismatch`; `post_plan`, `post_check`, and `post_commit` must
-never enter bounded continuity or use it as the first complete Branch Review.
+downstream Delivery Review input, preserves the prior task-content review as
+private evidence, and resumes the original closed target. This profile accepts
+Reconcile outputs from `post_branch_review` and `post_publication` (the current
+Delivery Review boundary retains that profile id). The legacy
+`finalizer_base_mismatch` profile does not create a Finalizer production route.
+`post_plan`, `post_check`, and `post_commit` must never enter bounded continuity
+or use it as the first complete Branch Review.
 
-#### 3.6 Publication review
+#### 3.6 Delivery review and publication
 
-After Branch Review and its pair guard pass, mandatory invoke
+After Branch Review and the pair guard, mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=publication)`.
 Only fresh `baseline_current` with `promotion_state=no_change` or
-`promotion_state=reviewed_promoted`
-may invoke guru-review-task-publication. Missing/stale evidence,
-`reviewed_candidate`, conflict, incomplete contract, or fitness regression is
-rejected through the Architecture router before Publication. The Publication
-semantic owner then authors and reviews the exact Chinese PR title/body from
-live authority. After that semantic judgment, invoke the package's original
-`invoke-guru-review-task-publication` command through `scripts/invoke.sh` so
-record, objective check, projection, and checkpoint retirement share one
-invocation-local current snapshot. Older argument shapes select its
-compatibility branch; record/check helpers remain package-private
-testing/diagnosis/recovery entries.
-The checked ready DTO carries that payload directly to Finalizer without a task-local publication handoff file.
-`ready` enters the pair guard with `resume_target=task_finalization`; the caller
-must not push the reviewed/publication HEAD or create a PR first. Only the
-checked resumed route enters Finalizer.
+`reviewed_promoted` enters `guru-review-task-delivery`. The semantic owner
+checks the current independently deliverable slice, remaining task work,
+validation and unverified boundaries, then authors the exact Chinese PR
+title/body with `Refs` only. Missing or stale Architecture evidence returns
+to its owner; task-content changes return to Phase 2 and full review.
 
-#### 3.7 Finalization
+The checked `ready` DTO enters `guru-publish-task-delivery`, whose own
+preview/confirmation, exact HEAD, remote branch and PR transaction govern
+push, Draft/Ready transition, and output-loss recovery. It never archives
+the task or closes its source Issue. Only its current `ready_for_merge` enters
+`guru-merge-task-delivery`; independent expected-head merge confirmation
+remains mandatory. Merge output loss is recovered against the same PR and
+merge identity. A task-work finding returns directly to the active
+implementation owner; there is no archived-task restore step.
+The Delivery Review pair guard retains profile `post_publication` but uses
+`resume_target=delivery_publication`: unchanged and bounded-continuity routes
+both resume the current `guru-publish-task-delivery` successor, never the
+retired Finalizer.
 
-After Publication ready and its pair guard resolve, mandatory invoke
+#### 3.7 Completion, Closure and Finish
+
+`guru-merge-task-delivery:delivered` feeds `guru-review-task-completion`.
+Completion fresh reads the entire accepted scope, all business Delivery facts,
+current evidence and requirements authority. A Reactivate generation with only
+new validation uses its verified prior terminal archive and fresh current
+evidence, not a same-generation merge or any historical Completion pass. Its incomplete exits keep the
+same task active and route to the earliest affected owner; evidence-only
+updates use its evidence-refresh entry without inventing a Delivery result.
+Only `completed` feeds `guru-complete-task-closure`. Exact source Issue closure
+requires its own review/confirmation; no-Issue, reference-only, follow-up and
+parent dispositions produce `no_mutation` rather than a closing keyword.
+
+After Closure, mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=acceptance_finish)`.
-A long-term Architecture change requires current `reviewed_promoted`; a task
-without shared-current change requires current `no_change` proof. Unpromoted or
-stale state returns `sync_required` to the Architecture owner. Any promotion
-diff re-enters fresh Phase 2, Task Commit, and independent Branch Review, then
-repeats Publication and Acceptance/Finish. Only the resulting current route
-invokes guru-finalize-task; this Architecture router does not interpret or
-extend Finalizer business semantics.
+A shared-current change requires `reviewed_promoted`; no change requires
+current `no_change`. Promotion diff re-enters fresh Phase 2, Task Commit and
+independent Branch Review before this stage can pass again.
+`guru-finish-task` alone archives the current lifecycle generation. Its
+separately reviewed, expected-head-bound bookkeeping commit/PR contains only
+the exact task archive and allowed terminal metadata, never business code;
+it is not a Delivery cycle and never triggers Completion. The target base must
+actually contain the unique terminal archive before `success` can feed
+`guru-cleanup-task-resources`. Cleanup owns a separate exact resource review
+and confirmation; failure does not undo Completion, Closure or Finish.
+Before invoking Cleanup, resolve a retained checkout of the same Git common-dir
+that is not among the sealed deletion targets, and invoke Cleanup with that
+checkout as its repository root. In particular, after Finish in a Guru-owned
+linked task worktree, move the invocation to the retained checkout before
+reviewing or deleting the task worktree. If no suitable retained checkout is
+available, stop and report the remaining resources for manual disposition;
+do not run Cleanup from a worktree it must remove.
 
-Invoke guru-finalize-task through its original `invoke-guru-finalize-task`
-command and `scripts/invoke.sh`: after one read-only preview and the exact
-dialogue-local Finalizer confirmation, the command may consume only mapped
-same-plan deterministic reprepare/recovery. Any material
-plan, authority, payload, scope, or side-effect-set change stops and requires a
-fresh preview/confirmation. Consume its declared exit; `ready_for_merge`
-immediately invokes `guru-merge-task-pr`, and only `merged` reaches the finish
-response after a separate expected-head confirmation, without base sync or
-direct Issue closure.
-
-Only publication ready enters finalization. Finalizer alone may display and execute the bounded push, PR, archive, and Ready side-effect set.
-No generic finish entry or direct task-archival/session-recording call may
-perform any part of that side-effect set.
-Verification, stale publication, base reconciliation, resume, and reprepare
-exits are automatically consumed by their declared Skills; the workflow never
-calls closeout executors directly. A Finalizer base-only mismatch returns
-`base_reconciliation_required` with `resume_target=finalization_resume`;
-`publication_review_stale` remains limited to Publication content or metadata
-and must not consume, relabel, or bypass that mismatch. When the resulting
-candidate changes the reviewed-content identity without changing task content,
-the reconcile owner obtains confirmation for one exact local Git mutation,
-creates the expected-head-bound reconciliation commit, and routes that committed
-HEAD through bounded continuity before Publication resumes.
-
-Publication diagnostics preserve the owner error code and expose only a bounded
-`recovery_scope`: `task_content`, `publication_content`, `stale_identity`, or
-`runtime_dependency`. Tracked task/code/test/durable-doc changes route
-back through Phase 2, Task Commit, Branch Review, and Publication; PR
-title/body/publication-payload changes retry only Publication; identity expiry
-refreshes the affected identity; and scope or reviewed-content changes reject
-the old ready result. Unknown or unmapped classifications stop fail closed.
-
-Before its first remote mutation, Finalizer requires no Open PR and only an absent remote branch or strict historical ancestor of the reviewed commit; recovery accepts only transaction-bound remote/PR identity.
-Reprepare keeps title/body in Finalizer owner-private state while its public DTO remains minimal. Finalizer binds the Publication-reviewed PR payload and never derives or reclassifies Issue effects.
-
-Merge normally uses one expected-head-bound `watch-task-pr-checks` invocation
-only when required checks are pending, then one confirmed `invoke-task-pr-merge`
-invocation through `scripts/invoke.sh`. The command owns one pre-merge snapshot,
-one expected-head mutation, one post-merge snapshot, and mutation-output-loss
-recovery. A current-scope task-work finding instead returns
-`phase2_reentry_required` without merge confirmation or remote mutation and
-immediately invokes `guru-restore-archived-task`. Exact restoration returns to
-`guru-resume-implementation`; restoration conflicts stop at
-`task-pr-phase2-reentry-blocked`. External blockers remain `merge_blocked`.
-After projection Merge performs no further polling, base sync, PR update, Issue
-mutation, or task cleanup.
+For a normally finished archived task, `guru-reactivate-task` first verifies
+the original TaskId, source, archive Git identity, accepted scope and current
+base. It increments the lifecycle generation and routes to Planning or its
+declared session/source/recovery owner. Old Finish/Cleanup receipts cannot
+operate on the new generation. Legacy archives are discovered by source Issue
+only as candidates, followed by unique terminal identity validation. An old
+in-flight Finalizer residue is not a Reactivate entry: use pinned-old or an
+explicit per-case manual disposition without bridging old DTOs.
 
 ## Global Integration Boundaries
 
@@ -892,10 +1005,9 @@ commit, push, PR creation/update, merge, Issue closure, tag/Release, or cleanup
 request. The current-session AI handles that specific operation using `git`
 and authenticated, explicitly repo-bound `gh`/`gh api`. This is not a new
 workflow node, Skill, typed exit, executor, or recovery path, nor a successful
-standalone Guru invocation. The existing Phase 2, Task Commit, Branch Review,
-Publication, Finalizer, Merge, and archive contracts remain unchanged for
-Guru lifecycle completion; their exclusive-owner restrictions apply to that
-chain, not to this separately requested operation.
+standalone Guru invocation. Phase 2, Task Commit, Branch Review, Delivery
+Review/Publish/Merge, Completion, Closure, Finish and Cleanup keep their own
+declared consumers; a separate manual operation cannot produce their results.
 
 For each operation, reread its live facts and review its correctness. Display
 the exact repository, worktree/path, branch/ref and HEAD (where applicable),
@@ -928,29 +1040,29 @@ closure, release publication, or cleanup.
 
 After success or failure, report two separate results: **Git/GitHub result**
 (observed action and verification) and **Workflow residue** (remaining task,
-runtime, Finalizer and archive state, including unknowns and unfinished steps).
-Do not write Phase 2, Branch Review, Publication, Finalizer, Merge or archive
-completion markers, forge gates, or clean runtime residue to make a manual
-success look like Guru completion. An operation failure is only that operation's
+runtime, Delivery, Completion, Closure, Finish and archive state, including
+unknowns and unfinished steps). Do not write Phase 2, Branch Review, Delivery,
+Completion, Closure, Finish or Cleanup results, forge gates, or clean runtime
+residue to make a manual success look like Guru completion. An operation failure
+is only that operation's
 failure, not automatic Guru re-entry. Returning to Guru lifecycle still requires
 its original current entry preconditions and declared routes.
 
 ### Workspace and task boundary
 
 - In worktree mode, every source, test, and task-local write occurs only after
-  a fresh read-only `check-workspace-boundary.sh` confirms that the expected
-  task workspace, current repository root/cwd, branch, task.json, task branch,
-  ignored runtime mappings, and live Git worktree registration still match.
+  a fresh read-only `check-task-checkout-boundary.sh` confirms that the expected
+  TaskId/generation, current TaskBranchBinding, current repository root/cwd,
+  branch and live Git worktree registration still match.
   The check must be repeated before each write, not only once when the phase
   starts. Missing `created` evidence or any identity/conflict drift blocks the
   write and routes to explicit recovery or re-selection.
 - Editors without an explicit working-directory option use absolute paths under
   that confirmed task worktree.
-- In this workflow, task workspace and workspace mapping mean the isolated task
-  checkout/worktree plus ignored Guru runtime mappings. They never mean the
+- The task checkout is the live execution location, not task identity. It never means the
   retired `.trellis/workspace/<developer>/journal-*` namespace. Current task
   resolution uses task metadata, current checkout/branch, live Git worktree
-  facts, and those ignored mappings; it does not initialize or read developer
+  facts; it does not initialize or read retired workspace mappings, developer
   identity, workspace journal/index, session records, or legacy agent traces.
 - Task activation consumes only guru-approve-task-plan:approved.
 - Downstream phases consume public DTOs and live facts, never an upstream
@@ -958,8 +1070,8 @@ its original current entry preconditions and declared routes.
 
 ### Active-task base evolution
 
-At plan approval, Phase 2 pass, task commit, Branch Review pass, Publication
-ready, and Finalizer base-only mismatch, invoke the package-local deterministic
+At plan approval, Phase 2 pass, task commit, Branch Review pass, and Delivery
+Review ready, invoke the package-local deterministic
 pair guard before continuing. The guard observes the selected base ref once and
 returns only objective unchanged/current/new/blocked pair state. Unchanged or
 already-current pairs require no new semantic invocation, GitHub/Docs/history
@@ -980,14 +1092,15 @@ owner first displays and executes one confirmed expected-head local merge
 commit. `post_plan` then resumes `task_activation`; `post_check` and
 `post_commit` return to fresh Phase 2 so all downstream evidence is rebuilt
 against the committed integration HEAD.
-After complete Branch Review, Publication, or a Finalizer base mismatch, the
+After complete Branch Review or Delivery Review, the
 same compatible result may return `reconciled` only when the candidate preserves
 the current reviewed-content identity. If task content remains unchanged but
 the candidate needs a new reviewed-content identity, the owner returns
-`review_continuity_required`; this exit is limited to those three post-review
-profiles and cannot replace the first complete Branch Review. After the AI
-judgment it displays the exact task
-branch, expected task/base HEADs, candidate tree, commit scope, and zero remote
+`review_continuity_required`; the current route uses the post-review profiles
+and cannot replace the first complete Branch Review. The retained
+`finalizer_base_mismatch` profile is not a current Finalizer entry. After the AI
+judgment it displays the exact task branch, expected task/base HEADs, candidate
+tree, commit scope, and zero remote
 effects, obtains confirmation for that mutation, and invokes its deterministic
 expected-head executor to create exactly one persistent local reconciliation
 commit. The executor must prove clean branch-bound state, expected ancestry, and
@@ -1009,8 +1122,8 @@ constitution prose, project rules, or Architecture private state.
 
 Planning establishes current impact. Qualified implementation expansion
 invalidates it. Phase 2 performs the first candidate before/after judgment, and
-Branch Review independently recomputes over the committed full diff. Publication
-and Acceptance/Finish accept only current `no_change` or fully
+Branch Review independently recomputes over the committed full diff. Delivery
+Review and Completion/Finish accept only current `no_change` or fully
 `reviewed_promoted` state. Shared current changes only by serialized promotion
 against expected current identity; a baseline advance returns `sync_required`,
 and a promotion diff repeats Phase 2 and Branch Review before downstream reuse.
@@ -1021,7 +1134,7 @@ The mandatory `guru-maintain-requirements-design-test-ssot` owner runs
 `bootstrap_foundation` when the repository authority is absent or incompatible,
 `task_impact_sync` for an approved task delta, `promotion` for a reviewed
 isolated contribution, and `repair` for a bounded authority defect. Planning,
-Phase 2 Check, Branch Review, Publication, acceptance, and Finish consume only
+Phase 2 Check, Branch Review, Delivery Review, Completion, and Finish consume only
 its public routes and reread the live Requirements, Design, and Test authority;
 they never read package-private owner state. Architecture inheritance uses only
 the public Architecture Baseline locator/version/status.
@@ -1039,25 +1152,27 @@ performs the first merge.
 
 ### External work item and closure
 
-Publication is the sole semantic owner that decides whether the current delivery
-should close its Issue. A fully delivered Issue-backed task defaults to closure;
-Publication keeps it open only when current authority contains a concrete
-post-merge validation, observation, release, or incomplete-delivery condition.
-No external work item produces no Issue reference or effect. Publication writes
-the reviewed closing keyword only for a PR targeting the default branch; a
-non-default-branch PR references the Issue and leaves the later default-branch
-Publication to decide again from fresh authority. Finalizer only executes the
-reviewed payload, and Merge reviews readiness and expected HEAD without
-re-deciding closure or calling an Issue-close API.
+Delivery Review owns each slice's Refs-only PR payload, including an Issue-backed
+Delivery targeting the default branch. Delivery Publish and Merge do not close
+the source Issue, and Merge yields a Delivery result, not Task Completion.
+`guru-review-task-completion` alone reviews the whole accepted scope and
+current evidence; incomplete work keeps the same task active. Only its
+`completed` exit enters `guru-complete-task-closure`, which owns the exact
+source Issue disposition and any separate confirmed close mutation. No-Issue,
+reference-only, follow-up and parent dispositions produce `no_mutation`.
+`guru-finish-task` then persists the terminal archive; its bookkeeping PR also
+has no Issue-closing keyword. Neither PR merge nor archive state substitutes
+for Completion or Closure.
 
 ### Human artifacts
 
-Before a planning, Phase 2, Branch Review, publication, or finalization stop, resolve human-authored artifacts:
+Before a planning, Phase 2, Branch Review, Delivery, Completion, Closure, or Finish stop, resolve human-authored artifacts:
 
     .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
 
-Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve from the active task first and from the archive after publication. Do not
-require a fixed table, and do not expose JSON gates, checkpoints, raw agent
+Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve
+from the active task through Delivery and Completion, and from the archive only
+after Finish. Do not require a fixed table, and do not expose JSON gates, checkpoints, raw agent
 reports, payloads, or digests as standard handoff artifacts.
 
 ### Interaction and side effects
@@ -1066,8 +1181,11 @@ reports, payloads, or digests as standard handoff artifacts.
 - For one current, unique, unambiguous side-effect plan, prompt only 确认继续 and accept any clear affirmative reply.
 - Automatically consume mapped exits and mapped re-entry routes.
 - Authorization exists only in the current dialogue and is never persisted.
-- Issue/workspace/task creation, task commit, push/PR/archive, merge, cleanup, and any new external mutation keep their own bounded authority.
+- Issue/task creation, task commit, Delivery push/PR, Delivery merge, post-Completion Issue Closure, Finish archive/bookkeeping, cleanup, and any new external mutation keep their own bounded authority.
 - No Skill pass creates permission for a later unrelated side effect.
+The confirmation boundary marker IDs below remain static compatibility identifiers;
+they do not route to a Finalizer. Current side-effect plans and consumers are
+owned by the active Delivery, Closure, Finish and Cleanup Skills above.
 <!-- guru-confirmation-boundary: {"id":"issue_creation","profiles":["new_issue"]} -->
 <!-- guru-confirmation-boundary: {"id":"workspace_and_task","profiles":["open_issue","new_issue"]} -->
 <!-- guru-confirmation-boundary: {"id":"phase_1_plan_review","profiles":["open_issue","new_issue"]} -->

@@ -1,0 +1,200 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-rebind-task-branch",
+  "commands": [
+    {
+      "id": "record-task-branch-rebind-plan",
+      "owner": "guru-rebind-task-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed branch and selected base.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-plan-request.schema.json"
+      ],
+      "validator_id": "plan_recorder",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "rebind-task-branch",
+      "owner": "guru-rebind-task-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Exact reviewed plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "rebind_executor",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "check-task-branch-rebind-result",
+      "owner": "guru-rebind-task-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Exact read-only recovery plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "result_checker",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "recover-task-branch-rebind-result",
+      "owner": "guru-rebind-task-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Exact output-loss plan.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "result_recovery",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "invoke-guru-rebind-task-branch",
+      "owner": "guru-rebind-task-branch",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed execute or read-only recover action.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

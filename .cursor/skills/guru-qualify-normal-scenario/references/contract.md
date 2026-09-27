@@ -31,13 +31,15 @@ Use exactly one profile and its fixed caller/semantic owner:
 | `base_impact_candidate_set` | `guru-reconcile-task-base` |
 | `phase2_candidate_set` | `guru-check-task` |
 | `branch_review_candidate_set` | `guru-review-branch` |
-| `publication_candidate_set` | `guru-review-task-publication` |
+| `publication_candidate_set` | `guru-review-task-delivery` |
 
 The deterministic resume target is a separate workflow mapping. In particular,
 `implementation_discovery` remains owned by
 `guru-phase2-implementation-coordinator`, while clarification and typed-output
 re-entry resume through the existing `guru-resume-implementation` workflow
 target.
+`publication_candidate_set` returns to `guru-review-task-delivery` after
+classification, scope clarification, or mechanism revision.
 
 Workflow and standalone modes use the same evidence and judgment. Each input is a closed profile contract containing its fixed profile and caller, one current target identity, a non-empty unique `candidate_refs` set, and the minimum locators needed for live reread. Do not accept severity, scenario class, a proposed decision or exit, authorization text, an earlier qualification result, a shared artifact locator, a raw worker report, a search transcript, or a caller assertion that a path is normal.
 

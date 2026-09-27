@@ -1,15 +1,1 @@
-{
-  "profile": "reactivate_completed_task",
-  "mode": "workflow",
-  "reason_refs": ["new evidence request"],
-  "workspace": {
-    "disposition": "create_new",
-    "workspace_path": "/tmp/example-worktrees/example-task-reactivated",
-    "branch_name": "codex/example-task-reactivated",
-    "base_branch": "main",
-    "base_head": "1111111111111111111111111111111111111111",
-    "workspace_mapping": ".trellis/.runtime/guru-team/workspaces/example-task.json",
-    "task_mapping": ".trellis/.runtime/guru-team/tasks/example-task.json"
-  },
-  "route": {"typed_exit": "reactivated_to_evidence_refresh"}
-}
+{"profile":"reactivate_completed_task","mode":"workflow","archived_lifecycle":{"task_id":"example-task","lifecycle_generation":0},"route":"session_binding_recovery_required","reason_refs":["new accepted work"],"selected_base_ref":"refs/heads/main","reviewed_base_head":"1111111111111111111111111111111111111111","session_outcome":"recovery_required","acquisition":{"task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":1,"route":"provision_linked_worktree","branch_ref":"refs/heads/codex/example-reactivated","decision_head":"1111111111111111111111111111111111111111","task_artifact_expectation":"absent","provision_disposition":"new_branch","target_path":"/tmp/example-worktrees/example-reactivated","transaction_id":"reactivate:example-task:1","result_id":"reactivated:example-task:1"}}

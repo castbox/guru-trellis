@@ -1,7 +1,7 @@
 # PLAN
 
 既有行的版本与 gate 状态保留对应 Issue 当时的记录，不作为当前调用的完成或执行依据。
-当前知识提升条目为 #454；后续动作仍需各 owner 读取 live authority。
+当前知识提升条目为 #434；后续动作仍需各 owner 读取 live authority。
 
 | 顺序 | Issue | 已知目的 | 状态语义 |
 | --- | --- | --- | --- |
@@ -20,6 +20,7 @@
 | current Task Lifecycle State Model Phase C + D0 | #454 | 建立 package-neutral lifecycle DTO/runtime substrate、stage-evidence lineage、checkout/branch/session/resource 控制，以及 C6 创建组合与 C7 非激活验证 | C2+D0 `.58 -> .59`，C3 `.59 -> .60`，provenance `.60 -> .61`，C4 `.61 -> .62`，C5 `.62 -> .63`，C6/C7 `.63 -> .64`；registry 保持 32/142/102、六个 planned IDs，production workflow 保持 22/98。D443、D436、E434 与完整 Release matrix 未完成 |
 | #454 D443 canonical Bind major | #454 | TaskId/generation、official session pointer 与六个成功出口的非激活迁移 | `.64 -> .65` reviewed contribution；D436 后续，E434 独占 production router/selector/installed 原子切换；#410 matrix 未验证 |
 | #454 D436 terminal lifecycle majors | #454 | Completion、Closure、Finish、Cleanup、Reactivate 五个 canonical package 对当前 generation、Result/Transaction/Seal refs 和单一 ledger 的非激活迁移 | `.65 -> .66` reviewed contribution；E434/#434 独占 production router/selector/installed 原子切换；#410 matrix 未验证 |
+| current #434 lifecycle activation | #434 | 七个 E434 package 与 child current interfaces 组合，激活 Delivery/Completion/Closure/Finish/Cleanup/Reactivate 图；旧图一次性退出 | `.66 -> .67` reviewed contribution/ADR-016；targeted source/installed、图、平台投影与本地 clean sample 为本任务 gate，完整多平台 Release matrix/业务仓生产验证仍归专门 owner |
 | post-stable refactor | #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围；#247 已作为 `.50` current predecessor完成独立 Architecture scope，不表示后续 #305 target 已实现 |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。

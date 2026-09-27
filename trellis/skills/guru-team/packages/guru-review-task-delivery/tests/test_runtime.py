@@ -16,6 +16,7 @@ sys.path.insert(0, str(PACKAGE / "runtime"))
 
 from invoke import run as invoke  # noqa: E402
 from runtime.io import CommandError  # noqa: E402
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository  # noqa: E402
 
 
 TASK_REF = ".trellis/tasks/09-18-435-active-task-delivery-loop"
@@ -43,9 +44,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
                     "id": "435-active-task-delivery-loop",
                     "status": "in_progress",
                     "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/435",
-                    "branch": "codex/435-active-task-delivery-loop",
                     "base_branch": "main",
-                    "worktree_path": str(self.repo),
                 }
             )
         )
@@ -53,6 +52,9 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.git("add", ".")
         self.git("commit", "-qm", "delivery review candidate")
         self.head = self.git("rev-parse", "HEAD")
+        self.bindings = BranchBindingStore(inspect_repository(self.repo))
+        self.key = TaskLifecycleKey("435-active-task-delivery-loop", 0)
+        self.bindings.establish(self.key, "codex/435-active-task-delivery-loop")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -128,6 +130,17 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.assertEqual("remaining", output["remaining_work_state"])
         self.assertRegex(output["delivery_cycle_ref"], r"^delivery-cycle:v1:[0-9a-f]{64}$")
         self.assertFalse(self.checkpoint().exists())
+
+    def test_missing_or_wrong_branch_binding_fails_before_checkpoint(self):
+        self.bindings.path_for(self.key).unlink()
+        for branch in (None, "main"):
+            with self.subTest(branch=branch):
+                if branch is not None:
+                    self.bindings.establish(self.key, branch)
+                with self.assertRaises(CommandError) as raised:
+                    self.invoke(self.semantic())
+                self.assertEqual("stale_identity", raised.exception.code)
+                self.assertFalse(self.checkpoint().exists())
 
     def test_all_non_ready_exits_project_minimal_dtos_and_retire_checkpoint(self):
         expected = {

@@ -12,8 +12,6 @@ SKILLS = Path(__file__).resolve().parents[1]
 REPO = SKILLS.parents[2]
 PACKAGES = (
     "guru-review-branch",
-    "guru-review-task-publication",
-    "guru-finalize-task",
     "guru-verify-extension-installation",
 )
 TASK_REF = ".trellis/tasks/08-18-reviewed-content-acceptance"
@@ -155,6 +153,16 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
                     "consumer_use": "branch_review_route_checker",
                 }
             ],
+            "delivery_review": {
+                "task_scope": ["PRD R1"],
+                "delivery_slice": ["PRD R1"],
+                "remaining_work": [],
+                "independent_delivery_conditions": ["The reviewed change is independently usable."],
+                "validation_boundaries": ["Fixture Git identity only; no live Delivery PR."],
+                "current_slice_status": "passed",
+                "remaining_work_status": "disclosed",
+                "summary": "The fixture slice is complete for Branch Review.",
+            },
             "semantic_review": {
                 "qualified_findings": [],
                 "scope_proposals": [],
@@ -195,7 +203,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             / "review-gate.json"
         )
 
-    def test_four_production_wrappers_share_one_identity_across_real_git_drift(self) -> None:
+    def test_current_wrappers_share_one_identity_across_real_git_drift(self) -> None:
         reviewed = self.assert_one_identity(self.all_identities())
 
         metadata = {

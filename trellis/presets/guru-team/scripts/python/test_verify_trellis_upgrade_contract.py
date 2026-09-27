@@ -103,15 +103,10 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
                                      {"status", "reviewer", "summary"})
                     self.assertEqual(authored["typed_exit"], route)
 
-    def test_workspace_authoring_matches_current_recorder_schema(self):
-        from jsonschema import Draft202012Validator
-        schema = json.loads((REPO / "trellis/skills/guru-team/packages/guru-create-task-workspace/"
-                             "schemas/record-authoring-input.schema.json").read_text())
-        authored = self.helper.workspace_authoring({})
-        envelope = {"schema_version": "1.0", "transition": {}, "authoring": authored}
-        Draft202012Validator(schema).validate(envelope)
-        self.assertEqual(set(authored), {"naming", "assignee", "side_effects", "ai_review_gate"})
-        self.assertNotIn("reviewed_plan_sha256", authored["ai_review_gate"])
+    def test_old_workspace_recorder_is_retired_from_current_packages(self):
+        self.assertFalse((REPO / "trellis/skills/guru-team/packages/guru-create-task-workspace").exists())
+        migration = (REPO / "trellis/presets/guru-team/MIGRATION-434.md").read_text()
+        self.assertIn("`record-task-workspace-plan` | `replaced(record-task-plan)`", migration)
 
     def test_activation_requires_exact_unmatched_session_no_task_result(self):
         healthy = {"current_task": None, "source": "none", "stale": False}
@@ -161,7 +156,7 @@ class NormalPhase0AuthoringTests(unittest.TestCase):
                             stdout = json.dumps({"resolved_task_path": str(task_dir),
                                 "task_workspace_root": str(workspace),
                                 "current_task": {"status": "in_progress"}})
-                    elif Path(argv[0]).name == "check-workspace-boundary.sh":
+                    elif Path(argv[0]).name == "check-task-checkout-boundary.sh":
                         stdout = json.dumps({"status": "ok"})
                     elif Path(argv[1]).name == "get_context.py":
                         stdout = f"Resolved task: {task_dir}\n"
@@ -253,7 +248,6 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             REPO / ".trellis/spec/docs/public-docs.md",
             REPO / "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
             REPO / "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
-            REPO / "trellis/workflows/guru-team/README.md",
         ]
         for path in docs:
             with self.subTest(path=path.relative_to(REPO)):
@@ -1825,7 +1819,7 @@ exit 23
                     "lifecycle_outcome_sha256": "a" * 64,
                 })
             return json.dumps({"status": "ok"})
-        for scenario, closeout_case in (("clean", "initial"), ("existing", "after-update")):
+        for scenario in ("clean", "existing"):
             with self.subTest(scenario=scenario), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load), \
                  mock.patch.object(
@@ -1852,21 +1846,13 @@ exit 23
                 )
                 native_load.assert_called_once_with(target, "codex", work / "native-load")
                 self.assertEqual(result["runtime_smokes"], [
-                    "closeout",
-                    "phase0",
-                    "task_workspace_absent",
-                    "task_workspace_present_a",
-                    "task_workspace_present_b",
+                    "guru-maintain-requirements-design-test-ssot",
+                    "guru-maintain-architecture-baseline",
+                    "guru-bootstrap-repository-ssot",
                 ])
-                self.assertEqual(result["legacy_workspace_outcome_sha256"], "a" * 64)
                 calls = [call.args[0] for call in invoked.call_args_list
                          if Path(call.args[0][0]).name == "resolve-python.sh"]
-                self.assertEqual(len(calls), 5)
-                for argv in calls:
-                    self.assertEqual(argv[:3], (str(target / ".trellis/guru-team/runtime/resolve-python.sh"),
-                                               str(target), str(target / ".trellis/guru-team/runtime")))
-                self.assertEqual(Path(calls[0][3]).name, "verify_installed_closeout.py")
-                self.assertEqual(calls[0][calls[0].index("--case") + 1], closeout_case)
+                self.assertEqual(calls, [])
 
     def test_existing_mode_cell_keeps_installed_validator_without_cumulative_smokes(self) -> None:
         target, source, work = Path("/fixture/target"), Path("/fixture/source"), Path("/fixture/work")
@@ -1941,11 +1927,11 @@ exit 23
         projection = self.matrix.capability_projection(REPO)
 
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(len(projection["skill_api"]["interfaces"]), 32)
-        self.assertEqual(len(projection["workflow"]["skill_invokes"]), 22)
-        self.assertEqual(len(projection["workflow"]["skill_exits"]), 98)
-        self.assertEqual(len(projection["workflow"]["workflow_targets"]), 35)
-        self.assertEqual(len(projection["workflow"]["stop_targets"]), 24)
+        self.assertEqual(len(projection["skill_api"]["interfaces"]), 34)
+        self.assertEqual(len(projection["workflow"]["skill_invokes"]), 33)
+        self.assertEqual(len(projection["workflow"]["skill_exits"]), 153)
+        self.assertEqual(len(projection["workflow"]["workflow_targets"]), 62)
+        self.assertEqual(len(projection["workflow"]["stop_targets"]), 36)
         self.assertEqual(
             projection["distribution"]["platforms"],
             list(self.matrix.PLATFORM_FLAGS),
@@ -2174,7 +2160,7 @@ exit 23
         template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
-        self.assertEqual(len(installed["skill_api"]["interfaces"]), 32)
+        self.assertEqual(len(installed["skill_api"]["interfaces"]), 34)
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
         source = self.matrix.capability_projection(REPO)
         current = self.matrix.compare_capabilities(
@@ -2514,13 +2500,10 @@ exit 23
         self.assertEqual(result.returncode, 2)
         self.assertIn("--fork-source is required", result.stderr)
 
-    def test_finish_work_compatibility_wrapper_exposes_shared_runtime(self) -> None:
-        wrapper = FINISH_WORK_WRAPPER.read_text(encoding="utf-8")
-        self.assertIn(
-            'export PYTHONPATH="$RUNTIME:$GURU_ROOT${PYTHONPATH:+:$PYTHONPATH}"',
-            wrapper,
-        )
-        self.assertIn('"$RUNTIME/lifecycle.py" finish-work "$@"', wrapper)
+    def test_old_finish_work_wrapper_is_retired(self) -> None:
+        self.assertFalse(FINISH_WORK_WRAPPER.exists())
+        migration = (REPO / "trellis/presets/guru-team/MIGRATION-434.md").read_text()
+        self.assertIn("`finish-work.sh` | `retired_without_replacement`", migration)
 
 
 if __name__ == "__main__":

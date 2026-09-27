@@ -27,7 +27,7 @@
         "guru-reconcile-task-base",
         "guru-check-task",
         "guru-review-branch",
-        "guru-review-task-publication"
+        "guru-review-task-delivery"
       ]
     },
     "continuation_id": {"type": "string", "minLength": 1},

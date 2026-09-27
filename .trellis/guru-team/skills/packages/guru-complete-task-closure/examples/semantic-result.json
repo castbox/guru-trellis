@@ -1,1 +1,1 @@
-{"profile":"completion_approved","mode":"workflow","route":{"typed_exit":"no_mutation","reason":"Issue is reference-only."}}
+{"profile":"completion_approved","mode":"workflow","reviewed_action_set":[{"issue_ref":{"repo_ref":"castbox/guru-trellis","issue_number":436},"disposition":"close"}],"route":{"typed_exit":"apply"}}

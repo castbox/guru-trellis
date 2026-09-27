@@ -1,1 +1,1 @@
-{"exit_id":"resume_finish","task_ref":".trellis/tasks/example-task","closure_exit":"no_mutation","closure_ref":"closure:v3:68459a04b284c0b1:4a136e9436490268","source_issue":{"disposition":"reference_only"}}
+{"exit_id":"resume_finish","task_id":"example-task","lifecycle_generation":1,"transaction_id":"finish:v1:0123456789abcdef","result_id":"closure-result:example"}

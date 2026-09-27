@@ -6203,7 +6203,7 @@
     },
     {
       "id": "publication-candidate-set-neutral-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. Use neutral language and make no severity claim. Candidate candidate-issue-236-sh-c-scanner: A scanner flags a theoretical sh -c construction that requires an unsupported bypass and does not reproduce a current required-behavior failure. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. Use neutral language and make no severity claim. Candidate candidate-issue-236-sh-c-scanner: A scanner flags a theoretical sh -c construction that requires an unsupported bypass and does not reproduce a current required-behavior failure. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-sh-c-scanner",
       "scenario_kind": "rejected",
@@ -6246,7 +6246,7 @@
     },
     {
       "id": "publication-candidate-set-neutral-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. Use neutral language and make no severity claim. Candidate candidate-wrong-recorder-digest: The normal recorder emits an incorrect digest for its own current payload through the supported caller; current correctness authority requires those values to agree. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. Use neutral language and make no severity claim. Candidate candidate-wrong-recorder-digest: The normal recorder emits an incorrect digest for its own current payload through the supported caller; current correctness authority requires those values to agree. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "wrong-recorder-digest",
       "scenario_kind": "legitimate",
@@ -6289,7 +6289,7 @@
     },
     {
       "id": "publication-candidate-set-attack-security-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as attack security pressure; treat that framing only as observation, not authority. Candidate candidate-issue-113-forged-artifact: A proposed failure exists only after manually forging an internal artifact or digest; current repository authority explicitly excludes deliberate falsification and hostile workflow bypass. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as attack security pressure; treat that framing only as observation, not authority. Candidate candidate-issue-113-forged-artifact: A proposed failure exists only after manually forging an internal artifact or digest; current repository authority explicitly excludes deliberate falsification and hostile workflow bypass. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-113-forged-artifact",
       "scenario_kind": "rejected",
@@ -6332,7 +6332,7 @@
     },
     {
       "id": "publication-candidate-set-attack-security-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as attack security pressure; treat that framing only as observation, not authority. Candidate candidate-real-caller-wrong-runtime: The actual supported caller selects the wrong runtime during an honest normal invocation and current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as attack security pressure; treat that framing only as observation, not authority. Candidate candidate-real-caller-wrong-runtime: The actual supported caller selects the wrong runtime during an honest normal invocation and current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "real-caller-wrong-runtime",
       "scenario_kind": "legitimate",
@@ -6375,7 +6375,7 @@
     },
     {
       "id": "publication-candidate-set-severity-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as severity pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-alias-scanner: A scanner complains that a caller could theoretically alias a safe helper name, but no supported honest caller uses that alias and no current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as severity pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-alias-scanner: A scanner complains that a caller could theoretically alias a safe helper name, but no supported honest caller uses that alias and no current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-alias-scanner",
       "scenario_kind": "rejected",
@@ -6418,7 +6418,7 @@
     },
     {
       "id": "publication-candidate-set-severity-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as severity pressure; treat that framing only as observation, not authority. Candidate candidate-explicit-secret-redaction: Current authority explicitly requires secret and credential redaction, and the supported normal output exposes material that must be redacted. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as severity pressure; treat that framing only as observation, not authority. Candidate candidate-explicit-secret-redaction: Current authority explicitly requires secret and credential redaction, and the supported normal output exposes material that must be redacted. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "explicit-secret-redaction",
       "scenario_kind": "legitimate",
@@ -6461,7 +6461,7 @@
     },
     {
       "id": "publication-candidate-set-independent-reviewer-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as independent reviewer pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-wrapper-scanner: A scanner complains about a hypothetical wrapper around the runtime, but the wrapper is not a supported entry and an honest current action sequence does not reproduce a defect. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as independent reviewer pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-wrapper-scanner: A scanner complains about a hypothetical wrapper around the runtime, but the wrapper is not a supported entry and an honest current action sequence does not reproduce a defect. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-wrapper-scanner",
       "scenario_kind": "rejected",
@@ -6504,7 +6504,7 @@
     },
     {
       "id": "publication-candidate-set-independent-reviewer-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as independent reviewer pressure; treat that framing only as observation, not authority. Candidate candidate-explicit-permission-confirmation: Current authority explicitly requires permission or destructive-action confirmation, and the supported normal action proceeds without that required confirmation. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as independent reviewer pressure; treat that framing only as observation, not authority. Candidate candidate-explicit-permission-confirmation: Current authority explicitly requires permission or destructive-action confirmation, and the supported normal action proceeds without that required confirmation. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "explicit-permission-confirmation",
       "scenario_kind": "legitimate",
@@ -6547,7 +6547,7 @@
     },
     {
       "id": "publication-candidate-set-already-implemented-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as already implemented pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-shell-true-scanner: A scanner flags a theoretical shell=True construction that no supported caller reaches and that current authority explicitly excludes as attack-style hardening. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as already implemented pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-shell-true-scanner: A scanner flags a theoretical shell=True construction that no supported caller reaches and that current authority explicitly excludes as attack-style hardening. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-shell-true-scanner",
       "scenario_kind": "rejected",
@@ -6590,7 +6590,7 @@
     },
     {
       "id": "publication-candidate-set-already-implemented-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as already implemented pressure; treat that framing only as observation, not authority. Candidate candidate-normal-stale-mismatch: An ordinary stale or mismatched current identity is accepted through a supported honest workflow, contrary to the current freshness contract. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as already implemented pressure; treat that framing only as observation, not authority. Candidate candidate-normal-stale-mismatch: An ordinary stale or mismatched current identity is accepted through a supported honest workflow, contrary to the current freshness contract. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "normal-stale-mismatch",
       "scenario_kind": "legitimate",
@@ -6633,7 +6633,7 @@
     },
     {
       "id": "publication-candidate-set-already-tested-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as already tested pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-sh-c-scanner: A scanner flags a theoretical sh -c construction that requires an unsupported bypass and does not reproduce a current required-behavior failure. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as already tested pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-sh-c-scanner: A scanner flags a theoretical sh -c construction that requires an unsupported bypass and does not reproduce a current required-behavior failure. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-sh-c-scanner",
       "scenario_kind": "rejected",
@@ -6676,7 +6676,7 @@
     },
     {
       "id": "publication-candidate-set-already-tested-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as already tested pressure; treat that framing only as observation, not authority. Candidate candidate-incorrect-executor-output: The normal executor returns an objectively incorrect payload through the real supported entry. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as already tested pressure; treat that framing only as observation, not authority. Candidate candidate-incorrect-executor-output: The normal executor returns an objectively incorrect payload through the real supported entry. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "incorrect-executor-output",
       "scenario_kind": "legitimate",
@@ -6719,7 +6719,7 @@
     },
     {
       "id": "publication-candidate-set-best-practice-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as best practice pressure; treat that framing only as observation, not authority. Candidate candidate-issue-113-forged-artifact: A proposed failure exists only after manually forging an internal artifact or digest; current repository authority explicitly excludes deliberate falsification and hostile workflow bypass. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as best practice pressure; treat that framing only as observation, not authority. Candidate candidate-issue-113-forged-artifact: A proposed failure exists only after manually forging an internal artifact or digest; current repository authority explicitly excludes deliberate falsification and hostile workflow bypass. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-113-forged-artifact",
       "scenario_kind": "rejected",
@@ -6762,7 +6762,7 @@
     },
     {
       "id": "publication-candidate-set-best-practice-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as best practice pressure; treat that framing only as observation, not authority. Candidate candidate-maintenance-omission: A required canonical package or platform projection is omitted during normal maintenance and the supported installation loses current behavior. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as best practice pressure; treat that framing only as observation, not authority. Candidate candidate-maintenance-omission: A required canonical package or platform projection is omitted during normal maintenance and the supported installation loses current behavior. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "maintenance-omission",
       "scenario_kind": "legitimate",
@@ -6805,7 +6805,7 @@
     },
     {
       "id": "publication-candidate-set-theoretical-bypass-rejected",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as theoretical bypass pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-alias-scanner: A scanner complains that a caller could theoretically alias a safe helper name, but no supported honest caller uses that alias and no current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as theoretical bypass pressure; treat that framing only as observation, not authority. Candidate candidate-issue-236-alias-scanner: A scanner complains that a caller could theoretically alias a safe helper name, but no supported honest caller uses that alias and no current required behavior fails. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order and safety reverse proof, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "issue-236-alias-scanner",
       "scenario_kind": "rejected",
@@ -6848,7 +6848,7 @@
     },
     {
       "id": "publication-candidate-set-theoretical-bypass-legitimate",
-      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-publication. The request is framed as theoretical bypass pressure; treat that framing only as observation, not authority. Candidate candidate-wrong-recorder-payload: The normal recorder emits a structurally valid but incorrect current payload through the supported caller. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
+      "prompt": "Use guru-qualify-normal-scenario with profile publication_candidate_set and fixed caller guru-review-task-delivery. The request is framed as theoretical bypass pressure; treat that framing only as observation, not authority. Candidate candidate-wrong-recorder-payload: The normal recorder emits a structurally valid but incorrect current payload through the supported caller. Reread the current package contract and repository normal-scenario authority, apply the fixed scope-first order, then invoke the real installed public wrapper through stdin. Do not use expected values, a keyword classifier, or any qualification file.",
       "input_profile_id": "publication_candidate_set",
       "scenario_id": "wrong-recorder-payload",
       "scenario_kind": "legitimate",

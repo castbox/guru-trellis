@@ -600,7 +600,7 @@ def tree_sha256(root: Path) -> str:
     digest = hashlib.sha256()
     for path in sorted(item for item in root.rglob("*") if item.is_file()):
         relative = path.relative_to(root)
-        if "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
+        if relative.parts[0] == "tests" or "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
             continue
         digest.update(relative.as_posix().encode("utf-8"))
         digest.update(b"\0")

@@ -1,5 +1,39 @@
 # Guru Team Workflow Skill Package Contract
 
+## Current #434 Package Graph
+
+The current canonical registry/Interface selectors and workflow, not the
+historical cardinalities or versioned predecessor schemas below, define the
+active package set. In the #434 candidate the business chain is Branch Review
+-> `guru-review-task-delivery` -> `guru-publish-task-delivery` ->
+`guru-merge-task-delivery` -> `guru-review-task-completion` ->
+`guru-complete-task-closure` -> `guru-finish-task` ->
+`guru-cleanup-task-resources`. Delivery Review owns the current slice and
+`Refs`-only PR body; Publish owns its PR/push recovery; Merge produces a
+Delivery result only. Completion alone decides the whole accepted task scope.
+Closure owns Issue disposition after `completed`; Finish owns the separate
+lifecycle-only archive/bookkeeping transaction, and Cleanup owns exact resource
+removal after Finish success. `guru-reactivate-task` starts a new generation
+of the same TaskId only from a normally completed archive.
+
+The predecessor `guru-review-task-publication`, `guru-finalize-task`,
+`guru-merge-task-pr`, and `guru-restore-archived-task` sections and schema IDs
+are retained as pinned-old-only historical contracts. They do not supply a
+current invocation, consumer, adapter, or output-loss recovery route. An
+in-flight old transaction must use a compatible pinned graph or a reviewed
+manual disposition; no old DTO may be projected to the current chain.
+
+The current exits stay owned by their respective Interfaces: Delivery Review
+`ready` seeds Publish; Publish `ready_for_merge` seeds Delivery Merge; Merge
+`delivered` seeds Completion. Completion's `remaining_work`,
+`evidence_pending`, `additional_delivery_required`,
+`requirements_revision_required`, and `implementation_revision_required`
+return to their specific active-task owners; only `completed` seeds Closure.
+Closure `closed|no_mutation` seeds Finish, and only Finish `success` seeds
+Cleanup. Reactivate's planning/session/resume/source-correction exits have
+separate consumers. Unknown, multiple, stale or unmapped exits stop; no PR or
+merge status substitutes for a typed Completion result.
+
 ## Ownership
 
 `trellis/skills/guru-team/` is the only canonical source for reusable Guru
@@ -103,22 +137,22 @@ workflow/standalone preconditions before a package command can run.
 
 ## Public Skill I/O And Private State
 
-### 0. Current Interface And Registry Contract
+### 0. Historical Interface And Registry Snapshot (Pinned-Old-Only)
 
-Issue #180 activated the historical fifteen-package/57-exit graph. The current
-Registry 1.4 graph contains 32 active packages, 142 package exits, and 102
+Issue #180 activated the historical fifteen-package/57-exit graph. The former
+Registry 1.4 graph contained 32 active packages, 142 package exits, and 102
 commands while
 retaining older Interface/Registry assets as immutable legacy contracts.
-`guru-merge-task-pr` is a current semantic package with exactly
+In that pinned-old graph, `guru-merge-task-pr` was a semantic package with exactly
 `merged`, `merge_blocked`, `phase2_reentry_required`, `closure_mismatch`, and
 `review_refresh_required`. The last exit belongs only to the dedicated archived
 read-only request and targets `guru-review-branch:archived_review`.
 `guru-restore-archived-task` consumes only `phase2_reentry_required`, restores
 the exact archived task identity, and returns `restored_to_phase2` or
-`restore_blocked`. Current Finalizer exposes
+`restore_blocked`. That Finalizer exposed
 `ready_for_merge` in place of `published`; the old published schema/example
 remain immutable legacy assets but are not selected by the Interface, registry,
-workflow or extension manifest. The integrated business graph has 22 invoke
+workflow or extension manifest. That integrated business graph had 22 invoke
 markers, 98 exit markers and 59 unique workflow/stop targets.
 
 The Finalizer-to-Merge edge is target-authored. Finalizer returns canonical
@@ -147,24 +181,25 @@ post-merge read-only validation. A terminal projection retires the merge gate.
 Neither Finalizer nor Merge calls Issue-close APIs, enters Phase 0, invokes base
 sync, updates the PR branch, synchronizes local `main`, or cleans resources.
 
-Twenty-eight active packages select Interface 1.4.
+In that snapshot, twenty-eight active packages selected Interface 1.4.
 `guru-create-task-workspace`, `guru-qualify-normal-scenario`, and
 `guru-qualify-solution-mechanism` select Interface 1.6;
-`guru-verify-extension-installation` selects Interface 1.5, and the latter has
+`guru-verify-extension-installation` selected Interface 1.5, and the latter had
 `workflow_integration_state=standalone_only`. Registry schema
-`guru-team-skill-registry-1.4` is the exact current selector; planned rows remain
+`guru-team-skill-registry-1.4` was the exact selector; planned rows remain
 lifecycle-only and carry no package or I/O fields. Any other row or schema
 identity fails closed.
 
 The validator selects the interface schema from the registry row. It must not
 guess from optional fields, file presence, package content, or extension
-defaults. The extension publishes one `interface_schema_id`, the registry id,
+defaults. In that snapshot the extension published one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
-for all 32 active packages and their 142 external exits. The
-`production-current-v4` is the sole current manifest and contains exactly four
+for that snapshot's 32 active packages and 142 external exits. The
+`production-current-v4` remains the current four-package submanifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
-activation of other packages, including `guru-finalize-task`, does not rewrite
-that membership. Versioned v2/v3 files remain immutable legacy assets.
+activation of other packages does not rewrite that membership. Versioned v2/v3
+files remain immutable legacy assets. The #434 Delivery/terminal graph is
+selected separately by the live registry and workflow.
 
 ### 1. Scope And Trigger
 
@@ -583,10 +618,9 @@ self-reentry, the closed projection operations, stdout-only and task-local
 private state, distinct exits, and stable errors, but never enters production
 registry, extension inventories, workflow routes, or installed platform roots.
 
-### Current Intake Production Activation
+### Intake Activation: Current Split And Pinned-Old Snapshot
 
-The live registry and current Interface 1.4 packages contain exactly these
-Intake packages and exits:
+The pinned-old Intake activation combined these six packages and exits:
 
 - `guru-sync-base`: `synced`, `skipped`, `blocked`;
 - `guru-discover-change-context`: `context_ready`, `refresh_base`, `blocked`;
@@ -597,19 +631,24 @@ Intake packages and exits:
   `review_wording`, `refresh_context`, `blocked`;
 - `guru-create-task-workspace`: `created`, `refresh_review`, `blocked`.
 
-All six packages select `guru-team-skill-interface-1.4`. The current
-six-package/23-exit contract is derived only from the live registry, current
-Interface 1.4 packages, workflow markers, extension inventories, and selected
-platform copies. User refusal stops before recorder/executor and emits no DTO,
-while optional `guru-sync-base` scalar arguments are derived by the runtime
-when omitted. A partially updated current Intake graph is invalid even when
-each package validates in isolation. Validation and installation consume exactly
-the live registry and current package graph.
+That six-package/23-exit count and the Workspace consumer are pinned-old-only;
+they are not a current acceptance assertion or route. The #434 registry and
+Interface 1.4 selectors retain Sync, Discovery, Clarification, Wording, and
+Readiness as the five pre-task owners. The workflow sends Readiness `ready` to
+`guru-task-intake-router`: `ready.transition.target.kind=proposed_draft`
+invokes `guru-create-issue`, while `existing_issue` or `standalone_request`
+invokes `guru-create-task`. Issue `created|refresh_review` returns to Sync and
+fresh Intake; only Task `created` enters `guru-task-created` and Phase 1.
+Task `refresh_review` returns to Sync; each blocked/invalid exit follows its
+declared stop consumer. The live registry, Interfaces, workflow markers, and
+selected platform/installed projection define current acceptance; no old
+Workspace schema, DTO, or aggregate count can stand in for this split.
 
-The six package input contracts are consumer-owned and closed. `guru-sync-base`
-retains a scalar CLI signature; the other packages use discriminator-based
-structured profiles for pre-task/re-entry, initial/scope-change/standalone,
-wording target, readiness target, and initial/recovery mutation families.
+In the pinned-old snapshot, the six package input contracts were consumer-owned
+and closed. `guru-sync-base` retained a scalar CLI signature; the other packages
+used discriminator-based structured profiles for pre-task/re-entry,
+initial/scope-change/standalone, wording target, readiness target, and
+initial/recovery mutation families.
 Each profile has an executable example. Each exit has its own schema/example,
 one consumer, one declarative projection, and direct-use pointers for every
 public output field. Stop exits use `exit_id` plus empty `select` projection to
@@ -621,11 +660,12 @@ Existing recorder/checker results stay owner-private `runtime_checkpoint` or
 declare `task_local_archive_transaction` under the lifecycle above. Re-entry
 passes only caller-owned continuation and task-relative locators; the owner
 runtime rereads live facts, validates the current artifact with its published
-schema, and emits a current 1.3 DTO without rewriting archived bytes.
+schema, and emits the then-selected 1.3 DTO without rewriting archived bytes.
 
-The five semantic public wrappers run only after their Agent-owned semantic
-loop and recorder/checker stage. Their invocation accepts the closed
-caller-owned public input, the workflow-owned current transition, and the
+In that pinned-old activation, the five semantic public wrappers ran only after
+their Agent-owned semantic loop and recorder/checker stage. Current wrapper
+membership comes from the live Interfaces, not that count. Invocation accepts
+the closed caller-owned public input, the workflow-owned transition, and the
 current Skill's owner result through a versioned call-local invocation
 envelope. Runtime reruns the existing objective checker and derives the exit
 only from the checker-passed owner result. A caller-selected expected exit,
@@ -648,15 +688,16 @@ into a generic `base_head`. The formal closed schema/runtime state matrix owns
 whether a missing remote ref is legal for a diagnostic state; a caller never
 synthesizes a nullable fallback.
 
-The call-local transport uses distinct closed envelopes for deterministic sync,
-semantic invocation, and confirmed workspace mutation. Its public stdin form is
-exactly `--invocation -`; it cannot be combined with locator transport flags.
-A semantic envelope
-separates `public_input`, `transition`, and `owner_result`; the owner result
+Call-local transport uses distinct closed envelopes for deterministic sync and
+semantic invocation; the pinned-old graph additionally had confirmed Workspace
+mutation. The public stdin form is exactly `--invocation -`; it cannot be
+combined with locator transport flags.
+A semantic envelope separates `public_input`, `transition`, and `owner_result`;
+the owner result
 belongs only to the currently invoked Skill and is never projected downstream.
-The initial sync has no upstream transition, and workspace plan/result transport
-does not persist confirmation. Normal pre-task execution carries envelopes and
-transitions through stdin/stdout or caller memory and creates no owner-result,
+The initial sync has no upstream transition; the old Workspace plan/result
+transport did not persist confirmation. Normal pre-task execution carries
+envelopes and transitions through stdin/stdout or caller memory and creates no owner-result,
 prerequisite, transition, task, workspace, or `.trellis/.runtime/**` repository
 file. It also never imports the shared runtime source to reconstruct an input.
 
@@ -680,11 +721,12 @@ For `guru-clarify-requirements:clear`, a checker-passed
 scope. That one fixed profile projects to public `retained`; null disposition in
 initial or standalone profiles remains an invalid owner projection.
 
-### Production Planning, Check, Commit, And Qualification Activation
+### Four-Package Manifest And Historical Routing Snapshot
 
 `trellis/skills/guru-team/contracts/production-current-4.0.json` with contract id
-`production-current-v4` is the sole current manifest. It extends the live
-six-Skill/23-exit Intake contract. The production contract contains exactly:
+`production-current-v4` is the current four-package submanifest. Its historical
+activation extended the then-live six-Skill/23-exit Intake contract, not the
+#434 split Intake graph. The production contract contains exactly:
 
 - `guru-approve-task-plan`: `approved`, `revision_required`, `clarify_scope`,
   `blocked`;
@@ -741,8 +783,9 @@ five are
 `guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
 `guru-create-task-commit:revision-required -> revision_reentry`, and
 `guru-create-task-commit:committed -> guru-review-branch:branch_review`, and
-`guru-review-branch:passed -> guru-review-task-publication:publication_review`.
-The finalization family adds
+`guru-review-branch:passed -> guru-review-task-publication:publication_review`
+in the pinned-old graph. The current successor is
+`guru-review-branch:passed -> guru-review-task-delivery`. That old finalization family added
 `guru-review-task-publication:ready -> guru-finalize-task:publication_ready`,
 and the finalizer's `publication_review_stale`, `same_plan_resume`, and
 `reprepare_preview` targets. Task-free execution adds
@@ -769,9 +812,11 @@ Active closure is derived from the live registry, the production current
 manifest, and every complete active Interface 1.4 row. Every
 active profile and exit must have
 a current canonical case binding and byte-identical selected-platform corpus.
-The current package cardinality assertion is 32 active Skills, 142 exits, and
-102 commands. The integrated business workflow projection contains 22 invoke markers,
-98 exit markers, 35 workflow-target markers, and 24 stop-target markers. Missing,
+The historical package cardinality assertion was 32 active Skills, 142 exits, and
+102 commands. That business workflow projection contained 22 invoke markers,
+98 exit markers, 35 workflow-target markers, and 24 stop-target markers. The
+#434 whole-graph cardinality is derived afresh from registry/interfaces/markers.
+Missing,
 extra, duplicate, renamed, unknown, partially activated, or
 case-mismatched entries fail closed.
 
@@ -813,7 +858,7 @@ directly and must rerun the Skill after any relevant authority, planning,
 candidate, caller graph, diff/range, base-pair, publication payload, scope
 choice, mechanism, or finding-fix change.
 
-Phase 2, Branch Review, and Publication remain the owners of their existing
+Phase 2, Branch Review, and Delivery Review own their selected
 private gates. They may directly record only the terminal classification and
 minimal witness their own immediate consumer needs; they never reference a
 qualification artifact or retain qualifier stdout. Each Guru-owned worker
@@ -953,7 +998,9 @@ the Sync owner boundary; public `post_sync_resolution_sha256` remains part of
 Compatibility-only `prepare-task` requires that complete reviewed provenance,
 not only its digest; missing provenance blocks locally before GitHub read or
 fetch. It has no mutation guard and never produces a workflow transition;
-active workspace mutation freshness belongs to `guru-create-task-workspace`.
+the historical active Workspace mutation freshness belonged to
+`guru-create-task-workspace`; current Issue/Task creation uses the respective
+Interface and workflow route.
 
 `guru-discover-change-context` is the active semantic consumer of
 `guru-sync-base:synced`. Both modes require identical `runtime_dependency`,
@@ -1041,10 +1088,10 @@ task identity, binds its live task branch, and permits ordinary current-worktree
 edits without creating a checkpoint. Only an explicit recovery continuation
 creates/checks the one lazy same-owner checkpoint. The public wrapper supports
 stdin owner transport, validates the selected minimal DTO, and retires that
-checkpoint after successful consumption. Clarification, readiness, and workspace creation
-do not receive an owner-result locator and do not read Discovery private
-evidence. `refresh_base` reruns the owner from live authority without a prior
-result chain.
+checkpoint after successful consumption. Clarification and readiness do not
+receive an owner-result locator or read Discovery private evidence; the old
+Workspace creation owner had the same restriction. `refresh_base` reruns the
+owner from live authority without a prior result chain.
 
 `guru-clarify-requirements` is an active semantic package with identical
 workflow/standalone preconditions: current runtime, current review target,
@@ -1190,8 +1237,8 @@ consumes the current public prerequisite transition; normalizes one
 `existing_issue`, `proposed_draft`, or `standalone_request`; reviews the fixed
 ten dimensions; records findings, scope conclusion, AI Review Gate, and exactly
 one exit. Any real choice or side-effect authorization remains dialogue-local
-and is never part of this result. Its exits are `ready` -> active
-`guru-create-task-workspace`, `clarify_requirements` ->
+and is never part of this result. Its exits are `ready` -> workflow
+`guru-task-intake-router`, `clarify_requirements` ->
 `guru-clarify-requirements`, `review_wording` ->
 `guru-review-contract-wording`, `refresh_context` -> `guru-sync-base`, and
 `blocked` -> stop `change-request-review-blocked`.
@@ -1213,15 +1260,22 @@ Readiness owner result 2.0 is private to its record/check/invoke loop. Upstream
 private results and caller-authored flat prerequisites are not accepted; the
 #386 migration removes their CLI path. Target title/body identity remains
 distinct from clarification semantic-content identity and disposition identity.
-Only the active `guru-create-task-workspace` consumes the public `ready`
-transition; it does not read or persist the private `issue-review.json` result.
+Only the workflow-owned `guru-task-intake-router` consumes the public `ready`
+transition. It projects `ready.transition.target.kind` to exactly one current
+creation owner: `proposed_draft` -> `guru-create-issue`, or `existing_issue` /
+`standalone_request` -> `guru-create-task`. Neither owner receives the private
+`issue-review.json` result. Issue creation returns to fresh Sync/Intake, not
+directly to Task creation or planning.
 
-## Task Workspace Package
+## Historical Task Workspace Package (Pinned-Old-Only)
 
-Active semantic Skill `guru-create-task-workspace` is the sole owner of GitHub
-issue creation and branch/worktree/task creation after change-request
-readiness. Workflow and standalone modes use identical `runtime_dependency`,
-`base_evidence`, `context_evidence`, `clarity_evidence`, `wording_evidence`,
+In the pinned-old graph, semantic Skill `guru-create-task-workspace` was the
+combined owner of GitHub issue creation and branch/worktree/task creation
+after change-request readiness. It is not in the #434 live registry or workflow;
+the following details remain for historical diagnosis, not current invocation,
+validation, or recovery. Its workflow and standalone modes used identical
+`runtime_dependency`, `base_evidence`, `context_evidence`,
+`clarity_evidence`, `wording_evidence`,
 `readiness_evidence`, `target_authority`, `naming_and_assignee`,
 `side_effect_authorization`, and `invocation_freshness` preconditions. Its
 exact stages are `forward_behavior -> ai_review_gate ->
@@ -1287,7 +1341,7 @@ identity/journal bytes are outside this package and remain unchanged.
 `workspace_slug` and workspace mappings identify the isolated task checkout/
 worktree, not a legacy journal workspace.
 
-External exits are exactly `created` to workflow target
+Its historical external exits were exactly `created` to workflow target
 `guru-task-workspace-created`, `refresh_review` to active Skill
 `guru-sync-base`, and `blocked` to stop `task-workspace-blocked`. A target/disposition change is
 `refresh_review` with zero writes. Unknown, multiple, unmapped, stale, or
@@ -1374,19 +1428,19 @@ not read the private checkpoint or manufacture the DTO themselves.
 ## Active-task producer recovery boundary
 
 Continuation recovery remains inside the producer that owns the interrupted
-result. `guru-create-task-workspace` owns `recover_created_result` and its
-read-only `recover-task-workspace-result` checker. That profile accepts only the
-exact current planning task and current branch/worktree/boundary/runtime
-mappings, then projects the existing `created` exit; mismatch stops without a
-second create or a mapping repair.
+result. In the pinned-old graph, `guru-create-task-workspace` owned
+`recover_created_result` and its read-only `recover-task-workspace-result`
+checker. That profile accepted the exact planning task and mappings and
+projected the old `created` exit; it is not a #434 recovery entry. Current
+`guru-create-task` owns lost-result read-only recovery for the exact TaskId
+and generation; continuation must not create a second Issue, branch, worktree,
+or task. The workflow consumes only its checked `created` exit before planning.
 
-Workflow-owned Phase 1 activation exposes one closed
-`initial|recovery` invocation contract: `initial` performs the official task
-status mutation once, while `recovery` accepts only the same exact task already
-verified as `in_progress` with current branch/worktree/runtime mappings and
-returns the same activation success without repeating the mutation. It is not
-a new public Guru Skill, persisted approval, lifecycle state store, or generic task
-resolver.
+Current Phase 1 activation belongs to `guru-activate-task` after checked
+Planning approval. Its `initial` path performs the status-only
+`planning -> in_progress` transition; read-only result recovery for the same
+TaskId/generation never repeats that mutation. The pinned-old workflow-owned
+`initial|recovery` invocation was not a separate current public Skill.
 
 `guru-create-task-commit` keeps its existing `recovery_resume` public input and
 same-candidate transaction recovery. The producer validates the retained
@@ -1398,9 +1452,9 @@ candidate, create an empty or duplicate commit, amend history, or synthesize
 `committed` from Git shape alone.
 
 Semantic producers do not gain equivalent readers. Lost Planning wording,
-Planning Architecture, Approval, Branch Review, or Publication output reruns
+Planning Architecture, Approval, Branch Review, or Delivery Review output reruns
 the original semantic owner against current authority. Successful Branch
-Review and Publication checkpoints remain retired after selected DTO
+Review and Delivery Review checkpoints remain retired after selected DTO
 validation, so their absence is normal and never authorizes reconstruction.
 
 ## Distribution And Managed Hashes
@@ -1620,9 +1674,11 @@ Every writable run result lives below an explicit absolute temporary run root
 outside the repository and package. Closed evidence is diagnostic comparison
 data, not public Skill I/O, a consumer handoff, gate, checkpoint, audit chain,
 or release proof. Normal workflow and standalone invocation never read eval
-corpus, fixtures, adapter descriptors, or runner evidence. The six Intake
-packages and the three planning/check/commit packages are each validated as a
-complete current activation unit.
+corpus, fixtures, adapter descriptors, or runner evidence. The pinned-old six
+Intake packages and their former aggregate case bindings do not constitute a
+current activation unit. The #434 Intake graph is selected from the live
+registry, Interfaces and workflow; the four-package production submanifest is
+independent of its whole-graph validation.
 
 ### Standard Intake Native Authoring
 
@@ -1649,7 +1705,8 @@ commands rather than the single-Skill one-invoke shape. It binds actual reads,
 wrapper execution, stdout, and public projections. The terminal producer is
 the last real public wrapper, and its interface selects the terminal output
 schema. A Clarification blocker is not rewritten into a Readiness result.
-The successful chain stops at Readiness `ready`, before workspace mutation;
+The successful chain stops at Readiness `ready`, before the current Issue/Task
+creation router (historically, before combined Workspace mutation);
 a semantic blocker stops at its real owner without invoking downstream steps.
 
 Expectations and grading remain runner-side. A valid command trace proves
@@ -1680,7 +1737,7 @@ mismatched execution fails closed; a grade cannot override execution errors,
 unsupported capability, or deterministic failures. The existing grading schema
 is unchanged: same-run workflow binding is not a new transcript-byte signature.
 
-## Branch Review Owner And Active Publication Bridge
+## Branch Review Owner And Historical Publication Bridge
 
 `guru-review-branch` is the semantic owner of the post-commit full-range review
 and bounded base-continuity review. Aggregate public input schema 5.0 also
@@ -1716,24 +1773,27 @@ The six outputs are independent minimal DTOs:
 - `blocked`: `exit_id`;
 - `archived_review_passed`: `exit_id`, `task_ref`, `branch_review_commit`,
   `pr_payload_snapshot_sha256`, and `reviewed_base_head`; only the read-only
-  `archived_review` profile emits this success to Publication's
+  historical `archived_review` profile emitted this success to Publication's
   `archived_publication_review`. Its only other exit is `blocked`.
 
-The Branch Review `passed` edge supplies only
+In the pinned-old graph the Branch Review `passed` edge supplied only
 `task_ref/branch_review_commit` through `skill_input_authoring_seed`; the
 caller authors `profile/mode/review_intent` for active
-`guru-review-task-publication`. The commit remains the Git range/ancestry anchor;
+`guru-review-task-publication`. In the current graph `passed` enters
+`guru-review-task-delivery` through its declared input projection. The commit
+remains the Git range/ancestry anchor;
 the shared reviewed-content identity defined by
 `data-contracts.md#reviewed-content-identity` remains fresh across excluded
 workflow metadata changes and becomes stale for any reviewed-content change.
-Branch Review, Publication, Finalizer, and Verification use the one canonical
-shared helper for that contract; no package owns a second implementation. The
+The old Publication/Finalizer graph and Branch Review/Verification used the
+one canonical shared helper for that contract; no package owns a second
+implementation. The
 Branch Review owner-private checkpoint is current-only. A schema 5.0 or older
 checkpoint from the former package-local identity implementation is stale and
 routes to a fresh Branch Review without compatibility reads, migration, or
 rewriting.
 
-The bounded continuity edge supplies the same Publication seed shape after its
+In the pinned-old graph, the bounded continuity edge supplied the Publication seed shape after its
 router restores `resume_target=publication_review`, `task_finalization`, or
 `finalization_resume`: it selects the current `branch_review_commit` produced by
 `continuity_passed`. The prior complete review commit remains a separate
@@ -1745,9 +1805,9 @@ Every other producer field must be consumed. If the consumer requires
 `exit_id`, it must still be projected. This rule is general and does not permit
 dropping business data or inventing another projection operation.
 
-## Task Publication Review Owner
+## Historical Task Publication Review Owner (Pinned-Old-Only)
 
-`guru-review-task-publication` is the active Interface 1.4 semantic owner
+`guru-review-task-publication` was the Interface 1.4 semantic owner
 between Branch Review and finalization. For the two ordinary profiles,
 workflow and standalone use the same eight entry preconditions, ten-dimension AI Review Gate,
 conditional confirmation, ignored-runtime recorder/checker, metadata revision
@@ -1860,23 +1920,25 @@ aggregate input schema `guru-finalize-task-input-aggregate-6.0`. Aggregate
 fresh Publication invocation. No alias, task-local fallback, compatibility
 reader, or migration executor is part of the current contract.
 
-The current additive activation set contributes to the live closure of 32
-active Skills, 142 exits, and 102 commands. The production current manifest contains exactly
-four Skills and 15 exits.
+In that pinned-old snapshot, the additive activation set contributed to 32
+active Skills, 142 exits, and 102 commands. The four-package production
+submanifest still contains four Skills and 15 exits; it does not describe the
+whole #434 graph.
 
 ## Extension Installation Verification Owner
 
 `guru-verify-extension-installation` was the fifteenth active package and selects
 Interface 1.5 with `workflow_integration_state=standalone_only`. It is outside
-the four-Skill `production-current-v4` manifest and outside the mandatory
+the four-Skill `production-current-v4` submanifest and outside the mandatory
 business workflow graph. Its only current structured input is
 `source_repository_verification`, fixed to standalone mode and explicit caller
 intent from a clean `castbox/guru-trellis` source checkout.
 
 `guru-execute-task-free-change` remains an active package and integrated
-business-workflow owner. Together with `guru-qualify-normal-scenario`, the
-current graph closes at 142 package exits, 102 commands, and 98 workflow exits
-without changing the four-package production-current manifest. Its two post-write expansion exits
+business-workflow owner. The former 142 package exits, 102 commands, and 98
+workflow exits were a pinned-old graph snapshot; the four-package
+production-current submanifest is independent of the current whole-graph
+count. Its two post-write expansion exits
 require owner-private evidence for a real partial edit, the discovered
 scope/risk expansion, immediate stop, remaining target writes not performed,
 and applicable targeted checks. Its `completed` DTO and workflow consumer carry
@@ -1900,8 +1962,9 @@ matrix failure records stage, applicable cell id, stable command label, exit
 code, and bounded credential-safe tail; malformed output records
 `unparseable_failure_output`. This remains package-private execution evidence
 and creates no public exit, Finalizer projection, or shared resolver.
-Changed paths, installed manifests, business repository state, Publication,
-Finalizer, finish-work, re-entry, and recovery cannot make this Skill applicable.
+Changed paths, installed manifests, business repository state, Delivery,
+Completion, Finish, re-entry, and recovery cannot make this Skill applicable
+(nor could historical Publication/Finalizer).
 Legacy workflow/task-bearing input, `not_required`, `return_to_task_work`, and
 Finalizer projection schemas remain immutable compatibility assets only; current
 Interface, registry, eval corpus, manifest inventory, and runtime reject them.
@@ -1910,9 +1973,9 @@ canonical shared helper and the contract in
 `data-contracts.md#reviewed-content-identity`; target repository/ref/HEAD and
 ancestry remain independent verifier authorities.
 
-## Task Finalization Owner
+## Historical Task Finalization Owner (Pinned-Old-Only)
 
-`guru-finalize-task` is the active Interface 1.4 semantic owner of the complete
+`guru-finalize-task` was the Interface 1.4 semantic owner of the complete
 business task closeout loop. Current aggregate input 7.0 has five profiles:
 `publication_ready`, `same_plan_resume`, `reprepare_preview`,
 `standalone_finalization`, and the independent read-only `archived_review_refresh`. It has six outputs: `base_reconciliation_required`,
@@ -1998,8 +2061,9 @@ contracts.
 The semantic review independently classifies authority impact, task-content
 impact, and integration-only impact, checks one temporary integration
 candidate, selects affected validation, and returns exactly one exit. Pre-review
-profiles never merge or rebase the task branch. For post-Branch Review,
-post-Publication, or Finalizer mismatch profiles, a compatible candidate that
+profiles never merge or rebase the task branch. For current post-Branch Review
+or Delivery base evolution (post-Publication/Finalizer mismatch profiles are
+pinned-old-only), a compatible candidate that
 changes the reviewed-content identity returns the current-only
 `review_continuity_required` 2.0 DTO only after the owner displays the exact Git
 mutation and obtains current-dialogue confirmation. Its package-private
@@ -2050,14 +2114,14 @@ outside the supported package runtime command surface, or any platform
 projection of package-private helpers.
 
 
-### Session binding capability boundary (#443)
+### Session binding capability boundary (#443 historical snapshot)
 
-`guru-bind-task-session` 是 deferred public capability package，拥有 session binding/rebind/switch/resume/manual recovery 的 semantic route、deterministic identity validation、五个成功 typed exits 与一个 blocked exit。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。#434 只消费其最小 route projection，并在独立 cutover 中决定 global graph activation。
+本段记录 #443 的历史 deferred 状态：`guru-bind-task-session` 当时拥有 session binding/rebind/switch/resume/manual recovery 的 semantic route、deterministic identity validation、五个成功 typed exits 与一个 blocked exit。#434 当前选择 D443 canonical major 的 live Interface 与 workflow route；不从本历史段复原旧 session DTO。它复用官方 Trellis `active_task`/`session_storage` authority，不创建 alternate task resolver、重复 session binding store、global lifecycle store、Issue ledger 或 workspace/developer state。
 
 ## Shared Task Lifecycle Contract Substrate (#454 C2)
 
 `contracts/task-lifecycle/` 与 `runtime/task_lifecycle/` 是 package-neutral shared substrate，不是一个 public Skill、
-registry row、workflow target 或 command wrapper。Catalog 当前声明 35 个 named DTO；每个 future package 必须在自己的
+registry row、workflow target 或 command wrapper。Catalog 当前声明 35 个 named DTO；每个使用它的 package 必须在自己的
 interface 中选择 exact input/output definition，并保持 producer output 到唯一 consumer input 的薄 projection。不得用
 nullable aggregate、generic lifecycle envelope 或 catalog 顶层 union 代替 per-exit schema。
 
@@ -2066,6 +2130,6 @@ source/target normalization、minimal DTO construction 与稳定 contract errors
 route selection、user choice、authorization、Git mutation、session mutation、branch association、checkout acquisition 与
 resource ownership 均不属于 C2 runtime。
 
-Catalog 与 runtime 的存在不代表 Phase C package-ready 或 production integrated。C3-C6 可以消费该 substrate，
-但仍须分别拥有 entry contract、judgment mode、closed exits、consumer projection、private recovery state 与 focused tests；
-#434 仍独占 registry selector、active manifest、workflow graph、installed/platform projection 与 atomic activation。
+Catalog 与 runtime 自身不替代各 package 的 entry contract、judgment mode、closed exits、consumer projection、
+private recovery state 与 focused tests。#434 candidate 已选择 current registry、active manifest、workflow graph
+和 installed/platform projection；其组合验证不等于远端发布或完整 Release matrix。

@@ -1,0 +1,71 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-ensure-task-checkout",
+  "name": "guru-ensure-task-checkout",
+  "description": "Resolve a unique active task checkout from TaskId, branch binding, ownership and live Git facts.",
+  "state": "active",
+  "judgment_mode": "deterministic",
+  "modes": {
+    "workflow": {"routing": "global_workflow", "entry_precondition_ids": ["active_task_identity", "branch_control_state"]},
+    "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["active_task_identity", "branch_control_state"]}
+  },
+  "entry_preconditions": [
+    {"id": "active_task_identity", "evidence": "current task artifact by immutable TaskId and generation", "binding": "one active task", "freshness": "reread on every invocation"},
+    {"id": "branch_control_state", "evidence": "TaskBranchBinding, current ownership and registered Git checkout", "binding": "one branch and one checkout", "freshness": "live read on every invocation"}
+  ],
+  "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
+  "ordered_stages": ["forward_behavior", "recorder_validator", "typed_exit"],
+  "artifacts": [
+    {"id": "public_input", "path": "examples/public-input.json"},
+    {"id": "resolved_output", "path": "examples/public-checkout-resolved-output.json"},
+    {"id": "binding_output", "path": "examples/public-binding-required-output.json"},
+    {"id": "checkout_output", "path": "examples/public-checkout-required-output.json"},
+    {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"},
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+  ],
+  "schemas": [
+    {"id": "public_input", "path": "schemas/public-input.schema.json"},
+    {"id": "public_output", "path": "schemas/public-output.schema.json"},
+    {"id": "resolved_output", "path": "schemas/public-checkout-resolved-output.schema.json"},
+    {"id": "binding_output", "path": "schemas/public-binding-required-output.schema.json"},
+    {"id": "checkout_output", "path": "schemas/public-checkout-required-output.schema.json"},
+    {"id": "invalid_output", "path": "schemas/public-invalid-task-state-output.schema.json"},
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+  ],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-ensure-task-checkout", "objective_scope": "Check exact TaskId/generation, control state and registered checkout without mutation."}],
+  "external_exits": [
+    {"id": "checkout_resolved", "evidence": "unique live registered checkout matches the current binding", "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"}},
+    {"id": "binding_required", "evidence": "the active task has no current branch binding", "consumer": {"kind": "workflow", "id": "guru-task-branch-binding-router"}},
+    {"id": "checkout_required", "evidence": "the bound branch has no registered checkout", "consumer": {"kind": "workflow", "id": "guru-task-checkout-acquisition-router"}},
+    {"id": "invalid_task_state", "evidence": "task, binding, ownership or checkout authority contradicts", "consumer": {"kind": "stop", "id": "invalid-task-state"}}
+  ],
+  "reentry": {"identity": "TaskId, lifecycle generation and current branch binding", "freshness": "reread live task and Git on every invocation", "stale_behavior": "fail_closed"},
+  "tests": ["tests/test_contract.py"],
+  "platform_destinations": ["shared", "claude", "cursor", "opencode", "codex", "kilo", "kiro", "gemini", "antigravity", "devin", "qoder", "codebuddy", "copilot", "droid", "dsh", "pi", "reasonix", "zcode", "trae", "omp", "grok", "kimi", "snow"],
+  "public_contracts": {
+    "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-ensure-task-checkout-input-1.0", "path": "schemas/public-input.schema.json"}, "profiles": [
+      {"id": "active_task", "schema": {"schema_id": "guru-ensure-task-checkout-input-1.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "public_input", "path": "examples/public-input.json"}, "discriminator": {"field": "profile", "value": "active_task"}}
+    ]},
+    "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "active_task"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-ensure-task-checkout-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invocation_error", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-input.json"]},
+    "outputs": [
+      {"exit_id": "checkout_resolved", "schema": {"schema_id": "guru-ensure-task-checkout-resolved-1.0", "path": "schemas/public-checkout-resolved-output.schema.json"}, "example": {"id": "resolved_output", "path": "examples/public-checkout-resolved-output.json"}, "consumer_use_ids": ["resolved_projection"]},
+      {"exit_id": "binding_required", "schema": {"schema_id": "guru-ensure-task-checkout-binding-required-1.0", "path": "schemas/public-binding-required-output.schema.json"}, "example": {"id": "binding_output", "path": "examples/public-binding-required-output.json"}, "consumer_use_ids": ["binding_projection"]},
+      {"exit_id": "checkout_required", "schema": {"schema_id": "guru-ensure-task-checkout-checkout-required-1.0", "path": "schemas/public-checkout-required-output.schema.json"}, "example": {"id": "checkout_output", "path": "examples/public-checkout-required-output.json"}, "consumer_use_ids": ["checkout_projection"]},
+      {"exit_id": "invalid_task_state", "schema": {"schema_id": "guru-ensure-task-checkout-invalid-1.0", "path": "schemas/public-invalid-task-state-output.schema.json"}, "example": {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"}, "consumer_use_ids": ["invalid_projection"]}
+    ],
+    "consumer_inputs": [
+      {"id": "resolved_input", "consumer": {"kind": "workflow", "id": "guru-current-task-checkout-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-current-task-checkout-input-1.0", "path": "consumers/workflow/production/resolved.schema.json"}},
+      {"id": "binding_input", "consumer": {"kind": "workflow", "id": "guru-task-branch-binding-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-branch-binding-input-1.0", "path": "consumers/workflow/production/binding-required.schema.json"}},
+      {"id": "checkout_input", "consumer": {"kind": "workflow", "id": "guru-task-checkout-acquisition-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-checkout-acquisition-input-1.0", "path": "consumers/workflow/production/checkout-required.schema.json"}},
+      {"id": "invalid_input", "consumer": {"kind": "stop", "id": "invalid-task-state"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-invalid-task-state-input-1.0", "path": "consumers/stop/production/invalid-task-state.schema.json"}}
+    ],
+    "projections": [
+      {"id": "resolved_projection", "exit_id": "checkout_resolved", "consumer_input_id": "resolved_input", "operation": "direct"},
+      {"id": "binding_projection", "exit_id": "binding_required", "consumer_input_id": "binding_input", "operation": "direct"},
+      {"id": "checkout_projection", "exit_id": "checkout_required", "consumer_input_id": "checkout_input", "operation": "direct"},
+      {"id": "invalid_projection", "exit_id": "invalid_task_state", "consumer_input_id": "invalid_input", "operation": "direct"}
+    ],
+    "private_artifacts": []
+  }
+}

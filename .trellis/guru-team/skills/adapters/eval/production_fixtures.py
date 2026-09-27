@@ -77,17 +77,6 @@ def production_task_fixture(runtime: Any, fixture: Path) -> tuple[Path, str]:
     run_git(fixture, "update-ref", "refs/remotes/origin/main", base_head)
     run_git(fixture, "remote", "add", "origin", "https://github.com/example/guru-extension.git")
     run_git(fixture, "checkout", "-q", "-b", "eval/current")
-    runtime.write_runtime_mappings(
-        fixture,
-        runtime.load_config(fixture),
-        {
-            "workspace_slug": "current",
-            "task_slug": "current",
-            "task_dir": ".trellis/tasks/current",
-            "branch_name": "eval/current",
-        },
-        fixture,
-    )
     return task, base_head
 
 def production_planning_input(
@@ -301,6 +290,16 @@ def production_phase2_input(
     payload = {
         "mode": "workflow",
         "reviewed_paths": sorted(implementation_paths),
+        "delivery_policy": {
+            "task_scope": ["R1. Production eval"],
+            "delivery_slice": ["R1. Production eval"],
+            "remaining_work": [],
+            "independent_delivery_conditions": ["The current slice is independently deliverable."],
+            "validation_boundaries": ["Production fixture scope only."],
+            "current_slice_status": "passed" if exit_id == "passed" else "blocked",
+            "remaining_work_status": "disclosed",
+            "summary": "The current slice and remaining work were reviewed for this fixture.",
+        },
         "validation": {
             "commands": [{
                 "id": "production-eval",

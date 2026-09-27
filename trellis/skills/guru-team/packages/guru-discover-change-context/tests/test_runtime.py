@@ -15,7 +15,9 @@ FINISH_SCHEMA=next(path for path in (
 for path in (RUNTIME.parent,LOCAL):
  if str(path) not in sys.path:sys.path.insert(0,str(path))
 from runtime.command import main
-from common import check_recovery,consume_recovery,observe_base_current,preview,record_recovery
+from runtime.io import CommandError
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+from common import active_task,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
 from invoke import run as invoke_run
 
@@ -61,7 +63,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as name:
    case=Path(name);repo=case/"repo";repo.mkdir()
    guru=repo/".trellis/guru-team";installed_package=guru/"skills/packages"/PACKAGE.name
-   ignore=shutil.ignore_patterns("__pycache__","*.pyc","*.pyo")
+   ignore=shutil.ignore_patterns("__pycache__",".pytest_cache","*.pyc","*.pyo")
    shutil.copytree(PACKAGE,installed_package,ignore=ignore)
    shutil.copytree(SKILLS/"consumers",guru/"skills/consumers",ignore=ignore)
    shutil.copytree(SKILLS/"schemas",guru/"skills/schemas",ignore=ignore)
@@ -147,6 +149,25 @@ class PackageLocalRuntimeTest(unittest.TestCase):
  def test_recovery_checkpoint_is_package_owned_and_short_lived(self):
   with tempfile.TemporaryDirectory() as name:
    repo=Path(name);subprocess.run(["git","init","-q","-b","feat/context",str(repo)],check=True);td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True);task={"id":"08-12-context","status":"in_progress","branch":"feat/context"};(td/"task.json").write_text(json.dumps(task));payload=json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text());payload["mode"]="workflow";path=record_recovery(PACKAGE,repo,td,task,payload,"resume-context");self.assertTrue(path.is_file());self.assertEqual(path,check_recovery(PACKAGE,repo,td,task,payload,"resume-context"));consume_recovery(path);self.assertFalse(path.exists());self.assertFalse(path.parent.exists())
+
+ def test_active_task_uses_current_checkout_binding_without_legacy_branch(self):
+  with tempfile.TemporaryDirectory() as name:
+   repo=Path(name);subprocess.run(["git","init","-q","-b","feat/context",str(repo)],check=True)
+   subprocess.run(["git","-C",str(repo),"-c","user.name=Test","-c","user.email=test@example.invalid","commit","--allow-empty","-q","-m","seed"],check=True)
+   td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True)
+   task={"id":"08-12-context","status":"in_progress"};(td/"task.json").write_text(json.dumps(task))
+   store=BranchBindingStore(inspect_repository(repo));key=TaskLifecycleKey(task["id"],0)
+   ref=".trellis/tasks/08-12-context"
+   with self.assertRaises(CommandError) as missing:active_task(repo,ref)
+   self.assertEqual(("stale_identity","branch_binding",3),(missing.exception.code,missing.exception.field_path,missing.exception.exit_status))
+   binding=store.establish(key,"feat/other")
+   with self.assertRaises(CommandError) as wrong:active_task(repo,ref)
+   self.assertEqual(("stale_identity","worktree",3),(wrong.exception.code,wrong.exception.field_path,wrong.exception.exit_status))
+   payload=binding.as_dict();payload["branch_name"]="feat/context";store.path_for(key).write_text(json.dumps(payload))
+   self.assertEqual((td.resolve(),task),active_task(repo,ref))
+   task["status"]="planning";(td/"task.json").write_text(json.dumps(task))
+   with self.assertRaises(CommandError) as stale:active_task(repo,ref)
+   self.assertEqual("stale_identity",stale.exception.code)
 
  def test_live_base_observer_classifies_current_refresh_and_blocked_without_mutation(self):
   with tempfile.TemporaryDirectory() as name:

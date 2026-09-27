@@ -1,0 +1,19 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.67
+status: active
+predecessor: current-main-0.6.17-guru.66
+source_binding: "reviewed #434 contribution + inherited immutable current-main-0.6.17-guru.66 authority + Architecture docs/architecture/README.md current-main-0.6.17-guru.67/active + containing Git object/tree identity"
+extension_manifest_version: 0.6.17-guru.42
+target_trellis_cli: 0.6.17
+release_target: v0.6.17-guru.1
+released_baseline: v0.6.16-guru.1
+framework_source: castbox/Trellis@71f43cd8955c676f8ab8215216f61376fe9c01fe
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.67/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.67/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 34
+external_exit_count: 155
+command_count: 104
+provenance: "reviewed #434 atomic lifecycle activation + inherited immutable current-main-0.6.17-guru.66 authority; Architecture current-main-0.6.17-guru.67/active, registry 34/155/104 with zero planned, production 33 invokes/153 exits; promotion-created diff requires fresh Phase 2, commit and complete Branch Review"

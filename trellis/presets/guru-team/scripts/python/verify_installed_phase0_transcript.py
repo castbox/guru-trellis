@@ -1239,7 +1239,7 @@ def readiness_owner_for_issue(
             "sha256": target_content_sha256,
             "summary": "The current reviewed issue title and body.",
         }],
-        "consumer": {"kind": "skill", "id": "guru-create-task-workspace"},
+        "consumer": {"kind": "workflow", "id": "guru-task-intake-router"},
     }
     if typed_exit in {"clarify_requirements", "review_wording", "refresh_context"}:
         category = {
@@ -1608,7 +1608,7 @@ def verify_created_activation(
             raise RuntimeError(f"primary/worktree mapping mismatch: {relative}")
     wrappers = workspace / ".trellis/guru-team/scripts/bash"
     boundary = json_stdout(run(
-        [wrappers / "check-workspace-boundary.sh", "--task", task_ref, "--json"],
+        [wrappers / "check-task-checkout-boundary.sh", "--task", task_ref, "--json"],
         cwd=workspace, env=env,
     ), "created workspace boundary")
     if boundary.get("status") != "ok":

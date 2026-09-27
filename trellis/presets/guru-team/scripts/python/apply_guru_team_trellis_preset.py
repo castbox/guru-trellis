@@ -65,7 +65,6 @@ GURU_OVERLAY_REMOVAL_SIDECAR = (
 ).encode("utf-8")
 SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
-    Path("tests/test_base_continuity_integration.py"),
     Path("tests/test_delivery_family_integration.py"),
 )
 PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
@@ -104,6 +103,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-interface-1.4.schema.json",
     "skill-interface-1.5.schema.json",
     "skill-interface-1.6.schema.json",
+    "skill-interface-1.7.schema.json",
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
@@ -119,6 +119,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("eval_runner.py"),
     Path("installed.py"),
     Path("io.py"),
+    Path("lifecycle_helpers.py"),
     Path("launch.sh"),
     Path("probe.py"),
     Path("python-runtime.json"),
@@ -129,6 +130,24 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("temporary-inventory.json"),
     Path("temporary_lifecycle.py"),
     Path("validate.py"),
+    Path("task_lifecycle/__init__.py"),
+    Path("task_lifecycle/active_checkout.py"),
+    Path("task_lifecycle/branch_resolution.py"),
+    Path("task_lifecycle/branch_store.py"),
+    Path("task_lifecycle/checkout_acquisition.py"),
+    Path("task_lifecycle/checkout_resolution.py"),
+    Path("task_lifecycle/closure_result.py"),
+    Path("task_lifecycle/composition.py"),
+    Path("task_lifecycle/errors.py"),
+    Path("task_lifecycle/git_facts.py"),
+    Path("task_lifecycle/handoff_cleanup.py"),
+    Path("task_lifecycle/identity.py"),
+    Path("task_lifecycle/rebind.py"),
+    Path("task_lifecycle/resource_ledger.py"),
+    Path("task_lifecycle/results.py"),
+    Path("task_lifecycle/schema.py"),
+    Path("task_lifecycle/session_adapter.py"),
+    Path("task_lifecycle/source.py"),
 )
 
 
@@ -203,9 +222,7 @@ MANAGED_ASSET_PATHS = [
     Path("schemas/finish-summary.schema.json"),
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
-    Path("scripts/bash/prepare-task.sh"),
-    Path("scripts/bash/check-workspace-boundary.sh"),
-    Path("scripts/bash/start-task.sh"),
+    Path("scripts/bash/check-task-checkout-boundary.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/discover-skill-evals.sh"),
@@ -224,29 +241,15 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-contract-wording-review.sh"),
     Path("scripts/bash/record-change-request-review.sh"),
     Path("scripts/bash/check-change-request-review.sh"),
-    Path("scripts/bash/record-task-workspace-plan.sh"),
-    Path("scripts/bash/create-task-workspace.sh"),
-    Path("scripts/bash/check-task-workspace-result.sh"),
     Path("scripts/bash/resolve-human-artifacts.sh"),
     Path("scripts/bash/record-planning-approval.sh"),
     Path("scripts/bash/check-planning-approval.sh"),
     Path("scripts/bash/record-phase2-check.sh"),
     Path("scripts/bash/check-phase2-check.sh"),
-    Path("scripts/bash/record-task-publication-review.sh"),
-    Path("scripts/bash/check-task-publication-review.sh"),
     Path("scripts/bash/execute-extension-verification.sh"),
     Path("scripts/bash/record-extension-verification.sh"),
     Path("scripts/bash/check-extension-verification.sh"),
     Path("scripts/bash/invoke-extension-verification.sh"),
-    Path("scripts/bash/preview-finalization.sh"),
-    Path("scripts/bash/record-finalization-gate.sh"),
-    Path("scripts/bash/check-finalization-gate.sh"),
-    Path("scripts/bash/execute-finalization-transition.sh"),
-    Path("scripts/bash/preview-task-pr-merge.sh"),
-    Path("scripts/bash/record-task-pr-merge.sh"),
-    Path("scripts/bash/check-task-pr-merge.sh"),
-    Path("scripts/bash/execute-task-pr-merge.sh"),
-    Path("scripts/bash/invoke-task-pr-merge.sh"),
     Path("scripts/bash/record-agent-recovery.sh"),
     Path("scripts/bash/check-agent-recovery.sh"),
     Path("scripts/bash/prepare-task-commit.sh"),
@@ -254,9 +257,92 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/create-task-commit.sh"),
     Path("scripts/bash/review-branch.sh"),
     Path("scripts/bash/check-review-gate.sh"),
-    Path("scripts/bash/finish-work.sh"),
 ]
 LEGACY_MANAGED_ASSET_HASHES = {
+    Path("scripts/bash/check-finalization-gate.sh"): frozenset({
+        "8bf8108a140dd83b85c76e6d11e60ed8456bd6ccfcf44e14e4d65729c8e0b197",
+        "959f0aa5990ea800f9eaba37a2d40ec86578bb8e1a58e1fd5a8ed730f5ba796e",
+    }),
+    Path("scripts/bash/check-task-pr-merge.sh"): frozenset({
+        "91ce5e69b0841dddeae0bedd2bfbce8c99dd5b6b993942c69dc6bc5c1f99edf7",
+        "ca9900158e2f48c8543ed0f2ba44c15528c8f0543a81dd941a1ad4a84732e217",
+    }),
+    Path("scripts/bash/check-task-publication-review.sh"): frozenset({
+        "26b3f45d0e24e9867b4ff4a311af8160bdf769e012e9ae7fd7dd5881b8e29e2e",
+        "c2762acd60a1c0d6de9118e5072e7f59a5e222a4b9f75315a173f52f1fce4b03",
+    }),
+    Path("scripts/bash/check-task-workspace-result.sh"): frozenset({
+        "3304fa906eccd1feaf758d6b9fa16db0fa4cc3f59dc83bef0ef65049a04f7e69",
+        "6852d320cdbd9aa1d192a6ead8ddb0c0e16861011b162e5d69de7a5869d7fb15",
+    }),
+    Path("scripts/bash/check-workspace-boundary.sh"): frozenset({
+        "22979f4cae8de720622e9333b107446d077eaba62d6dacbaefa0c6a673175ac4",
+        "3612b2bdd8e573a6c0aa41aa5d83e58bec6fafbb959add92029971e6cac34ffa",
+        "66860d6399c1382e89f03674af1733cdd11a1244591e46e21821d3a6c52523b9",
+        "af4d7784c8130613d680a1c9a427980b62b0287baf33f6e1292001ca88221ddd",
+        "a8353c5101e2950a33809792fc4b32cc8c46d86b4d5949ff2ea21cb8890d950b",
+    }),
+    Path("scripts/bash/create-task-workspace.sh"): frozenset({
+        "68c7c911d06ee2682da559222b54c047c7db66f6225021d39ec87d666e323ea8",
+        "68d96fba68c2e1c80fb12f421735f29aa8776fd7a3fd878016230618d99fee4a",
+    }),
+    Path("scripts/bash/execute-finalization-transition.sh"): frozenset({
+        "1d147b611010689cef44d829fe9fdba1cd6089ba5da55d92679e9073170b0c7e",
+        "5f0533a4c6f6972fefa21fef13112911f546683affb21ef33f20dfd7d60f5e56",
+    }),
+    Path("scripts/bash/execute-task-pr-merge.sh"): frozenset({
+        "133f90c6976323c128c34d961286474daa8d3c09f38e8ad15f4d4426f474a78d",
+        "a4695234b19068baf36355ab5cfa31e34dd07b597907be9d1de8cdccc6d394b3",
+    }),
+    Path("scripts/bash/finish-work.sh"): frozenset({
+        "03c3f27a78fcf9d7d1bc99091d29e5f2eebc8dcf8639e2a71f50f2d0595d3f2f",
+        "452736976f8d574368b82bf4628a2710b1699c61acaac7c2af1ef8356c7c81ad",
+        "5f9e0e96eba8c6f64e6cdd1f5b1e874132fc7a56849f84d580e2c16316654bc9",
+        "8b64867c85600696ff4682653dc724a37a636281f17d211184a458f4c64f7d3a",
+        "ec9b266e86a9176fae6bf3ac5e48954140c16db32056e3a50d4092e13445246c",
+    }),
+    Path("scripts/bash/invoke-task-pr-merge.sh"): frozenset({
+        "2befbe0e20ac14bd90f89f4ff73a048c0732e37d5a74663a6defb75165d11626",
+        "c8b47c1fbdff4b92d10c691f48a0f7e6b9f2067543971a6b26bc1d975657280e",
+    }),
+    Path("scripts/bash/prepare-task.sh"): frozenset({
+        "b6fc1155e9ae3253df42b39451132336df2c05d39da768dea94c833c3ff6164b",
+        "3b6c3cb98c524088b2dd8e59208bdf28b5a10c064284b5dc21105ec6ee959349",
+        "91bcd128090ce4257efdf73401181e3ec801673d6a5fe2d1696b6e8fb4c84d3e",
+        "ae98b7a6edbc717c66ae83e635406d8b1ddce02bc542291d58e4f0d221fbb3a8",
+    }),
+    Path("scripts/bash/preview-finalization.sh"): frozenset({
+        "409299c777b4a53d4a3daf5efca581d464c5c071d1826baa38390643802d37ca",
+        "1145d440e5270fe22176ca24ab2c64cf5338a369ee09174031bbf3495b235ae6",
+    }),
+    Path("scripts/bash/preview-task-pr-merge.sh"): frozenset({
+        "630c5b42773732d44f45db23589f01df8e67178eb92cb4c7acd0f8e95991130b",
+        "e54730048964784600b3e33e61155722b2756d98c1c32ac6a3f7de86342aee92",
+    }),
+    Path("scripts/bash/record-finalization-gate.sh"): frozenset({
+        "768118e0184b8ff08c87a312b287a31be9a61f062fb826e797cea6ea105cf0bc",
+        "1f13024ea82c27b09223685f747be78fa25397eb2aeacda176b898765f75f3db",
+    }),
+    Path("scripts/bash/record-task-pr-merge.sh"): frozenset({
+        "c5e8d69a5c8e87a7a7ded864b8a3c97fdab5f8c5e8a8ea8ee17c7f8bf2beb4cc",
+        "f94855ab939100d64c11cd054c5cb042e04588973f1e75bd0ee5da5e264c0238",
+    }),
+    Path("scripts/bash/record-task-publication-review.sh"): frozenset({
+        "489d1fc91724a863d181aab44efabd9068dba07fee1a112286730cb04e3d5ff5",
+        "37a0c591941de09288fac384a93ae5f61f24e26ebf96c57a5b8dcea7eb01f149",
+    }),
+    Path("scripts/bash/record-task-workspace-plan.sh"): frozenset({
+        "cefc9df7d1b0bcab01a0c5b5cb059aac932b69f5eb19a867cce8097e349b6c81",
+        "ef34b8b4eacae395f806d2bdcd950f4fda764dc284c84dde7e019dd2ced91f93",
+    }),
+    Path("scripts/bash/start-task.sh"): frozenset({
+        # Managed copies before and after the #419 interpreter routing update.
+        "d842e3dca026b3dd0de8189de13ed8d87e3daa7ea7b7845c7a447b0add98b6fc",
+        "4fcfaa03a183f1d8bf895be45badf12c7dfcb741782af6a8de94c19768c79270",
+        "10a373883ab9624c8dea947d2ecc217bdbf4abd03ac57d5cdaaba635a4fdb5bb",
+        "4bfeaf80b13dfef4cef5f914128256055af48a7c9ad7a69221b4c801cb683f20",
+        "efcb582ba52b91642b27588b96586d7299c88be74bda62d0a04f48184f7077b0",
+    }),
     Path("scripts/python/guru_team_trellis.py"): frozenset({
         # v0.6.5-guru.5, the required Issue #195 upgrade baseline.
         "c9ac793cbf02cbffa5b77e207a0c0de39fada462361d788388827798756ce9da",
@@ -1055,6 +1141,16 @@ def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
         current = current.parent
 
 
+def prune_empty_activated_skill_removals(repo: Path, result: dict[str, Any]) -> None:
+    for removal in result.get("skill_packages", {}).get("removals", []):
+        if removal.get("action") != "removed_managed":
+            continue
+        relative = Path(removal["path"])
+        target = repo / relative
+        if skill_path_is_managed(relative) and not target.exists():
+            prune_empty_managed_skill_parents(repo, target)
+
+
 def prune_empty_unselected_skill_projections(
     repo: Path, platforms: set[str]
 ) -> None:
@@ -1169,7 +1265,7 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
         for path in package_root.rglob("*")
         if path.is_file()
         and not path.is_symlink()
-        and "__pycache__" not in path.relative_to(package_root).parts
+        and not {"__pycache__", ".pytest_cache"}.intersection(path.relative_to(package_root).parts)
         and path.suffix not in {".pyc", ".pyo"}
     )
 
@@ -1239,14 +1335,20 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
         }
     }
-    public_authoring_paths = {
-        str(item["contract"]["authoring_example"]["path"])
-        for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
-        if isinstance(item, dict)
-        and isinstance(item.get("contract"), dict)
-        and isinstance(item["contract"].get("authoring_example"), dict)
-        and isinstance(item["contract"]["authoring_example"].get("path"), str)
-    }
+    public_authoring_paths: set[Path] = set()
+    for item in interface.get("public_contracts", {}).get("consumer_inputs", []):
+        if not isinstance(item, dict) or not isinstance(item.get("contract"), dict):
+            continue
+        contract = item["contract"]
+        for index, variant in enumerate((contract, *contract.get("alternate_authoring", []))):
+            example = variant.get("authoring_example")
+            if not isinstance(example, dict) or not isinstance(example.get("path"), str):
+                continue
+            relative = Path(example["path"])
+            source = package_root / relative
+            if index and (not source.is_file() or source.is_symlink()):
+                raise SystemExit(f"Missing canonical Skill authoring example: {source}")
+            public_authoring_paths.add(relative)
     public_wrapper = str(
         interface.get("public_contracts", {})
         .get("invocation", {})
@@ -1264,7 +1366,7 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
         if relative in required_schema_paths or relative in required_public_paths:
             result.append(path)
             continue
-        if relative_text in public_authoring_paths:
+        if relative in public_authoring_paths:
             result.append(path)
             continue
         if relative_text in private_paths or relative_text in private_artifact_paths:
@@ -1699,13 +1801,21 @@ def copy_managed_spec(
 def remove_legacy_managed_assets(
     repo: Path,
     dst: Path,
+    previous_manifest: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
     removals: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
     sidecars: list[str] = []
+    prior_install = previous_manifest.get("install") if isinstance(previous_manifest, dict) else None
+    prior_assets = prior_install.get("managed_assets") if isinstance(prior_install, dict) else None
+    prior_hashes = prior_install.get("managed_asset_hashes") if isinstance(prior_install, dict) else None
     for relative, known_hashes in LEGACY_MANAGED_ASSET_HASHES.items():
         target = dst / relative
         relative_target = lexical_repo_relative(repo, target)
+        if isinstance(prior_assets, list) and isinstance(prior_hashes, dict) and relative_target.as_posix() in prior_assets:
+            prior_hash = prior_hashes.get(relative_target.as_posix())
+            if isinstance(prior_hash, str) and re_full_hex_digest(prior_hash):
+                known_hashes = known_hashes | {prior_hash}
         checked_relative, target_stat, error = lstat_repo_path(repo, target)
         if error or checked_relative != relative_target:
             conflicts.append(skill_conflict(relative_target.as_posix(), "unsafe_legacy_path_boundary"))
@@ -1726,7 +1836,11 @@ def remove_legacy_managed_assets(
             continue
         sidecar = target.with_name(f"{target.name}.new")
         try:
-            write_safe_repo_file(repo, sidecar, LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR, 0o644)
+            _, sidecar_stat, sidecar_error = lstat_repo_path(repo, sidecar)
+            if sidecar_error or (sidecar_stat is not None and not stat.S_ISREG(sidecar_stat.st_mode)):
+                raise ValueError("unsafe legacy sidecar")
+            if sidecar_stat is None:
+                write_safe_repo_file(repo, sidecar, LEGACY_MANAGED_ASSET_REMOVAL_SIDECAR, 0o644)
             sidecar_relative = lexical_repo_relative(repo, sidecar).as_posix()
         except ValueError:
             sidecar_relative = None
@@ -1879,7 +1993,7 @@ MANAGED_TRANSACTION_FIXED_MARGIN_BYTES = 1024 * 1024
 def transaction_path_ignored(relative: Path) -> bool:
     return (
         any(relative == root or root in relative.parents for root in TRANSACTION_IGNORED_ROOTS)
-        or "__pycache__" in relative.parts
+        or bool({"__pycache__", ".pytest_cache"}.intersection(relative.parts))
         or relative.suffix in {".pyc", ".pyo"}
     )
 
@@ -1949,6 +2063,7 @@ def managed_transaction_paths(
     )
     paths.update(projections)
     paths.update(_manifest_paths(previous_manifest))
+    paths.update(lexical_repo_relative(repo, dst / relative) for relative in LEGACY_MANAGED_ASSET_HASHES)
     # Preserve the existing bounded language-guidance behavior without opening
     # the transaction to arbitrary repository documentation.
     paths.update(
@@ -2239,6 +2354,11 @@ def materialize_staged_conflict_sidecars(
             raise SystemExit(f"Missing staged conflict sidecar: {sidecar_text}") from exc
         if not stat.S_ISREG(staged_stat.st_mode):
             raise SystemExit(f"Staged conflict sidecar is not a regular file: {sidecar_text}")
+        _, existing_stat, error = lstat_repo_path(repo, repo / relative)
+        if error or (existing_stat is not None and not stat.S_ISREG(existing_stat.st_mode)):
+            raise SystemExit(f"Cannot preserve conflict sidecar across an unsafe target: {sidecar_text}")
+        if existing_stat is not None:
+            continue
         write_safe_repo_file(
             repo,
             repo / relative,
@@ -2445,6 +2565,7 @@ def install_assets(
                 if isinstance(item, dict) and isinstance(item.get("path"), str)
             )
             activate_staged_repository(staging_repo, repo, activation_paths)
+            prune_empty_activated_skill_removals(repo, result)
             prune_empty_unselected_skill_projections(
                 repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
             )
@@ -2471,7 +2592,7 @@ def _install_assets_in_place(
     dst.mkdir(parents=True, exist_ok=True)
 
     legacy_removals, legacy_conflicts, legacy_sidecars = remove_legacy_managed_assets(
-        repo, dst
+        repo, dst, previous_manifest
     )
     installed: list[str] = []
     unchanged: list[str] = []
@@ -2529,62 +2650,10 @@ def _install_assets_in_place(
         shutil.copyfile(src / MANAGED_CONFIG, target_config)
         installed.append(target_config.relative_to(repo).as_posix())
 
-    for script in [
-        dst / "scripts/bash/check-env.sh",
-        dst / "scripts/bash/version.sh",
-        dst / "scripts/bash/prepare-task.sh",
-        dst / "scripts/bash/check-workspace-boundary.sh",
-        dst / "scripts/bash/start-task.sh",
-        dst / "scripts/bash/check-skill-packages.sh",
-        dst / "scripts/bash/discover-skill-contract.sh",
-        dst / "scripts/bash/discover-skill-evals.sh",
-        dst / "scripts/bash/run-skill-evals.sh",
-        dst / "scripts/bash/run-skill-command.sh",
-        dst / "scripts/bash/run-package-command.sh",
-        dst / "scripts/bash/invoke-stage0-skill.sh",
-        dst / "scripts/bash/sync-base.sh",
-        dst / "scripts/bash/check-base-sync.sh",
-        dst / "scripts/bash/preview-change-context-history.sh",
-        dst / "scripts/bash/record-context-discovery.sh",
-        dst / "scripts/bash/check-context-discovery.sh",
-        dst / "scripts/bash/record-requirements-clarification.sh",
-        dst / "scripts/bash/check-requirements-clarification.sh",
-        dst / "scripts/bash/record-contract-wording-review.sh",
-        dst / "scripts/bash/check-contract-wording-review.sh",
-        dst / "scripts/bash/record-change-request-review.sh",
-        dst / "scripts/bash/check-change-request-review.sh",
-        dst / "scripts/bash/record-task-workspace-plan.sh",
-        dst / "scripts/bash/create-task-workspace.sh",
-        dst / "scripts/bash/check-task-workspace-result.sh",
-        dst / "scripts/bash/resolve-human-artifacts.sh",
-        dst / "scripts/bash/record-planning-approval.sh",
-        dst / "scripts/bash/check-planning-approval.sh",
-        dst / "scripts/bash/record-phase2-check.sh",
-        dst / "scripts/bash/check-phase2-check.sh",
-        dst / "scripts/bash/record-task-publication-review.sh",
-        dst / "scripts/bash/check-task-publication-review.sh",
-        dst / "scripts/bash/execute-extension-verification.sh",
-        dst / "scripts/bash/record-extension-verification.sh",
-        dst / "scripts/bash/check-extension-verification.sh",
-        dst / "scripts/bash/invoke-extension-verification.sh",
-        dst / "scripts/bash/preview-finalization.sh",
-        dst / "scripts/bash/record-finalization-gate.sh",
-        dst / "scripts/bash/check-finalization-gate.sh",
-        dst / "scripts/bash/execute-finalization-transition.sh",
-        dst / "scripts/bash/preview-task-pr-merge.sh",
-        dst / "scripts/bash/record-task-pr-merge.sh",
-        dst / "scripts/bash/check-task-pr-merge.sh",
-        dst / "scripts/bash/execute-task-pr-merge.sh",
-        dst / "scripts/bash/invoke-task-pr-merge.sh",
-        dst / "scripts/bash/record-agent-recovery.sh",
-        dst / "scripts/bash/check-agent-recovery.sh",
-        dst / "scripts/bash/prepare-task-commit.sh",
-        dst / "scripts/bash/check-commit-messages.sh",
-        dst / "scripts/bash/create-task-commit.sh",
-        dst / "scripts/bash/review-branch.sh",
-        dst / "scripts/bash/check-review-gate.sh",
-        dst / "scripts/bash/finish-work.sh",
-    ]:
+    for script in (
+        dst / path for path in MANAGED_ASSET_PATHS
+        if path.parts[:2] == ("scripts", "bash")
+    ):
         if script.exists():
             ensure_executable(script)
 
@@ -2730,6 +2799,25 @@ def install_overlays(
         for relative in canonical_by_path
         if overlay_selected(Path(relative), platforms)
     }
+    recovered_sidecars: set[str] = set()
+    for sidecar_text in pending_recovery_sidecars:
+        target_text = sidecar_text[:-4]
+        source = canonical_by_path.get(target_text)
+        target = repo / target_text
+        sidecar = repo / sidecar_text
+        if (
+            target_text in desired_paths
+            and source is not None
+            and target.is_file()
+            and not target.is_symlink()
+            and sidecar.is_file()
+            and not sidecar.is_symlink()
+            and target.read_bytes() == source.read_bytes()
+        ):
+            sidecar.unlink()
+            recovered_sidecars.add(sidecar_text)
+    sidecars = [path for path in sidecars if path not in recovered_sidecars]
+    managed_backups = [path for path in managed_backups if path not in recovered_sidecars]
     for relative in sorted(desired_paths):
         source = canonical_by_path[relative]
         relative = source.relative_to(overlay_root)
@@ -2869,6 +2957,7 @@ def main() -> int:
         "skill_source_validation": result["skill_source_validation"],
         "upstream_ownership_validation": result["upstream_ownership_validation"],
         "skill_installed_validation": result["skill_installed_validation"],
+        "skill_activation_validation": result["skill_activation_validation"],
         "python_runtime": result["python_runtime"],
         "config": ".trellis/guru-team/config.yml",
         "workflow_marketplace": WORKFLOW_MARKETPLACE,

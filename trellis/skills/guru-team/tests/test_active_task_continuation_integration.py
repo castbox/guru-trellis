@@ -18,14 +18,14 @@ EXTRACTOR_PATH = ".trellis/scripts/common/continuation_contract.py"
 
 FORMAL_WRAPPER_CASES = (
     (
-        "activation failure stops before mutation",
-        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
-        "test_wrapper_blocks_before_upstream_task_start_when_boundary_fails",
+        "activation fails before mutation on stale planning identity",
+        "trellis/skills/guru-team/packages/guru-activate-task/tests/test_contract.py",
+        "test_activation_rejects_stale_planning_identity",
     ),
     (
         "activation output loss rematerializes without repeating mutation",
-        "trellis/presets/guru-team/scripts/python/test_start_task_wrapper.py",
-        "test_recovery_rematerializes_success_without_repeating_upstream_start",
+        "trellis/skills/guru-team/packages/guru-activate-task/tests/test_contract.py",
+        "test_activation_status_only_and_read_only_recovery",
     ),
     (
         "Phase 2 lost output rematerializes only after the checker passes",
@@ -48,19 +48,19 @@ FORMAL_WRAPPER_CASES = (
         "test_nonterminal_record_and_invoke_are_idempotent_and_retain",
     ),
     (
-        "Task Commit and Publication use their formal public invocation paths",
-        "trellis/skills/guru-team/tests/test_closeout_happy_path_integration.py",
-        "test_supported_internal_and_wrapper_routes_are_equivalent",
+        "Delivery Review routes to Publish through its current public contract",
+        "trellis/skills/guru-team/packages/guru-review-task-delivery/tests/test_contract.py",
+        "test_ready_projection_matches_publish_review_ready_seed",
     ),
     (
-        "Publication failure retains its current owner checkpoint",
-        "trellis/skills/guru-team/packages/guru-review-task-publication/tests/test_contract.py",
-        "test_public_wrapper_keeps_checkpoint_when_checker_or_projection_fails",
+        "Delivery Review rejects stale content",
+        "trellis/skills/guru-team/packages/guru-review-task-delivery/tests/test_runtime.py",
+        "test_post_review_dirty_content_fails_closed",
     ),
     (
-        "confirmation is consumed once and mapped transitions stop at the next side effect",
+        "current finish graph has one marker per active exit",
         "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "test_confirm_continue_drives_actual_loaded_closeout_once",
+        "test_every_active_exit_has_one_matching_marker_and_consumer",
     ),
 )
 
@@ -150,6 +150,96 @@ def markdown_table(body: str, heading: str) -> list[tuple[str, str]]:
 
 
 class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
+    def test_phase_and_continuation_use_the_same_bound_task_worktree(self):
+        with tempfile.TemporaryDirectory(prefix="guru-bound-workflow-") as temporary:
+            primary = Path(temporary) / "primary"
+            linked = Path(temporary) / "linked"
+            primary.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main", str(primary)], check=True)
+            workflow = primary / ".trellis/workflow.md"
+            workflow.parent.mkdir()
+            workflow.write_text("## Phase Index\nprimary phase\n## Phase 1: Plan\n"
+                                "[trellis-continuation]\nprimary continuation\n[/trellis-continuation]\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(primary), "add", ".trellis/workflow.md"], check=True)
+            subprocess.run(["git", "-C", str(primary), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"], check=True)
+            subprocess.run(["git", "-C", str(primary), "worktree", "add", "-q", "-b", "linked", str(linked)], check=True)
+            (linked / ".trellis/workflow.md").write_text(
+                "## Phase Index\nlinked phase\n## Phase 1: Plan\n"
+                "[trellis-continuation]\nlinked continuation\n[/trellis-continuation]\n", encoding="utf-8")
+            task = linked / ".trellis/tasks/linked-task"
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(json.dumps({"id": "linked-task", "status": "in_progress",
+                                                       "lifecycle_generation": 0}), encoding="utf-8")
+            sessions = primary / ".git/trellis/sessions"
+            sessions.mkdir(parents=True)
+            (sessions / "codex_bound.json").write_text(
+                json.dumps({"schema_version": 2, "task_id": "linked-task", "lifecycle_generation": 0}),
+                encoding="utf-8")
+            env = {key: value for key, value in os.environ.items()
+                   if key not in {"CODEX_THREAD_ID", "TRELLIS_CONTEXT_ID"}}
+            env["TRELLIS_CONTEXT_ID"] = "codex_bound"
+            for mode, expected in (("phase", "linked phase"), ("continuation", "linked continuation")):
+                result = subprocess.run(
+                    [sys.executable, str(REPO / ".trellis/scripts/get_context.py"), "--mode", mode],
+                    cwd=primary, env=env, text=True, capture_output=True, check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(expected, result.stdout)
+                self.assertNotIn(f"primary {mode}", result.stdout)
+
+    def test_contextless_fallback_stays_in_its_registered_worktree(self):
+        with tempfile.TemporaryDirectory(prefix="guru-contextless-worktree-") as temporary:
+            primary = Path(temporary) / "primary"
+            linked = Path(temporary) / "linked"
+            primary.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main", str(primary)], check=True)
+            (primary / ".trellis").mkdir()
+            (primary / ".trellis/workflow.md").write_text("# Fixture\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(primary), "add", ".trellis/workflow.md"], check=True)
+            subprocess.run(
+                ["git", "-C", str(primary), "-c", "user.name=Fixture",
+                 "-c", "user.email=fixture@example.invalid", "commit", "-qm", "fixture"],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(primary), "worktree", "add", "-q", "-b", "linked", str(linked)],
+                check=True,
+            )
+            task = linked / ".trellis/tasks/linked-task"
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(
+                json.dumps({"id": "linked-task", "status": "in_progress",
+                            "lifecycle_generation": 0}), encoding="utf-8",
+            )
+            sessions = primary / ".git/trellis/sessions"
+            sessions.mkdir(parents=True)
+            (sessions / "codex_linked.json").write_text(
+                json.dumps({"schema_version": 2, "task_id": "linked-task",
+                            "lifecycle_generation": 0}), encoding="utf-8",
+            )
+            code = (
+                "import json, sys; from pathlib import Path; "
+                f"sys.path.insert(0, {str(REPO / '.trellis/scripts')!r}); "
+                "from common.active_task import resolve_active_task; "
+                "task = resolve_active_task(Path.cwd(), allow_single_session_fallback=True, "
+                "allow_environment_context=False); "
+                "print(json.dumps({'task': task.task_path, 'source': task.source_type, "
+                "'error': task.error}))"
+            )
+            env = {key: value for key, value in os.environ.items()
+                   if key not in {"CODEX_THREAD_ID", "TRELLIS_CONTEXT_ID"}}
+            def resolve(worktree: Path) -> dict:
+                result = subprocess.run(
+                    [sys.executable, "-B", "-c", code], cwd=worktree, env=env,
+                    text=True, capture_output=True, check=True,
+                )
+                return json.loads(result.stdout)
+
+            self.assertEqual(resolve(primary), {"task": None, "source": "none", "error": None})
+            self.assertEqual(resolve(linked), {"task": ".trellis/tasks/linked-task",
+                                               "source": "session-fallback", "error": None})
+
     def test_exact_upstream_protocol_extracts_one_nonempty_guru_contract(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         lines = [line.strip() for line in workflow.splitlines()]
@@ -188,27 +278,31 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
         rows = dict(markdown_table(body, "#### Phase 1 recovery matrix"))
         self.assertEqual(len(rows), 9)
         actions = "\n".join(rows.values())
-        self.assertIn("`guru-create-task-workspace` recovery/rematerialization", actions)
+        self.assertIn("`guru-create-task` read-only result recovery", actions)
         self.assertIn("`guru-review-contract-wording:planning_artifacts`", actions)
         self.assertIn(
             "`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`",
             actions,
         )
         self.assertIn("`guru-approve-task-plan`", actions)
-        self.assertIn("`start-task.sh --mode initial <task-path>`", actions)
-        self.assertIn("`start-task.sh --mode recovery <task-path>`", actions)
+        self.assertIn("`guru-activate-task` once", actions)
+        self.assertIn("`guru-activate-task` read-only recovery", actions)
         recovery = rows[
             "Activation mutation succeeded but its result was lost and the exact task is already `in_progress`"
         ]
-        self.assertIn("without calling `task.py start` again", recovery)
+        self.assertIn("never repeat the status mutation", recovery)
 
     def test_phase2_matrix_checks_before_rematerialization_and_freshly_reruns_failure(self):
         with tempfile.TemporaryDirectory(prefix="guru-continuation-phase2-") as temporary:
             body = load_upstream_extractor(Path(temporary)).extract_continuation_contract(
                 WORKFLOW
             )
-        rows = dict(markdown_table(body, "#### Phase 2-to-Finalizer recovery matrix"))
-        self.assertEqual(len(rows), 9)
+        rows = dict(markdown_table(body, "#### Phase 2-to-Completion recovery matrix"))
+        self.assertEqual(len(rows), 13)
+        self.assertIn(
+            "preceding archived generation's verified Git identity",
+            rows["Reactivated task needs only validation, without business changes or new Delivery"],
+        )
         phase2_loss = rows[
             "The `passed` DTO was lost but the producer checkpoint may still be current"
         ]
@@ -229,12 +323,8 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
                 "Branch Review DTO is absent/stale/lost or its producer checkpoint retired"
             ],
         )
-        self.assertIn(
-            "live Issue/PR/payload authority",
-            rows[
-                "Publication DTO is absent/stale/lost or its producer checkpoint retired"
-            ],
-        )
+        self.assertIn("current slice, Issue, PR and Refs-only payload",
+                      rows["Delivery Review DTO is absent/stale/lost"])
 
     def test_active_state_breadcrumbs_only_delegate_to_the_continuation_contract(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -276,7 +366,8 @@ class ActiveTaskContinuationIntegrationTests(unittest.TestCase):
             sessions = fixture / ".trellis/.runtime/sessions"
             sessions.mkdir(parents=True)
             (sessions / "codex_continuation-fixture.json").write_text(
-                json.dumps({"current_task": ".trellis/tasks/active-continuation"}),
+                json.dumps({"schema_version": 2, "task_id": "active-continuation",
+                            "lifecycle_generation": 0}),
                 encoding="utf-8",
             )
 

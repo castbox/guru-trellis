@@ -58,6 +58,16 @@ class ContractTest(unittest.TestCase):
         self.assertEqual([],validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
         post_commit['old_base_head']=post_commit['task_head']
         self.assertTrue(validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
+    def test_eval_resume_assertions_follow_profile_routing(self):
+        evals=json.loads((PACKAGE/'evals/evals.json').read_text())['evals']
+        for case in evals:
+            assertions=[item for item in case['assertions']['deterministic'] if item['kind']=='json_path' and item['pointer']=='/resume_target' and item['operation']=='equals']
+            if not assertions: continue
+            input_path=next(path for path in case['files'] if path.endswith('-input.json'))
+            request=json.loads((PACKAGE/input_path).read_text())
+            expected='phase2' if request['profile'] in {'post_check','post_commit'} else request['resume_target']
+            with self.subTest(case=case['id']):
+                for assertion in assertions: self.assertEqual(expected,assertion['expected'])
     def test_workflow_consumer_locators_exist_and_accept_exact_projection(self):
         interface=json.loads((PACKAGE/'interface.json').read_text())
         outputs={item['exit_id']:json.loads((PACKAGE/item['example']['path']).read_text()) for item in interface['public_contracts']['outputs']}

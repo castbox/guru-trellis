@@ -1,1 +1,0 @@
-{"scenario":"external-blocker","owner_staging":{"recipe":"restore-external-blocker"},"public_invocation":{"arguments":["--root",".","--input","placeholder","--semantic-result","placeholder","--facts","placeholder"]}}

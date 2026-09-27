@@ -8,6 +8,7 @@ for path in (SKILLS,LOCAL):
 import execute, invoke, record
 from common import index_tree_digest
 from runtime.io import CommandError
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 
 class RuntimeTest(unittest.TestCase):
     def setUp(self):
@@ -15,15 +16,18 @@ class RuntimeTest(unittest.TestCase):
     def tearDown(self): self.tmp.cleanup()
     def git(self,*args): return subprocess.run(['git',*args],cwd=self.repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip()
     def write(self,name,value): path=self.inputs/name; path.write_text(json.dumps(value)); return path
-    def write_identity(self,status='in_progress',branch='feature',task_ref=None,task_id=None,workspace_path=None):
-        task_ref=task_ref or self.task_ref; task_id=task_id or self.task_id; workspace_path=workspace_path or str(self.repo.resolve()); task_dir=self.repo/task_ref; task_dir.mkdir(parents=True,exist_ok=True); (task_dir/'task.json').write_text(json.dumps({'id':task_id,'status':status,'branch':branch,'base_branch':'main'}))
-        tasks=self.repo/'.trellis/.runtime/guru-team/tasks'; workspaces=self.repo/'.trellis/.runtime/guru-team/workspaces'; tasks.mkdir(parents=True,exist_ok=True); workspaces.mkdir(parents=True,exist_ok=True)
-        (tasks/f'{task_id}.json').write_text(json.dumps({'schema_version':'1.0','task_slug':task_id,'workspace_slug':task_id,'workspace_path':workspace_path,'task_artifact_dir':task_ref}))
-        (workspaces/f'{task_id}.json').write_text(json.dumps({'schema_version':'1.0','workspace_slug':task_id,'workspace_path':workspace_path,'branch_name':branch}))
+    def write_identity(self,status='in_progress',branch='feature',task_ref=None,task_id=None):
+        task_ref=task_ref or self.task_ref; task_id=task_id or self.task_id; task_dir=self.repo/task_ref; task_dir.mkdir(parents=True,exist_ok=True); (task_dir/'task.json').write_text(json.dumps({'id':task_id,'status':status,'base_branch':'main','lifecycle_generation':0}))
+        store=BranchBindingStore(inspect_repository(self.repo)); key=TaskLifecycleKey(task_id,0)
+        binding=store.read(key)
+        if binding is None:
+            store.establish(key,branch)
+        elif binding.branch_name != branch:
+            path=store.path_for(key); data=binding.as_dict(); data['branch_name']=branch; path.write_text(json.dumps(data))
     def runtime_snapshot(self):
         root=self.repo/'.trellis/.runtime'; return {p.relative_to(root).as_posix():p.read_bytes() for p in root.rglob('*') if p.is_file()}
     def public(self, profile='post_check'):
-        targets={'post_plan':'task_activation','post_check':'task_commit','post_commit':'branch_review','post_branch_review':'publication_review','post_publication':'task_finalization','finalizer_base_mismatch':'finalization_resume'}
+        targets={'post_plan':'task_activation','post_check':'task_commit','post_commit':'branch_review','post_branch_review':'publication_review','post_publication':'delivery_publication','finalizer_base_mismatch':'finalization_resume'}
         value={'profile':profile,'mode':'workflow','task_ref':self.task_ref,'task_head':self.head,'selected_base_ref':self.new,'resume_target':targets[profile]}
         if profile in {'post_branch_review','post_publication','finalizer_base_mismatch'}:
             value.update({'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head})
@@ -40,6 +44,11 @@ class RuntimeTest(unittest.TestCase):
         if profile in {'post_branch_review','post_publication','finalizer_base_mismatch'}: request['branch_review_commit']=self.head
         receipt=execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write(profile+'-reconciliation-request.json',request))])
         return public,candidate_tree,receipt
+    def expose_new_task_files(self):
+        (self.repo/'.gitignore').write_text('.trellis/.runtime/\n')
+        self.git('add','.gitignore'); self.git('commit','-qm','make task artifacts visible')
+        self.head=self.git('rev-parse','HEAD')
+        self.assertIn('?? .trellis/',self.git('status','--short'))
     def add_uninitialized_gitlink(self):
         child = Path(self.tmp.name) / 'child'
         subprocess.run(['git', 'init', '-q', '-b', 'main', str(child)], check=True)
@@ -224,13 +233,15 @@ class RuntimeTest(unittest.TestCase):
             observations.append((repo, head, identity))
             return identity
         with mock.patch.dict(os.environ, {'GIT_ALLOW_PROTOCOL': '', 'GIT_TERMINAL_PROMPT': '0'}):
-            with mock.patch.object(execute, 'index_tree_digest', side_effect=observe_index):
+            with mock.patch.object(execute, 'index_tree_digest', side_effect=observe_index), mock.patch.object(execute, 'committed_tree_digest', wraps=execute.committed_tree_digest) as committed_digest:
                 public, candidate_tree, receipt = self.execute_reconciliation('post_branch_review')
             reconciled = receipt['reconciled_task_head']
-            self.assertEqual(3, len(observations))
-            self.assertEqual([candidate_tree] * 3, [row[2] for row in observations])
-            self.assertEqual([self.new, self.head, reconciled], [row[1] for row in observations])
-            self.assertEqual([self.repo.resolve()] * 2, [row[0].resolve() for row in observations[1:]])
+            self.assertEqual(2, len(observations))
+            self.assertEqual([candidate_tree] * 2, [row[2] for row in observations])
+            self.assertEqual([self.new, self.head], [row[1] for row in observations])
+            self.assertEqual(self.repo.resolve(), observations[1][0].resolve())
+            committed_digest.assert_called_once()
+            self.assertEqual(self.repo.resolve(),committed_digest.call_args.args[0].resolve())
             self.assertFalse(observations[0][0].parent.exists())
             self.assertEqual(candidate_tree, receipt['candidate_tree_sha256'])
             self.assertEqual([self.head, self.new], self.git('show', '-s', '--format=%P', reconciled).split())
@@ -252,6 +263,22 @@ class RuntimeTest(unittest.TestCase):
             self.assertEqual('review_continuity_required', output['exit_id'])
     def test_guard_unchanged_and_new_pair_write_nothing(self):
         before=self.runtime_snapshot(); public=self.public(); path=self.write('public.json',public); result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)]); self.assertEqual('new_pair',result['status']); self.assertEqual(self.old,result['old_base_head']); public['selected_base_ref']=self.old; path=self.write('same.json',public); self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status']); self.assertEqual(before,self.runtime_snapshot())
+    def test_delivery_review_pair_resumes_delivery_publication(self):
+        public=self.public('post_publication')
+        unchanged={**public,'selected_base_ref':self.old,'old_base_head':self.old,'new_base_head':self.old}
+        result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-unchanged.json',unchanged))])
+        self.assertEqual(('unchanged','delivery_publication'),(result['status'],result['resume_target']))
+        result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-new.json',public))])
+        self.assertEqual(('new_pair','delivery_publication'),(result['status'],result['resume_target']))
+        public,candidate_tree,receipt=self.execute_reconciliation('post_publication')
+        owner=record.run(PACKAGE,{},[
+            '--root',str(self.repo),'--skill-input',str(self.write('delivery-public.json',public)),
+            '--semantic-review-file',str(self.write('delivery-gate.json',self.continuity_gate(candidate_tree))),
+            '--typed-exit','review_continuity_required',
+            '--reconciliation-result',str(self.write('delivery-receipt.json',receipt)),
+        ])
+        output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('delivery-envelope.json',{'public_input':public,'owner_result':owner}))])
+        self.assertEqual(('review_continuity_required','delivery_publication'),(output['exit_id'],output['resume_target']))
     def test_pre_review_input_rejects_caller_supplied_pair(self):
         public=self.public('post_commit'); public.update({'old_base_head':self.old,'new_base_head':self.new})
         with self.assertRaises(CommandError) as raised:
@@ -272,6 +299,9 @@ class RuntimeTest(unittest.TestCase):
             self.assertEqual('new_pair',result['status'],profile)
     def test_post_plan_accepts_planning_before_activation_but_later_boundaries_do_not(self):
         self.write_identity(status='planning')
+        self.assertNotIn('branch', json.loads((self.task_dir/'task.json').read_text()))
+        self.assertFalse((self.repo/'.trellis/.runtime/guru-team/tasks').exists())
+        self.assertFalse((self.repo/'.trellis/.runtime/guru-team/workspaces').exists())
         post_plan=self.public('post_plan'); post_plan['selected_base_ref']=self.old
         self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-plan.json',post_plan))])['status'])
         post_plan['selected_base_ref']=self.new
@@ -288,6 +318,75 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-check.json',post_check))])
         self.assertEqual('stale_identity',raised.exception.code)
+    def test_new_planning_task_survives_pre_review_base_reconciliation(self):
+        self.expose_new_task_files()
+        self.write_identity(status='planning')
+        original=(self.task_dir/'task.json').read_bytes()
+        public,candidate_tree,receipt=self.execute_reconciliation('post_plan')
+        self.assertEqual(original,(self.task_dir/'task.json').read_bytes())
+        self.assertIn('?? .trellis/',self.git('status','--short'))
+        self.assertEqual('',self.git('stash','list'))
+        path=self.write('dirty-plan-public.json',public)
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(path),'--semantic-review-file',str(self.write('dirty-plan-gate.json',self.gate(candidate_tree))),'--typed-exit','reconciled','--reconciliation-result',str(self.write('dirty-plan-receipt.json',receipt))])
+        self.assertEqual('reconciled',owner['typed_output']['exit_id'])
+    def test_staged_and_unstaged_implementation_survives_pre_review_reconciliation(self):
+        self.expose_new_task_files()
+        (self.repo/'task.txt').write_text('staged\n'); self.git('add','task.txt')
+        (self.repo/'task.txt').write_text('unstaged\n')
+        staged=self.git('show',':task.txt'); worktree=(self.repo/'task.txt').read_bytes()
+        public,candidate_tree,receipt=self.execute_reconciliation('post_check')
+        self.assertEqual(staged,self.git('show',':task.txt'))
+        self.assertEqual(worktree,(self.repo/'task.txt').read_bytes())
+        self.assertIn('MM task.txt',self.git('status','--short'))
+        self.assertEqual('',self.git('stash','list'))
+        path=self.write('dirty-check-public.json',public)
+        owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(path),'--semantic-review-file',str(self.write('dirty-check-gate.json',self.gate(candidate_tree))),'--typed-exit','reconciled','--reconciliation-result',str(self.write('dirty-check-receipt.json',receipt))])
+        self.assertEqual('reconciled',owner['typed_output']['exit_id'])
+    def test_dirty_candidate_mismatch_aborts_and_restores_planning(self):
+        self.expose_new_task_files(); self.write_identity(status='planning')
+        before=self.git('status','--porcelain=v1'); task=(self.task_dir/'task.json').read_bytes()
+        request={'profile':'post_plan','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'task_activation','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        with self.assertRaises(CommandError) as raised:
+            execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-mismatch.json',request))])
+        self.assertEqual('stale_identity',raised.exception.code)
+        self.assertEqual(self.head,self.git('rev-parse','HEAD'))
+        self.assertEqual(before,self.git('status','--porcelain=v1'))
+        self.assertEqual(task,(self.task_dir/'task.json').read_bytes())
+        self.assertEqual('',self.git('stash','list'))
+    def test_preexisting_stash_is_preserved_after_dirty_reconciliation(self):
+        (self.repo/'base.txt').write_text('existing pending work\n')
+        self.git('stash','push','-m','existing stash')
+        previous=self.git('rev-parse','refs/stash')
+        self.expose_new_task_files(); self.write_identity(status='planning')
+        self.execute_reconciliation('post_plan')
+        self.assertEqual(previous,self.git('rev-parse','refs/stash'))
+        self.assertIn('?? .trellis/',self.git('status','--short'))
+    def test_dirty_submodule_stop_restores_shelved_task_changes(self):
+        self.add_uninitialized_gitlink()
+        subprocess.run(['git','-c','protocol.file.allow=always','submodule','update','--init','vendor/child'],cwd=self.repo,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        (self.repo/'task.txt').write_text('pending task work\n')
+        child=self.repo/'vendor/child/child.txt'; child.write_text('pending child work\n')
+        before=self.git('status','--short')
+        request={'profile':'post_check','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'task_commit','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        with self.assertRaises(CommandError) as raised:
+            execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-submodule.json',request))])
+        self.assertEqual('stale_identity',raised.exception.code)
+        self.assertEqual('worktree',raised.exception.field_path)
+        self.assertEqual(self.head,self.git('rev-parse','HEAD'))
+        self.assertEqual(before,self.git('status','--short'))
+        self.assertEqual('pending task work\n',(self.repo/'task.txt').read_text())
+        self.assertEqual('pending child work\n',child.read_text())
+        self.assertEqual('',self.git('stash','list'))
+    def test_post_review_dirty_worktree_stops_without_shelving(self):
+        (self.repo/'task.txt').write_text('pending post-review work\n')
+        before=self.git('status','--short')
+        request={'profile':'post_branch_review','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'publication_review','branch_review_commit':self.head,'candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        with self.assertRaises(CommandError) as raised:
+            execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-post-review.json',request))])
+        self.assertEqual('stale_identity',raised.exception.code)
+        self.assertEqual('worktree',raised.exception.field_path)
+        self.assertEqual(before,self.git('status','--short'))
+        self.assertEqual('',self.git('stash','list'))
     def test_unrelated_post_plan_base_delta_preserves_task_activation(self):
         self.write_identity(status='planning')
         public,candidate_tree,receipt=self.execute_reconciliation('post_plan'); public_path=self.write('unrelated-post-plan.json',public)
@@ -470,27 +569,40 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])
         self.assertEqual('stale_identity',raised.exception.code)
-    def test_task_identity_rejects_typo_status_branch_mapping_and_not_current(self):
+    def test_task_identity_rejects_typo_status_binding_and_not_current(self):
         cases=[]
         typo=self.public(); typo['task_ref']='.trellis/tasks/typo'; cases.append(('typo',typo,lambda:None))
         stale=self.public(); cases.append(('status',stale,lambda:self.write_identity(status='done')))
         wrong_branch=self.public(); cases.append(('branch',wrong_branch,lambda:self.write_identity(branch='other')))
-        stale_mapping=self.public(); cases.append(('mapping',stale_mapping,lambda:self.write_identity(workspace_path=str(self.repo.parent/'other'))))
-        other_ref='.trellis/tasks/other'; self.write_identity(task_ref=other_ref,task_id='other-task'); not_current=self.public(); not_current['task_ref']=other_ref; cases.append(('not-current',not_current,lambda:None))
+        missing_binding=self.public(); cases.append(('binding',missing_binding,lambda:BranchBindingStore(inspect_repository(self.repo)).path_for(TaskLifecycleKey(self.task_id,0)).unlink()))
+        other_ref='.trellis/tasks/other'; self.write_identity(task_ref=other_ref,task_id='other-task',branch='other'); not_current=self.public(); not_current['task_ref']=other_ref; cases.append(('not-current',not_current,lambda:None))
         for name,public,mutate in cases:
             with self.subTest(name=name):
                 self.write_identity(); mutate(); path=self.write('identity-'+name+'.json',public)
                 with self.assertRaises(CommandError) as raised:
                     execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])
                 self.assertEqual('stale_identity',raised.exception.code)
+    def test_reactivated_generation_requires_its_own_branch_binding(self):
+        metadata=json.loads((self.task_dir/'task.json').read_text()); metadata['lifecycle_generation']=1
+        (self.task_dir/'task.json').write_text(json.dumps(metadata))
+        public=self.public('post_check'); public['selected_base_ref']=self.old
+        path=self.write('reactivated-pair.json',public)
+        with self.assertRaises(CommandError) as raised:
+            execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])
+        self.assertEqual('stale_identity',raised.exception.code)
+        self.assertEqual('branch_binding',raised.exception.field_path)
+        store=BranchBindingStore(inspect_repository(self.repo))
+        store.path_for(TaskLifecycleKey(self.task_id,0)).unlink()
+        store.establish(TaskLifecycleKey(self.task_id,1),'feature')
+        self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status'])
     def test_checkpoint_namespace_binds_task_id_and_full_ref(self):
         from common import checkpoint_path
         first=checkpoint_path(self.repo,self.task_ref)
-        (self.repo/'.trellis/.runtime/guru-team/tasks'/f'{self.task_id}.json').unlink()
-        nested='.trellis/tasks/nested/current'; self.write_identity(task_ref=nested,task_id='nested-current')
-        second=checkpoint_path(self.repo,nested)
+        moved='.trellis/tasks/moved-current'
+        self.task_dir.rename(self.repo/moved)
+        second=checkpoint_path(self.repo,moved)
         self.assertNotEqual(first.parent.parent.name,second.parent.parent.name)
         self.assertIn(self.task_id,first.parent.parent.name)
-        self.assertIn('nested-current',second.parent.parent.name)
+        self.assertIn(self.task_id,second.parent.parent.name)
 
 if __name__=='__main__': unittest.main()

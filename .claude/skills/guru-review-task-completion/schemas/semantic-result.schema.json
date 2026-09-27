@@ -1,1 +1,28 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-review-task-completion-semantic-result-1.0","type":"object","additionalProperties":false,"required":["profile","mode","route","authority_refs","delivery_refs","evidence_refs"],"properties":{"profile":{"enum":["completion","evidence_refresh"]},"mode":{"enum":["workflow","standalone"]},"authority_refs":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"delivery_refs":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"evidence_refs":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"remaining_work_refs":{"type":"array","uniqueItems":true,"items":{"type":"string","minLength":1}},"route":{"oneOf":[{"type":"object","additionalProperties":false,"required":["typed_exit"],"properties":{"typed_exit":{"enum":["remaining_work","evidence_pending","additional_delivery_required","requirements_revision_required","implementation_revision_required","completed"]}}},{"type":"object","additionalProperties":false,"required":["typed_exit","reason_code","remediation"],"properties":{"typed_exit":{"const":"blocked"},"reason_code":{"type":"string","pattern":"^[a-z][a-z0-9_]{1,63}$"},"remediation":{"type":"string","minLength":1}}}]}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-completion-semantic-result-2.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["profile", "mode", "reviewed_scope_identity", "reviewed_evidence_slots", "remaining_work_refs", "route"],
+  "oneOf": [
+    {"required": ["reviewed_merge_result_id"], "not": {"required": ["reviewed_reactivation_anchor"]}},
+    {"required": ["reviewed_reactivation_anchor"], "not": {"required": ["reviewed_merge_result_id"]}}
+  ],
+  "properties": {
+    "profile": {"enum": ["completion", "evidence_refresh", "reactivation_validation"]}, "mode": {"enum": ["workflow", "standalone"]},
+    "reviewed_scope_identity": {"type": "string", "minLength": 1},
+    "reviewed_merge_result_id": {"type": "string", "minLength": 1},
+    "reviewed_reactivation_anchor": {"type": "object", "additionalProperties": false,
+      "required": ["task_id", "archived_generation", "archive_ref", "archive_head"],
+      "properties": {"task_id": {"type": "string", "minLength": 1}, "archived_generation": {"type": "integer", "minimum": 0},
+        "archive_ref": {"type": "string", "minLength": 1}, "archive_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}}},
+    "reviewed_evidence_slots": {"type": "object", "additionalProperties": {"type": "string", "minLength": 1}},
+    "remaining_work_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "route": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["typed_exit"], "properties": {"typed_exit": {"const": "completed"}}},
+      {"type": "object", "additionalProperties": false, "required": ["typed_exit", "reason"],
+       "properties": {"typed_exit": {"enum": ["remaining_work", "evidence_pending", "additional_delivery_required", "requirements_revision_required", "implementation_revision_required", "blocked"]},
+         "reason": {"type": "object", "additionalProperties": false, "required": ["reason_code", "reason_refs"],
+                    "properties": {"reason_code": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}, "reason_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}}}}
+    ]}
+  }
+}

@@ -577,7 +577,9 @@ class SharedRuntimeTests(unittest.TestCase):
 
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 23)
+        manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(active), 34)
+        self.assertEqual({row["id"] for row in active}, set(manifest["public_api"]["skill_contracts"]["active_skill_ids"]))
         for row in active:
             with self.subTest(skill=row["id"]):
                 payload = discover(SKILLS, row["id"])
@@ -708,12 +710,17 @@ class SharedRuntimeTests(unittest.TestCase):
             (task / "task.json").write_text(json.dumps({
                 "id": "08-12-context",
                 "status": "in_progress",
-                "branch": "feat/context",
+                "base_branch": "main",
+                "lifecycle_generation": 0,
             }))
             subprocess.run(["git", "config", "user.name", "Kernel Test"], cwd=repo, check=True)
             subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             subprocess.run(["git", "commit", "-q", "-m", "test: add installed runtime"], cwd=repo, check=True)
+            from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+            BranchBindingStore(inspect_repository(repo)).establish(
+                TaskLifecycleKey("08-12-context", 0), "feat/context"
+            )
             subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"], cwd=repo, check=True)
             subprocess.run(["git", "branch", "main"], cwd=repo, check=True)
             authority = outside / "authority"
@@ -1883,99 +1890,20 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 }
                 self.assertEqual(classified_refs, semantic_refs)
 
-    def test_production_publication_inputs_close_schema_5_for_every_exit(self) -> None:
-        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+    def test_current_delivery_publication_inputs_match_active_interface(self) -> None:
         from jsonschema import Draft202012Validator
 
-        class FixtureRuntime:
-            TASK_PUBLICATION_DIMENSIONS = (
-                "diff_outcome_consistency",
-                "external_work_item_effect",
-                "pr_body_quality",
-                "validation_claims",
-                "branch_review_summary",
-                "docs_ssot_reconciliation",
-                "safety_deployment_impact",
-                "finish_summary_semantics",
-                "metadata_tail_integrity",
-                "artifact_binding_freshness",
-            )
-
-            @staticmethod
-            def write_json(path: Path, payload: dict[str, object]) -> None:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(payload), encoding="utf-8")
-
-        schema = json.loads(
-            (
-                SKILLS
-                / "packages/guru-review-task-publication/schemas/pr-readiness.schema.json"
-            ).read_text(encoding="utf-8")
-        )
-        expected = {
-            "publication-ready": (
-                "candidate:publication:no-defect",
-                "rejected_not_reproduced",
-            ),
-            "publication-return": (
-                "candidate:publication:task-work",
-                "qualified_current",
-            ),
-            "publication-blocked": (
-                "candidate:publication:external-blocker",
-                "qualified_current",
-            ),
-            "publication-metadata-fix-ready": (
-                "candidate:publication:metadata-revision",
-                "qualified_current",
-            ),
-            "publication-metadata-durable-drift-return": (
-                "candidate:publication:task-work",
-                "qualified_current",
-            ),
-        }
-        public_input = {
-            "profile": "publication_review",
-            "mode": "workflow",
-            "review_intent": "initial_review",
-        }
-        with tempfile.TemporaryDirectory() as temporary:
-            fixture = Path(temporary)
-            task = fixture / ".trellis/tasks/publication-eval"
-            for recipe, (candidate_ref, decision) in expected.items():
-                with self.subTest(recipe=recipe):
-                    path = production_fixtures.production_publication_authoring(
-                        FixtureRuntime(), fixture, task, public_input, recipe
-                    )
-                    authored = json.loads(path.read_text(encoding="utf-8"))
-                    owner_projection = {
-                        key: value
-                        for key, value in authored.items()
-                        if key not in {"profile", "mode", "review_intent"}
-                    }
-                    payload = {
-                        "schema_version": "5.0",
-                        "skill_id": "guru-review-task-publication",
-                        "task_ref": ".trellis/tasks/publication-eval",
-                        "branch_review_commit": "1" * 40,
-                        "reviewed_content_sha256": "2" * 64,
-                        **owner_projection,
-                    }
-                    errors = list(Draft202012Validator(schema).iter_errors(payload))
-                    self.assertEqual([], errors)
-                    self.assertEqual(
-                        [(candidate_ref, decision)],
-                        [
-                            (row["candidate_ref"], row["decision"])
-                            for row in authored["candidate_classifications"]
-                        ],
-                    )
-                    self.assertTrue(
-                        all(
-                            row["candidate_ref"] == candidate_ref
-                            for row in authored["findings"]
-                        )
-                    )
+        package = SKILLS / "packages/guru-publish-task-delivery"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
+        active = {row["id"] for row in registry["skills"] if row["state"] == "active"}
+        self.assertIn("guru-publish-task-delivery", active)
+        self.assertNotIn("guru-review-task-publication", active)
+        for profile in interface["public_contracts"]["input"]["profiles"]:
+            with self.subTest(profile=profile["id"]):
+                schema = json.loads((package / profile["schema"]["path"]).read_text(encoding="utf-8"))
+                example = json.loads((package / profile["example"]["path"]).read_text(encoding="utf-8"))
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(example)), [])
 
     def test_qualification_public_projection_contains_declared_contracts(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
@@ -2213,7 +2141,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             "base_impact_candidate_set": "guru-reconcile-task-base",
             "phase2_candidate_set": "guru-check-task",
             "branch_review_candidate_set": "guru-review-branch",
-            "publication_candidate_set": "guru-review-task-publication",
+            "publication_candidate_set": "guru-review-task-delivery",
         }
         with tempfile.TemporaryDirectory() as tmp:
             owner = Path(tmp) / "owner"

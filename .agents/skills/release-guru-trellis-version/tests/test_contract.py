@@ -23,8 +23,20 @@ RUNTIME_MODULE = REPO / ".trellis/guru-team/runtime/reviewed_content.py"
 PUBLIC_SKILLS = REPO / "trellis/skills/guru-team"
 TASK_REF = ".trellis/tasks/09-02-release"
 TASK_COMMIT_PACKAGE = PUBLIC_SKILLS / "packages/guru-create-task-commit"
-PUBLICATION_PACKAGE = PUBLIC_SKILLS / "packages/guru-review-task-publication"
-FINALIZER_PACKAGE = PUBLIC_SKILLS / "packages/guru-finalize-task"
+DELIVERY_OWNERS = (
+    "guru-review-task-delivery",
+    "guru-publish-task-delivery",
+    "guru-merge-task-delivery",
+    "guru-review-task-completion",
+    "guru-complete-task-closure",
+    "guru-finish-task",
+    "guru-cleanup-task-resources",
+)
+RETIRED_OWNERS = (
+    "guru-review-task-publication",
+    "guru-finalize-task",
+    "guru-merge-task-pr",
+)
 
 
 def load_reviewed_content_module():
@@ -149,9 +161,7 @@ class SkillContractTest(unittest.TestCase):
             "Phase 2",
             "guru-create-task-commit",
             "guru-review-branch",
-            "guru-review-task-publication",
-            "guru-finalize-task",
-            "guru-merge-task-pr",
+            *DELIVERY_OWNERS,
         ):
             with self.subTest(owner=owner):
                 self.assertIn(owner, contract)
@@ -180,7 +190,10 @@ class SkillContractTest(unittest.TestCase):
             "serialized_architecture_rdt_promotion -> fresh_phase2 -> "
             "guru-create-task-commit -> post_promotion_commit -> "
             "guru-review-branch_post_promotion -> "
-            "guru-review-task-publication -> guru-finalize-task"
+            "guru-review-task-delivery -> guru-publish-task-delivery -> "
+            "guru-merge-task-delivery -> guru-review-task-completion -> "
+            "guru-complete-task-closure:no_mutation -> guru-finish-task -> "
+            "guru-cleanup-task-resources"
         )
         self.assertIn(honest_path, contract)
         self.assertEqual(2, honest_path.split(" -> ").count("guru-create-task-commit"))
@@ -198,11 +211,25 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn("The first review cannot be reused", contract)
         self.assertIn("the second review cannot run before promotion", contract)
         self.assertIn("promotion is an intentional reviewed-content mutation", contract)
+        self.assertIn("*whole preparation task*", contract)
+        self.assertIn("`reference_only`", contract)
+        self.assertIn("`Refs #<issue>` with no closing keyword", contract)
+        self.assertIn("Closure has no Issue mutation", contract)
+        self.assertIn("After Stage 1 Delivery and Finish bookkeeping merges", contract)
+        self.assertIn("Verify the remote tag points to the exact", contract)
+        self.assertIn("passing smoke for that tag and candidate", contract)
+        self.assertIn("separate Issue-closure", contract)
+        self.assertIn("Stage 1 reference-only Closure never substitutes", contract)
+        for retired in RETIRED_OWNERS:
+            self.assertNotIn(retired, contract)
 
         for boundary in (
             "task commit",
-            "complete Finalizer transaction",
+            "preparation PR push/bind/Ready",
             "preparation PR merge",
+            "Finish archive projection",
+            "Finish bookkeeping publication",
+            "Finish bookkeeping PR merge",
             "annotated tag creation/push",
             "tag-pinned smoke",
             "GitHub Release creation",
@@ -212,16 +239,40 @@ class SkillContractTest(unittest.TestCase):
             with self.subTest(boundary=boundary):
                 self.assertIn(f"| {boundary} |", contract)
         self.assertIn("cannot authorize, pre-authorize, or be reused", contract)
-        self.assertIn("MUST be displayed once", contract)
-        self.assertIn("one current-dialogue answer", contract)
-        self.assertRegex(
-            contract,
-            r"does not\s+authorize the later preparation PR merge",
+        self.assertIn("three distinct", contract)
+        self.assertIn("does not authorize the later preparation PR merge", contract)
+
+    def test_stage1_owner_exit_chain_matches_current_interfaces_and_workflow(self) -> None:
+        contract = (ROOTS["shared"] / "references/contract.md").read_text()
+        workflow = (REPO / ".trellis/workflow.md").read_text()
+        expected = (
+            ("guru-review-branch", "passed", "guru-review-task-delivery"),
+            ("guru-review-task-delivery", "ready", "guru-publish-task-delivery"),
+            ("guru-publish-task-delivery", "ready_for_merge", "guru-merge-task-delivery"),
+            ("guru-merge-task-delivery", "delivered", "guru-review-task-completion"),
+            ("guru-review-task-completion", "completed", "guru-complete-task-closure"),
+            ("guru-complete-task-closure", "no_mutation", "guru-finish-task"),
+            ("guru-finish-task", "success", "guru-cleanup-task-resources"),
         )
-        self.assertIn("MUST NOT require a pause or additional confirmation", contract)
-        self.assertNotIn("| branch push |", contract)
-        self.assertNotIn("| PR creation |", contract)
-        self.assertNotIn("| Finalizer archive and Ready mutations |", contract)
+        for owner, exit_id, consumer in expected:
+            with self.subTest(owner=owner, exit=exit_id):
+                interface = json.loads(
+                    (REPO / ".agents/skills" / owner / "interface.json").read_text()
+                )
+                exits = {item["id"]: item["consumer"] for item in interface["external_exits"]}
+                self.assertEqual({"kind": "skill", "id": consumer}, exits[exit_id])
+                marker = (
+                    '<!-- guru-skill-exit: '
+                    + json.dumps(
+                        {"skill": owner, "exit": exit_id, "consumer": exits[exit_id]},
+                        separators=(",", ":"),
+                    )
+                    + " -->"
+                )
+                self.assertIn(marker, workflow)
+                self.assertIn(owner, contract)
+        for retired in RETIRED_OWNERS:
+            self.assertNotIn(retired, contract)
 
     def test_contract_forbids_tracked_release_state_and_fail_open_routing(self) -> None:
         root = ROOTS["shared"]
@@ -283,14 +334,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         self.write(".gitignore", ".trellis/.runtime/\n")
         self.write(".trellis/config.yaml", "workspace_mode: worktree\n")
         shutil.copytree(REPO / ".trellis/scripts", self.repo / ".trellis/scripts")
-        for package in (PUBLICATION_PACKAGE, FINALIZER_PACKAGE):
-            shutil.copytree(
-                package,
-                self.repo
-                / "trellis/skills/guru-team/packages"
-                / package.name,
-                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
-            )
         shutil.copytree(
             REPO / "trellis/workflows/guru-team/schemas",
             self.repo / "trellis/workflows/guru-team/schemas",
@@ -524,238 +567,6 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             self.assertNotEqual(0, process.returncode, payload)
         return payload
 
-    def run_publication_wrapper(
-        self, branch_output: dict[str, object], reviewed: str
-    ) -> dict[str, object]:
-        public_input = {
-            "profile": "publication_review",
-            "mode": "workflow",
-            "task_ref": branch_output["task_ref"],
-            "branch_review_commit": branch_output["branch_review_commit"],
-            "review_intent": "initial_review",
-        }
-        authored = json.loads(
-            (PUBLICATION_PACKAGE / "examples/pr-readiness.json").read_text()
-        )
-        authored = {
-            key: authored[key]
-            for key in (
-                "candidate_classifications",
-                "dimensions",
-                "findings",
-                "conclusions",
-                "route",
-            )
-        }
-        authored.update(
-            profile="publication_review",
-            mode="workflow",
-            review_intent="initial_review",
-            pr_payload={
-                "title": "完成：建立 guru-trellis 私有正式发布 Skill",
-                "body": (
-                    "## 变更摘要\n\n- 建立仓库私有正式发布编排。\n\n"
-                    "## 影响范围\n\n- 仅影响 guru-trellis 私有 Skill 与 Docs SSOT。\n\n"
-                    "## 验证结果\n\n- honest-path owner 链验证通过。\n\n"
-                    "## Review Gate\n\n- 完整 Branch Review 无未关闭 finding。\n\n"
-                    "## Issue 关闭范围\n\n- Refs #335；Stage 2 完成后再独立判断关闭。\n\n"
-                    "## 安全与部署影响\n\n- 不涉及 secret、部署或数据迁移。\n\n"
-                    "## Docs SSOT\n\n"
-                    "- strategy: delta_first。\n"
-                    "- durable docs: README 与正式 Docs SSOT 已同步。\n"
-                    "- merged delta: task 增量已写回长期文档。\n"
-                    "- task history: task 只保留稳定规划历史。\n"
-                    "- follow-up: 无待办或已知限制。"
-                ),
-            },
-        )
-        public_path = self.write_json("inputs/publication-public.json", public_input)
-        authored_path = self.write_json("inputs/publication-authored.json", authored)
-        recorded = self.run_package_wrapper(
-            PUBLICATION_PACKAGE,
-            "record-task-publication-review.sh",
-            "--task",
-            TASK_REF,
-            "--input",
-            authored_path.relative_to(self.repo),
-            "--branch-review-commit",
-            branch_output["branch_review_commit"],
-        )
-        self.assertEqual(reviewed, recorded["reviewed_content_sha256"])
-        checked = self.run_package_wrapper(
-            PUBLICATION_PACKAGE,
-            "check-task-publication-review.sh",
-            "--task",
-            TASK_REF,
-            "--expected-exit",
-            "ready",
-        )
-        checkpoint = Path(str(checked["artifact_path"]))
-        owner_path = self.write_json(
-            "inputs/publication-owner.json", checked["owner_result"]
-        )
-        output = self.run_package_wrapper(
-            PUBLICATION_PACKAGE,
-            "invoke.sh",
-            "--input",
-            public_path,
-            "--owner-result",
-            owner_path,
-        )
-        self.assertFalse(checkpoint.exists())
-        return output
-
-    def run_finalizer_wrapper(
-        self,
-        publication_output: dict[str, object],
-        reviewed: str,
-        delivery_head: str,
-    ) -> tuple[dict[str, object], str]:
-        public_input = {
-            "profile": "publication_ready",
-            "mode": "workflow",
-            **{
-                key: publication_output[key]
-                for key in (
-                    "task_ref",
-                    "branch_review_commit",
-                    "pr_title",
-                    "pr_body",
-                )
-            },
-        }
-        public_path = self.write_json("inputs/finalizer-public.json", public_input)
-        plan_digest = "b" * 64
-        plan_ref = f"finalization:{plan_digest}"
-        archive_ref = ".trellis/tasks/archive/2026-09/09-02-release"
-
-        def write_context(transaction_state: str, publication_head: str) -> None:
-            self.write(
-                ".trellis/.runtime/guru-team/evals/finalization-context.json",
-                json.dumps({
-                "schema_version": "2.0",
-                "task_ref": TASK_REF,
-                "plan_ref": plan_ref,
-                "plan_digest": plan_digest,
-                "branch_review_commit": publication_output["branch_review_commit"],
-                "publication_head": publication_head,
-                "archive_locator": archive_ref,
-                "repo_ref": "castbox/guru-trellis",
-                "remote": "origin",
-                "head_branch": self.git("branch", "--show-current"),
-                "pr_title": publication_output["pr_title"],
-                "pr_body": publication_output["pr_body"],
-                "publication_status": "current",
-                "publication_stale_reason": None,
-                "transaction_state": transaction_state,
-                })
-                + "\n",
-            )
-
-        write_context("prepared", delivery_head)
-        review_path = self.write_json(
-            "inputs/finalizer-review.json",
-            {
-                "schema_version": "3.0",
-                "skill_id": "guru-finalize-task",
-                "review": {
-                    "status": "passed",
-                    "summary": "The exact current plan can resume without metadata commits.",
-                },
-                "route": {
-                    "typed_exit": "ready_for_merge",
-                    "consumer": {"kind": "skill", "id": "guru-merge-task-pr"},
-                    "output": {"materialization": "executor"},
-                },
-            },
-        )
-        eval_env = {"GURU_TEAM_EVAL_STAGING": "1"}
-        preview = self.run_package_wrapper(
-            FINALIZER_PACKAGE,
-            "preview-finalization.sh",
-            "--input",
-            public_path.relative_to(self.repo),
-            env=eval_env,
-        )
-        self.assertFalse(preview["side_effects"])
-        self.assertEqual("prepared", preview["transaction_state"])
-        recorded = self.run_package_wrapper(
-            FINALIZER_PACKAGE,
-            "record-finalization-gate.sh",
-            "--input",
-            public_path.relative_to(self.repo),
-            "--review-input",
-            review_path.relative_to(self.repo),
-            env=eval_env,
-        )
-        gate_path = Path(str(recorded["artifact_path"]))
-        checked = self.run_package_wrapper(
-            FINALIZER_PACKAGE,
-            "check-finalization-gate.sh",
-            "--input",
-            public_path.relative_to(self.repo),
-            "--gate",
-            gate_path.resolve().relative_to(self.repo.resolve()),
-            env=eval_env,
-        )
-        self.assertEqual("ready_for_merge", checked["typed_exit"])
-        self.assertEqual("prepared", checked["transaction_state"])
-
-        archive_path = self.repo / archive_ref
-        archive_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(self.repo / TASK_REF), str(archive_path))
-        archived_task = json.loads((archive_path / "task.json").read_text())
-        archived_task["status"] = "completed"
-        archived_task["completedAt"] = "2026-09-18"
-        self.write(
-            f"{archive_ref}/task.json",
-            json.dumps(archived_task) + "\n",
-        )
-        self.assertRegex(archived_task["completedAt"], r"^\d{4}-\d{2}-\d{2}$")
-        self.write(f"{archive_ref}/finish-summary.json", "{}\n")
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.git("add", "-A", TASK_REF, archive_ref)
-        self.git("commit", "-qm", "archive lifecycle metadata")
-        archive_head = self.git("rev-parse", "HEAD")
-        self.assertEqual(delivery_head, self.git("rev-parse", f"{archive_head}^"))
-        self.assertEqual("1", self.git("rev-list", "--count", f"{delivery_head}..HEAD"))
-        self.assertEqual(reviewed, self.identity()["sha256"])
-        write_context("ready", archive_head)
-
-        mock_bin = self.inputs / "bin"
-        mock_bin.mkdir(parents=True, exist_ok=True)
-        mock_gh = mock_bin / "gh"
-        mock_gh.write_text(
-            "#!/usr/bin/env bash\n"
-            "set -euo pipefail\n"
-            "if [[ \"${1:-}\" == auth && \"${2:-}\" == status ]]; then exit 0; fi\n"
-            "if [[ \"${1:-}\" == issue && \"${2:-}\" == view && \"${3:-}\" == 174 ]]; then\n"
-            "  printf '%s\\n' "
-            "'{\"number\":174,\"state\":\"OPEN\",\"url\":\"https://github.com/castbox/guru-trellis/issues/174\"}'\n"
-            "  exit 0\n"
-            "fi\n"
-            "exit 1\n",
-            encoding="utf-8",
-        )
-        mock_gh.chmod(0o755)
-        terminal_env = {
-            **eval_env,
-            "PATH": f"{mock_bin}{os.pathsep}{os.environ['PATH']}",
-        }
-        executed = self.run_package_wrapper(
-            FINALIZER_PACKAGE,
-            "execute-finalization-transition.sh",
-            "--input",
-            public_path.relative_to(self.repo),
-            "--gate",
-            gate_path.resolve().relative_to(self.repo.resolve()),
-            env=terminal_env,
-        )
-        self.assertEqual("ready_recovered", executed["stage"])
-        self.assertEqual("ready_for_merge", executed["typed_exit"])
-        self.assertFalse(gate_path.exists())
-        return executed["output"], archive_head
-
     def record_branch_review(self) -> tuple[Path, Path]:
         base = self.git("rev-parse", "HEAD^")
         self.git("update-ref", "refs/remotes/origin/main", base)
@@ -773,6 +584,20 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         semantic = self.write_json(
             "inputs/semantic.json",
             {
+                "delivery_review": {
+                    "task_scope": ["R335-03"],
+                    "delivery_slice": ["R335-03"],
+                    "remaining_work": [],
+                    "independent_delivery_conditions": [
+                        "The reviewed preparation slice is independently deliverable."
+                    ],
+                    "validation_boundaries": [
+                        "The release tag and smoke remain post-merge Issue work."
+                    ],
+                    "current_slice_status": "passed",
+                    "remaining_work_status": "disclosed",
+                    "summary": "Preparation delivery is complete; release work remains separate.",
+                },
                 "candidate_classifications": [
                     {
                         "candidate_ref": "candidate-no-defect",
@@ -827,78 +652,22 @@ class ReviewedContentIdentityTest(unittest.TestCase):
             / "review-gate.json"
         )
 
-    def test_honest_path_runs_branch_publication_and_finalizer_wrappers(self) -> None:
+    def test_honest_path_runs_commit_and_branch_review_without_retired_owners(self) -> None:
         delivery_head = str(self.delivery_commit["branch_review_commit"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
         reviewed = self.identity()["sha256"]
         public_input, checkpoint = self.record_branch_review()
         self.assertTrue(checkpoint.is_file())
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-
-        metadata = {
-            ".trellis/workspace/test/journal.md": "workspace metadata\n",
-            ".trellis/.runtime/guru-team/checkpoint.json": "{}\n",
-            "nested/.DS_Store": "noise\n",
-        }
-        for relative, content in metadata.items():
-            self.write(relative, content)
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-
-        self.write(
-            ".trellis/.runtime/guru-team/checkpoint.json",
-            '{"state":"replaced"}\n',
-        )
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-
         checked = self.run_branch_wrapper(
             "check-review-gate.sh", "--task", TASK_REF, "--expected-exit", "passed"
         )
-        self.assertEqual("ok", checked["status"])
+        self.assertEqual("owner_checkpoint_validated", checked["status"])
         projected = self.run_branch_wrapper(
             "invoke.sh", "--task", TASK_REF, "--input", public_input
         )
         self.assertEqual("passed", projected["exit_id"])
+        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
+        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
         self.assertFalse(checkpoint.exists())
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-        publication = self.run_publication_wrapper(projected, reviewed)
-        self.assertEqual("ready", publication["exit_id"])
-        self.assertEqual(delivery_head, self.git("rev-parse", "HEAD"))
-        finalizer, archive_head = self.run_finalizer_wrapper(
-            publication,
-            reviewed,
-            delivery_head,
-        )
-        self.assertEqual("ready_for_merge", finalizer["exit_id"])
-        self.assertEqual(archive_head, finalizer["expected_head_sha"])
-        self.assertEqual(archive_head, self.git("rev-parse", "HEAD"))
-        self.assertEqual(delivery_head, self.git("rev-parse", f"{archive_head}^"))
-        self.assertEqual("1", self.git("rev-list", "--count", f"{delivery_head}..HEAD"))
-        self.assertEqual(reviewed, self.identity(include_worktree=True)["sha256"])
-
-        registry = json.loads((PUBLIC_SKILLS / "registry.json").read_text())
-        by_id = {item["id"]: item for item in registry["skills"]}
-        branch_interface = json.loads(
-            (PUBLIC_SKILLS / by_id["guru-review-branch"]["interface"]).read_text()
-        )
-        publication_interface = json.loads(
-            (
-                PUBLIC_SKILLS
-                / by_id["guru-review-task-publication"]["interface"]
-            ).read_text()
-        )
-        branch_exits = {
-            item["id"]: item["consumer"]["id"]
-            for item in branch_interface["external_exits"]
-        }
-        publication_exits = {
-            item["id"]: item["consumer"]["id"]
-            for item in publication_interface["external_exits"]
-        }
-        self.assertEqual("guru-review-task-publication", branch_exits["passed"])
-        self.assertEqual("guru-finalize-task", publication_exits["ready"])
 
     def test_delivery_durable_config_script_and_test_drift_change_identity(self) -> None:
         previous = self.identity()["sha256"]

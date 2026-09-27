@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-completion-input-reactivation-validation-2.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["profile", "mode", "task_artifact", "accepted_scope_identity", "reactivation_anchor", "evidence_slots"],
+  "properties": {
+    "profile": {"const": "reactivation_validation"}, "mode": {"enum": ["workflow", "standalone"]},
+    "task_artifact": {"type": "object"}, "accepted_scope_identity": {"type": "string", "minLength": 1},
+    "reactivation_anchor": {"type": "object"}, "evidence_slots": {"type": "object", "minProperties": 1}
+  }
+}

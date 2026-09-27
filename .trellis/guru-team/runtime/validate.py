@@ -22,6 +22,7 @@ APPROVED_KERNEL_FILES = {
     "eval_runner.py",
     "installed.py",
     "io.py",
+    "lifecycle_helpers.py",
     "launch.sh",
     "probe.py",
     "python-runtime.json",

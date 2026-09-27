@@ -1,1 +1,42 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-complete-task-closure-input-1.0","type":"object","additionalProperties":false,"required":["profile","source_exit","mode","task_ref","completion_ref","source_issue"],"properties":{"profile":{"const":"completion_approved"},"source_exit":{"enum":["completed","resume_closure"]},"mode":{"enum":["workflow","standalone"]},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/"},"completion_ref":{"type":"string","minLength":1},"closure_ref":{"type":"string","minLength":1},"source_issue":{"oneOf":[{"type":"object","additionalProperties":false,"required":["repo_ref","number","disposition"],"properties":{"repo_ref":{"type":"string","pattern":"^[^/ ]+/[^/ ]+$"},"number":{"type":"integer","minimum":1},"disposition":{"const":"exact_source"}}},{"type":"object","additionalProperties":false,"required":["disposition"],"properties":{"disposition":{"enum":["no_issue","reference_only","follow_up","parent"]}}}]}},"allOf":[{"if":{"properties":{"source_exit":{"const":"resume_closure"}}},"then":{"required":["closure_ref"]}}]}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-complete-task-closure-input-2.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["profile", "mode", "source_exit", "completion_result", "source", "accepted_scope_identity", "delivery_target", "binding_ref", "content_head", "evidence_slots", "action_set"],
+  "properties": {
+    "profile": {"const": "completion_approved"}, "mode": {"enum": ["workflow", "standalone"]},
+    "source_exit": {"enum": ["completed", "resume_closure", "external_change_conflict"]},
+    "completion_result": {"$ref": "#/$defs/result"},
+    "source": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"const": "no_issue"}}},
+      {"type": "object", "additionalProperties": false, "required": ["kind", "repo_ref", "number", "disposition"], "properties": {"kind": {"const": "issue"}, "repo_ref": {"$ref": "#/$defs/repo"}, "number": {"type": "integer", "minimum": 1}, "disposition": {"enum": ["exact_source", "reference_only", "follow_up", "parent"]}}}
+    ]},
+    "accepted_scope_identity": {"$ref": "#/$defs/id"},
+    "delivery_target": {"type": "object", "additionalProperties": false, "required": ["repo_ref", "branch_ref"],
+      "properties": {"repo_ref": {"$ref": "#/$defs/repo"}, "branch_ref": {"type": "string", "minLength": 1}}},
+    "binding_ref": {"type": "object", "additionalProperties": false,
+      "required": ["task_id", "lifecycle_generation", "binding_epoch", "binding_revision"],
+      "properties": {"task_id": {"$ref": "#/$defs/task_id"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "binding_epoch": {"type": "integer", "minimum": 0}, "binding_revision": {"type": "integer", "minimum": 0}}},
+    "content_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "evidence_slots": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/id"},
+      "propertyNames": {"enum": ["planning", "task_commit_pair", "phase2_check", "branch_review", "closeout_publication", "delivery_review", "delivery_publication", "completion"]}, "required": ["completion"]},
+    "action_set": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/action"}},
+    "transaction_ref": {"$ref": "#/$defs/transaction"}
+  },
+  "allOf": [{"if": {"properties": {"source_exit": {"enum": ["resume_closure", "external_change_conflict"]}}, "required": ["source_exit"]}, "then": {"required": ["transaction_ref"]}}],
+  "$defs": {
+    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "repo": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
+    "lifecycle": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation"],
+      "properties": {"task_id": {"$ref": "#/$defs/task_id"}, "lifecycle_generation": {"type": "integer", "minimum": 0}}},
+    "result": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "result_id"],
+      "properties": {"task_id": {"$ref": "#/$defs/task_id"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "result_id": {"$ref": "#/$defs/id"}}},
+    "transaction": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "transaction_id", "result_id"],
+      "properties": {"task_id": {"$ref": "#/$defs/task_id"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "transaction_id": {"$ref": "#/$defs/id"}, "result_id": {"$ref": "#/$defs/id"}}},
+    "action": {"type": "object", "additionalProperties": false, "required": ["issue_ref", "disposition"],
+      "properties": {"issue_ref": {"type": "object", "additionalProperties": false, "required": ["repo_ref", "issue_number"],
+         "properties": {"repo_ref": {"$ref": "#/$defs/repo"}, "issue_number": {"type": "integer", "minimum": 1}}},
+        "disposition": {"enum": ["close", "already_closed_at_review", "no_close_authority"]}}}
+  }
+}

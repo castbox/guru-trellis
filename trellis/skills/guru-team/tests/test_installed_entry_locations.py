@@ -23,23 +23,27 @@ ENTRIES = {
     "guru-review-change-request": (
         "record-change-request-review.sh", "check-change-request-review.sh", "invoke.sh",
     ),
-    "guru-create-task-workspace": (
-        "record-task-workspace-plan.sh", "create-task-workspace.sh",
-        "check-task-workspace-result.sh", "invoke.sh",
-    ),
+    "guru-create-issue": ("invoke.sh",),
+    "guru-create-task": ("invoke.sh",),
 }
 
 
 class InstalledEntryLocationTests(unittest.TestCase):
     def check_contract(self, discovery: Path, package: Path, skill: str) -> None:
-        text = "\n".join((discovery / name).read_text(encoding="utf-8")
-                         for name in ("SKILL.md", "references/contract.md"))
-        expected_root = f".trellis/guru-team/skills/packages/{skill}"
-        self.assertIn(expected_root, text)
-        self.assertIn("repository root", text)
+        text = (discovery / "SKILL.md").read_text(encoding="utf-8")
+        contract = discovery / "references/contract.md"
+        if contract.is_file():
+            text += "\n" + contract.read_text(encoding="utf-8")
+            self.assertIn(f".trellis/guru-team/skills/packages/{skill}", text)
+            self.assertIn("repository root", text)
+        else:
+            self.assertIn(skill, text)
+            self.assertTrue((package / "interface.json").is_file())
+            self.assertTrue((package / "commands.json").is_file())
         for name in ENTRIES[skill]:
             with self.subTest(skill=skill, script=name, discovery=discovery):
-                self.assertIn(name, text)
+                if contract.is_file():
+                    self.assertIn(name, text)
                 self.assertTrue((package / "scripts" / name).is_file())
                 self.assertTrue(os.access(package / "scripts" / name, os.X_OK))
         for relative in set(re.findall(r"(?:schemas|examples)/[A-Za-z0-9_.-]+\.json", text)):

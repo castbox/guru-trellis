@@ -3,12 +3,15 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from runtime.io import CommandError
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 
 EXITS = {
     "reconciled", "review_continuity_required", "implementation_required",
@@ -105,60 +108,17 @@ def _identity_json(path: Path, field: str) -> dict[str, Any]:
     return value
 
 
-def _current_worktree_branch(repo: Path) -> str:
-    rows: list[dict[str, str]] = []
-    current: dict[str, str] = {}
-    for line in git(repo, "worktree", "list", "--porcelain").splitlines() + [""]:
-        if not line:
-            if current:
-                rows.append(current)
-                current = {}
-            continue
-        key, _, value = line.partition(" ")
-        current[key] = value
-    matches = [row for row in rows if Path(row.get("worktree", "")).resolve() == repo.resolve()]
-    if len(matches) != 1 or not matches[0].get("branch", "").startswith("refs/heads/"):
-        raise CommandError("stale_identity", "worktree", "Use the unique current branch worktree.", 3)
-    return matches[0]["branch"].removeprefix("refs/heads/")
-
-
 def task_identity(repo: Path, task_ref: str, *, allow_planning: bool = False) -> dict[str, str]:
-    tasks_root = (repo / ".trellis/tasks").resolve()
-    task_dir = (repo / task_ref).resolve()
-    if not task_ref.startswith(".trellis/tasks/") or task_dir == tasks_root or not task_dir.is_relative_to(tasks_root) or not task_dir.is_dir() or task_dir.is_symlink():
-        raise CommandError("stale_identity", "task_ref", "Use the exact current task directory.", 3)
-    task = _identity_json(task_dir / "task.json", "task.json")
-    task_id = task.get("id")
-    branch = task.get("branch")
-    allowed_statuses = {"in_progress", "planning"} if allow_planning else {"in_progress"}
-    if not isinstance(task_id, str) or not task_id or not isinstance(branch, str) or not branch or task.get("status") not in allowed_statuses:
-        expected = "planning or in-progress" if allow_planning else "in-progress"
-        raise CommandError("stale_identity", "task.json", f"Use the current {expected} task identity.", 3)
-    live_branch = git(repo, "branch", "--show-current")
-    if branch != live_branch or branch != _current_worktree_branch(repo):
-        raise CommandError("stale_identity", "task.json.branch", "Use the task branch checked out in this exact worktree.", 3)
-    task_mapping = _identity_json(repo / ".trellis/.runtime/guru-team/tasks" / f"{task_id}.json", "task_mapping")
-    workspace_slug = task_mapping.get("workspace_slug")
-    relative = task_dir.relative_to(repo.resolve()).as_posix()
-    expected_task = {"schema_version": "1.0", "task_slug": task_id, "workspace_path": str(repo.resolve()), "task_artifact_dir": relative}
-    if not isinstance(workspace_slug, str) or not workspace_slug or any(task_mapping.get(key) != value for key, value in expected_task.items()):
-        raise CommandError("stale_identity", "task_mapping", "Use the mapping for this exact task and worktree.", 3)
-    current_mappings: list[Path] = []
-    mappings_root = repo / ".trellis/.runtime/guru-team/tasks"
-    for candidate in mappings_root.glob("*.json"):
-        try:
-            candidate_mapping = json.loads(candidate.read_text())
-        except (OSError, json.JSONDecodeError):
-            continue
-        if isinstance(candidate_mapping, dict) and candidate_mapping.get("workspace_path") == str(repo.resolve()):
-            current_mappings.append(candidate.resolve())
-    if current_mappings != [(mappings_root / f"{task_id}.json").resolve()]:
-        raise CommandError("stale_identity", "task_mapping", "Use the unique current task mapping for this worktree.", 3)
-    workspace_mapping = _identity_json(repo / ".trellis/.runtime/guru-team/workspaces" / f"{workspace_slug}.json", "workspace_mapping")
-    expected_workspace = {"schema_version": "1.0", "workspace_slug": workspace_slug, "workspace_path": str(repo.resolve()), "branch_name": branch}
-    if any(workspace_mapping.get(key) != value for key, value in expected_workspace.items()):
-        raise CommandError("stale_identity", "workspace_mapping", "Use the mapping for this exact task branch and worktree.", 3)
-    return {"task_id": task_id, "task_ref": relative, "branch": branch, "workspace_slug": workspace_slug}
+    try:
+        current = resolve_active_task_checkout(repo, task_ref)
+        artifact = current.artifact
+        task = _identity_json(repo / artifact.task_ref / "task.json", "task.json")
+        allowed_statuses = {"in_progress", "planning"} if allow_planning else {"in_progress"}
+        if task.get("status") not in allowed_statuses:
+            raise CommandError("stale_identity", "task.json.status", "Use the current task status.", 3)
+        return {"task_id": artifact.task_id, "task_ref": artifact.task_ref, "branch": current.branch_name}
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
 
 
 def is_ancestor(repo: Path, older: str, newer: str) -> bool:
@@ -191,10 +151,11 @@ def operation_pair(repo: Path, public: dict[str, Any]) -> tuple[str, str, str]:
     return task_head, old_base, new_base
 
 
-def index_tree_digest(repo: Path) -> str:
+def index_tree_digest(repo: Path, *, index_file: Path | None = None) -> str:
     process = subprocess.run(
         ["git", "ls-files", "--stage", "-z"],
         cwd=repo,
+        env={**os.environ, "GIT_INDEX_FILE": str(index_file)} if index_file else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -234,6 +195,19 @@ def index_tree_digest(repo: Path) -> str:
             path + b"\0" + hashlib.sha256(blob.stdout).hexdigest().encode() + b"\0"
         )
     return hashlib.sha256(b"".join(rows)).hexdigest()
+
+
+def committed_tree_digest(repo: Path) -> str:
+    with tempfile.TemporaryDirectory(prefix="guru-reconcile-tree-") as directory:
+        index = Path(directory) / "index"
+        loaded = subprocess.run(
+            ["git", "read-tree", "HEAD"], cwd=repo,
+            env={**os.environ, "GIT_INDEX_FILE": str(index)},
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        if loaded.returncode:
+            raise CommandError("stale_identity", "repository.tree", "Read the committed reconciliation tree.", 3)
+        return index_tree_digest(repo, index_file=index)
 
 
 def require_clean_worktree(repo: Path) -> None:
@@ -331,8 +305,9 @@ def validate_result(package: Path, repo: Path, result: dict[str, Any], public: d
             raise CommandError("stale_identity", "new_base_head", "The reviewed new base must remain an ancestor.", 3)
         if result["profile"] in POST_REVIEW_PROFILES and not is_ancestor(repo, result["branch_review_commit"], result["task_head"]):
             raise CommandError("stale_identity", "branch_review_commit", "The prior full-review commit must remain an ancestor.", 3)
-        require_clean_worktree(repo)
-        if index_tree_digest(repo) != receipt["candidate_tree_sha256"]:
+        if result["profile"] in POST_REVIEW_PROFILES:
+            require_clean_worktree(repo)
+        if committed_tree_digest(repo) != receipt["candidate_tree_sha256"]:
             raise CommandError("stale_identity", "candidate_tree_sha256", "The committed tree must match the reviewed candidate.", 3)
     elif receipt is not None or result["task_head"] != result["prior_task_head"]:
         raise CommandError("schema_mismatch", "reconciliation_result", "Only committed reconciliation routes may consume a reconciliation result.")

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-create-task-created-1.0","type":"object","additionalProperties":false,"required":["exit_id","task_id","task_ref","lifecycle_generation"],"properties":{"exit_id":{"const":"created"},"task_id":{"type":"string","minLength":1},"task_ref":{"type":"string","minLength":1},"lifecycle_generation":{"const":0}}}

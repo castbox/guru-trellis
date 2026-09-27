@@ -5,20 +5,45 @@ description: Reactivate one normally finished archived task while preserving its
 
 # Guru Reactivate Task
 
-Reactivate is the normal archived-task continuation owner. It is distinct from
-`guru-restore-archived-task`: it preserves the original task identity, moves a
-single archive copy back to active, and routes either requirements, planning,
-implementation or evidence refresh. It never reopens an Issue implicitly.
+Reactivate owns one normally finished archived TaskLifecycleKey, never Finish
+recovery or implementation activation. The AI reviews the fresh archive,
+source relation, target base and shared checkout acquisition disposition. Entry
+requires the archived generation's sealed Finish result, or the exact completed
+manual Cleanup receipt after Finish returned `manual_cleanup_required`, and no
+unfinished visible Finish transaction, not merely `status=completed`. A reviewed
+SourceCorrectionReadyDTO is applied to the archived task with a private
+recoverable receipt before routing to the source owner; it never advances the
+generation. A ready correction accompanying acquisition is also applied in
+the Reactivate transaction and bound to its recovery receipt, including when
+the selected checkout predates the separate archive correction. Confirm source correction or acquisition side effects in the
+current dialogue.
+For a normally committed old schema-2 archive, absent generation or explicit
+generation zero with a matching retired `task.json.archive_dir` uses the
+unique Git archive and old Finalizer-residue check when no C5 ledger exists.
+Other explicit-generation archives require the current Finish seal or exact
+manual Cleanup receipt. An empty old finish-summary Issue index does not
+exclude a candidate whose committed task source identifies the Issue.
+When an old archive has no structured or parseable source but its committed
+finish-summary indexes the Issue, the index is discovery evidence only. The AI
+reviews the source against the old ledger and Issue; a source correction must
+be applied before Reactivate can advance the generation.
+For old backfilled summaries, the unique Git addition identifies the archive
+lineage; the terminal summary is the latest committed version at the reviewed
+head and must match the working tree. A normal committed backfill revision does
+not invalidate that lineage.
 
-Before mutation, the AI reviews one exact target baseline and either an exact
-reusable clean branch/worktree or a new branch/worktree plan. The deterministic
-executor prepares that workspace, moves the original archive to the single
-active locator, refreshes task metadata and ignored runtime mappings, and
-invalidates prior Finish and Cleanup receipts while incrementing the task
-lifecycle generation. It never creates a replacement task.
+The executor keeps TaskId, moves the archived artifact into the active locator,
+increments the generation and enters planning. It composes the shared checkout,
+branch binding and common-dir resource ledger; it never creates task/workspace
+mappings or turns historical Finish/Cleanup results into new authority. A
+resolved old-generation binding may be released for branch reuse, but any
+unresolved prior local resource responsibility blocks that reuse. A
+session needing repair routes to Bind; session binding failure never rolls back
+an established incarnation.
 
-If stdout is lost after that transaction, retry the exact same public and
-semantic input. The executor rematerializes the same typed result only when the
-active task, reviewed workspace/branch/base, both mappings, and invalidated
-Finish and Cleanup receipt state still form the complete transaction post-state. It creates
-no recovery artifact; partial or mismatched state fails closed.
+The package-local transaction identifies the exact acquisition and branch
+successor without a persisted checkout path. Same-transaction recovery reads
+live Git, task and ledger facts without repeating mutations. Partial or stale
+states block; no direct requirements, implementation or evidence-refresh route
+is part of this package. The active #434 workflow router consumes its typed
+result without transferring Reactivate's package-local recovery ownership.

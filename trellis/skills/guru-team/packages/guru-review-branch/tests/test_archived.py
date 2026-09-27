@@ -15,7 +15,7 @@ from jsonschema import Draft202012Validator
 
 
 class ArchivedContractTest(unittest.TestCase):
-    def test_closed_examples_and_target_owned_projection(self):
+    def test_closed_examples_and_legacy_disposition_stop(self):
         package = test_contract.PACKAGE
         interface = json.loads((package / "interface.json").read_text())
         skills = package.parents[1]
@@ -28,12 +28,13 @@ class ArchivedContractTest(unittest.TestCase):
             self.assertEqual(set(value), set(schema["required"]))
         output = json.loads((package / "examples/public-archived-review-passed-output.json").read_text())
         projection = next(p for p in interface["public_contracts"]["projections"] if p["exit_id"] == "archived_review_passed")
-        projected = {m["target"]: output[m["source"]] for m in projection["mappings"]}
-        target = package.parent / "guru-review-task-publication"
-        target_interface = json.loads((target / "interface.json").read_text())
-        profile = next(p for p in target_interface["public_contracts"]["input"]["profiles"] if p["id"] == "archived_publication_review")
-        authored = json.loads((target / "examples/public-archived-publication-review-authoring.json").read_text())
-        Draft202012Validator(json.loads((target / profile["schema"]["path"]).read_text())).validate({**projected, **authored})
+        self.assertEqual(projection["operation"], "direct")
+        consumer = next(item for item in interface["public_contracts"]["consumer_inputs"]
+                        if item["id"] == projection["consumer_input_id"])
+        self.assertEqual(consumer["consumer"], {
+            "kind": "stop", "id": "legacy-archived-review-disposition-required",
+        })
+        Draft202012Validator(json.loads((package / consumer["contract"]["path"]).read_text())).validate(output)
 
 
 class ArchivedReviewTest(unittest.TestCase):

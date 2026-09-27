@@ -1,0 +1,159 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-create-issue",
+  "commands": [
+    {
+      "id": "record-issue-creation-plan",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed proposed Issue draft.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "none",
+      "schema_bindings": [
+        "schemas/public-input.schema.json"
+      ],
+      "validator_id": "record_plan",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "create-issue",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed proposed Issue draft.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "create_issue",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "check-issue-creation-result",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed Issue identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_read",
+      "schema_bindings": [
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "check_result",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "recover-created-issue-result",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed Issue identity.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "recover_result",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "invoke-guru-create-issue",
+      "owner": "guru-create-issue",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Reviewed Issue creation or recovery input.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "github_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-output.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

@@ -278,6 +278,8 @@ def stage_clean_installed_owner_repo(
     run_git(fixture, "init", "-q", "-b", "main")
     run_git(fixture, "config", "user.email", "stage0-eval@example.invalid")
     run_git(fixture, "config", "user.name", "Stage0 Eval")
+    run_git(fixture, "config", "maintenance.auto", "false")
+    run_git(fixture, "config", "gc.auto", "0")
     canonical_packages = source_repo / "trellis/skills/guru-team/packages"
     try:
         request_package.relative_to(canonical_packages)

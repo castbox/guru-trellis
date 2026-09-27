@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-branch-rebind-transaction-1.0",
+  "title": "Guru Team task branch rebind transaction checkpoint",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "transaction_id",
+        "task_id",
+        "lifecycle_generation",
+        "route",
+        "stage",
+        "source_binding",
+        "target_binding_revision",
+        "target_branch_name",
+        "checkout_root",
+        "source_head",
+        "target_head",
+        "source_index_sha256",
+        "source_worktree_sha256",
+        "source_status_sha256",
+        "resource_ledger_revision"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "transaction_id": {"$ref": "#/$defs/identifier"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "route": {"const": "same_checkout_new_ref"},
+        "stage": {"$ref": "#/$defs/stage"},
+        "source_binding": {"$ref": "#/$defs/binding"},
+        "target_binding_revision": {"type": "integer", "minimum": 1},
+        "target_branch_name": {"$ref": "#/$defs/branchName"},
+        "checkout_root": {"$ref": "#/$defs/absolutePath"},
+        "source_head": {"$ref": "#/$defs/commit"},
+        "target_head": {"$ref": "#/$defs/commit"},
+        "source_index_sha256": {"$ref": "#/$defs/sha256"},
+        "source_worktree_sha256": {"$ref": "#/$defs/sha256"},
+        "source_status_sha256": {"$ref": "#/$defs/sha256"},
+        "resource_ledger_revision": {"type": "integer", "minimum": 0}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "transaction_id",
+        "task_id",
+        "lifecycle_generation",
+        "route",
+        "stage",
+        "source_binding",
+        "target_binding_revision",
+        "target_branch_name",
+        "source_checkout_root",
+        "target_checkout_root",
+        "source_head",
+        "target_head",
+        "target_task_artifact_sha256",
+        "resource_ledger_revision"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "transaction_id": {"$ref": "#/$defs/identifier"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "route": {"const": "existing_target"},
+        "stage": {"$ref": "#/$defs/stage"},
+        "source_binding": {"$ref": "#/$defs/binding"},
+        "target_binding_revision": {"type": "integer", "minimum": 1},
+        "target_branch_name": {"$ref": "#/$defs/branchName"},
+        "source_checkout_root": {"$ref": "#/$defs/absolutePath"},
+        "target_checkout_root": {"$ref": "#/$defs/absolutePath"},
+        "source_head": {"$ref": "#/$defs/commit"},
+        "target_head": {"$ref": "#/$defs/commit"},
+        "target_task_artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "resource_ledger_revision": {"type": "integer", "minimum": 0}
+      }
+    }
+  ],
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "branchName": {
+      "type": "string",
+      "minLength": 1,
+      "not": {"pattern": "[\\u0000-\\u001F\\u007F]"},
+      "pattern": "^(?!-)(?!HEAD$)(?!refs/)(?!guru-task-lifecycle(?:/|$))(?!/)(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+    },
+    "absolutePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?:/|[A-Za-z]:[\\\\/]).+$"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "stage": {
+      "enum": ["prepared", "target_acquired", "control_state_committed"]
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "task_id",
+        "lifecycle_generation",
+        "binding_epoch",
+        "binding_revision",
+        "branch_name"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "task_id": {"$ref": "#/$defs/taskId"},
+        "lifecycle_generation": {"type": "integer", "minimum": 0},
+        "binding_epoch": {"type": "integer", "minimum": 0},
+        "binding_revision": {"type": "integer", "minimum": 0},
+        "branch_name": {"$ref": "#/$defs/branchName"}
+      }
+    }
+  }
+}

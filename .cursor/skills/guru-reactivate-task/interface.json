@@ -1,531 +1,64 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
-  "id": "guru-reactivate-task",
-  "name": "guru-reactivate-task",
-  "description": "Reactivate one normally finished archived task while preserving its identity and routing the fresh work.",
-  "state": "active",
-  "judgment_mode": "semantic",
-  "modes": {
-    "workflow": {
-      "routing": "global_workflow",
-      "entry_precondition_ids": [
-        "runtime_dependency",
-        "archived_identity",
-        "current_baseline",
-        "reactivation_reason"
-      ]
-    },
-    "standalone": {
-      "routing": "direct_discovery",
-      "entry_precondition_ids": [
-        "runtime_dependency",
-        "archived_identity",
-        "current_baseline",
-        "reactivation_reason"
-      ]
-    }
-  },
-  "entry_preconditions": [
-    {
-      "id": "runtime_dependency",
-      "evidence": "installed reactivation package",
-      "binding": "Guru Team preset",
-      "freshness": "each call"
-    },
-    {
-      "id": "archived_identity",
-      "evidence": "archive task, metadata and finish facts",
-      "binding": "one original task id",
-      "freshness": "fresh read"
-    },
-    {
-      "id": "current_baseline",
-      "evidence": "target base and workspace resources",
-      "binding": "new active binding",
-      "freshness": "before write"
-    },
-    {
-      "id": "reactivation_reason",
-      "evidence": "fresh AI reason and selected resume owner",
-      "binding": "one reactivation round",
-      "freshness": "call-local"
-    }
+  "$schema":"../../schemas/skill-interface-1.4.schema.json","schema_version":"1.4",
+  "id":"guru-reactivate-task","name":"guru-reactivate-task",
+  "description":"Reactivate one normally finished archived task while preserving its identity and routing the fresh work.",
+  "state":"active","judgment_mode":"semantic",
+  "modes":{"workflow":{"routing":"global_workflow","entry_precondition_ids":["archived_identity","current_baseline","reactivation_reason"]},"standalone":{"routing":"direct_discovery","entry_precondition_ids":["archived_identity","current_baseline","reactivation_reason"]}},
+  "entry_preconditions":[
+    {"id":"archived_identity","evidence":"exact archived TaskLifecycleKey and terminal task facts","binding":"one stable TaskId and archived generation","freshness":"before mutation"},
+    {"id":"current_baseline","evidence":"live local base and shared checkout acquisition facts","binding":"next lifecycle generation","freshness":"before acquisition"},
+    {"id":"reactivation_reason","evidence":"AI-reviewed intent, source and route","binding":"one Reactivate transaction","freshness":"call-local"}
   ],
-  "runtime_dependency": {
-    "extension_id": "guru-team",
-    "api_version": "1.0",
-    "manifest_path": ".trellis/guru-team/extension.json",
-    "dispatcher": "run-skill-command",
-    "distribution": "guru-team-preset",
-    "package_portability": "not-self-contained"
-  },
-  "ordered_stages": [
-    "forward_behavior",
-    "ai_review_gate",
-    "conditional_human_confirmation",
-    "recorder_validator",
-    "typed_exit"
+  "runtime_dependency":{"extension_id":"guru-team","api_version":"1.0","manifest_path":".trellis/guru-team/extension.json","dispatcher":"run-skill-command","distribution":"guru-team-preset","package_portability":"not-self-contained"},
+  "ordered_stages":["forward_behavior","ai_review_gate","conditional_human_confirmation","recorder_validator","typed_exit"],
+  "artifacts":[
+    {"id":"input","path":"examples/public-input.json"},{"id":"semantic_result","path":"examples/semantic-result.json"},
+    {"id":"planning_output","path":"examples/public-planning-output.json"},{"id":"session_output","path":"examples/public-session-output.json"},
+    {"id":"resume_output","path":"examples/public-resume-output.json"},{"id":"source_output","path":"examples/public-source-output.json"},
+    {"id":"blocked_output","path":"examples/public-blocked-output.json"}
   ],
-  "artifacts": [
-    {
-      "id": "input",
-      "path": "examples/public-input.json"
-    },
-    {
-      "id": "semantic_result",
-      "path": "examples/semantic-result.json"
-    },
-    {
-      "id": "evidence_refresh_output",
-      "path": "examples/public-output.json"
-    },
-    {
-      "id": "requirements_output",
-      "path": "examples/public-requirements-output.json"
-    },
-    {
-      "id": "planning_output",
-      "path": "examples/public-planning-output.json"
-    },
-    {
-      "id": "implementation_output",
-      "path": "examples/public-implementation-output.json"
-    },
-    {
-      "id": "blocked_output",
-      "path": "examples/public-blocked-output.json"
-    },
-    {
-      "id": "requirements_authoring",
-      "path": "examples/requirements-authoring.json"
-    },
-    {
-      "id": "evidence_refresh_authoring",
-      "path": "examples/evidence-refresh-authoring.json"
-    }
+  "schemas":[
+    {"id":"public_input","path":"schemas/public-input.schema.json"},{"id":"semantic_result","path":"schemas/semantic-result.schema.json"},
+    {"id":"public_output","path":"schemas/public-output.schema.json"},{"id":"planning_output","path":"schemas/public-planning-output.schema.json"},
+    {"id":"session_output","path":"schemas/public-session-output.schema.json"},{"id":"resume_output","path":"schemas/public-resume-output.schema.json"},
+    {"id":"source_output","path":"schemas/public-source-output.schema.json"},{"id":"blocked_output","path":"schemas/public-blocked-output.schema.json"},
+    {"id":"reactivation_transaction","path":"schemas/reactivation-transaction.schema.json"},
+    {"id":"source_correction_transaction","path":"schemas/source-correction-transaction.schema.json"}
   ],
-  "schemas": [
-    {
-      "id": "public_input",
-      "path": "schemas/public-input.schema.json"
-    },
-    {
-      "id": "semantic_result",
-      "path": "schemas/semantic-result.schema.json"
-    },
-    {
-      "id": "public_output",
-      "path": "schemas/public-output.schema.json"
-    },
-    {
-      "id": "requirements_output",
-      "path": "schemas/public-requirements-output.schema.json"
-    },
-    {
-      "id": "planning_output",
-      "path": "schemas/public-planning-output.schema.json"
-    },
-    {
-      "id": "implementation_output",
-      "path": "schemas/public-implementation-output.schema.json"
-    },
-    {
-      "id": "evidence_refresh_output",
-      "path": "schemas/public-evidence-refresh-output.schema.json"
-    },
-    {
-      "id": "blocked_output",
-      "path": "schemas/public-blocked-output.schema.json"
-    }
+  "validators":[{"id":"public_invocation","command":"scripts/invoke.sh","runtime_command":"invoke-guru-reactivate-task","objective_scope":"Validate exact archive, shared acquisition, branch/ledger successor and same-transaction recovery."}],
+  "external_exits":[
+    {"id":"reactivated_to_planning","evidence":"new planning incarnation and branch binding","consumer":{"kind":"workflow","id":"task-planning-router"}},
+    {"id":"session_binding_recovery_required","evidence":"new incarnation requires the Bind owner","consumer":{"kind":"workflow","id":"task-session-recovery-router"}},
+    {"id":"resume_reactivation","evidence":"same transaction recovered without a second mutation","consumer":{"kind":"workflow","id":"task-reactivation-resume-router"}},
+    {"id":"source_correction_required","evidence":"reviewed source correction applied to archived task before generation advance","consumer":{"kind":"workflow","id":"task-source-correction-router"}},
+    {"id":"reactivate_blocked","evidence":"archive, checkout or control state cannot be proven","consumer":{"kind":"stop","id":"task-reactivate-blocked"}}
   ],
-  "validators": [
-    {
-      "id": "public_invocation",
-      "command": "scripts/invoke.sh",
-      "runtime_command": "invoke-guru-reactivate-task",
-      "objective_scope": "Validate archived identity and project one fresh reactivation route."
-    }
-  ],
-  "external_exits": [
-    {
-      "id": "reactivated_to_requirements",
-      "evidence": "same task reactivated for requirements",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-clarify-requirements"
-      }
-    },
-    {
-      "id": "reactivated_to_planning",
-      "evidence": "same task reactivated for planning",
-      "consumer": {
-        "kind": "workflow",
-        "id": "task-planning-router"
-      }
-    },
-    {
-      "id": "reactivated_to_implementation",
-      "evidence": "same task reactivated for implementation",
-      "consumer": {
-        "kind": "workflow",
-        "id": "guru-resume-implementation"
-      }
-    },
-    {
-      "id": "reactivated_to_evidence_refresh",
-      "evidence": "same task reactivated for evidence refresh",
-      "consumer": {
-        "kind": "skill",
-        "id": "guru-review-task-completion"
-      }
-    },
-    {
-      "id": "reactivate_blocked",
-      "evidence": "archive or workspace identity cannot be proven",
-      "consumer": {
-        "kind": "stop",
-        "id": "task-reactivate-blocked"
-      }
-    }
-  ],
-  "reentry": {
-    "identity": "archived task id, archive locator, target base and selected route",
-    "freshness": "reread archive and current workspace before write",
-    "stale_behavior": "fail_closed"
-  },
-  "tests": [
-    "tests/test_reactivate_contract.py"
-  ],
-  "platform_destinations": [
-    "shared",
-    "claude",
-    "cursor",
-    "opencode",
-    "codex",
-    "kilo",
-    "kiro",
-    "gemini",
-    "antigravity",
-    "devin",
-    "qoder",
-    "codebuddy",
-    "copilot",
-    "droid",
-    "dsh",
-    "pi",
-    "reasonix",
-    "zcode",
-    "trae",
-    "omp",
-    "grok",
-    "kimi",
-    "snow"
-  ],
-  "public_contracts": {
-    "input": {
-      "kind": "structured_json",
-      "aggregate_schema": {
-        "schema_id": "guru-reactivate-task-input-1.0",
-        "path": "schemas/public-input.schema.json"
-      },
-      "profiles": [
-        {
-          "id": "reactivate_completed_task",
-          "schema": {
-            "schema_id": "guru-reactivate-task-input-1.0",
-            "path": "schemas/public-input.schema.json"
-          },
-          "example": {
-            "id": "input",
-            "path": "examples/public-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "reactivate_completed_task"
-          }
-        }
-      ]
-    },
-    "invocation": {
-      "command_id": "run-skill-command",
-      "wrapper": "scripts/invoke.sh",
-      "input_binding": {
-        "kind": "structured_json",
-        "profile_id": "reactivate_completed_task"
-      },
-      "stdout_contract": "single_typed_exit",
-      "error_schema": {
-        "schema_id": "guru-reactivate-task-output-1.0",
-        "path": "schemas/public-output.schema.json"
-      },
-      "error_example": {
-        "id": "input",
-        "path": "examples/public-input.json"
-      },
-      "example_argv": [
-        "--input",
-        "examples/public-input.json",
-        "--semantic-result",
-        "examples/semantic-result.json"
-      ]
-    },
-    "outputs": [
-      {
-        "exit_id": "reactivated_to_requirements",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-requirements-1.0",
-          "path": "schemas/public-requirements-output.schema.json"
-        },
-        "example": {
-          "id": "requirements_output",
-          "path": "examples/public-requirements-output.json"
-        },
-        "consumer_use_ids": [
-          "requirements"
-        ]
-      },
-      {
-        "exit_id": "reactivated_to_planning",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-planning-1.0",
-          "path": "schemas/public-planning-output.schema.json"
-        },
-        "example": {
-          "id": "planning_output",
-          "path": "examples/public-planning-output.json"
-        },
-        "consumer_use_ids": [
-          "planning"
-        ]
-      },
-      {
-        "exit_id": "reactivated_to_implementation",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-implementation-1.0",
-          "path": "schemas/public-implementation-output.schema.json"
-        },
-        "example": {
-          "id": "implementation_output",
-          "path": "examples/public-implementation-output.json"
-        },
-        "consumer_use_ids": [
-          "implementation"
-        ]
-      },
-      {
-        "exit_id": "reactivated_to_evidence_refresh",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-evidence-refresh-1.0",
-          "path": "schemas/public-evidence-refresh-output.schema.json"
-        },
-        "example": {
-          "id": "evidence_refresh_output",
-          "path": "examples/public-output.json"
-        },
-        "consumer_use_ids": [
-          "evidence"
-        ]
-      },
-      {
-        "exit_id": "reactivate_blocked",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-blocked-1.0",
-          "path": "schemas/public-blocked-output.schema.json"
-        },
-        "example": {
-          "id": "blocked_output",
-          "path": "examples/public-blocked-output.json"
-        },
-        "consumer_use_ids": [
-          "blocked"
-        ]
-      }
+  "reentry":{"identity":"archived TaskLifecycleKey and call-local acquisition transaction","freshness":"revalidate live base, target checkout, branch and ledger","stale_behavior":"fail_closed"},
+  "tests":["tests/test_reactivate_contract.py"],
+  "platform_destinations":["shared","claude","cursor","opencode","codex","kilo","kiro","gemini","antigravity","devin","qoder","codebuddy","copilot","droid","dsh","pi","reasonix","zcode","trae","omp","grok","kimi","snow"],
+  "public_contracts":{
+    "input":{"kind":"structured_json","aggregate_schema":{"schema_id":"guru-reactivate-task-input-2.0","path":"schemas/public-input.schema.json"},"profiles":[{"id":"reactivate_completed_task","schema":{"schema_id":"guru-reactivate-task-input-2.0","path":"schemas/public-input.schema.json"},"example":{"id":"input","path":"examples/public-input.json"},"discriminator":{"field":"profile","value":"reactivate_completed_task"}}]},
+    "invocation":{"command_id":"run-skill-command","wrapper":"scripts/invoke.sh","input_binding":{"kind":"structured_json","profile_id":"reactivate_completed_task"},"stdout_contract":"single_typed_exit","error_schema":{"schema_id":"guru-reactivate-task-output-2.0","path":"schemas/public-output.schema.json"},"error_example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"example_argv":["--input","examples/public-input.json","--semantic-result","examples/semantic-result.json"]},
+    "outputs":[
+      {"exit_id":"reactivated_to_planning","schema":{"schema_id":"guru-reactivate-task-output-planning-2.0","path":"schemas/public-planning-output.schema.json"},"example":{"id":"planning_output","path":"examples/public-planning-output.json"},"consumer_use_ids":["planning"]},
+      {"exit_id":"session_binding_recovery_required","schema":{"schema_id":"guru-reactivate-task-output-session-2.0","path":"schemas/public-session-output.schema.json"},"example":{"id":"session_output","path":"examples/public-session-output.json"},"consumer_use_ids":["session"]},
+      {"exit_id":"resume_reactivation","schema":{"schema_id":"guru-reactivate-task-output-resume-2.0","path":"schemas/public-resume-output.schema.json"},"example":{"id":"resume_output","path":"examples/public-resume-output.json"},"consumer_use_ids":["resume"]},
+      {"exit_id":"source_correction_required","schema":{"schema_id":"guru-reactivate-task-output-source-2.0","path":"schemas/public-source-output.schema.json"},"example":{"id":"source_output","path":"examples/public-source-output.json"},"consumer_use_ids":["source"]},
+      {"exit_id":"reactivate_blocked","schema":{"schema_id":"guru-reactivate-task-output-blocked-2.0","path":"schemas/public-blocked-output.schema.json"},"example":{"id":"blocked_output","path":"examples/public-blocked-output.json"},"consumer_use_ids":["blocked"]}
     ],
-    "consumer_inputs": [
-      {
-        "id": "requirements",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-clarify-requirements"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-clarify-requirements/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "active_task_scope_change",
-          "seed_fields": [
-            "source_exit",
-            "task_locator",
-            "resume_target"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode",
-            "target_locator",
-            "continuation_id"
-          ],
-          "authoring_example": {
-            "id": "requirements_authoring",
-            "path": "examples/requirements-authoring.json"
-          }
-        }
-      },
-      {
-        "id": "planning",
-        "consumer": {
-          "kind": "workflow",
-          "id": "task-planning-router"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-reactivate-task-route-1.0",
-          "path": "consumers/workflow/production/reactivate-route.schema.json"
-        }
-      },
-      {
-        "id": "implementation",
-        "consumer": {
-          "kind": "workflow",
-          "id": "guru-resume-implementation"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-reactivate-task-route-1.0",
-          "path": "consumers/workflow/production/reactivate-route.schema.json"
-        }
-      },
-      {
-        "id": "evidence",
-        "consumer": {
-          "kind": "skill",
-          "id": "guru-review-task-completion"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-completion/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "evidence_refresh",
-          "seed_fields": [
-            "source_exit",
-            "task_ref",
-            "resume_target"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode",
-            "authority_refs",
-            "delivery_facts",
-            "evidence_refs"
-          ],
-          "authoring_example": {
-            "id": "evidence_refresh_authoring",
-            "path": "examples/evidence-refresh-authoring.json"
-          }
-        }
-      },
-      {
-        "id": "blocked",
-        "consumer": {
-          "kind": "stop",
-          "id": "task-reactivate-blocked"
-        },
-        "payload_kind": "zero_payload"
-      }
+    "consumer_inputs":[
+      {"id":"planning","consumer":{"kind":"workflow","id":"task-planning-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-task-route-2.0","path":"consumers/workflow/production/reactivate-route.schema.json"}},
+      {"id":"session","consumer":{"kind":"workflow","id":"task-session-recovery-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-session-route-2.0","path":"consumers/workflow/production/reactivate-session.schema.json"}},
+      {"id":"resume","consumer":{"kind":"workflow","id":"task-reactivation-resume-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-resume-route-2.0","path":"consumers/workflow/production/reactivate-resume.schema.json"}},
+      {"id":"source","consumer":{"kind":"workflow","id":"task-source-correction-router"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-source-route-2.0","path":"consumers/workflow/production/reactivate-source.schema.json"}},
+      {"id":"blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-blocked-route-2.0","path":"consumers/stop/production/reactivate-blocked.schema.json"}}
     ],
-    "projections": [
-      {
-        "id": "requirements",
-        "exit_id": "reactivated_to_requirements",
-        "consumer_input_id": "requirements",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_locator"
-          },
-          {
-            "source": "resume_target",
-            "target": "resume_target"
-          }
-        ]
-      },
-      {
-        "id": "planning",
-        "exit_id": "reactivated_to_planning",
-        "consumer_input_id": "planning",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "exit_id"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "resume_target",
-            "target": "resume_target"
-          }
-        ]
-      },
-      {
-        "id": "implementation",
-        "exit_id": "reactivated_to_implementation",
-        "consumer_input_id": "implementation",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "exit_id"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "resume_target",
-            "target": "resume_target"
-          }
-        ]
-      },
-      {
-        "id": "evidence",
-        "exit_id": "reactivated_to_evidence_refresh",
-        "consumer_input_id": "evidence",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "resume_target",
-            "target": "resume_target"
-          }
-        ]
-      },
-      {
-        "id": "blocked",
-        "exit_id": "reactivate_blocked",
-        "consumer_input_id": "blocked",
-        "operation": "select",
-        "mappings": []
-      }
-    ],
-    "private_artifacts": []
+    "projections":[
+      {"id":"planning","exit_id":"reactivated_to_planning","consumer_input_id":"planning","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_id","target":"task_id"},{"source":"task_ref","target":"task_ref"},{"source":"lifecycle_generation","target":"lifecycle_generation"},{"source":"binding_epoch","target":"binding_epoch"},{"source":"binding_revision","target":"binding_revision"},{"source":"session_outcome","target":"session_outcome"}]},
+      {"id":"session","exit_id":"session_binding_recovery_required","consumer_input_id":"session","operation":"direct"},
+      {"id":"resume","exit_id":"resume_reactivation","consumer_input_id":"resume","operation":"direct"},
+      {"id":"source","exit_id":"source_correction_required","consumer_input_id":"source","operation":"direct"},
+      {"id":"blocked","exit_id":"reactivate_blocked","consumer_input_id":"blocked","operation":"direct"}
+    ],"private_artifacts":[{"id":"reactivation_transaction","kind":"runtime_checkpoint","schema":{"schema_id":"guru-reactivate-task-transaction-1.0","path":"schemas/reactivation-transaction.schema.json"},"persistence":"ignored_runtime"},{"id":"source_correction_transaction","kind":"runtime_checkpoint","schema":{"schema_id":"guru-reactivate-task-source-transaction-1.0","path":"schemas/source-correction-transaction.schema.json"},"persistence":"ignored_runtime"}]
   }
 }

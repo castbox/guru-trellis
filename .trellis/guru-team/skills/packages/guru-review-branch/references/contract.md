@@ -46,10 +46,11 @@ and does not accept this new variant or change its blocked semantics.
 
 The `archived_review_passed` DTO contains task_ref, branch_review_commit A,
 pr_payload_snapshot_sha256 and reviewed_base_head B, plus exit_id. Its sole
-consumer is Publication's target-owned `archived_publication_review` seed:
-select those four payload fields; target authoring adds only profile and mode.
-Publication must reject a changed B or title/body snapshot. Full current
-review bodies, findings, private checkpoint and the PR number remain private.
+current consumer is the `legacy-archived-review-disposition-required` stop.
+It is read-only historical evidence, not a seed for Delivery, Completion or
+Reactivate. The old Publication consumer is available only in a pinned old
+graph; it is not invoked from the current graph. Full review bodies, findings,
+private checkpoint and the PR number remain private.
 
 ### Ordinary Entry
 
@@ -194,7 +195,7 @@ persisted. A closure reviewer never also performs the fresh final review.
 
 An Architecture promotion diff follows the same rule: it returns through fresh
 Phase 2 Architecture/check, a new task commit, and an independent complete-range
-Branch Review. Only that post-promotion review can support the later Publication
+Branch Review. Only that post-promotion review can support the later Delivery Review
 Architecture stage; no pre-promotion Branch Review or Phase 2 conclusion is
 reused.
 
@@ -242,7 +243,7 @@ checkpoint and empty owner directory. `implementation_required` and
 `scope_confirmation_required` retain the same checkpoint for their mapped
 same-owner re-entry; a
 duplicate invocation deterministically returns the same DTO and creates no
-second state. Publication receives only the minimal typed DTO and live Git
+second state. Delivery Review receives only the minimal typed DTO and live Git
 facts; it never reads or deletes Branch Review private state. A failed checker
 or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
@@ -262,7 +263,7 @@ rewrites, or migrates them.
 Return exactly one of:
 
 - `passed`: minimal `task_ref`, `branch_review_commit` seed for
-  `guru-review-task-publication`, only after the current Branch Review-stage
+  `guru-review-task-delivery`, only after the current Branch Review-stage
   Architecture result passes independently;
 - `continuity_passed`: current-only schema 2.0 projects the exact pair and
   candidate identity to the workflow-owned `guru-base-continuity-passed-router`,

@@ -17,6 +17,20 @@ generation. A ready correction accompanying acquisition is also applied in
 the Reactivate transaction and bound to its recovery receipt, including when
 the selected checkout predates the separate archive correction. Confirm source correction or acquisition side effects in the
 current dialogue.
+For a normally committed old schema-2 archive, absent generation or explicit
+generation zero with a matching retired `task.json.archive_dir` uses the
+unique Git archive and old Finalizer-residue check when no C5 ledger exists.
+Other explicit-generation archives require the current Finish seal or exact
+manual Cleanup receipt. An empty old finish-summary Issue index does not
+exclude a candidate whose committed task source identifies the Issue.
+When an old archive has no structured or parseable source but its committed
+finish-summary indexes the Issue, the index is discovery evidence only. The AI
+reviews the source against the old ledger and Issue; a source correction must
+be applied before Reactivate can advance the generation.
+For old backfilled summaries, the unique Git addition identifies the archive
+lineage; the terminal summary is the latest committed version at the reviewed
+head and must match the working tree. A normal committed backfill revision does
+not invalidate that lineage.
 
 The executor keeps TaskId, moves the archived artifact into the active locator,
 increments the generation and enters planning. It composes the shared checkout,
@@ -31,4 +45,5 @@ The package-local transaction identifies the exact acquisition and branch
 successor without a persisted checkout path. Same-transaction recovery reads
 live Git, task and ledger facts without repeating mutations. Partial or stale
 states block; no direct requirements, implementation or evidence-refresh route
-is part of this package. Production router activation belongs to #434.
+is part of this package. The active #434 workflow router consumes its typed
+result without transferring Reactivate's package-local recovery ownership.

@@ -15,21 +15,23 @@ Guru Trellis 是 Guru Team 面向业务研发仓库提供的 Trellis 团队扩�
 
 ## 已归档任务复审
 
-已归档任务的只读复审由原 Merge、Branch Review、Publication、Finalizer owners
-依次完成，入口为 Merge 的 `archived_review_request`。它重新审查现有 PR 与归档，
-不恢复 task 状态、不改写 history/PR，也不把已退休的 checkpoint 当作额外门禁。
-复审成功才产生新的 `ready_for_merge`；实际合并仍需独立审核与确认。
-输入和失败条件以所安装的
-[Skill 合同](trellis/skills/guru-team/packages/guru-merge-task-pr/SKILL.md) 为准；
-源码能力不代表历史 release 已包含它。
+旧链产生的已归档任务只读复审不能在当前图中接回旧 Merge、Publication、
+Finalizer 或 `ready_for_merge`。当前 Branch Review 的 `archived_review_passed`
+止于 `legacy-archived-review-disposition-required`，须核对任务、归档、PR、
+本地/远端 HEAD、base 与旧 Finalizer 事实后，在兼容的 pinned-old 版本完成，
+或逐案人工处置；不得伪投影为新 Delivery/Completion/Finish 结果。正常完成的
+旧归档若需再次工作，使用当前 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md)
+重新验证唯一 TaskId、来源 Issue 和终态 Git 身份。旧链在途 residue 不是
+Reactivate 的正常结束输入；详见 [当前 workflow](trellis/workflows/guru-team/workflow.md)。
 
 ## 当前框架来源
 
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到已审查的 Fork lifecycle primitive commit
-`eb370008c7689d4e272ae626bd002190ecbb3296`，并记录对应 CI `35621578090`。
+当前 source candidate 固定到已审查的 Fork lifecycle primitive、跨工作树续接、
+无 context key 回退与显式 TaskId 校验修复 commit
+`71f43cd8955c676f8ab8215216f61376fe9c01fe`，对应 main CI `36332562361`。
 CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
@@ -69,8 +71,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | --- | --- |
 | Current target Guru Trellis repo tag | `v0.6.17-guru.1` |
 | Target Guru Team extension revision | `0.6.17-guru.42` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `eb370008c7689d4e272ae626bd002190ecbb3296` |
-| Reviewed Fork lifecycle primitive CI identity | `35621578090` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `71f43cd8955c676f8ab8215216f61376fe9c01fe` |
+| Reviewed Fork lifecycle primitive CI identity | `36332562361` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标
@@ -259,13 +261,12 @@ Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/
 
 Guru Team preset 提供面向规划、实现检查、任务提交、分支审查、发布审核和最终收口的协作能力，使每个阶段都能读取前序结果，同时保持职责清晰。
 
-发布审核由 Publication 在同一个语义循环中生成并审查准确的中文 PR 标题与正文，随后以包含任务、分支审查提交和标题正文的五字段 4.0 结果直接交给 Finalizer，不再创建 task-local PR body 或索引交接文件。Publication 基于 current requirement authority、reviewed diff 与目标分支独占判断 Issue 引用和关闭意图；Finalizer 只把该 PR payload 与实时仓库事实绑定为当前 finalization transaction，并在草稿 PR 建立后一次生成 finish summary 2。历史归档中的旧 closeout 与 finish summary 1 只作为不可变历史保留，不提供 current runtime 兼容或迁移。
+当前交付由 `guru-review-task-delivery` 根据 accepted slice、current requirement authority、完整 reviewed diff 与目标分支审查中文 Refs-only PR 标题正文。其 `ready` 交给 `guru-publish-task-delivery` 完成 push/PR/Ready；`ready_for_merge` 再交给 `guru-merge-task-delivery` 做独立 expected-head merge。Merge 只产生一次 Delivery result，task 保持 active；`guru-review-task-completion` 随后判断剩余工作，只有 `completed` 才进入 Closure、Finish 与 Cleanup。旧 Publication/Finalizer/Merge closeout 和 finish summary 1/2 仅是历史或 pinned-old 版本事实，不提供当前 runtime adapter。
 
-安装到业务仓库后的 Finalizer 在需要刷新 provenance metadata tail 时，会把业务目标与
-Guru Trellis 扩展源码作为两个独立 checkout：业务 checkout 只接收 manifest tail，扩展源码
-checkout 只提供 canonical preset 实现。self-hosted 模式绑定业务 reviewed HEAD；installed
-模式按 manifest 中的 immutable repo/ref/commit 精确检出源码。它不会要求业务仓库携带
-`trellis/presets/**` source tree，也不会调用 standalone extension verifier。
+旧 Finalizer 的 provenance metadata-tail 行为属于 pinned-old 交付链，不能作为当前
+Delivery/Finish 的入口。当前安装来源仍由 manifest 中的 immutable repo/ref/commit 和
+canonical preset 界定；业务仓库不需要携带 `trellis/presets/**` source tree，也不会在
+业务 Delivery 中调用 standalone extension verifier。
 
 ### 多平台一致体验
 
@@ -313,8 +314,8 @@ Skill。维护者提供 target repository、current release Issue、目标 repo 
 revision、官方 Trellis CLI version 和 predecessor tag；Skill 每次重新读取 live Git/GitHub authority，先
 编排 preparation task/PR，再在合并后从 fresh `origin/main` 冻结 exact candidate。
 
-preparation 继续由 standard intake、Phase 2、Task Commit、一次完整 Branch Review、
-Publication、Finalizer 和 Merge owners 各自负责；post-merge 阶段只组合 release-specific
+preparation 继续由 standard intake、Phase 2、Task Commit、晋升前后各一次完整 Branch Review、
+Delivery Review、Publish、Merge、Completion、Closure、Finish 和 Cleanup owners 各自负责；post-merge 阶段只组合 release-specific
 检查以及彼此独立的 tag、tag-pinned smoke、GitHub Release、Issue closure 和 cleanup 动作。
 每个外部副作用都必须单独展示并取得仅适用于该动作的确认。
 

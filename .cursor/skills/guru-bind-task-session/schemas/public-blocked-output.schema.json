@@ -1,1 +1,11 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-bind-task-session-output-blocked-1.0","type":"object","additionalProperties":false,"required":["exit_id"],"properties":{"exit_id":{"const":"binding_blocked"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-bind-task-session-output-blocked-2.0",
+  "type": "object", "additionalProperties": false,
+  "required": ["exit_id", "reason_code", "reason_refs"],
+  "properties": {
+    "exit_id": {"const": "binding_blocked"},
+    "reason_code": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "reason_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

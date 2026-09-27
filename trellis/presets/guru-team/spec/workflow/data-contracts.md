@@ -1,5 +1,28 @@
 # Data Contracts
 
+## Current Delivery Lifecycle Boundary
+
+The #434 canonical candidate selects the active registry, Interface and
+`trellis/workflows/guru-team/workflow.md` graph as current contracts. One active
+TaskId may have ordered Delivery cycles: `guru-review-branch:passed` ->
+`guru-review-task-delivery:ready` -> `guru-publish-task-delivery:ready_for_merge`
+-> `guru-merge-task-delivery:delivered` -> `guru-review-task-completion`.
+Delivery PRs use `Refs` only. A merge is a Delivery fact, not a whole-task pass,
+Issue closure, or archive. Completion's `completed` alone enters
+`guru-complete-task-closure`; its `closed` or `no_mutation` result enters
+`guru-finish-task`, whose verified bookkeeping archive result enters
+`guru-cleanup-task-resources`. Incomplete Completion routes keep the task
+active. A normally finished archive may enter `guru-reactivate-task` under the
+same TaskId and a new lifecycle generation.
+
+The historical Publication (`guru-review-task-publication`), Finalizer
+(`guru-finalize-task`), PR Merge (`guru-merge-task-pr`) and Restore
+(`guru-restore-archived-task`) contracts below are pinned-old-only. Their
+schema names, examples and recovery rules describe their original versions;
+none is a current producer, consumer, fallback, or adapter for the #434 graph.
+An old in-flight closeout requires a pinned compatible old graph or reviewed
+manual disposition, not projection of its DTO into Delivery/Completion/Finish.
+
 ## Configuration
 
 `trellis/workflows/guru-team/config-template.yml` is the reusable default
@@ -71,7 +94,7 @@ object:
 | `context_current` | current base identity, target locator, context continuation and authoritative-content freshness | `guru-clarify-requirements` |
 | `clarity_current` | current context identity, target disposition, scope/authority content identity and clarity checker token | `guru-review-contract-wording` |
 | `wording_current` | current clarity identity, fixed wording profile, target content identity and wording checker token | `guru-review-change-request` |
-| `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-create-task-workspace` |
+| `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-task-intake-router` (current Issue/task creation route) |
 
 The base provenance is a closed source-preserving value containing resolution
 source, selected base, remote, ordered candidates, decision HEAD, local base
@@ -126,8 +149,9 @@ next guard, while `resolution.source` remains the
 `explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
 prepare-generated explicit override. No task artifact persists the complete
 base resolution/result payload, process output, or machine path. Current task
-identity comes from official `task.json`, ignored runtime mapping, and live Git
-worktree facts.
+identity comes from the canonical TaskId/generation artifact, its Git common-dir
+branch binding, and live registered worktree facts. Retired task/workspace
+mappings and `task.json.branch` are not current identity inputs.
 
 `prepare-task` is compatibility-only and never produces a current transition.
 An explicit call must receive the complete reviewed base provenance above.
@@ -412,7 +436,8 @@ The installed manifest is one closed current contract:
 
 The installed manifest is installer and ownership provenance only. Its presence,
 content, drift, or changed path never makes extension verification applicable to
-a business task, Publication, Finalizer, finish-work, re-entry, or recovery.
+a business task, Delivery, Completion, Finish, re-entry, or recovery (nor to
+historical Publication/Finalizer).
 `guru-verify-extension-installation` instead validates the live clean canonical
 source checkout and its `origin`/requested-ref/HEAD identity before any clone,
 tempdir, installer, artifact write, or mutation. Its private result belongs only
@@ -439,21 +464,22 @@ The canonical and installed extension manifests publish one closed current
 contract under `public_api.skill_contracts`:
 
 - `interface_schema_id` is `guru-team-skill-interface-1.4`, with
-  `interface_schema_ids` publishing current 1.4, 1.5, and 1.6 selectors;
+  `interface_schema_ids` publishing current 1.4, 1.5, 1.6, and 1.7 selectors;
 - `registry_schema_id` is `guru-team-skill-registry-1.4`;
 - `public_input_schema_ids`, `typed_output_schema_ids`, and
   `private_artifact_schema_ids` are exact inventories from all active
   production packages.
 
-The current Intake closure is derived only from the live registry, current
-Interface 1.4 packages, workflow markers, extension inventories, eval corpora,
+The following Intake cardinalities are pinned-old snapshots, not current #434
+graph assertions. In that graph Intake closure was derived from the live
+registry, Interface 1.4 packages, workflow markers, extension inventories, eval corpora,
 and selected-platform copies. It contains six packages and 23 exits. A
 workspace/task mutation refusal stops in dialogue before recorder/executor,
 and the current `guru-sync-base` scalar contract delegates omitted optional
 arguments to the formal resolver. Source validation, discovery, invocation, and
 install consume exactly this live closure.
 
-The sole current manifest is
+The current four-package production submanifest is
 `trellis/skills/guru-team/contracts/production-current-4.0.json`, with schema id
 `guru-team-production-contract-manifest-4.0` and contract id
 `production-current-v4`. It binds exactly the three planning/check/commit
@@ -463,20 +489,23 @@ projections, private artifact ids, four authoring-seed edges, the 160 x 5 host
 production control, and canonical eval cases. Inputs and owner artifacts must
 validate against the current package schemas; versioned v2/v3 files are
 immutable legacy assets and no alternate executor, projection, or manifest
-participates in current invocation.
+participates in those package invocations. This submanifest is not a complete
+inventory of the #434 lifecycle graph; the live registry and workflow select
+the Delivery and terminal packages separately.
 
-The source and installed closure algorithm reads the live registry, current
+The source and installed closure algorithm reads the live registry, selected
 package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. Twenty-eight active rows select Interface
 1.4; `guru-create-task-workspace` and the two qualification packages select
 Interface 1.6; the standalone verifier selects Interface 1.5. Exact profile, exit,
 consumer, projection, current-case, and authoring-edge equality is required.
-Thirty-two Skills, 142 exits, and 102 commands are the current package
-cardinality regression, not
-a hard-coded future registry allowlist; the business workflow independently
-asserts 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
+Thirty-two Skills, 142 exits, and 102 commands were that snapshot's package
+cardinality regression, not a current registry allowlist; its business workflow
+asserted 22 invokes, 98 exits, 35 workflow targets, and 24 stop targets.
+The #434 candidate derives its counts from the live registry, Interface and
+workflow markers rather than reusing these old values.
 
-The production manifest also binds the exact four
+That four-package production submanifest also binds the exact four
 `skill_input_authoring_seed` edges. Each binding names the target Interface and
 profile, projected `seed_fields`, target-owned `authoring_fields`, and the
 package-local authoring example id. Interface and manifest validation require
@@ -554,9 +583,10 @@ names only after the new tag is verified.
 
 Current AI-first tasks use official Trellis `task.json` as their tracked task
 identity and create no Guru-owned durable Intake aggregate. Runtime resolves
-the worktree from current `task.json`, the checkout,
-ignored runtime mapping, and live `git worktree list` facts. Any missing or
-mismatched identity fails closed; no alternate task identity artifact is read.
+the worktree from the canonical TaskId/lifecycle generation artifact, its Git
+common-dir branch binding, and live registered checkout facts. Any missing or
+mismatched identity fails closed; `task.json.branch` and old task/workspace
+mappings do not establish current identity.
 
 Local-only reusable mappings live under the gitignored producer namespace:
 
@@ -565,7 +595,7 @@ Local-only reusable mappings live under the gitignored producer namespace:
 
 Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from current `task.json`, the checkout, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
 
-Finalizer's archive executor must converge the same task's existing source and
+In the pinned-old graph, Finalizer's archive executor had to converge the same task's existing source and
 target `task_artifact_dir` projections to the exact committed archive locator.
 Validate both task/workspace mappings and registered owner identity before
 either write; preserve workspace/branch/source identities and unrelated
@@ -575,8 +605,8 @@ fail-closed; boundary validators remain read-only and cannot perform a repair.
 The source mapping points into the task workspace, so archive convergence does
 not create a second tracked archive in the source checkout.
 
-Query-only `prepare-task` writes neither task context nor runtime cache. Active
-`guru-create-task-workspace` is the only creator. On successful workspace/task
+Query-only `prepare-task` writes neither task context nor runtime cache. In the
+pinned-old graph, `guru-create-task-workspace` was the sole creator. On successful workspace/task
 creation it writes official `task.json` and ignored source/target runtime
 mappings. Upstream checker results and workspace
 plan/result stay in ignored owner-private runtime and are reread only by their
@@ -619,13 +649,14 @@ transition. `recovery` accepts only the same exact task already current as
 mutation. The mode and confirmation are not stored in `task.json`, runtime
 mappings, owner checkpoints, public DTOs, schemas, or archives.
 
-Branch Review and Publication public outputs remain call-local. Their successful
+Branch Review and Delivery Review public outputs remain call-local. Their
+successful
 private checkpoints retire after output validation; a later missing DTO causes
 a fresh semantic run and never causes a data reconstruction. Old conversation
 text, commit messages, clean state, PR text, task status, or checkpoint absence
 is not result evidence.
 
-## Finish Summary
+## Finish Summary (Shared Schema; Historical Finalizer Writer Below)
 
 `trellis/workflows/guru-team/schemas/finish-summary.schema.json` is the current
 finish-work summary SSOT. The only accepted generator is
@@ -642,7 +673,8 @@ Git paths. The generator sorts and deduplicates Git paths by exact string, and
 validators still reject exact duplicates. Non-path semantic and search-token
 string arrays continue to reject duplicates after text normalization.
 
-Current finish-summary schema version 2 has no task-local semantic input file.
+In the pinned-old Finalizer graph, finish-summary schema version 2 has no
+task-local semantic input file.
 Finalizer builds it once from the exact Publication-reviewed PR payload,
 `task.json`, ignored runtime identity, live Git, archived
 artifact existence, UTC time, and the unique publish output. `index.problem`
@@ -721,7 +753,7 @@ or manufacture transition state.
 
 ## Workspace Boundary Snapshot
 
-`check-workspace-boundary --json` resolves the task from `--task` or current
+`check-task-checkout-boundary --json` resolves the task from `--task` or current
 task, validates `task.json` plus ignored task/workspace mappings and live Git
 worktree identity, then derives the expected workspace. The command never
 trusts a committed absolute workspace path or alternate task identity artifact.
@@ -845,7 +877,7 @@ target mismatch, real title/body drift and draft source-authority mismatch.
 Handwritten flat projections cannot prove this chain. Shape errors fail with
 `schema_mismatch`; actual target/content drift remains `stale_identity`.
 
-## Task Workspace Plan And Result
+## Task Workspace Plan And Result (Historical Creator; Pinned-Old-Only)
 
 Schema `guru-task-workspace-plan-2.0` is a closed ignored-runtime plan produced by
 `record-task-workspace-plan`. It binds skill/mode/invocation identity; the five
@@ -949,10 +981,9 @@ by the workflow/interface graph. Unknown, missing, duplicate, multi-exit,
 profile/caller mismatch, stale identity, or consumer mismatch fails closed.
 
 No schema defines a qualification result/report/checkpoint locator. The checked
-result is process-local stdout and expires when the invocation ends. Phase 2
-and Publication current schema 5.0 gates and the Branch Review current schema
-6.0 gate independently record only terminal qualified/rejected classifications
-for their own direct consumers.
+result is process-local stdout and expires when the invocation ends. Phase 2,
+Branch Review and Delivery Review's selected gates independently record only
+terminal qualified/rejected classifications for their own direct consumers.
 Every row contains unique `candidate_ref`, one terminal decision, a six-field
 witness (`requirement_refs`, `supported_entry_refs`,
 `existing_caller_refs`, `honest_action_sequence`, `defect_observation`,
@@ -1168,7 +1199,20 @@ or a platform wait timeout. The checkpoint is owner-private recovery input and
 is not a Phase 2 dimension, Branch Review prerequisite, public DTO, tracked
 handoff or archive artifact.
 
-## External Work Item Publication Effect
+## External Work Item Effect
+
+In the #434 graph, every business Delivery PR has a reviewed `Refs`-only
+payload, including a PR targeting the default branch. Delivery Review owns
+that payload; Publish preserves it; Delivery Merge verifies the exact PR/head
+and returns only a Delivery result. Neither PR creation nor merge closes the
+Issue, archives the task, or asserts Completion. Completion evaluates the
+entire accepted scope and current evidence after the Delivery result. Only its
+`completed` exit enters Closure, whose own fresh authority review and
+confirmation own the source Issue disposition. `no_mutation` is a real Closure
+result, not an inferred PR closing effect. Finish then owns lifecycle-only
+bookkeeping and archive persistence; Cleanup alone owns resource deletion.
+
+### Historical Publication Effect (Pinned-Old-Only)
 
 Publication rereads current requirement authority and live GitHub state and is
 the sole semantic owner of the PR's external-work-item effect. A fully delivered
@@ -1187,8 +1231,8 @@ an Issue-close API.
 
 `check-commit-messages --json` is an explicit standalone quality diagnostic for
 objective commit subject/body shape. `guru-create-task-commit` still validates
-the exact message it is about to create, but Branch Review, Publication, and
-Finalizer do not rerun range-level message parsing or use subject/body/`Refs` as
+the exact message it is about to create, but Branch Review and Delivery Review
+do not rerun range-level message parsing or use subject/body/`Refs` as
 freshness authority. Message-only deviation therefore cannot require a metadata
 commit while reviewed content identity is unchanged. The diagnostic must not
 decide whether implementation, Phase 2 check, Branch Review, or PR readiness is
@@ -1209,17 +1253,20 @@ When blocked, the command exits non-zero and returns `status=blocked` with
 `errors[]` entries that include the commit hash, subject, classified kind
 (`work`, `metadata`, `merge`, or `invalid`), and objective validation messages.
 
-The single archive transaction commit generated by finalization uses
+In the pinned-old Finalizer graph, the single archive transaction commit uses
 the Task Commit owner's reviewed Chinese metadata subject and an empty body. There
 is no separate readiness/evidence metadata commit.
 Commit message payloads must never use close keywords such as `Closes`,
 `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; those keywords remain PR
-body-only semantics controlled by Publication.
+body-only semantics controlled by Publication. In the #434 graph, business
+Delivery PRs remain `Refs`-only, and Finish bookkeeping has no Issue-closing
+keywords; Closure owns any Issue state mutation after Completion.
 
 ## Reviewed Content Identity
 
-`guru-reviewed-content-1.0` is the durable content-continuity contract shared
-by Branch Review, Publication, Finalizer, and source Verification. Its digest is
+`guru-reviewed-content-1.0` is the durable content-continuity contract. The
+following Publication/Finalizer consumer list is the pinned-old graph's use of
+that unchanged digest, not a current lifecycle edge. Its digest is
 SHA-256 over this canonical UTF-8 JSON payload, encoded with sorted object keys,
 no ASCII escaping, and compact separators:
 
@@ -1267,7 +1314,7 @@ implementation is stale: current loaders do not dual-read, migrate, rewrite,
 or synthesize it.
 Recovery is one fresh Branch Review over current authority and content.
 
-### Finalizer provenance source/target binding
+### Finalizer provenance source/target binding (Historical; Pinned-Old-Only)
 
 The pre-PR provenance metadata tail has two independent Git identities. The
 `target_reviewed_checkout` belongs to the task repository at
@@ -1359,9 +1406,9 @@ otherwise be `list[str]`; active children found by official exact/suffix lookup
 block only when their `task.json` would join the archive mutation, while archived
 children remain valid historical references.
 
-## Current Finalizer Transaction
+## Historical Finalizer Transaction (Pinned-Old-Only)
 
-Current Finalizer transaction schema `guru-finalization-transaction-3.0` is an
+The pinned-old Finalizer transaction schema `guru-finalization-transaction-3.0` is an
 owner-private, task-scoped ignored-runtime contract named
 `finalization-transaction.json`. It is persisted before the first remote
 mutation so the same owner can distinguish its own pushed state from an
@@ -1527,7 +1574,7 @@ An unfinished 4.0 owner-private candidate is not converted or supplemented. It
 is rejected or removed and the owner fully reprepares candidate 5.0 from current
 Phase 2 and live Git evidence.
 
-## Current Merge Gate And Results
+## Historical PR Merge Gate And Results (Pinned-Old-Only)
 
 `guru-merge-task-pr` owns one ignored-runtime semantic gate. Active public input
 2.0 binds canonical repository/PR identity, expected head SHA, reviewed
@@ -1561,7 +1608,7 @@ and merged commit identity. `merge_blocked` carries a closed reason/remediation.
 executor never calls Issue-close APIs, updates/rebases the PR branch,
 synchronizes local `main`, or cleans task resources.
 
-## Current Finalization Transaction
+## Historical Finalization Transaction (Pinned-Old-Only)
 
 Publication produces the exact reviewed PR title and body for one current task.
 Finalizer combines that DTO with live task, Git, remote, and archive facts to
@@ -1619,7 +1666,9 @@ python3 -m json.tool trellis/index.json
   `DEFAULTS`.
 - Adding an alternate task identity reader instead of using current
   `task.json`, ignored runtime mapping, and live Git worktree facts.
-- Letting Finalizer or Merge re-decide Publication's external-work-item effect.
+- Letting Delivery Publish/Merge decide Completion or Closure from PR state;
+  in the pinned-old graph, Finalizer/Merge likewise could not re-decide
+  Publication's reviewed effect.
 - Recording review-gate evidence that does not mention deployment impact.
 
 ## Skill Evaluation Data Contracts
@@ -1723,8 +1772,9 @@ completed execution; it does not claim a new grade-to-transcript byte digest.
 
 ## Branch Review Data Boundary
 
-Branch Review aggregate public input schema 5.0 dispatches three independent
-profiles, including read-only `archived_review` schema 1.0. The original
+Branch Review aggregate public input schema 5.0 includes three independent
+profiles. The read-only `archived_review` schema 1.0 has only a pinned-old
+Publication consumer, not a #434 graph successor. The original
 `branch_review` schema 2.0 profile contains workflow/standalone
 mode, task/base/`branch_review_commit` identity, and one of
 `initial_review|fresh_final_review`. The current-only `base_continuity` schema
@@ -1759,7 +1809,7 @@ exactly one of `qualified_finding`, `scope_proposal`,
 no severity and never selects an implementation route. Every semantic
 disposition row binds one candidate from the same gate.
 
-## Publication Readiness Gate
+## Historical Publication Readiness Gate (Pinned-Old-Only)
 
 Ignored-runtime `pr-readiness.json` is the only publication readiness gate.
 Current-only schema `guru-task-publication-readiness-5.0` stores only
@@ -1861,21 +1911,21 @@ candidate tree. After current-dialogue confirmation, the deterministic executor
 creates one local reconciliation commit. The bounded continuity input then
 requires `task_head == HEAD`, prior review and new base ancestry, and exact tree
 equality. The prior review remains owner-private gate evidence; its output sets
-`branch_review_commit` to the current reconciled HEAD for Publication and omits
+`branch_review_commit` to the current reconciled HEAD for Delivery Review and omits
 the prior commit because no downstream consumer requires it. No authorization,
 complete review body, or private checkpoint crosses either public boundary.
 
-Legacy active-task state is adapted once from current package contracts. An
-existing same-task-content Branch Review may retain its task review validity,
-while any legacy Publication stale reason is classified by its current owner:
-base-only mismatch routes to base reconciliation and content/metadata stale
-remains Publication-owned. Migration does not rewrite active task artifacts,
-read another package's private state, or restore the retired shared dispatcher.
+The prior same-graph base-evolution adaptation was pinned-old-only: Publication
+stale reasons were classified by that graph's owner. The #434 graph never
+adapts those Publication/Finalizer results into Delivery. An old in-flight
+task needs pinned-old completion or reviewed manual disposition; current
+reconcile/continuity follows the selected Delivery Review route without
+reading another package's private state.
 
-## Closeout Invocation State
+## Closeout Invocation State (Historical Publication/Finalizer/Merge Portion)
 
-Closeout invocation state is package-local, ignored, and bounded to one direct
-consumer behind the existing public command. Publication's current full
+In the pinned-old graph, closeout invocation state was package-local, ignored,
+and bounded to one direct consumer behind the existing public command. Publication's full
 snapshot is process-local and reused only by its record/check/projection
 sequence. Finalizer's preview identity is a dialogue-local confirmation binding,
 not authorization evidence; any retained transaction records only the minimum
@@ -1900,7 +1950,13 @@ public Skill DTO or durable audit artifact. Wall-clock samples are observational
 and must separate Agent orchestration, deterministic command, GitHub API, and
 external CI wait.
 
-## Post-Delivery Lifecycle Contracts
+## Post-Delivery Lifecycle Contracts (Historical #436 Inputs)
+
+The following #436 input/receipt shapes preceded the #454 D436 major. Current
+Completion/Closure/Finish/Cleanup/Reactivate select the TaskLifecycleKey and
+exact ResultRefDTO/ResourceSealRefDTO contracts from their active Interfaces;
+neither a legacy `task_ref/closure_ref` nor an old Finish receipt is a current
+Cleanup authority.
 
 Completion public input locates one task, current scope/requirement/evidence and
 all Delivery facts. Its seven outputs are minimal route DTOs; only `completed`
@@ -1925,27 +1981,47 @@ only `task_ref`, final `archive_ref` and current `finish_ref` for Cleanup.
 
 Finish stages only paths under the reviewed active task and exact archive
 locators. Its commit, PR and merge payloads contain neither Issue-closing
-keywords nor Delivery trailers. The remote target branch, not the invoking
+keywords nor legacy (`Guru-Delivery-Task`, `Guru-Delivery-Cycle`) or current
+(`Guru-Task-Identity`, `Guru-Delivery-Schema`, `Guru-Delivery-Head`) Delivery
+trailers. The remote target branch, not the invoking
 worktree HEAD, is the post-merge authority: active `task.json` must be absent,
 archive `task.json` and `finish-summary.json` must exist, and the target head
 must equal the verified bookkeeping merge commit.
 
-Reactivate public input identifies the original active/archive locators and
-stable task id. The semantic result adds one reviewed workspace plan: current
-base branch/head, branch name, absolute worktree path, reuse-or-create
-disposition, and the two ignored mapping locators. Its output intentionally
-omits branch/worktree internals because the selected downstream owner consumes
-the refreshed task binding. Prior Finish receipts are deleted during the
-reactivation mutation and cannot seed Cleanup.
+Reactivate accepts only a normally finished archive for the same TaskId and
+generation. It reviews the source relation, base and checkout acquisition,
+moves the archive to the active locator, increments the generation, and enters
+planning. Its package-local transaction and shared branch/resource owners bind
+the new checkout; it does not create old task/workspace mappings. Prior Finish
+receipts cannot seed Cleanup for the new generation.
+Legacy Issue discovery treats an old finish-summary index as a hint, not a
+mandatory source authority: the committed task source and unique terminal Git
+archive decide the match. Old schema-2 archives with absent generation, or
+generation zero plus a matching retired `task.json.archive_dir`, use legacy
+committed-archive verification only without a C5 ledger. Other explicit
+generations require the current Finish seal or exact manual Cleanup receipt.
 
+### Task identity and session binding (#443, selected by #434)
 
-### Task identity session binding (#443)
+The Fixed Fork resolver owns immutable `task.json.id`, generation and
+TaskId-to-TaskRef resolution. The C3 checkout and C4 branch/ownership readers
+must agree on one live execution checkout before `guru-bind-task-session`
+resolves that TaskId/generation in the selected checkout. An old branch may
+retain the same artifact after rebind; it is not a second current checkout.
+The session owner changes only the official session pointer. Task creation,
+checkout acquisition, branch binding, resource ownership and lifecycle
+transitions belong to their respective owners, not the session binding owner.
 
-`task.json`、task artifact locator、live Git/worktree、repository common dir 与既有 task/workspace mappings 继续构成 task/workspace identity authority。`guru-bind-task-session` 只能在这些 facts 与当前 Trellis session context 完全一致时，通过官方 `active_task`/`session_storage` writer 建立当前 session binding；它不写入重复的 `.trellis/.runtime/guru-team/session-bindings/` projection，不进入 tracked task artifact、Issue ledger、授权记录或 public DTO。Base HEAD 只属于 Base Reconcile、Review 与 Publication 等具体操作的 fresh evidence，不属于 task/workspace/session identity；legacy `base_head` 不参与 binding validation，manual recovery 也不再写入该字段。
+`resume_current_task` reads an exact current pointer without a write;
+`rebind_missing_session`, `switch_task`, `reactivate_rebind` and
+`manual_recovery` change only that session pointer after fresh validation.
+Missing session context yields `explicit_task_mode` without a session write.
+The successful outputs contain TaskLifecycleDTO and `resume_target`; consumers
+resolve TaskRef anew. A changed generation invalidates an old pointer, while
+base HEAD evolution is operation-specific freshness evidence rather than
+session identity. No authorization or alternate session store is persisted.
 
-binding 丢失时，`rebind_missing_session` 重新读取同一 task identity；同一合法 binding 重试幂等，任一 task、repository、workspace、branch、mapping、session 或 lifecycle mismatch zero-write fail closed。Target base 演进不会使 session binding 失效，由对应操作 owner fresh读取并处理 base evolution。Reactivate 的新 `lifecycle_generation` 使旧 binding 失效；Finish/Cleanup receipt 仍由各自 owner 校验。创建期 attach 继续由 `guru-create-task-workspace` owner 负责，#434 后续消费 binding typed exits，不复制 resolver/store。
-
-## Task Lifecycle Substrate Candidate (#454 C2)
+## Task Lifecycle Substrate (#454 C2)
 
 Task lifecycle 的 canonical shared contract 位于
 `trellis/skills/guru-team/contracts/task-lifecycle/task-lifecycle-dtos.schema.json`。它是 Draft 2020-12
@@ -1962,11 +2038,12 @@ Checkout path、workspace path、session identity、authorization、generic evid
 snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
 的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
 
-Fork `castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` 独占 immutable `task.json.id`、generation、
+Fork `castbox/Trellis@71f43cd8955c676f8ab8215216f61376fe9c01fe` 独占 immutable `task.json.id`、generation、
 TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
-alias、dual-read 或 dual-write。该 catalog 与 runtime 当前只是 C2 substrate candidate；package registration、workflow
-edge、active manifest、installed/platform projection 和 production activation 仍由后续 owner 独立完成。
+alias、dual-read 或 dual-write。该 catalog 与 runtime 是当前 package-neutral substrate；
+#434 candidate 的 package registration、workflow edge、active manifest 与 installed/platform
+projection 以 live registry/interface/workflow 为准。candidate 验证不等于远端发布或完整 Release matrix。
 
 ## #454 D436 Terminal Lifecycle Package Successor
 
@@ -1992,7 +2069,7 @@ while creating generation `g+1` through C3 acquisition, C4 binding, C5 ledger,
 and the official session adapter. Historical receipts do not authorize the
 new generation.
 
-These are canonical source package contracts only. #434/E434 owns the atomic
-workflow, registry selector, active manifest, installed/platform projection,
-and predecessor retirement. Package tests do not prove production activation
-or the full Release matrix.
+These package contracts are selected by the #434 canonical candidate's atomic
+workflow, registry, manifest and installed/platform projection; the old
+predecessor edges are retired there. Package tests alone do not prove remote
+publication or the full Release matrix.

@@ -725,7 +725,7 @@ class BranchReviewContractTest(unittest.TestCase):
             phase.index("invokes guru-review-branch"),
         )
 
-    def test_workflow_closes_publication_finish_and_promotion_architecture_routes(self):
+    def test_workflow_closes_delivery_completion_finish_and_promotion_architecture_routes(self):
         text = (REPO / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         normalized = " ".join(text.split())
         for stage in (
@@ -734,25 +734,29 @@ class BranchReviewContractTest(unittest.TestCase):
         ):
             self.assertIn(stage, normalized)
         for phrase in (
-            "Publication rejects missing or stale Architecture evidence",
+            "Delivery Review rejects missing or stale Architecture evidence",
             "reviewed_promoted",
             "current `no_change` proof",
             "promotion-created shared-current diff returns to fresh Phase 2",
             "baseline, constitution, contribution, expected-current, or stage identity always returns `sync_required`",
             "`sync_required(sync_kind=promotion_required)` enters that owner's declared serialized promotion route",
-            "does not absorb PR-publication or Finalizer business semantics",
+            "does not absorb Delivery publication, whole-task Completion",
         ):
             self.assertIn(phrase, normalized)
-        publication = text.split("#### 3.6 Publication review", 1)[1].split("#### 3.7 Finalization", 1)[0]
+        publication = text.split("#### 3.6 Delivery review and publication", 1)[1].split("#### 3.7 Completion, Closure and Finish", 1)[0]
         self.assertLess(
             publication.index("task_impact_sync(stage=publication)"),
-            publication.index("invoke guru-review-task-publication"),
+            publication.index("enters `guru-review-task-delivery`"),
         )
-        finish = text.split("#### 3.7 Finalization", 1)[1].split("## Global Integration Boundaries", 1)[0]
+        finish = text.split("#### 3.7 Completion, Closure and Finish", 1)[1].split("## Global Integration Boundaries", 1)[0]
         self.assertLess(
             finish.index("task_impact_sync(stage=acceptance_finish)"),
-            finish.index("Invoke guru-finalize-task"),
+            finish.index("`guru-finish-task` alone archives"),
         )
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        self.assertIn("`guru-review-task-delivery`", contract)
+        self.assertIn("`legacy-archived-review-disposition-required` stop", contract)
+        self.assertNotIn("consumer is Publication's", contract)
         spec = (
             REPO / "trellis/presets/guru-team/spec/workflow/workflow-contract.md"
         ).read_text(encoding="utf-8")
@@ -761,9 +765,9 @@ class BranchReviewContractTest(unittest.TestCase):
             "committed full-diff Branch Review",
             "returns `sync_required`",
             "requires `reviewed_promoted`",
-            "routing-only integration",
         ):
             self.assertIn(phrase, spec)
+        self.assertRegex(spec, r"routing-only\s+integration")
 
     def test_current_interface_wording_matches_profiles_gate_and_exits(self):
         interface = json.loads((PACKAGE / "interface.json").read_text())

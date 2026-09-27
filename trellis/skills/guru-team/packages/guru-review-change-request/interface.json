@@ -101,8 +101,8 @@
       "path": "examples/public-ready-output.json"
     },
     {
-      "id": "public_output_ready_example_3_0",
-      "path": "examples/public-ready-output-3.0.json"
+      "id": "public_output_ready_example_4_0",
+      "path": "examples/public-ready-output-4.0.json"
     },
     {
       "id": "public_output_clarify_requirements_example",
@@ -124,7 +124,7 @@
   "schemas": [
     {
       "id": "change_request_review_schema",
-      "path": "schemas/change-request-review.schema.json"
+      "path": "schemas/change-request-review-3.0.schema.json"
     },
     {
       "id": "public_input_current_issue",
@@ -151,8 +151,8 @@
       "path": "schemas/public-ready-output.schema.json"
     },
     {
-      "id": "public_output_ready_3_0",
-      "path": "schemas/public-ready-output-3.0.schema.json"
+      "id": "public_output_ready_4_0",
+      "path": "schemas/public-ready-output-4.0.schema.json"
     },
     {
       "id": "public_output_clarify_requirements",
@@ -200,8 +200,8 @@
       "id": "ready",
       "evidence": "all ten AI-reviewed dimensions passed, no blocking finding, and both prerequisite projections are current and linked",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-create-task-workspace"
+        "kind": "workflow",
+        "id": "guru-task-intake-router"
       }
     },
     {
@@ -358,12 +358,12 @@
       {
         "exit_id": "ready",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-ready-3.0",
-          "path": "schemas/public-ready-output-3.0.schema.json"
+          "schema_id": "guru-stage0-review-change-request-output-ready-4.0",
+          "path": "schemas/public-ready-output-4.0.schema.json"
         },
         "example": {
           "id": "ready_output",
-          "path": "examples/public-ready-output-3.0.json"
+          "path": "examples/public-ready-output-4.0.json"
         },
         "consumer_use_ids": [
           "project_ready"
@@ -428,17 +428,16 @@
     ],
     "consumer_inputs": [
       {
-        "id": "ready_execute_reviewed_plan_input",
+        "id": "ready_task_intake_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-create-task-workspace"
+          "kind": "workflow",
+          "id": "guru-task-intake-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input",
-          "interface_path": "packages/guru-create-task-workspace/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "execute_reviewed_plan"
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-task-intake-router-input-1.0",
+          "path": "consumers/workflow/stage0/task-intake-ready.schema.json"
         },
         "transition": {
           "source_field": "transition",
@@ -513,18 +512,8 @@
       {
         "id": "project_ready",
         "exit_id": "ready",
-        "consumer_input_id": "ready_execute_reviewed_plan_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "profile",
-            "target": "profile"
-          },
-          {
-            "source": "mode",
-            "target": "mode"
-          }
-        ]
+        "consumer_input_id": "ready_task_intake_input",
+        "operation": "direct"
       },
       {
         "id": "project_clarify_requirements",
@@ -623,8 +612,8 @@
         "id": "change_request_review",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-2.0.json",
-          "path": "schemas/change-request-review.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-request-review-3.0.json",
+          "path": "schemas/change-request-review-3.0.schema.json"
         },
         "persistence": "stdout_only_owner_private"
       }

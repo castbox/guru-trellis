@@ -38,8 +38,9 @@ commands. The dedicated closed `archived-1.0` gate admits only
 `archived_review_passed|blocked`; it is never synthesized from an ordinary
 checkpoint. Both exits retire the owner checkpoint after validated projection.
 The success output carries only task_ref, A, the exact title/body snapshot,
-and reviewed_base_head B. Publication owns the target authoring fields
-profile=archived_publication_review and mode. Stale A/B/PR payload, non-Ready
+and reviewed_base_head B. In the new graph this legacy archived-review result
+stops for pinned-old or manual disposition; it does not feed Delivery Review.
+Stale A/B/PR payload, non-Ready
 state, dirty archive or missing/mismatched mappings fail closed without repair.
 
 ## Ordinary Reviews
@@ -143,10 +144,9 @@ reviewed-content identity.
 `continuity_passed` is only a bounded continuity judgment over a previously
 reviewed task plus one committed reconciliation pair. It must never be
 described as a full Branch Review.
-`passed` targets the active `guru-review-task-publication` Skill through its
-target-owned authoring seed. The workflow caller performs the publication
-content authoring preparation required by the global Phase 3.6 order before
-invoking that active owner.
+`passed` targets `guru-review-task-delivery` through its target-owned authoring
+seed. The workflow caller supplies current Delivery policy and live PR facts
+before invoking that owner.
 This package is not self-contained or portable.
 
 The public wrapper accepts only current public input, reruns the objective
@@ -161,8 +161,9 @@ fails closed.
 
 If Architecture promotion changes shared current files, that diff returns to a
 fresh Phase 2 Architecture/check round, a new task commit, and this independent
-complete-range Branch Review. Publication cannot consume the pre-promotion
-review or a Phase 2 result in place of that fresh review.
+complete-range Branch Review. Delivery Review cannot consume the pre-promotion
+review or a Phase 2 result in place of that fresh review; Delivery Review
+consumes only the post-promotion `passed` result.
 
 Aggregate public input schema 4.0 dispatches two profiles: `branch_review`
 schema 2.0 accepts only `initial_review` and `fresh_final_review`, while

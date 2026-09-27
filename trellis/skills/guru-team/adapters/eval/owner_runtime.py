@@ -11,6 +11,7 @@ import sys
 from adapters.eval.fixture_io import (
     run_git,
 )
+from adapters.eval.phase2_authoring import write_json as write_fixture_json
 
 
 def load_package_owner_runtime(runtime_target: Path, skill_id: str) -> Any:
@@ -139,17 +140,14 @@ def compose_change_request_eval_runtime(runtime_target: Path, module: Any) -> No
     module.change_request_review_normalize_target = normalize_target
 
 def compose_review_branch_eval_runtime(runtime_target: Path, module: Any) -> None:
-    publication = load_package_owner_runtime(
-        runtime_target, "guru-review-task-publication"
-    )
-    module.load_config = publication.load_config
-    module.WorkflowError = publication.WorkflowError
-    module.read_json = publication.read_json
-    module.write_json = publication.write_json
-    module.write_runtime_mappings = publication.write_runtime_mappings
-    module.current_head = publication.current_head
-    module.git_status_paths = publication.git_status_paths
-    module.diff_base_ref = publication.diff_base_ref
+    module.read_json = lambda path: json.loads(Path(path).read_text(encoding="utf-8"))
+    module.write_json = write_fixture_json
+    module.current_head = lambda root: run_git(root, "rev-parse", "HEAD")
+    module.git_status_paths = lambda root: [
+        line[3:] for line in run_git(root, "status", "--short").splitlines()
+        if len(line) >= 4
+    ]
+    module.diff_base_ref = lambda root, branch: f"origin/{branch}"
     module.INDEPENDENT_REVIEW_SOURCE = "independent-agent"
 
     def changed_files(root: Path, diff_range: str) -> list[str]:
@@ -264,15 +262,8 @@ def compose_production_owner_command_runtime(
             setattr(module, name, binding)
 
 def compose_production_fixture_runtime(runtime_target: Path, module: Any) -> None:
-    helper_names = ("load_config", "write_json", "write_runtime_mappings")
-    missing = [name for name in helper_names if not hasattr(module, name)]
-    if not missing:
-        return
-    publication = load_package_owner_runtime(
-        runtime_target, "guru-review-task-publication"
-    )
-    for name in missing:
-        setattr(module, name, getattr(publication, name))
+    if not hasattr(module, "write_json"):
+        module.write_json = write_fixture_json
 
 def compose_task_workspace_eval_runtime(runtime_target: Path, module: Any) -> None:
     compose_change_request_eval_runtime(runtime_target, module)

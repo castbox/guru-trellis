@@ -1,3 +1,5 @@
+"""Current task Delivery-to-Finish graph and legacy terminal isolation."""
+
 from __future__ import annotations
 
 import json
@@ -8,936 +10,191 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any
 
 
-SOURCE_REPO = Path(__file__).resolve().parents[4]
-EXECUTION_MODE = os.environ.get("GURU_FINISH_INTEGRATION_MODE", "source")
-if EXECUTION_MODE not in {"source", "installed"}:
+SOURCE = Path(__file__).resolve().parents[4]
+MODE = os.environ.get("GURU_FINISH_INTEGRATION_MODE", "source")
+if MODE not in {"source", "installed"}:
     raise RuntimeError("GURU_FINISH_INTEGRATION_MODE must be source or installed")
-REPO = Path(
-    os.environ.get("GURU_FINISH_INTEGRATION_ROOT", str(SOURCE_REPO))
-).resolve()
-if EXECUTION_MODE == "installed":
-    SKILLS_ROOT = REPO / ".trellis/guru-team/skills"
-    WORKFLOW = REPO / ".trellis/workflow.md"
-    EVAL_DISCOVERY = REPO / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh"
-    EVAL_RUNNER = REPO / ".trellis/guru-team/scripts/bash/run-skill-evals.sh"
-else:
-    SKILLS_ROOT = REPO / "trellis/skills/guru-team"
-    WORKFLOW = REPO / "trellis/workflows/guru-team/workflow.md"
-    EVAL_DISCOVERY = (
-        REPO / "trellis/workflows/guru-team/scripts/bash/discover-skill-evals.sh"
-    )
-    EVAL_RUNNER = (
-        REPO / "trellis/workflows/guru-team/scripts/bash/run-skill-evals.sh"
-    )
-
-FINISH_EXITS = {
-    "guru-review-task-publication": {"ready", "return_to_task_work", "blocked"},
-    "guru-verify-extension-installation": {"verified", "blocked"},
-    "guru-finalize-task": {
-        "base_reconciliation_required",
-        "publication_review_stale",
-        "resume_finalization",
-        "reprepare_required",
-        "ready_for_merge",
-        "blocked",
-    },
-    "guru-merge-task-pr": {
-        "merged",
-        "phase2_reentry_required",
-        "merge_blocked",
-        "closure_mismatch",
-    },
+ROOT = Path(os.environ.get("GURU_FINISH_INTEGRATION_ROOT", str(SOURCE))).resolve()
+SKILLS = ROOT / (".trellis/guru-team/skills" if MODE == "installed" else "trellis/skills/guru-team")
+RUNTIME_ROOT = ROOT / (".trellis/guru-team" if MODE == "installed" else "trellis/skills/guru-team")
+WORKFLOW = ROOT / (".trellis/workflow.md" if MODE == "installed" else "trellis/workflows/guru-team/workflow.md")
+RETIRED = {
+    "guru-create-task-workspace", "guru-review-task-publication", "guru-finalize-task",
+    "guru-merge-task-pr", "guru-restore-archived-task",
 }
-EXPECTED_CONSUMERS = {
-    ("guru-review-task-publication", "ready"): ("skill", "guru-finalize-task"),
-    ("guru-review-task-publication", "return_to_task_work"): (
-        "workflow",
-        "guru-task-publication-work-router",
-    ),
-    ("guru-review-task-publication", "blocked"): (
-        "stop",
-        "task-publication-review-blocked",
-    ),
-    ("guru-verify-extension-installation", "verified"): (
-        "stop",
-        "extension-installation-verification-verified",
-    ),
-    ("guru-verify-extension-installation", "blocked"): (
-        "stop",
-        "extension-installation-verification-blocked",
-    ),
-    ("guru-finalize-task", "base_reconciliation_required"): (
-        "skill",
-        "guru-reconcile-task-base",
-    ),
-    ("guru-finalize-task", "publication_review_stale"): (
-        "skill",
-        "guru-review-task-publication",
-    ),
-    ("guru-finalize-task", "resume_finalization"): (
-        "skill",
-        "guru-finalize-task",
-    ),
-    ("guru-finalize-task", "reprepare_required"): (
-        "skill",
-        "guru-finalize-task",
-    ),
-    ("guru-finalize-task", "ready_for_merge"): (
-        "skill",
-        "guru-merge-task-pr",
-    ),
-    ("guru-finalize-task", "blocked"): (
-        "stop",
-        "task-finalization-blocked",
-    ),
-    ("guru-merge-task-pr", "merged"): (
-        "workflow",
-        "guru-finalization-finish-response",
-    ),
-    ("guru-merge-task-pr", "phase2_reentry_required"): (
-        "skill",
-        "guru-restore-archived-task",
-    ),
-    ("guru-merge-task-pr", "merge_blocked"): (
-        "stop",
-        "task-pr-merge-blocked",
-    ),
-    ("guru-merge-task-pr", "closure_mismatch"): (
-        "stop",
-        "task-pr-closure-mismatch",
-    ),
-}
-ROUTE_GROUPS = {
-    "normal": [
-        ("guru-review-task-publication", "ready"),
-        ("guru-finalize-task", "ready_for_merge"),
-        ("guru-merge-task-pr", "merged"),
-    ],
-    "return_to_work": [
-        ("guru-review-task-publication", "return_to_task_work"),
-    ],
-    "phase2_reentry": [
-        ("guru-merge-task-pr", "phase2_reentry_required"),
-    ],
-    "publication_refresh": [
-        ("guru-finalize-task", "publication_review_stale"),
-        ("guru-review-task-publication", "ready"),
-    ],
-    "same_plan_or_reprepare": [
-        ("guru-finalize-task", "resume_finalization"),
-        ("guru-finalize-task", "reprepare_required"),
-    ],
-    "terminal": [
-        ("guru-review-task-publication", "blocked"),
-        ("guru-finalize-task", "blocked"),
-        ("guru-merge-task-pr", "merge_blocked"),
-        ("guru-merge-task-pr", "closure_mismatch"),
-    ],
-    "standalone_verification": [
-        ("guru-verify-extension-installation", "verified"),
-        ("guru-verify-extension-installation", "blocked"),
-    ],
-}
-GURU_ENTRY_RELATIVES = (
-    ".codex/prompts/guru-finish-work.md",
-    ".claude/commands/guru/finish-work.md",
-    ".cursor/commands/guru-finish-work.md",
-)
-GURU_ENTRIES = (
-    GURU_ENTRY_RELATIVES
-    if EXECUTION_MODE == "installed"
-    else tuple(
-        str(Path("trellis/presets/guru-team/overlays") / relative)
-        for relative in GURU_ENTRY_RELATIVES
-    )
-)
-TERMINAL_CASES = {
-    "publication-ready-ready-for-merge": "ready_for_merge",
-    "same-plan-ready-for-merge": "ready_for_merge",
+ROUTES = {
+    ("guru-review-branch", "passed"): ("skill", "guru-review-task-delivery"),
+    ("guru-review-task-delivery", "ready"): ("skill", "guru-publish-task-delivery"),
+    ("guru-publish-task-delivery", "ready_for_merge"): ("skill", "guru-merge-task-delivery"),
+    ("guru-merge-task-delivery", "delivered"): ("skill", "guru-review-task-completion"),
+    ("guru-review-task-completion", "remaining_work"): ("workflow", "active-task-continuation"),
+    ("guru-review-task-completion", "additional_delivery_required"): ("workflow", "task-delivery-planning-router"),
+    ("guru-review-task-completion", "completed"): ("skill", "guru-complete-task-closure"),
+    ("guru-complete-task-closure", "closed"): ("skill", "guru-finish-task"),
+    ("guru-complete-task-closure", "no_mutation"): ("skill", "guru-finish-task"),
+    ("guru-finish-task", "success"): ("skill", "guru-cleanup-task-resources"),
+    ("guru-cleanup-task-resources", "cleaned"): ("stop", "task-cleanup-complete"),
+    ("guru-reactivate-task", "reactivated_to_planning"): ("workflow", "task-planning-router"),
 }
 
 
-class DialogueContinuationHarness:
-    def __init__(self, testcase: unittest.TestCase) -> None:
-        self.testcase = testcase
-        self.transcript: list[dict[str, Any]] = []
-        self.pending_action: dict[str, str] | None = None
-        self.confirmation_consumers: list[str] = []
-        self.archive_mutations = 0
-        self.journal_mutations = 0
-
-    def actual_load(self, skill_id: str) -> dict[str, Any]:
-        skill_package = package(skill_id)
-        interface = read_json(skill_package / "interface.json")
-        wrapper = skill_package / interface["public_contracts"]["invocation"]["wrapper"]
-        process = subprocess.run(
-            [str(wrapper), "--help"],
-            cwd=REPO,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-        )
-        self.testcase.assertEqual(process.returncode, 0, process.stderr)
-        self.transcript.append({
-            "event": "actual_load",
-            "skill": skill_id,
-            "wrapper": wrapper.relative_to(REPO).as_posix(),
-        })
-        return interface
-
-    def display_action(self, skill_id: str, identity: str) -> None:
-        self.testcase.assertIsNone(self.pending_action)
-        self.pending_action = {"skill": skill_id, "identity": identity}
-        self.transcript.append({
-            "event": "display_action",
-            "skill": skill_id,
-            "identity": identity,
-        })
-
-    def consume(self, message: str) -> str:
-        self.testcase.assertEqual(message, "确认继续")
-        if self.pending_action is None:
-            raise AssertionError("confirmation has no displayed action to consume")
-        action = self.pending_action
-        self.pending_action = None
-        self.confirmation_consumers.append(action["identity"])
-        self.transcript.append({
-            "event": "consume_confirmation",
-            "skill": action["skill"],
-            "identity": action["identity"],
-        })
-        return action["skill"]
-
-    def mapped_exit(self, skill_id: str, exit_id: str) -> tuple[str, str]:
-        interface = self.actual_load(skill_id)
-        matches = [
-            item for item in interface["external_exits"] if item["id"] == exit_id
-        ]
-        self.testcase.assertEqual(len(matches), 1)
-        consumer = matches[0]["consumer"]
-        self.transcript.append({
-            "event": "mapped_exit",
-            "skill": skill_id,
-            "exit": exit_id,
-            "consumer": consumer,
-            "confirmation_requested": False,
-        })
-        return consumer["kind"], consumer["id"]
-
-    def classify_archived_task(self, *, finalizer_complete: bool) -> str:
-        state = WORKFLOW.read_text(encoding="utf-8").split(
-            "[workflow-state:no_task]", 1
-        )[1].split("[/workflow-state:no_task]", 1)[0]
-        self.testcase.assertIn("archived incomplete-closeout identity", state)
-        self.testcase.assertIn("`incomplete_closeout` form of `invalid-task-state`", state)
-        result = "no_task" if finalizer_complete else "invalid-task-state:incomplete_closeout"
-        self.transcript.append({
-            "event": "classify_archived_task",
-            "finalizer_complete": finalizer_complete,
-            "result": result,
-            "mutations": [],
-        })
-        return result
+def read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
-def read_json(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(value, dict):
-        raise AssertionError(f"{path} must contain one JSON object")
-    return value
+def markers(kind: str) -> list[dict]:
+    return [json.loads(value) for value in re.findall(
+        rf"<!-- guru-{kind}: (\{{.*?\}}) -->", WORKFLOW.read_text(encoding="utf-8")
+    )]
 
 
-def package(skill_id: str) -> Path:
-    return SKILLS_ROOT / "packages" / skill_id
+class CurrentFinishGraphTests(unittest.TestCase):
+    def test_reactivated_validation_only_completion_to_closure_and_finish(self) -> None:
+        completion = SKILLS / "packages/guru-review-task-completion"
+        closure = SKILLS / "packages/guru-complete-task-closure"
+        finish = SKILLS / "packages/guru-finish-task"
+        public = read_json(completion / "examples/public-reactivation-validation-input.json")
+        semantic = read_json(completion / "examples/reactivation-semantic-result.json")
+        self.assertNotIn("merge_result", public)
 
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            task = root / public["task_artifact"]["task_ref"]
+            task.mkdir(parents=True)
+            (task / "task.json").write_text(json.dumps({
+                "id": "example-task", "status": "in_progress", "lifecycle_generation": 1,
+                "source": {"kind": "no_issue"},
+            }))
 
-def markers(kind: str) -> list[dict[str, Any]]:
-    pattern = re.compile(rf"<!-- guru-{kind}: (\{{.*?\}}) -->")
-    return [json.loads(value) for value in pattern.findall(WORKFLOW.read_text(encoding="utf-8"))]
+            def run(package: Path, name: str, authored: dict, review: dict) -> dict:
+                input_path = root / f"{name}-input.json"
+                review_path = root / f"{name}-review.json"
+                input_path.write_text(json.dumps(authored))
+                review_path.write_text(json.dumps(review))
+                result = subprocess.run([
+                    sys.executable, str(package / "runtime/invoke.py"), "--root", str(root),
+                    "--input", str(input_path), "--semantic-result", str(review_path),
+                ], capture_output=True, text=True, check=False,
+                    env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                return json.loads(result.stdout)
 
+            completed = run(completion, "completion", public, semantic)
+            self.assertEqual(completed["exit_id"], "completed")
+            self.assertEqual(completed["result_ref"]["lifecycle_generation"], 1)
+            closure_input = read_json(completion / "examples/closure-authoring.json")
+            closure_input.update({"source_exit": completed["exit_id"], "completion_result": completed["result_ref"],
+                                  "source": {"kind": "no_issue"}, "action_set": [],
+                                  "binding_ref": {"task_id": "example-task", "lifecycle_generation": 1,
+                                                  "binding_epoch": 0, "binding_revision": 0},
+                                  "evidence_slots": {"completion": completed["result_ref"]["result_id"]}})
+            closure_review = read_json(closure / "examples/semantic-result.json")
+            closure_review["reviewed_action_set"] = []
+            closed = run(closure, "closure", closure_input, closure_review)
+            self.assertEqual(closed["exit_id"], "no_mutation")
+            self.assertEqual(closed["result_ref"]["lifecycle_generation"], 1)
+            sys.path.insert(0, str(RUNTIME_ROOT))
+            from runtime.schema import validate_json
+            validate_json({"profile": "closure_completed", "mode": "workflow", "closure_result": closed["result_ref"]},
+                          finish / "schemas/public-input.schema.json", "finish")
 
-def run_skill(
-    skill_id: str,
-    root: Path,
-    run_root: Path,
-    label: str,
-    public: dict[str, Any],
-    semantic: dict[str, Any],
-    *extra_args: str,
-    env: dict[str, str] | None = None,
-    check: bool = True,
-) -> subprocess.CompletedProcess[str]:
-    input_path = run_root / f"{label}-input.json"
-    semantic_path = run_root / f"{label}-semantic.json"
-    input_path.write_text(json.dumps(public), encoding="utf-8")
-    semantic_path.write_text(json.dumps(semantic), encoding="utf-8")
-    runtime_pythonpath = SKILLS_ROOT.parent if EXECUTION_MODE == "installed" else SKILLS_ROOT
-    runtime_env = {
-        **os.environ,
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "PYTHONPATH": str(runtime_pythonpath),
-    }
-    if env:
-        runtime_env.update(env)
-    return subprocess.run(
-        [
-            sys.executable,
-            str(package(skill_id) / "runtime/invoke.py"),
-            "--root",
-            str(root),
-            "--input",
-            str(input_path),
-            "--semantic-result",
-            str(semantic_path),
-            *extra_args,
-        ],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=runtime_env,
-        check=check,
-    )
+    def test_old_generation_merge_cannot_enter_reactivated_completion_chain(self) -> None:
+        completion = SKILLS / "packages/guru-review-task-completion"
+        authored = read_json(completion / "examples/public-reactivation-validation-input.json")
+        reviewed = read_json(completion / "examples/reactivation-semantic-result.json")
+        authored.pop("reactivation_anchor")
+        authored["merge_result"] = read_json(completion / "examples/public-input.json")["merge_result"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            input_path = root / "completion-input.json"
+            review_path = root / "completion-review.json"
+            input_path.write_text(json.dumps(authored))
+            review_path.write_text(json.dumps(reviewed))
+            result = subprocess.run([
+                sys.executable, str(completion / "runtime/invoke.py"), "--root", str(root),
+                "--input", str(input_path), "--semantic-result", str(review_path),
+            ], capture_output=True, text=True, check=False,
+                env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(json.loads(result.stderr)["code"], "schema_mismatch")
+            self.assertFalse((root / ".git").exists())
 
-
-def write_finish_fake_gh(path: Path) -> None:
-    path.write_text(
-        """#!/usr/bin/env python3
-import json, os, subprocess, sys
-from pathlib import Path
-
-args = sys.argv[1:]
-state_path = Path(os.environ["FAKE_GH_STATE"])
-repo = Path(os.environ["FAKE_REPO_PATH"])
-remote = Path(os.environ["FAKE_REMOTE_PATH"])
-state = json.loads(state_path.read_text()) if state_path.exists() else {}
-
-if args[:2] == ["pr", "list"]:
-    print(json.dumps([state["pr"]] if state.get("pr") and state["pr"]["state"] == "OPEN" else []))
-elif args[:2] == ["pr", "create"]:
-    def value(flag): return args[args.index(flag) + 1]
-    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, text=True, capture_output=True, check=True).stdout.strip()
-    state["pr"] = {"number": 7, "url": "https://github.com/example/repo/pull/7", "state": "OPEN", "isDraft": False, "title": value("--title"), "body": value("--body"), "headRefName": value("--head"), "headRefOid": head, "baseRefName": value("--base"), "mergedAt": None, "mergeCommit": None}
-    state_path.write_text(json.dumps(state))
-    print(state["pr"]["url"])
-elif args[:2] == ["pr", "view"]:
-    print(json.dumps(state["pr"]))
-elif args[:2] == ["pr", "merge"]:
-    expected = args[args.index("--match-head-commit") + 1]
-    subprocess.run(["git", "--git-dir", str(remote), "update-ref", "refs/heads/main", expected], check=True)
-    state["pr"].update({"state": "MERGED", "mergedAt": "2026-09-19T00:00:00Z", "mergeCommit": {"oid": expected}})
-    state_path.write_text(json.dumps(state))
-else:
-    raise SystemExit("unsupported fake gh invocation: " + repr(args))
-""",
-        encoding="utf-8",
-    )
-    path.chmod(0o755)
-
-
-class NoTaskBreadcrumbStaticContractTests(unittest.TestCase):
-    """Guard #395's Markdown contract, not agent task-resolution behavior."""
-
-    def setUp(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8")
-        start = "[workflow-state:no_task]"
-        end = "[/workflow-state:no_task]"
-        self.assertEqual(text.count(start), 1)
-        self.assertEqual(text.count(end), 1)
-        self.assertLess(text.index(start), text.index(end))
-        self.state = " ".join(text.split(start, 1)[1].split(end, 1)[0].split())
-
-    def test_unrelated_in_progress_inventory_is_not_a_workspace_conflict(self) -> None:
-        self.assertIn(
-            "Unrelated `in_progress` tasks in the repository inventory "
-            "are not current-task conflicts",
-            self.state,
-        )
-
-    def test_same_user_inventory_does_not_force_selection_or_task_free(self) -> None:
-        self.assertIn(
-            "are not current-task conflicts, even for the same user; do not ask "
-            "the user to select one or switch to task-free because they exist.",
-            self.state,
-        )
-
-    def test_source_checkout_provenance_alone_does_not_bind_a_task(self) -> None:
-        self.assertIn(
-            "A mapping's `source_checkout` alone does not bind its task to that checkout.",
-            self.state,
-        )
-
-    def test_same_issue_reuses_identity_and_preserves_binding_blockers(self) -> None:
-        self.assertIn(
-            "An unfinished task for the same Issue must resolve to its existing "
-            "identity rather than create a duplicate; missing or conflicting "
-            "bindings stop at `invalid-task-state`.",
-            self.state,
-        )
-
-    def test_bound_workspace_identity_still_requires_validation(self) -> None:
-        self.assertIn(
-            "Every file-changing request first resolves task identity for the "
-            "current workspace and requested Issue.",
-            self.state,
-        )
-        self.assertIn(
-            "A task bound to the current workspace must be validated; an incomplete "
-            "or conflicting identity stops at `invalid-task-state`.",
-            self.state,
-        )
-
-    def test_mode_selection_remains_conditional_on_no_relevant_identity(self) -> None:
-        self.assertIn(
-            "Only when no relevant active task or bound archived incomplete-closeout "
-            "identity exists does the request invoke `guru-select-workflow-mode`, "
-            "including requests without an Issue or task-free wording.",
-            self.state,
-        )
-
-
-class FinishFamilyIntegrationTests(unittest.TestCase):
-    def test_finish_exits_have_exact_unique_public_consumers(self) -> None:
-        seen: set[tuple[str, str]] = set()
-        for skill_id, expected_exits in FINISH_EXITS.items():
-            interface = read_json(package(skill_id) / "interface.json")
-            exits = interface["external_exits"]
-            self.assertEqual({item["id"] for item in exits}, expected_exits)
-            for item in exits:
-                identity = (skill_id, item["id"])
-                self.assertNotIn(identity, seen)
-                seen.add(identity)
-                consumer = item["consumer"]
-                self.assertEqual(
-                    (consumer["kind"], consumer["id"]),
-                    EXPECTED_CONSUMERS[identity],
-                )
-            contracts = interface["public_contracts"]
-            self.assertEqual(
-                {item["exit_id"] for item in contracts["outputs"]}, expected_exits
-            )
-            self.assertEqual(
-                {item["exit_id"] for item in contracts["projections"]},
-                expected_exits,
-            )
-
-    def test_workflow_keeps_registry_derived_projection_and_seven_route_groups(self) -> None:
+    def test_every_active_exit_has_one_matching_marker_and_consumer(self) -> None:
+        active = {
+            item["id"] for item in read_json(SKILLS / "registry.json")["skills"]
+            if item["state"] == "active"
+            and item.get("workflow_integration_state", "integrated") == "integrated"
+            and item["id"] != "guru-verify-extension-installation"
+        }
+        self.assertFalse(active & RETIRED)
         invokes = markers("skill-invoke")
         exits = markers("skill-exit")
-        registry = read_json(SKILLS_ROOT / "registry.json")
-        workflow_skill_ids = {
-            entry["id"]
-            for entry in registry["skills"]
-            if entry.get("state") == "active"
-            and entry.get("workflow_integration_state", "integrated") == "integrated"
-            and entry["id"] != "guru-verify-extension-installation"
-        }
-        expected_exits = {
-            (skill_id, exit_contract["id"])
-            for skill_id in workflow_skill_ids
-            for exit_contract in read_json(package(skill_id) / "interface.json")["external_exits"]
-        }
-        expected_targets = {
-            (exit_contract["consumer"]["kind"], exit_contract["consumer"]["id"])
-            for skill_id in workflow_skill_ids
-            for exit_contract in read_json(package(skill_id) / "interface.json")["external_exits"]
-            if exit_contract["consumer"]["kind"] in {"workflow", "stop"}
-        }
-        self.assertEqual({item["skill"] for item in invokes}, workflow_skill_ids)
+        self.assertEqual(len(invokes), len(active))
+        self.assertEqual({item["skill"] for item in invokes}, active)
+        expected = {}
+        for skill_id in active:
+            interface = read_json(SKILLS / "packages" / skill_id / "interface.json")
+            for exit_contract in interface["external_exits"]:
+                expected[(skill_id, exit_contract["id"])] = exit_contract["consumer"]
+        self.assertEqual(len(exits), len(expected))
         self.assertEqual(
-            {(item["skill"], item["exit"]) for item in exits},
-            expected_exits,
+            {(item["skill"], item["exit"]): item["consumer"] for item in exits},
+            expected,
         )
-        self.assertEqual(
-            {
-                (kind, item["id"])
-                for kind in ("workflow", "stop")
-                for item in markers(f"{kind}-target")
-            },
-            expected_targets,
-        )
-        routed = {
-            (item["skill"], item["exit"]): (
-                item["consumer"]["kind"],
-                item["consumer"]["id"],
-            )
-            for item in exits
+        targets = {
+            (kind, item["id"])
+            for kind in ("workflow", "stop") for item in markers(f"{kind}-target")
         }
-        for group in ROUTE_GROUPS.values():
-            for identity in group:
-                if identity[0] == "guru-verify-extension-installation":
-                    self.assertNotIn(identity, routed)
-                    continue
-                self.assertIn(identity, routed)
-                if identity in EXPECTED_CONSUMERS:
-                    self.assertEqual(routed[identity], EXPECTED_CONSUMERS[identity])
-
-    def test_business_closeout_has_no_verifier_route(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8")
-        business_skills = {
-            "guru-review-task-publication",
-            "guru-finalize-task",
-            "guru-merge-task-pr",
-        }
-        for item in markers("skill-exit"):
-            if item["skill"] in business_skills:
-                self.assertNotEqual(
-                    item["consumer"].get("id"),
-                    "guru-verify-extension-installation",
-                )
-        for skill_id in business_skills:
-            contract = json.dumps(read_json(package(skill_id) / "interface.json"))
-            self.assertNotIn("marketplace-verification", contract)
-        self.assertNotIn("guru-verify-extension-installation", text)
-
-    def test_guru_finish_entries_are_equal_thin_routes(self) -> None:
-        contents = [(REPO / relative).read_text(encoding="utf-8") for relative in GURU_ENTRIES]
-        self.assertEqual(len(set(contents)), 1)
-        content = contents[0]
-        self.assertIn("guru-finalize-task", content)
-        self.assertIn("guru-merge-task-pr", content)
-        self.assertIn("exclusive finish entry", content)
-        self.assertIn("`trellis-finish-work` Skill is not applicable", content)
-        self.assertIn("Before Finalizer, do not call `task.py archive`", content)
-        self.assertIn("clear affirmative such as `确认继续`", content)
-        self.assertIn("Continue mapped internal exits automatically", content)
-        self.assertNotIn("implementation-handoff", content)
-
-    def test_workflow_excludes_generic_finish_and_preserves_continuation(self) -> None:
-        text = WORKFLOW.read_text(encoding="utf-8")
-        state = text.split("[workflow-state:no_task]", 1)[1].split(
-            "[/workflow-state:no_task]", 1
-        )[0]
-        branch_review = text.split("#### 3.5 Branch review", 1)[1].split(
-            "#### 3.6 Publication review", 1
-        )[0]
-        finalization = text.split("#### 3.7 Finalization", 1)[1].split(
-            "## Global Integration Boundaries", 1
-        )[0]
-        normalized_branch_review = " ".join(branch_review.split())
-
-        self.assertIn("archived incomplete-closeout identity", state)
-        self.assertIn("`incomplete_closeout` form of `invalid-task-state`", state)
-        self.assertIn("zero-write", state)
-        self.assertIn("upstream-owned `trellis-finish-work` Skill", text)
-        self.assertIn("exactly one next consumer", normalized_branch_review)
-        self.assertIn("`resume_target=publication_review`", normalized_branch_review)
-        self.assertIn(
-            "official checker and the public wrapper both return `passed`",
-            normalized_branch_review,
-        )
-        self.assertIn("Finalizer alone", finalization)
-        self.assertIn("No generic finish entry", finalization)
-
-    def test_confirm_continue_drives_actual_loaded_closeout_once(self) -> None:
-        harness = DialogueContinuationHarness(self)
-
-        harness.actual_load("guru-create-task-commit")
-        harness.display_action(
-            "guru-create-task-commit",
-            "commit:fixture-head:reviewed-paths",
-        )
-        self.assertEqual(harness.consume("确认继续"), "guru-create-task-commit")
-        with self.assertRaisesRegex(AssertionError, "no displayed action"):
-            harness.consume("确认继续")
-
-        self.assertEqual(
-            harness.mapped_exit("guru-create-task-commit", "committed"),
-            ("skill", "guru-review-branch"),
-        )
-        review_interface = harness.actual_load("guru-review-branch")
-        review_identity = "origin/main@base...HEAD@fixture-head"
-        checker_result = {"identity": review_identity, "status": "passed"}
-        wrapper_result = {"identity": review_identity, "exit_id": "passed"}
-        self.assertEqual(checker_result["identity"], wrapper_result["identity"])
-        self.assertEqual(checker_result["status"], "passed")
-        self.assertEqual(wrapper_result["exit_id"], "passed")
-        self.assertEqual(
-            [
-                item["consumer"]
-                for item in review_interface["external_exits"]
-                if item["id"] == wrapper_result["exit_id"]
-            ],
-            [{"kind": "skill", "id": "guru-review-task-publication"}],
-        )
-        harness.transcript.append({
-            "event": "branch_review_return",
-            "identity": review_identity,
-            "checker": "passed",
-            "wrapper": "passed",
+        self.assertEqual(targets, {
+            (consumer["kind"], consumer["id"])
+            for consumer in expected.values() if consumer["kind"] in {"workflow", "stop"}
         })
+        for key, (kind, target) in ROUTES.items():
+            self.assertEqual(expected[key], {"kind": kind, "id": target})
 
-        self.assertEqual(
-            harness.mapped_exit("guru-review-branch", "passed"),
-            ("skill", "guru-review-task-publication"),
-        )
-        self.assertEqual(
-            harness.mapped_exit("guru-review-task-publication", "ready"),
-            ("skill", "guru-finalize-task"),
-        )
-        self.assertIsNone(harness.pending_action)
-        self.assertEqual(harness.confirmation_consumers, ["commit:fixture-head:reviewed-paths"])
-        self.assertEqual(harness.archive_mutations, 0)
-        self.assertEqual(harness.journal_mutations, 0)
-
-        harness.actual_load("guru-finalize-task")
-        harness.display_action(
-            "guru-finalize-task",
-            "finalize:fixture-plan:publication-head",
-        )
-        self.assertEqual(len(harness.confirmation_consumers), 1)
-        self.assertEqual(harness.consume("确认继续"), "guru-finalize-task")
-        harness.archive_mutations += 1
-        harness.journal_mutations += 1
-
-        self.assertEqual(
-            harness.confirmation_consumers,
-            [
-                "commit:fixture-head:reviewed-paths",
-                "finalize:fixture-plan:publication-head",
-            ],
-        )
-        mapped = [
-            event for event in harness.transcript if event["event"] == "mapped_exit"
-        ]
-        self.assertEqual(
-            [(event["skill"], event["exit"]) for event in mapped],
-            [
-                ("guru-create-task-commit", "committed"),
-                ("guru-review-branch", "passed"),
-                ("guru-review-task-publication", "ready"),
-            ],
-        )
-        self.assertTrue(all(not event["confirmation_requested"] for event in mapped))
-
-    def test_archived_incomplete_closeout_fails_closed_without_mutation(self) -> None:
-        harness = DialogueContinuationHarness(self)
-        classification = harness.classify_archived_task(finalizer_complete=False)
-        self.assertEqual(classification, "invalid-task-state:incomplete_closeout")
-        self.assertNotEqual(classification, "no_task")
-        self.assertEqual(harness.archive_mutations, 0)
-        self.assertEqual(harness.journal_mutations, 0)
-        self.assertEqual(harness.transcript[-1]["mutations"], [])
-
-    def test_finish_cleanup_reactivate_two_cycles_reject_old_cleanup_receipt(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="guru-finish-two-cycles-") as directory:
-            run_root = Path(directory)
-            repo = run_root / "repo"
-            remote = run_root / "remote.git"
-            fake_bin = run_root / "bin"
-            repo.mkdir()
-            fake_bin.mkdir()
-            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-            subprocess.run(["git", "init", "-q", "--bare", remote], check=True)
-
-            def git(*args: str) -> str:
-                return subprocess.run(
-                    ["git", *args],
-                    cwd=repo,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=True,
-                ).stdout.strip()
-
-            git("config", "user.email", "test@example.com")
-            git("config", "user.name", "Test")
-            git("remote", "add", "origin", str(remote))
-            (repo / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
-            task_ref = ".trellis/tasks/demo"
-            archive_ref = ".trellis/tasks/archive/2026-09/demo"
-            task = repo / task_ref
-            task.mkdir(parents=True)
-            (task / "task.json").write_text(
-                json.dumps(
-                    {
-                        "id": "demo",
-                        "title": "Demo",
-                        "status": "in_progress",
-                        "base_branch": "main",
-                        "lifecycle_generation": 0,
-                    }
-                ),
-                encoding="utf-8",
-            )
-            for name in ("prd.md", "design.md", "implement.md"):
-                (task / name).write_text("fixture\n", encoding="utf-8")
-            git("add", ".")
-            git("commit", "-qm", "initial task")
-            git("push", "-q", "-u", "origin", "main")
-            git("switch", "-qc", "codex/demo")
-
-            write_finish_fake_gh(fake_bin / "gh")
-            runtime_env = {
-                "PATH": str(fake_bin) + os.pathsep + os.environ["PATH"],
-                "FAKE_GH_STATE": str(run_root / "gh-state.json"),
-                "FAKE_REPO_PATH": str(repo),
-                "FAKE_REMOTE_PATH": str(remote),
-            }
-
-            def finish_cycle(cycle: int) -> dict[str, Any]:
-                closure_ref = f"closure:v2:cycle-{cycle}"
-                public = {
-                    "profile": "closure_completed",
-                    "source_exit": "no_mutation",
-                    "mode": "standalone",
-                    "task_ref": task_ref,
-                    "closure_exit": "no_mutation",
-                    "closure_ref": closure_ref,
-                }
-                semantic = {
-                    "profile": "closure_completed",
-                    "mode": "standalone",
-                    "allowlist": [task_ref, archive_ref],
-                    "bookkeeping": {
-                        "repo_ref": "example/repo",
-                        "base_branch": "main",
-                        "expected_base_head": git("rev-parse", "refs/remotes/origin/main"),
-                        "head_branch": "codex/demo",
-                        "archive_ref": archive_ref,
-                        "commit_subject": f"chore(trellis): finish demo cycle {cycle}",
-                        "commit_body": "Persist terminal task metadata.\n\nRefs #436",
-                        "pr_title": f"持久化 demo 第 {cycle} 周期收尾归档",
-                        "pr_body": "仅包含 task lifecycle bookkeeping。\n\nRefs #436",
-                        "merge_subject": f"chore(merge): finish demo cycle {cycle}",
-                        "merge_body": "Merge reviewed bookkeeping.\n\nRefs #436",
-                    },
-                    "route": {"typed_exit": "success"},
-                }
-                resume = {
-                    "exit_id": "resume_finish",
-                    "task_ref": task_ref,
-                    "closure_exit": "no_mutation",
-                    "closure_ref": closure_ref,
-                }
-                for stage, args in (
-                    ("pending", ()),
-                    ("project", ("--confirmed-finish",)),
-                    ("publish", ("--confirmed-bookkeeping-publish",)),
-                ):
-                    process = run_skill(
-                        "guru-finish-task",
-                        repo,
-                        run_root,
-                        f"finish-{cycle}-{stage}",
-                        public,
-                        semantic,
-                        *args,
-                        env=runtime_env,
-                        check=False,
-                    )
-                    self.assertEqual(process.returncode, 0, process.stderr)
-                    self.assertEqual(json.loads(process.stdout), resume)
-                finished = run_skill(
-                    "guru-finish-task",
-                    repo,
-                    run_root,
-                    f"finish-{cycle}-merge",
-                    public,
-                    semantic,
-                    "--confirmed-bookkeeping-merge",
-                    env=runtime_env,
-                    check=False,
+    def test_current_public_wrappers_load_and_retired_packages_are_absent(self) -> None:
+        for skill_id in {key[0] for key in ROUTES}:
+            with self.subTest(skill=skill_id):
+                interface = read_json(SKILLS / "packages" / skill_id / "interface.json")
+                wrapper = SKILLS / "packages" / skill_id / interface["public_contracts"]["invocation"]["wrapper"]
+                result = subprocess.run(
+                    [str(wrapper), "--help"], cwd=ROOT, capture_output=True, text=True,
+                    env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
                 )
-                self.assertEqual(finished.returncode, 0, finished.stderr)
-                output = json.loads(finished.stdout)
-                self.assertEqual(output["exit_id"], "success")
-                return output
+                self.assertEqual(result.returncode, 0, result.stderr)
+        for skill_id in RETIRED:
+            self.assertFalse(any(path.is_file() for path in (SKILLS / "packages" / skill_id).rglob("*")))
 
-            def cleanup_cycle(cycle: int, finish_output: dict[str, Any]) -> Path:
-                public = {
-                    "profile": "finish_success",
-                    "source_exit": "success",
-                    "mode": "standalone",
-                    "task_ref": task_ref,
-                    "archive_ref": archive_ref,
-                    "finish_ref": finish_output["finish_ref"],
-                    "resources": [],
-                }
-                semantic = {
-                    "profile": "finish_success",
-                    "mode": "standalone",
-                    "owned_resources": [],
-                    "route": {"typed_exit": "cleaned"},
-                }
-                cleaned = run_skill(
-                    "guru-cleanup-task-resources",
-                    repo,
-                    run_root,
-                    f"cleanup-{cycle}",
-                    public,
-                    semantic,
-                )
-                self.assertEqual(json.loads(cleaned.stdout), {"exit_id": "cleaned"})
-                suffix = finish_output["finish_ref"].rsplit(":", 1)[-1]
-                receipt = repo / ".trellis/.runtime/guru-team/cleanup" / f"{suffix}.json"
-                self.assertTrue(receipt.is_file())
-                return receipt
-
-            finish_zero = finish_cycle(0)
-            cleanup_zero = cleanup_cycle(0, finish_zero)
-            cleanup_zero_payload = cleanup_zero.read_text(encoding="utf-8")
-            base_head = git("rev-parse", "refs/remotes/origin/main")
-            reactivate_public = {
-                "profile": "reactivate_completed_task",
-                "mode": "standalone",
-                "task_ref": task_ref,
-                "archive_ref": archive_ref,
-                "task_id": "demo",
-            }
-            reactivate_semantic = {
-                "profile": "reactivate_completed_task",
-                "mode": "standalone",
-                "reason_refs": ["new evidence"],
-                "workspace": {
-                    "disposition": "reuse_exact",
-                    "workspace_path": str(repo),
-                    "branch_name": "codex/demo",
-                    "base_branch": "main",
-                    "base_head": base_head,
-                    "workspace_mapping": ".trellis/.runtime/guru-team/workspaces/demo.json",
-                    "task_mapping": ".trellis/.runtime/guru-team/tasks/demo.json",
-                },
-                "route": {"typed_exit": "reactivated_to_evidence_refresh"},
-            }
-            reactivated = run_skill(
-                "guru-reactivate-task",
-                repo,
-                run_root,
-                "reactivate",
-                reactivate_public,
-                reactivate_semantic,
-                "--confirmed-reactivation",
-            )
-            self.assertEqual(json.loads(reactivated.stdout)["exit_id"], "reactivated_to_evidence_refresh")
-            self.assertFalse(cleanup_zero.exists())
-            active_task = read_json(repo / task_ref / "task.json")
-            self.assertEqual(active_task["lifecycle_generation"], 1)
-
-            finish_one = finish_cycle(1)
-            self.assertNotEqual(finish_one["finish_ref"], finish_zero["finish_ref"])
-            cleanup_zero.parent.mkdir(parents=True, exist_ok=True)
-            cleanup_zero.write_text(cleanup_zero_payload, encoding="utf-8")
-            stale_public = {
-                "profile": "finish_success",
-                "source_exit": "success",
-                "mode": "standalone",
-                "task_ref": task_ref,
-                "archive_ref": archive_ref,
-                "finish_ref": finish_zero["finish_ref"],
-                "resources": [],
-            }
-            cleanup_semantic = {
-                "profile": "finish_success",
-                "mode": "standalone",
-                "owned_resources": [],
-                "route": {"typed_exit": "cleaned"},
-            }
-            stale = run_skill(
-                "guru-cleanup-task-resources",
-                repo,
-                run_root,
-                "cleanup-stale-cycle-zero",
-                stale_public,
-                cleanup_semantic,
-                check=False,
-            )
-            self.assertEqual(stale.returncode, 3)
-            self.assertEqual(
-                json.loads(stale.stderr),
-                {
-                    "code": "stale_identity",
-                    "field_path": "cleanup_receipt",
-                    "remediation": "Cleanup recovery receipt belongs to another reviewed cleanup call.",
-                },
-            )
-            cleanup_zero.unlink()
-            cleanup_one = cleanup_cycle(1, finish_one)
-            self.assertEqual(read_json(cleanup_one)["lifecycle_generation"], 1)
-
-    def test_terminal_corpus_matches_public_discovery(self) -> None:
-        corpus = read_json(package("guru-finalize-task") / "evals/evals.json")
-        expected = [item["id"] for item in corpus["evals"]]
-        process = subprocess.run(
-            [
-                str(EVAL_DISCOVERY),
-                "--mode",
-                EXECUTION_MODE,
-                "--skill",
-                "guru-finalize-task",
-                "--json",
-            ],
-            cwd=REPO,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
+    def test_legacy_terminal_state_cannot_enter_current_graph(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("archived_review_passed", text)
+        self.assertIn("legacy-archived-review-disposition-required", text)
+        self.assertIn("pinned compatible old version or per-case manual disposition", text)
+        self.assertIn(
+            "Prove one TaskId, source, accepted scope and terminal Git identity",
+            " ".join(text.split()),
         )
-        self.assertEqual(process.returncode, 0, process.stderr)
-        discovery = json.loads(process.stdout)
-        self.assertEqual(discovery["case_ids"], expected)
-        self.assertEqual(
-            [item["id"] for item in discovery["adapters"]],
-            ["shared", "codex", "claude", "cursor"],
-        )
+        for item in markers("skill-exit"):
+            self.assertNotIn(item["skill"], RETIRED)
+            self.assertNotIn(item["consumer"].get("id"), RETIRED)
 
-    def test_terminal_cases_execute_through_public_eval_boundary(self) -> None:
-        for case_id, expected_exit in TERMINAL_CASES.items():
-            with self.subTest(case=case_id), tempfile.TemporaryDirectory(
-                prefix="guru-finish-terminal-"
-            ) as directory:
-                process = subprocess.run(
-                    [
-                        str(EVAL_RUNNER),
-                        "--mode",
-                        EXECUTION_MODE,
-                        "--skill",
-                        "guru-finalize-task",
-                        "--adapter",
-                        "shared",
-                        "--case",
-                        case_id,
-                        "--run-root",
-                        directory,
-                        "--json",
-                    ],
-                    cwd=REPO,
-                    text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=False,
-                    env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-                )
-                self.assertEqual(process.returncode, 0, process.stderr)
-                result = json.loads(process.stdout)
-                self.assertEqual(result["status"], "passed", result)
-                case = result["cases"][0]
-                self.assertEqual(case["actual_exit"], expected_exit)
-                checks = {
-                    item["id"]: item["passed"]
-                    for item in case["deterministic_results"]
-                }
-                self.assertTrue(
-                    all(
-                        checks[item]
-                        for item in (
-                            "expected-exit",
-                            "actual-exit-output-schema",
-                            "expected-route",
-                        )
-                    )
-                )
-                transcript = read_json(Path(case["transcript_locator"]))
-                trace = read_json(Path(transcript["native_trace_path"]))
-                self.assertEqual(trace["events"][0]["kind"], "read")
-                self.assertEqual(trace["events"][0]["target_kind"], "skill_contract")
-                self.assertEqual(trace["events"][-1]["kind"], "invoke")
-                self.assertEqual(trace["events"][-1]["returncode"], 0)
+    def test_no_task_breadcrumb_preserves_identity_boundary(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        state = text.split("[workflow-state:no_task]", 1)[1].split("[/workflow-state:no_task]", 1)[0]
+        for phrase in (
+            "Every file-changing request first resolves task identity",
+            "Unrelated `in_progress` tasks",
+            "A checkout path alone does not bind its task identity",
+            "current repository and TaskId must be validated",
+            "An unfinished task for the same Issue must resolve to its existing identity",
+            "no relevant active task, archived incomplete-closeout identity, or normally finished original-task Reactivate candidate",
+            "discover relevant normally finished archives by source Issue or explicit original TaskId",
+            "old Finalizer residue is not a normally completed archive",
+        ):
+            self.assertIn(phrase, " ".join(state.split()))
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ from typing import Any
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 
 
 DIMENSION_IDS = [
@@ -177,12 +178,10 @@ def task_facts(repo: Path, target: Path) -> dict[str, str]:
         raise CommandError("invalid_json", "task_ref", "Repair current task.json.") from exc
     if not isinstance(metadata, dict) or metadata.get("status") != "in_progress":
         raise CommandError("stale_identity", "task_ref", "Use one active in_progress task.", 3)
-    branch = git(repo, "branch", "--show-current")
-    if not branch or metadata.get("branch") != branch:
-        raise CommandError("stale_identity", "task.branch", "Use the task's current branch.", 3)
-    workspace = metadata.get("worktree_path")
-    if not isinstance(workspace, str) or Path(workspace).resolve() != repo:
-        raise CommandError("stale_identity", "task.worktree_path", "Use the task's current worktree.", 3)
+    try:
+        branch = resolve_active_task_checkout(repo, rel(repo, target)).branch_name
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
     base_branch = metadata.get("base_branch")
     if not isinstance(base_branch, str) or not base_branch.strip():
         raise CommandError("stale_identity", "task.base_branch", "Restore the task base branch.", 3)

@@ -11,11 +11,12 @@ Guru Team extension, public Skill projections, package runtimes, minimal shared 
 discovery copies, and Guru-owned explicit entries are installed by the preset.
 
 Guru task workspace terminology means the isolated task checkout/worktree and
-its ignored Guru runtime mappings. It never refers to the retired
+current task/branch/session binding. It never refers to the retired
 `.trellis/workspace/<developer>/journal-*` namespace. Current task resolution
-uses task metadata, current checkout/branch, live Git worktree facts, and those
-mappings; no normal workflow path initializes or reads developer identity,
-workspace journal/index, session recording, or legacy agent traces.
+uses TaskId/generation, task metadata, branch binding, and live Git checkout
+facts; old task/workspace mappings and checkout paths are not identity authority.
+No normal workflow path initializes or reads developer identity, workspace
+journal/index, session recording, or legacy agent traces.
 
 ## SSOT Boundary
 
@@ -27,7 +28,7 @@ The global workflow owns only:
 - workflow targets, fail-closed stops, and automatic mapped re-entry;
 - tool-free initial request classification;
 - workspace/task boundary selection and task activation;
-- Docs SSOT and Publication-owned external-work-item disposition points;
+- Docs SSOT and post-Completion external-work-item Closure integration points;
 - human-readable artifact presentation;
 - the user interaction and external side-effect boundaries.
 
@@ -68,39 +69,35 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current package registry contains exactly 32 active Skill ids, 142 external
-exits, and 102 commands. Twenty-two mandatory Skill invocations participate in
-the business-task workflow, whose global graph contains 98 mapped exits, 35
-workflow targets, and 24 stop targets. Nine additional active packages remain
-deferred capability owners, and `guru-verify-extension-installation` remains the
-standalone-only source-repository Skill; none of those ten packages activates a
-new business-workflow edge before the owning lifecycle change.
+The current source registry has 34 active packages, 155 package exits, and 104
+commands. The business-task workflow declares 33 mandatory invocations and 153
+external exits; `guru-verify-extension-installation` is standalone-only. These
+counts are checks against the live registry and workflow markers, not an
+alternative routing authority.
 
-| Skill | Typed exit -> unique consumer |
-| --- | --- |
-| `guru-maintain-architecture-baseline` | `baseline_current -> guru-architecture-baseline-current-router`; `sync_required -> guru-maintain-architecture-baseline`; `baseline_incomplete -> guru-architecture-baseline-bootstrap-router`; `architecture_conflict -> guru-architecture-baseline-planning-router`; `contract_incomplete -> guru-architecture-baseline-planning-router`; `fitness_regression -> guru-architecture-baseline-check-router`; `blocked -> architecture-baseline-blocked` |
-| `guru-qualify-normal-scenario` | `classified -> guru-normal-scenario-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-normal-scenario-mechanism-router`; `blocked -> normal-scenario-qualification-blocked` |
-| `guru-qualify-solution-mechanism` | `classified -> guru-solution-mechanism-classified-router`; `scope_confirmation_required -> guru-clarify-requirements`; `mechanism_revision_required -> guru-solution-mechanism-mechanism-router`; `blocked -> solution-mechanism-qualification-blocked` |
-| `guru-execute-task-free-change` | `completed -> guru-task-free-completed`; `resume_active_task -> guru-task-free-resume-active-task-router`; `scope_change -> guru-task-free-scope-change-router`; `location_required -> guru-execute-task-free-change`; `reselect_mode -> guru-select-workflow-mode`; `explicit_choice_required -> guru-execute-task-free-change`; `blocked -> task-free-change-blocked` |
-| `guru-sync-base` | `synced -> guru-discover-change-context`; `skipped -> original-request-route`; `blocked -> base-sync-blocked` |
-| `guru-discover-change-context` | `context_ready -> guru-clarify-requirements`; `refresh_base -> guru-sync-base`; `blocked -> change-context-blocked` |
-| `guru-clarify-requirements` | `clear -> guru-requirements-clear-router`; `needs_context -> guru-discover-change-context`; `refresh_context -> guru-sync-base`; `retarget_context -> guru-sync-base`; `new_task -> guru-full-task-intake-chain`; `blocked -> requirements-clarification-blocked` |
-| `guru-review-contract-wording` | `pass -> guru-contract-wording-pass-router`; `content_changed -> guru-contract-wording-change-router`; `blocked -> contract-wording-blocked` |
-| `guru-review-change-request` | `ready -> guru-create-task-workspace`; `clarify_requirements -> guru-clarify-requirements`; `review_wording -> guru-review-contract-wording`; `refresh_context -> guru-sync-base`; `blocked -> change-request-review-blocked` |
-| `guru-create-task-workspace` | `created -> guru-task-workspace-created`; `refresh_review -> guru-sync-base`; `blocked -> task-workspace-blocked`; `invalid_task_state -> invalid-task-state` |
-| `guru-approve-task-plan` | `approved -> phase-1-task-activation`; `revision_required -> guru-approve-task-plan`; `clarify_scope -> guru-task-plan-clarify-scope-router`; `blocked -> task-plan-approval-blocked` |
-| `guru-check-task` | `passed -> guru-create-task-commit`; `implementation_required -> guru-resume-implementation`; `planning_stale -> guru-task-check-planning-router`; `blocked -> task-check-blocked` |
-| `guru-create-task-commit` | `committed -> guru-review-branch`; `revision-required -> guru-create-task-commit`; `blocked -> task-commit-blocked` |
-| `guru-review-branch` | `passed -> guru-review-task-publication`; `continuity_passed -> guru-base-continuity-passed-router`; `implementation_required -> guru-branch-review-implementation-router`; `scope_confirmation_required -> guru-branch-review-scope-router`; `blocked -> branch-review-blocked`; `archived_review_passed -> guru-review-task-publication` |
-| `guru-review-task-publication` | `ready -> guru-finalize-task`; `return_to_task_work -> guru-task-publication-work-router`; `blocked -> task-publication-review-blocked`; `archived_ready -> guru-finalize-task` |
-| `guru-verify-extension-installation` (standalone only) | `verified -> extension-installation-verification-verified`; `blocked -> extension-installation-verification-blocked` |
-| `guru-finalize-task` | `publication_review_stale -> guru-review-task-publication`; `resume_finalization -> guru-finalize-task`; `reprepare_required -> guru-finalize-task`; `ready_for_merge -> guru-merge-task-pr`; `blocked -> task-finalization-blocked` |
-| `guru-merge-task-pr` | `merged -> guru-finalization-finish-response`; `merge_blocked -> task-pr-merge-blocked`; `phase2_reentry_required -> guru-restore-archived-task`; `closure_mismatch -> task-pr-closure-mismatch`; `review_refresh_required -> guru-review-branch` |
-| `guru-restore-archived-task` | `restored_to_phase2 -> guru-resume-implementation`; `restore_blocked -> task-pr-phase2-reentry-blocked` |
+The production spine is `guru-sync-base` -> context/clarification/wording/
+change-request review -> `guru-create-issue` for a proposed draft (then fresh
+Intake) or `guru-create-task` for an existing Issue/standalone request ->
+identity/binding/checkout/session resolution -> Planning and `guru-activate-task`
+-> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
+-> Delivery Publish -> Delivery Merge -> whole-task Completion -> source Issue
+Closure -> Finish -> Cleanup. Incomplete Completion retains the same active
+TaskId and routes to the earliest affected owner or next Delivery slice.
+Normally finished archives can enter Reactivate under a new generation.
+
+The workflow's `guru-skill-invoke` and `guru-skill-exit` markers, registry and
+package interfaces declare every exact exit/consumer pair. No summary in this
+contract supersedes that graph. The old `guru-create-task-workspace`,
+`guru-review-task-publication`, `guru-finalize-task`, `guru-merge-task-pr`, and
+`guru-restore-archived-task` packages have no current production edge. Historical
+IDs and old DTOs cannot be projected into the new lifecycle.
 
 Missing Skill packages, missing or duplicate markers, unknown/multiple/unmapped
 exits, a consumer mismatch, a dangling target, a kind mismatch, or an invalid
-projection always fails closed. Frontmatter discovery is only a convenience and
+projection always fails closed. The installed graph validator checks every
+parsed invocation and exit against the current registry/interface declarations;
+an extra retired marker fails even when all required markers remain present.
+Frontmatter discovery is only a convenience and
 never substitutes for a mandatory workflow invocation marker.
 
 ### Normal-scenario qualification invocation
@@ -173,7 +170,7 @@ checkpoint, persistent state store, handoff, or result locator.
 Every standard task mandatory invokes
 `guru-maintain-architecture-baseline:task_impact_sync` with one fresh stage at
 Planning, qualified `implementation_discovery` boundary expansion, Phase 2,
-committed full-diff Branch Review, Publication, and Acceptance/Finish. The one
+committed full-diff Branch Review, Delivery Review, and Completion/Finish. The one
 global mandatory marker identifies the stable Skill; a prior stage result never
 substitutes for the next invocation.
 
@@ -191,15 +188,15 @@ regular project-owned constitution locator, and its exact source profile. Only
 `source_profile=bootstrap_foundation|repair` reruns
 `task_impact_sync(stage=<affected-stage>)` before that stage can resume.
 `source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
-independent committed full-diff Branch Review before Publication or
-Acceptance/Finish reruns. Missing or stale Architecture evidence,
+independent committed full-diff Branch Review before Delivery Review or
+Completion/Finish reruns. Missing or stale Architecture evidence,
 `architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
-reach Publication. Stale baseline, constitution, contribution,
+reach Delivery Review. Stale baseline, constitution, contribution,
 expected-current, or stage identity returns `sync_required` to the Architecture
-owner. Acceptance/Finish requires `reviewed_promoted` for a long-term
-Architecture change or a current `no_change` proof. This is
-routing-only integration; Publication and Finalizer keep their existing
-package-owned business semantics.
+owner. Completion/Finish requires `reviewed_promoted` for a long-term
+Architecture change or a current `no_change` proof. This is routing-only
+integration; Delivery, Completion, Closure and Finish retain their package-owned
+judgments.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
@@ -210,7 +207,7 @@ for information, such as checking an Issue's current status, remains a
 non-file-changing direct answer. The selector's `standard_intake` exit enters
 `guru-sync-base`, then automatically follows the public graph through current
 context discovery, requirements clarification, wording review, change-request
-review, and `guru-create-task-workspace`. Its `task_free` exit enters only the
+review, and the `guru-task-intake-router`. Its `task_free` exit enters only the
 bounded current-checkout edit target.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
@@ -220,44 +217,47 @@ deterministic components inside the public Skill and focused diagnostics/tests.
 Each refresh edge starts one new complete public sync invocation and discards
 the stale transition; it does not maintain a parallel evidence track.
 
-The standard Intake route carries a workflow-owned closed transition through
-the five current stages:
+The standard Intake route carries a workflow-owned closed transition:
 
 ```text
 base_current -> guru-discover-change-context
 context_current -> guru-clarify-requirements
 clarity_current -> guru-review-contract-wording
 wording_current -> guru-review-change-request
-readiness_current -> guru-create-task-workspace
+readiness_current -> guru-task-intake-router
 ```
+
+The router uses `ready.transition.target.kind`: `proposed_draft` invokes
+`guru-create-issue` with its own confirmation and then restarts fresh Sync and
+Intake for the new Issue; `existing_issue` and `standalone_request` invoke
+`guru-create-task`. Only the latter's checked `created` exit enters Planning.
+Issue creation is not task creation. Identity, branch binding, checkout and
+session owners resolve the exact TaskId/generation for subsequent phases.
 
 The producer's actual checked stdout is projected into the next stage and then
 combined only with that consumer's current semantic authoring input. Normal
 pre-task routing writes no owner-result, prerequisite, or transition file under
 `.trellis/tasks/**`, `.trellis/workspace/**`, or `.trellis/.runtime/**`.
 Missing/stale stage identity, unknown or multiple exits, or an unmapped consumer
-stops fail closed. `prepare-task` is never a Phase 0 hop; its explicit legacy
-use is a compatibility-only local diagnostic governed by the source-preserving
-provenance contract.
+stops fail closed. Retired `prepare-task` is never a Phase 0 hop.
 
-Only `guru-create-task-workspace:created` enters planning. An incomplete or
+Only `guru-create-task:created` enters planning. An incomplete or
 conflicting active-task identity is terminal at the unique `invalid-task-state`
 consumer and never re-enters Intake or automatic recovery. The workflow does not
-create an issue, branch, worktree, or task directly and does not copy the
-workspace owner's target selection, recovery, confirmation, executor, or
-checker behavior.
+create an issue, branch, worktree, or task directly and does not copy their
+owners' selection, recovery, confirmation, executor, or checker behavior.
 
 The pre-selection identity check is scoped to the current workspace and the
 requested Issue, not the repository-wide active-task inventory. Unrelated
 `in_progress` tasks, including tasks owned by the same user, do not prevent
 `guru-select-workflow-mode` and do not justify asking the user to select an
-unrelated task or use task-free. A mapping's `source_checkout` is provenance,
-not a binding of its task to that checkout. Validate a task bound to the current
-workspace and resolve an unfinished task for the same Issue before selecting
-new work; incomplete or conflicting relevant identity remains fail closed.
-An archived task's incomplete Finalizer/closeout blocks only when live workspace,
-branch, task, PR and Finalizer facts bind it to the current identity. None of
-these relevance checks permits task mutation, mapping repair, or cleanup.
+unrelated task or use task-free. A checkout path or old mapping is not a task
+binding. Validate the exact TaskId/generation and resolve an unfinished task
+for the same Issue before selecting new work; incomplete or conflicting
+relevant identity remains fail closed. An archived incomplete closeout blocks
+only when live task, branch, PR and lifecycle facts bind it to the current
+identity. Old in-flight Finalizer residue is a legacy stop, not a current task
+route. None of these relevance checks permits mutation or cleanup.
 
 Every file-changing request not already routed through an active task invokes
 the selector, including requests without an Issue or task-free wording.
@@ -288,7 +288,7 @@ one explicit Docs SSOT Plan. Before presenting those files, mandatory invoke
 `approved` reaches `phase-1-task-activation`. That target first presents the
 three planning links, semantic conclusion, key choices, alternatives,
 trade-offs, and unverified boundaries, then owns the dialogue-local review
-pause before the official task-start state transition. Questions, revision
+pause before `guru-activate-task` performs its status-only transition. Questions, revision
 requests, partial choices, and ambiguous replies remain paused. Material plan
 changes rerun wording and semantic review before a new presentation; an older
 reply and any Phase 0 confirmation are not reusable. Explicit autonomous
@@ -321,73 +321,42 @@ planning-stale exits return to their declared consumers automatically. The
 workflow does not reproduce Phase 2 adequacy dimensions, severity rules,
 recorder/checker commands, or private evidence shape.
 
-### Phase 3 — Commit, independent review, publication, finalization, merge
+### Phase 3 — Delivery cycles and task completion
 
-Mandatory invoke `guru-create-task-commit`, then `guru-review-branch` over the
-complete committed base-to-HEAD range. After `passed`, mandatory invoke
-`guru-review-task-publication`; its AI owner authors and reviews the exact
-Chinese PR title/body directly from live authority without a task-local
-publication handoff file.
+Mandatory invoke `guru-create-task-commit`, then independently review the
+complete committed base-to-HEAD diff with `guru-review-branch`. A checked
+`passed` enters the active-task pair guard and Delivery Review. The Delivery
+Review owner checks one independently deliverable slice and authors the exact
+Chinese PR title/body with `Refs` only, including when the target is the
+default branch. It discloses remaining task work and unverified boundaries;
+task-content findings return to Phase 2 and affected downstream gates.
 
-Only publication `ready` enters `guru-finalize-task`. Stale publication,
-resume, and reprepare exits are automatically consumed by their declared
-Skills. The Finalizer never routes a business task to extension installation
-verification. Only the finalizer may display and execute the bounded
-commit/push/PR/archive/ready side-effect plan. The global workflow never calls
-deterministic closeout scripts directly.
+Only `guru-review-task-delivery:ready` enters `guru-publish-task-delivery`.
+That owner controls the reviewed HEAD push, current Draft/Ready PR, bounded
+side-effect confirmation, and same-plan recovery. Only its checked
+`ready_for_merge` enters `guru-merge-task-delivery`, which requires a separate
+expected-head merge confirmation. Its `delivered` result is one Delivery, not
+whole-task completion, Issue closure, archive authority, or cleanup permission.
+Lost outputs return to the original producer against current exact identity;
+they do not create duplicate PRs or merges. No retired Finalizer or Restore
+path is a current consumer.
 
-Finalizer `ready_for_merge` is not completion. It proves that the unique PR is
-Ready, still points at the reviewed expected head, and still carries the exact
-Publication-reviewed reference or closing-keyword semantics. The workflow immediately and mandatorily
-invokes `guru-merge-task-pr`; only `merged` reaches the finish response.
-`phase2_reentry_required` invokes `guru-restore-archived-task` without merge
-confirmation or remote mutation. Exact restoration resumes Phase 2 through
-`guru-resume-implementation`; restore conflicts stop at
-`task-pr-phase2-reentry-blocked`. External blockers remain `merge_blocked`, and
-`closure_mismatch` remains the post-merge closure stop.
+Mandatory invoke `guru-review-task-completion` after a checked Delivery result.
+It rereads the entire accepted scope, all applicable Deliveries, current
+requirements and evidence. Incomplete results keep the same task active and
+route to the earliest affected owner, evidence refresh, or next Delivery
+planning; only `completed` enters `guru-complete-task-closure`. Closure alone
+decides and, where applicable, separately confirms the exact source Issue
+mutation. No-Issue, reference-only, follow-up and parent dispositions use
+`no_mutation`; neither Delivery nor bookkeeping PR closes an Issue by keyword.
 
-`guru-merge-task-pr` is a semantic, remote-only post-publication route. It
-compares live PR base/head branches with Finalizer's minimal reviewed identity,
-then derives the GitHub closing effect from the live PR body for semantic review
-and post-merge verification. The Merge owner
-authors and reviews the exact Chinese
-`chore(merge)` subject/body on top of that seed, then rebuilds check, review, mergeability, repository-policy
-and Issue facts using repo-bound `gh`; it never enters Phase 0, invokes `guru-sync-base`, updates
-the PR branch, synchronizes local `main`, or cleans resources. After one exact
-merge confirmation, its deterministic executor uses the merge-commit method,
-expected-head precondition and reviewed subject/body. Post-merge verification is read-only:
-the PR must be `MERGED`, the merge commit must have the reviewed message and
-parents `[pre-merge base head, expected head]`, the remote base must point at
-that merge SHA, every close Issue must be `CLOSED`/`COMPLETED`, and
-each Issue close timestamp must be no earlier than the PR merge timestamp.
-Missing GitHub close-keyword effects return `closure_mismatch`; no Guru command
-manually closes an Issue.
-
-Finalizer stale handback preserves exactly `task_ref`,
-`branch_review_commit`, and `stale_reason` for Publication's unique consumer
-profile. Inputs outside that current profile fail closed. Proven descendant
-content drift may leave Publication only through `return_to_task_work` and the
-existing Phase 2 router; `ready` continues to require current content
-continuity.
-
-`guru-finalize-task` owns the single resumable transaction loop entered by the
-canonical thin `guru-finish-work` router. Formal closeout accepts exactly one
-reviewed payload source: Publication `ready` schema 4.0 projects
-`task_ref/branch_review_commit/pr_title/pr_body`, and Finalizer target authoring
-adds only `profile/mode`. Finalizer binds that exact payload in an owner-private
-ignored `finalization-transaction.json` before its
-first remote mutation, including the exact accepted pre-push remote head, and
-retires it only after terminal public consumption. The minimal state binds
-task/repository/base/branch, reviewed and publication heads, immutable
-publication input, current transition and an optional PR identity. It contains no live scan, review
-history, authorization, command transcript or archive projection.
-`ready_for_merge` retires transaction, gate, request and superseded owner state.
-
-GitHub PR discovery must bind the exact repository identity as well as the
-branch and HEAD: `headRepository.nameWithOwner` must match the selected repo,
-`headRepositoryOwner.login` must agree, and `isCrossRepository` must be false.
-Missing or inconsistent repository identity fails closed before a PR candidate
-can be reused or published.
+After Closure, fresh `task_impact_sync(stage=acceptance_finish)` gates
+`guru-finish-task`. Finish alone persists the terminal archive through its
+reviewed local archive and bookkeeping Git/GitHub boundaries. Only verified
+success on the target baseline enters `guru-cleanup-task-resources`, which
+reviews exact owned resources and requests its own confirmation. Partial
+cleanup does not undo Completion, Closure or Finish. The global workflow
+never invokes package-private closeout scripts directly.
 
 ### Active-task continuation authority
 
@@ -397,8 +366,8 @@ For an exact current task, the active workflow's single non-empty
 entries, hooks, prior conversation text, and private checkpoint names provide
 facts or broad lifecycle guidance only. They must not maintain another route
 table or infer a semantic pass. `planning` and `planning-inline` share one Phase
-1 matrix; `in_progress` and `in_progress-inline` share one Phase 2-to-Finalizer
-matrix; `completed` enters canonical `guru-finish-work`; invalid identity or an
+1 matrix; `in_progress` and `in_progress-inline` share one Phase 2-to-Completion
+matrix; `completed` resumes the current Finish or Cleanup consumer; invalid identity or an
 unsupported task state stops at `invalid-task-state`. Without an exact current
 task, continuation never selects a replacement from project inventory.
 
@@ -412,19 +381,16 @@ status, old summaries, and earlier confirmation are never substitutes.
 
 The Phase 1 matrix preserves the current owner for task-created attachment,
 partial planning, planning wording, Planning Architecture, plan approval,
-dialogue-local plan acceptance, and activation. Activation has one
-workflow-owned `initial|recovery` contract: `initial` performs the official
-status transition once after current approval and confirmation; `recovery`
-requires the same exact task/worktree/branch/mapping pair already to be
-`in_progress` and rematerializes the same success without invoking activation
-again. Neither path persists confirmation.
+dialogue-local plan acceptance, and activation. `guru-activate-task` performs
+the status-only transition once after current approval and confirmation; lost
+output is recovered read-only for the same TaskId/generation when already
+`in_progress`. Neither path persists confirmation or writes legacy branch metadata.
 
-When the task/workspace mutation succeeded but its `created` output was lost,
-the original `guru-create-task-workspace:recover_created_result` profile invokes
-its read-only `recover-task-workspace-result` checker for the exact planning
-task. It may rematerialize only the normal `created` exit after current task,
-branch, worktree, boundary, and both runtime mappings agree; it never creates or
-repairs another Issue, branch, worktree, task, or mapping.
+When task creation succeeded but its `created` output was lost, return to
+`guru-create-task` read-only result recovery for the exact TaskId/generation.
+It may rematerialize only the checked `created` result, never create a second
+Issue, branch, worktree or task. Issue creation output loss belongs to the
+separate `guru-create-issue` owner and returns through fresh Intake.
 
 For Phase 2, a current retained `passed` checkpoint may be checked again and
 projected through the existing checker-to-`invoke-guru-check-task` path. This is
@@ -433,11 +399,13 @@ recovery profile, exit, schema, or semantic judgment. If that checkpoint is
 missing or stale, fresh Phase 2 Architecture and `guru-check-task` are required.
 Task Commit output loss uses the existing `guru-create-task-commit` same-
 candidate `recovery_resume` contract and may not create a second candidate,
-empty commit, amend, or duplicate commit. Lost Branch Review or Publication
+empty commit, amend, or duplicate commit. Lost Branch Review or Delivery Review
 DTOs require fresh Architecture at the matching stage and a fresh semantic
-owner run because their successful checkpoints retire after output validation.
-This continuation stops at the existing `guru-finalize-task` entry; Finalizer,
-archive, Merge, and archived-task recovery retain their existing owners.
+owner run. Delivery Publish/Merge recovery belongs to the original owner and
+current PR/HEAD transaction. A current checked Delivery result enters
+Completion; evidence-only changes use Completion's evidence-refresh entry,
+not a fabricated Delivery. Closure, Finish and Cleanup retain their own
+generation-bound recovery and consumers.
 
 `确认继续` authorizes only one unique, fully displayed, still-current side-effect
 plan in the current dialogue. A verified successful executor result returns the
@@ -474,23 +442,22 @@ Automatically consume mapped typed exits, stale/re-entry/reprepare routes, and
 recorder/validator steps. Do not simulate a human approval chain and do not
 persist authorization state, text, refs, digests, or process.
 
-For an existing Open Issue, the happy-path budget is exactly four
-`确认继续` boundaries: workspace/task creation, Phase 1 plan review, the complete
-Finalizer side-effect set, and expected-head merge. Creating a new Issue adds
-one independent Issue creation confirmation for a total of five. Task
-activation after the Phase 1 acceptance, implementation, Phase 2 check, Branch
-Review, an exactly requested task commit, mapped exits and read-only recovery
-add no routine confirmation. Branch
-classification, protection, sharing, ownership and publication state are not
-operation authority; without a current exact commit request, Task Commit asks
-once for the fully displayed action.
-Finalizer and merge confirmation remain separate because merge readiness exists
-only after Finalizer reaches `ready_for_merge`.
+Current side-effect boundaries are distinct: new Issue creation when needed,
+task creation/checkout, Phase 1 plan acceptance and activation, Task Commit
+when not already exactly requested, Delivery push/PR, Delivery merge,
+post-Completion source Issue closure when applicable, Finish archive and
+bookkeeping, and Cleanup. Each owner displays its current exact action and
+obtains confirmation where required by its contract; an earlier confirmation
+does not authorize a later action. Task activation after accepted Planning,
+implementation, Phase 2 check, Branch Review, mapped exits and read-only
+recovery add no second routine confirmation. Branch classification, protection,
+sharing, ownership and PR state are facts, not operation authority.
 
-The canonical workflow declares those five possible boundaries with one
-`guru-confirmation-boundary` marker each. The controlled #174 replay derives
-open/new-Issue budgets from those markers and its single chained event log; it
-must not hard-code totals or sum isolated eval cases.
+The canonical workflow retains five `guru-confirmation-boundary` marker IDs
+for historical #174 replay compatibility. In particular
+`finalizer_side_effect_set` names a retired profile; it does not route to a
+Finalizer or define the current lifecycle's confirmation count. Use the
+current owners' plans and exits for production authorization.
 
 ## Docs SSOT And External Work Items
 
@@ -499,21 +466,16 @@ Every planning cycle chooses one Docs SSOT strategy:
 `no_docs_update_needed`. Phase 2 executes that decision; Branch Review verifies
 the final reconciliation but must not perform the first merge.
 
-Publication is the sole semantic owner of external-work-item disposition. It
-rereads current requirement authority and live GitHub state, then decides one
-of three effects: a fully delivered Issue-backed task normally requests closure;
-a concrete post-merge validation, observation, release, or incomplete-delivery
-requirement keeps the Issue reference-only; and a task with no external work
-item produces no Issue reference or closing effect. A PR targeting the default
-branch carries the reviewed closing keyword when closure is requested. A PR
-targeting a non-default branch remains reference-only; the later Publication
-onto the default branch rereads authority and decides closure afresh.
+Delivery Review owns each slice's Refs-only PR payload, even for an Issue-backed
+Delivery to the default branch. Publish and Merge do not close the source
+Issue. Completion owns the whole accepted-scope judgment; only its `completed`
+result enters Closure, which reviews the exact source Issue disposition and
+performs a separate confirmed close when applicable. No-Issue, reference-only,
+follow-up and parent relationships produce `no_mutation`. Finish's bookkeeping
+PR is likewise Refs-only. PR merge, Issue state and archive presence never
+substitute for Completion or Closure.
 
-Finalizer binds the exact Publication-reviewed PR payload. Merge verifies that
-payload and GitHub's resulting state but does not re-decide disposition or call
-an Issue-close API.
-
-Before a planning, Phase 2, Branch Review, or publication stop, resolve the
+Before a planning, Phase 2, Branch Review, Delivery, Completion, Closure, or Finish stop, resolve the
 human-authored artifacts and show only files that exist. JSON gates, private
 checkpoints, assignment/liveness records, raw agent reports, and digests are not
 standard user-facing handoff artifacts.
@@ -564,10 +526,9 @@ modes, README commands, and a recursive zero-sidecar scan.
 
 Every stable active-task boundary observes the selected base through the single
 `guru-reconcile-task-base` pair guard before continuing. The guarded
-boundaries are planning approval before activation, Phase 2 pass before Task
-Commit, Task Commit before Branch Review, Branch Review before Publication,
-Publication readiness before the first Finalizer publication side effect, and
-Finalizer base-only mismatch before resuming the same finalization plan.
+boundaries are plan approval before activation, Phase 2 pass before Task
+Commit, Task Commit before Branch Review, Branch Review before Delivery Review,
+and Delivery Review readiness before Delivery Publish.
 
 The workflow owns one closed `resume_target` table, mandatory invocation of the
 semantic owner for a new pair, and one `guru-base-reconciliation-router`.
@@ -583,58 +544,38 @@ confirmation boundary.
 
 Base identity is integration evidence, not authority or task-content
 freshness. A base-only change cannot by itself invalidate Planning, Phase 2,
-Branch Review, or Publication. For post-Branch Review, post-Publication, and
-Finalizer mismatch profiles, a compatible candidate that changes the shared
+Branch Review, or Delivery Review. For post-Branch Review and post-Delivery
+Review profiles, a compatible candidate that changes the shared
 reviewed-content identity uses `review_continuity_required`: after semantic
 judgment and an exact current-dialogue Git confirmation, the reconcile owner
 creates one persistent local reconciliation commit bound to expected task/base
 HEADs and the reviewed candidate tree. Bounded continuity separately binds the
 prior complete review commit and that current commit, then projects the current
-commit as Publication's reviewed-content anchor. Publication stale remains
-limited to its own PR payload, issue scope, validation statement, deployment,
-security metadata, or genuine task-content drift. Finalizer exposes
-`base_reconciliation_required` separately and never relabels a base-only
-mismatch as Publication stale.
+commit as Delivery Review's reviewed-content anchor. The retained
+`post_publication` and `finalizer_base_mismatch` profile IDs are historical
+compatibility identifiers: the former serves the current post-Delivery Review
+boundary, while the latter creates no Finalizer production route. A base-only
+change is not a Delivery Review content-staleness finding.
 
-## Closeout Original-Entry Routing
+## Public Entry And Recovery Routing
 
-Commit, Publication, Finalizer, and Merge remain four independent semantic
-Skills. Each package keeps its existing Interface-declared public wrapper and
-stable command id as the only normal entry. Happy Path consolidation happens
-inside that command; an older argument shape selects a mutually exclusive
-compatibility branch, while record/check/execute helpers remain package-private
-testing, diagnosis, or bounded-recovery entries. The normal sequence is:
-
-- Commit: one `prepare-task-commit`, one dialogue-local action confirmation,
-  then one `invoke-guru-create-task-commit` through `scripts/invoke.sh` with the
-  prepared candidate locator.
-- Publication: after the AI semantic review, one
-  `invoke-guru-review-task-publication` through `scripts/invoke.sh` with the
-  public input and semantic result.
-- Finalizer: one read-only preview, one dialogue-local Finalizer confirmation,
-  then one `invoke-guru-finalize-task` through `scripts/invoke.sh` with the
-  confirmed preview identity.
-- Merge: at most one expected-head-bound `watch-task-pr-checks` while checks are
-  pending, then one dialogue-local merge confirmation and one
-  `invoke-task-pr-merge` through `scripts/invoke.sh`.
-
-The original command may reuse facts only within one invocation, for one exact
-authority identity, and only until a mutation boundary. It may automatically
-consume a mapped deterministic recovery/reprepare only when the package proves
-the semantic plan and side-effect set are unchanged. Material scope, authority,
-payload, head, plan, or action changes return to the owning semantic step and
-invalidate the previous confirmation. The Happy Path must not execute the
-compatibility branch first or publish a second wrapper/command authority. Every
-Merge exit is terminal for that Skill; its consumer or stop target runs next,
-with no post-exit polling or work.
+Each current package's Interface-declared public invocation is the normal
+entry; component record/check/execute commands remain diagnostics or bounded
+recovery, not an alternate workflow. Task Commit keeps its reviewed
+`prepare-task-commit` and `invoke-guru-create-task-commit` entry. Delivery
+Review, Publish and Merge, then Completion, Closure, Finish and Cleanup use
+their own current public contracts and mapped exits. A command may reuse
+facts only for one current authority identity and mutation boundary. Recovery
+may consume a mapped same-plan result only after the original owner proves
+the side-effect set unchanged; material scope, payload, HEAD, authority or
+action changes invalidate prior confirmation and return to semantic review.
+The workflow does not invoke retired Publication/Finalizer/PR Merge wrappers.
 
 ## Post-Delivery Task Lifecycle
 
-The additive Post-Delivery lifecycle consists of five independent semantic
-owners. Their packages may be installed before activation, but the production
-workflow does not route into them until the lifecycle graph owner performs one
-atomic cutover. A Delivery merge, PR readiness, deployment, passing test, closed
-Issue, or archived directory never implies Task Completion.
+The five post-Delivery owners are active production consumers, not deferred
+packages awaiting cutover. A Delivery merge, PR readiness, deployment, passing
+test, closed Issue, or archived directory never implies Task Completion.
 
 `guru-review-task-completion` is the only Completion owner. It rereads accepted
 scope, every applicable Delivery fact, current requirement authority, validation
@@ -657,17 +598,22 @@ remote target baseline contains the unique final archive, the active task is
 absent, and terminal metadata is readable there. Local movement, commit, push,
 or PR creation alone returns `resume_finish`.
 
-`guru-cleanup-task-resources` consumes only the current Finish success. It
+`guru-cleanup-task-resources` consumes current Finish `success` or its declared
+`manual_cleanup_required` handoff. It
 freshly reviews the exact owned branch, worktree and ignored runtime resources,
 requires an independent confirmation, and preserves every previous lifecycle
 result when cleanup is partial. A Reactivate invalidates the prior Finish
 receipt, so old success cannot delete current resources.
 
-`guru-reactivate-task` handles only a normally finished original task and is
-distinct from merge-time `guru-restore-archived-task`. It preserves task and
-Issue identity, verifies current archive/scope/base facts, and either reuses one
-exact clean branch/worktree or creates a new branch/worktree from the reviewed
-target baseline. It moves the single archive copy back to active, refreshes task
-metadata and ignored mappings, and routes explicitly to requirements, planning,
-implementation, or evidence refresh. It never creates a replacement task,
-reopens an Issue, or treats prior Completion/Closure/Finish as current approval.
+`guru-reactivate-task` handles only a normally finished original task. It
+preserves TaskId, source and accepted scope, verifies archive/base identity,
+increments the lifecycle generation and establishes a current branch/checkout
+binding. Its normal exit returns to Planning; session recovery, same-transaction
+resume and legacy source correction use their declared consumers. It never
+creates a replacement task, reopens an Issue, or treats prior
+Completion/Closure/Finish as current approval. An old in-flight Finalizer
+residue is not a normally finished archive: inspect exact task/PR/local/remote/
+base facts, then use a pinned compatible old version or explicit per-case
+manual disposition. Never adapt old Publication/Finalizer/Merge/Restore DTOs
+into new Delivery or Completion results. `archived_review_passed` stops at
+`legacy-archived-review-disposition-required` in the current graph.

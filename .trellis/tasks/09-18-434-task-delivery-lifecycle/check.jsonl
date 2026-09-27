@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "#434 定向验证范围与普通 Issue 门禁"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "检查全局图、route 与对话边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "检查 registry/interface/schema/consumer closure"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "检查旧 active 资产退出且无双图兼容"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "检查 source/installed/platform/reapply 一致性"}
+{"file": "docs/architecture/contributions/434-task-delivery-lifecycle.md", "reason": "检查 Architecture concern、promotion 与未验证边界"}

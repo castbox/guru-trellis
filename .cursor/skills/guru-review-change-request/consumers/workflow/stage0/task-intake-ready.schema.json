@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-task-intake-router-input-1.0",
+  "type": "object",
+  "required": ["exit_id", "transition"],
+  "properties": {
+    "exit_id": {"const": "ready"},
+    "transition": {
+      "type": "object",
+      "required": ["stage", "target"],
+      "properties": {
+        "stage": {"const": "readiness_current"},
+        "target": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {"kind": {"enum": ["proposed_draft", "existing_issue", "standalone_request"]}}
+        }
+      }
+    }
+  }
+}

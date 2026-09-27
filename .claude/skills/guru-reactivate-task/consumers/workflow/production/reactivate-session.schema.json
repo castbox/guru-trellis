@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reactivate-session-route-2.0","type":"object","additionalProperties":false,"required":["exit_id","task_id","lifecycle_generation"],"properties":{"exit_id":{"const":"session_binding_recovery_required"},"task_id":{"type":"string","minLength":1},"lifecycle_generation":{"type":"integer","minimum":1}}}

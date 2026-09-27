@@ -350,7 +350,7 @@
       {
         "exit_id": "approved",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-approved-2.0",
+          "schema_id": "guru-production-approve-task-plan-output-approved-3.0",
           "path": "schemas/public-approved-output.schema.json"
         },
         "example": {
@@ -414,7 +414,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-production-approve-task-plan-workflow-approved-input-2.0",
+          "schema_id": "guru-production-approve-task-plan-workflow-approved-input-3.0",
           "path": "consumers/workflow/production/approve-task-plan-approved.schema.json"
         }
       },

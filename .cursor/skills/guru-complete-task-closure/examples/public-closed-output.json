@@ -1,1 +1,1 @@
-{"exit_id":"closed","task_ref":".trellis/tasks/example-task","issue_ref":"castbox/guru-trellis#436","closure_exit":"closed","closure_ref":"closure:v3:19bfed2128f39815:0f97cb03199061c4","source_issue":{"repo_ref":"castbox/guru-trellis","number":436,"disposition":"exact_source"}}
+{"exit_id":"closed","result_ref":{"task_id":"example-task","lifecycle_generation":0,"result_id":"closure:111111111111111111111111"}}

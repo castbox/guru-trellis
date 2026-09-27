@@ -88,7 +88,7 @@ def stage_intake_facts(request: dict[str, Any], execution_root: Path,
     run_git(fixture, "update-ref", "refs/remotes/origin/main", head)
     run_git(fixture, "remote", "add", "origin", f"https://github.com/{source['repo']}.git")
     local_remote = execution_root / "source-remote.git"
-    run_git(execution_root, "clone", "--bare", str(fixture), str(local_remote))
+    run_git(execution_root, "clone", "--bare", "--no-local", str(fixture), str(local_remote))
     binary = write_fake_gh(execution_root, "standard-intake", source, local_remote)
     return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {
         "PATH": str(binary) + os.pathsep + os.environ["PATH"], "PYTHONDONTWRITEBYTECODE": "1",

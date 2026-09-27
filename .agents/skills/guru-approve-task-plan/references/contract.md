@@ -127,11 +127,13 @@ It retains only:
 - the final eight-dimension semantic result;
 - typed exit, reason, and consumer.
 
-The composite token has one local deterministic consumer: the planning checker
-invoked inside this Skill's public wrapper before typed-output projection. It
-detects same-path content drift, then returns control to this owner for AI delta
-classification. It is not authorization, semantic approval, a public DTO field,
-cross-Skill authority, or a digest chain. After the checked typed output passes
+The composite token first serves the planning checker inside this Skill's
+public wrapper. On `approved`, the wrapper projects the checked token as the
+minimal `planning_result_id` handed to Activation. Activation compares that
+reviewed identity with the current planning files; its caller must not replace
+it with a freshly computed digest. The token detects same-path content drift,
+then returns control to this owner for AI delta classification. It is not
+authorization, semantic approval, or a digest chain. After the checked typed output passes
 its output schema, the same producer wrapper deletes the checkpoint. Task
 activation and Phase 2 consume only the minimal DTO plus current planning/live
 facts; they never read or delete this private state. The checkpoint does not

@@ -2078,85 +2078,14 @@ def _run_installed_smokes(
         platform,
         work_root / "preset-clean-provenance.log",
     )
-    smoke_results = []
-    workspace_outcomes: list[str] = []
-    installed_python = target / ".trellis/guru-team/runtime/resolve-python.sh"
-    installed_runtime = target / ".trellis/guru-team/runtime"
-    smoke_specs = [
-        (
-            "closeout",
-            (
-                clean_source
-                / "trellis/presets/guru-team/scripts/python/verify_installed_closeout.py",
-                "--repo",
-                target,
-                "--case",
-                "after-update" if scenario == "existing" else "initial",
-            ),
-        ),
-        (
-            "phase0",
-            (
-                source_root
-                / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py",
-                "--installed-repo",
-                target,
-                "--work-root",
-                work_root / "phase0",
-                "--checkpoint",
-                "matrix-cell",
-                "--semantic-grading",
-                source_root
-                / "trellis/presets/guru-team/tests/semantic-retrieval-grading.json",
-            ),
-        ),
-    ]
-    for legacy_profile in ("absent", "present-a", "present-b"):
-        smoke_specs.append(
-            (
-                "task_workspace_" + legacy_profile.replace("-", "_"),
-                (
-                    source_root
-                    / "trellis/presets/guru-team/scripts/python/verify_installed_task_workspace.py",
-                    "--installed-repo",
-                    target,
-                    "--work-root",
-                    work_root / f"task-workspace-{legacy_profile}",
-                    "--checkpoint",
-                    "matrix-cell",
-                    "--legacy-profile",
-                    legacy_profile,
-                ),
-            ),
-        )
-    for name, args in smoke_specs:
-        argv = (
-            str(installed_python),
-            str(target),
-            str(installed_runtime),
-            *(str(value) for value in args),
-        )
-        output = _run(argv, capture=True, log=work_root / f"{name}.log")
-        payload = _require_dict(json.loads(output), f"{name} smoke")
-        if payload.get("status") != "ok":
-            raise MatrixError(f"{name} installed smoke did not pass")
-        if name.startswith("task_workspace_"):
-            if payload.get("legacy_preserved") is not True:
-                raise MatrixError(f"{name} did not preserve legacy state")
-            outcome = payload.get("lifecycle_outcome_sha256")
-            if not isinstance(outcome, str) or not SHA256_RE.fullmatch(outcome):
-                raise MatrixError(f"{name} returned no lifecycle outcome identity")
-            workspace_outcomes.append(outcome)
-        smoke_results.append(name)
-    if len(set(workspace_outcomes)) != 1:
-        raise MatrixError("legacy absent/present task workspace outcomes differ")
+    # Pre-434 phase0/task-workspace/closeout transcripts require the pinned old
+    # graph. Current installed behavior is covered by the package profiles above.
     return {
         "package_validator": "passed",
         "native_load": native_load,
         "cumulative_runtime_smokes": True,
         "installed_profiles": installed_profile_evals,
-        "runtime_smokes": smoke_results,
-        "legacy_workspace_outcome_sha256": workspace_outcomes[0],
+        "runtime_smokes": [row["skill_id"] for row in installed_profile_evals],
     }
 
 

@@ -15,10 +15,13 @@ from __future__ import annotations
 
 import shutil
 import sys
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .paths import FILE_TASK_JSON, generate_task_archive_month, get_repo_root, get_tasks_dir
+from .io import read_json_checked
+from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
 from .history_paths import RetiredDataPathError, require_active_path
 
 if TYPE_CHECKING:
@@ -55,6 +58,121 @@ def is_within_tasks_dir(task_dir_abs: Path, repo_root: Path | None = None) -> bo
 # =============================================================================
 # Task Lookup
 # =============================================================================
+
+
+class TaskIdentityError(ValueError):
+    """Task metadata cannot establish a valid lifecycle identity."""
+
+
+@dataclass(frozen=True)
+class TaskIdentity:
+    task_id: str
+    lifecycle_generation: int
+
+
+def lifecycle_generation(data: dict, source: Path | str) -> int:
+    """Read a strict generation, defaulting an absent legacy field to zero."""
+    if "lifecycle_generation" not in data:
+        return 0
+    value = data["lifecycle_generation"]
+    if type(value) is not int or value < 0:
+        raise TaskIdentityError(
+            f"invalid_lifecycle_generation: {source}: expected non-negative integer"
+        )
+    return value
+
+
+def task_identity_from_data(data: dict, source: Path | str) -> TaskIdentity:
+    task_id = data.get("id")
+    if not isinstance(task_id, str) or not task_id.strip():
+        raise TaskIdentityError(f"invalid_task_id: {source}: expected nonempty string")
+    return TaskIdentity(task_id, lifecycle_generation(data, source))
+
+
+def read_task_identity(task_json: Path, repo_root: Path) -> TaskIdentity:
+    require_active_path(task_json, repo_root)
+    data, reason = read_json_checked(task_json)
+    if data is None:
+        raise TaskIdentityError(f"task_metadata_{reason}: {task_json}")
+    return task_identity_from_data(data, task_json)
+
+
+def _visible_identity_candidates(task_ref: str) -> set[str]:
+    candidates = {task_ref}
+    parts = task_ref.split("-", 2)
+    if len(parts) == 3 and all(part.isdigit() for part in parts[:2]):
+        candidates.add(parts[2])
+    return candidates
+
+
+def _task_directories(tasks_dir: Path, repo_root: Path):
+    require_active_path(tasks_dir, repo_root)
+    if not tasks_dir.is_dir():
+        return
+    for candidate in sorted(tasks_dir.iterdir()):
+        if candidate.name == "archive":
+            continue
+        require_active_path(candidate, repo_root)
+        if candidate.is_dir():
+            yield candidate
+    archive = tasks_dir / "archive"
+    require_active_path(archive, repo_root)
+    if not archive.is_dir():
+        return
+    for month in sorted(archive.iterdir()):
+        require_active_path(month, repo_root)
+        if not month.is_dir():
+            continue
+        for candidate in sorted(month.iterdir()):
+            require_active_path(candidate, repo_root)
+            if candidate.is_dir():
+                yield candidate
+
+
+def task_id_collisions(
+    requested: str,
+    tasks_dir: Path,
+    repo_root: Path,
+    *,
+    exclude: Path | None = None,
+) -> list[str]:
+    """Return exact/case-fold collisions relevant to one requested TaskId."""
+    folded = requested.casefold()
+    excluded = exclude.resolve() if exclude is not None else None
+    conflicts: list[str] = []
+    for directory in _task_directories(tasks_dir, repo_root):
+        if excluded is not None and directory.resolve() == excluded:
+            continue
+        task_json = directory / FILE_TASK_JSON
+        require_active_path(task_json, repo_root)
+        data, reason = read_json_checked(task_json)
+        if data is None:
+            if any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
+                conflicts.append(f"{directory}: unreadable task.json ({reason})")
+            continue
+        task_id = data.get("id")
+        if isinstance(task_id, str) and task_id.strip():
+            if task_id.casefold() == folded:
+                kind = "exact" if task_id == requested else "case-fold"
+                conflicts.append(f"{directory}: {kind} TaskId {task_id!r}")
+        elif any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
+            conflicts.append(f"{directory}: invalid or missing TaskId")
+    return conflicts
+
+
+def require_unique_task_id(
+    requested: str,
+    tasks_dir: Path,
+    repo_root: Path,
+    *,
+    exclude: Path | None = None,
+) -> None:
+    conflicts = task_id_collisions(
+        requested, tasks_dir, repo_root, exclude=exclude
+    )
+    if conflicts:
+        detail = "; ".join(conflicts)
+        raise TaskIdentityError(f"task_id_collision: {requested!r}: {detail}")
 
 def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = None) -> Path | None:
     """Find task directory by name (exact or suffix match).
@@ -120,7 +238,7 @@ def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = 
 def archive_destination_for(task_dir_abs: Path) -> Path:
     """Path a task would be archived to: <tasks>/archive/<YYYY-MM>/<name>."""
     tasks_dir = task_dir_abs.parent
-    year_month = generate_task_archive_month()
+    year_month = datetime.now().strftime("%Y-%m")
     return tasks_dir / "archive" / year_month / task_dir_abs.name
 
 

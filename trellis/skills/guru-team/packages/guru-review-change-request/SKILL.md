@@ -40,9 +40,9 @@ does not enter scope clarification.
 The recorder and checker validate only closed JSON shape, hashes, linkage,
 freshness, fixed consumers, and objective exit invariants. They never generate
 findings, select a delivery unit, decide readiness, or choose a route. Pre-task
-and standalone execution is stdout-only. `ready` declares
-`guru-create-task-workspace` as its consumer but does not create or persist a
-task workspace. Fail closed when evidence is missing, stale, mismatched, or the
+and standalone execution is stdout-only. `ready` routes by the current
+`transition.target.kind` through `guru-task-intake-router`; Issue creation and
+task creation have separate owners. Fail closed when evidence is missing, stale, mismatched, or the
 compatible Guru Team preset runtime is unavailable. This package is not
 self-contained or portable.
 

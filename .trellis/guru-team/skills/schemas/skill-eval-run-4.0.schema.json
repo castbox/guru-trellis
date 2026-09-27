@@ -283,7 +283,7 @@
     "schema_version": {"const": "4.0"},
     "skill_id": {"const": "guru-qualify-normal-scenario"},
     "interface_schema_id": {
-      "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6"]
+      "enum": ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.5", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7"]
     },
     "corpus_schema_id": {"const": "guru-team-skill-evals-2.0"},
     "corpus_version": {"const": "2.0"},

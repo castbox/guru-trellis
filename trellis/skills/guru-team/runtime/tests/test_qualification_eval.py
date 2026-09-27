@@ -924,7 +924,7 @@ class QualificationEvalTests(unittest.TestCase):
         )
         self.assertEqual(
             manifest["interface_schema_ids"],
-            ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.6"],
+            ["guru-team-skill-interface-1.4", "guru-team-skill-interface-1.6", "guru-team-skill-interface-1.7"],
         )
         self.assertEqual(
             qualification["interface_schema_id"],
@@ -979,6 +979,7 @@ class QualificationEvalTests(unittest.TestCase):
                 "guru-team-skill-interface-1.4",
                 "guru-team-skill-interface-1.5",
                 "guru-team-skill-interface-1.6",
+                "guru-team-skill-interface-1.7",
             ],
         )
         self.assertEqual(

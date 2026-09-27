@@ -3,6 +3,7 @@ import argparse,copy,hashlib,json,re,subprocess,sys,unicodedata
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -199,10 +200,11 @@ def validate(package_root,v):validate_json(v,package_root/"schemas/change-contex
 def active_task(repo,value):
  p=(repo/str(value or "")).resolve();tasks=(repo/".trellis/tasks").resolve()
  if not p.is_dir() or p.is_symlink() or not p.is_relative_to(tasks):raise CommandError("unsafe_path","active_task","Use one active task below .trellis/tasks.")
+ try:resolve_active_task_checkout(repo,str(value))
+ except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
  try:task=json.loads((p/"task.json").read_text())
  except Exception as exc:raise CommandError("invalid_json","active_task","Provide a valid active task.json.") from exc
- branch=subprocess.run(["git","rev-parse","--abbrev-ref","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip()
- if task.get("status")!="in_progress" or task.get("branch")!=branch:raise CommandError("stale_identity","active_task","Use the current in-progress task branch.",3)
+ if task.get("status")!="in_progress":raise CommandError("stale_identity","active_task","Use the current in-progress task branch.",3)
  return p,task
 def recovery_path(repo,task_dir):return repo/".trellis/.runtime/guru-team/owner-checkpoints"/task_dir.name/"change-context-recovery.json"
 def consume_recovery(path):

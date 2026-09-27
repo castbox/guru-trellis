@@ -61,6 +61,12 @@ class IntakeAuthoringTests(unittest.TestCase):
             request = request_for(root)
             _, target, _ = stage_owner_execution(request, root / "execution", Path(request["runtime_target"]))
             owner = target.parents[4]
+            for key, expected in (("maintenance.auto", "false"), ("gc.auto", "0")):
+                configured = subprocess.run(["git", "config", "--local", "--get", key],
+                    cwd=owner, capture_output=True, text=True, check=True)
+                self.assertEqual(configured.stdout.strip(), expected)
+            remote_pack = root / "execution/source-remote.git/objects/pack"
+            self.assertTrue(list(remote_pack.glob("*.pack")))
             # Execute the installed runner in its real split module layout. Only the adapter
             # response is doubled to reproduce the captured blocked DTO, not native behavior.
             script = '''

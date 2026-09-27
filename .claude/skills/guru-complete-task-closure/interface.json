@@ -77,10 +77,6 @@
       "path": "examples/semantic-result.json"
     },
     {
-      "id": "live_facts",
-      "path": "examples/live-facts.json"
-    },
-    {
       "id": "no_mutation_output",
       "path": "examples/public-output.json"
     },
@@ -91,6 +87,10 @@
     {
       "id": "resume_closure_output",
       "path": "examples/public-resume-closure-output.json"
+    },
+    {
+      "id": "external_change_conflict_output",
+      "path": "examples/public-external-change-conflict-output.json"
     },
     {
       "id": "blocked_output",
@@ -119,10 +119,6 @@
       "path": "schemas/semantic-result.schema.json"
     },
     {
-      "id": "live_facts",
-      "path": "schemas/live-facts.schema.json"
-    },
-    {
       "id": "aggregate_output",
       "path": "schemas/public-output.schema.json"
     },
@@ -137,6 +133,10 @@
     {
       "id": "resume_closure_output",
       "path": "schemas/public-resume-closure-output.schema.json"
+    },
+    {
+      "id": "external_change_conflict_output",
+      "path": "schemas/public-external-change-conflict-output.schema.json"
     },
     {
       "id": "blocked_output",
@@ -181,6 +181,14 @@
       }
     },
     {
+      "id": "external_change_conflict",
+      "evidence": "frozen Closure authority or required closed Issue changed",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-complete-task-closure"
+      }
+    },
+    {
       "id": "blocked",
       "evidence": "closure identity or provider cannot be trusted",
       "consumer": {
@@ -190,7 +198,7 @@
     }
   ],
   "reentry": {
-    "identity": "task, completion, source Issue/disposition/action and closure transaction",
+    "identity": "TaskLifecycleKey, Completion result, source, scope, target, binding, evidence and frozen action set",
     "freshness": "reread provider and task facts before mutation",
     "stale_behavior": "fail_closed"
   },
@@ -226,14 +234,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-complete-task-closure-input-1.0",
+          "schema_id": "guru-complete-task-closure-input-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "completion_approved",
           "schema": {
-            "schema_id": "guru-complete-task-closure-input-1.0",
+            "schema_id": "guru-complete-task-closure-input-2.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -274,7 +282,7 @@
       {
         "exit_id": "no_mutation",
         "schema": {
-          "schema_id": "guru-complete-task-closure-output-no-mutation-1.0",
+          "schema_id": "guru-complete-task-closure-output-no-mutation-2.0",
           "path": "schemas/public-no-mutation-output.schema.json"
         },
         "example": {
@@ -288,7 +296,7 @@
       {
         "exit_id": "closed",
         "schema": {
-          "schema_id": "guru-complete-task-closure-output-closed-1.0",
+          "schema_id": "guru-complete-task-closure-output-closed-2.0",
           "path": "schemas/public-closed-output.schema.json"
         },
         "example": {
@@ -302,7 +310,7 @@
       {
         "exit_id": "resume_closure",
         "schema": {
-          "schema_id": "guru-complete-task-closure-output-resume-closure-1.0",
+          "schema_id": "guru-complete-task-closure-output-resume-closure-2.0",
           "path": "schemas/public-resume-closure-output.schema.json"
         },
         "example": {
@@ -314,9 +322,21 @@
         ]
       },
       {
+        "exit_id": "external_change_conflict",
+        "schema": {
+          "schema_id": "guru-complete-task-closure-output-external-change-conflict-2.0",
+          "path": "schemas/public-external-change-conflict-output.schema.json"
+        },
+        "example": {
+          "id": "external_change_conflict_output",
+          "path": "examples/public-external-change-conflict-output.json"
+        },
+        "consumer_use_ids": ["self_conflict"]
+      },
+      {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-complete-task-closure-output-blocked-1.0",
+          "schema_id": "guru-complete-task-closure-output-blocked-2.0",
           "path": "schemas/public-blocked-output.schema.json"
         },
         "example": {
@@ -342,11 +362,7 @@
           "input_kind": "structured_json",
           "profile_id": "closure_completed",
           "seed_fields": [
-            "source_exit",
-            "task_ref",
-            "closure_exit",
-            "closure_ref",
-            "source_issue"
+            "closure_result"
           ],
           "authoring_fields": [
             "profile",
@@ -372,15 +388,19 @@
           "profile_id": "completion_approved",
           "seed_fields": [
             "source_exit",
-            "task_ref",
-            "completion_ref",
-            "closure_ref",
-            "source_issue"
+            "transaction_ref"
           ],
           "authoring_fields": [
             "profile",
             "mode",
-            "source_issue"
+            "completion_result",
+            "source",
+            "accepted_scope_identity",
+            "delivery_target",
+            "binding_ref",
+            "content_head",
+            "evidence_slots",
+            "action_set"
           ],
           "authoring_example": {
             "id": "self_authoring",
@@ -394,7 +414,12 @@
           "kind": "stop",
           "id": "task-closure-blocked"
         },
-        "payload_kind": "zero_payload"
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-complete-task-closure-blocked-stop-2.0",
+          "path": "consumers/stop/production/closure-blocked.schema.json"
+        }
       }
     ],
     "projections": [
@@ -405,24 +430,8 @@
         "operation": "rename",
         "mappings": [
           {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "closure_exit",
-            "target": "closure_exit"
-          },
-          {
-            "source": "closure_ref",
-            "target": "closure_ref"
-          },
-          {
-            "source": "source_issue",
-            "target": "source_issue"
+            "source": "result_ref",
+            "target": "closure_result"
           }
         ]
       },
@@ -433,24 +442,8 @@
         "operation": "rename",
         "mappings": [
           {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "closure_exit",
-            "target": "closure_exit"
-          },
-          {
-            "source": "closure_ref",
-            "target": "closure_ref"
-          },
-          {
-            "source": "source_issue",
-            "target": "source_issue"
+            "source": "result_ref",
+            "target": "closure_result"
           }
         ]
       },
@@ -465,21 +458,19 @@
             "target": "source_exit"
           },
           {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "completion_ref",
-            "target": "completion_ref"
-          },
-          {
-            "source": "closure_ref",
-            "target": "closure_ref"
-          },
-          {
-            "source": "source_issue",
-            "target": "source_issue"
+            "source": "transaction_ref",
+            "target": "transaction_ref"
           }
+        ]
+      },
+      {
+        "id": "self_conflict",
+        "exit_id": "external_change_conflict",
+        "consumer_input_id": "self",
+        "operation": "rename",
+        "mappings": [
+          {"source": "exit_id", "target": "source_exit"},
+          {"source": "transaction_ref", "target": "transaction_ref"}
         ]
       },
       {
@@ -487,7 +478,10 @@
         "exit_id": "blocked",
         "consumer_input_id": "blocked",
         "operation": "select",
-        "mappings": []
+        "mappings": [
+          {"source": "exit_id", "target": "exit_id"},
+          {"source": "reason", "target": "reason"}
+        ]
       }
     ],
     "private_artifacts": []

@@ -17,6 +17,7 @@ for path in (SKILLS, LOCAL):
         sys.path.insert(0, str(path))
 
 from runtime.io import CommandError
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 from common import capture_snapshot, commit_result_path
 import execute
 import invoke
@@ -41,7 +42,6 @@ class PublicInvocationTest(unittest.TestCase):
                 {
                     "id": "09-02-happy-path",
                     "status": "in_progress",
-                    "branch": "feature/happy-path",
                     "base_branch": "main",
                 }
             )
@@ -49,6 +49,9 @@ class PublicInvocationTest(unittest.TestCase):
         self.git("add", ".")
         self.git("commit", "-q", "-m", "base")
         self.parent = self.git("rev-parse", "HEAD")
+        BranchBindingStore(inspect_repository(self.repo)).establish(
+            TaskLifecycleKey("09-02-happy-path", 0), "feature/happy-path"
+        )
         phase2 = (
             self.repo
             / ".trellis/.runtime/guru-team/owner-checkpoints/09-02-happy-path/phase2-check.json"

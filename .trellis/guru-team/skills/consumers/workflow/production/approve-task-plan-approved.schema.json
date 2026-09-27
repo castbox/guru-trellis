@@ -1,15 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-approve-task-plan-workflow-approved-input-2.0",
+  "$id": "guru-production-approve-task-plan-workflow-approved-input-3.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "exit_id",
-    "task_ref"
+    "task_ref",
+    "planning_result_id"
   ],
   "properties": {
     "exit_id": {
       "const": "approved"
+    },
+    "planning_result_id": {
+      "type": "string",
+      "pattern": "^planning:[0-9a-f]{64}$"
     },
     "task_ref": {
       "type": "string",

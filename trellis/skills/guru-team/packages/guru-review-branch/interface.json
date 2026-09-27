@@ -279,7 +279,7 @@
       "evidence": "all qualified findings closed and a fresh final reviewer passed the complete current range",
       "consumer": {
         "kind": "skill",
-        "id": "guru-review-task-publication"
+        "id": "guru-review-task-delivery"
       }
     },
     {
@@ -318,8 +318,8 @@
       "id": "archived_review_passed",
       "evidence": "Fresh independent completed archive review binds current A, B and existing PR payload snapshot.",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-review-task-publication"
+        "kind": "stop",
+        "id": "legacy-archived-review-disposition-required"
       }
     }
   ],
@@ -522,29 +522,28 @@
     ],
     "consumer_inputs": [
       {
-        "id": "publication_seed_input",
+        "id": "delivery_seed_input",
         "consumer": {
           "kind": "skill",
-          "id": "guru-review-task-publication"
+          "id": "guru-review-task-delivery"
         },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-publication/interface.json",
+          "interface_path": "packages/guru-review-task-delivery/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "publication_review",
+          "profile_id": "delivery_review",
           "seed_fields": [
             "task_ref",
             "branch_review_commit"
           ],
           "authoring_fields": [
             "profile",
-            "mode",
-            "review_intent"
+            "mode"
           ],
           "authoring_example": {
-            "id": "publication_review_authoring",
-            "path": "examples/public-publication-review-authoring.json"
+            "id": "delivery_review_authoring",
+            "path": "examples/public-delivery-review-authoring.json"
           }
         }
       },
@@ -596,31 +595,16 @@
         "payload_kind": "zero_payload"
       },
       {
-        "id": "archived_publication_seed_input",
+        "id": "archived_review_disposition_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-review-task-publication"
+          "kind": "stop",
+          "id": "legacy-archived-review-disposition-required"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-review-task-publication/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "archived_publication_review",
-          "seed_fields": [
-            "task_ref",
-            "branch_review_commit",
-            "pr_payload_snapshot_sha256",
-            "reviewed_base_head"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode"
-          ],
-          "authoring_example": {
-            "id": "archived_publication_review_authoring",
-            "path": "examples/public-archived-publication-review-authoring.json"
-          }
+          "kind": "json_schema",
+          "schema_id": "guru-legacy-archived-review-disposition-input-1.0",
+          "path": "consumers/stop/production/legacy-archived-review-disposition.schema.json"
         }
       }
     ],
@@ -628,7 +612,7 @@
       {
         "id": "project_passed",
         "exit_id": "passed",
-        "consumer_input_id": "publication_seed_input",
+        "consumer_input_id": "delivery_seed_input",
         "operation": "select",
         "mappings": [
           {
@@ -669,26 +653,8 @@
       {
         "id": "project_archived_review_passed",
         "exit_id": "archived_review_passed",
-        "consumer_input_id": "archived_publication_seed_input",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          },
-          {
-            "source": "branch_review_commit",
-            "target": "branch_review_commit"
-          },
-          {
-            "source": "pr_payload_snapshot_sha256",
-            "target": "pr_payload_snapshot_sha256"
-          },
-          {
-            "source": "reviewed_base_head",
-            "target": "reviewed_base_head"
-          }
-        ]
+        "consumer_input_id": "archived_review_disposition_input",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
