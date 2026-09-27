@@ -111,15 +111,20 @@ will occur. A post-review continuity action also displays the prior full-review
 commit. Current-dialogue confirmation authorizes only that displayed invocation
 and is not included in any request, result, checkpoint, or DTO.
 
-`execute-base-reconciliation` is package-private. It requires a clean,
-uniquely branch-bound task worktree at the exact prior task HEAD and binds the
+`execute-base-reconciliation` is package-private. It requires a uniquely
+branch-bound task worktree at the exact prior task HEAD and binds the
 selected ref to the exact new base. For pre-review profiles it re-derives the
 old base from the live merge base. For post-review profiles it validates the
 adjacent old-base ancestry and prior full-review ancestry. It creates one local
 `--no-ff` merge commit and verifies exact parent order, result ancestry,
-candidate tree identity, and final cleanliness. Stale or mismatched
-preconditions fail before commit. A failed merge or candidate mismatch is
-aborted back to the prior task HEAD. The executor never pushes or records user authorization.
+candidate tree identity, and final cleanliness for post-review profiles.
+Pre-review planning or implementation changes may be staged, unstaged, or
+untracked. The executor temporarily shelves them, commits only the reviewed
+base merge tree, then restores their index and worktree state before returning.
+Its checker reads the committed tree rather than the restored dirty index.
+An unsuccessful merge or candidate mismatch aborts back to the prior HEAD and
+restores pending changes; if restoration fails, the exact stash remains for
+manual recovery and the route stops. The executor never pushes or records user authorization.
 
 The recorder and checker validate the AI-authored result and live Git facts.
 They do not generate semantic retrieval terms or infer impact/route. The

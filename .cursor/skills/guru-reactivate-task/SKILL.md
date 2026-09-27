@@ -37,4 +37,5 @@ The package-local transaction identifies the exact acquisition and branch
 successor without a persisted checkout path. Same-transaction recovery reads
 live Git, task and ledger facts without repeating mutations. Partial or stale
 states block; no direct requirements, implementation or evidence-refresh route
-is part of this package. Production router activation belongs to #434.
+is part of this package. The active #434 workflow router consumes its typed
+result without transferring Reactivate's package-local recovery ownership.

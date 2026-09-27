@@ -23,18 +23,28 @@ conflicts and sidecars after the managed-backup recovery. Current integration,
 fixed complete-old/new graphs and mixed-graph rejection pass. The representative
 Codex clean/focused local workflow sample and two preset reapplications pass;
 remote marketplace installation is outside #434 acceptance. `.66`
-remains shared current authority. The first complete committed-range review of
-`origin/main...a6b6d633` found two normal-path defects: Cleanup invoked from
-its own linked task worktree and the public manifest omitting the active
-Interface 1.7 selector. The revised workflow/Skill route Cleanup from a
-retained same-common-dir checkout; the manifest now declares 1.7. The next
-independent review of `origin/main...a74fe13a` found a stale post-publication
-Reconcile eval assertion; Architecture authority reread found that the proposed
-ADR reused accepted ADR-012. The eval now binds `delivery_publication`, and
-the distinct proposed decision is ADR-016. Focused regressions and a current
-dirty-candidate Phase 2 pass; this evidence-only update requires refreshed Phase 2. Earlier clean reviews do not cover these edits. New commit,
-complete Branch Review, serialized promotion and the dedicated multi-platform
-Release matrix remain open.
+remains shared current authority. Earlier committed reviews exposed Cleanup's
+invoking-worktree handoff, the Interface 1.7 manifest, a stale Reconcile eval
+and an ADR number collision; those fixes remain in this candidate. Later
+reviews exposed the old task metadata identity check and a pre-review dirty
+Planning blocker. This candidate now resolves Reconcile and five active
+consumers through TaskId/generation, branch binding and registered checkout.
+The first clean installer run exposed the shared helper missing from the
+explicit distribution list; the list and regression have been corrected.
+Current package, shared lifecycle, installed and local installer gates pass,
+but all earlier formal Phase 2 and Branch Review results predate these edits.
+The retired companion-script migration now inventories historical managed
+bytes across Git commits and checks representative older installations with
+no per-file manifest hashes; unknown local modifications still conflict rather
+than being deleted. This post-review correction requires a fresh full gate.
+The current quality and installer guidance also exits the retired script and
+old Workspace/Publication/Finalizer requirements; historical tests remain
+pinned-old and the current package graph remains the only install target.
+The installer top-level and manifest authority now name the active graph and
+Completion Interface 1.7, and the active terminal Skill text no longer defers
+its own activation to a future cutover.
+Fresh Phase 2, new commit, complete Branch Review, serialized promotion and
+the dedicated multi-platform Release matrix remain open.
 
 ## Before And Target
 
@@ -67,6 +77,13 @@ receipts cannot be projected into either current completion path.
   interface/version binding, atomic activation, migration statement, and
   old-edge retirement. #454 Phase C/D substrate and #435/#436/#443 step-local
   semantics remain with their respective owners.
+- Active package consumers of task checkout identity use TaskId/generation,
+  current common-dir branch binding and the registered checkout. Create Task
+  Commit, Change Context, Delivery Review, Publish, Merge and Reconcile retain
+  their step-local status/base/HEAD requirements without reading retired
+  `task.json.branch` or `worktree_path`. The archived Branch Review remains a
+  pinned-old exact-path pre-merge profile, not an adapter for new Finish or
+  Issue-based archive lookup; Reactivate owns committed-source discovery.
 - the global workflow owns ordering and unique typed consumers, not step-local
   semantic results.
 - The task-creation owner binds the reviewed TaskRef to the current Shanghai
@@ -88,6 +105,13 @@ receipts cannot be projected into either current completion path.
 - Cleanup uses a retained checkout outside its sealed deletion targets as the
   invocation root; the self-worktree guard remains unchanged. Public extension
   manifest schema discovery lists active Interface 1.7 as well as 1.4-1.6.
+- Reconcile shares one current-task identity check across its pair guard,
+  recorder, execute and recovery: canonical TaskId/generation, Git common-dir
+  branch binding and the registered checkout. New tasks do not carry the
+  retired `task.json.branch` or task/workspace mappings.
+- Pre-review base reconciliation preserves uncommitted task work without
+  including it in the reviewed merge commit; post-review continuity retains
+  its clean-worktree boundary.
 - RDT and Architecture serialized owners remain the only writers of shared
   current authority.
 
@@ -102,7 +126,7 @@ receipts cannot be projected into either current completion path.
 | `compatibility-and-exit` | `applicable` | Directly replace the old active closeout graph. No dual graph, old-output adapter or schema dual-read remains on current main. |
 | `gap-and-deviation` | `applicable` | Close the pre-merge archive/Restore coupling and early closure-intent gap without adding an Acceptance phase or generic archive recovery. |
 | `parallel-scope` | `applicable` |  #435/#436/#443 may build isolated additive packages; none may switch production workflow before #434 activation. Shared current promotion remains serialized. |
-| `evidence-and-freshness` | `applicable` | Current source/installed closure reports 34 active/104 commands and 33 mandatory invokes/153 production exits, with zero sidecars and dogfood drift. The second committed-range review found a stale eval assertion; Architecture authority reread found a duplicate ADR ID. Both repairs have focused regressions; installer/upgrade 162, graph/integration 35, Completion 27, Reactivate 35, Identity 3, focused Reconcile/graph 24 pass as separately collected suites. Architecture and nine-dimension Phase 2 returned current/passed before this evidence update; refreshed gate and committed Branch Review remain. Pinned-old eval is historical only; remote marketplace is unused and the dedicated full Release matrix is outside #434 acceptance. |
+| `evidence-and-freshness` | `applicable` | This candidate has source/installed closure at 34 active/104 commands and 33 mandatory invokes/153 production exits, zero sidecars and matching dogfood projection. Installer/upgrade/native-load 174/174, local routing 45/45, current graph/prose 20/20, lifecycle/Completion/Finish/Reactivate integration 283/283, Change Context 18/18, Reconcile 44/44, Task Commit 27/27, Delivery Review 13/13, Publish 20/20 and Merge 21/21 pass on the reviewed checkout. Two independent read-only full-candidate reviews found no P0-P3. Formal Phase 2, committed Branch Review and promotion remain separate gates. Pinned-old eval is historical; the dedicated full multi-platform Release matrix is outside #434 acceptance. |
 | `review-and-promotion` | `applicable` | Independent full-diff review precedes expected-current promotion; promotion-created diff repeats Phase 2, commit and full Branch Review. |
 
 ## Compatibility And Deletion
@@ -145,9 +169,15 @@ Earlier planning result was bound to `.56` and is stale after base reconciliatio
 change contract, exact owner split, target-native path, old asset exit,
 parallel package boundary, contribution/ADR requirement and promotion re-entry.
 The implementation before/after state and exact child interfaces are now in
-the candidate; its current test evidence is recorded above. The first fresh
-Phase 2 has passed on the dirty candidate; this status update requires a refresh, followed by a complete
-committed Branch Review before promotion.
+the candidate; its current test evidence is recorded above. Change Context
+now uses the same TaskId/generation branch binding as its runtime, and current
+preset reapply retires recognized predecessor script entrypoints without
+mutating unknown local edits. An earlier Phase 2 passed a prior dirty candidate;
+the current candidate needs a fresh result and complete committed Branch Review
+before promotion.
+The #389 Workspace test matrix is now described only as pinned-old history in
+the quality guide; active Checkout and Cleanup guidance points to current
+TaskId/generation and Finish routing, without reviving a predecessor entry.
 
 ## Review, ADR, And Promotion
 

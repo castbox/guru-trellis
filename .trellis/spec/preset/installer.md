@@ -1,12 +1,14 @@
 # Preset Installer
 
-The managed Guru Team assets install only current Finalizer and Publication
-contracts. Fresh install, workflow switch/update, and preset reapply must
-preserve the current transaction, Draft-to-Ready handshake, `ready_for_merge`
-route and Merge entry across shared and every selected upstream platform. Retired
-closeout-plan and retired Issue classification schemas are not installed, registered,
-read, migrated, or retained as compatibility assets. Recursive `.new`/`.bak`
-scans and canonical/dogfood equality cover only current managed assets.
+The managed Guru Team assets install one current Task Delivery graph. Fresh
+install and preset reapply must preserve the Intake, Delivery Review/Publish/
+Merge, Completion, Closure, Finish, Cleanup, and Reactivate packages and their
+declared consumers across shared and selected platform roots. Retired
+Workspace, Publication, Finalizer, old PR Merge/Restore, closeout-plan and old
+Issue-classification assets do not enter the active graph. Known historical
+managed script bytes are removed on reapply; unknown local edits are preserved
+as conflicts. Recursive `.new`/`.bak` scans and canonical/dogfood equality
+cover the current managed inventory.
 
 ## Boundary
 
@@ -76,8 +78,8 @@ enter Python. Package and platform rows bind the actual invocation path to the
 canonical package wrapper, its fixed command in `commands.json`, the installed
 `runtime/launch.sh`, and that launcher's exact `resolve-python.sh` hop. A wrapper
 that enters Python must use the resolver matching its source or installed
-layout. Installed `finish-work.sh`, compatibility `prepare-task.sh`, package
-validators, and platform `invoke.sh` entries therefore cannot invoke PATH
+layout. Current package public wrappers, validators, and platform `invoke.sh`
+entries therefore cannot invoke PATH
 Python before their package-local entry.
 
 The inventory also scans every canonical
@@ -170,13 +172,12 @@ Before any public skill read/write/remove, validate lexical repo containment
 and use `lstat` on every target component. Any target or ancestor symlink,
 including dangling, internal, external, and multilevel chains, fails closed.
 
-The atomic current package inventory includes the Interface 1.4 additive
-`skill_input_authoring_seed` schema shape, thirteen target-owned authoring
-examples, the production manifest bindings, the four finalization-family
-bindings, and their canonical-source validator/probe tests. Installed, shared,
-Codex, Cursor, and Claude copies must carry byte-identical public contracts;
-a graph that has only part of those thirteen handoffs is a mixed package activation and must fail
-before target mutation.
+The atomic current package inventory is derived from the active registry and
+each selected Interface, consumer authoring seed, production manifest binding,
+and canonical source validation. It includes Completion's Interface 1.7
+variants without changing the published 1.4 bytes. Installed, shared, Codex,
+Cursor, and Claude copies carry byte-identical public contracts; a partial
+old/new handoff graph fails before target mutation.
 
 Installed package validation parses the installed workflow target declarations
 as well as invoke/exit markers. Every `skill` consumer must resolve to an active
@@ -242,21 +243,18 @@ active id, artifact schema, and both runtime command ids as one compatible
 versioned capability.
 
 The registry additionally installs active semantic
-`guru-review-change-request` and active consumer
-`guru-create-task-workspace`. The readiness
+`guru-review-change-request` and the current Intake router for
+`guru-create-issue` or `guru-create-task`. The readiness
 managed tree includes Skill/interface/contract, deidentified
 `issue-review.json` example, `guru-change-request-review-1.0` schema, tests, and
 executable dispatcher-only record/check wrappers. Companion managed assets are
 `record-change-request-review.sh` and `check-change-request-review.sh`; both are
-stdout-only and install no task/workspace mutation executor. The workspace
-package separately installs Skill/interface/contract, plan/result schemas,
-deidentified examples, tests, and dispatcher-only wrappers for
-`record-task-workspace-plan`, `create-task-workspace`, and
-`check-task-workspace-result`. The extension manifest publishes both active
-ids, artifact schema ids, stable artifact basename, and all runtime command
-ids. Source/installed validation must prove readiness's five exit markers and
-the workspace package's three exit markers and exact consumers. No planned
-missing-package stop remains.
+stdout-only and install no task/workspace mutation executor. Issue creation and
+task creation have separate active package interfaces and mutations; Issue
+creation returns to fresh Sync/Intake, while only `guru-create-task:created`
+enters Planning. Source/installed validation binds their declared exits to
+unique current consumers. The retired Workspace package, its command wrappers,
+and its DTOs are not installed as current assets.
 
 Guru preset apply, update, and reapply do not read, create, copy, initialize,
 restore, or delete `.trellis/.developer` or `.trellis/workspace/**`. A clean
@@ -370,15 +368,12 @@ subprocesses; source and target checkouts must not gain `__pycache__`, `.pyc`,
 or `.pyo` residue. Post-run cleanup is not a substitute for this entrypoint
 property.
 
-The business Finalizer may consume this current manifest only as immutable
-extension-source provenance for its own pre-PR reprepare. It must validate a
-canonical repository identity, full commit OID, `tree_state=clean`, and
-`is_mutable_ref=false`, then obtain source in a separate detached checkout.
-The manifest never makes the business target an extension source checkout and
-never transfers standalone verifier ownership. Canonical apply bytes come from
-the bound extension source; the apply target remains the business reviewed
-checkout. Self-hosted source/target repository equality explicitly binds the
-reviewed target commit instead of falling back to an older manifest commit.
+The manifest records current installed extension-source provenance; it is not
+a Finalizer transaction or a business task result. Current Delivery and Finish
+owners consume only their declared package inputs. The old Finalizer's
+pre-PR source reprepare belongs to a pinned-old version, not to this graph.
+The manifest never makes a business target an extension source checkout or
+transfers standalone verifier ownership.
 
 When adding user-facing version fields, expose them through `check-env --json`
 or `version.sh --json`; scripts may record and validate objective facts, but
@@ -554,12 +549,9 @@ python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_t
 For behavioral changes, run the installer against a temporary Trellis project
 or disposable copy and verify:
 
-- throwaway `trellis init` verifies the current branch's workflow marketplace
-  source; if Trellis CLI cannot address the current branch as a marketplace
-  source, the verification script must fail closed or the final report must
-  explicitly say only the public remote marketplace was sampled
-- existing-project `trellis workflow --marketplace ... --create-new` preview
-  and forced switch paths can read the Guru Team workflow
+- a representative clean local workflow sample plus preset installation
+  validates the current canonical workflow and installed package graph;
+  remote marketplace installation is not part of #434 acceptance
 - existing `.trellis/guru-team/config.yml` remains unchanged
 - `config-template.yml` remains managed while user-owned `config.yml` is not
   listed in `install.managed_assets`; fresh and repeated apply report the same
@@ -585,13 +577,12 @@ or disposable copy and verify:
 - throwaway validation fails if `.trellis/spec/**` or
   `00-bootstrap-guidelines` still contain known English documentation language
   requirements
-- the already-installed `finish-work.sh` completes dry-run digest, formal draft
-  binding, official archive, local/remote/PR HEAD equality, ready transition,
-  and clean-tree assertions both before and after update/reapply; the verifier
-  must not copy canonical workflow/scripts/schemas into the target fixture
-- the installed `test_finish_family_integration.py` passes before and after
-  update/reapply, including 13 Finish exits, six route groups, platform entry
-  bytes, terminal eval execution, and private/public boundary assertions
+- the current Delivery/Completion/Closure/Finish/Cleanup package wrappers and
+  selected platform entries load from installed bytes before and after reapply;
+  retired `finish-work.sh` and `prepare-task.sh` do not remain executable
+- the installed current finish-family integration validates the declared
+  terminal exits and private/public boundary without projecting the old
+  Publication/Finalizer result into the new graph
 
 ## Common Mistakes
 
@@ -643,18 +634,16 @@ prompt context or ordinary Skill invocation payloads.
 
 ## Current Intake Package Activation
 
-The preset installs only the live six-package/23-exit Intake contract,
-including optional `guru-sync-base.repo_root` / `route` scalar arguments. The
-six production packages, five-stage transition family, call-local invocation
-envelopes, current public and consumer schemas/examples, package wrappers,
-shared runtime, registry, extension/activation manifests, eval corpora, and
-selected platform copies are one versioned activation unit. Source staging
-validates the complete unit before target mutation, and installed validation
-runs immediately after apply. Failure preserves the prior complete graph and
-reports conflicts or sidecars; it must not leave a partially updated or mixed
-old/new Intake graph.
+The preset installs the current Intake graph: Sync, Discovery, Clarification,
+Wording and Readiness route to the separate `guru-create-issue` and
+`guru-create-task` owners, then TaskId, checkout and branch-binding owners
+lead to Planning. Current public/consumer schemas, package wrappers, shared
+runtime, registry, extension manifest, eval corpora, and selected platform
+copies form one validated package activation. Source staging validates the
+complete unit before target mutation; installed validation runs after apply.
+Failure preserves the prior complete graph and reports conflicts or sidecars.
 
-The installed normal route invokes only the `guru-sync-base` public wrapper for
+The installed normal route invokes the `guru-sync-base` public wrapper for
 authoritative synchronization, carries `base_current`, `context_current`,
 `clarity_current`, `wording_current`, and `readiness_current` call-locally, and
 has zero production references to repo-local owner/prerequisite locators.
@@ -676,11 +665,11 @@ same resolver.
 
 A fresh target or a complete current installed manifest is the only accepted
 input. A non-current installed manifest fails closed before staging. Reapply
-replaces the complete six-package activation unit. Fresh install, current update,
+replaces the complete current package activation unit. Fresh install, current update,
 `trellis update`, and repeated preset apply all end with the same manifest,
 registry, extension, package, corpus, and selected-platform bytes and modes.
 The verifier scans recursively for `.new` and `.bak` after each transition.
-Clean throwaway installation runs the actual-stdout six-Skill transcript; an
+Clean representative installation runs the current actual-stdout Intake transcript; an
 isolated package test or handwritten intermediate DTO does not prove activation.
 Its Sync-to-Discovery edge invokes the real Sync public wrapper, applies the
 declared projection, invokes Discovery with input 2.0 plus actual
@@ -710,16 +699,19 @@ production manifest's three-Skill/11-exit membership. The current v4 manifest
 includes qualification and the current
 committed consumer/projection binding and four authoring-seed edges.
 
-The current installation includes both active packages and routes Branch Review
-`passed` through the five continue entries to the active publication owner. The
-finalizer package is directly discoverable, globally invoked after
-publication `ready`, and reached through the five thin finish entries. Internal
-verification and recovery exits are automatically consumed rather than exposed
-as user continuation gates. The combined layer adds the canonical
-`guru-finish-work` platform entries and installed integration regression without
-changing any package-local public contract.
+The current installation routes Branch Review `passed` through its declared
+continue entries to Delivery Review. Delivery publication and merge keep the
+task active until Completion independently decides Closure, Finish, and
+Cleanup. Internal verification and recovery exits have unique current
+consumers. Selected `guru-finish-work` platform entries load this graph without
+copying retired Finalizer or Workspace semantics.
 
-## Task Publication Package Activation
+## Retired Task Publication Package Activation (pinned-old only)
+
+The following historical contract describes the pre-#434 complete old graph.
+It is not a current installation requirement. The active graph requires
+`guru-review-task-delivery`, `guru-publish-task-delivery`, and
+`guru-merge-task-delivery`, followed by the separate terminal family.
 
 `guru-review-task-publication` is installed as an additive active Interface 1.4
 package together with its registry row, active `guru-finalize-task` consumer
@@ -731,29 +723,33 @@ wrapper, and canonical eval corpus. Package-private tests are checked in the
 canonical source package and are validated there, but are excluded from the
 installed package projection.
 
-The activation participates in the current package closure of 32 active Skills,
+The historical activation participated in the old package closure of 32 active Skills,
 142 external exits, and 102 commands.
-`production-current-v4` remains exactly four Skills and 15 exits; #116 is an
-additional complete active Interface 1.4 row outside that manifest. The current Branch Review
+`production-current-v4` then covered four Skills and 15 exits; #116 was an
+additional complete active Interface 1.4 row outside that manifest. The old Branch Review
 `passed` DTO feeds the target-owned `publication_review` authoring seed.
 
-The preset transaction does not install any `trellis-continue` payload. Initial
+The old preset transaction did not install any `trellis-continue` payload. Initial
 PR payload authoring and the integrated `ready -> guru-finalize-task` route are
 owned by the Publication package, marketplace workflow, and active public
 package graph. The installed asset inventory contains no task-local body/index
 template, reader, writer, fixture, or CLI compatibility flag. It distributes
-the current readiness/ready/Finalizer input 4.0 schemas, transaction 1.0,
+the then-current readiness/ready/Finalizer input 4.0 schemas, transaction 1.0,
 and finish-summary 2.0 without a closeout-plan or retired Issue classification asset.
+
+## Current Delivery And Terminal Installation
 
 Clean throwaway install and post-`trellis update` preset reapply both run
 source/installed validation, workflow marker and consumer uniqueness checks,
 real wrapper/eval smoke, selected-platform byte identity, upstream ownership,
 dogfood drift, and recursive zero `.new`/`.bak` checks. Business finish-work has
 no extension-verification gate.
-Update/reapply tests also reject any retained retired publication asset and
-prove legacy 3.0 DTOs fail closed rather than being silently upgraded.
+Update/reapply tests also reject retained retired Publication/Finalizer assets
+and prove legacy DTOs do not enter the current Delivery/Completion graph.
 
-Focused Finalizer recovery validation may project the current installed package
+### Pinned-Old Finalizer Recovery
+
+Focused Finalizer recovery validation may project the pinned-old installed package
 into an isolated clean Git fixture without running the complete marketplace,
 official-update, preset-reapply, or tag-pinned release matrix. It must exercise
 the installed package bytes for post-bind recovery and historical tracked-plan
@@ -786,13 +782,16 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, and descriptor-selected platform package/corpus byte identity,
-wrapper executable modes, the 32-Skill/142-exit/102-command package closure, the
-integrated business closure of 22 invokes, 98 exits, 35 workflow targets, and
-24 stop targets, and current
+wrapper executable modes, the current 34-Skill/155-package-exit/104-command
+closure and 33-invoke/153-production-exit workflow graph, and current
 ownership schema 4.0 with 22 descriptors, 43 managed claims, and 22 overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
-## Task Finalization Package Activation
+## Retired Task Finalization Package Activation (pinned-old only)
+
+The following Finalizer/Publication/old Merge inventory is historical; it is
+not a current installed package, graph, or release prerequisite. Current
+terminal owners are Completion, Closure, Finish, Cleanup, and Reactivate.
 
 `guru-finalize-task` is installed as an additive active Interface 1.4 package
 with four current public input profiles, six output contracts, current gate

@@ -7,6 +7,8 @@ import unittest
 WORKFLOW = Path(__file__).resolve().parents[4] / "trellis/workflows/guru-team/workflow.md"
 SPEC = Path(__file__).resolve().parents[4] / "trellis/presets/guru-team/spec/workflow"
 PROJECT_INDEX = Path(__file__).resolve().parents[4] / ".trellis/spec/workflow/index.md"
+INSTALLER_SPEC = Path(__file__).resolve().parents[4] / ".trellis/spec/preset/installer.md"
+PACKAGES = Path(__file__).resolve().parents[1] / "packages"
 
 
 def section(text: str, heading: str) -> str:
@@ -93,6 +95,56 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         entire_guide = guide.split("## Normal Scenario Qualification Quality\n", 1)[0]
         self.assertNotIn("32-Skill/142-exit/102-command current", entire_guide)
         self.assertIn("34-Skill/155-exit/104-command current package closure", entire_guide)
+
+    def test_current_installer_and_quality_guidance_exclude_retired_entries(self) -> None:
+        guide = (SPEC / "quality-guidelines.md").read_text(encoding="utf-8")
+        intake = guide.split("When standard Intake is selected", 1)[1].split(
+            "Search before editing", 1
+        )[0]
+        self.assertIn("The retired `prepare-task.sh` is not installed", intake)
+        self.assertNotIn("compatibility-only `.trellis/guru-team/scripts/bash/prepare-task.sh", intake)
+        python_gate = guide.split("## Managed Python Runtime Gate", 1)[1].split(
+            "## Retired Closeout", 1
+        )[0]
+        self.assertIn("Retired `finish-work.sh` and `prepare-task.sh` must be absent", python_gate)
+        self.assertNotIn("including installed `finish-work.sh`", python_gate)
+
+        installer = INSTALLER_SPEC.read_text(encoding="utf-8")
+        intake = installer.split("## Current Intake Package Activation", 1)[1].split(
+            "## Branch Review Package Activation", 1
+        )[0]
+        self.assertIn("`guru-create-issue` and\n`guru-create-task` owners", intake)
+        self.assertIn("The retired Workspace package", installer)
+        self.assertNotIn("active consumer\n`guru-create-task-workspace`", intake)
+        current = installer.split("## Current Delivery And Terminal Installation", 1)[1].split(
+            "### Pinned-Old Finalizer Recovery", 1
+        )[0]
+        self.assertIn("Delivery/Completion graph", current)
+        self.assertIn("## Retired Task Finalization Package Activation (pinned-old only)", installer)
+        self.assertIn("34-Skill/155-package-exit/104-command", installer)
+        self.assertIn("install one current Task Delivery graph", installer)
+        self.assertNotIn("install only current Finalizer and Publication", installer)
+        self.assertNotIn("The business Finalizer may consume this current manifest", installer)
+        self.assertIn("Completion's Interface 1.7", installer)
+
+    def test_retired_workspace_fixture_is_history_not_current_instructions(self) -> None:
+        guide = (SPEC / "quality-guidelines.md").read_text(encoding="utf-8")
+        historical = section(guide, "### Retired #389 Task Workspace Fixture (historical only)")
+        normalized = " ".join(historical.split())
+        self.assertIn("complete pinned-old graph", normalized)
+        self.assertIn("do not define current Intake behavior", normalized)
+        self.assertIn("No old Workspace result is synthesized", historical)
+        for obsolete in ("Route tests require", "source-checkout matrix must", "tests use a real remote"):
+            self.assertNotIn(obsolete, historical)
+
+    def test_active_terminal_skills_do_not_claim_future_activation(self) -> None:
+        for skill in ("guru-finish-task", "guru-complete-task-closure", "guru-reactivate-task", "guru-cleanup-task-resources"):
+            with self.subTest(skill=skill):
+                prose = (PACKAGES / skill / "SKILL.md").read_text(encoding="utf-8")
+                self.assertNotIn("not active until the separate graph activation", prose)
+                self.assertNotIn("downstream Finish and workflow projection migration belong to", prose)
+                self.assertNotIn("Production router activation belongs to #434", prose)
+                self.assertNotIn("normal route remains owned by #434 activation", prose)
 
 
 if __name__ == "__main__":

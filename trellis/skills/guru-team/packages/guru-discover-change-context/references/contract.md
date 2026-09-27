@@ -160,7 +160,8 @@ the objective checker. The input transport is not a semantic approval.
 
 An active-task workflow owner passes the direct task identity independently as
 `--active-task`. Record, check, and public invoke then bind the live checkout to
-`task.json.branch`, the current task worktree, and fresh selected-base refs while
+the task's TaskId/lifecycle generation, its Git common-dir branch binding,
+registered checkout, and fresh selected-base refs while
 allowing ordinary in-progress worktree edits; this normal mapped route remains
 repository-write-free. Only a real interruption adds
 `--recovery-continuation-id`, which writes one

@@ -29,6 +29,7 @@ PLANNED_SKILL_ROWS: list[dict[str, str]] = []
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 import validate_upstream_ownership as ownership
+from retired_script_reapply_tests import RetiredScriptReapplyTests
 
 
 _RUNTIME_RESULT = {
@@ -922,7 +923,7 @@ class LanguageGuidanceInstallerTest(unittest.TestCase):
         self.assertIn(".trellis/spec/**/*.md", payload["language_guidance"]["scope"])
 
 
-class PlatformOverlayInstallerTest(unittest.TestCase):
+class PlatformOverlayInstallerTest(RetiredScriptReapplyTests, unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()
         self.repo = Path(self.tmp.name)
@@ -997,6 +998,7 @@ class PlatformOverlayInstallerTest(unittest.TestCase):
             "validation": installed["skill_installed_validation"]["errors"],
         })
         self.assertTrue((self.install_dst / "runtime/task_lifecycle/identity.py").is_file())
+        self.assertTrue((self.install_dst / "runtime/task_lifecycle/active_checkout.py").is_file())
         canonical_root = self.repo / "trellis"
         canonical_wrappers = canonical_root / "workflows/guru-team/scripts/bash"
         canonical_wrappers.mkdir(parents=True)
@@ -1382,6 +1384,10 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
         self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh").is_file())
         start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
         self.assertFalse(start_task.exists())
+        for relative in preset.LEGACY_MANAGED_ASSET_HASHES:
+            if relative.parts[:2] == ("scripts", "bash"):
+                self.assertNotIn(relative, preset.MANAGED_ASSET_PATHS)
+                self.assertFalse((self.install_dst / relative).exists(), relative)
         installed_manifest = json.loads(
             (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
         )

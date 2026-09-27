@@ -14,6 +14,7 @@ from urllib.parse import quote
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 
 
 DIMENSIONS = (
@@ -178,17 +179,16 @@ def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.") from exc
     if not isinstance(task, dict):
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.")
-    branch = git(root, "branch", "--show-current")
+    try:
+        checkout = resolve_active_task_checkout(root, public["task_ref"])
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+    branch = checkout.branch_name
     head = git(root, "rev-parse", "HEAD")
     if task.get("status") != "in_progress":
         raise CommandError("stale_identity", "task.status", "Use the current active task.", 3)
-    if task.get("branch") != branch:
-        raise CommandError("stale_identity", "task.branch", "Use the task's current bound branch.", 3)
-    configured_worktree = task.get("worktree_path")
-    if configured_worktree and Path(configured_worktree).resolve() != root:
-        raise CommandError("stale_identity", "task.worktree_path", "Use the task's current bound worktree.", 3)
     stable_id = task.get("id")
-    if not isinstance(stable_id, str) or not stable_id:
+    if stable_id != checkout.artifact.task_id:
         raise CommandError("invalid_arguments", "task.id", "Repair the stable task identity.")
     base_branch = task.get("base_branch")
     if not isinstance(base_branch, str) or not base_branch:

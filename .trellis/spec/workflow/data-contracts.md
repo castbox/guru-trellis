@@ -149,8 +149,9 @@ next guard, while `resolution.source` remains the
 `explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
 prepare-generated explicit override. No task artifact persists the complete
 base resolution/result payload, process output, or machine path. Current task
-identity comes from official `task.json`, ignored runtime mapping, and live Git
-worktree facts.
+identity comes from the canonical TaskId/generation artifact, its Git common-dir
+branch binding, and live registered worktree facts. Retired task/workspace
+mappings and `task.json.branch` are not current identity inputs.
 
 `prepare-task` is compatibility-only and never produces a current transition.
 An explicit call must receive the complete reviewed base provenance above.
@@ -582,9 +583,10 @@ names only after the new tag is verified.
 
 Current AI-first tasks use official Trellis `task.json` as their tracked task
 identity and create no Guru-owned durable Intake aggregate. Runtime resolves
-the worktree from current `task.json`, the checkout,
-ignored runtime mapping, and live `git worktree list` facts. Any missing or
-mismatched identity fails closed; no alternate task identity artifact is read.
+the worktree from the canonical TaskId/lifecycle generation artifact, its Git
+common-dir branch binding, and live registered checkout facts. Any missing or
+mismatched identity fails closed; `task.json.branch` and old task/workspace
+mappings do not establish current identity.
 
 Local-only reusable mappings live under the gitignored producer namespace:
 

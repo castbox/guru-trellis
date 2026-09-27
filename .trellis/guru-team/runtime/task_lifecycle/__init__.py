@@ -1,3 +1,4 @@
+from .active_checkout import ActiveTaskCheckout, resolve_active_task_checkout
 from .checkout_acquisition import (
     CheckoutAcquisitionPlan,
     CheckoutAcquisitionResult,
@@ -70,7 +71,7 @@ from .session_adapter import (
 from .source import normalize_branch_ref, normalize_delivery_target, normalize_repo_ref, normalize_source
 
 __all__ = [
-    "BranchBinding", "BranchBindingStore", "BranchCandidate", "CheckoutAcquisitionPlan",
+    "ActiveTaskCheckout", "BranchBinding", "BranchBindingStore", "BranchCandidate", "CheckoutAcquisitionPlan",
     "CheckoutAcquisitionResult", "CheckoutCandidate", "CheckoutRequest", "CheckoutResolution",
     "CheckoutStateSnapshot", "CleanupResolution", "CleanupResource", "CreationInputs", "ActivationInputs", "EstablishmentResolution",
     "LifecycleContractError", "OfficialSessionPort", "OwnershipCurrent", "RebindPlan", "RebindResult",
@@ -82,7 +83,7 @@ __all__ = [
     "normalize_delivery_target", "normalize_generation", "normalize_repo_ref", "normalize_source",
     "normalize_task_id", "normalize_task_ref", "prepare_rebind", "prepare_creation_inputs", "prepare_activation_inputs", "provision_linked_worktree", "reason",
     "recover_checkout_acquisition", "recover_created_control_state", "recover_established_branch_binding", "recover_rebind", "resolve_session",
-    "resolve_establishment", "resolve_task_id", "resolve_task_ref", "result_ref", "select_or_specify",
+    "resolve_active_task_checkout", "resolve_establishment", "resolve_task_id", "resolve_task_ref", "result_ref", "select_or_specify",
     "task_artifact", "task_identity", "task_inventory", "task_lifecycle", "transaction_ref", "validate_dto",
     "bind_session",
 ]

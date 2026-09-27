@@ -3,6 +3,7 @@ import argparse,hashlib,json,os,re,stat,subprocess,sys,tempfile
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -112,8 +113,11 @@ def commit_result_path(repo,task_key,sequence):return repo/".trellis/.runtime/gu
 def build_candidate(package_root,repo,public,authoring):
  profile=public.get("profile");schemas={"initial_commit":"public-initial-commit-input.schema.json","revision_reentry":"public-revision-reentry-input.schema.json","finding_fix_commit":"public-finding-fix-commit-input.schema.json","recovery_resume":"public-recovery-resume-input.schema.json"}
  if profile not in schemas:raise CommandError("schema_mismatch","input.profile","Use one declared task commit profile.")
- validate_json(public,package_root/"schemas"/schemas[profile],"input");td=task_dir(repo,public["task_ref"]);task=json_file(td/"task.json","task")
- if task.get("status")!="in_progress" or task.get("branch")!=git(repo,"rev-parse","--abbrev-ref","HEAD").stdout.strip():raise CommandError("stale_identity","task","Use the current in-progress task branch.",3)
+ validate_json(public,package_root/"schemas"/schemas[profile],"input");td=task_dir(repo,public["task_ref"])
+ try:checkout=resolve_active_task_checkout(repo,public["task_ref"])
+ except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
+ task=json_file(td/"task.json","task")
+ if task.get("status")!="in_progress":raise CommandError("stale_identity","task","Use the current in-progress task branch.",3)
  phase2_path=repo/".trellis/.runtime/guru-team/owner-checkpoints"/td.name/"phase2-check.json";phase2=json_file(phase2_path,"phase2")
  if phase2.get("typed_exit")!="passed" or phase2.get("task_ref")!=public["task_ref"] or phase2.get("phase2_capture_commit")!=public["phase2_commit_anchor"]:raise CommandError("stale_identity","phase2_commit_anchor","Rerun Phase 2 for the current task.",3)
  cp,sequence=candidate_path(repo,td);snapshot=capture_snapshot(repo,{repo_rel(repo,cp)});raw=authoring.get("path_classifications")
@@ -131,7 +135,7 @@ def build_candidate(package_root,repo,public,authoring):
  review=authoring.get("ai_review")
  if not isinstance(review,dict) or review.get("status") not in {"passed","revision-required","blocked"} or not isinstance(review.get("evidence"),list) or not review["evidence"]:raise CommandError("schema_mismatch","ai_review","Provide the completed AI review.")
  base=str(task.get("base_branch") or "main");base_ref=f"origin/{base}" if git(repo,"rev-parse","--verify",f"origin/{base}",check=False).returncode==0 else base
- candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":task["id"],"path":public["task_ref"],"status":"in_progress","branch":task["branch"]},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
+ candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":checkout.artifact.task_id,"path":public["task_ref"],"status":"in_progress","branch":checkout.branch_name},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
  validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
  try:receipt.parent.rmdir()
  except OSError:pass

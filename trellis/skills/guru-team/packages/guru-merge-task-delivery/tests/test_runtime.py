@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -17,6 +18,7 @@ spec = importlib.util.spec_from_file_location("merge_delivery_owner", PACKAGE / 
 assert spec and spec.loader
 OWNER = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(OWNER)
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 
 
 class RuntimeTest(unittest.TestCase):
@@ -76,6 +78,41 @@ class RuntimeTest(unittest.TestCase):
 
     def args(self) -> Namespace:
         return Namespace(root=str(self.root), input=str(self.input), review_input=str(self.review_path))
+
+    def test_task_facts_uses_live_binding_without_retired_task_fields(self) -> None:
+        repo = self.root / "live"
+        repo.mkdir()
+        def git(*args: str) -> str:
+            result = subprocess.run(["git", *args], cwd=repo, text=True, check=True,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return result.stdout.strip()
+        git("init", "-q", "-b", "feat/current")
+        git("config", "user.name", "Task Test")
+        git("config", "user.email", "task@example.invalid")
+        (repo / "README.md").write_text("test\n")
+        git("add", "README.md")
+        git("commit", "-qm", "base")
+        task_dir = repo / self.public["task_ref"]
+        task_dir.mkdir(parents=True)
+        (task_dir / "task.json").write_text(json.dumps({
+            "id": "current", "status": "in_progress", "base_branch": "main",
+            "lifecycle_generation": 0,
+        }))
+        store = BranchBindingStore(inspect_repository(repo))
+        key = TaskLifecycleKey("current", 0)
+        with self.assertRaises(OWNER.CommandError) as missing:
+            OWNER.task_facts(repo, self.public)
+        self.assertEqual("stale_identity", missing.exception.code)
+        store.establish(key, "feat/current")
+        self.assertEqual("feat/current", OWNER.task_facts(repo, self.public)["branch"])
+        binding = store.read(key)
+        assert binding is not None
+        stale = binding.as_dict()
+        stale["branch_name"] = "feat/other"
+        store.path_for(key).write_text(json.dumps(stale))
+        with self.assertRaises(OWNER.CommandError) as wrong:
+            OWNER.task_facts(repo, self.public)
+        self.assertEqual("stale_identity", wrong.exception.code)
 
     def test_first_delivery_performs_one_mutation_and_projects_minimal_result(self) -> None:
         pre, post = self.facts(merged=False), self.facts(merged=True)

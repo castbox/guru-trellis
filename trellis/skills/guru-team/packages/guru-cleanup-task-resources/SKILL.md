@@ -32,5 +32,6 @@ deletion lease, not the historical Finish HEAD. Current branch bindings in the
 Git common-dir block deletion even if the invoking checkout contains only an
 older archived task generation. Machine handoff reads a released source inventory and resolves only
 its Guru-owned pending local resources. Both require independent deletion
-confirmation and can reread a recorded result after output loss. This
-canonical package major does not activate production routing.
+confirmation and can reread a recorded result after output loss. The active
+#434 workflow invokes normal Cleanup after Finish; this package does not
+choose the global consumer route.

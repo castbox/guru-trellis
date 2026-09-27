@@ -213,7 +213,21 @@
 
 本轮正式 Architecture Phase 2 对 `.66` 返回 `baseline_current/reviewed_candidate`；九维 Phase 2 对当前 dirty candidate 依次 recorder/checker/wrapper 返回 `passed`。本段与 RDT/Architecture 状态说明是随后写入的证据文字，必须刷新 Phase 2 的 content identity 后才能进入 Task Commit；独立完整提交范围 review 与 shared 晋升仍待执行。
 
+随后完整提交范围审核发现 Reconcile 的旧任务身份残留及 pre-review 未提交 Planning 内容的正常路径问题；本轮再发现 Create Task Commit、Change Context、Delivery Review、Publish、Merge 五个活跃消费者仍读退休的 `task.json.branch/worktree_path`。已统一到 TaskId/generation、Git common-dir branch binding 和注册 checkout，并为本 #434 旧任务建立精确 generation 0 binding；未修改业务仓。新增共享模块首次在临时干净安装漏发，installer 3 项失败，经显式分发清单和安装回归修复后完整 installer 89/89 通过。Reconcile 37/37、五消费者 27/27、18/18、13/13、20/20、21/21；共享生命周期 138/138、当前集成 20/20、#434 图 17/17、upgrade 73/73、本地路由 45/45、native load 5/5。source/installed、drift、diff check 与两次 preset reapply 通过，零 sidecar。此前所有正式 Phase 2/Branch Review 不绑定这份候选，连续无 finding 计数归零；需重新取证、提交、完整独立审核及串行 `.66 -> .67` 晋升。
+
+本轮连续审核第二位又发现两项 P3，计数归零：Change Context canonical/平台指令仍将活跃任务绑定到已退休 `task.json.branch`；旧安装重应用保留可执行的 `start-task.sh`，合法新任务调用会因旧字段缺失被拒。现已改为 TaskId/代次、branch binding 与注册 checkout 的一致合同，并将 `start-task.sh` 连同 17 个退役 companion 脚本纳入受管旧资产退出：只删已知受管 hash 或旧 manifest 对应的原字节，本地未知修改保留并阻断；只对当前分发脚本设置可执行位。当前 dogfood apply 后 source/installed、drift、零 `.new/.bak` 通过，installer 旧候选 92/92；最终清单变更后仍需完整重跑。连续两轮全新无 finding 审核、正式 Phase 2、提交后 Branch Review 和 shared 晋升均未完成。
+
+下一轮全新只读审核又发现两项正常问题，连续计数仍为零：更早的受管安装 `1092865f...` 在旧 manifest 缺少逐文件 hash 时有两个脚本不同于现行已知字节，导致重应用误判为本地冲突；未知旧脚本二次冲突会覆写用户修改的 `.new`。已补这两个历史受管 hash，用该真实旧提交的 18 个脚本和缺 hash manifest 验证全部安全退出；已有 `.new` 在重复冲突时原样保留。定向 5/5，完整 installer 与后续正式门禁仍须对稳定候选重跑；两轮无 finding 审核从零重新开始。
+
+再一轮全新审核指出更早的受管脚本字节未全被退役白名单覆盖，连续无 finding 计数仍为零。现从仓库 Git 历史枚举 18 个受管旧脚本版本，补齐摘要并新增逐版本覆盖测试；三个更早提交的无逐文件 hash 安装重应用样本已通过，未知本地编辑仍需保留冲突。定向 2/2；完整 installer、组合门禁、正式 Phase 2、提交后完整 Branch Review 和 shared 晋升仍待本候选重跑。
+
+历史摘要修复后 installer/upgrade/native-load 174/174、生命周期/图 155/155、路由 45/45、当前集成 25/25，source/installed 34 active/104 commands/33 invokes/153 production exits、二次 apply、dogfood drift、零 sidecar、task validate 和 diff check 均通过。首位全新只读审核又发现 quality guide 与本仓 installer 规范仍将退役脚本和旧 Workspace/Publication/Finalizer 图称为现行，连续无 finding 计数归零；已改为当前 Intake/Delivery/终态 owner 并把旧合同标 pinned-old，定向文案 9/9。新投影和正式门禁仍需重跑，不将前一候选的 174/174 当成新状态结果。
+
+修订后第一轮全新审核仍发现 installer 首页及 manifest 把 Finalizer/Publication 握手写作当前。已统一首页、原子包清单、manifest 消费者和三份终态 Skill 的激活提示；旧合同限定 pinned-old，现行 Intake/Delivery/Completion/Closure/Finish/Cleanup/Reactivate 唯一图和 Interface 1.7 显式。文案回归 10/10；重新投影、组合门禁、连续两轮无 finding 审核和正式 Phase 2/Branch Review 均未完成，计数重置为零。
+
 ## Expected File Areas
+
+2026-09-27 审核修复候选：quality guide 的 #389 Workspace 长段已收为 pinned-old 历史，不再向当前 checkout 下达旧 mapping、route 和脚本测试要求；Cleanup Skill 改为当前 Finish 后路由。新增 T434-31 与文案回归。此前审核 finding 使连续无问题计数归零；本次投影、组合门禁、两轮全新审核及正式 Phase 2 尚待执行。
 
 - `trellis/workflows/guru-team/` 与 `.trellis/workflow.md`
 - `trellis/skills/guru-team/` 与 `.trellis/guru-team/skills/`

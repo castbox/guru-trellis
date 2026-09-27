@@ -9,6 +9,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
+
 
 SKILL_ID = "guru-publish-task-delivery"
 STAGES = ("push_content", "bind_pr", "converge_metadata", "mark_ready", "ready")
@@ -150,13 +152,14 @@ def task_context(root: Path, task_ref: str) -> tuple[Path, dict[str, Any]]:
     task = read_json(task_dir / "task.json")
     if task.get("status") != "in_progress":
         raise WorkflowError("Delivery publication requires an active task.", code="task_not_active")
-    branch = task.get("branch")
+    try:
+        branch = resolve_active_task_checkout(root, task_ref).branch_name
+    except LifecycleContractError as exc:
+        raise WorkflowError(exc.remediation, code="task_identity_stale") from exc
     base = task.get("base_branch")
-    if not isinstance(branch, str) or not branch or not isinstance(base, str) or not base:
-        raise WorkflowError("Task branch/base binding is incomplete.", code="task_identity_stale")
-    if git_text(root, "branch", "--show-current") != branch:
-        raise WorkflowError("Current branch no longer matches task identity.", code="task_identity_stale")
-    return task_dir, task
+    if not isinstance(base, str) or not base:
+        raise WorkflowError("Task base branch is incomplete.", code="task_identity_stale")
+    return task_dir, {**task, "branch": branch}
 
 
 def repository_identity(root: Path) -> str:

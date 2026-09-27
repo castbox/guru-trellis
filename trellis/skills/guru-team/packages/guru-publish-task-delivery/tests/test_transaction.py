@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -9,6 +11,10 @@ from unittest import mock
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
+GURU_ROOT = PACKAGE.parents[1]
+sys.path.insert(0, str(GURU_ROOT))
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository  # noqa: E402
+
 SPEC = importlib.util.spec_from_file_location("publish_owner", PACKAGE / "runtime/owner.py")
 assert SPEC and SPEC.loader
 OWNER = importlib.util.module_from_spec(SPEC)
@@ -255,6 +261,76 @@ class TransactionTests(unittest.TestCase):
             self.assertEqual(output, {"exit_id": "reconstructed"})
             self.assertEqual(preview["transaction_stage"], "push_content")
             execute.assert_called_once()
+
+
+class PublicationCheckoutTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = (Path(self.tmp.name) / "repo").resolve()
+        subprocess.run(["git", "init", "-q", "-b", "main", str(self.repo)], check=True)
+        self.git("config", "user.name", "Test")
+        self.git("config", "user.email", "test@example.invalid")
+        (self.repo / "base.txt").write_text("base\n")
+        self.git("add", ".")
+        self.git("commit", "-qm", "base")
+        self.git("switch", "-qc", "codex/435")
+        task = self.repo / TASK
+        task.mkdir(parents=True)
+        (task / "task.json").write_text(json.dumps({
+            "id": "435-active-task-delivery-loop",
+            "status": "in_progress",
+            "base_branch": "main",
+        }))
+        self.git("add", ".")
+        self.git("commit", "-qm", "delivery candidate")
+        self.head = self.git("rev-parse", "HEAD")
+        self.bindings = BranchBindingStore(inspect_repository(self.repo))
+        self.key = TaskLifecycleKey("435-active-task-delivery-loop", 0)
+        self.bindings.establish(self.key, "codex/435")
+        self.public = {**source_input(), "reviewed_head": self.head}
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def git(self, *args: str) -> str:
+        return subprocess.run(
+            ["git", *args], cwd=self.repo, text=True, stdout=subprocess.PIPE, check=True
+        ).stdout.strip()
+
+    def test_new_task_without_legacy_checkout_fields_previews_current_branch(self) -> None:
+        with mock.patch.object(OWNER, "repository_identity", return_value="castbox/guru-trellis"), mock.patch.object(
+            OWNER, "remote_head", return_value=None
+        ), mock.patch.object(OWNER, "list_open_prs", return_value=[]):
+            plan = OWNER.plan_from_input(self.repo, self.public)
+        self.assertEqual("preview", plan["typed_exit"])
+        self.assertEqual("codex/435", plan["head_branch"])
+        self.assertEqual("main", plan["base_branch"])
+        self.assertEqual(self.head, plan["plan_identity"]["reviewed_head"])
+
+    def test_missing_or_wrong_branch_binding_maps_to_reprepare(self) -> None:
+        self.bindings.path_for(self.key).unlink()
+        input_path = Path(self.tmp.name) / "input.json"
+        review_path = Path(self.tmp.name) / "review.json"
+        input_path.write_text(json.dumps(self.public))
+        review_path.write_text(json.dumps({
+            "schema_version": "1.0", "skill_id": OWNER.SKILL_ID,
+            "review": {"status": "passed", "summary": "Current publication reviewed."},
+            "route": {"typed_exit": "ready_for_merge"},
+        }))
+        for branch in (None, "main"):
+            with self.subTest(branch=branch):
+                if branch is not None:
+                    self.bindings.establish(self.key, branch)
+                with mock.patch.object(OWNER, "repository_identity") as github:
+                    with self.assertRaises(OWNER.WorkflowError) as raised:
+                        OWNER.preview(self.repo, str(input_path))
+                    output = OWNER.invoke(self.repo, str(input_path), str(review_path), None)
+                self.assertEqual("task_identity_stale", raised.exception.code)
+                self.assertEqual({
+                    "exit_id": "reprepare_required", "task_ref": TASK,
+                    "reason_code": "task_identity_stale",
+                }, output)
+                github.assert_not_called()
 
 
 if __name__ == "__main__":

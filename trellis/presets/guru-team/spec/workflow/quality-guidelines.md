@@ -73,11 +73,9 @@ When standard Intake is selected, the deterministic base and workspace helpers
 remain:
 
 - `.trellis/guru-team/scripts/bash/check-env.sh --json`
-- compatibility-only `.trellis/guru-team/scripts/bash/prepare-task.sh --json`
 
-Normal Phase 0 does not call `prepare-task`; an explicit diagnostic supplies
-complete reviewed base provenance and blocks locally when it is missing.
-Phase 1.0 must not leave bare `task.py create` or `prepare-task` mutation
+The retired `prepare-task.sh` is not installed and is not a current diagnostic.
+Phase 1.0 must not leave bare `task.py create` or retired prepare mutation
 flags as an active source-checkout path. Current Intake routes through the
 declared #434 Issue, TaskId, checkout and branch-binding owners; no retired
 `guru-create-task-workspace` result enters Planning.
@@ -478,79 +476,30 @@ memory. Check initial installation and reapply, zero repository/input-file
 residue, unchanged fixed scope, actual checker receipts, and live title/body
 drift rejection. Mock remote responses only at the fixture GitHub boundary;
 do not replace the installed dispatcher or synthesize a successful receipt.
+### Current Task Checkout Boundary
+
+For current checkout-boundary changes, run
+`.trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh --json --task
+<task-dir>` from the selected task checkout. Cover exact TaskId and lifecycle
+generation, Git common-dir branch binding, the unique registered checkout,
+wrong invocation root, missing/mismatched binding, stale generation and
+unrelated active tasks. The old task/workspace runtime mapping is not an input
+or expected projection. Current Issue and Task creation tests use their own
+active package interfaces and may not synthesize an old Workspace result.
+
 ### Retired #389 Task Workspace Fixture (historical only)
 
-The following #389 `guru-create-task-workspace` fixture is historical-only
-after #434 activation; it is not the current Intake acceptance gate. Current
-Issue, TaskId, checkout and branch-binding tests use their active package
-interfaces and the live task-checkout boundary. The #389 installed regression
-consumes actual `readiness_current` through the
-published recorder authoring input, then runs executor, result checker and public
-invoke to `created` inside disposable repositories. Verify workspace/task/runtime
-mapping identity, unchanged source state before mutation, and exact
-diagnostic paths for ordinary missing envelope/authoring fields. Do not use the
-private transcript helper to construct the final plan in this acceptance test.
-When changing workspace boundary behavior, also run
-`.trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh --json --task
-<task-dir>` from the selected task worktree and add regression tests for wrong
-cwd, worktree mode without a matching `task.json`, ignored runtime mapping, and
-live Git worktree identity, source checkout same-task artifacts, wrong private
-gate/check checkpoint locators, planner-only prepare no-write behavior, and
-controlled `create_task` cwd. The source-checkout matrix must distinguish
-current-base-tracked and path-clean ordinary task/planning files (accepted
-projection) from untracked or staged/unstaged/deleted/renamed files (blocked),
-while tracked-clean review/check metadata and `reviews/**` remain blocked;
-unrelated dirty paths must not be misclassified. `--allow-source-clean` must
-not bypass any artifact blocker.
-
-For `guru-create-task-workspace`, tests must cover workflow/standalone
-precondition parity; every missing/stale/wrong-exit/target-mismatched
-prerequisite; open issue and reviewed-draft variants; mutually exclusive issue
-and workspace/task dialogue-only confirmations; proof that refusal stops before
-recorder/executor and that plan/result/runtime/public DTO contain no
-authorization fields; draft-created issue live binding plus exact
-reviewed title/body/labels bytes without adapter trimming or newline insertion;
-immediate `refresh_review`; zero branch/worktree/task writes in that invocation;
-create success followed by immediate reread failure and same-plan retry with
-exactly one remote issue; exact recovery candidate cardinality 0/1/>1;
-checker-passed created-issue result carryover into a complete Intake rerun;
-missing/partial carryover, result/binding digest drift, reviewed draft or
-created-issue identity mismatch, and fresh live existing-issue identity or null
-`issue_binding` mismatch;
-target/disposition change `refresh_review` and blocked zero-write results; explicit, one
-issue assignee, zero issue assignees/current-login, multiple/user-choice, and
-unresolved assignee cases; isolated official `common.task_store.cmd_create`
-adapter with explicit creator and assignee; missing-owner failure before writes; exact
-`task.json.creator=task.json.assignee=reviewed login`; preservation of existing
-identity bytes; exact object reuse/conflict blocking; no Guru-owned tracked
-task-local Intake aggregate; task identity derived only from current `task.json`,
-ignored runtime mappings, and live Git worktree
-facts; source and target with no `.trellis/.developer` or
-`.trellis/workspace/**`; preservation
-of existing official identity/journal bytes; exactly three typed exits and unique
-consumers; source/installed/platform distribution; removed prepare mutation
-flags remaining zero-write; and clean throwaway update/reapply.
-
-Route tests require `created`, `refresh_review`, or `blocked`; refusal has no
-recorder/result/DTO route. Public plan/result schema, examples, and stdout must
-reject authorization fields and absolute machine-local paths.
-
-Mutation-boundary tests use a real remote whose base advances after the initial
-checker-passed evidence while the local remote-tracking ref remains stale. They
-prove the executor detects the advance with read-only `git ls-remote`, never
-calls the base-sync executor, leaves the decision HEAD plus local and
-remote-tracking refs unchanged, returns `refresh_review`, and creates no issue,
-branch, worktree, task, artifact, or runtime mapping. The unchanged-remote case
-still completes the reviewed mutation path.
-
-The retired task-workspace A/B fixture used one clean base, production
-record/executor/checker, independent worktrees/tasks, task-local closeout and
-archive, complete commits, then both A -> B and B -> A local merge orders. The
-second merge in each order must have no Guru metadata conflict, tracked Guru
-metadata path intersection must be empty, and neither diff may contain a fixed
-handoff, `.trellis/workspace/**`, `.trellis/.developer`, shared tracked runtime,
-index, or cache. It uses no remote PR or concurrent process and does not expand
-into locks, TOCTOU, stress, cross-OS, hostile-input, or extra fault injection.
+The #389 `guru-create-task-workspace` corpus belongs to the complete pinned-old
+graph. It recorded old `readiness_current` -> workspace `created` routing,
+runtime mapping, source-checkout preconditions, issue creation carryover,
+mutation/recovery, and two independent task merge orders. Its old plan/result
+schemas, three exits, `task.json.branch`-era fixtures and script entrypoints do
+not define current Intake behavior or required checks on a #434 installation.
+Historical regression may run only against a pinned complete old graph; the
+current Issue, TaskId, branch binding, registered checkout and lifecycle routes
+are verified with their active package interfaces and the current checkout
+boundary above. No old Workspace result is synthesized to make the current
+graph pass.
 
 ### Current Delivery Publish And Closeout Checks
 
@@ -1374,10 +1323,12 @@ callers it must prove the actual invocation path maps from
 `interface.json.public_contracts.invocation.wrapper` to the canonical wrapper's
 fixed `commands.json` command and reaches the installed
 `runtime/launch.sh -> resolve-python.sh` chain. Python-entering wrappers,
-including installed `finish-work.sh`, compatibility `prepare-task.sh`, package
-validators, and any Interface-declared platform public wrapper, must reach their
+including current package validators, public wrappers, and any Interface-declared
+platform public wrapper, must reach their
 package runtime only through the checkout-local resolver. The review must not
 infer `scripts/invoke.sh` when a package declares another safe relative wrapper.
+Retired `finish-work.sh` and `prepare-task.sh` must be absent from the current
+installed inventory; pinned-old verification is a separate version boundary.
 It must additionally inspect the package-runtime closure and confirm every
 registered Python second hop in the real `run`, `run_stdout`, `subprocess.run`,
 and `owner.run` call shapes, plus the current dynamic validation helper, remains

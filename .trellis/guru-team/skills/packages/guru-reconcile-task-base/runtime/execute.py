@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
-from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
+from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
 from runtime.io import CommandError
 
 def _managed_validation_command(command: list[str]) -> list[str]:
@@ -57,7 +57,6 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
     identity=task_identity(repo,request["task_ref"],allow_planning=request["profile"]=="post_plan")
     if identity["branch"] != request["branch"]:
         raise CommandError("stale_identity","branch","Use the exact current task branch.",3)
-    require_clean_worktree(repo)
     prior=resolve_commit(repo,request["prior_task_head"],"prior_task_head")
     old_base=resolve_commit(repo,request["old_base_head"],"old_base_head")
     new_base=resolve_commit(repo,request["new_base_head"],"new_base_head")
@@ -76,8 +75,21 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
             raise CommandError("stale_identity","branch_review_commit","Use the prior full-review commit for this task history.",3)
     if is_ancestor(repo,new_base,prior):
         raise CommandError("stale_identity","new_base_head","The current task HEAD already contains this base.",3)
+    dirty=bool(git(repo,"status","--porcelain=v1","--untracked-files=normal"))
+    if dirty and request["profile"] not in PRE_REVIEW_PROFILES:
+        require_clean_worktree(repo)
+    stash_oid=None
+    if dirty:
+        previous=git(repo,"rev-parse","--verify","-q","refs/stash",check=False)
+        saved=subprocess.run(["git","stash","push","--include-untracked","-m","guru-reconcile-task-base temporary worktree"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        if saved.returncode:
+            raise CommandError("reconciliation_failed","worktree",saved.stderr.strip() or "Preserve the pending task changes before reconciliation.",3)
+        stash_oid=git(repo,"rev-parse","--verify","refs/stash")
+        if stash_oid==previous:
+            raise CommandError("reconciliation_failed","worktree","No pending changes were preserved; inspect the task worktree.",3)
     merge_started=False
     try:
+        require_clean_worktree(repo)
         merge=subprocess.run(["git","merge","--no-commit","--no-ff",new_base],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         merge_started=(repo/".git/MERGE_HEAD").is_file() or bool(subprocess.run(["git","rev-parse","-q","--verify","MERGE_HEAD"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE).returncode==0)
         if merge.returncode:
@@ -94,13 +106,23 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
         parents=subprocess.run(["git","show","-s","--format=%P",reconciled],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True).stdout.strip().split()
         if parents != [prior,new_base]:
             raise CommandError("reconciliation_failed","reconciled_task_head","Create exactly one merge commit with the reviewed parent order.",3)
-        if index_tree_digest(repo) != request["candidate_tree_sha256"]:
+        if committed_tree_digest(repo) != request["candidate_tree_sha256"]:
             raise CommandError("reconciliation_failed","candidate_tree_sha256","The committed tree differs from the reviewed candidate.",3)
         require_clean_worktree(repo)
     except Exception:
         if resolve_commit(repo,"HEAD","HEAD") == prior and merge_started:
             subprocess.run(["git","merge","--abort"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         raise
+    finally:
+        if stash_oid is not None:
+            restored=subprocess.run(["git","stash","apply","--index",stash_oid],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            if restored.returncode:
+                raise CommandError("reconciliation_failed","worktree",f"Pending task changes remain in stash {stash_oid}; resolve the restore before continuing.",3)
+            if git(repo,"stash","list","-1","--format=%H") != stash_oid:
+                raise CommandError("reconciliation_failed","worktree",f"Pending task changes were restored but stash {stash_oid} requires manual disposition.",3)
+            dropped=subprocess.run(["git","stash","drop","stash@{0}"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            if dropped.returncode:
+                raise CommandError("reconciliation_failed","worktree",f"Pending task changes were restored but stash {stash_oid} remains.",3)
     result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
     if review is not None: result["branch_review_commit"]=review
     validate_json(result,package_root/"schemas/reconciliation-result.schema.json","result"); return result
