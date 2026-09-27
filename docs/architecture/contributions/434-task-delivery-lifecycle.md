@@ -42,9 +42,25 @@ old Workspace/Publication/Finalizer requirements; historical tests remain
 pinned-old and the current package graph remains the only install target.
 The installer top-level and manifest authority now name the active graph and
 Completion Interface 1.7, and the active terminal Skill text no longer defers
-its own activation to a future cutover.
-Fresh Phase 2, new commit, complete Branch Review, serialized promotion and
-the dedicated multi-platform Release matrix remain open.
+its own activation to a future cutover. A fresh review found that Merge's
+`delivered` output still used a planned flat Completion seed. The current
+candidate projects the nested `task_artifact` and nine-field `merge_result`
+through the current Completion profile, leaving scope and evidence to fresh
+semantic authoring. The corrected broad runtime and installer/graph suites
+passed 333/333 and 117/117 after this handoff edit; Merge passes 23/23.
+A subsequent full-range review exposed the installed-mode terminal test's
+incorrect shared-runtime import root. Source and installed terminal cases now
+each pass 6/6, and the default #434 candidate gate explicitly executes the
+installed variant. Another full-range review found the Merge Skill's required
+contract still described a deferred package, flat old output and exact-base
+recovery. The current contract binds the active graph, nested Completion seed
+and verified ancestor recovery; canonical, installed and platform copies now
+match. The final installer/graph gate now passes 118/118; the focused
+Merge/Completion/Finish/Issue/runtime suite passes 132/132. Two fresh,
+independent read-only full-candidate reviews consecutively found no P0-P3,
+but neither is a committed Branch Review. Fresh Phase 2, task commit,
+full-range Branch Review and serialized promotion remain open. The dedicated
+multi-platform Release matrix belongs to its separate gate.
 
 ## Before And Target
 
@@ -126,7 +142,7 @@ receipts cannot be projected into either current completion path.
 | `compatibility-and-exit` | `applicable` | Directly replace the old active closeout graph. No dual graph, old-output adapter or schema dual-read remains on current main. |
 | `gap-and-deviation` | `applicable` | Close the pre-merge archive/Restore coupling and early closure-intent gap without adding an Acceptance phase or generic archive recovery. |
 | `parallel-scope` | `applicable` |  #435/#436/#443 may build isolated additive packages; none may switch production workflow before #434 activation. Shared current promotion remains serialized. |
-| `evidence-and-freshness` | `applicable` | This candidate has source/installed closure at 34 active/104 commands and 33 mandatory invokes/153 production exits, zero sidecars and matching dogfood projection. Installer/upgrade/native-load 174/174, local routing 45/45, current graph/prose 20/20, lifecycle/Completion/Finish/Reactivate integration 283/283, Change Context 18/18, Reconcile 44/44, Task Commit 27/27, Delivery Review 13/13, Publish 20/20 and Merge 21/21 pass on the reviewed checkout. Two independent read-only full-candidate reviews found no P0-P3. Formal Phase 2, committed Branch Review and promotion remain separate gates. Pinned-old eval is historical; the dedicated full multi-platform Release matrix is outside #434 acceptance. |
+| `evidence-and-freshness` | `applicable` | After the nested handoff correction, source/installed closure held at 34 active/104 commands and 33 mandatory invokes/153 production exits with zero sidecars; broad runtime 333/333, installer/graph 117/117 and Merge 23/23 passed. Installed-mode terminal integration 6/6 now runs in the default candidate gate; full gates and two independent clean reviews must be refreshed after this test change. Formal Phase 2, committed Branch Review and promotion remain separate gates. Pinned-old eval is historical; the dedicated full multi-platform Release matrix is outside #434 acceptance. |
 | `review-and-promotion` | `applicable` | Independent full-diff review precedes expected-current promotion; promotion-created diff repeats Phase 2, commit and full Branch Review. |
 
 ## Compatibility And Deletion

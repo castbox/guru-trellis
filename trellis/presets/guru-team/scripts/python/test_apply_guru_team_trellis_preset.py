@@ -2060,6 +2060,20 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tmp.cleanup()
 
+    def test_skill_package_projection_excludes_pytest_cache(self) -> None:
+        package = self.repo / "package"
+        package.mkdir()
+        (package / "SKILL.md").write_text("skill", encoding="utf-8")
+        cache = package / ".pytest_cache/v/cache"
+        cache.mkdir(parents=True)
+        (cache / "nodeids").write_text("[]", encoding="utf-8")
+
+        self.assertEqual(
+            preset.skill_package_installed_files(package),
+            [package / "SKILL.md"],
+        )
+        self.assertTrue(preset.transaction_path_ignored(Path(".agents/skills/example/.pytest_cache/v/cache/nodeids")))
+
     def test_activated_managed_removal_prunes_only_its_empty_skill_directory(self) -> None:
         retired = self.repo / ".agents/skills/guru-retired/consumers"
         unrelated = self.repo / ".agents/skills/guru-unrelated/consumers"
@@ -2190,8 +2204,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("public_input_schema_ids", 108),
-            ("typed_output_schema_ids", 151),
             ("private_artifact_schema_ids", 21),
         ):
             self.assertEqual(
@@ -2199,6 +2211,28 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 canonical["public_api"]["skill_contracts"][field],
             )
             self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
+        for field in ("public_input_schema_ids", "typed_output_schema_ids"):
+            declared_ids = set(public_api["skill_contracts"][field])
+            self.assertEqual(len(declared_ids), len(public_api["skill_contracts"][field]))
+            interface_ids = set()
+            for skill_id in public_api["skill_contracts"]["active_skill_ids"]:
+                interface = json.loads((
+                    self.guru_root / "trellis/skills/guru-team/packages" / skill_id / "interface.json"
+                ).read_text(encoding="utf-8"))
+                contracts = interface["public_contracts"]
+                if field == "public_input_schema_ids":
+                    input_contract = contracts["input"]
+                    if "aggregate_schema" in input_contract:
+                        interface_ids.add(input_contract["aggregate_schema"]["schema_id"])
+                    interface_ids.update(
+                        profile["schema"]["schema_id"]
+                        for profile in input_contract.get("profiles", [])
+                    )
+                else:
+                    interface_ids.update(
+                        output["schema"]["schema_id"] for output in contracts["outputs"]
+                    )
+            self.assertEqual(declared_ids, interface_ids)
         public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
         architecture_interface = json.loads(
             (

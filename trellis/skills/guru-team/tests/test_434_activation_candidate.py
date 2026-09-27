@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -60,6 +61,17 @@ class ActivationCandidateTests(unittest.TestCase):
         current = {row["id"] for row in registry["skills"] if row["state"] == "active"}
         self.ids = current - RETIRED | NEW
         self.interfaces = {skill: read_json(PACKAGES / skill / "interface.json") for skill in self.ids}
+
+    def test_installed_finish_graph_executes_current_terminal_cases(self) -> None:
+        script = SKILLS / "tests/test_finish_family_integration.py"
+        result = subprocess.run(
+            [sys.executable, str(script)], cwd=ROOT, capture_output=True, text=True,
+            env={**os.environ, "GURU_FINISH_INTEGRATION_MODE": "installed",
+                 "GURU_FINISH_INTEGRATION_ROOT": str(ROOT), "PYTHONDONTWRITEBYTECODE": "1"},
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Ran 6 tests", result.stderr)
 
     def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
         seen: dict[str, Path] = {}

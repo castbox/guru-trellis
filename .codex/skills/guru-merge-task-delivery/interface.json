@@ -101,6 +101,10 @@
       "path": "examples/public-delivered-output.json"
     },
     {
+      "id": "completion_authoring",
+      "path": "examples/completion-authoring.json"
+    },
+    {
       "id": "merge_blocked_output",
       "path": "examples/public-merge-blocked-output.json"
     },
@@ -338,7 +342,7 @@
       {
         "exit_id": "delivered",
         "schema": {
-          "schema_id": "guru-merge-task-delivery-output-delivered-1.0",
+          "schema_id": "guru-merge-task-delivery-output-delivered-2.0",
           "path": "schemas/public-delivered-output.schema.json"
         },
         "example": {
@@ -401,15 +405,24 @@
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "planned_skill_input_seed",
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-completion/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "completion",
           "seed_fields": [
-            "task_ref",
-            "delivery_cycle_ref",
-            "repo_ref",
-            "pr_number",
-            "reviewed_head",
-            "merge_commit_sha"
-          ]
+            "task_artifact",
+            "merge_result"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "accepted_scope_identity",
+            "evidence_slots"
+          ],
+          "authoring_example": {
+            "id": "completion_authoring",
+            "path": "examples/completion-authoring.json"
+          }
         }
       },
       {
@@ -473,28 +486,12 @@
         "operation": "select",
         "mappings": [
           {
-            "source": "task_ref",
-            "target": "task_ref"
+            "source": "task_artifact",
+            "target": "task_artifact"
           },
           {
-            "source": "delivery_cycle_ref",
-            "target": "delivery_cycle_ref"
-          },
-          {
-            "source": "repo_ref",
-            "target": "repo_ref"
-          },
-          {
-            "source": "pr_number",
-            "target": "pr_number"
-          },
-          {
-            "source": "reviewed_head",
-            "target": "reviewed_head"
-          },
-          {
-            "source": "merge_commit_sha",
-            "target": "merge_commit_sha"
+            "source": "merge_result",
+            "target": "merge_result"
           }
         ]
       },

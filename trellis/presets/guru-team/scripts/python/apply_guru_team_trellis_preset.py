@@ -1265,7 +1265,7 @@ def skill_package_source_files(package_root: Path) -> list[Path]:
         for path in package_root.rglob("*")
         if path.is_file()
         and not path.is_symlink()
-        and "__pycache__" not in path.relative_to(package_root).parts
+        and not {"__pycache__", ".pytest_cache"}.intersection(path.relative_to(package_root).parts)
         and path.suffix not in {".pyc", ".pyo"}
     )
 
@@ -1993,7 +1993,7 @@ MANAGED_TRANSACTION_FIXED_MARGIN_BYTES = 1024 * 1024
 def transaction_path_ignored(relative: Path) -> bool:
     return (
         any(relative == root or root in relative.parents for root in TRANSACTION_IGNORED_ROOTS)
-        or "__pycache__" in relative.parts
+        or bool({"__pycache__", ".pytest_cache"}.intersection(relative.parts))
         or relative.suffix in {".pyc", ".pyo"}
     )
 

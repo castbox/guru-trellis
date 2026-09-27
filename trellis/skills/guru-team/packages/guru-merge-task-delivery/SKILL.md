@@ -30,6 +30,10 @@ The public invocation performs one pre-read, at most one expected-head
 `--merge` mutation, and one post-read. Repeating the same invocation after
 output loss reconstructs the same `delivered` result from live PR, commit,
 parent, base-ref, and trailer facts without repeating the mutation.
+Its declared `completion_seed` projects `task_artifact` and the complete
+`merge_result` to the current Completion `completion` profile. The Completion
+owner freshly authors the profile, mode, accepted scope identity and evidence
+slots before invoking its semantic review; Merge never decides task completion.
 
 The package also exposes the deterministic read-only command:
 

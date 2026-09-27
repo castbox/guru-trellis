@@ -227,7 +227,23 @@
 
 ## Expected File Areas
 
+2026-09-27 提交后首次独立 Branch Review 的两项 P2 已修复：canonical 与 installed extension manifest 补齐 Completion 的 `reactivation_validation` 输入并将 Approval `approved` output 更新为 3.0；安装测试从全部 34 个 active Interface 精确推导公开输入/输出 ID，防止固定计数掩盖缺漏。同步过程中发现 installer 曾将 ignored `.pytest_cache` 纳入包资产，现排除缓存并加定向回归；误投影留下的缓存删除记录已从本轮生成的 installed manifest 移除。两次 reapply 均零 backup/sidecar，source/installed、dogfood drift、图/文案 20/20、Delivery 集成 5/5、manifest 定向 2/2 和 diff check 通过。installer 宽测 96 项通过；同一命令尾部的三个模块路径写错导致导入错误，已分别按文件发现重跑图/集成，不能将导入错误算作产品失败。连续无 finding 审核、正式 Phase 2/提交后 Branch Review 与 `.66 -> .67` 晋升仍待重新执行；远端 marketplace 不纳入验收。
+
+首位全新独立审核又发现一项 P1，连续无 finding 计数归零：Merge `delivered` 的六字段 seed 缺失 Completion 必填 TaskId、generation、result ID。当前 Merge 输出升为 2.0，从已验证 active checkout 提取身份，以 merge commit 派生稳定结果 ID；接口投影九字段，跨包测试把投影送入 Completion 当前 schema。Merge 包 22/22、图/文案 20/20、Delivery 集成 5/5 通过；第一次 reapply 的受管差异经第二次收敛，source/installed、dogfood drift、零 sidecar 和 diff check 通过。上一轮审核与 Phase 2 不覆盖该变更；新的组合测试、两轮全新无 finding 审核和正式门禁仍待执行。
+
+下一位独立审核发现 P2，连续无 finding 计数再次归零：成功 merge 的输出丢失后，如果目标 base 有正常后续提交，恢复误要求 base HEAD 恰好等于原 merge SHA。终态恢复现通过 GitHub compare 校验原 merge 是当前目标 base HEAD 的祖先，PR、merge commit、reviewed head 与双亲仍按原合同精确核对；非祖先拒绝。恢复无第二次 merge，原 result ID 不变，Merge 包 23/23。改动后的 projection 和连续两轮无 finding 审核、正式 Phase 2/Branch Review 以及 shared authority 晋升尚待执行。
+
+其后首位全新只读审核无 P0-P3（1/2），但广义 runtime pytest 325 pass/8 fail：六项是退休 owner/23 包计数/旧 branch 字段/缺少 Delivery policy 的测试夹具，两项是标准 Intake eval 的本地 bare clone 在临时对象复制时失败。当前 fixture 已以 34 包 manifest、真实 branch binding、现行 Publish Interface 和 Phase 2 policy 修正，静态定向 5/5；eval fixture 改用非本地 bare transfer 并关闭临时 Git 自动 maintenance，Intake 13/13 和 Qualification 6/6 两次通过。新编辑使 1/2 审核失效，计数归零；广义套件正在重跑，不能把先前 8 项失败称为通过。
+
 2026-09-27 审核修复候选：quality guide 的 #389 Workspace 长段已收为 pinned-old 历史，不再向当前 checkout 下达旧 mapping、route 和脚本测试要求；Cleanup Skill 改为当前 Finish 后路由。新增 T434-31 与文案回归。此前审核 finding 使连续无问题计数归零；本次投影、组合门禁、两轮全新审核及正式 Phase 2 尚待执行。
+
+2026-09-27 广义 runtime 333/333、installer/graph 117/117、Merge/Delivery 28/28 与 source/installed/drift 通过。首次 installer fixture 曾因三个 eval canonical 文件尚未投影而产生受管备份，二次 apply 后零 sidecar，失败单例与完整套件均通过。随后全新完整范围审核发现 Merge `delivered` 仍以 `planned_skill_input_seed` 扁平字段交给 Completion；已将未发布的 2.0 结果改为嵌套 `task_artifact`/`merge_result`，声明现行 `completion` profile 的 authoring seed，定向 Merge 23/23。该 edit 使先前测试和审核不能代表新候选；重新投影、组合验证、连续两轮全新无 finding 审核、正式 Phase 2/Branch Review 与 `.66 -> .67` 晋升仍待完成。
+
+嵌套 handoff 修复后的 runtime 333/333、installer/graph 117/117、source/installed/drift 均通过。下一轮完整审核发现终态集成测试的 installed 模式将共享 `runtime` 导入路径错误设成 `.trellis/guru-team/skills`；修正为 `.trellis/guru-team` 后 source 与 installed 各 6/6，并在默认 #434 candidate gate 内执行完整 installed 终态 suite。新增 T434-34；此编辑之后组合 gate、两轮全新无 finding 审核及正式 Phase 2/Branch Review 仍需刷新。
+
+随后的全新审核发现 Merge 的必读 `references/contract.md` 仍声明生产未激活、旧扁平 `delivered` 与 base HEAD 必须等于原 merge commit。现改为当前 active graph、TaskId/generation/branch binding、嵌套 Completion authoring seed 和已验证祖先的 read-only output-loss 恢复；新增 T434-35/合同文案回归。canonical/installed/平台经二次 apply 收敛零 sidecar，Merge + #434 candidate 34/34、source/installed 和 drift 通过。完整 installer 首次快照只得 117 pass/1 个投影备份失败，不能视作本候选通过；新的组合 gate、两轮全新审核与正式 Phase 2/Branch Review 待做。
+
+2026-09-27 本候选完整 installer/graph 重跑 118/118，Merge/Completion/Finish/Issue/runtime 定向 132/132，source/installed 34 active/104 commands、dogfood drift、task validate 与 diff check 通过，最终没有受管 `.new/.bak`。两位互不依赖的全新只读 reviewer 串行覆盖 `origin/main...d7f57ce1` 加全部未提交/未跟踪 #434 改动，连续两轮均无 P0-P3；此结果只证明提交前候选修复，不替代最新内容身份的正式 Phase 2、Task Commit、独立 committed full-range Branch Review。旧 #154 仍限定 pinned-old 或逐项人工处置，完整多平台 Release matrix 仍由专门 gate 承担。
 
 - `trellis/workflows/guru-team/` 与 `.trellis/workflow.md`
 - `trellis/skills/guru-team/` 与 `.trellis/guru-team/skills/`

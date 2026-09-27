@@ -1,6 +1,6 @@
 # #434 Global Delivery Lifecycle Requirements Contribution
 
-Status: finding-fix candidate against `.66/active`. The first complete committed-range review found two normal-path defects; the prior Phase 2 and earlier clean reviews do not cover these edits. Fresh Phase 2, commit, full Branch Review and serialized promotion remain pending.
+Status: finding-fix candidate against `.66/active`. Fresh full-range reviews found Merge's planned Completion seed, the installed-mode terminal test import path, and stale Merge contract prose describing the old graph/output and exact-base-only recovery. The candidate fixes all three; earlier Phase 2 and clean reviews predate these edits. Fresh Phase 2, two consecutive clean reviews, commit, full Branch Review and serialized promotion remain pending.
 
 - `R434-01`: One active TaskId may have multiple ordered business Delivery merges. A merge produces only a Delivery result; Completion alone decides whole-task state from accepted scope, merged lineage and current evidence. Every Delivery PR uses `Refs`, with no premature Issue closure or archive.
 - `R434-02`: A fresh completed result leads to Closure, then Finish bookkeeping persistence and current-generation Cleanup. Cleanup invoked after Finish in a linked task worktree must use a retained checkout outside its deletion targets, or stop for manual disposition. A bookkeeping PR is not a Delivery and cannot recursively trigger Completion. Incomplete/evidence-pending/additional-Delivery outcomes retain the same active task.

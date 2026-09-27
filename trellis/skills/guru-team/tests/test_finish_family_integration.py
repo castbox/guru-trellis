@@ -18,6 +18,7 @@ if MODE not in {"source", "installed"}:
     raise RuntimeError("GURU_FINISH_INTEGRATION_MODE must be source or installed")
 ROOT = Path(os.environ.get("GURU_FINISH_INTEGRATION_ROOT", str(SOURCE))).resolve()
 SKILLS = ROOT / (".trellis/guru-team/skills" if MODE == "installed" else "trellis/skills/guru-team")
+RUNTIME_ROOT = ROOT / (".trellis/guru-team" if MODE == "installed" else "trellis/skills/guru-team")
 WORKFLOW = ROOT / (".trellis/workflow.md" if MODE == "installed" else "trellis/workflows/guru-team/workflow.md")
 RETIRED = {
     "guru-create-task-workspace", "guru-review-task-publication", "guru-finalize-task",
@@ -77,7 +78,7 @@ class CurrentFinishGraphTests(unittest.TestCase):
                     sys.executable, str(package / "runtime/invoke.py"), "--root", str(root),
                     "--input", str(input_path), "--semantic-result", str(review_path),
                 ], capture_output=True, text=True, check=False,
-                    env={**os.environ, "PYTHONPATH": str(SKILLS), "PYTHONDONTWRITEBYTECODE": "1"})
+                    env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
                 self.assertEqual(result.returncode, 0, result.stderr)
                 return json.loads(result.stdout)
 
@@ -95,7 +96,7 @@ class CurrentFinishGraphTests(unittest.TestCase):
             closed = run(closure, "closure", closure_input, closure_review)
             self.assertEqual(closed["exit_id"], "no_mutation")
             self.assertEqual(closed["result_ref"]["lifecycle_generation"], 1)
-            sys.path.insert(0, str(SKILLS))
+            sys.path.insert(0, str(RUNTIME_ROOT))
             from runtime.schema import validate_json
             validate_json({"profile": "closure_completed", "mode": "workflow", "closure_result": closed["result_ref"]},
                           finish / "schemas/public-input.schema.json", "finish")
@@ -116,7 +117,7 @@ class CurrentFinishGraphTests(unittest.TestCase):
                 sys.executable, str(completion / "runtime/invoke.py"), "--root", str(root),
                 "--input", str(input_path), "--semantic-result", str(review_path),
             ], capture_output=True, text=True, check=False,
-                env={**os.environ, "PYTHONPATH": str(SKILLS), "PYTHONDONTWRITEBYTECODE": "1"})
+                env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(json.loads(result.stderr)["code"], "schema_mismatch")
             self.assertFalse((root / ".git").exists())

@@ -63,7 +63,7 @@ class RuntimeTest(unittest.TestCase):
     def facts(self, *, merged: bool) -> dict:
         merge_sha = "4" * 40 if merged else None
         facts = {
-            "task": {"task_ref": self.public["task_ref"], "stable_task_id": "current", "status": "in_progress", "branch": "feat/current", "base_branch": "main", "head_sha": "1" * 40},
+            "task": {"task_ref": self.public["task_ref"], "stable_task_id": "current", "lifecycle_generation": 0, "status": "in_progress", "branch": "feat/current", "base_branch": "main", "head_sha": "1" * 40},
             "pr": {"number": 27, "url": "https://github.com/example/repo/pull/27", "state": "MERGED" if merged else "OPEN", "is_draft": False, "head_sha": "1" * 40, "head_branch": "feat/current", "base_branch": "main", "body": "Refs #27", "merged_at": "2026-09-18T01:00:00Z" if merged else None, "merge_commit_sha": merge_sha, "mergeable": "MERGEABLE", "merge_state_status": "CLEAN", "review_decision": "APPROVED", "checks": []},
             "repository_policy": {"allow_merge_commit": True, "allow_squash_merge": True, "allow_rebase_merge": True},
             "base_ref": {"name": "main", "head_sha": merge_sha or "3" * 40},
@@ -118,7 +118,12 @@ class RuntimeTest(unittest.TestCase):
         pre, post = self.facts(merged=False), self.facts(merged=True)
         with mock.patch.object(OWNER, "live_facts", side_effect=[pre, post]) as reads, mock.patch.object(OWNER, "run_merge") as mutation:
             result = OWNER.cmd_invoke(PACKAGE, self.args())
-        self.assertEqual(result, {"exit_id": "delivered", "task_ref": self.public["task_ref"], "delivery_cycle_ref": self.public["delivery_cycle_ref"], "repo_ref": "example/repo", "pr_number": 27, "reviewed_head": "1" * 40, "merge_commit_sha": "4" * 40})
+        artifact = {"task_id": "current", "task_ref": self.public["task_ref"], "lifecycle_generation": 0}
+        self.assertEqual(result, {"exit_id": "delivered", "task_artifact": artifact, "merge_result": {
+            **artifact, "delivery_cycle_ref": self.public["delivery_cycle_ref"], "repo_ref": "example/repo",
+            "pr_number": 27, "reviewed_head": "1" * 40, "merge_commit_sha": "4" * 40,
+            "result_id": "merge:" + "4" * 40,
+        }})
         mutation.assert_called_once()
         self.assertEqual(reads.call_count, 2)
         self.assertFalse(OWNER.gate_path(self.root, self.public).exists())
@@ -129,6 +134,37 @@ class RuntimeTest(unittest.TestCase):
             first = OWNER.cmd_invoke(PACKAGE, self.args())
             second = OWNER.cmd_invoke(PACKAGE, self.args())
         self.assertEqual(first, second)
+        mutation.assert_not_called()
+
+    def test_terminal_output_loss_recovers_after_target_base_advances(self) -> None:
+        terminal = self.facts(merged=True)
+        advanced = self.facts(merged=True)
+        advanced["base_ref"]["head_sha"] = "5" * 40
+        advanced["facts_sha256"] = OWNER.digest({k: v for k, v in advanced.items() if k != "facts_sha256"})
+        comparison = {
+            "status": "ahead",
+            "merge_base_commit": {"sha": "4" * 40},
+            "head_commit": {"sha": "5" * 40},
+        }
+        with mock.patch.object(OWNER, "live_facts", side_effect=[terminal, advanced]), \
+                mock.patch.object(OWNER, "gh_json", return_value=comparison) as compare, \
+                mock.patch.object(OWNER, "run_merge") as mutation:
+            first = OWNER.cmd_invoke(PACKAGE, self.args())
+            second = OWNER.cmd_invoke(PACKAGE, self.args())
+        self.assertEqual(first, second)
+        mutation.assert_not_called()
+        compare.assert_called_once_with(
+            self.root.resolve(), ["api", f"repos/example/repo/compare/{'4' * 40}...{'5' * 40}"],
+            "target base ancestry",
+        )
+
+        comparison["merge_base_commit"]["sha"] = "3" * 40
+        with mock.patch.object(OWNER, "live_facts", return_value=advanced), \
+                mock.patch.object(OWNER, "gh_json", return_value=comparison), \
+                mock.patch.object(OWNER, "run_merge") as mutation:
+            with self.assertRaises(OWNER.CommandError) as rejected:
+                OWNER.cmd_invoke(PACKAGE, self.args())
+        self.assertEqual(rejected.exception.code, "stale_identity")
         mutation.assert_not_called()
 
     def test_retained_gate_recovers_completed_mutation_without_repeating_it(self) -> None:

@@ -290,6 +290,16 @@ def production_phase2_input(
     payload = {
         "mode": "workflow",
         "reviewed_paths": sorted(implementation_paths),
+        "delivery_policy": {
+            "task_scope": ["R1. Production eval"],
+            "delivery_slice": ["R1. Production eval"],
+            "remaining_work": [],
+            "independent_delivery_conditions": ["The current slice is independently deliverable."],
+            "validation_boundaries": ["Production fixture scope only."],
+            "current_slice_status": "passed" if exit_id == "passed" else "blocked",
+            "remaining_work_status": "disclosed",
+            "summary": "The current slice and remaining work were reviewed for this fixture.",
+        },
         "validation": {
             "commands": [{
                 "id": "production-eval",
