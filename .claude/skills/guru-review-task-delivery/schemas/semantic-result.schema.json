@@ -7,6 +7,10 @@
   "properties":{
     "profile":{"const":"delivery_review"},
     "mode":{"enum":["workflow","standalone"]},
+    "reviewed_source":{"oneOf":[
+      {"type":"object","additionalProperties":false,"required":["kind"],"properties":{"kind":{"const":"no_issue"}}},
+      {"type":"object","additionalProperties":false,"required":["kind","repo_ref","number","disposition"],"properties":{"kind":{"const":"issue"},"repo_ref":{"type":"string","minLength":3},"number":{"type":"integer","minimum":1},"disposition":{"enum":["reference_only","follow_up","parent"]}}}
+    ]},
     "delivery_policy":{
       "type":"object","additionalProperties":false,
       "required":["task_scope_refs","delivery_slice_refs","remaining_work_refs","independent_delivery_conditions","validation_boundaries","followup_owner"],

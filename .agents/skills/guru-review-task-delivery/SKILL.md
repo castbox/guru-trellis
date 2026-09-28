@@ -13,6 +13,9 @@ reusing the prior result or Publish's stale reason.
 Read `references/contract.md`, the current requirement authority, approved
 Delivery policy, current slice and remaining work, validation evidence, RDT and
 Architecture authorities, full Branch Review, base, and live Git/GitHub facts.
+For a legacy active task with no structured source and noncanonical scope,
+freshly review a non-exact relation in `reviewed_source`. It stays in this
+round's private semantic result; task metadata is not written for review alone.
 
 This Skill is the sole semantic owner of Delivery readiness. The normal public
 path is `scripts/invoke.sh` with one public input and one AI-completed semantic
@@ -20,7 +23,8 @@ result. The invocation records, objectively checks, projects, validates, and
 retires its owner-private checkpoint in one process. Recorder and checker
 commands are diagnostic and test entrypoints only.
 
-Require a truthful Chinese PR title/body, `Refs` only, explicit remaining work,
+Require a truthful Chinese PR title/body, `Refs` only for the structured source
+Issue, explicit remaining work,
 and no completion, closure, archive, finish, cleanup, push, PR mutation, or
 merge claim. Missing or ambiguous Delivery policy returns
 `planning_revision_required`; current-slice findings return

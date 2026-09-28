@@ -169,8 +169,9 @@ def _candidate_id(branch_name: str, kind: CandidateKind, path: Path | None) -> s
 
 
 def _is_retained_control_ref(branch_ref: str) -> bool:
-    return branch_ref == "refs/heads/guru-task-lifecycle" or branch_ref.startswith(
-        "refs/heads/guru-task-lifecycle/"
+    return any(
+        branch_ref == prefix or branch_ref.startswith(f"{prefix}/")
+        for prefix in ("refs/heads/guru-task-lifecycle", "refs/heads/guru-task-lifecycle-id")
     )
 
 

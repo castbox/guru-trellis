@@ -82,30 +82,6 @@ def facts(package_root, repo, public):
         if not path.is_file() or path.is_symlink() or not git(repo, "ls-tree", head, "--", f"{task_ref}/{name}"):
             stale("archive", "Review requires committed archive planning and finish-summary files.")
     config = config_values(repo)
-    runtime = repo / config["runtime_root"]
-    slug = metadata.get("id") or metadata.get("name")
-    mapping = load(repo, package_root, str(runtime / "tasks" / f"{slug}.json"), "task_mapping")
-    workspace = mapping.get("workspace_slug")
-    if not workspace or any(mapping.get(k) != v for k, v in {
-        "schema_version": "1.0", "task_slug": slug,
-        "workspace_path": str(repo), "task_artifact_dir": task_ref,
-    }.items()):
-        stale("task_mapping", "Require current archived mapping; read-only review never repairs locators.")
-    work = load(repo, package_root, str(runtime / "workspaces" / f"{workspace}.json"), "workspace_mapping")
-    if any(work.get(k) != v for k, v in {
-        "schema_version": "1.0", "workspace_slug": workspace,
-        "workspace_path": str(repo), "branch_name": branch,
-    }.items()):
-        stale("workspace_mapping", "Require the existing exact task workspace mapping.")
-    source = work.get("source_checkout")
-    if not isinstance(source, str) or not Path(source).is_dir():
-        stale("workspace_mapping", "Require the existing source checkout identity.")
-    source_root = Path(source).resolve()
-    source_runtime = source_root / config_values(source_root)["runtime_root"]
-    for group, key, expected in (("tasks", slug, mapping), ("workspaces", workspace, work)):
-        other = load(repo, package_root, str(source_runtime / group / f"{key}.json"), "source_mapping")
-        if {k: v for k, v in other.items() if k != "updated_at"} != {k: v for k, v in expected.items() if k != "updated_at"}:
-            stale("source_mapping", "Both existing mappings must agree; archived review never reconciles them.")
     records = git(repo, "worktree", "list", "--porcelain").split("\n\n")
     if not any(f"worktree {repo}" in row.splitlines() and f"branch refs/heads/{branch}" in row.splitlines() for row in records):
         stale("worktree", "Require the registered task branch/worktree pair.")

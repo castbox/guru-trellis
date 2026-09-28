@@ -11,7 +11,7 @@
       "routing": "global_workflow",
       "entry_precondition_ids": [
         "runtime_dependency",
-        "task_workspace",
+        "task_checkout",
         "current_authority",
         "planning_documents",
         "docs_ssot",
@@ -23,7 +23,7 @@
       "routing": "direct_discovery",
       "entry_precondition_ids": [
         "runtime_dependency",
-        "task_workspace",
+        "task_checkout",
         "current_authority",
         "planning_documents",
         "docs_ssot",
@@ -40,10 +40,10 @@
       "freshness": "run-skill-command validates the managed runtime before each command"
     },
     {
-      "id": "task_workspace",
-      "evidence": "direct active task locator, task.json, current checkout, and workspace boundary",
-      "binding": "one task in its expected repository worktree",
-      "freshness": "the workspace boundary is rebuilt before record and check"
+      "id": "task_checkout",
+      "evidence": "active TaskId, task.json, current branch binding, and resolved checkout",
+      "binding": "one active task in its resolved repository checkout",
+      "freshness": "task identity and checkout resolution are refreshed before record and check"
     },
     {
       "id": "current_authority",

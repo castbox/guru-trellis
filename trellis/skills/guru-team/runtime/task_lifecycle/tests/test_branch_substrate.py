@@ -597,12 +597,14 @@ class BranchSubstrateTests(unittest.TestCase):
         self.assertEqual(candidates[0].reason_code, "unresolved_resource_incarnation")
 
     def test_registered_control_ref_is_skipped_before_branch_normalization(self) -> None:
-        facts = self.registered_facts(
-            live_branch_ref=f"refs/heads/guru-task-lifecycle/{TASK_ID}",
-            registered_branch_ref=f"refs/heads/guru-task-lifecycle/{TASK_ID}",
-        )
-        candidates = self.discover_mocked_registered_candidate(facts)
-        self.assertEqual(candidates, ())
+        for ref in (
+            f"refs/heads/guru-task-lifecycle/{TASK_ID}",
+            "refs/heads/guru-task-lifecycle-id/" + "a" * 64,
+        ):
+            with self.subTest(ref=ref):
+                facts = self.registered_facts(live_branch_ref=ref, registered_branch_ref=ref)
+                candidates = self.discover_mocked_registered_candidate(facts)
+                self.assertEqual(candidates, ())
 
     def test_local_control_ref_is_skipped_before_branch_normalization(self) -> None:
         self.fixture.git(

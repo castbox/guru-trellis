@@ -160,6 +160,32 @@ def test_exact_legacy_scope_is_read_only_source_normalization(tmp_path):
     assert not log.exists()
 
 
+def test_noncanonical_legacy_source_is_frozen_without_task_metadata_write(tmp_path):
+    public, semantic = fixture()
+    public["source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 436,
+                        "disposition": "reference_only"}
+    public["action_set"][0]["disposition"] = "no_close_authority"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, _, log = fake_gh(tmp_path)
+    task = tmp_path / ".trellis/tasks/example-task"
+    task.mkdir(parents=True)
+    metadata = {"id": "example-task", "status": "in_progress", "lifecycle_generation": 0,
+                "scope": "GitHub Issue #436"}
+    (task / "task.json").write_text(json.dumps(metadata))
+    result = invoke(tmp_path, public, semantic, env)
+    assert result.returncode == 0, result.stderr
+    output = json.loads(result.stdout)
+    assert output["exit_id"] == "no_mutation"
+    assert read_terminal_closure_result(inspect_repository(tmp_path), output["result_ref"])["source"] == public["source"]
+    assert json.loads((task / "task.json").read_text()) == metadata
+    assert not log.exists()
+
+    public["source"]["disposition"] = "exact_source"
+    rejected = invoke(tmp_path, public, semantic, env, confirmed=True)
+    assert rejected.returncode != 0
+    assert not log.exists()
+
+
 def test_close_and_same_owner_output_loss_recovery(tmp_path):
     public, semantic = fixture()
     env, state, log = fake_gh(tmp_path)

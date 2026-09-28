@@ -103,6 +103,27 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
         for skill_id in ("guru-create-issue", "guru-ensure-task-checkout"):
             self.assertTrue((self.repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / skill_id / "interface.json").is_file())
 
+    def test_retired_consumer_schemas_are_not_in_current_install(self) -> None:
+        retired = (
+            "workflow/production/review-task-publication-return-to-task-work.schema.json",
+            "workflow/production/finalize-task-published.schema.json",
+            "workflow/production/merge-task-pr-merged.schema.json",
+            "workflow/stage0/create-task-workspace-created.schema.json",
+            "workflow/stage0/invocations/workspace-mutation.schema.json",
+            "stop/production/finalize-task-blocked.schema.json",
+            "stop/production/merge-task-pr-closure-mismatch.schema.json",
+            "stop/production/review-task-publication-blocked.schema.json",
+            "stop/production/merge-task-pr-blocked.schema.json",
+        )
+        manifest = json.loads((self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8"))
+        installed_paths = {item["path"] for item in manifest["skill_packages"]["files"]}
+        for suffix in retired:
+            with self.subTest(path=suffix):
+                self.assertFalse((self.repo / "trellis/skills/guru-team/consumers" / suffix).exists())
+                installed = f".trellis/guru-team/skills/consumers/{suffix}"
+                self.assertFalse((self.repo / installed).exists())
+                self.assertNotIn(installed, installed_paths)
+
     def test_planned_canonical_package_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
@@ -130,6 +151,7 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
                 / "guru-unregistered-package"
             )
             extra.mkdir()
+            (extra / "SKILL.md").write_text("# Unregistered package\n", encoding="utf-8")
             payload = ownership.validate_repository(repo)
         self.assertEqual(payload["status"], "error")
         self.assertIn(

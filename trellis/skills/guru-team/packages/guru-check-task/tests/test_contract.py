@@ -24,7 +24,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         self.assertEqual(self.interface["schema_version"], "1.4")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         expected = [
-            "runtime_dependency", "task_workspace", "approved_planning",
+            "runtime_dependency", "task_checkout", "approved_planning",
             "live_implementation", "validation_scope", "docs_ssot",
             "invocation_freshness",
         ]

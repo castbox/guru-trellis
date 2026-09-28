@@ -103,9 +103,9 @@ class IdentityTests(unittest.TestCase):
                 resolve_task_ref(repo, ".trellis/tasks/09-20-demo")
 
     def test_task_id_uses_exact_ascii_domain(self):
-        for value in ["demo", "Demo_1.2", "9-task", "HEAD", "task.LOCK"]:
+        for value in ["demo", "Demo_1.2", "9-task", "HEAD", "task.LOCK", "task.lock", "task.", "task..child"]:
             self.assertEqual(normalize_task_id(value), value)
-        for value in ["", "-demo", "demo/task", "task.lock", "task.", "task..child", "Straße", None, True]:
+        for value in ["", "-demo", "demo/task", "Straße", None, True]:
             with self.subTest(value=value), self.assertRaises(LifecycleContractError):
                 normalize_task_id(value)
 

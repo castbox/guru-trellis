@@ -156,6 +156,24 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
     return False
 
 
+def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path, key: TaskLifecycleKey,
+                                 finish_result_id: str, archive_ref: str) -> None:
+    path = (store.repository.common_dir / "guru-team" / "finish-results" /
+            key.task_id / f"{key.lifecycle_generation}-manual.json")
+    if not path.is_file() or path.is_symlink():
+        raise LifecycleContractError("manual_finish_result_missing", "finish_result_id", "Recover the exact manual Finish result before selecting resources.")
+    try:
+        result = json.loads(path.read_text(encoding="utf-8"))
+        validate_json(result, package_root.parent / "guru-finish-task/schemas/manual-finish-result.schema.json", "manual_finish_result")
+    except (OSError, json.JSONDecodeError, CommandError) as exc:
+        raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Recover a valid manual Finish result.") from exc
+    if any(result[field] != value for field, value in {
+        "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation,
+        "finish_result_id": finish_result_id, "archive_ref": archive_ref,
+    }.items()):
+        raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Select the current archived Finish result.")
+
+
 def handoff_cleanup(root: Path, public: dict[str, Any], *, confirmed: bool) -> dict[str, Any]:
     repository = inspect_repository(root)
     reference = public["handoff_inventory"]
@@ -273,6 +291,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                     task = resolve_task_id(root, key.task_id)
                     if task.lifecycle_state != "archived" or task.lifecycle_generation != key.lifecycle_generation:
                         raise LifecycleContractError("archived_lifecycle_stale", "task", "Select a normally finished archived lifecycle.")
+                    require_manual_finish_result(store, package_root, key, public["finish_result_id"], task.task_ref)
                 if ledger is not None:
                     eligible = {row.resource_id: row for row in ledger.resources if row.ownership == "caller_owned" and row.state == "retained" and row.responsibility_role == "manual_only"}
                     if not out and any(

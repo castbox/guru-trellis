@@ -615,6 +615,20 @@ class ResourceLedgerTests(unittest.TestCase):
         )
         self.assertNotEqual(retained.resource_id, other_remote.resource_id)
         self.assertNotEqual(retained.portable_ref, other_remote.portable_ref)
+        projected = self.store.record_retained_control_ref(
+            key,
+            remote_name="origin",
+            repository_ref="castbox/guru-trellis",
+            branch_ref="refs/heads/guru-task-lifecycle-id/" + "a" * 64,
+        )
+        self.assertEqual(projected.responsibility_role, "retained_control")
+        with self.assertRaisesRegex(LifecycleContractError, "invalid_branch_ref"):
+            self.store.record_retained_control_ref(
+                key,
+                remote_name="origin",
+                repository_ref="castbox/guru-trellis",
+                branch_ref="refs/heads/guru-task-lifecycle-id/short",
+            )
         after_unrelated_mutation = self.store.snapshot(key).content
         self.assertEqual(
             self.store.record_remote_delivery(

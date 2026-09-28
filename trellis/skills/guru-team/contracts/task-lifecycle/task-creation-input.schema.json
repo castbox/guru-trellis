@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["task_id", "task_ref", "source_profile", "reviewed_source", "accepted_scope_identity", "delivery_target", "selected_base_ref", "reviewed_base_head"],
   "properties": {
-    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$"},
     "source_profile": {"enum": ["existing_issue", "standalone_request"]},
     "reviewed_source": {"type": "object"},

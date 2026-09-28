@@ -25,7 +25,7 @@
   },
   "allOf": [{"if": {"properties": {"source_exit": {"enum": ["resume_closure", "external_change_conflict"]}}, "required": ["source_exit"]}, "then": {"required": ["transaction_ref"]}}],
   "$defs": {
-    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
     "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
     "repo": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
     "lifecycle": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation"],

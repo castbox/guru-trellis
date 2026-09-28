@@ -12,7 +12,7 @@ from runtime.schema import validate_json
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_id
-from runtime.task_lifecycle.source import task_source
+from runtime.task_lifecycle.source import task_source_with_review
 
 
 def _load(root: Path, package: Path, name: str, field: str) -> dict:
@@ -88,7 +88,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         if artifact.lifecycle_state != "active" or artifact.lifecycle_generation != key["lifecycle_generation"]:
             raise LifecycleContractError("stale_task", "task", "Resolve the current active task generation.")
         metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
-        current_source = task_source(metadata)
+        current_source = task_source_with_review(metadata, public["source"])
     except (LifecycleContractError, OSError, ValueError) as exc:
         raise CommandError("stale_identity", "task.source", "Reread the current task source relation.", 3) from exc
     if current_source != public["source"]:

@@ -95,13 +95,6 @@ class ArchivedReviewTest(unittest.TestCase):
             + str(real_git) + ' "$@"; fi\n'
         )
         (self.bin / "git").chmod(0o755)
-        runtime = self.repo / ".trellis/.runtime/guru-team"
-        mapping = {"schema_version": "1.0", "task_slug": "example", "workspace_slug": "example", "workspace_path": str(self.repo), "task_artifact_dir": self.task_ref}
-        workspace = {"schema_version": "1.0", "workspace_slug": "example", "workspace_path": str(self.repo), "source_checkout": str(self.repo), "branch_name": "feat/archive"}
-        for group, value in (("tasks", mapping), ("workspaces", workspace)):
-            target = runtime / group / "example.json"
-            target.parent.mkdir(parents=True)
-            target.write_text(json.dumps(value))
         self.pr = {"number": 12, "url": "https://github.com/example/repo/pull/12", "state": "OPEN", "isDraft": False, "headRefName": "feat/archive", "baseRefName": "main", "headRefOid": self.head, "headRepository": {"nameWithOwner": "example/repo"}, "isCrossRepository": False, "title": "Current title", "body": "Current body\n"}
         self.provider_base = self.base
         self.provider_files()
@@ -159,6 +152,11 @@ class ArchivedReviewTest(unittest.TestCase):
         self.assertEqual(tree, self.git("rev-parse", "HEAD^{tree}"))
         self.assertEqual("", self.git("status", "--porcelain"))
         self.assertEqual("stale_identity", self.invoke(ok=False)["code"])
+
+    def test_archived_review_does_not_read_retired_mappings(self):
+        self.assertFalse((self.repo / ".trellis/.runtime/guru-team/tasks").exists())
+        self.assertFalse((self.repo / ".trellis/.runtime/guru-team/workspaces").exists())
+        self.assertEqual("archived_review_passed", self.record()["typed_exit"])
 
     def test_title_body_and_ready_state_drift_preserve_checkpoint(self):
         self.record()
@@ -220,8 +218,6 @@ class ArchivedConfigDefaultsTest(unittest.TestCase):
                 try:
                     paths = [
                         fixture.repo / ".trellis/guru-team/config.yml",
-                        fixture.repo / ".trellis/.runtime/guru-team/tasks/example.json",
-                        fixture.repo / ".trellis/.runtime/guru-team/workspaces/example.json",
                         fixture.inputs / "pr.json",
                         *sorted((fixture.repo / fixture.task_ref).iterdir()),
                     ]

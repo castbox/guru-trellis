@@ -44,13 +44,19 @@
     {"$ref": "#/$defs/ReasonDTO"}
   ],
   "$defs": {
-    "taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "taskId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
     "taskRef": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))(?!\\.{1,2}$)[^/\\\\]+$|^\\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/(?!\\.{1,2}$)[^/\\\\]+$"},
     "generation": {"type": "integer", "minimum": 0},
     "identifier": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
     "repoRef": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
-    "branchRef": {"type": "string", "minLength": 1, "pattern": "^(?!-)(?!HEAD$)(?!/)(?!refs/remotes/)(?!(?:refs/heads/)?guru-task-lifecycle(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"},
-    "handoffReceiptRef": {"type": "string", "pattern": "^refs/heads/guru-task-lifecycle/(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "branchRef": {"type": "string", "minLength": 1, "pattern": "^(?!-)(?!HEAD$)(?!/)(?!refs/remotes/)(?!(?:refs/heads/)?guru-task-lifecycle(?:-id)?(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"},
+    "handoffReceiptRef": {
+      "type": "string",
+      "oneOf": [
+        {"pattern": "^refs/heads/guru-task-lifecycle/(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+        {"pattern": "^refs/heads/guru-task-lifecycle-id/[0-9a-f]{64}$"}
+      ]
+    },
     "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "repoPath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?![A-Za-z]:[\\\\/])(?!.*//)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\).+$"},

@@ -212,10 +212,12 @@ def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, sche
     semantic.pop("selected_base_ref")
     semantic.pop("reviewed_base_head")
     semantic["route"] = "source_correction_required"
+    current_source = ({"kind": "no_issue"} if local_issue_scope else
+                      {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
+                       "disposition": "exact_source"})
     semantic["source_correction"] = {
         **correction(), "lifecycle_generation": 0,
-        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
-                           "disposition": "exact_source"},
+        "current_source": current_source,
     }
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
@@ -224,8 +226,7 @@ def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, sche
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
     semantic["source_correction"] = {
         **correction(), "lifecycle_generation": 0,
-        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
-                           "disposition": "exact_source"},
+        "current_source": current_source,
     }
     first = execute(repo, public, semantic, confirmed=True)
     assert first["exit_id"] == "session_binding_recovery_required"

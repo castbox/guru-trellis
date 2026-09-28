@@ -713,9 +713,29 @@ class ContractTests(unittest.TestCase):
                 {**payload, "receipt_ref": "refs/heads/guru-task-lifecycle/another-task"},
             )
 
+    def test_handoff_receipt_ref_projects_git_invalid_task_ids(self):
+        from hashlib import sha256
+
+        payload = valid_payloads()["HandoffRefDTO"]
+        for task_id in ["task.lock", "task.", "task..child"]:
+            expected_ref = "refs/heads/guru-task-lifecycle-id/" + sha256(task_id.encode("utf-8")).hexdigest()
+            with self.subTest(task_id=task_id):
+                self.assertEqual(
+                    validate_dto("HandoffRefDTO", {**payload, "task_id": task_id, "receipt_ref": expected_ref})["receipt_ref"],
+                    expected_ref,
+                )
+                with self.assertRaises(LifecycleContractError):
+                    validate_dto("HandoffRefDTO", {**payload, "task_id": task_id, "receipt_ref": f"refs/heads/guru-task-lifecycle/{task_id}"})
+
     def test_git_and_repository_primitives_use_closed_value_domains(self):
         payloads = valid_payloads()
         for task_id in ["task.lock", "task.", "task..child"]:
+            with self.subTest(task_id=task_id):
+                self.assertEqual(
+                    validate_dto("TaskLifecycleDTO", {**payloads["TaskLifecycleDTO"], "task_id": task_id})["task_id"],
+                    task_id,
+                )
+        for task_id in ["-task", "task/name", "task space"]:
             with self.subTest(task_id=task_id), self.assertRaises(LifecycleContractError):
                 validate_dto("TaskLifecycleDTO", {**payloads["TaskLifecycleDTO"], "task_id": task_id})
         self.assertEqual(

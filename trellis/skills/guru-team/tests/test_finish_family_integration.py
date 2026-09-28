@@ -166,7 +166,10 @@ class CurrentFinishGraphTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
         for skill_id in RETIRED:
-            self.assertFalse(any(path.is_file() for path in (SKILLS / "packages" / skill_id).rglob("*")))
+            self.assertFalse(any(
+                path.is_file() and path.suffix not in {".pyc", ".pyo"} and "__pycache__" not in path.parts
+                for path in (SKILLS / "packages" / skill_id).rglob("*")
+            ))
 
     def test_legacy_terminal_state_cannot_enter_current_graph(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")

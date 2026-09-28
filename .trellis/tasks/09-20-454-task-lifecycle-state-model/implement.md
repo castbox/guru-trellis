@@ -257,7 +257,8 @@ revision 0。Rebind只实现same-checkout-new-ref与clean existing-target两条r
 不同历史返回named reconciliation stop。
 
 Candidate label/id只服务当前选择与展示，不是freshness token。Discovery跳过全部保留的
-`refs/heads/guru-task-lifecycle/*` control refs；mutation与output-loss recovery都绑定并fresh验证reviewed expected HEAD，
+`refs/heads/guru-task-lifecycle/*`及Git-ref-invalid TaskId对应的
+`refs/heads/guru-task-lifecycle-id/<sha256(TaskId UTF-8)>` control refs；mutation与output-loss recovery都绑定并fresh验证reviewed expected HEAD，
 不能用candidate label、排序或branch name替代HEAD freshness。
 
 Tests：epoch schema/store parity、revision 0初始化与strict increment、binding/ownership四象限的epoch恢复、全部control
@@ -357,7 +358,8 @@ Recovery：session write失败不回滚已成立lifecycle；ledger mutation失�
   `.trellis/scripts/common/**`，不创建第二 session store、legacy mapping reader、alias、dual-read 或 dual-write。
 - ownership 无法证明时固定为 caller-owned。active ledger missing 可在 current binding/live resources 验证后保守恢复；
   terminal ledger missing 不补写历史 ownership，进入 manual cleanup selection。普通 Cleanup 只投影
-  `guru_owned + cleanup_pending`，retained `refs/heads/guru-task-lifecycle/*` control refs 永不进入普通 cleanup set。
+  `guru_owned + cleanup_pending`，retained `refs/heads/guru-task-lifecycle/*` 及
+  `refs/heads/guru-task-lifecycle-id/*` control refs 永不进入普通 cleanup set。
 - `guru-establish-task-identity` 只增加 `state=planned` metadata；本 slice 不创建其 package/interface/command/route，
   不修改 active selector、production workflow、installed/platform projection、D443、D436、E434 或 #434 activation。
 - Task-isolated Architecture/RDT contribution 位于
@@ -837,3 +839,15 @@ Branch Review通过，且 shared current 文档与当前 candidate 一致。E434
 - 对 `origin/main@0ac48e5d...37c3c051` 的完整范围复审发现四项正常路径问题：Finish 只复核 Closure 的 Issue action，未比对已冻结 source 与当前 task source；人工 Cleanup 从旧 archive checkout 解析 TaskId 时可能漏掉新 generation 的 current binding；caller-owned ref 在 Finish 后前进到重新审核的 HEAD 时被旧 ledger HEAD 拒绝；Finish 重新写入已退役的 `task.json.archive_dir`。四项均经当前 #454 正常场景与机制资格审查。
 - finding-fix 让共享 Closure reader 向 Finish 返回原事务冻结的 source，Finish 在任何归档前与当前 task source 比对；人工 Cleanup 直接检查 Git common-dir 中所有当前 branch binding，并对 caller-owned retained resource 用选定的 live HEAD 作删除 lease，仍严格比对 resource ID/kind/portable ref 与当前使用状态；archive locator 只留在 finish-summary。新增 source correction、新 generation binding、caller-owned 本地与远端 HEAD 演进和归档字段回归。E434 激活与 Release matrix 仍属于后续独立边界；本次修复需重建正式 Phase 2、Task Commit、完整 Branch Review 与 Publication/Finalizer 证据。
 - `0bbe3f94` 删除从 D443 继承的 tracked `finish-summary.json`，使 D436 Finalizer 可按现有合同生成 untracked archive output。随后的完整范围独立复审发现 D436 Finish 新摘要的 source Issue 索引为空，正常按 Issue 历史预览会漏掉归档。当前修复仅从已验证的 `task.source` 投影 Issue 检索键及现有归档文件路径；归档投影时尚未创建 bookkeeping PR，也没有可可靠重建的完整 Delivery 文件集，因此不伪造 PR 引用或业务 `git.changed_paths`。五包与共享 runtime/contract 组合 244/244、Discover 模块单独 9/9 通过；额外 production predecessor 4 项失败和 E434/Release matrix 仍须在激活前处理。
+
+## Generation 7：#454 全量验收与收尾
+
+Entry：原 TaskId `454-task-lifecycle-state-model` 的旧 generation 6 归档已逐案人工续接。`codex/454-d436-lifecycle-packages@bf4ff976` 包含 generation 7 planning artifact，current base 为 `main@4d7cd74f`；TaskBranchBinding 和 caller-owned branch/worktree bundle 已建立，task 已正式进入 `in_progress`。旧 PR #474 与旧 Finalizer summary 均仅为历史，不是当前 Delivery/Finish result。
+
+本代新增固定 Fork TaskId 域修正，候选源码为 `castbox/Trellis@5ee56ec443a82c05b7382ef4888c9f6efc9d0959`。它由本代隔离 Architecture contribution `docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md` 和 RDT contribution `docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/` 承接。已提升的 `.67` 与历史 #434/#454 contribution 保持 immutable；不得在独立 committed-range review 前将候选 pin 或新增 R/D/T 语义直接改写为 shared current。
+
+1. Fresh reread live #454、#435、#436、#443、#434、main、Architecture/RDT 与 package I/O；完成本轮规划语义审查和 activation。若 authority 演进，先重新协调 base，不复用旧 slice gate。
+2. 对照 live #454 acceptance 建立 source/installed/platform/graph/resource 矩阵。按 source、Cleanup、Branch Review、Approve/Check 等原 owner 修复可复现缺口，旧 eval 只允许显式 pinned-old 回放。同步 canonical、preset/dogfood 与必要 Docs/Architecture/RDT。
+3. 跑 source+installed package-ready、生命周期/Delivery/阶段组合定向回归、三平台声明投影、preset reapply、dogfood drift、task validation、diff checks。记录真实 skip 与 Release matrix 未验证边界；任何 finding-fix 重新跑受影响门禁。
+4. 先对本代隔离贡献完成正式 Architecture/Phase 2、task commit 与独立 `origin/main...HEAD` 完整 Branch Review。无阻塞 finding 后由 Architecture、RDT owner 依当时 live current 串行 promotion；若 base/current 前进，先重协调而不预占 successor identity。promotion-created diff 再完成 fresh Phase 2、task commit 与独立完整 Branch Review。
+5. 对最终同一候选用全新只读 subagent 连续两轮独立审核，任何 finding 返回对应 owner 修复并重启计数。Delivery Review、Publish、Merge、Completion、Closure、Finish bookkeeping 与 Cleanup 各自读取 live facts 后执行；PR 在完整验收前只用 `Refs #454`，不得提前关闭 Issue。最终回读 main、PR、Issue、archive 与资源结果；保留 caller-owned 或无关工作树。marketplace 与完整多平台 Release matrix 不属于本次门禁。

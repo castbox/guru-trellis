@@ -75,6 +75,18 @@ class UpstreamOwnershipTest(unittest.TestCase):
         ):
             self.assertRegex(first[field], r"^[0-9a-f]{64}$")
 
+    def test_bytecode_only_retired_directory_is_not_a_canonical_package(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            retired = repo / "trellis/skills/guru-team/packages/guru-retired-only-cache/runtime/__pycache__"
+            retired.mkdir(parents=True)
+            (retired / "owner.cpython-312.pyc").write_bytes(b"cache")
+            self.assertEqual(ownership.validate_repository(repo)["status"], "ok")
+            (retired.parent / "owner.py").write_text("# real package asset\n")
+            errors = ownership.validate_repository(repo)["errors"]
+            self.assertIn("canonical_package_set_mismatch", {row["code"] for row in errors})
+
     def test_schema_is_valid_and_accepts_inventory(self) -> None:
         from jsonschema import Draft202012Validator
 

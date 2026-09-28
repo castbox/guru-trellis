@@ -12,7 +12,7 @@
     "current_task_id": {"$ref": "#/$defs/taskId"},
     "current_lifecycle_generation": {"type": "integer", "minimum": 0}
   },
-  "$defs": {"taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"}},
+  "$defs": {"taskId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}},
   "allOf": [{"if": {"properties": {"profile": {"const": "switch_task"}}, "required": ["profile"]},
     "then": {"required": ["current_task_id", "current_lifecycle_generation"]},
     "else": {"not": {"anyOf": [{"required": ["current_task_id"]}, {"required": ["current_lifecycle_generation"]}]}}}]

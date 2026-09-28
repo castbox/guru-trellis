@@ -62,7 +62,7 @@ _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _REMOTE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _RETAINED_CONTROL_REF = re.compile(
-    r"^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)"
+    r"^refs/heads/(?=guru-task-lifecycle(?:/|$)|guru-task-lifecycle-id/[0-9a-f]{64}$)(?!-)(?!HEAD$)(?!/)"
     r"(?!.*[\x00-\x20\x7f])"
     r"(?!.*(?:^|/)\.)(?!.*(?:^|/)[^/]*\.lock(?:/|$))"
     r"(?!.*\.\.)(?!.*@\{)(?!.*[ ~^:?*\[\]\\])"

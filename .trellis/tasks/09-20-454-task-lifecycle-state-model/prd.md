@@ -334,7 +334,9 @@ ledger与本机path不属于跨机器恢复范围。
 
 计划内active handoff由`guru-transfer-task-machine`独占：源机器先把Guru-owned local resource封存进独立
 handoff-cleanup inventory，关闭源association/session，再向
-`refs/heads/guru-task-lifecycle/<TaskId>`发布只有目标机器直接消费的path-free handoff
+`refs/heads/guru-task-lifecycle/<TaskId>`发布只有目标机器直接消费的path-free handoff；
+对符合TaskId合同但不能成为Git ref尾段的ID，使用
+`refs/heads/guru-task-lifecycle-id/<sha256(TaskId UTF-8)>`，保持既有Git-valid ID的ref不变。
    artifact；artifact只携带TaskLifecycleKey、current branch ref、checkpoint identity与全部未收敛portable remote resource
 responsibility，并保留每个resource的原binding epoch/revision、state与responsibility role。
 目标机器消费后建立新binding epoch/revision 0、按实际acquisition facts建立local resource ownership，并
@@ -468,3 +470,11 @@ association，固定返回Closure `external_change_conflict`进行semantic re-re
 
 无。第一阶段所需的产品目标、范围、恢复行为、人工选择原则、ownership 保守规则和生命周期边界均已
 由当前共识确定。
+
+## Generation 7 最终验收（2026-09-28）
+
+本轮不改变 live #454 的 accepted scope。#434 已在 main 激活新 graph，#435 已单独收口；此前 C1-C7、D443、D436 仅为分批能力交付，不能代替 #454 的完整验收。当前同一 TaskId 从旧 Finalizer generation 6 归档逐案人工续接为 generation 7；旧归档没有新 Finish seal，故不得宣称正常 Reactivate 成功或重放旧 Completion/Closure。
+
+最终验收同时覆盖：现行 workflow/selector/manifest/installed/声明平台投影；旧 task/workspace mapping 的生产 reader、writer 与公共命名退役；TaskId/source/session/binding/checkout/resource ownership；Reactivate、Completion、Closure、Finish、Cleanup 的组合正常路径；按 Issue 检索旧归档；以及旧链在途任务的 pinned-old 或逐案人工处置边界。legacy `GitHub Issue #N` 不能仅凭该非 canonical scope 自动取得 `exact_source`。terminal ownership 丢失的 manual Cleanup 必须核对当前 generation 的 exact Finish result，不能仅凭 archived status 进入删除。
+
+门禁为组合 package-ready、相关 source/installed/platform/reapply、定向回归、task validation 和 `git diff --check`；finding-fix 后使用全新只读 reviewer，直到连续两轮无 finding，再完成正式 Branch Review、Delivery、Completion、Closure、Finish 和 Cleanup。marketplace 不使用；完整多平台 Release matrix 由专门 gate 承担，本轮不得宣称覆盖。

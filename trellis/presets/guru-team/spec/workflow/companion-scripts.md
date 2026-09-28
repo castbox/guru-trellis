@@ -728,10 +728,9 @@ is pre-#434 history, not an active Intake command or fallback. Current Issue,
 TaskId, checkout and branch-binding owners use their own declared interfaces.
 
 `record-task-workspace-plan`, `create-task-workspace`, and
-`check-task-workspace-result` are the deterministic commands published for
-active semantic `guru-create-task-workspace`. Their Bash wrappers remain thin;
-package wrappers reach them only through `run-skill-command` and fixed
-validator ids.
+`check-task-workspace-result` were the deterministic commands published for
+the retired semantic `guru-create-task-workspace`. Their Bash and package
+wrappers are historical assets, not current workflow entry points.
 
 The recorder accepts one AI-authored plan, validates the closed plan schema and
 current prerequisite projections, derives canonical digests, and emits the
@@ -804,9 +803,9 @@ reviewed slug, and live Git facts.
 Neither command reads, creates, copies, initializes, restores, or deletes
 `.trellis/.developer` or `.trellis/workspace/**`. Existing official identity
 bytes are unchanged and unconsumed; clean source/target inputs remain absent.
-Guru workspace mappings describe isolated task checkouts/worktrees, not legacy
-journal workspaces. The public
-plan/result contain no absolute paths, runtime paths, full process output,
+Guru workspace mappings described isolated task checkouts/worktrees, not legacy
+journal workspaces. The historical public
+plan/result contained no absolute paths, runtime paths, full process output,
 secrets, or raw private records.
 
 ## GitHub and Git Operations

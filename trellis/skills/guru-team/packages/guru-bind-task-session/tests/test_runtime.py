@@ -290,8 +290,9 @@ class FixedForkIntegrationTest(unittest.TestCase):
                     "commit", "-qm", "reactivate")
                 rebound = Path(directory) / "rebound-a"
                 git(root, "worktree", "add", "-qb", "rebound-a", str(rebound), "reactivated-a")
-                with self.assertRaisesRegex(ValueError, "ambiguous_task_identity"):
-                    port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                resolved = port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                self.assertEqual(resolved.workspace, root.resolve())
+                self.assertEqual(resolved.task_ref, ".trellis/tasks/a")
                 old = bind.BranchBindingStore(repository).read(key)
                 bind.ResourceLedgerStore(repository).rebind_current(
                     key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
@@ -304,6 +305,8 @@ class FixedForkIntegrationTest(unittest.TestCase):
                     key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
                     branch_name="rebound-a",
                 )
+                resolved = port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                self.assertEqual(resolved.workspace, rebound.resolve())
                 session.unlink()
                 self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
                 self.assertEqual(invoke("resume_current_task", generation=1)["exit_id"], "session_resumed")

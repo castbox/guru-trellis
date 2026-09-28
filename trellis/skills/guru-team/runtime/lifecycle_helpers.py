@@ -32,7 +32,7 @@ def _task(root: Path, value: str | None) -> tuple[str, object]:
         path = Path(".trellis/tasks") / path
     identity = resolve_task_ref(root, path.as_posix())
     if identity.lifecycle_state != "active":
-        raise ValueError("workspace boundary requires an active task")
+        raise ValueError("task checkout boundary requires an active task")
     return identity.task_ref, identity
 
 
@@ -47,11 +47,10 @@ def _boundary(root: Path, task_ref: str, identity: object) -> dict:
         raise ValueError("task branch binding required before checkout boundary validation")
     expected = binding.branch_ref
     if registration is None or branch != expected or registration.registered_branch_ref != expected:
-        raise ValueError("workspace boundary does not match task branch and worktree registration")
+        raise ValueError("task checkout does not match branch binding and worktree registration")
     return {
-        "status": "ok", "task_dir_relative": task_ref, "actual_repo_root": str(root),
-        "expected_workspace": str(root), "task_worktree_status": _git(root, "status", "--porcelain").splitlines(),
-        "source_checkout_status": [], "suspicious_source_artifacts": [], "errors": [],
+        "status": "ok", "task_dir_relative": task_ref, "checkout_root": str(root),
+        "task_worktree_status": _git(root, "status", "--porcelain").splitlines(), "errors": [],
     }
 
 

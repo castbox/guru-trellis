@@ -190,3 +190,14 @@ Bind package。#456 `436-*` 迁移账本与 #454 的统一模型是五个 packag
   recovery、same-transaction resume、source correction，退休旧 requirements/implementation/evidence exits。
 - 五个 package 只形成 canonical package-ready major；production workflow、registry selector、active manifest、
   installed/platform bytes 与旧 edge retirement 全由 E434/#434 同一激活边界拥有。
+
+## Generation 7 最终收敛设计
+
+现行 main graph 是本轮唯一 production authority；前述未激活切片说明仅保留历史。先以当前 selector、manifest、workflow、installed 与平台投影检查整条新链，再由各原 owner 修复正常路径缺口：
+
+- `source.py` 只允许精确 canonical URL legacy scope 自动归一化 `exact_source`；短式 Issue scope 进入 fresh semantic source review，不能让 repo_ref 参数改变 disposition authority。
+- Cleanup 在 resource ledger 缺失的 manual route 先验证同一 TaskId/generation/finish_result_id 的当前 Finish 结果，再列资源候选；保留 caller-owned、live identity、HEAD、非使用和独立确认门禁。
+- Branch Review 的 active `archived_review` 只读 profile 不读取 task/workspace mappings 或 `source_checkout`；旧 Finalizer 在途 PR 只按 pinned-old 或人工处置审查，不将其输出投影为新 graph Delivery。
+- Approve/Check 的 public entry precondition 使用 task checkout/identity 语义，移除 `task_workspace` 名称。installed/platform 通过 canonical preset 投影同步；历史 pinned-old eval 可只在显式版本快照中运行，不得作为现行投影调用。
+
+同一 TaskId 的 generation 7 规划与后续实现使用原工作树的 current branch，binding revision 0 与 caller-owned resource bundle 已由正式 establishment owner 建立。人工恢复提交只是续接事实，不是业务 Delivery 或新 Finish 证明；后续所有语义门禁仍需 fresh 执行。Architecture/RDT 只记录本轮实际改变的 authority 和验证边界，不回写 C1-C7 的历史 pass。

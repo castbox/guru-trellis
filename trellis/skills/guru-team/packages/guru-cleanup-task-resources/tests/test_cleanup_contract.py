@@ -362,6 +362,34 @@ def test_missing_terminal_ledger_and_handoff_require_explicit_route(tmp_path):
     assert invoke(tmp_path, root, handoff)["reason_code"] == "handoff_inventory_missing"
 
 
+def test_missing_ledger_manual_cleanup_requires_exact_finished_generation(tmp_path):
+    root, store, public, head = fixture(tmp_path, ownership="caller_owned")
+    key = TaskLifecycleKey("demo", 0)
+    row = store.read(key).resources[0]
+    store.path_for(key).unlink()
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    archive = root / archive_ref
+    archive.mkdir(parents=True)
+    (archive / "task.json").write_text(json.dumps({"id": "demo", "lifecycle_generation": 0, "status": "completed"}))
+    result_id = "finish:v1:0123456789abcdef"
+    manual = {"profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": result_id, "cleanup_state": "manual_cleanup_required",
+              "selected_targets": [{"resource_id": row.resource_id, "kind": row.kind,
+                                    "portable_ref": row.portable_ref, "expected_cleanup_head": head}]}
+    assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "manual_finish_result_missing"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+
+    result_path = store.repository.common_dir / "guru-team/finish-results/demo/0-manual.json"
+    result_path.parent.mkdir(parents=True)
+    result = {"schema_version": "1.0", "task_id": "demo", "lifecycle_generation": 0,
+              "finish_result_id": result_id, "finish_head": head, "target_head": head, "archive_ref": archive_ref}
+    result_path.write_text(json.dumps(result))
+    assert invoke(tmp_path, root, {**manual, "finish_result_id": "finish:v1:fedcba9876543210"}, confirmed=True)["reason_code"] == "manual_finish_result_stale"
+    assert invoke(tmp_path, root, manual)["exit_id"] == "manual_selection_required"
+    assert invoke(tmp_path, root, manual, confirmed=True)["exit_id"] == "cleaned"
+    assert not git(root, "branch", "--list", "codex/demo")
+
+
 def handoff_fixture(tmp_path: Path) -> tuple[Path, ResourceLedgerStore, dict, str]:
     root, store, _normal, head = fixture(tmp_path)
     row = store.read(TaskLifecycleKey("demo", 0)).resources[0]

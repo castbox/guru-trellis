@@ -517,6 +517,27 @@ def test_finish_archive_is_discoverable_by_source_issue(tmp_path):
     assert [row["finish_summary_path"] for row in preview["candidates"]] == [f"{archive_ref}/finish-summary.json"]
 
 
+def test_finish_materializes_closure_reviewed_legacy_source(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    task_ref = ".trellis/tasks/demo"
+    task_dir = repo / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({"id": "demo", "status": "in_progress",
+                                                    "lifecycle_generation": 0, "scope": "GitHub Issue #454"}))
+    source = {"kind": "issue", "repo_ref": "example/repo", "number": 454,
+              "disposition": "reference_only"}
+    assert FINISH.closure_source_current(repo, {"task_id": "demo", "lifecycle_generation": 0}, source)
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref),
+                           archive_ref, Path(archive_ref), source)
+    archived = json.loads((repo / archive_ref / "task.json").read_text())
+    summary = json.loads((repo / archive_ref / "finish-summary.json").read_text())
+    assert archived["source"] == source
+    assert summary["index"]["search_terms"]["issue_refs"] == ["#454"]
+
+
 def test_finish_archive_retires_only_its_generation_sessions(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
