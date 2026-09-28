@@ -8,8 +8,8 @@ The installer never edits upstream Trellis source or a global npm package.
 
 ## Apply And Verify
 
-Use the source-locked, built `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`
-CLI (successful main push CI `36460551909`) and a matching reviewed Guru
+Use the source-locked, built `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`
+CLI (successful main push CI `36486251351`) and a matching reviewed Guru
 source. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:

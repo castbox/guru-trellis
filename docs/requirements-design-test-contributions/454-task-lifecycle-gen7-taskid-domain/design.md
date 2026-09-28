@@ -3,7 +3,7 @@
 Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion gates remain independent.
 
 - `D454-G7-01`: Pin the merged official Fork commit
-  `18ccbf0356ebcc61f3557e1427d1ad8a6351559a` as the implementation
+  `a9e0b5dcb40e9dd0a54f990ad4d215e427939856` as the implementation
   candidate. The official task writer validates explicit and slug-derived IDs. Guru
   `identity.py` and the shared DTO schema use the exact same TaskId pattern.
 - `D454-G7-02`: Derive handoff receipt refs in one runtime owner. Preserve
@@ -42,3 +42,7 @@ Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion 
 - `D454-G7-08`: Align the official Fork source parser with Guru's
   `normalize_repo_ref` contract and project that writer and the current
   five-field session reader byte-for-byte into the dogfood official scripts.
+- `D454-G7-09`: In an installed Guru Team checkout, the official session
+  reader returns `binding_required` when the current TaskBranchBinding is
+  missing. Only ordinary Trellis retains its existing no-binding fallback;
+  neither path creates a replacement binding or guesses a current branch.

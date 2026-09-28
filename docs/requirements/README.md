@@ -42,7 +42,7 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，成功 main CI `36460551909`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
+当前框架源码固定为 `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`，成功 main CI `36486251351`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
 当前 `.68` 完整继承 immutable `.67`，并承接 #454 generation 7 TaskId/domain、official writer/source 与 terminal Cleanup/Reactivate；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.68/active`。promotion-created diff 尚需 fresh Phase 2、Task Commit 与完整 Branch Review，完整 Release matrix 和业务仓生产验证不在本次通过声明内。
 
 `.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。

@@ -517,4 +517,4 @@ install、task validator 与 diff check。已完成的 118/118、132/132、155/1
 
 ## #454 Generation 7 current plan
 
-`T454-G7-01..09` 以 [reviewed contribution](../../../requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/test.md) 为定向计划。固定 Fork、TaskId/ref/source writer、五字段 binding/session reader、terminal ledger-loss candidate/空选择、Reactivate receipt、source/installed/platform 投影均须以最终候选重新验证。`.67` 和提升前检查不能替代 promotion-created diff 的 Phase 2、Task Commit 与完整 Branch Review；先前更宽 installer `172 passed, 2 failed` 不可写成通过。完整 Release matrix 另属专门 gate。
+`T454-G7-01..10` 以 [reviewed contribution](../../../requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/test.md) 为定向计划。固定 Fork、TaskId/ref/source writer、五字段 binding/session reader、安装态 binding 丢失、terminal ledger-loss candidate/空选择、Reactivate receipt、source/installed/platform 投影均须以最终候选重新验证。`.67` 和提升前检查不能替代 promotion-created diff 的 Phase 2、Task Commit 与完整 Branch Review；先前更宽 installer `172 passed, 2 failed` 不可写成通过。完整 Release matrix 另属专门 gate。

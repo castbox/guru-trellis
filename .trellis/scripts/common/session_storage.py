@@ -145,6 +145,8 @@ def _bound_task_workspace(
     require_active_path(path, facts.invocation_root)
     binding, reason = read_json_checked(path)
     if reason == JSON_READ_MISSING:
+        if (facts.invocation_root / ".trellis" / "guru-team" / "extension.json").is_file():
+            raise SessionBindingError(f"binding_required: {task_id!r}")
         return None
     if binding is None or set(binding) != {
         "schema_version", "task_id", "lifecycle_generation", "binding_revision", "branch_name",

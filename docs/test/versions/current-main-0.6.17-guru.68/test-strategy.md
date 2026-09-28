@@ -596,4 +596,4 @@ Release matrix 和业务仓生产验证留给专门 gate。
 
 ## #454 Generation 7 current strategy
 
-`T454-G7-01..09` 分开证明 fixed Fork source/CI、canonical runtime/package、installed/platform、real Git lifecycle 与最终完整 diff 的 semantic gates。测试不得把 Git-ref eligibility 当 TaskId 合法性，也不得以删除候选推断 ownership。提升前 34 包隔离结果为 `685 passed, 2 skipped`，installer/upgrade/Fork 定向子集为 `90 passed`；promotion 后须重验 exact candidate。完整多平台 Release matrix 与业务仓生产验证仍 `unverified`。
+`T454-G7-01..10` 分开证明 fixed Fork source/CI、canonical runtime/package、installed/platform、real Git lifecycle 与最终完整 diff 的 semantic gates。测试不得把 Git-ref eligibility 当 TaskId 合法性，也不得以删除候选推断 ownership。installed Guru reader 在 current binding 丢失时必须返回 `binding_required`，普通 Trellis 的无绑定回退仍可用。提升前 34 包隔离结果为 `685 passed, 2 skipped`，installer/upgrade/Fork 定向子集为 `90 passed`；promotion 后须重验 exact candidate。完整多平台 Release matrix 与业务仓生产验证仍 `unverified`。

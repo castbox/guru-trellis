@@ -217,12 +217,14 @@ remaining scope；completed 后 Closure、Finish、Cleanup 依次处理。Finish
 验证不属于此 current 实现证据。
 
 `ARCH-CUR-045`（`source_confirmed` + `reviewed`）：#454 generation 7 在 `.67` current 上将
-official Fork 固定至 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，
-tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`，成功 main CI `36460551909`。
+official Fork 固定至 `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`，
+tree `38a2e226a03ca7899ae3504bf3763dc1aac0cb35`，成功 main CI `36486251351`。
 TaskId 完整接受 `[A-Za-z0-9][A-Za-z0-9._-]*`；Git-ref-invalid 的合法 TaskId 只由
 私有确定性 handoff ref 投影处理，不收窄身份域。official create/rename/archive 保持
 immutable TaskId 与结构化 source，不再写入或消费退休的 task branch metadata。
-Guru dogfood writer 与五字段 session reader 同固定 Fork；TaskBranchBinding 只有
+Guru dogfood writer 与五字段 session reader 同固定 Fork；已安装 Guru Team 缺失
+TaskBranchBinding 时，official continuation reader 返回 `binding_required`，不回退到旧 checkout。
+TaskBranchBinding 只有
 schema version、TaskId、generation、revision、branch name。terminal ledger 丢失时，
 Cleanup 以 exact Finish result 和 fresh Git facts 给出 call-local 显式选择；确认空选择
 仅在 Finish branch 已不存在时封口，Reactivate 消费匹配本代 Finish 的 cleaned receipt。

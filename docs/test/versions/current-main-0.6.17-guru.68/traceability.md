@@ -453,5 +453,6 @@ promotion-created diff gates 和完整 Release matrix 不由此表宣称通过�
 | `T454-G7-07` | `R454-G7-06` | `D454-G7-06` | Reactivate receipt |
 | `T454-G7-08` | `R454-G7-07` | `D454-G7-07` | five-field binding/retained branch |
 | `T454-G7-09` | `R454-G7-08` | `D454-G7-08` | source writer/session reader |
+| `T454-G7-10` | `R454-G7-09` | `D454-G7-09` | installed binding loss/ordinary fallback |
 
 完整 [G7 contribution trace](../../../requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/traceability.md) 保留 `R454-G7-01` 的双测试和 `R454-G7-02` 的 ref 验证。Architecture 为 `.68/active`；最终证据必须绑定 promotion 后同一候选。

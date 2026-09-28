@@ -40,3 +40,7 @@ Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion 
 - `R454-G7-08`: The official task source writer and Guru reader accept the
   same portable owner/repo domain before durable task creation. The dogfood
   session reader consumes the current five-field binding record.
+- `R454-G7-09`: When an installed Guru Team session loses its current
+  TaskBranchBinding, official continuation reports `binding_required` instead
+  of resolving a stale checkout by task artifact presence. Ordinary Trellis
+  without Guru Team keeps its existing fallback behavior.

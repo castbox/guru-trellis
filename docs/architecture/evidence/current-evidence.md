@@ -413,6 +413,10 @@ diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review �
 
 ## EVD-043: #454 Generation 7 TaskId Domain Candidate
 
+This records the pre-Fork-PR-21 candidate. The current source and post-fix
+validation are recorded in `EVD-044` below; this older result is not the final
+Branch Review or Delivery gate.
+
 固定 Fork 为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，
 tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`，main CI `36460551909`
 成功。提升前候选 `origin/main@4d7cd74f3803ca924ac3802dcc12afd1f2cac06c...
@@ -423,3 +427,25 @@ HEAD@63de89e3a47686f8b1fd505ba6fae89ce5658931` 的完整 Branch Review
 未整体重跑，不把它计为通过。promotion-created diff 与最终同候选审查、
 远端 Delivery/merge/Closure/Finish/Cleanup 尚未在此条中证明；完整 Release matrix
 和 marketplace 不属于本次验收。
+
+## EVD-044: #454 Final Source Candidate Before Branch Review
+
+Fixed Fork PR #21 merged to `castbox/Trellis` main at
+`a9e0b5dcb40e9dd0a54f990ad4d215e427939856`, tree
+`38a2e226a03ca7899ae3504bf3763dc1aac0cb35`; main push CI
+`36486251351` succeeded. Its installed Guru Team session reader returns
+`binding_required` on a missing current TaskBranchBinding rather than using
+an old checkout copy. The official template and Guru dogfood session script
+are byte-identical. Ordinary Trellis retains its no-binding fallback.
+
+The fixed Fork checkout passed frozen install, build and `validate-source`.
+On the Guru candidate, 34 package suites passed in isolated processes with
+two scoped skips; shared lifecycle kernel 142/142, Architecture owner 26/26,
+RDT owner 9/9, and installer/Fork/preset combination 189/189 passed. The
+new installed-reader binding-loss regression passed. Source and installed
+package validators, preset reapply, selected Claude/Codex/Cursor drift,
+task validation and `git diff --check` passed; no `.new` or `.bak` sidecar
+remains. Full multi-platform Release matrix, marketplace and business-repo
+production validation were not run. This evidence does not substitute for
+fresh Phase 2, committed complete-range Branch Review, two independent
+zero-finding reviews, Delivery or terminal closeout.

@@ -4,7 +4,7 @@
 - State: independently reviewed and promoted against expected `current-main-0.6.17-guru.67/active` to `.68/active`; post-promotion gates remain separate.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
-- Verified source candidate: `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`, tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`, successful main CI `36460551909`. Fork PRs #18, #19 and #20 are merged and Issue #8 is closed; Guru package-ready verification remains separate.
+- Current source candidate: `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`, tree `38a2e226a03ca7899ae3504bf3763dc1aac0cb35`, successful main CI `36486251351`. Fork PRs #18-#21 are merged and Issue #8 is closed; Guru package-ready verification and final review remain separate.
 
 The official Trellis task writer owns the complete TaskId domain
 `[A-Za-z0-9][A-Za-z0-9._-]*`. A TaskId is not a branch name, Git ref tail,
@@ -23,6 +23,12 @@ The current single-focus session pointer, task branch, checkout acquisition,
 source relation and resource ledger remain independent owners. This change
 does not require a session to retain multiple bindings or to release an old
 binding before switching focus.
+
+The official session reader in an installed Guru Team checkout also treats a
+missing current TaskBranchBinding as `binding_required`. It cannot recover
+current branch authority from an older checkout's task artifact. Ordinary
+Trellis without Guru Team retains its existing no-binding fallback; neither
+path creates an additional session binding record or history.
 
 TaskBranchBinding has exactly five fields: schema version, TaskId, generation,
 binding revision and branch name. No epoch token is stored in the binding,

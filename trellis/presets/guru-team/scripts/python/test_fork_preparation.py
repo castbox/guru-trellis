@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,33 @@ ROOT = Path(__file__).resolve().parents[5]
 
 
 class ForkPreparationTests(unittest.TestCase):
+    def test_installed_session_reader_requires_missing_guru_binding(self):
+        script = r'''
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from common.session_storage import RepositoryFacts, SessionBindingError, _bound_task_workspace
+root = Path(sys.argv[2])
+common = root / ".git"
+common.mkdir()
+(root / ".trellis/guru-team").mkdir(parents=True)
+facts = RepositoryFacts(root, common, (root,), root)
+assert _bound_task_workspace(facts, "task-454", 0, (root,)) is None
+(root / ".trellis/guru-team/extension.json").write_text("{}")
+try:
+    _bound_task_workspace(facts, "task-454", 0, (root,))
+except SessionBindingError as exc:
+    assert "binding_required" in str(exc), exc
+else:
+    raise AssertionError("installed Guru reader fell back without TaskBranchBinding")
+'''
+        with tempfile.TemporaryDirectory(prefix="guru-binding-loss-") as tmp:
+            result = subprocess.run(
+                [sys.executable, "-c", script, str(ROOT / ".trellis/scripts"), tmp],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_release_readmes_match_canonical_source_identity(self):
         lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
         for relative_path in (

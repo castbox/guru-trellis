@@ -30,8 +30,8 @@ Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
 当前 source candidate 固定到已审查的 Fork lifecycle primitive、跨工作树续接、
-无 context key 回退、显式及派生 TaskId 校验与五字段绑定读取修复 commit
-`18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，对应 main CI `36460551909`。
+无 context key 回退、显式及派生 TaskId 校验、五字段绑定读取与缺失 binding 拒绝旧 checkout 回退的修复 commit
+`a9e0b5dcb40e9dd0a54f990ad4d215e427939856`，对应 main CI `36486251351`。
 CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
@@ -71,8 +71,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | --- | --- |
 | Current target Guru Trellis repo tag | `v0.6.17-guru.1` |
 | Target Guru Team extension revision | `0.6.17-guru.42` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `18ccbf0356ebcc61f3557e1427d1ad8a6351559a` |
-| Reviewed Fork lifecycle primitive CI identity | `36460551909` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `a9e0b5dcb40e9dd0a54f990ad4d215e427939856` |
+| Reviewed Fork lifecycle primitive CI identity | `36486251351` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标

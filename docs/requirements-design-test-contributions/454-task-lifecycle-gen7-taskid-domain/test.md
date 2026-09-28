@@ -41,3 +41,7 @@ Status: reviewed promotion to `.68/active`; results must be bound to the final r
   and accept legal dotted and hyphenated names. Assert Guru dogfood task and
   session scripts match the fixed Fork templates and resolve a current
   generation 7 five-field session binding.
+- `T454-G7-10`: In fixed Fork and Guru installed readers, remove the current
+  binding while an old checkout still carries the task artifact. Guru
+  continuation must report `binding_required`; ordinary Trellis no-binding
+  fallback remains usable. Check exact source/template/dogfood byte parity.
