@@ -464,11 +464,11 @@ def cmd_create(args: argparse.Namespace) -> int:
             return 1
 
     dir_name = f"{date_prefix}-{slug}"
-    task_id = getattr(args, "task_id", None)
-    if task_id is None:
-        task_id = slug
-    elif not TASK_ID_PATTERN.fullmatch(task_id):
-        print(colored("Error: --task-id must match [A-Za-z0-9][A-Za-z0-9._-]*", Colors.RED), file=sys.stderr)
+    explicit_task_id = getattr(args, "task_id", None)
+    task_id = explicit_task_id if explicit_task_id is not None else slug
+    if not TASK_ID_PATTERN.fullmatch(task_id):
+        source = "--task-id" if explicit_task_id is not None else "derived task id"
+        print(colored(f"Error: {source} must match [A-Za-z0-9][A-Za-z0-9._-]*", Colors.RED), file=sys.stderr)
         return 1
     task_dir = tasks_dir / dir_name
     task_json_path = task_dir / FILE_TASK_JSON

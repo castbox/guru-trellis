@@ -844,7 +844,7 @@ Branch Review通过，且 shared current 文档与当前 candidate 一致。E434
 
 Entry：原 TaskId `454-task-lifecycle-state-model` 的旧 generation 6 归档已逐案人工续接。`codex/454-d436-lifecycle-packages@bf4ff976` 包含 generation 7 planning artifact，current base 为 `main@4d7cd74f`；TaskBranchBinding 和 caller-owned branch/worktree bundle 已建立，task 已正式进入 `in_progress`。旧 PR #474 与旧 Finalizer summary 均仅为历史，不是当前 Delivery/Finish result。
 
-本代新增固定 Fork TaskId 域修正，候选源码为 `castbox/Trellis@5ee56ec443a82c05b7382ef4888c9f6efc9d0959`。它由本代隔离 Architecture contribution `docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md` 和 RDT contribution `docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/` 承接。已提升的 `.67` 与历史 #434/#454 contribution 保持 immutable；不得在独立 committed-range review 前将候选 pin 或新增 R/D/T 语义直接改写为 shared current。
+本代固定 Fork source candidate 已由 `castbox/Trellis@5ee56ec443a82c05b7382ef4888c9f6efc9d0959` 更新为 `castbox/Trellis@09994d21a462813c4d1a280cce7fe1bf803af019`，后者修复正常 `--slug` 派生非法 TaskId 的写入路径，main CI 为 `36414078546`。本代隔离 Architecture contribution `docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md` 和 RDT contribution `docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/` 承接最终候选。已提升的 `.67` 与历史 #434/#454 contribution 保持 immutable；不得在独立 committed-range review 前将候选 pin 或新增 R/D/T 语义直接改写为 shared current。
 
 1. Fresh reread live #454、#435、#436、#443、#434、main、Architecture/RDT 与 package I/O；完成本轮规划语义审查和 activation。若 authority 演进，先重新协调 base，不复用旧 slice gate。
 2. 对照 live #454 acceptance 建立 source/installed/platform/graph/resource 矩阵。按 source、Cleanup、Branch Review、Approve/Check 等原 owner 修复可复现缺口，旧 eval 只允许显式 pinned-old 回放。同步 canonical、preset/dogfood 与必要 Docs/Architecture/RDT。

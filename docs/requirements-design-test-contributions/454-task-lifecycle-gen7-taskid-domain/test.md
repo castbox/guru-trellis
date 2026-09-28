@@ -4,7 +4,8 @@ Status: isolated candidate; results must be bound to the final reviewed diff.
 
 - `T454-G7-01`: In the exact fixed Fork, create tasks using `task.lock`,
   `task.`, `task..child` and ordinary Git-valid IDs; verify rejected IDs
-  are outside the public pattern. Confirm the pinned commit, tree and CI.
+  are outside the public pattern for explicit and slug-derived IDs before
+  task creation. Confirm the pinned commit, tree and CI.
 - `T454-G7-02`: Run Guru identity/schema/runtime tests for the same values,
   collisions and archive identity. Assert unchanged refs for Git-valid IDs
   and deterministic, valid, separate refs for Git-ref-invalid IDs.

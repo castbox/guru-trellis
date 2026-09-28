@@ -4,12 +4,13 @@
 - State: candidate pending independent review; expected current is `current-main-0.6.17-guru.67/active`.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
-- Source candidate: `castbox/Trellis@5ee56ec443a82c05b7382ef4888c9f6efc9d0959`, tree `df12e1582e543f421e104dbb3e3ebf7cdb3e1d77`, successful main CI `36397820517`.
+- Source candidate: `castbox/Trellis@09994d21a462813c4d1a280cce7fe1bf803af019`, tree `73810704ee0cc72f295e8bc89a512344523124c9`, successful main CI `36414078546`.
 
 The official Trellis task writer owns the complete TaskId domain
 `[A-Za-z0-9][A-Za-z0-9._-]*`. A TaskId is not a branch name, Git ref tail,
 task directory slug, checkout path, Issue number, session key, assignee, or
-developer identity. The Guru lifecycle kernel validates the same TaskId
+developer identity. The writer validates explicit IDs and IDs derived from a
+slug before creating the task. The Guru lifecycle kernel validates the same TaskId
 domain. For a legal TaskId that cannot form the existing handoff Git ref,
 Guru derives a deterministic ref in the separate
 `guru-task-lifecycle-id/<sha256(TaskId UTF-8)>` namespace. Git-valid TaskIds

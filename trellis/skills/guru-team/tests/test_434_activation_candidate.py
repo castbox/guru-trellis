@@ -186,6 +186,17 @@ class ActivationCandidateTests(unittest.TestCase):
                 self.assertIn("--task-id", result.stderr)
                 self.assertEqual(sorted((root / ".trellis/tasks").glob("*/task.json")), before)
 
+            derived = subprocess.run(
+                [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
+                 "--description", "TaskId fixture", "--slug", "two words",
+                 "--creator", "test", "--assignee", "test", "--no-start"],
+                cwd=root, capture_output=True, text=True,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
+            )
+            self.assertNotEqual(derived.returncode, 0, (derived.stdout, derived.stderr))
+            self.assertIn("derived task id must match", derived.stderr)
+            self.assertEqual(sorted((root / ".trellis/tasks").glob("*/task.json")), before)
+
     def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
         seen: dict[str, Path] = {}
         for path in sorted((ROOT / "docs/architecture/adr").glob("[0-9][0-9][0-9]-*.md")):

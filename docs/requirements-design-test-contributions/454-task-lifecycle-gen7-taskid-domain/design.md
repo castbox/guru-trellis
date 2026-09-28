@@ -3,8 +3,8 @@
 Status: isolated candidate against `.67/active`; not promoted.
 
 - `D454-G7-01`: Pin the merged official Fork commit
-  `5ee56ec443a82c05b7382ef4888c9f6efc9d0959` as the implementation
-  candidate. The official task writer owns `--task-id` validation. Guru
+  `09994d21a462813c4d1a280cce7fe1bf803af019` as the implementation
+  candidate. The official task writer validates explicit and slug-derived IDs. Guru
   `identity.py` and the shared DTO schema use the exact same TaskId pattern.
 - `D454-G7-02`: Derive handoff receipt refs in one runtime owner. Preserve
   the prior ref for Git-valid IDs; otherwise use

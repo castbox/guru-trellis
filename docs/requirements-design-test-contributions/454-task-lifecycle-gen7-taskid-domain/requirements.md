@@ -2,8 +2,9 @@
 
 Status: isolated candidate against `.67/active`; not promoted.
 
-- `R454-G7-01`: Official `task.py create --task-id` and Guru lifecycle
-  identity accept exactly `[A-Za-z0-9][A-Za-z0-9._-]*`, including
+- `R454-G7-01`: Official `task.py create` validates explicit `--task-id` and
+  slug-derived TaskIds against exactly `[A-Za-z0-9][A-Za-z0-9._-]*` before
+  task creation; Guru lifecycle identity accepts the same domain, including
   `task.lock`, `task.`, and `task..child`. Git-ref eligibility does not
   narrow the TaskId domain.
 - `R454-G7-02`: Handoff receipt refs remain valid Git refs for every

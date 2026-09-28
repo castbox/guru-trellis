@@ -2010,7 +2010,7 @@ Checkout path、workspace path、session identity、authorization、generic evid
 snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
 的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
 
-Fork `castbox/Trellis@5ee56ec443a82c05b7382ef4888c9f6efc9d0959` 独占 immutable `task.json.id`、generation、
+Fork `castbox/Trellis@09994d21a462813c4d1a280cce7fe1bf803af019` 独占 immutable `task.json.id`、generation、
 TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
 alias、dual-read 或 dual-write。该 catalog 与 runtime 是当前 package-neutral substrate；
