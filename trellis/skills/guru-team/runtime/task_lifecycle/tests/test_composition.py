@@ -134,6 +134,22 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "task_identity_already_exists")
         self.assertFalse((self.repo / TASK_REF).exists())
 
+    def test_creation_rejects_identity_on_unregistered_local_branch(self) -> None:
+        sibling = Path(self.temporary.name) / "prior-task"
+        self.git("worktree", "add", "-b", "prior-task", str(sibling))
+        archived = sibling / ".trellis/tasks/archive/2026-09/prior-task"
+        archived.mkdir(parents=True)
+        (archived / "task.json").write_text(
+            json.dumps({"id": TASK_ID, "status": "completed", "lifecycle_generation": 0}), encoding="utf-8",
+        )
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "prior task"], cwd=sibling, check=True)
+        self.git("worktree", "remove", str(sibling))
+        self.assertIsNone(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)))
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "task_identity_already_exists")
+
     def test_recovery_rejects_branch_ledger_disagreement(self) -> None:
         plan = self.acquisition("provision_linked_worktree")
         inputs = prepare_creation_inputs(self.repo, self.creation(), plan)

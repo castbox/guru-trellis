@@ -533,6 +533,30 @@ def test_missing_other_task_control_state_keeps_its_active_checkout(tmp_path):
     assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
 
 
+def test_missing_other_task_control_state_keeps_its_remote_branch(tmp_path):
+    root, _store, public, _checkout = missing_ledger_fixture(tmp_path)
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "switch", "-q", "-c", "codex/other-task")
+    task = root / ".trellis/tasks/09-28-other-task"
+    task.mkdir(parents=True)
+    (task / "task.json").write_text(json.dumps({
+        "id": "other-task", "lifecycle_generation": 0, "status": "in_progress",
+        "source": {"kind": "no_issue"},
+    }))
+    git(root, "add", ".trellis/tasks/09-28-other-task/task.json")
+    git(root, "commit", "-qm", "start other task")
+    git(root, "push", "-q", "origin", "HEAD:refs/heads/codex/other-task")
+    git(root, "switch", "-q", "main")
+    git(root, "branch", "-D", "codex/other-task")
+    selected = selection(root, finish_result_id=public["finish_result_id"],
+                         kinds=("remote_branch",), branch_name="codex/other-task")
+    assert invoke(tmp_path, root, selected, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/other-task")
+
+
 @pytest.mark.parametrize("retained_active_artifact", [True, False])
 def test_manual_cleanup_requires_surviving_active_artifact(tmp_path, retained_active_artifact):
     root, _store, _public, _checkout = missing_ledger_fixture(tmp_path)

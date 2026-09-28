@@ -208,17 +208,23 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
         if any(row["portable_ref"].get("ref", row["portable_ref"].get("branch_ref")) == binding.branch_ref for row in resources):
             return True
     selected_branches = {row["portable_ref"].get("ref", row["portable_ref"].get("branch_ref"))
-                         for row in resources if row["kind"] in {"local_branch", "linked_worktree"}}
+                         for row in resources}
     local_branches = git(store.repository.context_path, "for-each-ref", "--format=%(refname)", "refs/heads").stdout.splitlines()
     retained = [branch for branch in local_branches if branch not in selected_branches]
-    for branch in selected_branches:
-        if branch not in local_branches:
-            continue
+    selected_heads = [(branch, branch) for branch in selected_branches if branch in local_branches]
+    for row in resources:
+        if row["kind"] == "remote_branch":
+            branch = row["portable_ref"]["ref"]
+            head = row["expected_cleanup_head"]
+            if git(store.repository.context_path, "cat-file", "-e", f"{head}^{{commit}}", check=False).returncode:
+                raise LifecycleContractError("resource_head_unavailable", branch, "Fetch the selected remote head before manual cleanup.")
+            selected_heads.append((branch, head))
+    for _branch, head in selected_heads:
         active_artifacts = [path for path in git(store.repository.context_path, "ls-tree", "-r", "--name-only",
-                                                branch, "--", ".trellis/tasks").stdout.splitlines()
+                                                head, "--", ".trellis/tasks").stdout.splitlines()
                             if re.fullmatch(r"\.trellis/tasks/[^/]+/task\.json", path)]
         if any(not any(
-            git(store.repository.context_path, "merge-base", "--is-ancestor", branch, survivor,
+            git(store.repository.context_path, "merge-base", "--is-ancestor", head, survivor,
                 check=False).returncode == 0
             and git(store.repository.context_path, "cat-file", "-e", f"{survivor}:{path}",
                     check=False).returncode == 0

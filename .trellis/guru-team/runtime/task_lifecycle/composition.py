@@ -5,13 +5,15 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import re
+import subprocess
 from typing import Any
 
 from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_worktree_registrations, local_branch_head
+from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_local_branch_refs, list_worktree_registrations, local_branch_head
 from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -233,6 +235,24 @@ def prepare_creation_inputs(
             for row in task_inventory(registration.path)
         ):
             raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
+    for _branch_ref, head in list_local_branch_refs(repository):
+        tree = subprocess.run(
+            ["git", f"--git-dir={repository.common_dir}", "ls-tree", "-r", "--name-only", head, "--", ".trellis/tasks"],
+            capture_output=True, text=True, check=True,
+        )
+        for path in tree.stdout.splitlines():
+            if not re.fullmatch(r"\.trellis/tasks/(?:archive/.+/)?[^/]+/task\.json", path):
+                continue
+            payload = commit_path_bytes(repository, head, path)
+            try:
+                metadata = json.loads(payload) if payload is not None else None
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.") from exc
+            if isinstance(metadata, dict) and (
+                str(metadata.get("id", "")).casefold() == task_id.casefold()
+                or path.removesuffix("/task.json") == task_ref
+            ):
+                raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     if any(
         ledger.task_id.casefold() == task_id.casefold()
         and any(row.state != "resolved" for row in ledger.resources)

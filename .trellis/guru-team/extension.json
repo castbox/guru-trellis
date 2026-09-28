@@ -958,11 +958,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-28T21:35:41Z",
+  "installed_at": "2026-09-28T22:50:36Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "4517b4f90c597ef8fa8403f386fd3cc611f56b7b",
-    "commit": "4517b4f90c597ef8fa8403f386fd3cc611f56b7b",
+    "ref": "aedb4fc266356a16d90244db89b47c9284acbb3c",
+    "commit": "aedb4fc266356a16d90244db89b47c9284acbb3c",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1122,7 +1122,7 @@
       {
         "id": "guru-cleanup-task-resources",
         "interface_sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
-        "tree_sha256": "13243da78e0607699dbc9b1a38b58136e3d52404d1bf80f4ff4d0de87f795bf2"
+        "tree_sha256": "36e1e876e22457e18cbcd37681d7516820a96687c93a0c846037dc08fb217023"
       },
       {
         "id": "guru-complete-task-closure",
@@ -3952,7 +3952,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/runtime/invoke.py",
-        "sha256": "4014fb95a8a1f5e5a093ddb53691f1da3fe200b505240ad2518c4b1232a7fec2",
+        "sha256": "aa5d71e8d6d46bba2bdbc7b495b8775eea6bd1082454d11037f29340e688c2fc",
         "executable": false,
         "action": "unchanged"
       },
@@ -12429,7 +12429,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/composition.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
-        "sha256": "31dfebe3787df22a03fe841a911537596bc37c31f0a121ffef7523d0e9ba8ef1",
+        "sha256": "148b54fe10cf7f5216cc6e3007f68933b430e681995af1cb6d6c7013c040a27b",
         "executable": false,
         "action": "unchanged"
       },
