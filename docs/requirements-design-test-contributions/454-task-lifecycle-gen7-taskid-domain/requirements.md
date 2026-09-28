@@ -22,6 +22,8 @@ Status: isolated candidate against `.67/active`; not promoted.
   revalidates them, requires an exact deletion confirmation, and leaves
   unselected resources unchanged. Ledger loss after an ordinary successful
   Finish also reaches this route using the exact terminal Finish identity.
+  After the Finish branch itself is absent, an explicitly confirmed empty
+  selection records `cleaned` without deleting unrelated resources.
 - `R454-G7-05`: The official task writer creates immutable TaskId and
   structured source without retired `branch` metadata; official rename and
   archive preserve TaskId/source/generation. A remote-backed ordinary archive
@@ -29,7 +31,8 @@ Status: isolated candidate against `.67/active`; not promoted.
   the same fixed official task CLI semantics.
 - `R454-G7-06`: A completed explicit terminal Cleanup selection seals a
   result that Reactivate recognizes for the same TaskId, generation and Finish
-  result; old completed manual receipts remain readable for prior generations.
+  result, including normal Finish followed by ledger loss and confirmed empty
+  selection; old completed manual receipts remain readable for prior generations.
 - `R454-G7-07`: TaskBranchBinding uses only the five live Issue fields;
   neither resource ownership nor public DTO adds an epoch. Missing-control
   Cleanup cannot delete a local branch carrying an active task unless another

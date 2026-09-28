@@ -150,7 +150,7 @@ def persist_cleanup_fallback(root: Path, package_root: Path, key: TaskLifecycleK
         "schema_version": "1.0", "task_id": key.task_id,
         "lifecycle_generation": key.lifecycle_generation, "finish_result_id": finish_result_id,
         "finish_head": transaction["commit"], "target_head": transaction["target_head"],
-        "archive_ref": archive_ref,
+        "archive_ref": archive_ref, "head_branch": transaction["head_branch"],
     }
     validate_json(result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
     path = manual_result_path(root, key)

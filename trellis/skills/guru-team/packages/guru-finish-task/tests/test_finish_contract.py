@@ -455,6 +455,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert store.cleanup_resolution(TaskLifecycleKey("demo", 0), finish_result_id=finished["finish_result_id"], inventory_id=finished["inventory_id"]).resolution_kind == "ordinary_cleanup"
     fallback = json.loads(FINISH.manual_result_path(repo, key).read_text())
     assert fallback["finish_result_id"] == finished["finish_result_id"]
+    assert fallback["head_branch"] == "codex/demo"
     validate_json(fallback, PACKAGE / "schemas/manual-finish-result.schema.json", "manual_finish_result")
     repeated = invoke()
     assert repeated["exit_id"] == "success"

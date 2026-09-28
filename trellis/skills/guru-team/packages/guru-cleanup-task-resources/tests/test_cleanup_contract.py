@@ -399,6 +399,23 @@ def test_missing_ledger_does_not_list_candidates_without_terminal_finish(tmp_pat
     assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
 
 
+def test_missing_ledger_confirmed_empty_selection_seals_without_deleting_other_resources(tmp_path):
+    root, store, selected, _checkout = missing_ledger_fixture(tmp_path)
+    git(root, "update-ref", "-d", "refs/heads/codex/demo")
+    public = {**selected, "selected_candidate_ids": []}
+    listed = invoke(tmp_path, root, public)
+    assert listed["exit_id"] == "manual_cleanup_required"
+    assert any(row["branch_name"] == "main" for row in listed["candidates"])
+    completed = invoke(tmp_path, root, public, confirmed=True)
+    assert completed["exit_id"] == "cleaned"
+    assert invoke(tmp_path, root, public, confirmed=True) == completed
+    receipts = list((store.repository.common_dir / "guru-team/cleanup-results/demo").glob("selected-*.json"))
+    assert len(receipts) == 1
+    assert json.loads(receipts[0].read_text())["output"] == completed
+    assert git(root, "show-ref", "--verify", "refs/heads/main")
+    assert store.read(TaskLifecycleKey("demo", 0)) is None
+
+
 def test_missing_ledger_manual_cleanup_requires_exact_finished_generation(tmp_path):
     root, store, public, head = fixture(tmp_path, ownership="caller_owned")
     key = TaskLifecycleKey("demo", 0)
@@ -438,7 +455,8 @@ def missing_ledger_fixture(tmp_path: Path, *, linked: bool = False) -> tuple[Pat
     result_path.parent.mkdir(parents=True)
     result_path.write_text(json.dumps({"schema_version": "1.0", "task_id": "demo", "lifecycle_generation": 0,
                                        "finish_result_id": result_id, "finish_head": head,
-                                       "target_head": head, "archive_ref": archive_ref}))
+                                       "target_head": head, "archive_ref": archive_ref,
+                                       "head_branch": "codex/demo"}))
     return root, store, selection(root, finish_result_id=result_id), checkout
 
 

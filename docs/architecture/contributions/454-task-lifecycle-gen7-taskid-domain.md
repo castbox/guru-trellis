@@ -50,7 +50,13 @@ Both successful normal Finish and the missing-ownership Finish route retain the
 same minimal terminal result in ignored common-dir runtime. If only the
 resource ledger is later lost, Cleanup validates that exact Finish identity
 before offering call-local manual candidates; it never infers Guru ownership
-from surviving Git resources.
+from surviving Git resources. The terminal result also retains the portable
+Finish branch as a liveness hint: a confirmed empty selection can seal a
+zero-deletion Cleanup only after that branch is absent. An older result without
+the hint remains on the manual candidate route; unrelated branches are never
+deleted by an empty selection. Reactivate accepts the resulting exact
+`selected-*` cleaned receipt even when the Finish transaction originally
+completed through the normal owned-ledger route and that ledger was lost later.
 
 ## Project Change Contract
 

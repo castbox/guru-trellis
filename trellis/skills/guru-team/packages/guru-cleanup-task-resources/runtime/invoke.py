@@ -229,7 +229,7 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
 
 
 def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path, key: TaskLifecycleKey,
-                                 finish_result_id: str, archive_ref: str) -> None:
+                                 finish_result_id: str, archive_ref: str) -> dict[str, Any]:
     path = (store.repository.common_dir / "guru-team" / "finish-results" /
             key.task_id / f"{key.lifecycle_generation}-manual.json")
     if not path.is_file() or path.is_symlink():
@@ -244,14 +244,15 @@ def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path,
         "finish_result_id": finish_result_id, "archive_ref": archive_ref,
     }.items()):
         raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Select the current archived Finish result.")
+    return result
 
 
 def require_missing_terminal(store: ResourceLedgerStore, package_root: Path,
-                             key: TaskLifecycleKey, finish_result_id: str, root: Path) -> None:
+                             key: TaskLifecycleKey, finish_result_id: str, root: Path) -> dict[str, Any]:
     task = resolve_task_id(root, key.task_id)
     if task.lifecycle_state != "archived" or task.lifecycle_generation != key.lifecycle_generation:
         raise LifecycleContractError("archived_lifecycle_stale", "task", "Select a normally finished archived lifecycle.")
-    require_manual_finish_result(store, package_root, key, finish_result_id, task.task_ref)
+    return require_manual_finish_result(store, package_root, key, finish_result_id, task.task_ref)
 
 
 def handoff_cleanup(root: Path, public: dict[str, Any], *, confirmed: bool) -> dict[str, Any]:
@@ -380,9 +381,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                     selected = public["selected_candidate_ids"]
                     resources = [candidates[candidate_id][1] for candidate_id in selected if candidate_id in candidates]
                     if not selected:
+                        terminal = None
                         if ledger is None:
-                            require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
-                        out = manual_required(public, [dto for dto, _item in candidates.values()])
+                            terminal = require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
+                        head_branch = terminal.get("head_branch") if terminal else None
+                        branch_still_present = any(dto["branch_name"] == head_branch for dto, _item in candidates.values())
+                        if ledger is not None or not head_branch or branch_still_present or not args.confirmed_cleanup or route != "cleaned":
+                            out = manual_required(public, [dto for dto, _item in candidates.values()])
                     elif len(resources) != len(selected):
                         out = blocked("cleanup_candidate_stale", "selected_candidate_ids")
                     elif ledger is None:

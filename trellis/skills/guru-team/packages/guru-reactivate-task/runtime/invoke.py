@@ -220,10 +220,21 @@ def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str)
             or terminal_summary.get("task", {}).get("archive_dir") != archive_ref):
         raise LifecycleContractError("finish_result_unsealed", "finish_head", "Use a Finish seal for the exact archived TaskLifecycleKey.")
     for transaction in transactions:
+        missing_ledger_finish_matches = (
+            ledger is None
+            and (
+                transaction.get("cleanup_state") == "manual_cleanup_required"
+                or (
+                    manual.get("head_branch") == transaction.get("head_branch")
+                    and manual["target_head"] == transaction["target_head"]
+                )
+            )
+        )
         if (transaction["stage"] != "success" or transaction["finish_ref"] != finish_result_id
                 or transaction["commit"] != finish_head or transaction["archive_ref"] != archive_ref
                 or not is_ancestor(repository, finish_head, transaction["target_head"])
-                or (ledger is None) != (transaction.get("cleanup_state") == "manual_cleanup_required")):
+                or (ledger is None and not missing_ledger_finish_matches)
+                or (ledger is not None and transaction.get("cleanup_state") == "manual_cleanup_required")):
             raise LifecycleContractError("finish_transaction_unfinished", "finish_transaction", "Resume the exact Finish transaction before Reactivate.")
 
 

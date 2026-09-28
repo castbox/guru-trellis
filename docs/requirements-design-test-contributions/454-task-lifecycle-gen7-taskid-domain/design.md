@@ -20,6 +20,9 @@ Status: isolated candidate against `.67/active`; not promoted.
   selection uses stable candidate IDs and fresh live resource checks, not
   ledger reconstruction or ownership inference. Normal and manual Finish both
   retain the exact minimal terminal result for a later ledger-loss recovery.
+  The portable Finish branch in that result is a liveness hint, not ownership:
+  an empty confirmed selection seals a zero-deletion result only when the
+  branch is absent; old results without this hint remain manual.
   Rename the public manual
   profile and exit to the Issue contract without a compatibility alias.
 - `D454-G7-05`: Evolve the official Fork task create/archive store in place:
@@ -29,7 +32,9 @@ Status: isolated candidate against `.67/active`; not promoted.
   and archive; keep branch and checkout resolution in their existing owners.
 - `D454-G7-06`: Reactivate reads the current Cleanup `selected-*` receipt as
   well as prior `manual-*` receipts, checking the same TaskId, generation,
-  Finish result and cleaned exit before admitting the new generation.
+  Finish result and cleaned exit before admitting the new generation. When
+  the terminal ledger was lost after normal Finish, the exact terminal result
+  branch and target identity also bind that normal Finish transaction.
 - `D454-G7-07`: Keep TaskBranchBinding and resource ownership on the live
   five-field contract without an epoch. Cleanup's missing-control selection
   checks active task artifacts and a retained containing branch before deleting
