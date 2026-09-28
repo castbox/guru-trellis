@@ -3,7 +3,7 @@
   "name": "454-task-lifecycle-state-model",
   "title": "#454 建立统一 task lifecycle state model",
   "description": "generation 6 交付 Phase D436 的 Reactivate、Completion、Closure、Finish、Cleanup canonical package major migration。C1-C7、D443 已由历史 Delivery 交付；E434 与 #434 production activation 仍属后续。保持 workflow、registry selector、manifest 和 installed/platform projection 不变。",
-  "status": "completed",
+  "status": "planning",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
   "package": null,
@@ -11,10 +11,8 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-20",
-  "completedAt": "2026-09-26",
-  "branch": "codex/454-d436-lifecycle-packages",
+  "completedAt": null,
   "base_branch": "main",
-  "worktree_path": "/Users/wumengye/Documents/GoProjects/guru-trellis-worktrees/454-d436-lifecycle-packages",
   "commit": null,
   "pr_url": null,
   "subtasks": [],
@@ -23,5 +21,11 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {},
-  "lifecycle_generation": 6
+  "lifecycle_generation": 7,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 454,
+    "disposition": "exact_source"
+  }
 }
