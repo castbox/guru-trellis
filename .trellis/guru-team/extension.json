@@ -958,11 +958,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-28T09:11:54Z",
+  "installed_at": "2026-09-28T10:25:01Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "bf4ff976f8a849a88dd1267a7e825cce6009a55f",
-    "commit": "bf4ff976f8a849a88dd1267a7e825cce6009a55f",
+    "ref": "a19291ca1703d30fbef80666b62c01f87daaac46",
+    "commit": "a19291ca1703d30fbef80666b62c01f87daaac46",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1691,7 +1691,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/README.md",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/README.md",
-        "sha256": "4d395b15abe06695196cd8f03b6e234a60127b268b92379458ef22c5bcd405ae",
+        "sha256": "547cc356354c7bd153013c6d5450790a4971628b50867f690a9248b4e215fbe4",
         "executable": false,
         "action": "unchanged"
       },
@@ -1754,7 +1754,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/tests/test_task_id_schemas.py",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/tests/test_task_id_schemas.py",
-        "sha256": "a410af066412d487d900922198cbde36749236119c368aedf74057ff98e48737",
+        "sha256": "6ea8d05895940fce9f1d87a9844ed868e972328ef11e45e4c2643748f0d0089b",
         "executable": false,
         "action": "unchanged"
       },

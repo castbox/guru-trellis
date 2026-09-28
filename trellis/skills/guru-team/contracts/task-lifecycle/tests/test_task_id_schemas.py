@@ -85,6 +85,15 @@ class TaskIdSchemaTest(unittest.TestCase):
         self.assertTrue(retained.is_valid("refs/heads/guru-task-lifecycle-id/" + "a" * 64))
         self.assertFalse(retained.is_valid("refs/heads/guru-task-lifecycle-id/abc"))
 
+    def test_cleanup_contract_documents_both_retained_control_ref_namespaces(self):
+        readme = (CONTRACTS / "README.md").read_text()
+        for namespace in (
+            "refs/heads/guru-task-lifecycle/*",
+            "refs/heads/guru-task-lifecycle-id/*",
+        ):
+            with self.subTest(namespace=namespace):
+                self.assertIn(f"`{namespace}`", readme)
+
 
 if __name__ == "__main__":
     unittest.main()

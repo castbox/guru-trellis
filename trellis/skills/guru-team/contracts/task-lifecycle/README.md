@@ -94,8 +94,9 @@ complete responsibility inventory identity.
 `task-resource-cleanup-resolution.schema.json` separates ordinary Guru-owned
 cleanup, terminal manual selection, and already-clean results. Ordinary
 Cleanup includes only `guru_owned + cleanup_pending` resources and excludes
-caller-owned, unknown-ownership, and `refs/heads/guru-task-lifecycle/*`
-retained control refs.
+caller-owned, unknown-ownership, and retained control refs under
+`refs/heads/guru-task-lifecycle/*` or
+`refs/heads/guru-task-lifecycle-id/*`.
 
 C5 remains substrate only. It does not activate D443/D436, create a planned
 Skill package, change the production workflow, or publish installed/platform
