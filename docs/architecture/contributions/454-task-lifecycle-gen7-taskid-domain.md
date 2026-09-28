@@ -4,7 +4,7 @@
 - State: candidate pending independent review; expected current is `current-main-0.6.17-guru.67/active`.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
-- Source candidate: `castbox/Trellis@09994d21a462813c4d1a280cce7fe1bf803af019`, tree `73810704ee0cc72f295e8bc89a512344523124c9`, successful main CI `36414078546`.
+- Verified source candidate: `castbox/Trellis@ebabae6cf686ff85a00b7ea92c957b0ee1ba5679`, tree `7d357543a097420c92ad872b02e99e2437eaeb82`, successful main CI `36451010671`. Fork PRs #18 and #19 are merged and Issue #8 is closed; Guru package-ready verification remains separate.
 
 The official Trellis task writer owns the complete TaskId domain
 `[A-Za-z0-9][A-Za-z0-9._-]*`. A TaskId is not a branch name, Git ref tail,
@@ -24,6 +24,25 @@ source relation and resource ledger remain independent owners. This change
 does not require a session to retain multiple bindings or to release an old
 binding before switching focus.
 
+TaskBranchBinding has exactly five fields: schema version, TaskId, generation,
+binding revision and branch name. No epoch token is stored in the binding,
+resource ownership or public DTO. Cleanup revalidates selected live targets;
+when local control records are missing, it refuses deletion of a branch still
+carrying an active task artifact unless another retained local branch contains
+that task commit and artifact. Reactivate accepts current `selected-*` Cleanup
+receipts and completed older `manual-*` receipts for the same sealed Finish.
+
+The full #454 review also closed two owner boundaries. The official task
+create/archive store carries immutable TaskId and structured source without
+`task.json.branch` as archive authority; the Guru dogfood task CLI projects
+the same fixed Fork semantics. The existing Cleanup owner exposes a call-local
+terminal resource candidate DTO when ownership is missing, then accepts
+selected candidate IDs under fresh live validation and an exact deletion
+confirmation. Its completed selection receipt is consumed by Reactivate for
+the same TaskId, generation and Finish result. Candidate discovery never
+reconstructs ownership or creates a durable locator. These are repairs to
+existing owners, not new task/session binding concepts or new persistence.
+
 ## Project Change Contract
 
 Requirement authority is the live #454 accepted TaskId pattern and this
@@ -41,11 +60,11 @@ Guru-side task writer.
 
 | Required concern | Applicability and result |
 | --- | --- |
-| authority-binding | Applicable: the fixed Fork writes TaskId; Guru only validates and derives receipt refs. |
+| authority-binding | Applicable: the fixed Fork writes TaskId/source; Guru only validates or supplies its reviewed source and derives receipt refs. Cleanup uses live Git facts only for explicit candidate selection, not ownership inference. |
 | constitution-binding | Applicable: the five current principle identities remain bound to the existing constitution. |
 | boundary-and-decision | Applicable: `target_native` extends the accepted TaskId domain without changing `ADR-016` ownership. |
-| owner-and-single-writer | Applicable: Fork is the sole task writer; Guru lifecycle is the sole receipt-ref projection writer; Architecture and RDT owners alone promote shared current. |
-| compatibility-and-exit | Applicable: Git-valid TaskIds retain old refs, while legal Git-ref-invalid IDs use the separate namespace; no dual read or compatibility authority remains. |
+| owner-and-single-writer | Applicable: Fork is the sole task writer; Guru lifecycle is the sole receipt-ref projection writer and existing Cleanup owner handles selected deletion; Architecture and RDT owners alone promote shared current. |
+| compatibility-and-exit | Applicable: Git-valid TaskIds retain old refs, while legal Git-ref-invalid IDs use the separate namespace. The new Cleanup public profile/exit directly follows live #454; no `manual` alias, branch-field read or dual authority remains. |
 | gap-and-deviation | Applicable: no new, worsened or prematurely closed GAP; `ARCH-GAP-009/011` keep their current owner and exit conditions. |
 | parallel-scope | Applicable: code, tests and this task-owned contribution may advance in the task branch; editing `.67` current or another task's contribution before promotion is forbidden. |
 | evidence-and-freshness | Applicable: exact Fork commit/CI and candidate-bound tests plus source/installed projection are reviewed against this generation's diff. |
@@ -59,10 +78,14 @@ from TaskId validation once the fixed Fork and Guru contracts agree; the
 receipt-ref projection remains a deterministic private implementation detail.
 
 Before: the old fixed Fork and Guru control-ref validation rejected legal
-TaskIds such as `task.lock`, `task.`, and `task..child`.
-After: the official writer, Guru runtime/schema, installed package and
-receipt-ref derivation agree on the exact domain. Existing Git-valid IDs keep
-their previous ref identity. No legacy dual writer or adapter is retained.
+TaskIds such as `task.lock`, `task.`, and `task..child`; the newer Fork still
+wrote retired branch metadata and its archive gate read that field. Cleanup
+also lacked the specified terminal candidate DTO/profile.
+After, pending independent committed-range review: the official writer,
+Guru runtime/schema and installed package agree on TaskId/source; archive
+does not depend on task branch metadata; Cleanup selection uses only current
+Git candidates and preserves ownership boundaries. Existing Git-valid IDs
+keep their previous ref identity. No legacy dual writer or adapter remains.
 The previous `.67` authority and #434 contribution are immutable inputs,
 not targets for this candidate.
 

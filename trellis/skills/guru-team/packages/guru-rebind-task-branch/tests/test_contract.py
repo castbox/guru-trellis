@@ -39,7 +39,7 @@ class RebindTaskBranchTests(unittest.TestCase):
         store = BranchBindingStore(self.repository)
         binding = store.establish(self.key, "task/demo")
         ResourceLedgerStore(self.repository).establish_current(
-            self.key, binding_epoch=binding.binding_epoch, binding_revision=0,
+            self.key, binding_revision=0,
             branch_name="task/demo", branch_ownership="caller_owned", worktree_ownership="not_applicable",
         )
         self.request = {

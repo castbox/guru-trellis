@@ -467,7 +467,7 @@
           "guru-bootstrap-repository-ssot-input-existing-repository-1.0",
           "guru-bootstrap-repository-ssot-input-new-repository-1.0",
           "guru-bootstrap-repository-ssot-input-repair-1.0",
-          "guru-cleanup-task-resources-input-2.0",
+          "guru-cleanup-task-resources-input-3.0",
           "guru-complete-task-closure-input-2.0",
           "guru-create-issue-input-1.0",
           "guru-create-task-input-1.0",
@@ -588,7 +588,7 @@
           "guru-cleanup-task-resources-output-cleaned-2.0",
           "guru-cleanup-task-resources-output-handoff-complete-2.0",
           "guru-cleanup-task-resources-output-handoff-remaining-2.0",
-          "guru-cleanup-task-resources-output-manual-selection-2.0",
+          "guru-cleanup-task-resources-output-manual-cleanup-required-3.0",
           "guru-cleanup-task-resources-output-remaining-resources-2.0",
           "guru-complete-task-closure-output-blocked-2.0",
           "guru-complete-task-closure-output-closed-2.0",
@@ -958,11 +958,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-28T11:34:23Z",
+  "installed_at": "2026-09-28T17:00:04Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "cd36b06b4c4bce1353f337f05681b3ea15f42c0d",
-    "commit": "cd36b06b4c4bce1353f337f05681b3ea15f42c0d",
+    "ref": "93a155fa71aaad9c1550827feed0485e70631419",
+    "commit": "93a155fa71aaad9c1550827feed0485e70631419",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1032,10 +1032,10 @@
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
       ".trellis/spec/workflow/workflow-contract.md": "0b720e6cc3e0f92c2cd750c1fa097c5df39ef11bcd297f7627697678eb65cfd1",
       ".trellis/spec/workflow/skill-package-contract.md": "0ff9faf4215aa6eb5c2ccafe7a8d09c86a1b7f66ce9a19a7e63ddb4a8052b11b",
-      ".trellis/spec/workflow/data-contracts.md": "6d9b9f58efff0e07d9729dc06e25cc30e5b4e301db0f9d2a81e1e9f6e58bae21",
+      ".trellis/spec/workflow/data-contracts.md": "eda52a872a94bd7a2453eba8fbbad1c802c901329b036fcd69ccc4cd21b2e086",
       ".trellis/spec/workflow/companion-scripts.md": "4d197a1db7300f551cfe665e2503089eaa521bdd52f9e970ecd419005a34ebe9",
       ".trellis/spec/workflow/quality-guidelines.md": "0e209a2d1eadf4c0349394ace66b8668b0e34cac3640f58d38c1926c0296a8b0",
-      ".trellis/guru-team/trellis-source.json": "298709cbea58cc191678f3b2cf401b76d99bc54b5b8c28938da18acdfad4366a"
+      ".trellis/guru-team/trellis-source.json": "8fe73c463563f595dfad2f5f36336900bdc45ca3d0786bec860c87f73a667b7b"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -1102,7 +1102,7 @@
       {
         "id": "guru-bind-task-session",
         "interface_sha256": "ca7401c97034f8c7b818dc69e497fd75244b30bb35491828e7a268fbd7f7ece1",
-        "tree_sha256": "d1e880ce1dd8fc5a8f5ad6fca08556257c7f59b18b9abf7998e943969303df50"
+        "tree_sha256": "ee417eafc5c0db71ddb6e6b79619fa8f5256246dd77766e56c2eb526d30651bc"
       },
       {
         "id": "guru-bootstrap-repository-ssot",
@@ -1121,13 +1121,13 @@
       },
       {
         "id": "guru-cleanup-task-resources",
-        "interface_sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
-        "tree_sha256": "c5185e17eb918f39d772698df8d16b91a5ff46154ba9a4092e83f8a3dacbf4ec"
+        "interface_sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
+        "tree_sha256": "05cc757b5fbc160f558a94118b34bc5b214541500fce30ef866c5a583b8f82bc"
       },
       {
         "id": "guru-complete-task-closure",
         "interface_sha256": "aa987470b291e702334715f341d4aae6fc128df2649c78ffc7869ce4cbd2d368",
-        "tree_sha256": "a9cc62b5b24e775d9f48e789f33a19342b7feb169e3099430b96cd8a3e2b7086"
+        "tree_sha256": "155e5d86142b2f498bb52e9f0cfe94307c3ea16ba6e994c40ea4d007cc8cc9e5"
       },
       {
         "id": "guru-create-issue",
@@ -1137,7 +1137,7 @@
       {
         "id": "guru-create-task",
         "interface_sha256": "56a95fdbe2f890ea79d8f10d9356f80622378f49b31d79996ee044a34dcea623",
-        "tree_sha256": "c7b7341622c930a6953f94408f8554a94c8b4681391c83f60f9469371cc548a1"
+        "tree_sha256": "b7f1329c67ee08cf3d418775767396af49a9c3b2788d2beebde3da46a92fffed"
       },
       {
         "id": "guru-create-task-commit",
@@ -1152,12 +1152,12 @@
       {
         "id": "guru-ensure-task-checkout",
         "interface_sha256": "dab4c45989b907f95f6c35bc8d2924d0d80f2367f43e572ea4820b25f3904434",
-        "tree_sha256": "7b4aaa31f3bf9db5ce7550d17f60eaa7e835108a8879fb029e41971844f8bb39"
+        "tree_sha256": "6da597e9054c67f28069747ee9a9fb2b8512c0a339681c7a8ee82f885de8ff78"
       },
       {
         "id": "guru-establish-task-branch-binding",
         "interface_sha256": "475f747fc3a08021b79605d75ead64ef612ce776d2e7e927886645c2dea260f3",
-        "tree_sha256": "81189d56f44f8d1bb372076f4c26cbecf51af0fd27751014a530c7377d84773d"
+        "tree_sha256": "f0e7014d2734837bdf8f45d5733de5be223ce7f665a829b5e357b90c761fb1eb"
       },
       {
         "id": "guru-establish-task-identity",
@@ -1171,8 +1171,8 @@
       },
       {
         "id": "guru-finish-task",
-        "interface_sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
-        "tree_sha256": "65204e6bdfbac3e5a058adf4d4f8be2bd053cc0c92d5d754301c3afde7ca6f78"
+        "interface_sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
+        "tree_sha256": "f21d32a0316190fc4876e7f42d83b72a28b794cd33fa6db03f4afebc49f0ae7e"
       },
       {
         "id": "guru-maintain-architecture-baseline",
@@ -1206,13 +1206,13 @@
       },
       {
         "id": "guru-reactivate-task",
-        "interface_sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
-        "tree_sha256": "ba71f140410494637f2c46b9eb58ed2d6497e8732f7c147b35dd0283265db520"
+        "interface_sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
+        "tree_sha256": "972eb1b143ae043a264f00a88efda13d97ee5af2d9108c3820603f404bd4158d"
       },
       {
         "id": "guru-rebind-task-branch",
         "interface_sha256": "b4192239ea7ed343d7b0b9f2267de2d6f11f4d63c946fb922843679dfc015c1c",
-        "tree_sha256": "79661632cc51f24ae52dd7768c4daa59bc8b4ad078305def3dbf753e4d2f42b1"
+        "tree_sha256": "3e22efdb562f4ce42b27da0db1c26a2c2d5ff481091e4289d0f5375448cb92a7"
       },
       {
         "id": "guru-reconcile-task-base",
@@ -1222,7 +1222,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "b959e5dd828471a58b49643f7436fbe750aff469f01b7f84c6ad2910ea75fe67",
-        "tree_sha256": "31d95ad198bee8e165ea711579b2993da123c5c71c6f25b4b7debf347f7de2e2"
+        "tree_sha256": "8922f2145dccae991807a25dc2420d382ca1687449d0f3f7587e1fe9678ad6ac"
       },
       {
         "id": "guru-review-change-request",
@@ -1237,7 +1237,7 @@
       {
         "id": "guru-review-task-completion",
         "interface_sha256": "95cd1490b57b536c7f1f969d94c33bf7d123ad8167d80233adf2a164d95998b6",
-        "tree_sha256": "13068fd152e8283b6adca03f693e88d9fa161efbc140b76e32d5471a056837ab"
+        "tree_sha256": "ce26f6ec30f7be9cd7e186bcfb69b41028aec8f3e30dd4c37f0c668b4143d0bc"
       },
       {
         "id": "guru-review-task-delivery",
@@ -1271,7 +1271,7 @@
       {
         "path": ".trellis/guru-team/skills/tests/test_finish_family_integration.py",
         "source": "trellis/skills/guru-team/tests/test_finish_family_integration.py",
-        "sha256": "24570c611961afdec5dc76cf2c7e94abdebe501c5335ebeff107371bca937a5a",
+        "sha256": "1017fc22501c7be3531b1b69540648e9dde467d6462d3d1af0c43ae98b699141",
         "executable": false,
         "action": "unchanged"
       },
@@ -1691,7 +1691,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/README.md",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/README.md",
-        "sha256": "547cc356354c7bd153013c6d5450790a4971628b50867f690a9248b4e215fbe4",
+        "sha256": "616e986dabb38013fe55725569e9c3b51bd5292baab48a7836cb443430900404",
         "executable": false,
         "action": "unchanged"
       },
@@ -1705,14 +1705,14 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/task-branch-binding.schema.json",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/task-branch-binding.schema.json",
-        "sha256": "f5866e40c6d98d967353e4f013744298c1362aa510679ae5d3efdc40d76f31f5",
+        "sha256": "09035d90674414f8166aae32b7beb6db68af6fe8e7bb5db5d363537ac0e0f358",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/task-branch-rebind-transaction.schema.json",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/task-branch-rebind-transaction.schema.json",
-        "sha256": "608e4c17907a601f606ed9dacdcd7feb8db5d613749a30704bfec25efa7cee5c",
+        "sha256": "d46397129c248a8066a79457a62a72e2e88707787d57d282ea7823cbbd2fa25e",
         "executable": false,
         "action": "unchanged"
       },
@@ -1726,7 +1726,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/task-lifecycle-dtos.schema.json",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/task-lifecycle-dtos.schema.json",
-        "sha256": "8bc4c4f9460f7f584b68d9c0b5d6b6db867f63e499a788128c0091b1559e4cf4",
+        "sha256": "0d210eaaa2bc195f20f96877e6f58d4e6a64a68ea10cc5983b6cad58d94fdcf5",
         "executable": false,
         "action": "unchanged"
       },
@@ -1740,7 +1740,7 @@
       {
         "path": ".trellis/guru-team/skills/contracts/task-lifecycle/task-resource-ledger.schema.json",
         "source": "trellis/skills/guru-team/contracts/task-lifecycle/task-resource-ledger.schema.json",
-        "sha256": "8b6df6972fcbabd0e48f3a4a6cda744ca3c58713e22c6f8482eb87de469fdb2f",
+        "sha256": "d6aa76bc233e59ec0236d95b53ed60f556315947d78784f3ba9fa9c3f2eaa875",
         "executable": false,
         "action": "unchanged"
       },
@@ -2650,7 +2650,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/runtime/invoke.py",
-        "sha256": "acdd0a60323d991e5362bfc32cde8c299b1c30addb4e9ab0e5cda04472ebec9e",
+        "sha256": "40686e8394eb780965bcb3a97950eb235cd615e673e45c1e3a8a72cb4534964f",
         "executable": false,
         "action": "unchanged"
       },
@@ -3805,7 +3805,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "542e7e5a9f03dea1d9f37b6e818f7869f3eb25b0ccaed35362d9352271c00f56",
+        "sha256": "48e3aaef834bbc22776ca48c8624e2fbaeaf7017af5619db8175c52dd85f875c",
         "executable": false,
         "action": "unchanged"
       },
@@ -3852,13 +3852,6 @@
         "action": "unchanged"
       },
       {
-        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "sha256": "51d999e19f4ff203b6c3f80165c24e95fc24e67fc93d8990ffb70a3f12c9205e",
@@ -3901,16 +3894,9 @@
         "action": "unchanged"
       },
       {
-        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-manual-input.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-input.json",
-        "sha256": "35e13bd539f40970184f31d6d5c7faa14800766b9e23b5e94e7003ad4c052b62",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
-        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0",
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "sha256": "b3a01cb0ca4d7f20f7fd7ddba69c2f6e050a0f2401c6a040c4402776c2d87a7d",
         "executable": false,
         "action": "unchanged"
       },
@@ -3925,6 +3911,20 @@
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-remaining-resources-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-remaining-resources-output.json",
         "sha256": "7a15ad0aa6c2c0da35d2159acd31c4f6fda6fadad9ce6471a4b52d59e60bcf6d",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-selection-input.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-selection-input.json",
+        "sha256": "721ebaada139c4bba07dd1cdd09fa1bcf99b1a9e0757d6034ace27f57026b489",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "sha256": "24d27788285fcb900f86796000b85c0721218a6ecc602242febea4f9dc9329d0",
         "executable": false,
         "action": "unchanged"
       },
@@ -3945,14 +3945,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/interface.json",
-        "sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
+        "sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/runtime/invoke.py",
-        "sha256": "93ef331ec9db83f4b282cbe04a03724c293d2e83b4ae69ec030f46a5e5f30f2e",
+        "sha256": "683770c15732dd5e4c15554fa87065ff926bcd7348ff9ea2baf338f78ab1545a",
         "executable": false,
         "action": "unchanged"
       },
@@ -3987,21 +3987,21 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
-        "sha256": "2d5ad22440240b62f1c764a3f674cbe5a29d583a35c49d8518364e43ed8cfaa3",
+        "sha256": "55e234f7a04fdafc3621a6fb73d0c626768deaed6ff66181aa56058dbd0c6bfd",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458",
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "sha256": "6c681b907d672c80a360a548443b94765e052a7ce896c7ee388efb5fab868e99",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
-        "sha256": "29e0e10bd20f2fc9ffb0e626b900beaacf0aa4a0843ea3e44f9d26b741121987",
+        "sha256": "bd53e47243834456f6e5f31bfbceb679737e16b3cbe20a4be26a44cd42213066",
         "executable": false,
         "action": "unchanged"
       },
@@ -4015,7 +4015,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
-        "sha256": "e6ea7de536f1144f8f1a0c21fbe2cb3ee93d26b0185eba5191041fa2fc8ffddd",
+        "sha256": "765a531f6ca7a196efddc2ee0c5a262b679340e2c7883b711dbb223945bcdc65",
         "executable": false,
         "action": "unchanged"
       },
@@ -4085,7 +4085,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-complete-task-closure/examples/public-input.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-input.json",
-        "sha256": "ac4402f1cb2ee59b278e525add4239e12f71d3fa62fd214783843182a6d5c4b1",
+        "sha256": "89039c8f89d2c0a4cc69c3b2d7223d93cf11c9f6d603829c03964396cae08937",
         "executable": false,
         "action": "unchanged"
       },
@@ -4113,7 +4113,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-complete-task-closure/examples/public-self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-self-authoring.json",
-        "sha256": "c083efa77bc92d2bdc229d8ac2e41bae37bfecab2aef7b9f123c30c99d9b4188",
+        "sha256": "d005b28faeac2e3f811ec0b08c816a36d1207bd60a0d7e7b32bbca5af4d26b3d",
         "executable": false,
         "action": "unchanged"
       },
@@ -4162,7 +4162,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-complete-task-closure/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/schemas/public-input.schema.json",
-        "sha256": "f1711584fce3cb2ef3c23f0e118be55e89ed849d9aee80196be8ec191963e8c1",
+        "sha256": "38a4d8497bf31796f21eaa2c4201fe43485e6b7aa53f80add3106a4cad167614",
         "executable": false,
         "action": "unchanged"
       },
@@ -4491,7 +4491,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task/runtime/invoke.py",
-        "sha256": "34ad3231c3335bb5ee3465dd4e5e9a2bd8c35d5c0856d2967529260119653a4f",
+        "sha256": "99029dc3c3cfe4e50e7721b9bef9066ad4bb807831087c192b2119c072f842a3",
         "executable": false,
         "action": "unchanged"
       },
@@ -5282,7 +5282,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-ensure-task-checkout/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-ensure-task-checkout/runtime/invoke.py",
-        "sha256": "87b4d238dae12498bde27b6e6defe0fc13fd7bc1024c3b9040a1b69b34adb6ac",
+        "sha256": "59741eabdd5f7b8d8544af02f7da25b4d0a1ef76312f388d2e548c2754e0f40d",
         "executable": false,
         "action": "unchanged"
       },
@@ -5443,7 +5443,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/examples/public-recover-input.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/examples/public-recover-input.json",
-        "sha256": "bddf1af636c68ef87faefe6daf48ef8ce85b4d9b162b0c337d8287fd855803d1",
+        "sha256": "70088ab170e05fabe1691c6ebf14bb5910ffe0f46e745311d27e43fac210e1d3",
         "executable": false,
         "action": "unchanged"
       },
@@ -5485,7 +5485,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
-        "sha256": "726d60505f72fce13281020ed7189f544e1b83bcce01241076efd0e132a99385",
+        "sha256": "5f5bfcf871cdb97b2e9e9e0a428b8f0def5f92831d2d245e6278ceabdff32b86",
         "executable": false,
         "action": "unchanged"
       },
@@ -6164,7 +6164,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
-        "sha256": "8289974b62fffc1323954194a945a38fb50264db08cef7bcf0de2ec8d195aba8",
+        "sha256": "b57d1b3942e2df7017fb2fce0886138e7348127b850a604981dca92704b59241",
         "executable": false,
         "action": "unchanged"
       },
@@ -6241,14 +6241,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/interface.json",
-        "sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
+        "sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/runtime/invoke.py",
-        "sha256": "e52de0191badc47bdda350a265a55fca6e7db9053cb65372fc2ca1dee08ee713",
+        "sha256": "33d404f10b9715f67df74ab1c52fb89cd1387d2ec7b13a36e70f39e6b1ce956f",
         "executable": false,
         "action": "unchanged"
       },
@@ -8502,7 +8502,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
-        "sha256": "ee08640ca9fd13dbe2b81d3cb8640808039b1e711c3221c5a2574a2f039dab70",
+        "sha256": "00ecb81bdb4397f0249685e5c255ff076cdf3a82bf42f97c7bbc9d4248ba1636",
         "executable": false,
         "action": "unchanged"
       },
@@ -8558,7 +8558,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/examples/public-planning-output.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/examples/public-planning-output.json",
-        "sha256": "e05822d6e569357ab14c0b76dd63a4cf5f5e62f46d5ff44e7bbd4812a2175360",
+        "sha256": "84866e633a5228995f46260fcd4e09e554b88711ee9605a67e0333eb7e0020ee",
         "executable": false,
         "action": "unchanged"
       },
@@ -8593,14 +8593,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/interface.json",
-        "sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
+        "sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
-        "sha256": "9a8449ab4d370a4c66cdeeed9b886c06734a36d8c3dbb66817a11a06180513c3",
+        "sha256": "05f445c7ab7226584a27295712c7d565541f1f1ece640a859ece91bf74c0041d",
         "executable": false,
         "action": "unchanged"
       },
@@ -8621,14 +8621,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-output.schema.json",
-        "sha256": "d68786ffdd8848042ac19fea2eb47ed8e3dec5c103d125fea95dfede156a2872",
+        "sha256": "16d47b181d3253edec99d59f7c10973fc2b1ba198f292ad058b2800b8c7c1678",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
-        "sha256": "0553119408ae4fe51accb21058bd72c7ff03291517c5d724a9db0b695d4ce0c7",
+        "sha256": "ed0c8ed58c72c381a55ff95469772000a9dd05c1790e80a99a112ea9dfe9099e",
         "executable": false,
         "action": "unchanged"
       },
@@ -8656,7 +8656,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/schemas/reactivation-transaction.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/reactivation-transaction.schema.json",
-        "sha256": "bacaba02ee9126d45fade799187f957f8aba103489f6527ab971334e72ddcdad",
+        "sha256": "5273e41951fb803c79244e32fa5eeded257faaef8b935389f225b117262e03aa",
         "executable": false,
         "action": "unchanged"
       },
@@ -8754,7 +8754,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-rebind-task-branch/examples/public-input.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/examples/public-input.json",
-        "sha256": "45679b380af1e4a06b8768f6ce521adef5f24803ee4c2d021c846ea2f646eb21",
+        "sha256": "69b8b2efed898e125b84752588d8dd0a134347c158797332c16dcbfb50061448",
         "executable": false,
         "action": "unchanged"
       },
@@ -8789,7 +8789,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-rebind-task-branch/examples/public-recover-input.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/examples/public-recover-input.json",
-        "sha256": "60872ed03a1698392812d753d611aa495b496edd9d3e24964e4411955974e358",
+        "sha256": "347e3a8e00cee7abe7802f327bed3cdfdb7d3b8dcc4ad4282e971e154d7b1bbe",
         "executable": false,
         "action": "unchanged"
       },
@@ -8810,7 +8810,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-rebind-task-branch/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/runtime/invoke.py",
-        "sha256": "a838954cadb8b8fa24363f6e382559dd8424dcff6d280cbff6278c5041c08aa9",
+        "sha256": "a285f8a27921914b6e19085456b538666ff3d365f82069c72ebc643006808e59",
         "executable": false,
         "action": "unchanged"
       },
@@ -8824,7 +8824,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
-        "sha256": "b54e9e35fe9b0c755cf2fb5a243b78b1109a17758c13e1f7dbba979cdb2662c1",
+        "sha256": "9c80b76aa8421baf313d391331f7500890f646d8997a6b93573d4ef64b279326",
         "executable": false,
         "action": "unchanged"
       },
@@ -9524,7 +9524,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "e16bfe1accf486a45e582dec9b8f7b6e34ed0dd5a864a579ef3bd9c0fd453923",
+        "sha256": "b8a29e2b1d84835026e75740fc04d1037ac1c2dbdeca61949ba40ee88c433ddf",
         "executable": false,
         "action": "unchanged"
       },
@@ -9825,7 +9825,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "2330df44ec43cfe14a5d66710831d5621a53c2785d6cb81ff36b2123187162e5",
+        "sha256": "7fe4fd3f58ac0de0cb5bf2907e4d1a7a0e738137f9602d804f4ed574490e59ea",
         "executable": false,
         "action": "unchanged"
       },
@@ -10812,7 +10812,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-completion/examples/closure-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/examples/closure-authoring.json",
-        "sha256": "e2ead7edc38e754f23d032a523befb8b5466030629643218799e02aa22c84ce9",
+        "sha256": "07779d0454c755116b73b1ad88325132844fd1de4e88bf522b7491c153216c63",
         "executable": false,
         "action": "unchanged"
       },
@@ -12394,14 +12394,14 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
-        "sha256": "04c6128819eb8e4cd78fa176991c8092ae24efe3936e93ad61e4ebad1d5da857",
+        "sha256": "a51768d17ffdd7fbcba67e71d6dcde0e075835d8da1078e921fc995b2734bfec",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/branch_store.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/branch_store.py",
-        "sha256": "f3de81642ca4be0a048b86f69abdb38528d0beed385a5b29971b44b5b2d9eef1",
+        "sha256": "64f136faf71910d6404927a077d839e79d8f19bf20abc76c2b82c3e38813bc04",
         "executable": false,
         "action": "unchanged"
       },
@@ -12429,7 +12429,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/composition.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
-        "sha256": "a3db47c2ab1fa98000c647ae16cd5fe757e6b6bcfa036bfd9aaa86d8cd26542c",
+        "sha256": "31dfebe3787df22a03fe841a911537596bc37c31f0a121ffef7523d0e9ba8ef1",
         "executable": false,
         "action": "unchanged"
       },
@@ -12464,14 +12464,14 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/rebind.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/rebind.py",
-        "sha256": "08d9625a0ed18c14f69b668ff1c7d56fe51e12a79af8a6f50704cdda5d79b923",
+        "sha256": "719e66f11bcda7f6e2aa9d152884ed6a2e8ad752796326ef26eaee7aacb1fb16",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/resource_ledger.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py",
-        "sha256": "c0f5f19c3a9fc0801a630ccf0cf62677cbc63e16d22174d4878248198ec86c99",
+        "sha256": "4b35c2c0d83a426520f09dfe0f64938c196775ed3338110962d0457b07e431fd",
         "executable": false,
         "action": "unchanged"
       },
@@ -17798,7 +17798,7 @@
       {
         "path": ".agents/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "542e7e5a9f03dea1d9f37b6e818f7869f3eb25b0ccaed35362d9352271c00f56",
+        "sha256": "48e3aaef834bbc22776ca48c8624e2fbaeaf7017af5619db8175c52dd85f875c",
         "executable": false,
         "action": "unchanged"
       },
@@ -17838,13 +17838,6 @@
         "action": "unchanged"
       },
       {
-        "path": ".agents/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
         "path": ".agents/skills/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "sha256": "51d999e19f4ff203b6c3f80165c24e95fc24e67fc93d8990ffb70a3f12c9205e",
@@ -17873,9 +17866,9 @@
         "action": "unchanged"
       },
       {
-        "path": ".agents/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0",
+        "path": ".agents/skills/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "sha256": "b3a01cb0ca4d7f20f7fd7ddba69c2f6e050a0f2401c6a040c4402776c2d87a7d",
         "executable": false,
         "action": "unchanged"
       },
@@ -17894,6 +17887,13 @@
         "action": "unchanged"
       },
       {
+        "path": ".agents/skills/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "sha256": "24d27788285fcb900f86796000b85c0721218a6ecc602242febea4f9dc9329d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
         "path": ".agents/skills/guru-cleanup-task-resources/examples/self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/self-authoring.json",
         "sha256": "9b71c704e19c9c615328220c681d541df3e152ec839522d65c1e9b5f82c4bb71",
@@ -17903,7 +17903,7 @@
       {
         "path": ".agents/skills/guru-cleanup-task-resources/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/interface.json",
-        "sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
+        "sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
         "executable": false,
         "action": "unchanged"
       },
@@ -17938,21 +17938,21 @@
       {
         "path": ".agents/skills/guru-cleanup-task-resources/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
-        "sha256": "2d5ad22440240b62f1c764a3f674cbe5a29d583a35c49d8518364e43ed8cfaa3",
+        "sha256": "55e234f7a04fdafc3621a6fb73d0c626768deaed6ff66181aa56058dbd0c6bfd",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".agents/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458",
+        "path": ".agents/skills/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "sha256": "6c681b907d672c80a360a548443b94765e052a7ce896c7ee388efb5fab868e99",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-cleanup-task-resources/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
-        "sha256": "29e0e10bd20f2fc9ffb0e626b900beaacf0aa4a0843ea3e44f9d26b741121987",
+        "sha256": "bd53e47243834456f6e5f31bfbceb679737e16b3cbe20a4be26a44cd42213066",
         "executable": false,
         "action": "unchanged"
       },
@@ -17966,7 +17966,7 @@
       {
         "path": ".agents/skills/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
-        "sha256": "e6ea7de536f1144f8f1a0c21fbe2cb3ee93d26b0185eba5191041fa2fc8ffddd",
+        "sha256": "765a531f6ca7a196efddc2ee0c5a262b679340e2c7883b711dbb223945bcdc65",
         "executable": false,
         "action": "unchanged"
       },
@@ -17980,7 +17980,7 @@
       {
         "path": ".codex/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "542e7e5a9f03dea1d9f37b6e818f7869f3eb25b0ccaed35362d9352271c00f56",
+        "sha256": "48e3aaef834bbc22776ca48c8624e2fbaeaf7017af5619db8175c52dd85f875c",
         "executable": false,
         "action": "unchanged"
       },
@@ -18020,13 +18020,6 @@
         "action": "unchanged"
       },
       {
-        "path": ".codex/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
         "path": ".codex/skills/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "sha256": "51d999e19f4ff203b6c3f80165c24e95fc24e67fc93d8990ffb70a3f12c9205e",
@@ -18055,9 +18048,9 @@
         "action": "unchanged"
       },
       {
-        "path": ".codex/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0",
+        "path": ".codex/skills/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "sha256": "b3a01cb0ca4d7f20f7fd7ddba69c2f6e050a0f2401c6a040c4402776c2d87a7d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18076,6 +18069,13 @@
         "action": "unchanged"
       },
       {
+        "path": ".codex/skills/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "sha256": "24d27788285fcb900f86796000b85c0721218a6ecc602242febea4f9dc9329d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
         "path": ".codex/skills/guru-cleanup-task-resources/examples/self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/self-authoring.json",
         "sha256": "9b71c704e19c9c615328220c681d541df3e152ec839522d65c1e9b5f82c4bb71",
@@ -18085,7 +18085,7 @@
       {
         "path": ".codex/skills/guru-cleanup-task-resources/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/interface.json",
-        "sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
+        "sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
         "executable": false,
         "action": "unchanged"
       },
@@ -18120,21 +18120,21 @@
       {
         "path": ".codex/skills/guru-cleanup-task-resources/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
-        "sha256": "2d5ad22440240b62f1c764a3f674cbe5a29d583a35c49d8518364e43ed8cfaa3",
+        "sha256": "55e234f7a04fdafc3621a6fb73d0c626768deaed6ff66181aa56058dbd0c6bfd",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".codex/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458",
+        "path": ".codex/skills/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "sha256": "6c681b907d672c80a360a548443b94765e052a7ce896c7ee388efb5fab868e99",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-cleanup-task-resources/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
-        "sha256": "29e0e10bd20f2fc9ffb0e626b900beaacf0aa4a0843ea3e44f9d26b741121987",
+        "sha256": "bd53e47243834456f6e5f31bfbceb679737e16b3cbe20a4be26a44cd42213066",
         "executable": false,
         "action": "unchanged"
       },
@@ -18148,7 +18148,7 @@
       {
         "path": ".codex/skills/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
-        "sha256": "e6ea7de536f1144f8f1a0c21fbe2cb3ee93d26b0185eba5191041fa2fc8ffddd",
+        "sha256": "765a531f6ca7a196efddc2ee0c5a262b679340e2c7883b711dbb223945bcdc65",
         "executable": false,
         "action": "unchanged"
       },
@@ -18162,7 +18162,7 @@
       {
         "path": ".claude/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "542e7e5a9f03dea1d9f37b6e818f7869f3eb25b0ccaed35362d9352271c00f56",
+        "sha256": "48e3aaef834bbc22776ca48c8624e2fbaeaf7017af5619db8175c52dd85f875c",
         "executable": false,
         "action": "unchanged"
       },
@@ -18202,13 +18202,6 @@
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
         "path": ".claude/skills/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "sha256": "51d999e19f4ff203b6c3f80165c24e95fc24e67fc93d8990ffb70a3f12c9205e",
@@ -18237,9 +18230,9 @@
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0",
+        "path": ".claude/skills/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "sha256": "b3a01cb0ca4d7f20f7fd7ddba69c2f6e050a0f2401c6a040c4402776c2d87a7d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18258,6 +18251,13 @@
         "action": "unchanged"
       },
       {
+        "path": ".claude/skills/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "sha256": "24d27788285fcb900f86796000b85c0721218a6ecc602242febea4f9dc9329d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
         "path": ".claude/skills/guru-cleanup-task-resources/examples/self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/self-authoring.json",
         "sha256": "9b71c704e19c9c615328220c681d541df3e152ec839522d65c1e9b5f82c4bb71",
@@ -18267,7 +18267,7 @@
       {
         "path": ".claude/skills/guru-cleanup-task-resources/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/interface.json",
-        "sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
+        "sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
         "executable": false,
         "action": "unchanged"
       },
@@ -18302,21 +18302,21 @@
       {
         "path": ".claude/skills/guru-cleanup-task-resources/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
-        "sha256": "2d5ad22440240b62f1c764a3f674cbe5a29d583a35c49d8518364e43ed8cfaa3",
+        "sha256": "55e234f7a04fdafc3621a6fb73d0c626768deaed6ff66181aa56058dbd0c6bfd",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".claude/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458",
+        "path": ".claude/skills/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "sha256": "6c681b907d672c80a360a548443b94765e052a7ce896c7ee388efb5fab868e99",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-cleanup-task-resources/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
-        "sha256": "29e0e10bd20f2fc9ffb0e626b900beaacf0aa4a0843ea3e44f9d26b741121987",
+        "sha256": "bd53e47243834456f6e5f31bfbceb679737e16b3cbe20a4be26a44cd42213066",
         "executable": false,
         "action": "unchanged"
       },
@@ -18330,7 +18330,7 @@
       {
         "path": ".claude/skills/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
-        "sha256": "e6ea7de536f1144f8f1a0c21fbe2cb3ee93d26b0185eba5191041fa2fc8ffddd",
+        "sha256": "765a531f6ca7a196efddc2ee0c5a262b679340e2c7883b711dbb223945bcdc65",
         "executable": false,
         "action": "unchanged"
       },
@@ -18344,7 +18344,7 @@
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md",
-        "sha256": "542e7e5a9f03dea1d9f37b6e818f7869f3eb25b0ccaed35362d9352271c00f56",
+        "sha256": "48e3aaef834bbc22776ca48c8624e2fbaeaf7017af5619db8175c52dd85f875c",
         "executable": false,
         "action": "unchanged"
       },
@@ -18384,13 +18384,6 @@
         "action": "unchanged"
       },
       {
-        "path": ".cursor/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
-        "sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a",
-        "executable": false,
-        "action": "unchanged"
-      },
-      {
         "path": ".cursor/skills/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-blocked-output.json",
         "sha256": "51d999e19f4ff203b6c3f80165c24e95fc24e67fc93d8990ffb70a3f12c9205e",
@@ -18419,9 +18412,9 @@
         "action": "unchanged"
       },
       {
-        "path": ".cursor/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
-        "sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0",
+        "path": ".cursor/skills/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/public-manual-cleanup-required-output.json",
+        "sha256": "b3a01cb0ca4d7f20f7fd7ddba69c2f6e050a0f2401c6a040c4402776c2d87a7d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18440,6 +18433,13 @@
         "action": "unchanged"
       },
       {
+        "path": ".cursor/skills/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/selection-authoring.json",
+        "sha256": "24d27788285fcb900f86796000b85c0721218a6ecc602242febea4f9dc9329d0",
+        "executable": false,
+        "action": "unchanged"
+      },
+      {
         "path": ".cursor/skills/guru-cleanup-task-resources/examples/self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/examples/self-authoring.json",
         "sha256": "9b71c704e19c9c615328220c681d541df3e152ec839522d65c1e9b5f82c4bb71",
@@ -18449,7 +18449,7 @@
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/interface.json",
-        "sha256": "049aac57874f61532ac0e928c561449e1f0494c3346c9a289ac3f5023351d300",
+        "sha256": "35530db471b7751ee2d17b275c9f902aeaf5579c875ee3d90c8e1680d129df98",
         "executable": false,
         "action": "unchanged"
       },
@@ -18484,21 +18484,21 @@
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-input.schema.json",
-        "sha256": "2d5ad22440240b62f1c764a3f674cbe5a29d583a35c49d8518364e43ed8cfaa3",
+        "sha256": "55e234f7a04fdafc3621a6fb73d0c626768deaed6ff66181aa56058dbd0c6bfd",
         "executable": false,
         "action": "unchanged"
       },
       {
-        "path": ".cursor/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
-        "sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458",
+        "path": ".cursor/skills/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-manual-cleanup-required-output.schema.json",
+        "sha256": "6c681b907d672c80a360a548443b94765e052a7ce896c7ee388efb5fab868e99",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/public-output.schema.json",
-        "sha256": "29e0e10bd20f2fc9ffb0e626b900beaacf0aa4a0843ea3e44f9d26b741121987",
+        "sha256": "bd53e47243834456f6e5f31bfbceb679737e16b3cbe20a4be26a44cd42213066",
         "executable": false,
         "action": "unchanged"
       },
@@ -18512,7 +18512,7 @@
       {
         "path": ".cursor/skills/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/schemas/semantic-result.schema.json",
-        "sha256": "e6ea7de536f1144f8f1a0c21fbe2cb3ee93d26b0185eba5191041fa2fc8ffddd",
+        "sha256": "765a531f6ca7a196efddc2ee0c5a262b679340e2c7883b711dbb223945bcdc65",
         "executable": false,
         "action": "unchanged"
       },
@@ -18589,7 +18589,7 @@
       {
         "path": ".agents/skills/guru-complete-task-closure/examples/public-self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-self-authoring.json",
-        "sha256": "c083efa77bc92d2bdc229d8ac2e41bae37bfecab2aef7b9f123c30c99d9b4188",
+        "sha256": "d005b28faeac2e3f811ec0b08c816a36d1207bd60a0d7e7b32bbca5af4d26b3d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18624,7 +18624,7 @@
       {
         "path": ".agents/skills/guru-complete-task-closure/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/schemas/public-input.schema.json",
-        "sha256": "f1711584fce3cb2ef3c23f0e118be55e89ed849d9aee80196be8ec191963e8c1",
+        "sha256": "38a4d8497bf31796f21eaa2c4201fe43485e6b7aa53f80add3106a4cad167614",
         "executable": false,
         "action": "unchanged"
       },
@@ -18736,7 +18736,7 @@
       {
         "path": ".codex/skills/guru-complete-task-closure/examples/public-self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-self-authoring.json",
-        "sha256": "c083efa77bc92d2bdc229d8ac2e41bae37bfecab2aef7b9f123c30c99d9b4188",
+        "sha256": "d005b28faeac2e3f811ec0b08c816a36d1207bd60a0d7e7b32bbca5af4d26b3d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18771,7 +18771,7 @@
       {
         "path": ".codex/skills/guru-complete-task-closure/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/schemas/public-input.schema.json",
-        "sha256": "f1711584fce3cb2ef3c23f0e118be55e89ed849d9aee80196be8ec191963e8c1",
+        "sha256": "38a4d8497bf31796f21eaa2c4201fe43485e6b7aa53f80add3106a4cad167614",
         "executable": false,
         "action": "unchanged"
       },
@@ -18883,7 +18883,7 @@
       {
         "path": ".claude/skills/guru-complete-task-closure/examples/public-self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-self-authoring.json",
-        "sha256": "c083efa77bc92d2bdc229d8ac2e41bae37bfecab2aef7b9f123c30c99d9b4188",
+        "sha256": "d005b28faeac2e3f811ec0b08c816a36d1207bd60a0d7e7b32bbca5af4d26b3d",
         "executable": false,
         "action": "unchanged"
       },
@@ -18918,7 +18918,7 @@
       {
         "path": ".claude/skills/guru-complete-task-closure/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/schemas/public-input.schema.json",
-        "sha256": "f1711584fce3cb2ef3c23f0e118be55e89ed849d9aee80196be8ec191963e8c1",
+        "sha256": "38a4d8497bf31796f21eaa2c4201fe43485e6b7aa53f80add3106a4cad167614",
         "executable": false,
         "action": "unchanged"
       },
@@ -19030,7 +19030,7 @@
       {
         "path": ".cursor/skills/guru-complete-task-closure/examples/public-self-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/examples/public-self-authoring.json",
-        "sha256": "c083efa77bc92d2bdc229d8ac2e41bae37bfecab2aef7b9f123c30c99d9b4188",
+        "sha256": "d005b28faeac2e3f811ec0b08c816a36d1207bd60a0d7e7b32bbca5af4d26b3d",
         "executable": false,
         "action": "unchanged"
       },
@@ -19065,7 +19065,7 @@
       {
         "path": ".cursor/skills/guru-complete-task-closure/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-complete-task-closure/schemas/public-input.schema.json",
-        "sha256": "f1711584fce3cb2ef3c23f0e118be55e89ed849d9aee80196be8ec191963e8c1",
+        "sha256": "38a4d8497bf31796f21eaa2c4201fe43485e6b7aa53f80add3106a4cad167614",
         "executable": false,
         "action": "unchanged"
       },
@@ -22411,7 +22411,7 @@
       {
         "path": ".agents/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
-        "sha256": "726d60505f72fce13281020ed7189f544e1b83bcce01241076efd0e132a99385",
+        "sha256": "5f5bfcf871cdb97b2e9e9e0a428b8f0def5f92831d2d245e6278ceabdff32b86",
         "executable": false,
         "action": "unchanged"
       },
@@ -22558,7 +22558,7 @@
       {
         "path": ".codex/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
-        "sha256": "726d60505f72fce13281020ed7189f544e1b83bcce01241076efd0e132a99385",
+        "sha256": "5f5bfcf871cdb97b2e9e9e0a428b8f0def5f92831d2d245e6278ceabdff32b86",
         "executable": false,
         "action": "unchanged"
       },
@@ -22705,7 +22705,7 @@
       {
         "path": ".claude/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
-        "sha256": "726d60505f72fce13281020ed7189f544e1b83bcce01241076efd0e132a99385",
+        "sha256": "5f5bfcf871cdb97b2e9e9e0a428b8f0def5f92831d2d245e6278ceabdff32b86",
         "executable": false,
         "action": "unchanged"
       },
@@ -22852,7 +22852,7 @@
       {
         "path": ".cursor/skills/guru-establish-task-branch-binding/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/schemas/public-input.schema.json",
-        "sha256": "726d60505f72fce13281020ed7189f544e1b83bcce01241076efd0e132a99385",
+        "sha256": "5f5bfcf871cdb97b2e9e9e0a428b8f0def5f92831d2d245e6278ceabdff32b86",
         "executable": false,
         "action": "unchanged"
       },
@@ -24721,7 +24721,7 @@
       {
         "path": ".agents/skills/guru-finish-task/examples/manual-cleanup-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
-        "sha256": "8289974b62fffc1323954194a945a38fb50264db08cef7bcf0de2ec8d195aba8",
+        "sha256": "b57d1b3942e2df7017fb2fce0886138e7348127b850a604981dca92704b59241",
         "executable": false,
         "action": "unchanged"
       },
@@ -24777,7 +24777,7 @@
       {
         "path": ".agents/skills/guru-finish-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/interface.json",
-        "sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
+        "sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
         "executable": false,
         "action": "unchanged"
       },
@@ -24896,7 +24896,7 @@
       {
         "path": ".codex/skills/guru-finish-task/examples/manual-cleanup-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
-        "sha256": "8289974b62fffc1323954194a945a38fb50264db08cef7bcf0de2ec8d195aba8",
+        "sha256": "b57d1b3942e2df7017fb2fce0886138e7348127b850a604981dca92704b59241",
         "executable": false,
         "action": "unchanged"
       },
@@ -24952,7 +24952,7 @@
       {
         "path": ".codex/skills/guru-finish-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/interface.json",
-        "sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
+        "sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
         "executable": false,
         "action": "unchanged"
       },
@@ -25071,7 +25071,7 @@
       {
         "path": ".claude/skills/guru-finish-task/examples/manual-cleanup-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
-        "sha256": "8289974b62fffc1323954194a945a38fb50264db08cef7bcf0de2ec8d195aba8",
+        "sha256": "b57d1b3942e2df7017fb2fce0886138e7348127b850a604981dca92704b59241",
         "executable": false,
         "action": "unchanged"
       },
@@ -25127,7 +25127,7 @@
       {
         "path": ".claude/skills/guru-finish-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/interface.json",
-        "sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
+        "sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
         "executable": false,
         "action": "unchanged"
       },
@@ -25246,7 +25246,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/examples/manual-cleanup-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/examples/manual-cleanup-authoring.json",
-        "sha256": "8289974b62fffc1323954194a945a38fb50264db08cef7bcf0de2ec8d195aba8",
+        "sha256": "b57d1b3942e2df7017fb2fce0886138e7348127b850a604981dca92704b59241",
         "executable": false,
         "action": "unchanged"
       },
@@ -25302,7 +25302,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/interface.json",
-        "sha256": "10d1f8c289071cafe8a162a904d10f65fabc117e93829088cbb611c6f6884935",
+        "sha256": "5199b3385df84951bb7203e6739635ac21d815cb09a03844196fa98838c5781c",
         "executable": false,
         "action": "unchanged"
       },
@@ -32218,7 +32218,7 @@
       {
         "path": ".agents/skills/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
-        "sha256": "ee08640ca9fd13dbe2b81d3cb8640808039b1e711c3221c5a2574a2f039dab70",
+        "sha256": "00ecb81bdb4397f0249685e5c255ff076cdf3a82bf42f97c7bbc9d4248ba1636",
         "executable": false,
         "action": "unchanged"
       },
@@ -32260,7 +32260,7 @@
       {
         "path": ".agents/skills/guru-reactivate-task/examples/public-planning-output.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/examples/public-planning-output.json",
-        "sha256": "e05822d6e569357ab14c0b76dd63a4cf5f5e62f46d5ff44e7bbd4812a2175360",
+        "sha256": "84866e633a5228995f46260fcd4e09e554b88711ee9605a67e0333eb7e0020ee",
         "executable": false,
         "action": "unchanged"
       },
@@ -32288,7 +32288,7 @@
       {
         "path": ".agents/skills/guru-reactivate-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/interface.json",
-        "sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
+        "sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
         "executable": false,
         "action": "unchanged"
       },
@@ -32309,14 +32309,14 @@
       {
         "path": ".agents/skills/guru-reactivate-task/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-output.schema.json",
-        "sha256": "d68786ffdd8848042ac19fea2eb47ed8e3dec5c103d125fea95dfede156a2872",
+        "sha256": "16d47b181d3253edec99d59f7c10973fc2b1ba198f292ad058b2800b8c7c1678",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".agents/skills/guru-reactivate-task/schemas/public-planning-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
-        "sha256": "0553119408ae4fe51accb21058bd72c7ff03291517c5d724a9db0b695d4ce0c7",
+        "sha256": "ed0c8ed58c72c381a55ff95469772000a9dd05c1790e80a99a112ea9dfe9099e",
         "executable": false,
         "action": "unchanged"
       },
@@ -32386,7 +32386,7 @@
       {
         "path": ".codex/skills/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
-        "sha256": "ee08640ca9fd13dbe2b81d3cb8640808039b1e711c3221c5a2574a2f039dab70",
+        "sha256": "00ecb81bdb4397f0249685e5c255ff076cdf3a82bf42f97c7bbc9d4248ba1636",
         "executable": false,
         "action": "unchanged"
       },
@@ -32428,7 +32428,7 @@
       {
         "path": ".codex/skills/guru-reactivate-task/examples/public-planning-output.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/examples/public-planning-output.json",
-        "sha256": "e05822d6e569357ab14c0b76dd63a4cf5f5e62f46d5ff44e7bbd4812a2175360",
+        "sha256": "84866e633a5228995f46260fcd4e09e554b88711ee9605a67e0333eb7e0020ee",
         "executable": false,
         "action": "unchanged"
       },
@@ -32456,7 +32456,7 @@
       {
         "path": ".codex/skills/guru-reactivate-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/interface.json",
-        "sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
+        "sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
         "executable": false,
         "action": "unchanged"
       },
@@ -32477,14 +32477,14 @@
       {
         "path": ".codex/skills/guru-reactivate-task/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-output.schema.json",
-        "sha256": "d68786ffdd8848042ac19fea2eb47ed8e3dec5c103d125fea95dfede156a2872",
+        "sha256": "16d47b181d3253edec99d59f7c10973fc2b1ba198f292ad058b2800b8c7c1678",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".codex/skills/guru-reactivate-task/schemas/public-planning-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
-        "sha256": "0553119408ae4fe51accb21058bd72c7ff03291517c5d724a9db0b695d4ce0c7",
+        "sha256": "ed0c8ed58c72c381a55ff95469772000a9dd05c1790e80a99a112ea9dfe9099e",
         "executable": false,
         "action": "unchanged"
       },
@@ -32554,7 +32554,7 @@
       {
         "path": ".claude/skills/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
-        "sha256": "ee08640ca9fd13dbe2b81d3cb8640808039b1e711c3221c5a2574a2f039dab70",
+        "sha256": "00ecb81bdb4397f0249685e5c255ff076cdf3a82bf42f97c7bbc9d4248ba1636",
         "executable": false,
         "action": "unchanged"
       },
@@ -32596,7 +32596,7 @@
       {
         "path": ".claude/skills/guru-reactivate-task/examples/public-planning-output.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/examples/public-planning-output.json",
-        "sha256": "e05822d6e569357ab14c0b76dd63a4cf5f5e62f46d5ff44e7bbd4812a2175360",
+        "sha256": "84866e633a5228995f46260fcd4e09e554b88711ee9605a67e0333eb7e0020ee",
         "executable": false,
         "action": "unchanged"
       },
@@ -32624,7 +32624,7 @@
       {
         "path": ".claude/skills/guru-reactivate-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/interface.json",
-        "sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
+        "sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
         "executable": false,
         "action": "unchanged"
       },
@@ -32645,14 +32645,14 @@
       {
         "path": ".claude/skills/guru-reactivate-task/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-output.schema.json",
-        "sha256": "d68786ffdd8848042ac19fea2eb47ed8e3dec5c103d125fea95dfede156a2872",
+        "sha256": "16d47b181d3253edec99d59f7c10973fc2b1ba198f292ad058b2800b8c7c1678",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".claude/skills/guru-reactivate-task/schemas/public-planning-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
-        "sha256": "0553119408ae4fe51accb21058bd72c7ff03291517c5d724a9db0b695d4ce0c7",
+        "sha256": "ed0c8ed58c72c381a55ff95469772000a9dd05c1790e80a99a112ea9dfe9099e",
         "executable": false,
         "action": "unchanged"
       },
@@ -32722,7 +32722,7 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/consumers/workflow/production/reactivate-route.schema.json",
-        "sha256": "ee08640ca9fd13dbe2b81d3cb8640808039b1e711c3221c5a2574a2f039dab70",
+        "sha256": "00ecb81bdb4397f0249685e5c255ff076cdf3a82bf42f97c7bbc9d4248ba1636",
         "executable": false,
         "action": "unchanged"
       },
@@ -32764,7 +32764,7 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/examples/public-planning-output.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/examples/public-planning-output.json",
-        "sha256": "e05822d6e569357ab14c0b76dd63a4cf5f5e62f46d5ff44e7bbd4812a2175360",
+        "sha256": "84866e633a5228995f46260fcd4e09e554b88711ee9605a67e0333eb7e0020ee",
         "executable": false,
         "action": "unchanged"
       },
@@ -32792,7 +32792,7 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/interface.json",
-        "sha256": "99e4647bb89bb4bca358e7f8f88f681a77705fd51cef4093c366417fe8efb02a",
+        "sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
         "executable": false,
         "action": "unchanged"
       },
@@ -32813,14 +32813,14 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/schemas/public-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-output.schema.json",
-        "sha256": "d68786ffdd8848042ac19fea2eb47ed8e3dec5c103d125fea95dfede156a2872",
+        "sha256": "16d47b181d3253edec99d59f7c10973fc2b1ba198f292ad058b2800b8c7c1678",
         "executable": false,
         "action": "unchanged"
       },
       {
         "path": ".cursor/skills/guru-reactivate-task/schemas/public-planning-output.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/schemas/public-planning-output.schema.json",
-        "sha256": "0553119408ae4fe51accb21058bd72c7ff03291517c5d724a9db0b695d4ce0c7",
+        "sha256": "ed0c8ed58c72c381a55ff95469772000a9dd05c1790e80a99a112ea9dfe9099e",
         "executable": false,
         "action": "unchanged"
       },
@@ -32960,7 +32960,7 @@
       {
         "path": ".agents/skills/guru-rebind-task-branch/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
-        "sha256": "b54e9e35fe9b0c755cf2fb5a243b78b1109a17758c13e1f7dbba979cdb2662c1",
+        "sha256": "9c80b76aa8421baf313d391331f7500890f646d8997a6b93573d4ef64b279326",
         "executable": false,
         "action": "unchanged"
       },
@@ -33114,7 +33114,7 @@
       {
         "path": ".codex/skills/guru-rebind-task-branch/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
-        "sha256": "b54e9e35fe9b0c755cf2fb5a243b78b1109a17758c13e1f7dbba979cdb2662c1",
+        "sha256": "9c80b76aa8421baf313d391331f7500890f646d8997a6b93573d4ef64b279326",
         "executable": false,
         "action": "unchanged"
       },
@@ -33268,7 +33268,7 @@
       {
         "path": ".claude/skills/guru-rebind-task-branch/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
-        "sha256": "b54e9e35fe9b0c755cf2fb5a243b78b1109a17758c13e1f7dbba979cdb2662c1",
+        "sha256": "9c80b76aa8421baf313d391331f7500890f646d8997a6b93573d4ef64b279326",
         "executable": false,
         "action": "unchanged"
       },
@@ -33422,7 +33422,7 @@
       {
         "path": ".cursor/skills/guru-rebind-task-branch/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-rebind-task-branch/schemas/public-input.schema.json",
-        "sha256": "b54e9e35fe9b0c755cf2fb5a243b78b1109a17758c13e1f7dbba979cdb2662c1",
+        "sha256": "9c80b76aa8421baf313d391331f7500890f646d8997a6b93573d4ef64b279326",
         "executable": false,
         "action": "unchanged"
       },
@@ -35130,7 +35130,7 @@
       {
         "path": ".agents/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "e16bfe1accf486a45e582dec9b8f7b6e34ed0dd5a864a579ef3bd9c0fd453923",
+        "sha256": "b8a29e2b1d84835026e75740fc04d1037ac1c2dbdeca61949ba40ee88c433ddf",
         "executable": false,
         "action": "unchanged"
       },
@@ -35361,7 +35361,7 @@
       {
         "path": ".agents/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "2330df44ec43cfe14a5d66710831d5621a53c2785d6cb81ff36b2123187162e5",
+        "sha256": "7fe4fd3f58ac0de0cb5bf2907e4d1a7a0e738137f9602d804f4ed574490e59ea",
         "executable": false,
         "action": "unchanged"
       },
@@ -35529,7 +35529,7 @@
       {
         "path": ".codex/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "e16bfe1accf486a45e582dec9b8f7b6e34ed0dd5a864a579ef3bd9c0fd453923",
+        "sha256": "b8a29e2b1d84835026e75740fc04d1037ac1c2dbdeca61949ba40ee88c433ddf",
         "executable": false,
         "action": "unchanged"
       },
@@ -35760,7 +35760,7 @@
       {
         "path": ".codex/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "2330df44ec43cfe14a5d66710831d5621a53c2785d6cb81ff36b2123187162e5",
+        "sha256": "7fe4fd3f58ac0de0cb5bf2907e4d1a7a0e738137f9602d804f4ed574490e59ea",
         "executable": false,
         "action": "unchanged"
       },
@@ -35928,7 +35928,7 @@
       {
         "path": ".claude/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "e16bfe1accf486a45e582dec9b8f7b6e34ed0dd5a864a579ef3bd9c0fd453923",
+        "sha256": "b8a29e2b1d84835026e75740fc04d1037ac1c2dbdeca61949ba40ee88c433ddf",
         "executable": false,
         "action": "unchanged"
       },
@@ -36159,7 +36159,7 @@
       {
         "path": ".claude/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "2330df44ec43cfe14a5d66710831d5621a53c2785d6cb81ff36b2123187162e5",
+        "sha256": "7fe4fd3f58ac0de0cb5bf2907e4d1a7a0e738137f9602d804f4ed574490e59ea",
         "executable": false,
         "action": "unchanged"
       },
@@ -36327,7 +36327,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "e16bfe1accf486a45e582dec9b8f7b6e34ed0dd5a864a579ef3bd9c0fd453923",
+        "sha256": "b8a29e2b1d84835026e75740fc04d1037ac1c2dbdeca61949ba40ee88c433ddf",
         "executable": false,
         "action": "unchanged"
       },
@@ -36558,7 +36558,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "2330df44ec43cfe14a5d66710831d5621a53c2785d6cb81ff36b2123187162e5",
+        "sha256": "7fe4fd3f58ac0de0cb5bf2907e4d1a7a0e738137f9602d804f4ed574490e59ea",
         "executable": false,
         "action": "unchanged"
       },
@@ -38777,7 +38777,7 @@
       {
         "path": ".agents/skills/guru-review-task-completion/examples/closure-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/examples/closure-authoring.json",
-        "sha256": "e2ead7edc38e754f23d032a523befb8b5466030629643218799e02aa22c84ce9",
+        "sha256": "07779d0454c755116b73b1ad88325132844fd1de4e88bf522b7491c153216c63",
         "executable": false,
         "action": "unchanged"
       },
@@ -38987,7 +38987,7 @@
       {
         "path": ".codex/skills/guru-review-task-completion/examples/closure-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/examples/closure-authoring.json",
-        "sha256": "e2ead7edc38e754f23d032a523befb8b5466030629643218799e02aa22c84ce9",
+        "sha256": "07779d0454c755116b73b1ad88325132844fd1de4e88bf522b7491c153216c63",
         "executable": false,
         "action": "unchanged"
       },
@@ -39197,7 +39197,7 @@
       {
         "path": ".claude/skills/guru-review-task-completion/examples/closure-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/examples/closure-authoring.json",
-        "sha256": "e2ead7edc38e754f23d032a523befb8b5466030629643218799e02aa22c84ce9",
+        "sha256": "07779d0454c755116b73b1ad88325132844fd1de4e88bf522b7491c153216c63",
         "executable": false,
         "action": "unchanged"
       },
@@ -39407,7 +39407,7 @@
       {
         "path": ".cursor/skills/guru-review-task-completion/examples/closure-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/examples/closure-authoring.json",
-        "sha256": "e2ead7edc38e754f23d032a523befb8b5466030629643218799e02aa22c84ce9",
+        "sha256": "07779d0454c755116b73b1ad88325132844fd1de4e88bf522b7491c153216c63",
         "executable": false,
         "action": "unchanged"
       },
@@ -42829,6 +42829,86 @@
       }
     ],
     "removals": [
+      {
+        "path": ".agents/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a"
+      },
+      {
+        "path": ".agents/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0"
+      },
+      {
+        "path": ".agents/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458"
+      },
+      {
+        "path": ".claude/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a"
+      },
+      {
+        "path": ".claude/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0"
+      },
+      {
+        "path": ".claude/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458"
+      },
+      {
+        "path": ".codex/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a"
+      },
+      {
+        "path": ".codex/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0"
+      },
+      {
+        "path": ".codex/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458"
+      },
+      {
+        "path": ".cursor/skills/guru-cleanup-task-resources/examples/manual-authoring.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a"
+      },
+      {
+        "path": ".cursor/skills/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0"
+      },
+      {
+        "path": ".cursor/skills/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/manual-authoring.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "78cf96ee2aec936f42866304c7c88ee63dcbdf965902ee1b47b452ff3588764a"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-manual-input.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "35e13bd539f40970184f31d6d5c7faa14800766b9e23b5e94e7003ad4c052b62"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/examples/public-manual-selection-output.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "2bd11b771afad78fa6326b1b7dddca27e738b7f948a6573bf965640bb2b6ddf0"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/schemas/public-manual-selection-output.schema.json",
+        "action": "removed_managed",
+        "previous_managed_sha256": "79b771ced623e07e57df02c5b1f33d17ac3b5400e28f50586689b4af45fd2458"
+      },
       {
         "path": ".trellis/guru-team/skills/consumers/stop/production/finalize-task-blocked.schema.json",
         "action": "removed_managed",

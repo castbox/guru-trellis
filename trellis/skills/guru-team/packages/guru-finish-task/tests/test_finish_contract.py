@@ -362,7 +362,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     key = TaskLifecycleKey("demo", 0)
     binding_store = BranchBindingStore(store.repository)
     binding = binding_store.establish(key, "codex/demo")
-    store.establish_current(key, binding_epoch=binding.binding_epoch, binding_revision=0, branch_name="codex/demo", branch_ownership="guru_owned", worktree_ownership="not_applicable")
+    store.establish_current(key, binding_revision=0, branch_name="codex/demo", branch_ownership="guru_owned", worktree_ownership="not_applicable")
     shutil.rmtree(old_archive)
 
     archive_ref = ".trellis/tasks/archive/2026-09/demo"

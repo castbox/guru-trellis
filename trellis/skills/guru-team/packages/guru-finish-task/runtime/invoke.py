@@ -479,8 +479,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         if exc.code != "resource_ownership_missing":
             raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
         if binding is not None:
-            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
-                                       expected_revision=binding.binding_revision,
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
                                        expected_branch_name=binding.branch_name)
         transaction["cleanup_state"] = "manual_cleanup_required"
         write_transaction(transaction_file, transaction, package_root)
@@ -501,8 +500,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         return out
     if binding is not None:
         try:
-            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
-                                       expected_revision=binding.binding_revision,
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
                                        expected_branch_name=binding.branch_name)
         except LifecycleContractError as exc:
             raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc

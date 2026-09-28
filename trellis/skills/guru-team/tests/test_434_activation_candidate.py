@@ -149,7 +149,9 @@ class ActivationCandidateTests(unittest.TestCase):
     def test_official_task_id_and_generic_start_guidance_match_guru_activation(self) -> None:
         source = ROOT / ".trellis/scripts/common/task_store.py"
         self.assertIn("TASK_ID_PATTERN.fullmatch(task_id)", source.read_text(encoding="utf-8"))
-        self.assertIn('TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")', source.read_text(encoding="utf-8"))
+        self.assertIn("TASK_ID_PATTERN,", source.read_text(encoding="utf-8"))
+        utility = ROOT / ".trellis/scripts/common/task_utils.py"
+        self.assertIn('TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")', utility.read_text(encoding="utf-8"))
         for platform in (".agents", ".claude", ".cursor"):
             with self.subTest(platform=platform):
                 guide = (ROOT / platform / "skills/trellis-meta/references/local-architecture/task-system.md").read_text(encoding="utf-8")

@@ -89,7 +89,7 @@ class CurrentFinishGraphTests(unittest.TestCase):
             closure_input.update({"source_exit": completed["exit_id"], "completion_result": completed["result_ref"],
                                   "source": {"kind": "no_issue"}, "action_set": [],
                                   "binding_ref": {"task_id": "example-task", "lifecycle_generation": 1,
-                                                  "binding_epoch": 0, "binding_revision": 0},
+                                                  "binding_revision": 0},
                                   "evidence_slots": {"completion": completed["result_ref"]["result_id"]}})
             closure_review = read_json(closure / "examples/semantic-result.json")
             closure_review["reviewed_action_set"] = []

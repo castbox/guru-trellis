@@ -20,7 +20,7 @@ def _plan_json(plan: RebindPlan, base_ref: str, base_head: str) -> dict:
         "route": plan.route, "task_id": plan.key.task_id, "lifecycle_generation": plan.key.lifecycle_generation,
         "task_ref": plan.task_ref, "expected_status": plan.expected_status,
         "current_checkout": str(plan.current_checkout), "target_branch_name": plan.target_branch_name,
-        "expected_epoch": plan.expected_epoch, "expected_revision": plan.expected_revision,
+        "expected_revision": plan.expected_revision,
         "pre_state": {"path": str(before.path), "head": before.head, "branch_ref": before.branch_ref,
                       "index_sha256": before.index_sha256, "worktree_sha256": before.worktree_sha256,
                       "status_sha256": before.status_sha256},
@@ -35,7 +35,7 @@ def _plan_from_json(data: dict) -> RebindPlan:
         route=data["route"], key=TaskLifecycleKey(data["task_id"], data["lifecycle_generation"]),
         task_ref=data["task_ref"], expected_status=data["expected_status"],
         current_checkout=Path(data["current_checkout"]), target_branch_name=data["target_branch_name"],
-        expected_epoch=data["expected_epoch"], expected_revision=data["expected_revision"],
+        expected_revision=data["expected_revision"],
         pre_state=CheckoutStateSnapshot(
             path=Path(before["path"]), head=before["head"], branch_ref=before["branch_ref"],
             index_sha256=before["index_sha256"], worktree_sha256=before["worktree_sha256"],

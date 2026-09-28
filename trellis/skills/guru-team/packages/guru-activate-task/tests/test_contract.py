@@ -44,7 +44,7 @@ class ActivateTaskTests(unittest.TestCase):
         self.key = TaskLifecycleKey("demo", 0)
         binding = BranchBindingStore(repository).establish(self.key, "main")
         ResourceLedgerStore(repository).establish_current(
-            self.key, binding_epoch=binding.binding_epoch, binding_revision=0,
+            self.key, binding_revision=0,
             branch_name="main", branch_ownership="caller_owned", worktree_ownership="not_applicable",
         )
         self.planning_digest = self.write_planning_approval()

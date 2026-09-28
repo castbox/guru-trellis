@@ -114,7 +114,6 @@ def establish_created_control_state(inputs: CreationInputs, result: CheckoutAcqu
         binding = branches.establish(key, inputs.acquisition.branch_ref.removeprefix("refs/heads/"))
         resources.establish_current(
             key,
-            binding_epoch=binding.binding_epoch,
             binding_revision=binding.binding_revision,
             branch_name=binding.branch_name,
             branch_ownership=result.branch_ownership,
@@ -130,7 +129,7 @@ def establish_created_control_state(inputs: CreationInputs, result: CheckoutAcqu
 
 
 def recover_created_control_state(
-    inputs: CreationInputs, result: CheckoutAcquisitionResult, *, expected_epoch: int, expected_result_id: str,
+    inputs: CreationInputs, result: CheckoutAcquisitionResult, *, expected_result_id: str,
 ) -> BranchBinding:
     """Rematerialize an exact result without repeating a task or control-state write."""
 
@@ -142,8 +141,7 @@ def recover_created_control_state(
     binding = BranchBindingStore(repository).read(key)
     ledger = ResourceLedgerStore(repository).read(key)
     if (
-        binding is None or ledger is None or type(expected_epoch) is not int
-        or binding.binding_epoch != expected_epoch or binding.binding_revision != 0
+        binding is None or ledger is None or binding.binding_revision != 0
         or binding.branch_ref != canonical_head_ref(inputs.acquisition.branch_ref)
     ):
         raise LifecycleContractError("creation_result_mismatch", "control_state", "Recover only the exact initial branch result.")
@@ -154,7 +152,7 @@ def recover_created_control_state(
     if (
         ledger.ledger_revision != 1
         or {row.responsibility_role for row in current} != expected
-        or any(row.binding_epoch != expected_epoch or row.binding_revision != 0 for row in current)
+        or any(row.binding_revision != 0 for row in current)
         or any(row.branch_ref != binding.branch_ref for row in current if row.responsibility_role in {"current_branch", "current_worktree"})
         or any(row.ownership != result.branch_ownership for row in current if row.responsibility_role == "current_branch")
         or any(row.ownership != result.worktree_ownership for row in current if row.responsibility_role == "current_worktree")
@@ -168,14 +166,13 @@ def bind_created_session(
     inputs: CreationInputs,
     result: CheckoutAcquisitionResult,
     *,
-    expected_epoch: int,
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> SessionAdapterResult:
     """Bind a completed creation; session failure never undoes task ownership."""
 
     recover_created_control_state(
-        inputs, result, expected_epoch=expected_epoch, expected_result_id=inputs.result_id,
+        inputs, result, expected_result_id=inputs.result_id,
     )
     return bind_session(
         official,
@@ -316,8 +313,7 @@ def _activation_inputs(
     binding = BranchBindingStore(repository).read(key)
     ownership = ResourceLedgerStore(repository).read_current(key)
     if binding is None or ownership is None or (
-        binding.binding_epoch != ownership.binding_epoch
-        or binding.binding_revision != ownership.binding_revision
+        binding.binding_revision != ownership.binding_revision
         or binding.branch_name != ownership.branch_name
     ):
         raise LifecycleContractError("activation_branch_unresolved", "branch_binding", "Establish matching current branch and ownership first.")

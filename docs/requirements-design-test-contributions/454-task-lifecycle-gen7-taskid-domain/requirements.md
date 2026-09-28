@@ -15,3 +15,21 @@ Status: isolated candidate against `.67/active`; not promoted.
 - `R454-G7-03`: Canonical and installed package contracts, fixed Fork
   source lock and supported entry projections agree. The `.67` authority
   and historical #434 test claims remain immutable until reviewed promotion.
+- `R454-G7-04`: Terminal Cleanup with missing ownership never infers a
+  historical owner or deletes automatically. It exposes call-local live
+  resource candidates with stable IDs and exact identity/HEAD facts; the
+  `select_explicit_cleanup_targets` profile accepts selected candidate IDs,
+  revalidates them, requires an exact deletion confirmation, and leaves
+  unselected resources unchanged.
+- `R454-G7-05`: The official task writer creates immutable TaskId and
+  structured source without retired `branch` metadata; official rename and
+  archive preserve TaskId/source/generation. A remote-backed ordinary archive
+  does not require the retired task branch field. The Guru dogfood copy uses
+  the same fixed official task CLI semantics.
+- `R454-G7-06`: A completed explicit terminal Cleanup selection seals a
+  result that Reactivate recognizes for the same TaskId, generation and Finish
+  result; old completed manual receipts remain readable for prior generations.
+- `R454-G7-07`: TaskBranchBinding uses only the five live Issue fields;
+  neither resource ownership nor public DTO adds an epoch. Missing-control
+  Cleanup cannot delete a local branch carrying an active task unless another
+  retained branch contains the task commit and artifact.

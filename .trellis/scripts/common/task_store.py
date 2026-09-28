@@ -18,6 +18,7 @@ Provides:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass, field
@@ -34,8 +35,6 @@ from .config import (
 )
 from .git import (
     INDEX_LOCK_RETRY_ATTEMPTS,
-    branch_exists_locally,
-    has_git_remote,
     index_lock_path,
     resolve_default_branch,
     run_git,
@@ -59,7 +58,9 @@ from .safe_commit import (
     safe_archive_paths_to_add,
     safe_git_add,
 )
+from .session_storage import SessionBindingError, repository_facts, workspace_roots
 from .task_utils import (
+    TASK_ID_PATTERN,
     archive_destination_for,
     archive_task_complete,
     find_task_by_name,
@@ -96,9 +97,6 @@ BLANK_CHARS = (
     "\u202f\u205f\u3000"                      # narrow nbsp, math space, ideographic space
     "\ufeff"                                  # zero-width no-break space / BOM (JS only)
 )
-
-TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
-
 
 def strip_blank(value: str | None) -> str:
     """Return ``value`` with :data:`BLANK_CHARS` trimmed from both ends."""
@@ -304,6 +302,36 @@ def _parse_meta_pairs(pairs: list[str] | None) -> dict[str, str] | None:
     return meta
 
 
+def _parse_create_source(raw: str | None) -> dict | None:
+    """Validate the source that will be written with the new task.json."""
+    if raw is None:
+        return {"kind": "no_issue"}
+    try:
+        source = json.loads(raw)
+    except json.JSONDecodeError:
+        print("Error: --source-json must be valid JSON", file=sys.stderr)
+        return None
+    if source == {"kind": "no_issue"}:
+        return source
+    if (
+        isinstance(source, dict)
+        and set(source) == {"kind", "repo_ref", "number", "disposition"}
+        and source["kind"] == "issue"
+        and isinstance(source["repo_ref"], str)
+        and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", source["repo_ref"])
+        and type(source["number"]) is int
+        and source["number"] > 0
+        and source["disposition"] == "exact_source"
+    ):
+        return source
+    print(
+        "Error: --source-json must be no_issue or an issue with repo_ref, "
+        "positive number, and exact_source disposition",
+        file=sys.stderr,
+    )
+    return None
+
+
 def _default_prd_content(title: str, description: str | None = None) -> str:
     """Return the default PRD skeleton created with every task."""
     goal = (description or "").strip() or "TBD."
@@ -359,6 +387,10 @@ def cmd_create(args: argparse.Namespace) -> int:
             "not count): a task with an empty description is refused at archive.",
             file=sys.stderr,
         )
+        return 1
+
+    source = _parse_create_source(getattr(args, "source_json", None))
+    if source is None:
         return 1
 
     # Validate --meta (CLI source: fail-fast, before any directory is created)
@@ -474,10 +506,14 @@ def cmd_create(args: argparse.Namespace) -> int:
     task_json_path = task_dir / FILE_TASK_JSON
     for filename in (FILE_TASK_JSON, "prd.md", "implement.jsonl", "check.jsonl"):
         require_active_path(task_dir / filename, repo_root)
+    if task_dir.exists() and getattr(args, "force", False):
+        print(colored(f"Error: task_id_collision: --force cannot replace an existing task: {dir_name}", Colors.RED), file=sys.stderr)
+        return 1
 
     try:
-        require_unique_task_id(task_id, tasks_dir, repo_root)
-    except TaskIdentityError as exc:
+        for workspace in workspace_roots(repository_facts(repo_root)):
+            require_unique_task_id(task_id, get_tasks_dir(workspace), workspace)
+    except (TaskIdentityError, SessionBindingError) as exc:
         print(colored(f"Error: {exc}", Colors.RED), file=sys.stderr)
         return 1
 
@@ -490,28 +526,14 @@ def cmd_create(args: argparse.Namespace) -> int:
 
     # Reusing a slug on the same day is an ordinary accident, and continuing
     # would rewrite the existing task.json below — resetting status, children,
-    # parent, branch and meta, which nothing else can reconstruct. Fail like
-    # the archived-name collision above unless the caller asks for it.
+    # parent and meta, which nothing else can reconstruct. Stable TaskIds
+    # cannot be replaced by --force either.
     if task_dir.exists():
-        if not getattr(args, "force", False):
-            print(colored(f"Error: Task already exists: {dir_name}", Colors.RED), file=sys.stderr)
-            print(f"Existing task at: {_repo_relative_path(task_dir, repo_root)}", file=sys.stderr)
-            print(
-                "Use a different --slug, or pass --force to overwrite its task.json.",
-                file=sys.stderr,
-            )
-            return 1
-        print(
-            colored(
-                f"Warning: --force: overwriting task.json in existing task: {dir_name}",
-                Colors.YELLOW,
-            ),
-            file=sys.stderr,
-        )
-        created_dir = False
-    else:
-        task_dir.mkdir(parents=True)
-        created_dir = True
+        print(colored(f"Error: Task already exists: {dir_name}", Colors.RED), file=sys.stderr)
+        print(f"Existing task at: {_repo_relative_path(task_dir, repo_root)}", file=sys.stderr)
+        print("Use a different --slug to create a new task.", file=sys.stderr)
+        return 1
+    task_dir.mkdir(parents=True)
 
     today = datetime.now().strftime("%Y-%m-%d")
 
@@ -546,6 +568,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         "id": task_id,
         "name": slug,
         "lifecycle_generation": 0,
+        "source": source,
         "title": args.title,
         "description": description,
         "status": "planning",
@@ -557,7 +580,6 @@ def cmd_create(args: argparse.Namespace) -> int:
         "assignee": assignee,
         "createdAt": today,
         "completedAt": None,
-        "branch": None,
         "base_branch": base_branch,
         "worktree_path": None,
         "commit": None,
@@ -576,14 +598,13 @@ def cmd_create(args: argparse.Namespace) -> int:
     if not write_json(task_json_path, task_data):
         _report_write_failure(task_json_path)
         print(colored(f"No task was created: {dir_name}", Colors.RED), file=sys.stderr)
-        if created_dir:
-            try:
-                task_dir.rmdir()
-            except OSError:
-                print(
-                    f"Leftover empty directory: {_repo_relative_path(task_dir, repo_root)}",
-                    file=sys.stderr,
-                )
+        try:
+            task_dir.rmdir()
+        except OSError:
+            print(
+                f"Leftover empty directory: {_repo_relative_path(task_dir, repo_root)}",
+                file=sys.stderr,
+            )
         return 1
 
     prd_path = task_dir / "prd.md"
@@ -1210,92 +1231,6 @@ def cmd_rename(args: argparse.Namespace) -> int:
 # Command: archive
 # =============================================================================
 
-def _task_branch_field(data: dict, key: str) -> str:
-    """Read a branch field as a trimmed string ("" when unset or not a string)."""
-    value = data.get(key)
-    return strip_blank(value) if isinstance(value, str) else ""
-
-
-def _validate_branch_metadata(
-    data: dict,
-    task_name: str,
-    repo_root: Path,
-    skip: bool,
-) -> bool:
-    """Check branch metadata before the task leaves the active tree.
-
-    Returns False when archiving must stop. Archive is the last gate that sees
-    a task, so metadata nobody can reconstruct afterwards is refused here
-    rather than repaired by hand later (#399 follow-up).
-
-    "PR-backed" is deliberately pragmatic: a task carrying a base_branch in a
-    repo that has a remote was created expecting a PR, so a missing `branch`
-    means the metadata was never recorded — not that the work had no branch.
-    Local-only repos and tasks without a base_branch are left alone.
-
-    A recorded branch that no longer exists locally stays a warning: after a
-    merge the feature branch is normally deleted, and refusing to archive then
-    would be backwards.
-    """
-    branch = _task_branch_field(data, "branch")
-    base_branch = _task_branch_field(data, "base_branch")
-    task_py = f"python3 {DIR_WORKFLOW}/scripts/task.py"
-
-    if branch and not branch_exists_locally(branch, repo_root):
-        print(
-            colored(
-                f"Warning: recorded branch '{branch}' no longer exists locally "
-                "(likely merged and deleted).",
-                Colors.YELLOW,
-            ),
-            file=sys.stderr,
-        )
-
-    if skip:
-        return True
-
-    if branch and base_branch and branch == base_branch:
-        print(
-            colored(
-                f"Error: refusing to archive '{task_name}': branch and base_branch "
-                f"are both '{branch}'. A PR cannot target its own branch, so this "
-                "metadata cannot describe the work that was merged.",
-                Colors.RED,
-            ),
-            file=sys.stderr,
-        )
-        print("Repair whichever field is wrong:", file=sys.stderr)
-        print(f"  {task_py} set-branch {task_name} <feature-branch>", file=sys.stderr)
-        print(f"  {task_py} set-base-branch {task_name} <target-branch>", file=sys.stderr)
-        print(
-            f"  {task_py} archive {task_name} --skip-branch-validation"
-            "   # only if this task was never PR-backed",
-            file=sys.stderr,
-        )
-        return False
-
-    if not branch and base_branch and has_git_remote(repo_root):
-        print(
-            colored(
-                f"Error: refusing to archive '{task_name}': no branch is recorded, "
-                f"but the task targets base_branch '{base_branch}' in a repo with a "
-                "remote — the branch it was built on was never written down.",
-                Colors.RED,
-            ),
-            file=sys.stderr,
-        )
-        print("Repair with:", file=sys.stderr)
-        print(f"  {task_py} set-branch {task_name} <branch>", file=sys.stderr)
-        print(
-            f"  {task_py} archive {task_name} --skip-branch-validation"
-            "   # only if the work landed without a branch of its own",
-            file=sys.stderr,
-        )
-        return False
-
-    return True
-
-
 def cmd_archive(args: argparse.Namespace) -> int:
     """Archive completed task."""
     repo_root = get_repo_root()
@@ -1392,20 +1327,6 @@ def cmd_archive(args: argparse.Namespace) -> int:
     if task_json_path.is_file():
         data = task_data
         if data is not None:
-            # Before any mutation: branch metadata is unrecoverable once the
-            # task leaves the active tree. Stale branches only warn.
-            if not _validate_branch_metadata(
-                data,
-                task_name,
-                repo_root,
-                getattr(args, "skip_branch_validation", False),
-            ):
-                print(
-                    f"Not archived: {_repo_relative_path(task_dir, repo_root)} is unchanged.",
-                    file=sys.stderr,
-                )
-                return 1
-
             data["status"] = "completed"
             data["completedAt"] = today
             if not write_json(task_json_path, data):

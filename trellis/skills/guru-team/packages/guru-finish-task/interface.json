@@ -355,7 +355,7 @@
         "contract": {"kind": "json_schema", "schema_id": "guru-finish-task-blocked-stop-2.0", "path": "consumers/stop/production/finish-blocked.schema.json"}
       },
       {"id": "closure_refresh", "consumer": {"kind": "workflow", "id": "task-closure-refresh-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-finish-task-closure-refresh-route-2.0", "path": "consumers/workflow/production/closure-refresh.schema.json"}},
-      {"id": "manual_cleanup", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "manual", "seed_fields": ["task_id", "lifecycle_generation", "finish_result_id", "cleanup_state"], "authoring_fields": ["profile", "mode", "selected_targets"], "authoring_example": {"id": "manual_cleanup_authoring", "path": "examples/manual-cleanup-authoring.json"}}}
+      {"id": "manual_cleanup", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "select_explicit_cleanup_targets", "seed_fields": ["task_id", "lifecycle_generation", "finish_result_id"], "authoring_fields": ["profile", "mode", "selected_candidate_ids"], "authoring_example": {"id": "manual_cleanup_authoring", "path": "examples/manual-cleanup-authoring.json"}}}
     ],
     "projections": [
       {
@@ -389,7 +389,7 @@
         "operation": "direct"
       },
       {"id": "closure_refresh", "exit_id": "closure_refresh_required", "consumer_input_id": "closure_refresh", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "result_id", "target": "result_id"}]},
-      {"id": "manual_cleanup", "exit_id": "manual_cleanup_required", "consumer_input_id": "manual_cleanup", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "finish_result_id", "target": "finish_result_id"}, {"source": "cleanup_state", "target": "cleanup_state"}]}
+      {"id": "manual_cleanup", "exit_id": "manual_cleanup_required", "consumer_input_id": "manual_cleanup", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "finish_result_id", "target": "finish_result_id"}]}
     ],
     "private_artifacts": [
       {

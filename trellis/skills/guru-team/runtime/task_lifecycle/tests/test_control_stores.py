@@ -238,7 +238,6 @@ class ResourceLedgerTests(unittest.TestCase):
         for key, branch in ((old_key, "topic-0"), (new_key, "topic-1")):
             self.store.establish_current(
                 key,
-                binding_epoch=key.lifecycle_generation + 1,
                 binding_revision=0,
                 branch_name=branch,
                 branch_ownership="guru_owned",
@@ -285,7 +284,6 @@ class ResourceLedgerTests(unittest.TestCase):
                 key = self.key(generation)
                 current = self.store.establish_current(
                     key,
-                    binding_epoch=10 + generation,
                     binding_revision=0,
                     branch_name=f"topic-{generation}",
                     branch_ownership=branch_owner,
@@ -298,7 +296,6 @@ class ResourceLedgerTests(unittest.TestCase):
 
         recovered = self.store.recover_active_missing(
             self.key(4),
-            binding_epoch=14,
             binding_revision=2,
             branch_name="topic-4",
             live_branch_present=True,
@@ -315,7 +312,6 @@ class ResourceLedgerTests(unittest.TestCase):
         before = self.store.snapshot(self.key(4)).content
         rematerialized = self.store.recover_active_missing(
             self.key(4),
-            binding_epoch=14,
             binding_revision=2,
             branch_name="topic-4",
             live_branch_present=True,
@@ -327,7 +323,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
             self.store.recover_active_missing(
                 self.key(4),
-                binding_epoch=14,
                 binding_revision=2,
                 branch_name="topic-4",
                 live_branch_present=True,
@@ -340,7 +335,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.establish_current(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             branch_ownership="caller_owned",
@@ -350,7 +344,6 @@ class ResourceLedgerTests(unittest.TestCase):
         before = snapshot.content
         self.store.rebind_current(
             key,
-            expected_epoch=7,
             expected_revision=0,
             source_branch_name=BRANCH,
             target_branch_name=TARGET,
@@ -371,7 +364,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.establish_current(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             branch_ownership="guru_owned",
@@ -379,7 +371,6 @@ class ResourceLedgerTests(unittest.TestCase):
         )
         self.store.rebind_current(
             key,
-            expected_epoch=7,
             expected_revision=0,
             source_branch_name=BRANCH,
             target_branch_name=TARGET,
@@ -409,7 +400,6 @@ class ResourceLedgerTests(unittest.TestCase):
             self.store.branch_has_unresolved_incarnation(
                 BRANCH,
                 key=key,
-                allowed_current_epoch=None,
                 allowed_current_revision=None,
             )
         )
@@ -417,7 +407,6 @@ class ResourceLedgerTests(unittest.TestCase):
             self.store.branch_has_unresolved_incarnation(
                 TARGET,
                 key=key,
-                allowed_current_epoch=7,
                 allowed_current_revision=1,
             )
         )
@@ -442,7 +431,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.establish_current(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             branch_ownership="caller_owned",
@@ -450,7 +438,6 @@ class ResourceLedgerTests(unittest.TestCase):
         )
         self.store.rebind_current(
             key,
-            expected_epoch=7,
             expected_revision=0,
             source_branch_name=BRANCH,
             target_branch_name=TARGET,
@@ -470,18 +457,16 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         recovered = self.store.recover_active_missing(
             key,
-            binding_epoch=7,
             binding_revision=3,
             branch_name=BRANCH,
             live_branch_present=True,
             linked_worktree_present=False,
         )
-        self.assertEqual((recovered.binding_epoch, recovered.binding_revision), (7, 3))
+        self.assertEqual(recovered.binding_revision, 3)
         before = self.store.snapshot(key).content
         self.assertEqual(
             self.store.recover_active_missing(
                 key,
-                binding_epoch=7,
                 binding_revision=3,
                 branch_name=BRANCH,
                 live_branch_present=True,
@@ -493,7 +478,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
             self.store.recover_active_missing(
                 key,
-                binding_epoch=7,
                 binding_revision=4,
                 branch_name=BRANCH,
                 live_branch_present=True,
@@ -520,7 +504,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.establish_current(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             branch_ownership="guru_owned",
@@ -529,7 +512,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -539,7 +521,6 @@ class ResourceLedgerTests(unittest.TestCase):
             )
         remote = self.store.record_remote_delivery(
             key,
-            expected_epoch=7,
             expected_revision=0,
             remote_name="origin",
             repository_ref="castbox/guru-trellis",
@@ -567,7 +548,6 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertEqual(
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -581,7 +561,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="upstream",
                 repository_ref="castbox/guru-trellis",
@@ -593,7 +572,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -633,7 +611,6 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertEqual(
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -656,7 +633,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "invalid_resource_ref"):
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="bad name",
                 repository_ref="castbox/guru-trellis",
@@ -775,7 +751,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         store.establish_current(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             branch_ownership="guru_owned",
@@ -784,7 +759,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
             store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -793,7 +767,6 @@ class ResourceLedgerTests(unittest.TestCase):
             )
         first = store.record_remote_delivery(
             key,
-            expected_epoch=7,
             expected_revision=0,
             remote_name="origin",
             repository_ref="castbox/guru-trellis",
@@ -803,7 +776,6 @@ class ResourceLedgerTests(unittest.TestCase):
         )
         second = store.record_remote_delivery(
             key,
-            expected_epoch=7,
             expected_revision=0,
             remote_name="origin",
             repository_ref="castbox/guru-trellis",
@@ -819,7 +791,6 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertEqual(
             store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -833,7 +804,6 @@ class ResourceLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "resource_ownership_conflict"):
             store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -844,7 +814,6 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertEqual(store.snapshot(key).content, after_advance)
         store.rebind_current(
             key,
-            expected_epoch=7,
             expected_revision=0,
             source_branch_name=BRANCH,
             target_branch_name=TARGET,
@@ -870,7 +839,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.recover_active_missing(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             live_branch_present=True,
@@ -879,7 +847,6 @@ class ResourceLedgerTests(unittest.TestCase):
         )
         updated = self.store.record_remote_delivery(
             key,
-            expected_epoch=7,
             expected_revision=0,
             remote_name="origin",
             repository_ref="castbox/guru-trellis",
@@ -893,7 +860,6 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertEqual(
             self.store.record_remote_delivery(
                 key,
-                expected_epoch=7,
                 expected_revision=0,
                 remote_name="origin",
                 repository_ref="castbox/guru-trellis",
@@ -947,7 +913,6 @@ class ResourceLedgerTests(unittest.TestCase):
         key = self.key()
         self.store.recover_active_missing(
             key,
-            binding_epoch=7,
             binding_revision=0,
             branch_name=BRANCH,
             live_branch_present=True,

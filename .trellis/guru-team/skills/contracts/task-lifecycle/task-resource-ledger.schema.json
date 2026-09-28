@@ -218,7 +218,6 @@
         "acquisition_origin",
         "ownership",
         "portable_ref",
-        "binding_epoch",
         "binding_revision",
         "state",
         "responsibility_role",
@@ -244,7 +243,6 @@
             {"$ref": "#/$defs/remoteBranchRef"}
           ]
         },
-        "binding_epoch": {"type": "integer", "minimum": 0},
         "binding_revision": {"type": "integer", "minimum": 0},
         "state": {"enum": ["current", "cleanup_pending", "retained", "resolved"]},
         "responsibility_role": {

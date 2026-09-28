@@ -16,12 +16,12 @@ original closeout tip H. Finalizer alone validates H/archive continuity.
 
 The recorder, checker and invocation independently require a committed,
 completely clean completed archive, its planning and finish-summary identity,
-existing matching source/target mappings, a registered task branch/worktree,
+the legacy archive's matching task/summary branch and base, a registered task branch/worktree,
 the configured GitHub publish remote, exact remote/PR HEAD A, and one Open
 non-Draft same-repository PR. Summary PR identity excludes replacement PRs.
 The current selected-base ref (origin tracking first, then the local branch)
 must already resolve to B and match the authenticated live GitHub base ref.
-B must be an ancestor of A. These readers never fetch or rebuild mappings.
+B must be an ancestor of A. These readers never fetch or consult retired task/workspace mappings.
 The PR snapshot is SHA-256 of UTF-8 JSON `{"title": title, "body": body}`,
 sorted keys, compact separators, no trailing newline and no string trimming.
 

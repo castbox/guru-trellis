@@ -79,6 +79,7 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         sys.executable, str(script), "create", task["title"],
         "--description", task["description"], "--slug", directory,
         "--task-id", inputs.task_id,
+        "--source-json", json.dumps(inputs.reviewed_source, separators=(",", ":")),
         "--creator", task["creator"], "--assignee", task["assignee"],
         "--base-branch", inputs.selected_base_ref.removeprefix("refs/heads/"),
         "--no-start",
@@ -96,7 +97,8 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise LifecycleContractError("official_task_create_failed", "task.json", "Read the new official task artifact.") from exc
-    if metadata.get("status") != "planning" or metadata.get("name") != slug or metadata.get("id") != inputs.task_id:
+    if (metadata.get("status") != "planning" or metadata.get("name") != slug
+            or metadata.get("id") != inputs.task_id or metadata.get("source") != inputs.reviewed_source):
         raise LifecycleContractError("official_task_create_failed", "task.json", "Use the exact new planning task.")
     for legacy in (
         "branch", "worktree_path", "base_head", "entry_head", "workspace_slug",
@@ -106,7 +108,6 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
     ):
         metadata.pop(legacy, None)
     metadata["lifecycle_generation"] = 0
-    metadata["source"] = inputs.reviewed_source
     metadata["delivery_target"] = inputs.delivery_target
     metadata["scope"] = task["scope"]
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -163,7 +164,7 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
             binding = BranchBindingStore(inspect_repository(root)).read(key)
             if binding is None:
                 raise LifecycleContractError("creation_result_mismatch", "binding", "Recover the completed initial binding.")
-            recover_created_control_state(inputs, acquired, expected_epoch=binding.binding_epoch, expected_result_id=inputs.result_id)
+            recover_created_control_state(inputs, acquired, expected_result_id=inputs.result_id)
             official = _official_port(acquired.checkout.path)
             current = resolve_session(official, acquired.checkout.path)
             if current.status == "session_resolved":
@@ -171,7 +172,7 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
                     return {"exit_id": "blocked", "reason_code": "session_current_task_conflict"}
             elif current.status == "explicit_task_mode" and current.reason_code == "session_record_missing":
                 session = bind_created_session(
-                    official, inputs, acquired, expected_epoch=binding.binding_epoch,
+                    official, inputs, acquired,
                 )
                 if session.status != "session_bound":
                     return {"exit_id": "blocked", "reason_code": session.reason_code or session.status}
@@ -211,8 +212,7 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
             # Session binding follows the durable task/control transaction. A missing
             # context key is an explicit-task result; a session write failure is reported
             # without deleting the task that was already created.
-            session = bind_created_session(_official_port(acquired.checkout.path), inputs, acquired,
-                                           expected_epoch=BranchBindingStore(inspect_repository(root)).read(TaskLifecycleKey(inputs.task_id, 0)).binding_epoch)
+            session = bind_created_session(_official_port(acquired.checkout.path), inputs, acquired)
             if session.status not in {"session_bound", "explicit_task_mode"}:
                 return {"exit_id": "blocked", "reason_code": session.reason_code or session.status}
         return _created_result(inputs)

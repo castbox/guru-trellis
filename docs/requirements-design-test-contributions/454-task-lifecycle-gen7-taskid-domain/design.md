@@ -3,7 +3,7 @@
 Status: isolated candidate against `.67/active`; not promoted.
 
 - `D454-G7-01`: Pin the merged official Fork commit
-  `09994d21a462813c4d1a280cce7fe1bf803af019` as the implementation
+  `ebabae6cf686ff85a00b7ea92c957b0ee1ba5679` as the implementation
   candidate. The official task writer validates explicit and slug-derived IDs. Guru
   `identity.py` and the shared DTO schema use the exact same TaskId pattern.
 - `D454-G7-02`: Derive handoff receipt refs in one runtime owner. Preserve
@@ -15,3 +15,20 @@ Status: isolated candidate against `.67/active`; not promoted.
   copies through the preset mechanism. Remove no session or task binding
   flexibility: a session focus can switch or rebind by TaskId without
   treating Git HEAD, Issue, checkout, developer or assignee as task identity.
+- `D454-G7-04`: Evolve the existing Cleanup owner directly. Its terminal
+  missing-ledger exit projects only call-local Git resource candidates;
+  selection uses stable candidate IDs and fresh live resource checks, not
+  ledger reconstruction or ownership inference. Rename the public manual
+  profile and exit to the Issue contract without a compatibility alias.
+- `D454-G7-05`: Evolve the official Fork task create/archive store in place:
+  direct standalone creation defaults to `source.kind=no_issue`, Guru creation
+  replaces it with the reviewed structured source, and archive no longer
+  consumes `task.json.branch`. Preserve TaskId/source/generation on rename
+  and archive; keep branch and checkout resolution in their existing owners.
+- `D454-G7-06`: Reactivate reads the current Cleanup `selected-*` receipt as
+  well as prior `manual-*` receipts, checking the same TaskId, generation,
+  Finish result and cleaned exit before admitting the new generation.
+- `D454-G7-07`: Keep TaskBranchBinding and resource ownership on the live
+  five-field contract without an epoch. Cleanup's missing-control selection
+  checks active task artifacts and a retained containing branch before deleting
+  a selected local branch.

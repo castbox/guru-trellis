@@ -268,6 +268,8 @@ class CreateTaskTests(unittest.TestCase):
             result = MODULE.invoke(self.root, self.payload)
         self.assertEqual(result["exit_id"], "created")
         self.assertEqual(len(created), 1)
+        source_index = created[0].index("--source-json")
+        self.assertEqual(json.loads(created[0][source_index + 1]), {"kind": "no_issue"})
         self.assertEqual(MODULE.invoke(self.root, {**self.payload, "action": "recover_created_task_result"}), result)
         data = json.loads((self.root / self.ref / "task.json").read_text())
         self.assertEqual((data["id"], data["source"], data["lifecycle_generation"]),

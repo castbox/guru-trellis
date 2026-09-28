@@ -26,8 +26,8 @@ def invoke(root: Path, data: dict) -> dict:
     ownership = ResourceLedgerStore(repository).read_current(key)
     if ownership is None:
         return {"exit_id": "binding_required", "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation}
-    if (ownership.binding_epoch, ownership.binding_revision, ownership.branch_name) != (
-        binding.binding_epoch, binding.binding_revision, binding.branch_name
+    if (ownership.binding_revision, ownership.branch_name) != (
+        binding.binding_revision, binding.branch_name
     ):
         return {"exit_id": "invalid_task_state", "reason_code": "binding_ownership_mismatch"}
     candidates = [row for row in discover_worktree_facts(repository) if row.registration.registered_branch_ref == binding.branch_ref]

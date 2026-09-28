@@ -136,7 +136,6 @@ class InMemoryOwnershipPort:
         self,
         key: TaskLifecycleKey,
         *,
-        binding_epoch: int,
         binding_revision: int,
         branch_name: str,
         branch_ownership: str,
@@ -151,7 +150,6 @@ class InMemoryOwnershipPort:
         current = OwnershipCurrent(
             key.task_id,
             key.lifecycle_generation,
-            binding_epoch,
             binding_revision,
             branch_name,
         )
@@ -170,7 +168,6 @@ class InMemoryOwnershipPort:
         self,
         key: TaskLifecycleKey,
         *,
-        expected_epoch: int,
         expected_revision: int,
         source_branch_name: str,
         target_branch_name: str,
@@ -182,7 +179,6 @@ class InMemoryOwnershipPort:
         current = self.current.get(key)
         if (
             current is None
-            or current.binding_epoch != expected_epoch
             or current.binding_revision != expected_revision
             or current.branch_name != source_branch_name
         ):
@@ -194,7 +190,6 @@ class InMemoryOwnershipPort:
         successor = OwnershipCurrent(
             key.task_id,
             key.lifecycle_generation,
-            expected_epoch,
             expected_revision + 1,
             target_branch_name,
         )
@@ -217,7 +212,6 @@ class InMemoryOwnershipPort:
         branch_name: str,
         *,
         key: TaskLifecycleKey,
-        allowed_current_epoch: int | None,
         allowed_current_revision: int | None,
     ) -> bool:
         if branch_name not in self.unresolved_branches:
@@ -226,7 +220,6 @@ class InMemoryOwnershipPort:
         return not (
             current is not None
             and current.branch_name == branch_name
-            and current.binding_epoch == allowed_current_epoch
             and current.binding_revision == allowed_current_revision
         )
 
@@ -248,18 +241,15 @@ class BranchSubstrateTests(unittest.TestCase):
         self,
         branch: str = "main",
         *,
-        epoch: int = EPOCH,
         revision: int = 0,
     ) -> None:
         self.store.establish(
             self.key,
             branch,
-            binding_epoch=epoch,
             binding_revision=revision,
         )
         self.ownership.establish_current(
             self.key,
-            binding_epoch=epoch,
             binding_revision=revision,
             branch_name=branch,
             branch_ownership="caller_owned",
@@ -291,75 +281,72 @@ class BranchSubstrateTests(unittest.TestCase):
             expected_candidate_head=candidate.head,
         )
 
-    def test_binding_store_uses_six_fields_epoch_revision_zero_and_strict_increment(self) -> None:
-        initial = self.store.establish(self.key, "main", binding_epoch=EPOCH)
-        self.assertEqual((initial.binding_epoch, initial.binding_revision), (EPOCH, 0))
+    def test_binding_store_uses_five_fields_and_strict_revision_increment(self) -> None:
+        initial = self.store.establish(self.key, "main")
+        self.assertEqual(initial.binding_revision, 0)
         self.assertEqual(
             set(json.loads(self.store.path_for(self.key).read_text(encoding="utf-8"))),
             {
                 "schema_version",
                 "task_id",
                 "lifecycle_generation",
-                "binding_epoch",
                 "binding_revision",
                 "branch_name",
             },
         )
         successor = self.store.advance(
             self.key,
-            expected_epoch=EPOCH,
             expected_revision=0,
             branch_name="topic",
         )
         self.assertEqual(
-            (successor.binding_epoch, successor.binding_revision, successor.branch_name),
-            (EPOCH, 1, "topic"),
+            (successor.binding_revision, successor.branch_name),
+            (1, "topic"),
         )
-        with self.assertRaisesRegex(LifecycleContractError, "branch_binding_epoch_conflict"):
-            self.store.advance(
-                self.key,
-                expected_epoch=EPOCH + 1,
-                expected_revision=1,
-                branch_name="other",
-            )
         with self.assertRaisesRegex(LifecycleContractError, "branch_binding_revision_conflict"):
             self.store.advance(
                 self.key,
-                expected_epoch=EPOCH,
                 expected_revision=0,
                 branch_name="other",
             )
         with self.assertRaisesRegex(LifecycleContractError, "branch_binding_unchanged"):
             self.store.advance(
                 self.key,
-                expected_epoch=EPOCH,
                 expected_revision=1,
                 branch_name="topic",
             )
 
-    def test_binding_store_rejects_new_epoch_with_nonzero_revision(self) -> None:
-        with self.assertRaisesRegex(LifecycleContractError, "invalid_binding_revision"):
-            self.store.establish(self.key, "main", binding_revision=1)
-        self.assertIsNone(self.store.read(self.key))
+    def test_binding_store_restores_surviving_revision(self) -> None:
+        binding = self.store.establish(self.key, "main", binding_revision=1)
+        self.assertEqual(binding.binding_revision, 1)
+
+    def test_binding_store_rejects_legacy_epoch_field(self) -> None:
+        self.store.establish(self.key, "main")
+        path = self.store.path_for(self.key)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload["binding_epoch"] = 7
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with self.assertRaisesRegex(LifecycleContractError, "branch_binding_conflict"):
+            self.store.read(self.key)
 
     def test_retire_completed_generation_requires_exact_binding(self) -> None:
-        old = self.store.establish(self.key, "topic", binding_epoch=EPOCH)
+        old = self.store.establish(self.key, "topic")
         next_key = TaskLifecycleKey(TASK_ID, GENERATION + 1)
         with self.assertRaisesRegex(LifecycleContractError, "branch_binding_conflict"):
             self.store.retire_generation(
-                self.key, expected_epoch=EPOCH, expected_revision=1,
+                self.key, expected_revision=1,
                 expected_branch_name="topic",
             )
         self.assertEqual(self.store.read(self.key), old)
         self.assertEqual(
             self.store.retire_generation(
-                self.key, expected_epoch=EPOCH, expected_revision=0,
+                self.key, expected_revision=0,
                 expected_branch_name="topic",
             ),
             old,
         )
         self.assertIsNone(self.store.retire_generation(
-            self.key, expected_epoch=EPOCH, expected_revision=0,
+            self.key, expected_revision=0,
             expected_branch_name="topic",
         ))
         self.assertEqual(self.store.establish(next_key, "topic").key, next_key)
@@ -373,7 +360,7 @@ class BranchSubstrateTests(unittest.TestCase):
         ]:
             with self.subTest(branch_name=branch_name):
                 with self.assertRaises(LifecycleContractError):
-                    BranchBinding(TASK_ID, GENERATION, EPOCH, 0, branch_name)
+                    BranchBinding(TASK_ID, GENERATION, 0, branch_name)
 
     def test_establishment_returns_existing_aligned_control_state(self) -> None:
         self.establish_control(revision=3)
@@ -388,15 +375,14 @@ class BranchSubstrateTests(unittest.TestCase):
         )
         self.assertEqual(result.kind, "already_established")
         self.assertEqual(
-            (result.binding.binding_epoch, result.binding.binding_revision),
-            (EPOCH, 3),
+            result.binding.binding_revision,
+            3,
         )
 
-    def test_establishment_binding_only_restores_ownership_epoch(self) -> None:
+    def test_establishment_binding_only_restores_ownership_revision(self) -> None:
         self.store.establish(
             self.key,
             "main",
-            binding_epoch=EPOCH,
             binding_revision=3,
         )
         result = establish_branch_binding(
@@ -410,8 +396,8 @@ class BranchSubstrateTests(unittest.TestCase):
         )
         self.assertEqual(result.kind, "binding_established")
         self.assertEqual(
-            (result.ownership.binding_epoch, result.ownership.binding_revision),
-            (EPOCH, 3),
+            result.ownership.binding_revision,
+            3,
         )
         self.assertEqual(
             self.ownership.projections[-1],
@@ -422,10 +408,9 @@ class BranchSubstrateTests(unittest.TestCase):
             },
         )
 
-    def test_establishment_ownership_only_restores_binding_epoch(self) -> None:
+    def test_establishment_ownership_only_restores_binding_revision(self) -> None:
         self.ownership.establish_current(
             self.key,
-            binding_epoch=EPOCH,
             binding_revision=3,
             branch_name="main",
             branch_ownership="caller_owned",
@@ -442,39 +427,26 @@ class BranchSubstrateTests(unittest.TestCase):
         )
         self.assertEqual(result.kind, "binding_established")
         self.assertEqual(
-            (result.binding.binding_epoch, result.binding.binding_revision),
-            (EPOCH, 3),
+            result.binding.binding_revision,
+            3,
         )
 
-    def test_establishment_complete_control_loss_creates_new_epoch_revision_zero(self) -> None:
+    def test_establishment_complete_control_loss_starts_at_revision_zero(self) -> None:
         self.establish_control()
-        old_epoch = self.store.read(self.key).binding_epoch
         self.store.path_for(self.key).unlink()
         self.ownership.current.pop(self.key)
-        new_epoch = EPOCH + 12
-        with mock.patch(
-            "runtime.task_lifecycle.branch_store._new_binding_epoch",
-            return_value=new_epoch,
-        ):
-            result = establish_branch_binding(
-                self.repository,
-                self.store,
-                self.ownership,
-                key=self.key,
-                task_ref=TASK_REF,
-                expected_status="in_progress",
-                expected_candidate_head=self.fixture.head,
-            )
+        result = establish_branch_binding(
+            self.repository,
+            self.store,
+            self.ownership,
+            key=self.key,
+            task_ref=TASK_REF,
+            expected_status="in_progress",
+            expected_candidate_head=self.fixture.head,
+        )
         self.assertEqual(result.kind, "binding_established")
-        self.assertEqual(
-            (result.binding.binding_epoch, result.binding.binding_revision),
-            (new_epoch, 0),
-        )
-        self.assertEqual(
-            (result.ownership.binding_epoch, result.ownership.binding_revision),
-            (new_epoch, 0),
-        )
-        self.assertNotEqual(result.binding.binding_epoch, old_epoch)
+        self.assertEqual(result.binding.binding_revision, 0)
+        self.assertEqual(result.ownership.binding_revision, 0)
 
     def test_establishment_candidate_cardinality_is_closed(self) -> None:
         unique = resolve_establishment(
@@ -573,7 +545,7 @@ class BranchSubstrateTests(unittest.TestCase):
 
     def test_candidate_discovery_rejects_other_task_binding(self) -> None:
         other_key = TaskLifecycleKey("other-task", 0)
-        self.store.establish(other_key, "main", binding_epoch=41)
+        self.store.establish(other_key, "main")
         candidates = discover_branch_candidates(
             self.repository,
             self.store,
@@ -660,7 +632,6 @@ class BranchSubstrateTests(unittest.TestCase):
             "key": self.key,
             "task_ref": TASK_REF,
             "expected_status": "in_progress",
-            "expected_epoch": result.binding.binding_epoch,
             "expected_revision": 0,
             "expected_branch_name": "main",
             "expected_head": result.selected.head,
@@ -681,7 +652,7 @@ class BranchSubstrateTests(unittest.TestCase):
         self.assertEqual(second.binding, result.binding)
         self.assertEqual(self.ownership.ledger_revision, ledger_revision)
 
-    def test_establishment_recovery_rejects_epoch_mismatch(self) -> None:
+    def test_establishment_recovery_rejects_revision_mismatch(self) -> None:
         result = self.establish_selected()
         with self.assertRaisesRegex(LifecycleContractError, "branch_binding_result_mismatch"):
             recover_established_branch_binding(
@@ -691,18 +662,13 @@ class BranchSubstrateTests(unittest.TestCase):
                 key=self.key,
                 task_ref=TASK_REF,
                 expected_status="in_progress",
-                expected_epoch=result.binding.binding_epoch + 1,
-                expected_revision=0,
+                expected_revision=1,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
             )
 
-    def test_establishment_recovery_rejects_boolean_epoch(self) -> None:
-        with mock.patch(
-            "runtime.task_lifecycle.branch_store._new_binding_epoch",
-            return_value=1,
-        ):
-            result = self.establish_selected()
+    def test_establishment_recovery_rejects_boolean_revision(self) -> None:
+        result = self.establish_selected()
         with self.assertRaisesRegex(LifecycleContractError, "branch_binding_result_mismatch"):
             recover_established_branch_binding(
                 self.repository,
@@ -711,8 +677,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 key=self.key,
                 task_ref=TASK_REF,
                 expected_status="in_progress",
-                expected_epoch=True,
-                expected_revision=0,
+                expected_revision=True,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
             )
@@ -730,7 +695,6 @@ class BranchSubstrateTests(unittest.TestCase):
                 key=self.key,
                 task_ref=TASK_REF,
                 expected_status="in_progress",
-                expected_epoch=result.binding.binding_epoch,
                 expected_revision=0,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
@@ -738,7 +702,7 @@ class BranchSubstrateTests(unittest.TestCase):
 
     def test_local_branch_candidate_requires_checkout_acquisition_before_establishment(self) -> None:
         self.fixture.branch("local-only")
-        self.store.establish(self.key, "local-only", binding_epoch=EPOCH)
+        self.store.establish(self.key, "local-only")
         resolution = resolve_establishment(
             self.repository,
             self.store,
@@ -790,8 +754,8 @@ class BranchSubstrateTests(unittest.TestCase):
         after = capture_checkout_state(self.fixture.repo)
 
         self.assertEqual(
-            (result.binding.binding_epoch, result.binding.binding_revision, result.binding.branch_name),
-            (EPOCH, 1, "topic-dirty"),
+            (result.binding.binding_revision, result.binding.branch_name),
+            (1, "topic-dirty"),
         )
         self.assertEqual(before.head, after.head)
         self.assertEqual(before.index_sha256, after.index_sha256)
@@ -820,8 +784,8 @@ class BranchSubstrateTests(unittest.TestCase):
         result = execute_rebind(self.repository, self.store, self.ownership, plan)
         self.assertEqual(result.checkout_path, target.resolve())
         self.assertEqual(
-            (result.binding.binding_epoch, result.binding.binding_revision),
-            (EPOCH, 1),
+            result.binding.binding_revision,
+            1,
         )
         self.assertEqual(self.fixture.git("branch", "--show-current"), "main")
         self.assertEqual(self.fixture.git("branch", "--show-current", cwd=target), "target")
@@ -841,10 +805,9 @@ class BranchSubstrateTests(unittest.TestCase):
         store = BranchBindingStore(repository)
         ownership = InMemoryOwnershipPort()
         key = TaskLifecycleKey(TASK_ID, GENERATION)
-        store.establish(key, "main", binding_epoch=EPOCH)
+        store.establish(key, "main")
         ownership.establish_current(
             key,
-            binding_epoch=EPOCH,
             binding_revision=0,
             branch_name="main",
             branch_ownership="caller_owned",
@@ -1061,12 +1024,12 @@ class BranchSubstrateTests(unittest.TestCase):
         first = recover_rebind(self.repository, self.store, self.ownership, plan)
         second = recover_rebind(self.repository, self.store, self.ownership, plan)
         self.assertEqual(first.binding, executed.binding)
-        self.assertEqual(first.binding.binding_epoch, EPOCH)
+        self.assertEqual(first.binding.binding_revision, 1)
         self.assertEqual(second.binding.binding_revision, 1)
         self.assertTrue(first.recovered)
         self.assertEqual(self.ownership.rebind_calls, 1)
 
-    def test_rebind_output_loss_recovery_rejects_epoch_mismatch(self) -> None:
+    def test_rebind_output_loss_recovery_rejects_revision_mismatch(self) -> None:
         self.establish_control()
         plan = prepare_rebind(
             self.repository,
@@ -1077,7 +1040,7 @@ class BranchSubstrateTests(unittest.TestCase):
             task_ref=TASK_REF,
             expected_status="in_progress",
             current_checkout=self.fixture.repo,
-            target_branch_name="epoch-mismatch",
+            target_branch_name="revision-mismatch",
         )
         execute_rebind(self.repository, self.store, self.ownership, plan)
         with self.assertRaisesRegex(LifecycleContractError, "rebind_result_mismatch"):
@@ -1085,7 +1048,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 self.repository,
                 self.store,
                 self.ownership,
-                replace(plan, expected_epoch=EPOCH + 1),
+                replace(plan, expected_revision=1),
             )
 
     def test_rebind_output_loss_recovery_rejects_target_head_drift(self) -> None:

@@ -16,3 +16,19 @@ Status: isolated candidate; results must be bound to the final reviewed diff.
   graph and lifecycle acceptance gates after promotion; do not substitute
   #434 or C3-C7 historical evidence. The full multi-platform Release matrix
   remains assigned to its dedicated gate.
+- `T454-G7-05`: Exercise missing terminal ownership candidate discovery,
+  stable IDs, selected-only deletion, changed HEAD, dirty worktree, current
+  use, absent resources and independent confirmation through the canonical
+  and installed Cleanup interface and current workflow projection.
+- `T454-G7-06`: In the exact fixed Fork, exercise ordinary remote-backed
+  task create/rename/archive with immutable TaskId, `no_issue` source and no
+  retired branch dependency. Confirm Guru issue-sourced creation still writes
+  its reviewed source, the dogfood official scripts match fixed Fork templates,
+  and source-lock and installed regressions pass.
+- `T454-G7-07`: Complete exact selected-target Cleanup after a manual Finish,
+  then Reactivate the same archived task; stale or absent completed receipts
+  remain blocked. Preserve a regression for prior `manual-*` receipts.
+- `T454-G7-08`: Validate five-field binding and resource records in source,
+  installed and fixed Fork readers; reject retired six-field records. Exercise
+  missing-control Cleanup with a still-active artifact, both without and with
+  a retained branch containing that task commit and artifact.

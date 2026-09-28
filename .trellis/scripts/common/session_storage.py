@@ -11,7 +11,7 @@ from typing import Any
 
 from .history_paths import RetiredDataPathError, require_active_path
 from .io import JSON_READ_MISSING, read_json_checked, write_json
-from .task_utils import TaskIdentityError, lifecycle_generation
+from .task_utils import TASK_ID_PATTERN, TaskIdentityError, lifecycle_generation
 
 
 class SessionBindingError(ValueError):
@@ -267,7 +267,7 @@ def read_record(path: Path, root: Path, facts: RepositoryFacts) -> SessionRecord
     if set(data) != expected:
         raise SessionBindingError(f"invalid_binding_fields: {path}")
     task_id = data.get("task_id")
-    if not isinstance(task_id, str) or not task_id.strip():
+    if not isinstance(task_id, str) or not TASK_ID_PATTERN.fullmatch(task_id):
         raise SessionBindingError(f"invalid_task_id: {path}")
     try:
         generation = lifecycle_generation(data, path)
@@ -355,7 +355,7 @@ def resolve_task_identity(
                     )
                 continue
             candidate_id = data.get("id")
-            if not isinstance(candidate_id, str) or not candidate_id.strip():
+            if not isinstance(candidate_id, str) or not TASK_ID_PATTERN.fullmatch(candidate_id):
                 if visible_match:
                     raise SessionBindingError(f"invalid_task_id: {task_json}")
                 continue
