@@ -4,7 +4,7 @@
 - State: candidate pending independent review; expected current is `current-main-0.6.17-guru.67/active`.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
-- Verified source candidate: `castbox/Trellis@ebabae6cf686ff85a00b7ea92c957b0ee1ba5679`, tree `7d357543a097420c92ad872b02e99e2437eaeb82`, successful main CI `36451010671`. Fork PRs #18 and #19 are merged and Issue #8 is closed; Guru package-ready verification remains separate.
+- Verified source candidate: `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`, tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`, successful main CI `36460551909`. Fork PRs #18, #19 and #20 are merged and Issue #8 is closed; Guru package-ready verification remains separate.
 
 The official Trellis task writer owns the complete TaskId domain
 `[A-Za-z0-9][A-Za-z0-9._-]*`. A TaskId is not a branch name, Git ref tail,
@@ -35,7 +35,10 @@ receipts and completed older `manual-*` receipts for the same sealed Finish.
 The full #454 review also closed two owner boundaries. The official task
 create/archive store carries immutable TaskId and structured source without
 `task.json.branch` as archive authority; the Guru dogfood task CLI projects
-the same fixed Fork semantics. The existing Cleanup owner exposes a call-local
+the same fixed Fork semantics. Its source writer validates exactly the Guru
+reader's portable owner/repo domain before writing task metadata, including
+the no-`.git` transport-suffix rule. The dogfood session reader consumes the
+same five-field TaskBranchBinding as the lifecycle store. The existing Cleanup owner exposes a call-local
 terminal resource candidate DTO when ownership is missing, then accepts
 selected candidate IDs under fresh live validation and an exact deletion
 confirmation. Its completed selection receipt is consumed by Reactivate for

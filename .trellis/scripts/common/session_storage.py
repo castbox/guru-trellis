@@ -147,12 +147,10 @@ def _bound_task_workspace(
     if reason == JSON_READ_MISSING:
         return None
     if binding is None or set(binding) != {
-        "schema_version", "task_id", "lifecycle_generation", "binding_epoch",
-        "binding_revision", "branch_name",
+        "schema_version", "task_id", "lifecycle_generation", "binding_revision", "branch_name",
     } or (binding["schema_version"] != "1.0" or binding["task_id"] != task_id
           or type(binding["lifecycle_generation"]) is not int
           or binding["lifecycle_generation"] != generation
-          or type(binding["binding_epoch"]) is not int or binding["binding_epoch"] < 0
           or type(binding["binding_revision"]) is not int or binding["binding_revision"] < 0
           or not isinstance(binding["branch_name"], str) or not binding["branch_name"]):
         raise SessionBindingError(f"invalid_task_branch_binding: {path}")

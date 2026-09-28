@@ -140,6 +140,14 @@ class ActivationCandidateTests(unittest.TestCase):
             check=True, capture_output=True,
         ).stdout
         self.assertEqual(task_store, (ROOT / ".trellis/scripts/common/task_store.py").read_bytes())
+        session_storage = subprocess.run(
+            ["git", "-C", checkout, "show",
+             f"{lock['commit']}:packages/cli/src/templates/trellis/scripts/common/session_storage.py"],
+            check=True, capture_output=True,
+        ).stdout
+        self.assertEqual(session_storage, (ROOT / ".trellis/scripts/common/session_storage.py").read_bytes())
+        self.assertIn(b'"binding_revision", "branch_name"', session_storage)
+        self.assertNotIn(b'"binding_epoch"', session_storage)
 
     def test_current_test_index_includes_latest_acceptance_cases(self) -> None:
         index = (ROOT / "docs/test/README.md").read_text(encoding="utf-8")

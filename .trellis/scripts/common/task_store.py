@@ -318,7 +318,8 @@ def _parse_create_source(raw: str | None) -> dict | None:
         and set(source) == {"kind", "repo_ref", "number", "disposition"}
         and source["kind"] == "issue"
         and isinstance(source["repo_ref"], str)
-        and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", source["repo_ref"])
+        and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*", source["repo_ref"])
+        and not source["repo_ref"].endswith(".git")
         and type(source["number"]) is int
         and source["number"] > 0
         and source["disposition"] == "exact_source"

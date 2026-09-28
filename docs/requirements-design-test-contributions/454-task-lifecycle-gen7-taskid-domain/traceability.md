@@ -9,6 +9,7 @@
 | `R454-G7-05` | `D454-G7-05` | `T454-G7-06` |
 | `R454-G7-06` | `D454-G7-06` | `T454-G7-07` |
 | `R454-G7-07` | `D454-G7-07` | `T454-G7-08` |
+| `R454-G7-08` | `D454-G7-08` | `T454-G7-09` |
 
 These IDs refine existing `R454-01`, `D454-01..02`, and `T454-03/05` plus
 the live #454 terminal Cleanup and official task-store acceptance clauses.

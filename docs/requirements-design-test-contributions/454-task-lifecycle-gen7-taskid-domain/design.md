@@ -3,7 +3,7 @@
 Status: isolated candidate against `.67/active`; not promoted.
 
 - `D454-G7-01`: Pin the merged official Fork commit
-  `ebabae6cf686ff85a00b7ea92c957b0ee1ba5679` as the implementation
+  `18ccbf0356ebcc61f3557e1427d1ad8a6351559a` as the implementation
   candidate. The official task writer validates explicit and slug-derived IDs. Guru
   `identity.py` and the shared DTO schema use the exact same TaskId pattern.
 - `D454-G7-02`: Derive handoff receipt refs in one runtime owner. Preserve
@@ -32,3 +32,6 @@ Status: isolated candidate against `.67/active`; not promoted.
   five-field contract without an epoch. Cleanup's missing-control selection
   checks active task artifacts and a retained containing branch before deleting
   a selected local branch.
+- `D454-G7-08`: Align the official Fork source parser with Guru's
+  `normalize_repo_ref` contract and project that writer and the current
+  five-field session reader byte-for-byte into the dogfood official scripts.

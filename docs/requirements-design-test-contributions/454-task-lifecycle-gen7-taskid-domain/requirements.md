@@ -33,3 +33,6 @@ Status: isolated candidate against `.67/active`; not promoted.
   neither resource ownership nor public DTO adds an epoch. Missing-control
   Cleanup cannot delete a local branch carrying an active task unless another
   retained branch contains the task commit and artifact.
+- `R454-G7-08`: The official task source writer and Guru reader accept the
+  same portable owner/repo domain before durable task creation. The dogfood
+  session reader consumes the current five-field binding record.

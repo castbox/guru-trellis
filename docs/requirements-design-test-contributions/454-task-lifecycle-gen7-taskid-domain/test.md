@@ -32,3 +32,8 @@ Status: isolated candidate; results must be bound to the final reviewed diff.
   installed and fixed Fork readers; reject retired six-field records. Exercise
   missing-control Cleanup with a still-active artifact, both without and with
   a retained branch containing that task commit and artifact.
+- `T454-G7-09`: In the exact fixed Fork, reject source repo refs with a
+  transport `.git` suffix or illegal leading component before task creation,
+  and accept legal dotted and hyphenated names. Assert Guru dogfood task and
+  session scripts match the fixed Fork templates and resolve a current
+  generation 7 five-field session binding.
