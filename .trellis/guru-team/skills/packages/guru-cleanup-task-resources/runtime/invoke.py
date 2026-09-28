@@ -14,9 +14,9 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
-from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.git_facts import commit_path_bytes, inspect_repository
 from runtime.task_lifecycle.handoff_cleanup import read_handoff_cleanup_inventory
-from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.identity import normalize_task_ref
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
@@ -228,8 +228,8 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
     return False
 
 
-def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path, key: TaskLifecycleKey,
-                                 finish_result_id: str, archive_ref: str) -> dict[str, Any]:
+def require_missing_terminal(store: ResourceLedgerStore, package_root: Path,
+                             key: TaskLifecycleKey, finish_result_id: str, root: Path) -> dict[str, Any]:
     path = (store.repository.common_dir / "guru-team" / "finish-results" /
             key.task_id / f"{key.lifecycle_generation}-manual.json")
     if not path.is_file() or path.is_symlink():
@@ -237,22 +237,26 @@ def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path,
     try:
         result = json.loads(path.read_text(encoding="utf-8"))
         validate_json(result, package_root.parent / "guru-finish-task/schemas/manual-finish-result.schema.json", "manual_finish_result")
-    except (OSError, json.JSONDecodeError, CommandError) as exc:
+        archive_ref = normalize_task_ref(result["archive_ref"])
+        if not archive_ref.startswith(".trellis/tasks/archive/"):
+            raise ValueError("not an archive")
+        if any(result[field] != value for field, value in {
+            "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation,
+            "finish_result_id": finish_result_id,
+        }.items()):
+            raise ValueError("different Finish identity")
+        if git(root, "merge-base", "--is-ancestor", result["finish_head"], result["target_head"], check=False).returncode:
+            raise ValueError("Finish commit is absent from target")
+        task_bytes = commit_path_bytes(store.repository, result["target_head"], f"{archive_ref}/task.json")
+        summary_bytes = commit_path_bytes(store.repository, result["target_head"], f"{archive_ref}/finish-summary.json")
+        task = json.loads(task_bytes) if task_bytes is not None else None
+        if (summary_bytes is None or not isinstance(task, dict) or task.get("id") != key.task_id
+                or task.get("lifecycle_generation", 0) != key.lifecycle_generation
+                or task.get("status") != "completed"):
+            raise ValueError("target archive is absent or mismatched")
+    except (OSError, json.JSONDecodeError, CommandError, LifecycleContractError, ValueError) as exc:
         raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Recover a valid terminal Finish result.") from exc
-    if any(result[field] != value for field, value in {
-        "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation,
-        "finish_result_id": finish_result_id, "archive_ref": archive_ref,
-    }.items()):
-        raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Select the current archived Finish result.")
     return result
-
-
-def require_missing_terminal(store: ResourceLedgerStore, package_root: Path,
-                             key: TaskLifecycleKey, finish_result_id: str, root: Path) -> dict[str, Any]:
-    task = resolve_task_id(root, key.task_id)
-    if task.lifecycle_state != "archived" or task.lifecycle_generation != key.lifecycle_generation:
-        raise LifecycleContractError("archived_lifecycle_stale", "task", "Select a normally finished archived lifecycle.")
-    return require_manual_finish_result(store, package_root, key, finish_result_id, task.task_ref)
 
 
 def handoff_cleanup(root: Path, public: dict[str, Any], *, confirmed: bool) -> dict[str, Any]:

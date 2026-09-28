@@ -9,6 +9,9 @@ Normal Cleanup consumes only ResourceSealRefDTO and resolves Guru-owned
 incarnations from the common-dir ledger. It preserves caller-owned and unknown
 resources. Missing terminal ownership returns `manual_cleanup_required` with
 call-local live candidates; it does not reconstruct or persist ownership.
+For that route, the exact common-dir Finish result identifies the archived
+task and summary in its target commit; the retained invocation checkout may
+still be behind that commit.
 `select_explicit_cleanup_targets` first accepts an empty
 `selected_candidate_ids` list with the exact terminal Finish identity and
 returns the live candidates. Its next call accepts only selected candidate IDs

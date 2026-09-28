@@ -105,8 +105,9 @@ class ActivationCandidateTests(unittest.TestCase):
              "454-task-lifecycle-gen7-taskid-domain/manifest.yaml")
             .read_text(encoding="utf-8")
         )
-        self.assertEqual(contribution["status"], "candidate_pending_review")
+        self.assertEqual(contribution["status"], "reviewed_promoted")
         self.assertEqual(contribution["expected_current_version"], "current-main-0.6.17-guru.67")
+        self.assertEqual(contribution["candidate_successor_version"], "current-main-0.6.17-guru.68")
         for relative in (
             "docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md",
             "docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/design.md",

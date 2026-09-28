@@ -424,6 +424,12 @@ def test_missing_ledger_manual_cleanup_requires_exact_finished_generation(tmp_pa
     archive = root / archive_ref
     archive.mkdir(parents=True)
     (archive / "task.json").write_text(json.dumps({"id": "demo", "lifecycle_generation": 0, "status": "completed"}))
+    (archive / "finish-summary.json").write_text("{}\n")
+    git(root, "switch", "-q", "codex/demo")
+    git(root, "add", archive_ref)
+    git(root, "commit", "-qm", "finish")
+    head = git(root, "rev-parse", "HEAD")
+    git(root, "switch", "-q", "main")
     result_id = "finish:v1:0123456789abcdef"
     manual = selection(root, finish_result_id=result_id)
     assert invoke(tmp_path, root, manual, confirmed=True)["reason_code"] == "manual_finish_result_missing"
@@ -442,14 +448,20 @@ def test_missing_ledger_manual_cleanup_requires_exact_finished_generation(tmp_pa
 
 def missing_ledger_fixture(tmp_path: Path, *, linked: bool = False) -> tuple[Path, ResourceLedgerStore, dict, Path | None]:
     root, store, _public, head = fixture(tmp_path, ownership="caller_owned")
-    checkout = tmp_path / "linked" if linked else None
-    if checkout:
-        git(root, "worktree", "add", "-q", str(checkout), "codex/demo")
     store.path_for(TaskLifecycleKey("demo", 0)).unlink()
     archive_ref = ".trellis/tasks/archive/2026-09/demo"
     archive = root / archive_ref
     archive.mkdir(parents=True)
     (archive / "task.json").write_text(json.dumps({"id": "demo", "lifecycle_generation": 0, "status": "completed"}))
+    (archive / "finish-summary.json").write_text("{}\n")
+    git(root, "switch", "-q", "codex/demo")
+    git(root, "add", archive_ref)
+    git(root, "commit", "-qm", "finish")
+    head = git(root, "rev-parse", "HEAD")
+    git(root, "switch", "-q", "main")
+    checkout = tmp_path / "linked" if linked else None
+    if checkout:
+        git(root, "worktree", "add", "-q", str(checkout), "codex/demo")
     result_id = "finish:v1:0123456789abcdef"
     result_path = store.repository.common_dir / "guru-team/finish-results/demo/0-manual.json"
     result_path.parent.mkdir(parents=True)
@@ -458,6 +470,31 @@ def missing_ledger_fixture(tmp_path: Path, *, linked: bool = False) -> tuple[Pat
                                        "target_head": head, "archive_ref": archive_ref,
                                        "head_branch": "codex/demo"}))
     return root, store, selection(root, finish_result_id=result_id), checkout
+
+
+def test_missing_ledger_uses_finish_commit_when_retained_checkout_lags(tmp_path):
+    root, _store, selected, checkout = missing_ledger_fixture(tmp_path, linked=True)
+    assert checkout is not None
+    assert not (root / ".trellis/tasks/archive/2026-09/demo/task.json").exists()
+    assert (checkout / ".trellis/tasks/archive/2026-09/demo/task.json").is_file()
+    listed = invoke(tmp_path, root, {**selected, "selected_candidate_ids": []})
+    assert listed["exit_id"] == "manual_cleanup_required"
+    targets = [row["candidate_id"] for row in listed["candidates"]
+               if row["branch_name"] == "codex/demo" and row["kind"] in {"local_branch", "linked_worktree"}]
+    assert len(targets) == 2
+    assert invoke(tmp_path, root, {**selected, "selected_candidate_ids": targets})["exit_id"] == "manual_cleanup_required"
+
+
+def test_missing_ledger_rejects_finish_target_without_archive(tmp_path):
+    root, store, selected, _checkout = missing_ledger_fixture(tmp_path)
+    result_path = store.repository.common_dir / "guru-team/finish-results/demo/0-manual.json"
+    result = json.loads(result_path.read_text())
+    result["target_head"] = git(root, "rev-parse", "main")
+    result["finish_head"] = result["target_head"]
+    result_path.write_text(json.dumps(result))
+    discovery = {**selected, "selected_candidate_ids": []}
+    assert invoke(tmp_path, root, discovery)["reason_code"] == "manual_finish_result_stale"
+    assert invoke(tmp_path, root, selected)["reason_code"] == "manual_finish_result_stale"
 
 
 def test_missing_ledger_stale_head_blocks_selected_candidate(tmp_path):
