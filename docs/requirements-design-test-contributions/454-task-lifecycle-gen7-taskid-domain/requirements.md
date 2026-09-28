@@ -20,7 +20,8 @@ Status: isolated candidate against `.67/active`; not promoted.
   resource candidates with stable IDs and exact identity/HEAD facts; the
   `select_explicit_cleanup_targets` profile accepts selected candidate IDs,
   revalidates them, requires an exact deletion confirmation, and leaves
-  unselected resources unchanged.
+  unselected resources unchanged. Ledger loss after an ordinary successful
+  Finish also reaches this route using the exact terminal Finish identity.
 - `R454-G7-05`: The official task writer creates immutable TaskId and
   structured source without retired `branch` metadata; official rename and
   archive preserve TaskId/source/generation. A remote-backed ordinary archive

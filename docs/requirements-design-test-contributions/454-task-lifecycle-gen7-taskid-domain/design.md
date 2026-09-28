@@ -18,7 +18,9 @@ Status: isolated candidate against `.67/active`; not promoted.
 - `D454-G7-04`: Evolve the existing Cleanup owner directly. Its terminal
   missing-ledger exit projects only call-local Git resource candidates;
   selection uses stable candidate IDs and fresh live resource checks, not
-  ledger reconstruction or ownership inference. Rename the public manual
+  ledger reconstruction or ownership inference. Normal and manual Finish both
+  retain the exact minimal terminal result for a later ledger-loss recovery.
+  Rename the public manual
   profile and exit to the Issue contract without a compatibility alias.
 - `D454-G7-05`: Evolve the official Fork task create/archive store in place:
   direct standalone creation defaults to `source.kind=no_issue`, Guru creation

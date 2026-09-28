@@ -18,7 +18,7 @@ Status: isolated candidate; results must be bound to the final reviewed diff.
   remains assigned to its dedicated gate.
 - `T454-G7-05`: Exercise missing terminal ownership candidate discovery,
   stable IDs, selected-only deletion, changed HEAD, dirty worktree, current
-  use, absent resources and independent confirmation through the canonical
+  use, absent resources, normal-Finish ledger loss and independent confirmation through the canonical
   and installed Cleanup interface and current workflow projection.
 - `T454-G7-06`: In the exact fixed Fork, exercise ordinary remote-backed
   task create/rename/archive with immutable TaskId, `no_issue` source and no

@@ -144,6 +144,22 @@ def manual_result_path(root: Path, key: TaskLifecycleKey) -> Path:
     return inspect_repository(root).common_dir / "guru-team/finish-results" / key.task_id / f"{key.lifecycle_generation}-manual.json"
 
 
+def persist_cleanup_fallback(root: Path, package_root: Path, key: TaskLifecycleKey,
+                             finish_result_id: str, archive_ref: str, transaction: dict) -> None:
+    result = {
+        "schema_version": "1.0", "task_id": key.task_id,
+        "lifecycle_generation": key.lifecycle_generation, "finish_result_id": finish_result_id,
+        "finish_head": transaction["commit"], "target_head": transaction["target_head"],
+        "archive_ref": archive_ref,
+    }
+    validate_json(result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
+    path = manual_result_path(root, key)
+    if path.is_file() and json.loads(path.read_text(encoding="utf-8")) != result:
+        raise CommandError("stale_identity", "manual_finish_result", "Recover the exact terminal Finish result.", 3)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
     validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -483,18 +499,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                                        expected_branch_name=binding.branch_name)
         transaction["cleanup_state"] = "manual_cleanup_required"
         write_transaction(transaction_file, transaction, package_root)
-        manual_result = {
-            "schema_version": "1.0", "task_id": key.task_id,
-            "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation),
-            "finish_head": transaction["commit"], "target_head": transaction["target_head"],
-            "archive_ref": archive_ref,
-        }
-        validate_json(manual_result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
-        result_path = manual_result_path(root, key)
-        if result_path.is_file() and json.loads(result_path.read_text(encoding="utf-8")) != manual_result:
-            raise CommandError("stale_identity", "manual_finish_result", "Recover the exact manual Finish result.", 3)
-        result_path.parent.mkdir(parents=True, exist_ok=True)
-        result_path.write_text(json.dumps(manual_result, sort_keys=True) + "\n", encoding="utf-8")
+        persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
         out = {"exit_id": "manual_cleanup_required", "task_id": public["task_id"], "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation), "cleanup_state": "manual_cleanup_required"}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
@@ -504,6 +509,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                                        expected_branch_name=binding.branch_name)
         except LifecycleContractError as exc:
             raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
     out = {
         "exit_id": "success",
         "task_id": seal["task_id"],

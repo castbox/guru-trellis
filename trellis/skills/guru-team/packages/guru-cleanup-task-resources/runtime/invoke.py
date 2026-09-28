@@ -233,12 +233,12 @@ def require_manual_finish_result(store: ResourceLedgerStore, package_root: Path,
     path = (store.repository.common_dir / "guru-team" / "finish-results" /
             key.task_id / f"{key.lifecycle_generation}-manual.json")
     if not path.is_file() or path.is_symlink():
-        raise LifecycleContractError("manual_finish_result_missing", "finish_result_id", "Recover the exact manual Finish result before selecting resources.")
+        raise LifecycleContractError("manual_finish_result_missing", "finish_result_id", "Recover the exact terminal Finish result before selecting resources.")
     try:
         result = json.loads(path.read_text(encoding="utf-8"))
         validate_json(result, package_root.parent / "guru-finish-task/schemas/manual-finish-result.schema.json", "manual_finish_result")
     except (OSError, json.JSONDecodeError, CommandError) as exc:
-        raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Recover a valid manual Finish result.") from exc
+        raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Recover a valid terminal Finish result.") from exc
     if any(result[field] != value for field, value in {
         "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation,
         "finish_result_id": finish_result_id, "archive_ref": archive_ref,

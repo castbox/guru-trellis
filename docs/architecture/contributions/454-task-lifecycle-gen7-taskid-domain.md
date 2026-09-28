@@ -46,6 +46,12 @@ the same TaskId, generation and Finish result. Candidate discovery never
 reconstructs ownership or creates a durable locator. These are repairs to
 existing owners, not new task/session binding concepts or new persistence.
 
+Both successful normal Finish and the missing-ownership Finish route retain the
+same minimal terminal result in ignored common-dir runtime. If only the
+resource ledger is later lost, Cleanup validates that exact Finish identity
+before offering call-local manual candidates; it never infers Guru ownership
+from surviving Git resources.
+
 ## Project Change Contract
 
 Requirement authority is the live #454 accepted TaskId pattern and this

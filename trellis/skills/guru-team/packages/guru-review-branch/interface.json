@@ -41,8 +41,8 @@
     },
     {
       "id": "workspace_boundary",
-      "evidence": "task-local context and worktree mapping",
-      "binding": "actual root equals expected task worktree",
+      "evidence": "current task identity, TaskBranchBinding and live Git checkout facts",
+      "binding": "actual root is the unique resolved active task checkout",
       "freshness": "rebuilt before record and check"
     },
     {

@@ -453,9 +453,11 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert store.read(key).finish_head == git(repo, "rev-parse", "HEAD")
     assert git(repo, "rev-parse", "refs/remotes/origin/main") != store.read(key).finish_head
     assert store.cleanup_resolution(TaskLifecycleKey("demo", 0), finish_result_id=finished["finish_result_id"], inventory_id=finished["inventory_id"]).resolution_kind == "ordinary_cleanup"
+    fallback = json.loads(FINISH.manual_result_path(repo, key).read_text())
+    assert fallback["finish_result_id"] == finished["finish_result_id"]
+    validate_json(fallback, PACKAGE / "schemas/manual-finish-result.schema.json", "manual_finish_result")
     repeated = invoke()
     assert repeated["exit_id"] == "success"
-    git(repo, "switch", "-q", "main")
     cleanup_package = PACKAGE.parent / "guru-cleanup-task-resources"
     cleanup_spec = importlib.util.spec_from_file_location("guru_cleanup_after_finish", cleanup_package / "runtime/invoke.py")
     assert cleanup_spec and cleanup_spec.loader
@@ -465,6 +467,14 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     cleanup_semantic = tmp_path / "cleanup-semantic.json"
     cleanup_input.write_text(json.dumps({"profile": "normal", "mode": "standalone", **{key: finished[key] for key in ("task_id", "lifecycle_generation", "finish_result_id", "inventory_id")}}))
     cleanup_semantic.write_text(json.dumps({"profile": "normal", "mode": "standalone", "route": {"typed_exit": "cleaned"}}))
+    ledger_path = store.path_for(key)
+    sealed_ledger = ledger_path.read_bytes()
+    ledger_path.unlink()
+    missing_ledger = cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
+                                                        "--semantic-result", str(cleanup_semantic)])
+    assert missing_ledger["exit_id"] == "manual_cleanup_required", missing_ledger
+    ledger_path.write_bytes(sealed_ledger)
+    git(repo, "switch", "-q", "main")
     assert cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
                                              "--semantic-result", str(cleanup_semantic), "--confirmed-cleanup"])["exit_id"] == "cleaned"
     assert store.read(key).resources[0].state == "resolved"
