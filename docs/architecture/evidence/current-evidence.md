@@ -410,3 +410,16 @@ Global package suite 保持 `19/20`，preset suite 保持 `85/86`；前者是 un
 本 evidence 不证明 C4-C7、D443、D436、E434、production activation、完整 installer/upgrade/workflow-switch/
 multi-platform Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
+
+## EVD-043: #454 Generation 7 TaskId Domain Candidate
+
+固定 Fork 为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，
+tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`，main CI `36460551909`
+成功。提升前候选 `origin/main@4d7cd74f3803ca924ac3802dcc12afd1f2cac06c...
+HEAD@63de89e3a47686f8b1fd505ba6fae89ce5658931` 的完整 Branch Review
+通过；34 包隔离测试为 `685 passed, 2 skipped`，installer/upgrade/Fork
+定向子集 `90 passed`，source/installed、Claude/Codex/Cursor drift、sidecar 与
+`git diff --check` 已定向检查。先前更宽 installer 运行的 `172 passed, 2 failed`
+未整体重跑，不把它计为通过。promotion-created diff 与最终同候选审查、
+远端 Delivery/merge/Closure/Finish/Cleanup 尚未在此条中证明；完整 Release matrix
+和 marketplace 不属于本次验收。

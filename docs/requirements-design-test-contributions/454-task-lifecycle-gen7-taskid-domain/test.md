@@ -1,6 +1,6 @@
 # #454 Generation 7 TaskId Domain Test Contribution
 
-Status: isolated candidate; results must be bound to the final reviewed diff.
+Status: reviewed promotion to `.68/active`; results must be bound to the final reviewed diff.
 
 - `T454-G7-01`: In the exact fixed Fork, create tasks using `task.lock`,
   `task.`, `task..child` and ordinary Git-valid IDs; verify rejected IDs

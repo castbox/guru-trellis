@@ -87,3 +87,11 @@ manual recovery 只补官方 pointer。E434 才将新 owner 接入 production gr
 common-dir branch binding 与 registered checkout，不从退休的 task metadata/path 构造身份。
 旧归档 source Issue 搜索先验证唯一 terminal TaskId；在途旧链不进入本图。
 前述 #435/#443 deferred 表述保留为 `.55/.57` predecessor history，不是 `.67` current。
+
+`ARCH-DOM-030`（#454 generation 7 current）：official Fork task writer 独占
+TaskId/source/create/rename/archive；Guru lifecycle 只验证同一身份域并生成私有
+handoff ref。session 仍只有一个当前焦点指针，可按 TaskId 切换或重绑；不保存
+多绑定历史。Cleanup 在 terminal ledger 丢失时只执行显式确认的当前候选删除，
+或在 Finish branch 消失后记录零删除结果；Reactivate 仅验证同 TaskId、同代
+Finish 的 cleaned receipt。任何 Git HEAD、Issue、checkout、developer 或 assignee
+均不构成 task identity 或 session binding authority。

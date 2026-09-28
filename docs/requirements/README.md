@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.67` | [requirement-main.md](./versions/current-main-0.6.17-guru.67/requirement-main.md) | reviewed #434 atomic task Delivery lifecycle activation；完整继承 immutable `.66`，Architecture 为 `.67/active` |
+| `active` | `current-main-0.6.17-guru.68` | [requirement-main.md](./versions/current-main-0.6.17-guru.68/requirement-main.md) | reviewed #454 generation 7 TaskId/domain and terminal recovery；完整继承 immutable `.67`，Architecture 为 `.68/active` |
+| `superseded` | `current-main-0.6.17-guru.67` | [requirement-main.md](./versions/current-main-0.6.17-guru.67/requirement-main.md) | reviewed #434 atomic activation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.66` | [requirement-main.md](./versions/current-main-0.6.17-guru.66/requirement-main.md) | #454 D436 非激活 terminal lifecycle packages；immutable history |
 | `superseded` | `current-main-0.6.17-guru.65` | [requirement-main.md](./versions/current-main-0.6.17-guru.65/requirement-main.md) | #454 D443 非激活 Bind major；immutable history |
 | `superseded` | `current-main-0.6.17-guru.64` | [requirement-main.md](./versions/current-main-0.6.17-guru.64/requirement-main.md) | #454 C6/C7 非激活 substrate；immutable history |
@@ -41,8 +42,8 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@71f43cd8955c676f8ab8215216f61376fe9c01fe`，成功 push CI `36332562361`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
-当前 `.67` 完整继承 immutable `.66` 并承接 #434 原子激活；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.67/active`。source/installed 与所选平台投影已验证；promotion-created diff 尚需 fresh Phase 2、Task Commit 与完整 Branch Review，完整 Release matrix 和业务仓生产验证不在本次通过声明内。
+当前框架源码固定为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，成功 main CI `36460551909`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.42`，target repository axis 为 `v0.6.17-guru.1`。released `v0.6.16-guru.1` 与 extension `0.6.16-guru.41` 保持 immutable history。
+当前 `.68` 完整继承 immutable `.67`，并承接 #454 generation 7 TaskId/domain、official writer/source 与 terminal Cleanup/Reactivate；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.68/active`。promotion-created diff 尚需 fresh Phase 2、Task Commit 与完整 Branch Review，完整 Release matrix 和业务仓生产验证不在本次通过声明内。
 
 `.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。
 
@@ -108,4 +109,4 @@ inventory 只承接 current-to-target trace，不替代前两份 Requirements �
 
 旧路径 `requirement-main.md` 与 `guru-team-trellis-flow.md` 仅保留迁移导航，不定义 current。
 
-历史 `.65` 完整继承 `.64` 并吸收 reviewed #454 D443 contribution；当时 Architecture 对应 `.65/active`。D436 随后在 `.66` 提升为非激活 package authority；E434 与 #434 activation 在该前驱阶段仍是后续边界。本次 `.67` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；完整 Release Gate matrix 由专门 Issue 承担。
+历史 `.65` 完整继承 `.64` 并吸收 reviewed #454 D443 contribution；当时 Architecture 对应 `.65/active`。D436 随后在 `.66` 提升为非激活 package authority；E434 与 #434 activation 在该前驱阶段仍是后续边界。`.67` 是 #434 的 immutable predecessor。本次 `.68` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；完整 Release Gate matrix 由专门 Issue 承担。

@@ -1,6 +1,6 @@
 # #454 Generation 7 TaskId Domain Design Contribution
 
-Status: isolated candidate against `.67/active`; not promoted.
+Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion gates remain independent.
 
 - `D454-G7-01`: Pin the merged official Fork commit
   `18ccbf0356ebcc61f3557e1427d1ad8a6351559a` as the implementation

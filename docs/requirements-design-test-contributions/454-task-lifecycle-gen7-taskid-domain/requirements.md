@@ -1,6 +1,6 @@
 # #454 Generation 7 TaskId Domain Requirements Contribution
 
-Status: isolated candidate against `.67/active`; not promoted.
+Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion gates remain independent.
 
 - `R454-G7-01`: Official `task.py create` validates explicit `--task-id` and
   slug-derived TaskIds against exactly `[A-Za-z0-9][A-Za-z0-9._-]*` before

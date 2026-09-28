@@ -1,7 +1,7 @@
 # #454 Generation 7 TaskId Domain Architecture Contribution
 
 - Identity: `architecture-contribution-454-task-lifecycle-gen7-taskid-domain-v1`.
-- State: candidate pending independent review; expected current is `current-main-0.6.17-guru.67/active`.
+- State: independently reviewed and promoted against expected `current-main-0.6.17-guru.67/active` to `.68/active`; post-promotion gates remain separate.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
 - Verified source candidate: `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`, tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`, successful main CI `36460551909`. Fork PRs #18, #19 and #20 are merged and Issue #8 is closed; Guru package-ready verification remains separate.
@@ -96,7 +96,7 @@ Before: the old fixed Fork and Guru control-ref validation rejected legal
 TaskIds such as `task.lock`, `task.`, and `task..child`; the newer Fork still
 wrote retired branch metadata and its archive gate read that field. Cleanup
 also lacked the specified terminal candidate DTO/profile.
-After, pending independent committed-range review: the official writer,
+After, independently reviewed committed-range candidate: the official writer,
 Guru runtime/schema and installed package agree on TaskId/source; archive
 does not depend on task branch metadata; Cleanup selection uses only current
 Git candidates and preserves ownership boundaries. Existing Git-valid IDs
@@ -104,9 +104,9 @@ keep their previous ref identity. No legacy dual writer or adapter remains.
 The previous `.67` authority and #434 contribution are immutable inputs,
 not targets for this candidate.
 
-Review must check the full candidate diff, fixed Fork source/CI, package
-tests, installed projection and shared R454/D454/T454 traceability. After
-independent committed-range Branch Review, the Architecture and RDT owners
-may serialize a successor promotion against the then-live expected current.
-Promotion-created changes require a new Phase 2, commit and full Branch
-Review. The multi-platform Release matrix remains outside this Issue.
+The independent pre-promotion review checked the full committed candidate,
+fixed Fork source/CI, package tests, installed projection and shared
+R454/D454/T454 traceability. Architecture and RDT owners serialized the
+`.67 -> .68` promotion against the expected current. Promotion-created
+changes require a new Phase 2, commit and full Branch Review. The
+multi-platform Release matrix remains outside this Issue.
