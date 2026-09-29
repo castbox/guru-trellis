@@ -4,7 +4,7 @@
     "schema_version": "1.0",
     "extension_id": "guru-team",
     "name": "Guru Team Trellis Extension",
-    "version": "0.6.17-guru.42",
+    "version": "0.6.17-guru.43",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
     "target_trellis_cli": "0.6.17",
@@ -958,11 +958,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-29T09:17:03Z",
+  "installed_at": "2026-09-29T18:19:06Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "8ec0011480dfc29b6686c14c196564221cd928ca",
-    "commit": "8ec0011480dfc29b6686c14c196564221cd928ca",
+    "ref": "7bf3d1829ccca3ee9408f0d20992a9bc5294b0bc",
+    "commit": "7bf3d1829ccca3ee9408f0d20992a9bc5294b0bc",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -12429,7 +12429,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/composition.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
-        "sha256": "204481f8f78ee2b01b064d28936b9e8911dd2c374c53c26e9de99e36cbcf4bc8",
+        "sha256": "11e219912930866dbb49c0e4d3be0b155d7967a9213f94fb9be44180bfd0349f",
         "executable": false,
         "action": "unchanged"
       },
@@ -12457,7 +12457,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/identity.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
-        "sha256": "c9243d7f7d026b38fe54fda0891b1c713d1ebb6cb9934eb4cc0c90596c17a1b4",
+        "sha256": "9f400b973ca377a161536ce85da2a531a5e65f3cab3f74b5d3d505ebd3677f61",
         "executable": false,
         "action": "unchanged"
       },
@@ -12471,7 +12471,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/resource_ledger.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/resource_ledger.py",
-        "sha256": "4b35c2c0d83a426520f09dfe0f64938c196775ed3338110962d0457b07e431fd",
+        "sha256": "186ce5767a7a94fee9f68c1b2f37210717ba80e55a2f154da360794cfb4e34c4",
         "executable": false,
         "action": "unchanged"
       },

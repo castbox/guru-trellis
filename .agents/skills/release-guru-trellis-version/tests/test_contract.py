@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,9 @@ ROOTS = {
 }
 RUNTIME_MODULE = REPO / ".trellis/guru-team/runtime/reviewed_content.py"
 PUBLIC_SKILLS = REPO / "trellis/skills/guru-team"
+sys.path.insert(0, str(PUBLIC_SKILLS))
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.git_facts import inspect_repository
 TASK_REF = ".trellis/tasks/09-02-release"
 TASK_COMMIT_PACKAGE = PUBLIC_SKILLS / "packages/guru-create-task-commit"
 DELIVERY_OWNERS = (
@@ -180,7 +184,8 @@ class SkillContractTest(unittest.TestCase):
         self.assertIn('TRELLIS_FORK_SOURCE="${trellis_fork_source}"', contract)
         self.assertIn("verify-throwaway-install.sh --mode focused", contract)
         self.assertIn("invocation-local evidence, not a seventh release input", contract)
-        self.assertIn("Shared plus selected-platform install (Codex by default)", contract)
+        self.assertIn("one clean Shared plus Codex install", contract)
+        self.assertIn('TRELLIS_PREDECESSOR_COMMIT="${predecessor_fork_commit}"', contract)
         self.assertIn("four-platform source-contract parity remains the separate gate", contract)
         self.assertNotIn("Shared/Codex/Claude/Cursor install", contract)
         self.assertNotIn("GURU_TEAM_THROWAWAY_SINGLE_REPO_COMPATIBILITY", contract)
@@ -368,6 +373,9 @@ class ReviewedContentIdentityTest(unittest.TestCase):
         self.write("schemas/release.schema.json", '{"revision": "v1"}\n')
         self.write("scripts/release.sh", "#!/usr/bin/env bash\necho v1\n")
         self.write("tests/test_release.py", "EXPECTED = 'v1'\n")
+        BranchBindingStore(inspect_repository(self.repo)).establish(
+            TaskLifecycleKey(Path(TASK_REF).name, 0), "feat/335-release-fixture"
+        )
         self.delivery_commit = self.create_delivery_commit()
 
     def tearDown(self) -> None:

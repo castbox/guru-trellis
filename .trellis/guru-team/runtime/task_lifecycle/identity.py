@@ -140,7 +140,7 @@ def _task_refs(repo_root: Path) -> Iterator[str]:
             yield candidate.relative_to(repo_root).as_posix()
 
 
-def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
+def _read_task_metadata(repo_root: Path, task_ref: str) -> dict[str, Any]:
     ref = normalize_task_ref(task_ref)
     root = repo_root.resolve()
     directory = root / ref
@@ -165,6 +165,12 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
         raise LifecycleContractError("invalid_task_ref", ref, "Keep the task artifact inside the selected repository.") from exc
     if not isinstance(data, dict):
         raise LifecycleContractError("invalid_task_metadata", f"{ref}/task.json", "Use one task metadata object.")
+    return data
+
+
+def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
+    ref = normalize_task_ref(task_ref)
+    data = _read_task_metadata(repo_root, ref)
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
         ref,
@@ -187,6 +193,27 @@ def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
             "Assign repository-unique exact and case-fold TaskIds before lifecycle resolution.",
         )
     return rows
+
+
+def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
+    """Check one proposed identity without requiring unrelated history to be unique."""
+
+    key = task_id_key(task_id)
+    ref = normalize_task_ref(task_ref)
+    root = repo_root.resolve()
+    for item in _task_refs(root):
+        if item == ref:
+            return True
+        try:
+            data = _read_task_metadata(root, item)
+            existing_key = task_id_key(data.get("id"), field_path=f"{item}/task.json.id")
+        except LifecycleContractError as exc:
+            if exc.code in {"task_not_found", "invalid_task_metadata", "invalid_task_id"}:
+                continue
+            raise
+        if existing_key == key:
+            return True
+    return False
 
 
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:

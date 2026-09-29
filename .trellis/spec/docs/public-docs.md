@@ -35,19 +35,19 @@ is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must keep four version axes explicit. The current
-target Guru repo tag is `v0.6.17-guru.1`; the target extension revision is
-`0.6.17-guru.42`; the current main/source framework lock is
-`castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b`, CI `35190729418`, CLI/core `0.6.17`, package
-manager `pnpm@10.32.1`. The released tag does not prove or contain the current
-framework-source adoption. Stable workflow marketplace and preset sources for
+target Guru repo tag is `v0.6.17-guru.2`; the target extension revision is
+`0.6.17-guru.43`; the current main/source framework lock is
+`castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`, CI `36519692082`, CLI/core `0.6.17`, package
+manager `pnpm@10.32.1`. The predecessor `v0.6.17-guru.1` does not prove
+the current framework-source adoption. Stable workflow marketplace and preset sources for
 one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.58`, inheriting
-immutable `.57`; it is not a product release axis. Read the current
-`R452-01..10`, `D452-01..10`, and `T452-01..12` delta through the three layer
-READMEs. The inherited R443 session-binding authority, R410 release axes, R408 source/session boundary and older pins remain
+Current knowledge authority is `current-main-0.6.17-guru.69`; it is not a
+product release axis. Read current Requirements/Design/Test deltas through the
+three layer READMEs. The inherited R443 session-binding authority, R410
+release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
 snapshot. Existing retired internal API cleanup and old lifecycle stay in force.

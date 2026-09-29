@@ -1857,7 +1857,7 @@ exit 23
     def test_existing_mode_cell_keeps_installed_validator_without_cumulative_smokes(self) -> None:
         target, source, work = Path("/fixture/target"), Path("/fixture/source"), Path("/fixture/work")
         installed = {
-            "extension": {"version": "0.6.17-guru.42", "target_trellis_cli": "0.6.17"},
+            "extension": {"version": "0.6.17-guru.43", "target_trellis_cli": "0.6.17"},
             "install": {"selected_platforms": ["codex"]},
             "skill_packages": {"selected_platforms": ["codex"]},
             "overlays": {"selected_platforms": ["codex"]},
