@@ -134,6 +134,43 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "task_identity_already_exists")
         self.assertFalse((self.repo / TASK_REF).exists())
 
+    def test_creation_ignores_unrelated_legacy_checkout_artifacts(self) -> None:
+        sibling = Path(self.temporary.name) / "legacy"
+        self.git("worktree", "add", "-b", "legacy", str(sibling))
+        active = sibling / ".trellis/tasks/09-20-old"
+        archived = sibling / ".trellis/tasks/archive/2026-09/09-20-old"
+        active.mkdir(parents=True)
+        archived.mkdir(parents=True)
+        (active / "task.json").write_text(json.dumps({"id": "old-task"}), encoding="utf-8")
+        (archived / "task.json").write_text(json.dumps({"id": "old-task"}), encoding="utf-8")
+        (sibling / ".trellis/tasks/09-21-empty").mkdir()
+        self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
+        (sibling / TASK_REF).mkdir()
+        with self.assertRaisesRegex(LifecycleContractError, "task_identity_already_exists"):
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+
+    def test_creation_ignores_unrelated_malformed_branch_artifact(self) -> None:
+        sibling = Path(self.temporary.name) / "legacy"
+        self.git("worktree", "add", "-b", "legacy", str(sibling))
+        old = sibling / ".trellis/tasks/archive/2026-01/01-00-old/task.json"
+        old.parent.mkdir(parents=True)
+        old.write_text('{"id": ', encoding="utf-8")
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "legacy artifact"], cwd=sibling, check=True)
+        self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
+
+    def test_creation_ignores_unrelated_old_resource_ledger(self) -> None:
+        resources = ResourceLedgerStore(inspect_repository(self.repo))
+        path = resources.path_for(TaskLifecycleKey("old-task", 0))
+        path.parent.mkdir(parents=True)
+        path.write_text('{"schema_version":"old"}', encoding="utf-8")
+        self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
+        target = resources.path_for(TaskLifecycleKey(TASK_ID, 0))
+        target.parent.mkdir(parents=True)
+        target.write_text('{"schema_version":"old"}', encoding="utf-8")
+        with self.assertRaisesRegex(LifecycleContractError, "resource_ledger_conflict"):
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+
     def test_creation_rejects_identity_on_unregistered_local_branch(self) -> None:
         sibling = Path(self.temporary.name) / "prior-task"
         self.git("worktree", "add", "-b", "prior-task", str(sibling))

@@ -36,6 +36,10 @@ or upstream `task.py start` to perform that transition.
 
 ## Installation
 
+当前目标仓库 tag 为 `v0.6.17-guru.2`，extension revision 为
+`0.6.17-guru.43`；两者须在 exact-candidate 验证、tag 和 Release 完成后
+才成为已发布事实。官方 CLI/core 保持 `0.6.17`。
+
 Use the source-locked Trellis Fork checkout (`castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
 successful main push CI `36519692082`)
 and a matching reviewed Guru

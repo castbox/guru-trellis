@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "TaskId preflight canonical runtime and deterministic script boundary"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "Managed preset projection and retired asset cleanup"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "Release-facing version axes and current documentation"}
+{"file": ".trellis/spec/workflow/architecture-baseline.md", "reason": "Task-owned Architecture contribution and serialized promotion"}

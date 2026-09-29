@@ -822,7 +822,7 @@ class ResourceLedgerStore:
             )
         return ledger
 
-    def iter_ledgers(self) -> Iterator[ResourceLedger]:
+    def iter_ledgers(self, task_id: str | None = None) -> Iterator[ResourceLedger]:
         if not self.root.exists():
             return
         if self.root.is_symlink() or not self.root.is_dir():
@@ -832,6 +832,8 @@ class ResourceLedgerStore:
                 "Keep the resource-ledger root as one regular directory.",
             )
         for task_dir in sorted(self.root.iterdir(), key=lambda item: item.name):
+            if task_id is not None and task_dir.name.casefold() != task_id.casefold():
+                continue
             if task_dir.is_symlink() or not task_dir.is_dir():
                 raise LifecycleContractError(
                     "resource_ledger_conflict",

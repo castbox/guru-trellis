@@ -189,6 +189,26 @@ def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
     return rows
 
 
+def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
+    """Check one proposed identity without requiring unrelated history to be unique."""
+
+    key = task_id_key(task_id)
+    ref = normalize_task_ref(task_ref)
+    root = repo_root.resolve()
+    for item in _task_refs(root):
+        if item == ref:
+            return True
+        try:
+            row = _read_identity(root, item)
+        except LifecycleContractError as exc:
+            if exc.code in {"task_not_found", "invalid_task_metadata", "invalid_task_id", "invalid_lifecycle_generation"}:
+                continue
+            raise
+        if row.task_id.casefold() == key:
+            return True
+    return False
+
+
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:
     selected = _read_identity(repo_root.resolve(), normalize_task_ref(task_ref))
     rows = task_inventory(repo_root)

@@ -69,16 +69,16 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Current target Guru Trellis repo tag | `v0.6.17-guru.1` |
-| Target Guru Team extension revision | `0.6.17-guru.42` |
+| Current target Guru Trellis repo tag | `v0.6.17-guru.2` |
+| Target Guru Team extension revision | `0.6.17-guru.43` |
 | Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` |
 | Reviewed Fork lifecycle primitive CI identity | `36519692082` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标
-`v0.6.17-guru.1` 在 preparation PR 合并、exact-candidate gate、tag 和 GitHub Release
-完成前不构成已发布事实；它承接当前 main/source checkout 对 developer/workspace retirement
-的 `0.6.17` 接入。当前未发布源码验证使用已审查 Guru
+`v0.6.17-guru.2` 在 preparation PR 合并、exact-candidate gate、tag 和 GitHub Release
+完成前不构成已发布事实；其 predecessor 是已发布的 `v0.6.17-guru.1`，累计范围以
+predecessor 至最终 candidate 的完整 diff 为准。当前未发布源码验证使用已审查 Guru
 checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为该 checkout 对应的可寻址 marketplace
 ref，不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
 

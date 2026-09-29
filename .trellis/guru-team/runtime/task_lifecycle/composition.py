@@ -14,7 +14,7 @@ from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionRe
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
 from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head
-from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
+from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_identity_exists
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
 from .session_adapter import OfficialSessionPort, SessionAdapterResult, bind_session
@@ -230,10 +230,7 @@ def prepare_creation_inputs(
             continue
         if not registration.path.is_dir():
             raise LifecycleContractError("creation_checkout_stale", "git.worktree_list", "Resolve registered task checkouts before creation.")
-        if any(
-            row.task_id.casefold() == task_id.casefold() or row.task_ref == task_ref
-            for row in task_inventory(registration.path)
-        ):
+        if task_identity_exists(registration.path, task_id, task_ref):
             raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     for _branch_ref, head in list_task_history_branch_refs(repository):
         tree = subprocess.run(
@@ -247,7 +244,9 @@ def prepare_creation_inputs(
             try:
                 metadata = json.loads(payload) if payload is not None else None
             except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-                raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.") from exc
+                if path.removesuffix("/task.json") == task_ref:
+                    raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.") from exc
+                continue
             if isinstance(metadata, dict) and (
                 str(metadata.get("id", "")).casefold() == task_id.casefold()
                 or path.removesuffix("/task.json") == task_ref
@@ -256,7 +255,7 @@ def prepare_creation_inputs(
     if any(
         ledger.task_id.casefold() == task_id.casefold()
         and any(row.state != "resolved" for row in ledger.resources)
-        for ledger in ResourceLedgerStore(repository).iter_ledgers()
+        for ledger in ResourceLedgerStore(repository).iter_ledgers(task_id=task_id)
     ):
         raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     return CreationInputs(
