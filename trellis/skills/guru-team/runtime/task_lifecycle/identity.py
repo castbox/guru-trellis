@@ -248,8 +248,8 @@ def discover_archived_issue_candidate(
             )
         except LifecycleContractError:
             continue
-        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number")) == (
-            "issue", source_repo, issue_number,
+        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
+            "issue", source_repo, issue_number, "exact_source",
         )
         github = summary.get("github", {})
         indexed_legacy_source = (
