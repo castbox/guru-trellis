@@ -478,3 +478,10 @@ remain separate gates; this entry does not claim them. The legacy
 `guru-create-task-workspace` throwaway verifier is not a current package
 gate and its retired-path tests are not claimed as passing. Marketplace is
 unused and the full multi-platform Release matrix remains a dedicated gate.
+
+`EVD-045`（#467 preparation）：`origin/main@8abf52ed...728c313e` 的
+31 文件 pre-promotion committed range 经独立完整 Branch Review，零 P0-P3；
+TaskId 聚焦测试 22/22、完整 lifecycle 148/148，通过 source/installed、
+声明平台投影、preset reapply 与 drift。Architecture/RDT `.69` 晋升形成的
+新字节还须 fresh Phase 2、Task Commit 与完整 Branch Review。前一版本既有安装
+升级时退役资产的实际删除，以及最终 tag/Release，均未由本条证明。

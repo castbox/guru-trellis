@@ -171,3 +171,10 @@ dogfood task/session 脚本、installed 和声明平台入口消费同一 TaskId
 不创建 mapping、resource ownership 或 session 历史；Reactivate 读取本代
 terminal cleaned receipt。`.67` 的旧 Fork pin、Git-ref-safe TaskId 和
 六字段 reader 是 superseded 历史，不是 installed current。
+
+`ARCH-INT-034`（#467 current）：canonical extension `0.6.17-guru.43` 投影到
+installed manifest，Shared/Codex/Claude/Cursor source 保持同一合同。
+从 `v0.6.17-guru.1` 既有安装升级时，installer 按前版本 managed hash 删除
+新版本已退役且未被本地修改的 Skill、命令、package 文件和平台投影；本地修改保留并
+报 conflict/sidecar。实际退役清理以 exact candidate 的 predecessor existing-install
+cell 证明；focused clean cell 与静态投影不能代替该证据。

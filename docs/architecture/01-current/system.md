@@ -232,3 +232,12 @@ Cleanup 以 exact Finish result 和 fresh Git facts 给出 call-local 显式选�
 当前 registry/production 计数保持 `.67` 的 34/155/104 与 33/153；完整 Release matrix
 和业务仓生产验证仍由专门 gate 承担。前文与此冲突的 Fork pin、六字段 binding 和
 Git-ref-safe TaskId 叙述仅是历史 predecessor 事实。
+
+`ARCH-CUR-046`（`source_confirmed` + `reviewed`）：#467 将新 TaskId 创建预检收敛到
+提议身份。注册 checkout 中无关旧 active/archive 重复、历史分支的无关坏 JSON、其它
+TaskId 的旧 ledger 不再阻断新任务；提议 TaskId/TaskRef 和目标 ledger 冲突仍阻断。
+版本目标为 repository `v0.6.17-guru.2`、extension `0.6.17-guru.43`、CLI/core
+`0.6.17`、固定 Fork `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`。
+该目标仍待 post-Finish exact-candidate gate、annotated tag 与 GitHub Release，
+不因 `.69` current promotion 变成已发布事实；registry/production 计数保持
+34/155/104 与 33/153。

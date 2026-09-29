@@ -1,7 +1,7 @@
 # #467 v0.6.17-guru.2 Architecture Contribution
 
 - Identity: `architecture-contribution-467-release-v0617-guru2-v1`.
-- State: task-owned candidate; shared current remains `current-main-0.6.17-guru.68/active` until serialized promotion.
+- State: independently reviewed task-owned contribution; serialized promotion targets `current-main-0.6.17-guru.69/active` from `.68`.
 - Authority: live `castbox/guru-trellis#467`, task `467-release-v0617-guru2`, and `guru-maintain-architecture-baseline:2.0`.
 - Constitution: `docs/architecture/00-foundation/design-constitution.md@guru-trellis-design-constitution-v1/current`.
 - Project contract: `docs/architecture/06-governance/change-contract.md@guru-trellis-architecture-change-contract-v1`.

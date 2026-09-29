@@ -6,7 +6,7 @@ lifecycle_generation: 0
 source_version: "current-main-0.6.17-guru.68"
 expected_current_version: "current-main-0.6.17-guru.68"
 candidate_successor_version: "current-main-0.6.17-guru.69"
-status: "task_candidate"
+status: "reviewed_promoted"
 authority_scope: "task_owned_contribution"
 architecture_impact: "architecture_impact"
 change_path: "target_native"
@@ -17,7 +17,7 @@ contribution:
   traceability: "docs/requirements-design-test-contributions/467-release-v0617-guru2/traceability.md"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.17-guru.68"
+  version: "current-main-0.6.17-guru.69"
   status: "active"
 design_constitution:
   authority_owner: "docs/architecture"
@@ -35,5 +35,5 @@ public_contracts:
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 architecture_promotion_owner: "guru-maintain-architecture-baseline"
 architecture_contribution: "docs/architecture/contributions/467-release-v0617-guru2.md"
-promotion_decision: "pending_independent_review"
-shared_current_write: false
+promotion_decision: "reviewed_promoted_expected_68_to_69"
+shared_current_write: true

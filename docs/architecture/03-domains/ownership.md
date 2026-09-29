@@ -95,3 +95,8 @@ handoff ref。session 仍只有一个当前焦点指针，可按 TaskId 切换�
 或在 Finish branch 消失后记录零删除结果；Reactivate 仅验证同 TaskId、同代
 Finish 的 cleaned receipt。任何 Git HEAD、Issue、checkout、developer 或 assignee
 均不构成 task identity 或 session binding authority。
+
+`ARCH-DOM-031`（#467 current）：official Fork 仍是任务写入者；Guru 的既有
+`prepare_creation_inputs` 只检验提议 TaskId/TaskRef 与目标 resource ledger。
+Architecture 与 RDT 各自串行晋升 shared current，release 编排只消费其结果，
+不新增 task writer、版本状态 writer 或安装资产 owner。

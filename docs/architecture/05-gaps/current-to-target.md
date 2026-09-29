@@ -33,3 +33,8 @@ installed/声明平台投影，`ARCH-GAP-009` 的 production graph 子缺口和 
 与 five-field reader 漂移，并完成 terminal ledger-loss 显式 Cleanup/Reactivate
 边界；`ARCH-GAP-011` 的本次局部缺口 closed。完整多平台 Release matrix、业务仓
 生产验证仍为独立 `unverified`，不得从本次结果推定通过。
+
+`.69` 的 #467 preparation 关闭无关旧状态阻断新 TaskId 的局部缺陷，保留
+目标身份冲突 fail-closed。前一版本退役受管资产的真实升级清理、exact-candidate
+发布 gate、tag、smoke 与 GitHub Release 尚待 Stage 2/3；完整多平台 Release
+matrix 和业务仓生产安装仍属独立 `unverified` 边界。
