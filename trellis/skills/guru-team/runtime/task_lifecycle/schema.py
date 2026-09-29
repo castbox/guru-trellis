@@ -10,7 +10,9 @@ from typing import Any, Iterator
 from .errors import LifecycleContractError
 
 
-CONTRACT_ROOT = Path(__file__).resolve().parents[2] / "contracts" / "task-lifecycle"
+_PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+_CONTRACT_OWNER = _PACKAGE_ROOT / "skills" if (_PACKAGE_ROOT / "skills" / "packages").is_dir() else _PACKAGE_ROOT
+CONTRACT_ROOT = _CONTRACT_OWNER / "contracts" / "task-lifecycle"
 CATALOG_NAME = "task-lifecycle-dtos.schema.json"
 _SCHEMA_NAME = re.compile(r"^[a-z0-9][a-z0-9.-]*\.schema\.json$")
 
