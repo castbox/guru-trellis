@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-09-29T10:09:04Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "09-20-454-task-lifecycle-state-model",
+    "title": "#454 建立统一 task lifecycle state model",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/09-20-454-task-lifecycle-state-model",
+    "archive_dir": ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/454-d436-lifecycle-packages",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#454 建立统一 task lifecycle state model",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+          ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#454"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/454-d436-lifecycle-packages"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/design.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/finish-summary.json",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/implement.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/prd.md",
+        ".trellis/tasks/archive/2026-09/09-20-454-task-lifecycle-state-model/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#454 建立统一 task lifecycle state model；#454；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
