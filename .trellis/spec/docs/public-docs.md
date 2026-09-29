@@ -44,7 +44,7 @@ one installation use the same immutable release tag; an unreleased reviewed
 checkout is identified as such and never described as tag-pinned release
 provenance. Unpinned or branch sources remain mutable latest/canary inputs.
 
-Current knowledge authority is `current-main-0.6.17-guru.68`; it is not a
+Current knowledge authority is `current-main-0.6.17-guru.69`; it is not a
 product release axis. Read current Requirements/Design/Test deltas through the
 three layer READMEs. The inherited R443 session-binding authority, R410
 release axes, R408 source/session boundary and older pins remain

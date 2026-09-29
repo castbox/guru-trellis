@@ -4,7 +4,7 @@
 
 状态：`active`。`.69` 完整继承 immutable `.68` 并承接 #467 preparation；`T467-01..06` 是本次增量的 current acceptance authority，`T454-G7-01..10` 与 `T434-01..39` 为继承的 current 能力。提升前 package/installed tests 不能代替 promotion-created diff 的 fresh Phase 2、Task Commit 与完整 Branch Review。前一正式版本既有安装清理仍待 Stage 2 实证；完整多平台 Release Gate 与业务仓生产验证仍 `unverified`。
 
-历史 `FIN454-C4-P1-004` 在相同 `TST-032/SCN-044` 下增加 same-base old-review/provenance-tail/two-finding-fix topology、terminal PR exclusion、Open PR rejection、两个 transaction endpoint、intermediate remote rejection 与 replacement transaction binding；当时 provenance `23/23`、recovery `48/48`、Finalizer package `113/113` 通过，raw preset apply 被三项 pre-E434 sidecar 阻塞。该前驱快照不代表当前 `.68`；`.67` 的 preset reapply、dogfood drift 与 installer/graph `118/118` 是独立历史证据，仍不替代本次 promotion-created diff 的正式门禁。
+历史 `FIN454-C4-P1-004` 在相同 `TST-032/SCN-044` 下增加 same-base old-review/provenance-tail/two-finding-fix topology、terminal PR exclusion、Open PR rejection、两个 transaction endpoint、intermediate remote rejection 与 replacement transaction binding；当时 provenance `23/23`、recovery `48/48`、Finalizer package `113/113` 通过，raw preset apply 被三项 pre-E434 sidecar 阻塞。该前驱快照不代表当前 `.69`；`.67` 的 preset reapply、dogfood drift 与 installer/graph `118/118` 是独立历史证据，仍不替代本次 promotion-created diff 的正式门禁。
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
@@ -45,4 +45,4 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.35/test-strategy.md) |
 | `released-history` | `v0.6.5-guru.9` | [`README.md`](./versions/v0.6.5-guru.9/README.md) |
 
-当前 `.68/active` 完整继承 immutable `.67` 并承接 #454 generation 7；Architecture 为 `.68/active`。promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review；专门 Release matrix 和业务仓生产验证仍未验证。
+历史 `.68/active` 快照完整继承 immutable `.67` 并承接 #454 generation 7；其 Architecture 当时为 `.68/active`，现已由 `.69` 取代。当前 `.69` 的 promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review；专门 Release matrix 和业务仓生产验证仍未验证。
