@@ -221,12 +221,12 @@ def local_branch_head(repository: RepositoryFacts, branch_ref: str) -> str | Non
     return completed.stdout.strip() if completed.returncode == 0 else None
 
 
-def list_local_branch_refs(repository: RepositoryFacts) -> tuple[tuple[str, str], ...]:
+def _list_branch_refs(repository: RepositoryFacts, *namespaces: str) -> tuple[tuple[str, str], ...]:
     payload = _git(
         [
             "for-each-ref",
             "--format=%(refname)%00%(objectname)%00",
-            "refs/heads",
+            *namespaces,
         ],
         common_dir=repository.common_dir,
     ).stdout
@@ -238,6 +238,14 @@ def list_local_branch_refs(repository: RepositoryFacts) -> tuple[tuple[str, str]
         if branch_ref and head:
             rows.append((branch_ref, head))
     return tuple(sorted(rows))
+
+
+def list_local_branch_refs(repository: RepositoryFacts) -> tuple[tuple[str, str], ...]:
+    return _list_branch_refs(repository, "refs/heads")
+
+
+def list_task_history_branch_refs(repository: RepositoryFacts) -> tuple[tuple[str, str], ...]:
+    return _list_branch_refs(repository, "refs/heads", "refs/remotes")
 
 
 def commit_path_bytes(repository: RepositoryFacts, commit: str, path: str) -> bytes | None:

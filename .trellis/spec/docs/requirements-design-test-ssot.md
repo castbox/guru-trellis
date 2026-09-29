@@ -8,7 +8,7 @@
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
 - Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.68` / `active`
-- source binding：reviewed #454 generation 7 contribution + inherited immutable `current-main-0.6.17-guru.67` authority promoted to `current-main-0.6.17-guru.68`；current registry 为 34 packages / 155 exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits，fixed Fork source 为 `a9e0b5dcb40e9dd0a54f990ad4d215e427939856`。`.67` 的 #434 graph 为 immutable inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review，完整多平台 Release matrix 与业务仓生产验证未由本 projection 证明。
+- source binding：reviewed #454 generation 7 contribution + inherited immutable `current-main-0.6.17-guru.67` authority promoted to `current-main-0.6.17-guru.68`；current registry 为 34 packages / 155 exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits，fixed Fork source 为 `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`。`.67` 的 #434 graph 为 immutable inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review，完整多平台 Release matrix 与业务仓生产验证未由本 projection 证明。
 - Finalizer recovery mapping：`FIN454-C4-P1-004` 不创建新 RDT identity；它继续映射 `REQ-048 -> DES-046 -> TST-032/SCN-044`，以同一 unbound transaction、合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、无 Open PR 与 transaction-owned remote endpoints 构成最小充分绑定。
 
 ## 读取与更新

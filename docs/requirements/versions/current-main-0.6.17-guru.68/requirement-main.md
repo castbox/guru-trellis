@@ -1,6 +1,6 @@
 # Guru Team Trellis Extension 当前需求
 
-当前 .68 来源：reviewed #454 generation 7 contribution + inherited immutable `current-main-0.6.17-guru.67` authority；Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.68` / `active`。上游固定为 `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856` / CLI/core `0.6.17`；Guru extension revision `0.6.17-guru.42` 与 release target `v0.6.17-guru.1` 是独立版本轴。
+当前 .68 来源：reviewed #454 generation 7 contribution + inherited immutable `current-main-0.6.17-guru.67` authority；Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.68` / `active`。上游固定为 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` / CLI/core `0.6.17`；Guru extension revision `0.6.17-guru.42` 与 release target `v0.6.17-guru.1` 是独立版本轴。
 本版完整继承 immutable `.67` 中未被 #454 generation 7 替代的 authority；本文件后文的 `.66` 与 #434 历史段落保留 provenance，当前增量以文末 #454 generation 7 合同为准。
 
 `.66` 完整继承 immutable `.65` 并吸收 reviewed #454 D436 contribution；RDT 与 Architecture 当时均为 `.66/active`（现已 superseded）。提升前 focused evidence 不证明 promotion-created diff；该 diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review，E434、#434 activation 与 installed/platform 在该前驱版本未完成；完整 Release matrix 未验证。

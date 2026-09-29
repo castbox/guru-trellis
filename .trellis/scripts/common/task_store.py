@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -514,6 +515,28 @@ def cmd_create(args: argparse.Namespace) -> int:
     try:
         for workspace in workspace_roots(repository_facts(repo_root)):
             require_unique_task_id(task_id, get_tasks_dir(workspace), workspace)
+        refs_result = subprocess.run(
+            ["git", "for-each-ref", "--format=%(objectname)", "refs/heads", "refs/remotes"],
+            cwd=repo_root, capture_output=True, text=True, check=False,
+        )
+        for head in set(refs_result.stdout.splitlines() if refs_result.returncode == 0 else []):
+            paths = subprocess.run(
+                ["git", "ls-tree", "-r", "--name-only", head, "--", ".trellis/tasks"],
+                cwd=repo_root, capture_output=True, text=True, check=True,
+            ).stdout.splitlines()
+            for path in paths:
+                if not re.fullmatch(r"\.trellis/tasks/(?:archive/.+/)?[^/]+/task\.json", path):
+                    continue
+                payload = subprocess.run(
+                    ["git", "show", f"{head}:{path}"], cwd=repo_root,
+                    capture_output=True, text=True, check=True,
+                ).stdout
+                try:
+                    existing = json.loads(payload)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(existing, dict) and str(existing.get("id", "")).casefold() == task_id.casefold():
+                    raise TaskIdentityError(f"task_id_collision: {task_id!r}: {path} at {head}")
     except (TaskIdentityError, SessionBindingError) as exc:
         print(colored(f"Error: {exc}", Colors.RED), file=sys.stderr)
         return 1

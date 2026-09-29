@@ -198,7 +198,7 @@ def normal_receipt(store: ResourceLedgerStore, public: dict[str, Any]) -> tuple[
     return path, identity
 
 
-def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str, Any]]) -> bool:
+def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str, Any]], finishing_key: TaskLifecycleKey) -> bool:
     selected = {(row["kind"], json.dumps(row["portable_ref"], sort_keys=True)) for row in resources}
     for ledger in store.iter_ledgers():
         for row in ledger.resources:
@@ -210,7 +210,6 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
     selected_branches = {row["portable_ref"].get("ref", row["portable_ref"].get("branch_ref"))
                          for row in resources}
     local_branches = git(store.repository.context_path, "for-each-ref", "--format=%(refname)", "refs/heads").stdout.splitlines()
-    retained = [branch for branch in local_branches if branch not in selected_branches]
     selected_heads = [(branch, branch) for branch in selected_branches if branch in local_branches]
     for row in resources:
         if row["kind"] == "remote_branch":
@@ -223,14 +222,16 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
         active_artifacts = [path for path in git(store.repository.context_path, "ls-tree", "-r", "--name-only",
                                                 head, "--", ".trellis/tasks").stdout.splitlines()
                             if re.fullmatch(r"\.trellis/tasks/[^/]+/task\.json", path)]
-        if any(not any(
-            git(store.repository.context_path, "merge-base", "--is-ancestor", head, survivor,
-                check=False).returncode == 0
-            and git(store.repository.context_path, "cat-file", "-e", f"{survivor}:{path}",
-                    check=False).returncode == 0
-            for survivor in retained
-        ) for path in active_artifacts):
-            return True
+        for path in active_artifacts:
+            try:
+                payload = commit_path_bytes(store.repository, head, path)
+                task = json.loads(payload) if payload is not None else None
+            except (UnicodeDecodeError, json.JSONDecodeError, LifecycleContractError):
+                return True
+            if (not isinstance(task, dict) or task.get("id") != finishing_key.task_id
+                    or type(task.get("lifecycle_generation", 0)) is not int
+                    or task.get("lifecycle_generation", 0) != finishing_key.lifecycle_generation):
+                return True
     return False
 
 
@@ -409,7 +410,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                         for item in resources
                     ):
                         raise LifecycleContractError("resource_ownership_conflict", "selected_candidate_ids", "Select only exact caller-owned retired resources.")
-                if not out and manual_targets_current(store, resources):
+                if not out and manual_targets_current(store, resources, key):
                     raise LifecycleContractError("resource_in_current_use", "selected_candidate_ids", "Do not delete any active task's current resource.")
         except LifecycleContractError as exc:
             out = blocked(exc.code, exc.field_path)
@@ -430,7 +431,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
                     if conflict:
                         out = blocked(conflict, item["resource_id"])
                         break
-                    if public["profile"] == "select_explicit_cleanup_targets" and manual_targets_current(store, [item]):
+                    if public["profile"] == "select_explicit_cleanup_targets" and manual_targets_current(store, [item], key):
                         out = blocked("resource_in_current_use", item["resource_id"])
                         break
                     if present and not remove_resource(root, item):

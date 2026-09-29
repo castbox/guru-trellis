@@ -217,8 +217,8 @@ remaining scope；completed 后 Closure、Finish、Cleanup 依次处理。Finish
 验证不属于此 current 实现证据。
 
 `ARCH-CUR-045`（`source_confirmed` + `reviewed`）：#454 generation 7 在 `.67` current 上将
-official Fork 固定至 `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`，
-tree `38a2e226a03ca7899ae3504bf3763dc1aac0cb35`，成功 main CI `36486251351`。
+official Fork 固定至 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`，
+tree `31a83927ed215fb23c04f357e259b45a39c13b7b`，成功 main CI `36519692082`。
 TaskId 完整接受 `[A-Za-z0-9][A-Za-z0-9._-]*`；Git-ref-invalid 的合法 TaskId 只由
 私有确定性 handoff ref 投影处理，不收窄身份域。official create/rename/archive 保持
 immutable TaskId 与结构化 source，不再写入或消费退休的 task branch metadata。

@@ -557,8 +557,30 @@ def test_missing_other_task_control_state_keeps_its_remote_branch(tmp_path):
     assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/other-task")
 
 
+def test_manual_remote_selection_does_not_treat_merged_active_task_as_unused(tmp_path):
+    root, _store, public, _checkout = missing_ledger_fixture(tmp_path)
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "switch", "-q", "-c", "codex/other-task")
+    task = root / ".trellis/tasks/09-28-other-task"
+    task.mkdir(parents=True)
+    (task / "task.json").write_text(json.dumps({"id": "other-task", "status": "in_progress"}))
+    git(root, "add", ".trellis/tasks/09-28-other-task/task.json")
+    git(root, "commit", "-qm", "start other task")
+    git(root, "push", "-q", "origin", "HEAD:refs/heads/codex/other-task")
+    git(root, "switch", "-q", "main")
+    git(root, "merge", "--ff-only", "codex/other-task")
+    git(root, "branch", "-D", "codex/other-task")
+    selected = selection(root, finish_result_id=public["finish_result_id"],
+                         kinds=("remote_branch",), branch_name="codex/other-task")
+    assert invoke(tmp_path, root, selected, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/other-task")
+
+
 @pytest.mark.parametrize("retained_active_artifact", [True, False])
-def test_manual_cleanup_requires_surviving_active_artifact(tmp_path, retained_active_artifact):
+def test_manual_cleanup_rejects_other_active_artifact_even_when_retained(tmp_path, retained_active_artifact):
     root, _store, _public, _checkout = missing_ledger_fixture(tmp_path)
     git(root, "switch", "-q", "codex/demo")
     task = root / ".trellis/tasks/09-28-other-task"
@@ -573,12 +595,8 @@ def test_manual_cleanup_requires_surviving_active_artifact(tmp_path, retained_ac
         git(root, "commit", "-qm", "archive other task")
     selected = selection(root, finish_result_id="finish:v1:0123456789abcdef")
     result = invoke(tmp_path, root, selected, confirmed=True)
-    if retained_active_artifact:
-        assert result["exit_id"] == "cleaned"
-        assert not git(root, "branch", "--list", "codex/demo")
-    else:
-        assert result["reason_code"] == "resource_in_current_use"
-        assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
+    assert result["reason_code"] == "resource_in_current_use"
+    assert git(root, "show-ref", "--verify", "refs/heads/codex/demo")
 
 
 def test_missing_ledger_dirty_worktree_blocks_selected_candidate(tmp_path):

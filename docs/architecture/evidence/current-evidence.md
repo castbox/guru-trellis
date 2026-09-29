@@ -449,3 +449,32 @@ remains. Full multi-platform Release matrix, marketplace and business-repo
 production validation were not run. This evidence does not substitute for
 fresh Phase 2, committed complete-range Branch Review, two independent
 zero-finding reviews, Delivery or terminal closeout.
+
+## EVD-045: #454 TaskId History And Manual Cleanup Finding Fix
+
+The next independent review of `origin/main@4d7cd74f...7d40f6b8` found two
+normal-path gaps: TaskId reuse after a checkout and control-state loss when
+only a remote-tracking ref retained the prior task, and manual deletion of
+another active task's remote branch after its commit was merged to main.
+Neither finding was a malicious-input or concurrency scenario; that review
+did not pass Branch Review or count toward the two zero-finding rounds.
+
+Fork PR #22 merged as `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
+tree `31a83927ed215fb23c04f357e259b45a39c13b7b`; main CI run
+`36519692082` succeeded. The Fork task writer now checks visible local and
+remote-tracking task artifacts before creation, while non-Git Trellis keeps
+its prior directory-based behavior. Guru's creation preflight checks the
+same reachable refs. Terminal manual Cleanup rejects a selected local or
+remote HEAD carrying another active TaskId/generation even when its commit
+and artifact survive on main; it still does not infer historical ownership.
+
+Fork's commit hook passed 2318 tests across 100 files. The Guru finding-fix
+real-Git creation/Cleanup subset passed 56 tests; the 34 isolated package
+suites passed 689 tests with two scoped skips. The current source/installed
+package projection, preset reapply and declared Claude/Codex/Cursor drift
+passed with no sidecars. Shared lifecycle, Architecture/RDT, Phase 2, full
+committed Branch Review, two final independent reviews and live Delivery
+remain separate gates; this entry does not claim them. The legacy
+`guru-create-task-workspace` throwaway verifier is not a current package
+gate and its retired-path tests are not claimed as passing. Marketplace is
+unused and the full multi-platform Release matrix remains a dedicated gate.

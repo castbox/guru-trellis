@@ -6,7 +6,9 @@ Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion 
   slug-derived TaskIds against exactly `[A-Za-z0-9][A-Za-z0-9._-]*` before
   task creation; Guru lifecycle identity accepts the same domain, including
   `task.lock`, `task.`, and `task..child`. Git-ref eligibility does not
-  narrow the TaskId domain.
+  narrow the TaskId domain. Creation rejects an existing TaskId in reachable
+  local or remote-tracking branch task artifacts after a checkout disappears;
+  non-Git Trellis creation retains its existing directory-based check.
 - `R454-G7-02`: Handoff receipt refs remain valid Git refs for every
   accepted TaskId. Existing Git-valid TaskIds retain their ref identity;
   legal Git-ref-invalid TaskIds receive a deterministic separate namespace.
@@ -35,8 +37,8 @@ Status: reviewed promotion from immutable `.67` to `.68/active`; post-promotion 
   selection; old completed manual receipts remain readable for prior generations.
 - `R454-G7-07`: TaskBranchBinding uses only the five live Issue fields;
   neither resource ownership nor public DTO adds an epoch. Missing-control
-  Cleanup cannot delete a local branch carrying an active task unless another
-  retained branch contains the task commit and artifact.
+  Cleanup cannot delete a selected local or remote branch carrying another
+  active task artifact, even when that commit and artifact remain on main.
 - `R454-G7-08`: The official task source writer and Guru reader accept the
   same portable owner/repo domain before durable task creation. The dogfood
   session reader consumes the current five-field binding record.

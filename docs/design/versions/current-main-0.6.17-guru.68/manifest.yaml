@@ -8,7 +8,7 @@ extension_manifest_version: 0.6.17-guru.42
 target_trellis_cli: 0.6.17
 release_target: v0.6.17-guru.1
 released_baseline: v0.6.16-guru.1
-framework_source: castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856
+framework_source: castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983
 requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.68/requirement-main.md
 test_locator: docs/test/versions/current-main-0.6.17-guru.68/test-strategy.md
 architecture_locator: docs/architecture/README.md

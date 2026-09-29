@@ -13,7 +13,7 @@ from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_local_branch_refs, list_worktree_registrations, local_branch_head
+from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head
 from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -235,7 +235,7 @@ def prepare_creation_inputs(
             for row in task_inventory(registration.path)
         ):
             raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
-    for _branch_ref, head in list_local_branch_refs(repository):
+    for _branch_ref, head in list_task_history_branch_refs(repository):
         tree = subprocess.run(
             ["git", f"--git-dir={repository.common_dir}", "ls-tree", "-r", "--name-only", head, "--", ".trellis/tasks"],
             capture_output=True, text=True, check=True,

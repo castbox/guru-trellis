@@ -4,7 +4,7 @@
 - State: independently reviewed and promoted against expected `current-main-0.6.17-guru.67/active` to `.68/active`; post-promotion gates remain separate.
 - Task: `454-task-lifecycle-state-model`, lifecycle generation 7.
 - Change path: `target_native`; no new ADR is required.
-- Current source candidate: `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`, tree `38a2e226a03ca7899ae3504bf3763dc1aac0cb35`, successful main CI `36486251351`. Fork PRs #18-#21 are merged and Issue #8 is closed; Guru package-ready verification and final review remain separate.
+- Current source candidate: `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`, tree `31a83927ed215fb23c04f357e259b45a39c13b7b`, successful main CI `36519692082`. Fork PRs #18-#22 are merged and Issue #8 is closed; Guru package-ready verification and final review remain separate.
 
 The official Trellis task writer owns the complete TaskId domain
 `[A-Za-z0-9][A-Za-z0-9._-]*`. A TaskId is not a branch name, Git ref tail,
@@ -16,6 +16,11 @@ Guru derives a deterministic ref in the separate
 `guru-task-lifecycle-id/<sha256(TaskId UTF-8)>` namespace. Git-valid TaskIds
 retain their existing ref. This projection does not make the ref the TaskId
 authority or create a second task/session store.
+
+Task creation checks reachable task artifacts at registered checkouts and
+local/remote-tracking branch tips before admitting a reused TaskId. The Fork
+writer still supports non-Git creation using its existing task-directory
+inventory. These are live identity checks, not a persistent history locator.
 
 The task writer remains in the fixed Fork; the Guru package owns only its
 schema/runtime/installed projection and retained-control resource checks.
@@ -33,9 +38,9 @@ path creates an additional session binding record or history.
 TaskBranchBinding has exactly five fields: schema version, TaskId, generation,
 binding revision and branch name. No epoch token is stored in the binding,
 resource ownership or public DTO. Cleanup revalidates selected live targets;
-when local control records are missing, it refuses deletion of a branch still
-carrying an active task artifact unless another retained local branch contains
-that task commit and artifact. Reactivate accepts current `selected-*` Cleanup
+when local control records are missing, it refuses deletion of a selected
+local or remote branch carrying another active task artifact, even when that
+commit and artifact remain on main. Reactivate accepts current `selected-*` Cleanup
 receipts and completed older `manual-*` receipts for the same sealed Finish.
 
 The full #454 review also closed two owner boundaries. The official task

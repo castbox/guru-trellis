@@ -36,8 +36,8 @@ or upstream `task.py start` to perform that transition.
 
 ## Installation
 
-Use the source-locked Trellis Fork checkout (`castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`,
-successful main push CI `36486251351`)
+Use the source-locked Trellis Fork checkout (`castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
+successful main push CI `36519692082`)
 and a matching reviewed Guru
 source. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying

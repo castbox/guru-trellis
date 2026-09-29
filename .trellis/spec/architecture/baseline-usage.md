@@ -5,7 +5,7 @@
 - locator：`docs/architecture/README.md`
 - version：`current-main-0.6.17-guru.68`
 - status：`active`
-- source binding：reviewed #454 generation 7 contribution + inherited immutable `.67` authority；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ADR-016` / `ARCH-CUR-045` / `ARCH-DOM-030` / `ARCH-INT-033` / `ARCH-GAP-009/011`，fixed Fork source 为 `a9e0b5dcb40e9dd0a54f990ad4d215e427939856`。`.67` 的 #434 graph 保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
+- source binding：reviewed #454 generation 7 contribution + inherited immutable `.67` authority；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ADR-016` / `ARCH-CUR-045` / `ARCH-DOM-030` / `ARCH-INT-033` / `ARCH-GAP-009/011`，fixed Fork source 为 `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`。`.67` 的 #434 graph 保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

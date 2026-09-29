@@ -5,7 +5,9 @@ Status: reviewed promotion to `.68/active`; results must be bound to the final r
 - `T454-G7-01`: In the exact fixed Fork, create tasks using `task.lock`,
   `task.`, `task..child` and ordinary Git-valid IDs; verify rejected IDs
   are outside the public pattern for explicit and slug-derived IDs before
-  task creation. Confirm the pinned commit, tree and CI.
+  task creation. Confirm the pinned commit, tree and CI. Remove a prior
+  checkout while leaving its TaskId only on a remote-tracking ref and reject
+  reuse; non-Git creation still works.
 - `T454-G7-02`: Run Guru identity/schema/runtime tests for the same values,
   collisions and archive identity. Assert unchanged refs for Git-valid IDs
   and deterministic, valid, separate refs for Git-ref-invalid IDs.
@@ -34,8 +36,9 @@ Status: reviewed promotion to `.68/active`; results must be bound to the final r
   `manual-*` receipt regression.
 - `T454-G7-08`: Validate five-field binding and resource records in source,
   installed and fixed Fork readers; reject retired six-field records. Exercise
-  missing-control Cleanup with a still-active artifact, both without and with
-  a retained branch containing that task commit and artifact.
+  missing-control Cleanup with another active task artifact, both without and
+  with the task commit and artifact retained on main; test local and remote
+  selections and reject deletion in both cases.
 - `T454-G7-09`: In the exact fixed Fork, reject source repo refs with a
   transport `.git` suffix or illegal leading component before task creation,
   and accept legal dotted and hyphenated names. Assert Guru dogfood task and

@@ -270,4 +270,4 @@ schema/DTO 正文仍以 package SSOT 为准，设计及双向引用见 [D418-01.
 
 ## #454 Generation 7 current capability
 
-34 active packages / 155 exits / 104 commands、零 planned 与 33 mandatory invokes / 153 production exits 不变。既有 official task writer、Guru lifecycle/ref projection、Cleanup 与 Reactivate owner 承接 [G7 design](../../../requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/design.md)；不新增多绑定历史、locator 或 Skill ID。固定 Fork 为 `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856`。
+34 active packages / 155 exits / 104 commands、零 planned 与 33 mandatory invokes / 153 production exits 不变。既有 official task writer、Guru lifecycle/ref projection、Cleanup 与 Reactivate owner 承接 [G7 design](../../../requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/design.md)；不新增多绑定历史、locator 或 Skill ID。固定 Fork 为 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`。

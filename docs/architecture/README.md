@@ -10,7 +10,7 @@
 
 同一 authority 还允许 identity-matched unbound transaction 在 selected base 未变化时承接 fresh-reviewed finding-fix descendant：predecessor review-to-Publication 必须相等或为合法 provenance tail，base 已在 predecessor lineage，current Branch Review/Publication/live HEAD 相等且严格后继，并且没有 Open PR。历史 terminal PR 不作为 current candidate；remote 仅可等于 transaction-owned pre-push 或 Publication endpoint。该最小充分路径不增加 branch/session/path authority 或新的 recovery API。
 
-Repository `v0.6.17-guru.1`、extension `0.6.17-guru.42`、CLI/core `0.6.17` 与固定 Fork source `castbox/Trellis@a9e0b5dcb40e9dd0a54f990ad4d215e427939856` 仍保持独立版本轴。`.68` knowledge promotion 不是软件发布；RDT 从 `.67` 串行提升至 `.68`。promotion-created diff 必须重新通过 Phase 2、task commit 与独立完整 Branch Review；完整 Release matrix 与业务仓生产验证仍未被声明为通过。marketplace 不在本任务使用路径。
+Repository `v0.6.17-guru.1`、extension `0.6.17-guru.42`、CLI/core `0.6.17` 与固定 Fork source `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` 仍保持独立版本轴。`.68` knowledge promotion 不是软件发布；RDT 从 `.67` 串行提升至 `.68`。promotion-created diff 必须重新通过 Phase 2、task commit 与独立完整 Branch Review；完整 Release matrix 与业务仓生产验证仍未被声明为通过。marketplace 不在本任务使用路径。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 
