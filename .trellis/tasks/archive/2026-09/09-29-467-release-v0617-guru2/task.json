@@ -6,11 +6,11 @@
     "kind": "issue",
     "repo_ref": "castbox/guru-trellis",
     "number": 467,
-    "disposition": "exact_source"
+    "disposition": "reference_only"
   },
   "title": "发布 v0.6.17-guru.2 并提升 Guru Team extension 至 0.6.17-guru.43",
   "description": "按 live Issue #467 的两阶段发布合同，仅交付 Stage 1 preparation：extension .42 到 .43 的版本轴、Intake 常规缺陷修复、Architecture/RDT contribution 与 promotion，以及 reference-only Delivery、Completion、Closure、Finish、Cleanup。exact-candidate gate、tag-pinned smoke、GitHub Release 与 Issue closure 由开放的 #467 在任务完成后独立执行。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/467",
   "package": null,
@@ -18,7 +18,7 @@
   "creator": "wesleywu",
   "assignee": "wesleywu",
   "createdAt": "2026-09-29",
-  "completedAt": null,
+  "completedAt": "2026-09-29",
   "base_branch": "main",
   "subtasks": [],
   "children": [],
