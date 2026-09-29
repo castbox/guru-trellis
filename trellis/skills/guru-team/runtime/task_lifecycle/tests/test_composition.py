@@ -149,6 +149,18 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaisesRegex(LifecycleContractError, "task_identity_already_exists"):
             prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
 
+    def test_creation_checks_target_id_when_legacy_generation_is_invalid(self) -> None:
+        sibling = Path(self.temporary.name) / "legacy"
+        self.git("worktree", "add", "-b", "legacy", str(sibling))
+        old = sibling / ".trellis/tasks/archive/2026-09/09-20-old/task.json"
+        old.parent.mkdir(parents=True)
+        old.write_text(json.dumps({"id": "old-task", "lifecycle_generation": "unknown"}), encoding="utf-8")
+        self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
+        old.write_text(json.dumps({"id": TASK_ID, "lifecycle_generation": "unknown"}), encoding="utf-8")
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "task_identity_already_exists")
+
     def test_creation_ignores_unrelated_malformed_branch_artifact(self) -> None:
         sibling = Path(self.temporary.name) / "legacy"
         self.git("worktree", "add", "-b", "legacy", str(sibling))
