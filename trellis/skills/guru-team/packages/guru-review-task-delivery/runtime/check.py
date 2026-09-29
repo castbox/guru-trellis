@@ -27,4 +27,3 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser.add_argument("--expected-exit")
     args = parse(parser, argv)
     return check(package_root, repo_root(args.root), args.task, args.expected_exit)
-

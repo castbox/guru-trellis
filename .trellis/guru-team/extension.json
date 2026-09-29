@@ -1242,7 +1242,7 @@
       {
         "id": "guru-review-task-delivery",
         "interface_sha256": "06ace9cf8a3ffd74e5cccf71573a54bd16212bf6c2722d30cc904f5fd87da85b",
-        "tree_sha256": "ee593ea97520cdf6c506944166250590482ab67438bbc9a9ac928dc654e6267d"
+        "tree_sha256": "fe7aee9a277b7a79ccda4bcee2255b3db211bab017f114848fc2e94dfc4a8370"
       },
       {
         "id": "guru-select-workflow-mode",
@@ -11253,7 +11253,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-delivery/runtime/check.py",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/runtime/check.py",
-        "sha256": "ff7be8b2c9b6f296bc83ebf33e9cce999164385d69bce83255884edd08ab6830",
+        "sha256": "fc1a98cf65f3764bed2a5d2fc98711306b451869bf31d017793db045858d268e",
         "executable": false,
         "action": "unchanged"
       },
@@ -11267,7 +11267,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-delivery/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/runtime/invoke.py",
-        "sha256": "7e26485ac7944ba45b37ae106dd95d92e0175c9b7742eba3fa713267b9893914",
+        "sha256": "acb9e4f4ea61ce46d6a00f1de01037654ccb4e7f6aa49b4d3499b31efb024a77",
         "executable": false,
         "action": "unchanged"
       },

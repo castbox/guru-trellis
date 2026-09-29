@@ -33,4 +33,3 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[output["exit_id"]], "stdout")
     retire_checkpoint(repo, task_dir(repo, public["task_ref"]))
     return output
-

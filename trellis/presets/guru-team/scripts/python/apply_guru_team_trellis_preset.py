@@ -1142,6 +1142,8 @@ def prune_empty_managed_skill_parents(repo: Path, path: Path) -> None:
 
 
 def prune_empty_activated_skill_removals(repo: Path, result: dict[str, Any]) -> None:
+    retired_roots: set[Path] = set()
+    active_ids = set(result.get("skill_packages", {}).get("active_ids", []))
     for removal in result.get("skill_packages", {}).get("removals", []):
         if removal.get("action") != "removed_managed":
             continue
@@ -1149,6 +1151,28 @@ def prune_empty_activated_skill_removals(repo: Path, result: dict[str, Any]) -> 
         target = repo / relative
         if skill_path_is_managed(relative) and not target.exists():
             prune_empty_managed_skill_parents(repo, target)
+            for root in (*all_skill_roots(), Path(".trellis/guru-team/skills/packages")):
+                if root not in relative.parents:
+                    continue
+                skill_id = relative.relative_to(root).parts[0]
+                if skill_id.startswith("guru-") and skill_id not in active_ids:
+                    retired_roots.add(Path(os.path.abspath(repo)) / root / skill_id)
+                break
+
+    # A previous removal may have stopped at a sibling that was removed later.
+    for skill_root in retired_roots:
+        if not skill_root.is_dir() or skill_root.is_symlink():
+            continue
+        directories = sorted(
+            (path for path in skill_root.rglob("*") if path.is_dir()),
+            key=lambda path: len(path.parts),
+            reverse=True,
+        )
+        for directory in (*directories, skill_root):
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
 
 
 def prune_empty_unselected_skill_projections(
