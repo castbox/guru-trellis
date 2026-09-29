@@ -2110,6 +2110,59 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertFalse(retired.parent.exists())
         self.assertTrue(unrelated.is_dir())
 
+    def test_retired_skill_cleanup_prunes_sibling_directories_after_all_removals(self) -> None:
+        root = self.repo / ".agents/skills/guru-retired"
+        (root / "consumers/first").mkdir(parents=True)
+        removed = root / "runtime/second/old.py"
+        removed.parent.mkdir(parents=True)
+        removed.write_text("old", encoding="utf-8")
+        removed.unlink()
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": removed.relative_to(self.repo).as_posix(),
+                "action": "removed_managed",
+            }]}
+        })
+
+        self.assertFalse(root.exists())
+
+    def test_retired_skill_cleanup_preserves_user_file(self) -> None:
+        root = self.repo / ".agents/skills/guru-retired"
+        removed = root / "consumers/old.schema.json"
+        user_file = root / "notes.txt"
+        removed.parent.mkdir(parents=True)
+        user_file.write_text("local notes", encoding="utf-8")
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": removed.relative_to(self.repo).as_posix(),
+                "action": "removed_managed",
+            }]}
+        })
+
+        self.assertEqual(user_file.read_text(encoding="utf-8"), "local notes")
+        self.assertFalse(removed.parent.exists())
+
+    def test_active_skill_cleanup_keeps_untracked_empty_directories(self) -> None:
+        root = self.repo / ".agents/skills/guru-active"
+        empty = root / "consumers/keep"
+        empty.mkdir(parents=True)
+        removed = root / "runtime/old.py"
+        removed.parent.mkdir()
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {
+                "active_ids": ["guru-active"],
+                "removals": [{
+                    "path": removed.relative_to(self.repo).as_posix(),
+                    "action": "removed_managed",
+                }],
+            }
+        })
+
+        self.assertTrue(empty.is_dir())
+
     def test_install_assets_writes_installed_extension_manifest(self) -> None:
         with mock.patch.dict(
             os.environ,
