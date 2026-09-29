@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import hashlib
+import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -44,6 +47,22 @@ class PresetTransactionInstallerTest(unittest.TestCase):
             self.repo,
             {"codex", "cursor", "claude"},
         )
+
+    def test_installed_runtime_loads_task_lifecycle_catalog(self) -> None:
+        script = (
+            "from runtime.task_lifecycle.schema import load_contract, validate_dto; "
+            "assert load_contract()['$id'] == 'guru-task-lifecycle-dtos-1.0'; "
+            "validate_dto('ResultRefDTO', {'task_id': 'example-task', "
+            "'lifecycle_generation': 0, 'result_id': 'completion:1'})"
+        )
+        completed = subprocess.run(
+            [sys.executable, "-c", script],
+            cwd=self.repo,
+            env={**os.environ, "PYTHONPATH": str(self.install_dst)},
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
 
     def managed_graph_snapshot(self) -> dict[str, tuple[bytes, int]]:
         extension_path = self.install_dst / "extension.json"
