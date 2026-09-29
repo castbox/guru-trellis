@@ -247,7 +247,11 @@ def prepare_creation_inputs(
                 if path.removesuffix("/task.json") == task_ref:
                     raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.") from exc
                 continue
-            if isinstance(metadata, dict) and (
+            if not isinstance(metadata, dict):
+                if path.removesuffix("/task.json") == task_ref:
+                    raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.")
+                continue
+            if (
                 str(metadata.get("id", "")).casefold() == task_id.casefold()
                 or path.removesuffix("/task.json") == task_ref
             ):

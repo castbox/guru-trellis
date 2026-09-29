@@ -958,11 +958,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-09-29T17:55:38Z",
+  "installed_at": "2026-09-29T18:19:06Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "b652bdf9d7171034c5749b4d81052ac393ce62ec",
-    "commit": "b652bdf9d7171034c5749b4d81052ac393ce62ec",
+    "ref": "7bf3d1829ccca3ee9408f0d20992a9bc5294b0bc",
+    "commit": "7bf3d1829ccca3ee9408f0d20992a9bc5294b0bc",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -12429,7 +12429,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/composition.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
-        "sha256": "35a29ae2b90a089543919b4de9ce73a980717fbe76b166152a7440cd5f66f1d0",
+        "sha256": "11e219912930866dbb49c0e4d3be0b155d7967a9213f94fb9be44180bfd0349f",
         "executable": false,
         "action": "unchanged"
       },

@@ -8,5 +8,5 @@
 | `R467-04` | `D467-04` | `T467-04` |
 | `R467-05` | `D467-05` | `T467-06` |
 
-本 contribution 只记录任务候选合同；历史 .68 仍是 current authority，
-发布成功状态须由后续 live tag、smoke、Release 和 Issue 事实证明。
+本 contribution 只记录任务候选合同；`.68` 是晋升前的历史 authority，
+当前 `.69` 已晋升为 active。发布成功状态须由后续 live tag、smoke、Release 和 Issue 事实证明。

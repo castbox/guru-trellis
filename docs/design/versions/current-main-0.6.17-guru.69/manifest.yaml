@@ -7,7 +7,7 @@ source_binding: "reviewed #467 release preparation contribution + inherited immu
 extension_manifest_version: 0.6.17-guru.43
 target_trellis_cli: 0.6.17
 release_target: v0.6.17-guru.2
-released_baseline: v0.6.16-guru.1
+released_baseline: v0.6.17-guru.1
 framework_source: castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983
 requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.69/requirement-main.md
 test_locator: docs/test/versions/current-main-0.6.17-guru.69/test-strategy.md

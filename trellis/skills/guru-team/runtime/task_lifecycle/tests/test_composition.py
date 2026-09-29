@@ -171,6 +171,25 @@ class CompositionTests(unittest.TestCase):
         subprocess.run(["git", "commit", "-qm", "legacy artifact"], cwd=sibling, check=True)
         self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
 
+    def test_creation_rejects_target_ref_with_nonobject_branch_artifact(self) -> None:
+        sibling = Path(self.temporary.name) / "legacy"
+        self.git("worktree", "add", "-b", "legacy", str(sibling))
+        old = sibling / ".trellis/tasks/archive/2026-01/01-00-old/task.json"
+        old.parent.mkdir(parents=True)
+        old.write_text("[]", encoding="utf-8")
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "unrelated legacy artifact"], cwd=sibling, check=True)
+        self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)
+        target = sibling / TASK_REF / "task.json"
+        target.parent.mkdir(parents=True)
+        target.write_text("[]", encoding="utf-8")
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "occupied target task ref"], cwd=sibling, check=True)
+        self.git("worktree", "remove", str(sibling))
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "invalid_task_identity")
+
     def test_creation_ignores_unrelated_old_resource_ledger(self) -> None:
         resources = ResourceLedgerStore(inspect_repository(self.repo))
         path = resources.path_for(TaskLifecycleKey("old-task", 0))
