@@ -28,3 +28,8 @@ installed/声明平台投影，`ARCH-GAP-009` 的 production graph 子缺口和 
 的 E434 activation 子缺口均 `closed`。以上表格的 `.64/.66` CURRENT 与 `partial/open`
 为各自 predecessor 快照；本版两项只保留完整多平台 Release matrix 与业务仓生产验证的
 独立 `unverified` 边界，不把它们算为 #434 activation 失败或完成证明。
+
+`.68` 的 #454 generation 7 消除 TaskId/Git-ref 混同、official writer/source
+与 five-field reader 漂移，并完成 terminal ledger-loss 显式 Cleanup/Reactivate
+边界；`ARCH-GAP-011` 的本次局部缺口 closed。完整多平台 Release matrix、业务仓
+生产验证仍为独立 `unverified`，不得从本次结果推定通过。

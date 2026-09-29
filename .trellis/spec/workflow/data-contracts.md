@@ -79,10 +79,11 @@ cleanup state.
 
 ### Phase 0 Current Transition Family
 
-Active-task routing consumes only a closed identity across `task.json`, the
-task branch/worktree, live requirement authority, and Guru runtime mappings. A
-missing, conflicting, or stale relation is represented as `invalid_task_state`;
-session pointers remain locators and are not task authority.
+Active-task routing resolves `task.json.id` and lifecycle generation through
+the current TaskBranchBinding and live registered Git checkout. A missing
+binding routes to establishment; conflicting or stale identity fails closed.
+The session pointer contains only TaskId and generation, never checkout or
+source authority.
 
 The workflow-owned `guru-stage0-transition-1.0` family consists of five
 independent closed schemas. They are lifecycle stages, not one nullable mega
@@ -493,7 +494,7 @@ participates in those package invocations. This submanifest is not a complete
 inventory of the #434 lifecycle graph; the live registry and workflow select
 the Delivery and terminal packages separately.
 
-The source and installed closure algorithm reads the live registry, selected
+At the pinned-old snapshot, the source and installed closure algorithm read the live registry, selected
 package contracts, the production current manifest, Interface public
 contracts, and package-local corpora. Twenty-eight active rows select Interface
 1.4; `guru-create-task-workspace` and the two qualification packages select
@@ -588,47 +589,20 @@ common-dir branch binding, and live registered checkout facts. Any missing or
 mismatched identity fails closed; `task.json.branch` and old task/workspace
 mappings do not establish current identity.
 
-Local-only reusable mappings live under the gitignored producer namespace:
-
-- `.trellis/.runtime/guru-team/workspaces/<workspace-slug>.json`
-- `.trellis/.runtime/guru-team/tasks/<task-slug>.json`
-
-Runtime cache may contain absolute worktree paths and executor timestamps, but it is disposable, untracked, has no index/developer dimension, and must be reconstructable from current `task.json`, the checkout, `git worktree list`, or explicit parameters. Ordinary task commands read tracked shared config but do not rewrite it.
-
-In the pinned-old graph, Finalizer's archive executor had to converge the same task's existing source and
-target `task_artifact_dir` projections to the exact committed archive locator.
-Validate both task/workspace mappings and registered owner identity before
-either write; preserve workspace/branch/source identities and unrelated
-fields. Same-transaction archived recovery accepts only the exact old active
-or already-current archived locator. Missing or conflicting mappings stay
-fail-closed; boundary validators remain read-only and cannot perform a repair.
-The source mapping points into the task workspace, so archive convergence does
-not create a second tracked archive in the source checkout.
-
-Query-only `prepare-task` writes neither task context nor runtime cache. In the
-pinned-old graph, `guru-create-task-workspace` was the sole creator. On successful workspace/task
-creation it writes official `task.json` and ignored source/target runtime
-mappings. Upstream checker results and workspace
-plan/result stay in ignored owner-private runtime and are reread only by their
-direct consumer.
-
-Assignee remains a portable task/context audit field, never a path namespace.
-The workspace executor invokes official `common.task_store.cmd_create` in an
-isolated subprocess with explicit reviewed creator and assignee values.
-Official task creation therefore produces
-`task.json.creator=task.json.assignee=<reviewed-login>` and rejects missing
-ownership before writes. Guru runtime does not
-read, copy, initialize, restore, or require `.trellis/.developer` or
-`.trellis/workspace/**`; existing official identity bytes remain untouched.
-The `workspace_slug` and workspace mappings above identify the isolated task
-checkout/worktree only; they have no journal/index/developer dimension.
+Ignored `workspaces/*.json` and `tasks/*.json` mappings are retired historical
+artifacts: current Guru runtime neither reads nor writes them. Task creation
+uses `guru-create-task` and the official task store; checkout acquisition is
+call-local, and branch association lives in the Git common-dir binding store.
+Creator and assignee are ordinary portable task metadata, not prerequisites
+for TaskId, source, session, checkout, or resource ownership.
 
 ### Active-task continuation data boundary
 
 The continuation block is Markdown workflow authority, not a persisted data
 model. No global lifecycle state store, continuation checkpoint, route-classification
 artifact, authorization record, or cross-Skill result digest is added. Exact
-task identity comes from current task/worktree/branch/runtime mapping facts;
+task identity comes from `task.json.id` and generation, with branch association
+and execution location resolved from the current binding and live Git facts;
 `task.json.status` remains only a coarse lifecycle fact.
 
 An adjacent current public DTO remains call-local and is consumed directly by
@@ -751,19 +725,15 @@ remote, and fake GitHub PR store after invoking production `cmd_finish_work()`.
 Test-owned dictionaries may summarize those observed facts, but must not drive
 or manufacture transition state.
 
-## Workspace Boundary Snapshot
+## Task Checkout Boundary Snapshot
 
 `check-task-checkout-boundary --json` resolves the task from `--task` or current
-task, validates `task.json` plus ignored task/workspace mappings and live Git
-worktree identity, then derives the expected workspace. The command never
-trusts a committed absolute workspace path or alternate task identity artifact.
-The snapshot records `status`,
-`workspace_mode`, `expected_workspace`, `actual_repo_root`, optional
-`source_checkout`, `task_dir`, repo-relative `task_dir_relative`,
-source/task Git status, suspicious same-task artifacts, and deterministic
-errors. Missing or mismatched task/runtime/worktree identity, a task outside the
-current repo `.trellis/tasks`, or source-checkout same-task metadata fails
-closed.
+task, validates the immutable TaskId and generation against the current
+TaskBranchBinding and registered Git worktree, then returns a call-local
+checkout snapshot. It reads no task/workspace mapping and persists no checkout
+path. The snapshot contains `status`, repo-relative `task_dir_relative`,
+`checkout_root`, `task_worktree_status`, and `errors`. Missing or mismatched
+task/binding/worktree identity fails closed.
 
 ## Planning Approval Checkpoint
 
@@ -863,9 +833,11 @@ non-ready result requires at least one AI-authored failed dimension, blocking
 finding, and affected evidence. Deterministic commands validate these facts but
 never infer or rewrite the exit.
 
-The public package carries only a deidentified example. The active
-`guru-create-task-workspace` consumes the public `ready` transition, not the
-private review result, and persists no Guru-owned task-local scope aggregate.
+The public package carries only a deidentified example. The current workflow
+projects the public `ready.transition.target.kind` to `guru-create-issue` for
+`proposed_draft` or `guru-create-task` for `existing_issue` and
+`standalone_request`. Neither consumer reads the private review result or
+persists a Guru-owned task-local scope aggregate.
 Readiness creates no task, workspace journal, cache, index, sidecar, or tracked
 artifact. Owner result 1.0 and the old prerequisite-payload CLI are retired by
 the explicit #386 direct migration; no legacy reduction path remains active.
@@ -1665,7 +1637,7 @@ python3 -m json.tool trellis/index.json
 - Adding a config key to `config-template.yml` without adding a default in
   `DEFAULTS`.
 - Adding an alternate task identity reader instead of using current
-  `task.json`, ignored runtime mapping, and live Git worktree facts.
+  `task.json.id`, lifecycle generation, TaskBranchBinding, and live Git facts.
 - Letting Delivery Publish/Merge decide Completion or Closure from PR state;
   in the pinned-old graph, Finalizer/Merge likewise could not re-decide
   Publication's reviewed effect.
@@ -2038,7 +2010,7 @@ Checkout path、workspace path、session identity、authorization、generic evid
 snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
 的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
 
-Fork `castbox/Trellis@71f43cd8955c676f8ab8215216f61376fe9c01fe` 独占 immutable `task.json.id`、generation、
+Fork `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` 独占 immutable `task.json.id`、generation、
 TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
 alias、dual-read 或 dual-write。该 catalog 与 runtime 是当前 package-neutral substrate；

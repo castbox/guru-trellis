@@ -193,7 +193,7 @@ def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str)
         receipts = repository.common_dir / "guru-team/cleanup-results" / key.task_id
         completed = []
         if receipts.is_dir():
-            for path in receipts.glob("manual-*.json"):
+            for path in (*receipts.glob("selected-*.json"), *receipts.glob("manual-*.json")):
                 receipt = json.loads(path.read_text(encoding="utf-8"))
                 identity, output = receipt.get("identity", {}), receipt.get("output", {})
                 if (identity.get("task_id"), identity.get("lifecycle_generation"), identity.get("finish_result_id")) == (
@@ -220,10 +220,21 @@ def verify_finish_seal(repository: Any, key: TaskLifecycleKey, archive_ref: str)
             or terminal_summary.get("task", {}).get("archive_dir") != archive_ref):
         raise LifecycleContractError("finish_result_unsealed", "finish_head", "Use a Finish seal for the exact archived TaskLifecycleKey.")
     for transaction in transactions:
+        missing_ledger_finish_matches = (
+            ledger is None
+            and (
+                transaction.get("cleanup_state") == "manual_cleanup_required"
+                or (
+                    manual.get("head_branch") == transaction.get("head_branch")
+                    and manual["target_head"] == transaction["target_head"]
+                )
+            )
+        )
         if (transaction["stage"] != "success" or transaction["finish_ref"] != finish_result_id
                 or transaction["commit"] != finish_head or transaction["archive_ref"] != archive_ref
                 or not is_ancestor(repository, finish_head, transaction["target_head"])
-                or (ledger is None) != (transaction.get("cleanup_state") == "manual_cleanup_required")):
+                or (ledger is None and not missing_ledger_finish_matches)
+                or (ledger is not None and transaction.get("cleanup_state") == "manual_cleanup_required")):
             raise LifecycleContractError("finish_transaction_unfinished", "finish_transaction", "Resume the exact Finish transaction before Reactivate.")
 
 
@@ -266,7 +277,7 @@ def correct_source(root: Path, key: TaskLifecycleKey, archive_ref: str, correcti
 def release_resolved_prior_binding(branches: BranchBindingStore, resources: ResourceLedgerStore,
                                    key: TaskLifecycleKey, branch_name: str) -> Any:
     owner = branches.branch_owner(branch_name)
-    if resources.branch_has_unresolved_incarnation(branch_name, key=key, allowed_current_epoch=None,
+    if resources.branch_has_unresolved_incarnation(branch_name, key=key,
                                                    allowed_current_revision=None):
         raise LifecycleContractError("branch_responsibility_pending", "branch_name", "Resolve prior resource responsibility before reusing the branch.")
     if owner is not None and owner.key != key:
@@ -280,7 +291,6 @@ def release_resolved_prior_binding(branches: BranchBindingStore, resources: Reso
     snapshot = branches.snapshot(key)
     branches.retire_generation(
         key,
-        expected_epoch=old.binding_epoch,
         expected_revision=old.binding_revision,
         expected_branch_name=old.branch_name,
     )
@@ -313,7 +323,7 @@ def acquisition_plan(root: Path, key: TaskLifecycleKey, semantic: dict[str, Any]
     )
 
 
-def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, semantic: dict[str, Any]) -> tuple[str, int] | None:
+def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, semantic: dict[str, Any]) -> str | None:
     repository = inspect_repository(root)
     path = transaction_path(repository, key)
     if not path.exists():
@@ -329,7 +339,7 @@ def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, se
     correction = semantic.get("source_correction")
     if correction is not None:
         expected["source_correction_result_id"] = validate_dto("SourceCorrectionReadyDTO", correction)["result_id"]
-    if (not isinstance(record, dict) or set(record) != {*expected, "archive_ref", "binding_epoch"}
+    if (not isinstance(record, dict) or set(record) != {*expected, "archive_ref"}
             or any(record[k] != value for k, value in expected.items())):
         raise LifecycleContractError("reactivation_transaction_conflict", "transaction", "Resume only the exact Reactivate transaction.")
     validate_json(record, Path(__file__).resolve().parents[1] / "schemas/reactivation-transaction.schema.json", "transaction")
@@ -339,10 +349,10 @@ def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, se
     ledger = ResourceLedgerStore(repository)
     ownership = ledger.read_current(next_key)
     if binding is None or ownership is None or (
-        binding.binding_epoch, binding.binding_revision, binding.branch_ref
-    ) != (record["binding_epoch"], 0, expected["branch_ref"]) or (
-        ownership.binding_epoch, ownership.binding_revision, ownership.branch_name
-    ) != (binding.binding_epoch, 0, binding.branch_name):
+        binding.binding_revision, binding.branch_ref
+    ) != (0, expected["branch_ref"]) or (
+        ownership.binding_revision, ownership.branch_name
+    ) != (0, binding.branch_name):
         raise LifecycleContractError("reactivation_transaction_conflict", "control_state", "Recover the exact branch and ownership state.")
     rows = [row for row in discover_worktree_facts(repository) if row.branch_ref == binding.branch_ref and row.head == plan.decision_head]
     target = plan.invocation_checkout if plan.route == "adopt_invocation_checkout" else plan.target_path
@@ -360,8 +370,8 @@ def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, se
         expected_resources["current_worktree"] = expected_worktree_owner
     if stored is None or stored.ledger_revision != 1 or {
         row.responsibility_role: row.ownership for row in stored.resources
-    } != expected_resources or any(row.state != "current" or row.binding_epoch != binding.binding_epoch
-                     or row.binding_revision != 0 or row.branch_ref != binding.branch_ref for row in stored.resources):
+    } != expected_resources or any(row.state != "current" or row.binding_revision != 0
+                     or row.branch_ref != binding.branch_ref for row in stored.resources):
         raise LifecycleContractError("reactivation_transaction_conflict", "resource_ledger", "Recover the exact acquired resource ownership.")
     identity = resolve_task_id(rows[0].path, key.task_id)
     metadata = json.loads((rows[0].path / identity.task_ref / "task.json").read_text(encoding="utf-8"))
@@ -369,10 +379,10 @@ def recover(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, se
         raise LifecycleContractError("reactivation_transaction_conflict", "task", "Recover the exact planning incarnation.")
     if correction is not None and metadata.get("source") != correction["reviewed_source"]:
         raise LifecycleContractError("reactivation_transaction_conflict", "source", "Recover the reviewed source correction in the planning artifact.")
-    return identity.task_ref, binding.binding_epoch
+    return identity.task_ref
 
 
-def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, semantic: dict[str, Any], archive_ref: str) -> tuple[str, int]:
+def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan, semantic: dict[str, Any], archive_ref: str) -> str:
     repository = inspect_repository(root)
     next_key = TaskLifecycleKey(key.task_id, key.lifecycle_generation + 1)
     branches = BranchBindingStore(repository)
@@ -382,9 +392,9 @@ def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan,
     branch_name = canonical_head_ref(plan.branch_ref).removeprefix("refs/heads/")
     owner = branches.branch_owner(branch_name)
     if (owner is not None and owner.key != key) or resources.branch_has_unresolved_incarnation(
-            branch_name, key=key, allowed_current_epoch=None, allowed_current_revision=None):
+            branch_name, key=key, allowed_current_revision=None):
         raise LifecycleContractError("branch_responsibility_pending", "branch_name", "Resolve prior branch association and resource responsibility first.")
-    completed: list[tuple[str, int]] = []
+    completed: list[str] = []
 
     def after_acquisition(result: Any) -> None:
         checkout = result.checkout.path
@@ -436,7 +446,7 @@ def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan,
             old_snapshot = release_resolved_prior_binding(branches, resources, key, branch_name)
             binding = branches.establish(next_key, branch_name)
             resources.establish_current(
-                next_key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                next_key, binding_revision=0,
                 branch_name=binding.branch_name, branch_ownership=result.branch_ownership,
                 worktree_ownership=result.worktree_ownership,
             )
@@ -445,7 +455,7 @@ def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan,
                 "transaction_id": plan.transaction_id, "result_id": plan.result_id,
                 "branch_ref": binding.branch_ref, "base_ref": canonical_head_ref(semantic["selected_base_ref"]),
                 "base_head": plan.decision_head, "archive_ref": archive_ref,
-                "task_ref": plan.task_ref, "binding_epoch": binding.binding_epoch,
+                "task_ref": plan.task_ref,
             }
             if correction is not None:
                 record["source_correction_result_id"] = correction["result_id"]
@@ -455,7 +465,7 @@ def reactivate(root: Path, key: TaskLifecycleKey, plan: CheckoutAcquisitionPlan,
             with path.open("x", encoding="utf-8") as stream:
                 json.dump(record, stream, sort_keys=True)
                 stream.write("\n")
-            completed.append((plan.task_ref, binding.binding_epoch))
+            completed.append(plan.task_ref)
         except Exception:
             resources.restore(next_key, resource_snapshot)
             branches.restore(branch_snapshot)
@@ -506,7 +516,7 @@ def execute(root: Path, public: dict[str, Any], semantic: dict[str, Any], *, con
                 return blocked(package, "reactivation_transaction_missing", "transaction")
             assert archive_ref is not None
             prior = reactivate(root, key, plan, semantic, archive_ref)
-        task_ref, epoch = prior
+        task_ref = prior
         if route == "resume_reactivation":
             output = {"exit_id": route, **transaction_ref(key.task_id, key.lifecycle_generation + 1, plan.transaction_id, plan.result_id)}
         elif route == "session_binding_recovery_required":
@@ -516,7 +526,7 @@ def execute(root: Path, public: dict[str, Any], semantic: dict[str, Any], *, con
             if actual != semantic["session_outcome"]:
                 return blocked(package, "session_outcome_stale", "session")
             output = {"exit_id": route, **task_artifact(key.task_id, task_ref, key.lifecycle_generation + 1),
-                      "binding_epoch": epoch, "binding_revision": 0, "session_outcome": semantic["session_outcome"]}
+                      "binding_revision": 0, "session_outcome": semantic["session_outcome"]}
     validate_json(output, package / "schemas/public-output.schema.json", "stdout")
     exit_schema = {
         "reactivated_to_planning": "public-planning-output.schema.json",

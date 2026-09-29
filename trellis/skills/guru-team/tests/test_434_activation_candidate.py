@@ -32,6 +32,16 @@ NEW = {
     "guru-ensure-task-checkout", "guru-establish-task-identity",
     "guru-establish-task-branch-binding", "guru-rebind-task-branch",
 }
+RETIRED_CONSUMER_SCHEMAS = {
+    "guru-stage0-invocation-workspace-mutation-1.0",
+    "guru-finalize-task-workflow-published-input-1.0",
+    "guru-finalize-task-stop-blocked-input-1.0",
+    "guru-production-review-task-publication-workflow-return-to-task-work-input-1.0",
+    "guru-production-review-task-publication-stop-blocked-input-1.0",
+    "guru-merge-task-pr-workflow-merged-input-1.0",
+    "guru-merge-task-pr-stop-merge-blocked-input-1.0",
+    "guru-merge-task-pr-stop-closure-mismatch-input-1.0",
+}
 OLD_GRAPH_HEAD = "bab8cfcd534692735b9240b25dd8bc63e40a5cb4"
 
 
@@ -87,32 +97,26 @@ class ActivationCandidateTests(unittest.TestCase):
                      "session_path", "record_exists", "read_record", "write_record"):
             self.assertTrue(callable(getattr(port, name, None)), name)
 
-    def test_current_authority_indexes_bind_exact_fixed_fork_source(self) -> None:
+    def test_candidate_projection_binds_exact_fixed_fork_source(self) -> None:
         lock = read_json(ROOT / "trellis/presets/guru-team/source/trellis-source.json")
         self.assertEqual(read_json(ROOT / ".trellis/guru-team/trellis-source.json"), lock)
-        manifest = yaml.safe_load(
-            (ROOT / "docs/design/versions/current-main-0.6.17-guru.67/manifest.yaml")
+        contribution = yaml.safe_load(
+            (ROOT / "docs/requirements-design-test-contributions/"
+             "454-task-lifecycle-gen7-taskid-domain/manifest.yaml")
             .read_text(encoding="utf-8")
         )
-        self.assertEqual(manifest["framework_source"], f"castbox/Trellis@{lock['commit']}")
+        self.assertEqual(contribution["status"], "reviewed_promoted")
+        self.assertEqual(contribution["expected_current_version"], "current-main-0.6.17-guru.67")
+        self.assertEqual(contribution["candidate_successor_version"], "current-main-0.6.17-guru.68")
         for relative in (
-            "docs/requirements/README.md",
-            "docs/requirements/versions/current-main-0.6.17-guru.67/requirement-main.md",
-            "docs/design/versions/current-main-0.6.17-guru.67/design-main.md",
-            ".trellis/spec/docs/requirements-design-test-ssot.md",
-            ".trellis/spec/architecture/baseline-usage.md",
+            "docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md",
+            "docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/design.md",
             "trellis/presets/guru-team/spec/workflow/data-contracts.md",
             ".trellis/spec/workflow/data-contracts.md",
         ):
             with self.subTest(path=relative):
                 text = (ROOT / relative).read_text(encoding="utf-8")
                 self.assertIn(lock["commit"], text)
-                if relative.endswith("design-main.md"):
-                    self.assertIn(f"D434-00`：当前 Fork source lock 为 `castbox/Trellis@{lock['commit']}", text)
-                else:
-                    self.assertNotIn("eb370008c7689d4e272ae626bd002190ecbb3296", text)
-                    self.assertNotIn("645c817e4830a44564b0dc43b2adf75e306b1e81", text)
-                    self.assertNotIn("80ffa4efb6040572c15e7597eb1ecc3732096c68", text)
 
     def test_fixed_fork_context_template_matches_installed_script(self) -> None:
         checkout = os.environ.get("GURU_FIXED_TRELLIS_CHECKOUT")
@@ -131,6 +135,20 @@ class ActivationCandidateTests(unittest.TestCase):
         ).stdout
         self.assertEqual(source, (ROOT / ".trellis/scripts/get_context.py").read_bytes())
         self.assertIn(b'options.mode in {"phase", "continuation"}', source)
+        task_store = subprocess.run(
+            ["git", "-C", checkout, "show",
+             f"{lock['commit']}:packages/cli/src/templates/trellis/scripts/common/task_store.py"],
+            check=True, capture_output=True,
+        ).stdout
+        self.assertEqual(task_store, (ROOT / ".trellis/scripts/common/task_store.py").read_bytes())
+        session_storage = subprocess.run(
+            ["git", "-C", checkout, "show",
+             f"{lock['commit']}:packages/cli/src/templates/trellis/scripts/common/session_storage.py"],
+            check=True, capture_output=True,
+        ).stdout
+        self.assertEqual(session_storage, (ROOT / ".trellis/scripts/common/session_storage.py").read_bytes())
+        self.assertIn(b'"binding_revision", "branch_name"', session_storage)
+        self.assertNotIn(b'"binding_epoch"', session_storage)
 
     def test_current_test_index_includes_latest_acceptance_cases(self) -> None:
         index = (ROOT / "docs/test/README.md").read_text(encoding="utf-8")
@@ -140,6 +158,9 @@ class ActivationCandidateTests(unittest.TestCase):
     def test_official_task_id_and_generic_start_guidance_match_guru_activation(self) -> None:
         source = ROOT / ".trellis/scripts/common/task_store.py"
         self.assertIn("TASK_ID_PATTERN.fullmatch(task_id)", source.read_text(encoding="utf-8"))
+        self.assertIn("TASK_ID_PATTERN,", source.read_text(encoding="utf-8"))
+        utility = ROOT / ".trellis/scripts/common/task_utils.py"
+        self.assertIn('TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")', utility.read_text(encoding="utf-8"))
         for platform in (".agents", ".claude", ".cursor"):
             with self.subTest(platform=platform):
                 guide = (ROOT / platform / "skills/trellis-meta/references/local-architecture/task-system.md").read_text(encoding="utf-8")
@@ -151,17 +172,41 @@ class ActivationCandidateTests(unittest.TestCase):
             subprocess.run(["git", "init", "-q", str(root)], check=True)
             (root / ".trellis").mkdir()
             (root / ".trellis/scripts").symlink_to(ROOT / ".trellis/scripts")
-            for task_id in ("issue 434", "issue.", "issue.lock", "issue..434"):
+            for index, task_id in enumerate(("issue.", "issue.lock", "issue..434")):
+                slug = f"valid-{index}"
                 result = subprocess.run(
                     [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
-                     "--description", "TaskId fixture", "--slug", "candidate", "--task-id", task_id,
+                     "--description", "TaskId fixture", "--slug", slug, "--task-id", task_id,
+                     "--creator", "test", "--assignee", "test", "--no-start"],
+                    cwd=root, capture_output=True, text=True,
+                    env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
+                )
+                self.assertEqual(result.returncode, 0, (task_id, result.stdout, result.stderr))
+                task = root / result.stdout.strip() / "task.json"
+                self.assertEqual(json.loads(task.read_text(encoding="utf-8"))["id"], task_id)
+            before = sorted((root / ".trellis/tasks").glob("*/task.json"))
+            for task_id in ("issue 434", "-issue", "issue/name"):
+                result = subprocess.run(
+                    [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
+                     "--description", "TaskId fixture", "--slug", "invalid", "--task-id", task_id,
                      "--creator", "test", "--assignee", "test", "--no-start"],
                     cwd=root, capture_output=True, text=True,
                     env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
                 )
                 self.assertNotEqual(result.returncode, 0, (task_id, result.stdout, result.stderr))
                 self.assertIn("--task-id", result.stderr)
-                self.assertFalse(any((root / ".trellis/tasks").glob("*/task.json")))
+                self.assertEqual(sorted((root / ".trellis/tasks").glob("*/task.json")), before)
+
+            derived = subprocess.run(
+                [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
+                 "--description", "TaskId fixture", "--slug", "two words",
+                 "--creator", "test", "--assignee", "test", "--no-start"],
+                cwd=root, capture_output=True, text=True,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
+            )
+            self.assertNotEqual(derived.returncode, 0, (derived.stdout, derived.stderr))
+            self.assertIn("derived task id must match", derived.stderr)
+            self.assertEqual(sorted((root / ".trellis/tasks").glob("*/task.json")), before)
 
     def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
         seen: dict[str, Path] = {}
@@ -307,7 +352,9 @@ class ActivationCandidateTests(unittest.TestCase):
                     self.assertTrue(any("undeclared" in error for error in errors), errors)
 
     def test_old_public_ids_have_explicit_dispositions_and_real_replacements(self) -> None:
-        old_ids = set(RETIRED) | {"check-workspace-boundary", "prepare-task.sh", "start-task.sh", "finish-work.sh"}
+        old_ids = set(RETIRED) | RETIRED_CONSUMER_SCHEMAS | {
+            "check-workspace-boundary", "prepare-task.sh", "start-task.sh", "finish-work.sh",
+        }
         for skill in RETIRED:
             old_commands = json.loads(old_blob(f"trellis/skills/guru-team/packages/{skill}/commands.json"))
             old_ids.update(row["id"] for row in old_commands["commands"])

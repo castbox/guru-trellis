@@ -11,7 +11,7 @@ from typing import Any
 
 from .history_paths import RetiredDataPathError, require_active_path
 from .io import JSON_READ_MISSING, read_json_checked, write_json
-from .task_utils import TaskIdentityError, lifecycle_generation
+from .task_utils import TASK_ID_PATTERN, TaskIdentityError, lifecycle_generation
 
 
 class SessionBindingError(ValueError):
@@ -145,14 +145,14 @@ def _bound_task_workspace(
     require_active_path(path, facts.invocation_root)
     binding, reason = read_json_checked(path)
     if reason == JSON_READ_MISSING:
+        if (facts.invocation_root / ".trellis" / "guru-team" / "extension.json").is_file():
+            raise SessionBindingError(f"binding_required: {task_id!r}")
         return None
     if binding is None or set(binding) != {
-        "schema_version", "task_id", "lifecycle_generation", "binding_epoch",
-        "binding_revision", "branch_name",
+        "schema_version", "task_id", "lifecycle_generation", "binding_revision", "branch_name",
     } or (binding["schema_version"] != "1.0" or binding["task_id"] != task_id
           or type(binding["lifecycle_generation"]) is not int
           or binding["lifecycle_generation"] != generation
-          or type(binding["binding_epoch"]) is not int or binding["binding_epoch"] < 0
           or type(binding["binding_revision"]) is not int or binding["binding_revision"] < 0
           or not isinstance(binding["branch_name"], str) or not binding["branch_name"]):
         raise SessionBindingError(f"invalid_task_branch_binding: {path}")
@@ -267,7 +267,7 @@ def read_record(path: Path, root: Path, facts: RepositoryFacts) -> SessionRecord
     if set(data) != expected:
         raise SessionBindingError(f"invalid_binding_fields: {path}")
     task_id = data.get("task_id")
-    if not isinstance(task_id, str) or not task_id.strip():
+    if not isinstance(task_id, str) or not TASK_ID_PATTERN.fullmatch(task_id):
         raise SessionBindingError(f"invalid_task_id: {path}")
     try:
         generation = lifecycle_generation(data, path)
@@ -355,7 +355,7 @@ def resolve_task_identity(
                     )
                 continue
             candidate_id = data.get("id")
-            if not isinstance(candidate_id, str) or not candidate_id.strip():
+            if not isinstance(candidate_id, str) or not TASK_ID_PATTERN.fullmatch(candidate_id):
                 if visible_match:
                     raise SessionBindingError(f"invalid_task_id: {task_json}")
                 continue

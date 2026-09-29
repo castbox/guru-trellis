@@ -89,7 +89,7 @@ class CurrentFinishGraphTests(unittest.TestCase):
             closure_input.update({"source_exit": completed["exit_id"], "completion_result": completed["result_ref"],
                                   "source": {"kind": "no_issue"}, "action_set": [],
                                   "binding_ref": {"task_id": "example-task", "lifecycle_generation": 1,
-                                                  "binding_epoch": 0, "binding_revision": 0},
+                                                  "binding_revision": 0},
                                   "evidence_slots": {"completion": completed["result_ref"]["result_id"]}})
             closure_review = read_json(closure / "examples/semantic-result.json")
             closure_review["reviewed_action_set"] = []
@@ -166,7 +166,10 @@ class CurrentFinishGraphTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
         for skill_id in RETIRED:
-            self.assertFalse(any(path.is_file() for path in (SKILLS / "packages" / skill_id).rglob("*")))
+            self.assertFalse(any(
+                path.is_file() and path.suffix not in {".pyc", ".pyo"} and "__pycache__" not in path.parts
+                for path in (SKILLS / "packages" / skill_id).rglob("*")
+            ))
 
     def test_legacy_terminal_state_cannot_enter_current_graph(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")

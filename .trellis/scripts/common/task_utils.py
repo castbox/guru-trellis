@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import shutil
 import sys
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -64,6 +65,9 @@ class TaskIdentityError(ValueError):
     """Task metadata cannot establish a valid lifecycle identity."""
 
 
+TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
 @dataclass(frozen=True)
 class TaskIdentity:
     task_id: str
@@ -84,8 +88,8 @@ def lifecycle_generation(data: dict, source: Path | str) -> int:
 
 def task_identity_from_data(data: dict, source: Path | str) -> TaskIdentity:
     task_id = data.get("id")
-    if not isinstance(task_id, str) or not task_id.strip():
-        raise TaskIdentityError(f"invalid_task_id: {source}: expected nonempty string")
+    if not isinstance(task_id, str) or not TASK_ID_PATTERN.fullmatch(task_id):
+        raise TaskIdentityError(f"invalid_task_id: {source}: expected [A-Za-z0-9][A-Za-z0-9._-]*")
     return TaskIdentity(task_id, lifecycle_generation(data, source))
 
 

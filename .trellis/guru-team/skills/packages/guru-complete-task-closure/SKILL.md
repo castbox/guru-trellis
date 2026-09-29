@@ -12,7 +12,10 @@ close authority produce no Issue mutation. Show each exact close action and
 obtain dialogue-local confirmation before invoking with `--confirmed-close`.
 Reread the current `task.json.source` disposition before any action; only a
 missing source with exact canonical Issue scope may normalize to `exact_source`.
-An input source mismatch or non-exact close action fails before mutation.
+For a noncanonical legacy scope with no structured source, freshly review the
+non-exact relation and freeze it in the Closure transaction without writing
+task metadata. An input source mismatch or non-exact close action fails before
+mutation.
 The runtime freezes this entire set in owner-private state, rereads exact Issue
 state, and closes only actions with reviewed close authority.
 

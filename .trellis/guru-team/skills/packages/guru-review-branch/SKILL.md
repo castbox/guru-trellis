@@ -41,7 +41,7 @@ The success output carries only task_ref, A, the exact title/body snapshot,
 and reviewed_base_head B. In the new graph this legacy archived-review result
 stops for pinned-old or manual disposition; it does not feed Delivery Review.
 Stale A/B/PR payload, non-Ready
-state, dirty archive or missing/mismatched mappings fail closed without repair.
+state, dirty archive or mismatched legacy archive task/summary identity fail closed without repair.
 
 ## Ordinary Reviews
 

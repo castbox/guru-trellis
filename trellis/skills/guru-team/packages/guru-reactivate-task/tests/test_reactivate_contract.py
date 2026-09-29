@@ -68,7 +68,7 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     key = TaskLifecycleKey("demo", 2)
     binding = BranchBindingStore(facts).establish(key, old_branch)
     ledger = ResourceLedgerStore(facts)
-    ledger.establish_current(key, binding_epoch=binding.binding_epoch, binding_revision=0,
+    ledger.establish_current(key, binding_revision=0,
                              branch_name=old_branch, branch_ownership=old_owner, worktree_ownership="not_applicable")
     ledger.seal_for_finish(key, finish_result_id="finish:v1:1234567890abcdef", finish_head=head)
     finish_dir = repo / ".trellis/.runtime/guru-team/finish"
@@ -212,10 +212,12 @@ def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, sche
     semantic.pop("selected_base_ref")
     semantic.pop("reviewed_base_head")
     semantic["route"] = "source_correction_required"
+    current_source = ({"kind": "no_issue"} if local_issue_scope else
+                      {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
+                       "disposition": "exact_source"})
     semantic["source_correction"] = {
         **correction(), "lifecycle_generation": 0,
-        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
-                           "disposition": "exact_source"},
+        "current_source": current_source,
     }
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
@@ -224,8 +226,7 @@ def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, sche
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
     semantic["source_correction"] = {
         **correction(), "lifecycle_generation": 0,
-        "current_source": {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
-                           "disposition": "exact_source"},
+        "current_source": current_source,
     }
     first = execute(repo, public, semantic, confirmed=True)
     assert first["exit_id"] == "session_binding_recovery_required"
@@ -308,7 +309,8 @@ def test_legacy_archive_requires_unique_committed_terminal_identity(tmp_path, co
     assert not (tmp_path / "worktrees/new").exists()
 
 
-def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_path):
+@pytest.mark.parametrize("legacy_receipt", [False, True])
+def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_path, legacy_receipt):
     repo, head = repository(tmp_path)
     old_checkout = tmp_path / "old-worktree"
     git(repo, "worktree", "add", "-q", "-b", "codex/demo-old", str(old_checkout), head)
@@ -317,8 +319,7 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     ResourceLedgerStore(facts).path_for(key).unlink()
     prior_binding = BranchBindingStore(facts).read(key)
     BranchBindingStore(facts).retire_generation(
-        key, expected_epoch=prior_binding.binding_epoch,
-        expected_revision=prior_binding.binding_revision,
+        key, expected_revision=prior_binding.binding_revision,
         expected_branch_name=prior_binding.branch_name,
     )
     transaction = repo / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json"
@@ -345,22 +346,71 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     spec.loader.exec_module(cleanup)
     cleanup_input = tmp_path / "cleanup-input.json"
     cleanup_semantic = tmp_path / "cleanup-semantic.json"
+    selected_ids = [candidate_id for candidate_id, (dto, _resource) in cleanup.discover_candidates(repo).items()
+                    if dto["branch_name"] == "codex/demo-old"
+                    and dto["kind"] in {"linked_worktree", "local_branch"}]
+    assert len(selected_ids) == 2
     cleanup_input.write_text(json.dumps({
-        "profile": "manual", "mode": "standalone", "task_id": "demo", "lifecycle_generation": 2,
-        "finish_result_id": record["finish_ref"], "cleanup_state": "manual_cleanup_required",
-        "selected_targets": [{"resource_id": "old-worktree", "kind": "linked_worktree",
-                              "portable_ref": {"kind": "linked_worktree", "branch_ref": "refs/heads/codex/demo-old"},
-                              "expected_cleanup_head": head},
-                             {"resource_id": "old-branch", "kind": "local_branch",
-                              "portable_ref": {"kind": "local_branch", "ref": "refs/heads/codex/demo-old"},
-                              "expected_cleanup_head": head}],
+        "profile": "select_explicit_cleanup_targets", "mode": "standalone",
+        "task_id": "demo", "lifecycle_generation": 2,
+        "finish_result_id": record["finish_ref"], "selected_candidate_ids": selected_ids,
     }))
-    cleanup_semantic.write_text(json.dumps({"profile": "manual", "mode": "standalone",
+    cleanup_semantic.write_text(json.dumps({"profile": "select_explicit_cleanup_targets", "mode": "standalone",
                                             "route": {"typed_exit": "cleaned"}}))
     assert cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
                                                "--semantic-result", str(cleanup_semantic),
                                                "--confirmed-cleanup"])["exit_id"] == "cleaned"
     assert not old_checkout.exists() and git(repo, "branch", "--list", "codex/demo-old") == ""
+    if legacy_receipt:
+        receipt = next((facts.common_dir / "guru-team/cleanup-results/demo").glob("selected-*.json"))
+        receipt.rename(receipt.with_name(receipt.name.replace("selected-", "manual-", 1)))
+    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+
+
+def test_reactivate_after_confirmed_empty_terminal_cleanup(tmp_path):
+    repo, head = repository(tmp_path)
+    facts = inspect_repository(repo)
+    key = TaskLifecycleKey("demo", 2)
+    ResourceLedgerStore(facts).path_for(key).unlink()
+    binding = BranchBindingStore(facts).read(key)
+    BranchBindingStore(facts).retire_generation(
+        key, expected_revision=binding.binding_revision,
+        expected_branch_name=binding.branch_name,
+    )
+    transaction = json.loads((repo / ".trellis/.runtime/guru-team/finish/1234567890abcdef.json").read_text())
+    result = facts.common_dir / "guru-team/finish-results/demo/2-manual.json"
+    result.parent.mkdir(parents=True)
+    result.write_text(json.dumps({
+        "schema_version": "1.0", "task_id": "demo", "lifecycle_generation": 2,
+        "finish_result_id": transaction["finish_ref"], "finish_head": transaction["commit"],
+        "target_head": transaction["target_head"], "archive_ref": transaction["archive_ref"],
+        "head_branch": transaction["head_branch"],
+    }))
+    public, semantic = inputs(repo, head, tmp_path / "worktrees/new")
+    from runtime.task_lifecycle.errors import LifecycleContractError
+    with pytest.raises(LifecycleContractError, match="finish_result_unsealed"):
+        execute(repo, public, semantic, confirmed=True)
+    cleanup_package = PACKAGE.parent / "guru-cleanup-task-resources"
+    spec = importlib.util.spec_from_file_location("guru_empty_cleanup_reactivate", cleanup_package / "runtime/invoke.py")
+    assert spec and spec.loader
+    cleanup = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cleanup)
+    cleanup_input = tmp_path / "cleanup-input.json"
+    cleanup_semantic = tmp_path / "cleanup-semantic.json"
+    cleanup_input.write_text(json.dumps({
+        "profile": "select_explicit_cleanup_targets", "mode": "standalone",
+        "task_id": "demo", "lifecycle_generation": 2,
+        "finish_result_id": transaction["finish_ref"], "selected_candidate_ids": [],
+    }))
+    cleanup_semantic.write_text(json.dumps({
+        "profile": "select_explicit_cleanup_targets", "mode": "standalone",
+        "route": {"typed_exit": "cleaned"},
+    }))
+    assert cleanup.run(cleanup_package, {}, [
+        "--root", str(repo), "--input", str(cleanup_input),
+        "--semantic-result", str(cleanup_semantic), "--confirmed-cleanup",
+    ])["exit_id"] == "cleaned"
+    assert len(list((facts.common_dir / "guru-team/cleanup-results/demo").glob("selected-*.json"))) == 1
     assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
 
 

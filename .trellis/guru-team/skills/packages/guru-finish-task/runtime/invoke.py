@@ -18,7 +18,7 @@ from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
-from runtime.task_lifecycle.source import task_source
+from runtime.task_lifecycle.source import task_source, task_source_with_review
 
 
 def load(root: Path, package_root: Path, value: str, field: str) -> dict:
@@ -113,7 +113,7 @@ def closure_source_current(root: Path, public: dict, frozen_source: dict) -> boo
     try:
         artifact = resolve_task_id(root, public["task_id"])
         metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
-        source = task_source(metadata)
+        source = task_source_with_review(metadata, frozen_source)
     except (LifecycleContractError, OSError, ValueError) as exc:
         raise CommandError("stale_identity", "task.source", "Reread the exact current task source before Finish.", 3) from exc
     if artifact.lifecycle_generation != public["lifecycle_generation"]:
@@ -142,6 +142,22 @@ def transaction_path(root: Path, public: dict, generation: int) -> Path:
 
 def manual_result_path(root: Path, key: TaskLifecycleKey) -> Path:
     return inspect_repository(root).common_dir / "guru-team/finish-results" / key.task_id / f"{key.lifecycle_generation}-manual.json"
+
+
+def persist_cleanup_fallback(root: Path, package_root: Path, key: TaskLifecycleKey,
+                             finish_result_id: str, archive_ref: str, transaction: dict) -> None:
+    result = {
+        "schema_version": "1.0", "task_id": key.task_id,
+        "lifecycle_generation": key.lifecycle_generation, "finish_result_id": finish_result_id,
+        "finish_head": transaction["commit"], "target_head": transaction["target_head"],
+        "archive_ref": archive_ref, "head_branch": transaction["head_branch"],
+    }
+    validate_json(result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
+    path = manual_result_path(root, key)
+    if path.is_file() and json.loads(path.read_text(encoding="utf-8")) != result:
+        raise CommandError("stale_identity", "manual_finish_result", "Recover the exact terminal Finish result.", 3)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
@@ -215,7 +231,8 @@ def verify_payload(bookkeeping: dict) -> None:
         raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not publish a business Delivery identity.", 3)
 
 
-def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, archive_path: Path) -> None:
+def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, archive_path: Path,
+                    frozen_source: dict | None = None) -> None:
     task_dir = root / task_ref
     archive_dir = root / archive_path
     if archive_dir.exists():
@@ -226,6 +243,8 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
     task = json.loads(task_path.read_text())
     if task.get("id") != public["task_id"]:
         raise CommandError("stale_identity", "task.json.id", "Task identity does not match the resolved lifecycle.", 3)
+    if "source" not in task:
+        task["source"] = task_source_with_review(task, frozen_source) if frozen_source is not None else task_source(task)
     task["status"] = "completed"
     task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
     task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
@@ -440,7 +459,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         lifecycle_generation(root, public, archive_ref)
         if not args.confirmed_finish:
             return resume(public, "confirmation_required", "Confirm the reviewed local archive projection.")
-        project_archive(root, public, task_ref, archive_ref, archive_path)
+        project_archive(root, public, task_ref, archive_ref, archive_path, snapshot["source"])
         return resume(public, "bookkeeping_publication_required", "Review and confirm the exact bookkeeping commit, push and PR payload.")
     if not archive_dir.is_dir():
         raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
@@ -476,33 +495,21 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         if exc.code != "resource_ownership_missing":
             raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
         if binding is not None:
-            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
-                                       expected_revision=binding.binding_revision,
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
                                        expected_branch_name=binding.branch_name)
         transaction["cleanup_state"] = "manual_cleanup_required"
         write_transaction(transaction_file, transaction, package_root)
-        manual_result = {
-            "schema_version": "1.0", "task_id": key.task_id,
-            "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation),
-            "finish_head": transaction["commit"], "target_head": transaction["target_head"],
-            "archive_ref": archive_ref,
-        }
-        validate_json(manual_result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
-        result_path = manual_result_path(root, key)
-        if result_path.is_file() and json.loads(result_path.read_text(encoding="utf-8")) != manual_result:
-            raise CommandError("stale_identity", "manual_finish_result", "Recover the exact manual Finish result.", 3)
-        result_path.parent.mkdir(parents=True, exist_ok=True)
-        result_path.write_text(json.dumps(manual_result, sort_keys=True) + "\n", encoding="utf-8")
+        persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
         out = {"exit_id": "manual_cleanup_required", "task_id": public["task_id"], "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation), "cleanup_state": "manual_cleanup_required"}
         validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
         return out
     if binding is not None:
         try:
-            branches.retire_generation(key, expected_epoch=binding.binding_epoch,
-                                       expected_revision=binding.binding_revision,
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
                                        expected_branch_name=binding.branch_name)
         except LifecycleContractError as exc:
             raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
     out = {
         "exit_id": "success",
         "task_id": seal["task_id"],

@@ -16,7 +16,7 @@
     "ai_review_gate": {"type": "object", "additionalProperties": false, "required": ["status", "summary"],
       "properties": {"status": {"const": "passed"}, "summary": {"type": "string", "minLength": 1}}}
   },
-  "$defs": {"taskId": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"}},
+  "$defs": {"taskId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}},
   "allOf": [
     {"if": {"properties": {"profile": {"const": "switch_task"}}, "required": ["profile"]},
       "then": {"required": ["current_task_id", "current_lifecycle_generation"]},

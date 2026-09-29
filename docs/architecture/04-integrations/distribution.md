@@ -164,3 +164,10 @@ drift/零 sidecar 与代表性本地 clean install 均为 targeted gate；退休
 known bytes/manifest hash 匹配时删除，本地未知编辑保留 conflict。远端 marketplace 安装
 不是 #434 实际路径，完整多平台 Release matrix 仍由独立 owner 承担。此前 D443/D436
 非激活及 planned rows 的叙述仅是 `.65/.66` predecessor 状态。
+
+`ARCH-INT-033`（#454 generation 7 current）：固定 official Fork、canonical Guru package、
+dogfood task/session 脚本、installed 和声明平台入口消费同一 TaskId/source 与
+五字段 binding 合同。Cleanup 的显式选择只投影 call-local candidate ID，
+不创建 mapping、resource ownership 或 session 历史；Reactivate 读取本代
+terminal cleaned receipt。`.67` 的旧 Fork pin、Git-ref-safe TaskId 和
+六字段 reader 是 superseded 历史，不是 installed current。

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from hashlib import sha256
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -12,6 +13,12 @@ from .errors import LifecycleContractError
 CONTRACT_ROOT = Path(__file__).resolve().parents[2] / "contracts" / "task-lifecycle"
 CATALOG_NAME = "task-lifecycle-dtos.schema.json"
 _SCHEMA_NAME = re.compile(r"^[a-z0-9][a-z0-9.-]*\.schema\.json$")
+
+
+def _handoff_receipt_ref(task_id: str) -> str:
+    if ".." not in task_id and not task_id.endswith((".", ".lock")):
+        return f"refs/heads/guru-task-lifecycle/{task_id}"
+    return f"refs/heads/guru-task-lifecycle-id/{sha256(task_id.encode('utf-8')).hexdigest()}"
 
 
 def _rfc3339_date_time_matches(value: str) -> bool:
@@ -210,7 +217,7 @@ def validate_dto(name: str, payload: Any, *, contract_root: Path | None = None) 
             "dto_schema_mismatch", field, "Provide the exact closed DTO fields and value domains."
         )
     if name == "HandoffRefDTO":
-        expected_ref = f"refs/heads/guru-task-lifecycle/{payload['task_id']}"
+        expected_ref = _handoff_receipt_ref(payload["task_id"])
         if payload["receipt_ref"] != expected_ref:
             raise LifecycleContractError(
                 "dto_identity_mismatch",

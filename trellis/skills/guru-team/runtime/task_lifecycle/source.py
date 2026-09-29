@@ -10,10 +10,9 @@ REPOSITORY_REF_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-
 LEGACY_ISSUE_SCOPE = re.compile(
     r"^GitHub issue: https://github\.com/([A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*)/issues/([1-9][0-9]*)$"
 )
-LEGACY_LOCAL_ISSUE_SCOPE = re.compile(r"^GitHub Issue #([1-9][0-9]*)$")
 ISSUE_DISPOSITIONS = {"exact_source", "reference_only", "follow_up", "parent"}
 BRANCH_REF_PATTERN = re.compile(
-    r"^(?!-)(?!HEAD$)(?!/)(?!refs/remotes/)(?!(?:refs/heads/)?guru-task-lifecycle(?:/|$))"
+    r"^(?!-)(?!HEAD$)(?!/)(?!refs/remotes/)(?!(?:refs/heads/)?guru-task-lifecycle(?:-id)?(?:/|$))"
     r"(?!.*(?:^|/)\.)(?!.*(?:^|/)[^/]*\.lock(?:/|$))"
     r"(?!.*\.\.)(?!.*@\{)"
     r"(?!.*[ ~^:?*\[\]\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
@@ -59,18 +58,28 @@ def task_source(metadata: Any, *, repo_ref: str | None = None) -> dict[str, Any]
         return normalize_source(metadata["source"])
     scope = metadata.get("scope")
     matched = LEGACY_ISSUE_SCOPE.fullmatch(scope) if isinstance(scope, str) else None
-    if matched is not None:
-        source_repo, number = matched[1], int(matched[2])
-    else:
-        local = LEGACY_LOCAL_ISSUE_SCOPE.fullmatch(scope) if isinstance(scope, str) else None
-        if local is None or repo_ref is None:
-            raise LifecycleContractError(
-                "source_review_required", "task.json.source", "Review the legacy source relation before Closure."
-            )
-        source_repo, number = normalize_repo_ref(repo_ref), int(local[1])
+    if matched is None:
+        raise LifecycleContractError(
+            "source_review_required", "task.json.source", "Review the legacy source relation before Closure."
+        )
+    source_repo, number = matched[1], int(matched[2])
     return normalize_source({
         "kind": "issue", "repo_ref": source_repo, "number": number, "disposition": "exact_source",
     })
+
+
+def task_source_with_review(metadata: Any, reviewed_source: Any) -> dict[str, Any]:
+    try:
+        return task_source(metadata)
+    except LifecycleContractError as exc:
+        if exc.code != "source_review_required":
+            raise
+    source = normalize_source(reviewed_source)
+    if source.get("disposition") == "exact_source":
+        raise LifecycleContractError(
+            "source_review_required", "task.json.source", "A noncanonical legacy scope cannot grant exact source authority."
+        )
+    return source
 
 
 def legacy_archive_source(metadata: dict[str, Any], summary: dict[str, Any], archive_ref: str,
@@ -113,4 +122,4 @@ def normalize_delivery_target(value: Any, *, field_path: str = "delivery_target"
     }
 
 
-__all__ = ["legacy_archive_source", "normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source", "task_source"]
+__all__ = ["legacy_archive_source", "normalize_branch_ref", "normalize_delivery_target", "normalize_repo_ref", "normalize_source", "task_source", "task_source_with_review"]

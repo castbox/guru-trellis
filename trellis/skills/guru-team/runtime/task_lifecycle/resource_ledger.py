@@ -52,7 +52,6 @@ _RESOURCE_FIELDS = {
     "acquisition_origin",
     "ownership",
     "portable_ref",
-    "binding_epoch",
     "binding_revision",
     "state",
     "responsibility_role",
@@ -62,7 +61,7 @@ _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 _REMOTE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*$")
 _COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _RETAINED_CONTROL_REF = re.compile(
-    r"^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)"
+    r"^refs/heads/(?=guru-task-lifecycle(?:/|$)|guru-task-lifecycle-id/[0-9a-f]{64}$)(?!-)(?!HEAD$)(?!/)"
     r"(?!.*[\x00-\x20\x7f])"
     r"(?!.*(?:^|/)\.)(?!.*(?:^|/)[^/]*\.lock(?:/|$))"
     r"(?!.*\.\.)(?!.*@\{)(?!.*[ ~^:?*\[\]\\])"
@@ -75,7 +74,7 @@ def _normalize_nonnegative(value: Any, field_path: str) -> int:
         raise LifecycleContractError(
             "resource_ledger_conflict",
             field_path,
-            "Use one non-negative integer ledger, epoch or revision value.",
+            "Use one non-negative integer ledger or revision value.",
         )
     return value
 
@@ -146,7 +145,6 @@ def _resource_id(
     key: TaskLifecycleKey,
     kind: ResourceKind,
     portable_ref: dict[str, str],
-    binding_epoch: int,
     binding_revision: int,
     role: ResponsibilityRole,
 ) -> str:
@@ -155,7 +153,6 @@ def _resource_id(
         "lifecycle_generation": key.lifecycle_generation,
         "kind": kind,
         "portable_ref": portable_ref,
-        "binding_epoch": binding_epoch,
         "binding_revision": binding_revision,
         "responsibility_role": role,
     }
@@ -249,7 +246,6 @@ class ResourceIncarnation:
     acquisition_origin: AcquisitionOrigin
     ownership: ResourceOwnership
     portable_ref: dict[str, str]
-    binding_epoch: int
     binding_revision: int
     state: ResourceState
     responsibility_role: ResponsibilityRole
@@ -311,7 +307,6 @@ class ResourceIncarnation:
                 role=self.responsibility_role,
             ),
         )
-        _normalize_nonnegative(self.binding_epoch, "binding_epoch")
         _normalize_nonnegative(self.binding_revision, "binding_revision")
         object.__setattr__(
             self,
@@ -382,7 +377,6 @@ class ResourceIncarnation:
             "acquisition_origin": self.acquisition_origin,
             "ownership": self.ownership,
             "portable_ref": dict(self.portable_ref),
-            "binding_epoch": self.binding_epoch,
             "binding_revision": self.binding_revision,
             "state": self.state,
             "responsibility_role": self.responsibility_role,
@@ -462,13 +456,12 @@ class ResourceLedger:
             branch = current_branches[0]
             for row in (*current_worktrees, *current_delivery):
                 if (
-                    row.binding_epoch != branch.binding_epoch
-                    or row.binding_revision != branch.binding_revision
+                    row.binding_revision != branch.binding_revision
                 ):
                     raise LifecycleContractError(
                         "resource_ledger_conflict",
                         "resources",
-                        "Keep current resource epoch and revision aligned.",
+                        "Keep current resource revisions aligned.",
                     )
             for row in (*current_worktrees, *current_delivery):
                 if row.branch_ref != branch.branch_ref:
@@ -703,7 +696,6 @@ def _new_resource(
     *,
     kind: ResourceKind,
     portable_ref: dict[str, str],
-    epoch: int,
     revision: int,
     ownership: ResourceOwnership,
     origin: AcquisitionOrigin,
@@ -712,12 +704,11 @@ def _new_resource(
     expected_cleanup_head: str | None = None,
 ) -> ResourceIncarnation:
     return ResourceIncarnation(
-        resource_id=_resource_id(key, kind, portable_ref, epoch, revision, role),
+        resource_id=_resource_id(key, kind, portable_ref, revision, role),
         kind=kind,
         acquisition_origin=origin,
         ownership=ownership,
         portable_ref=portable_ref,
-        binding_epoch=epoch,
         binding_revision=revision,
         state=state,
         responsibility_role=role,
@@ -873,7 +864,6 @@ class ResourceLedgerStore:
         return OwnershipCurrent(
             ledger.task_id,
             ledger.lifecycle_generation,
-            branch.binding_epoch,
             branch.binding_revision,
             branch.branch_ref.removeprefix("refs/heads/"),
         )
@@ -882,7 +872,6 @@ class ResourceLedgerStore:
         self,
         key: TaskLifecycleKey,
         *,
-        binding_epoch: int,
         binding_revision: int,
         branch_name: str,
         branch_ownership: Ownership,
@@ -898,7 +887,6 @@ class ResourceLedgerStore:
         current = OwnershipCurrent(
             normalized.task_id,
             normalized.lifecycle_generation,
-            binding_epoch,
             binding_revision,
             branch_name,
         )
@@ -914,7 +902,6 @@ class ResourceLedgerStore:
                 normalized,
                 kind="local_branch",
                 portable_ref=_branch_portable_ref(branch_name),
-                epoch=binding_epoch,
                 revision=binding_revision,
                 ownership=branch_owner,
                 origin=_origin_for(branch_owner),
@@ -929,7 +916,6 @@ class ResourceLedgerStore:
                     normalized,
                     kind="linked_worktree",
                     portable_ref=_worktree_portable_ref(branch_name),
-                    epoch=binding_epoch,
                     revision=binding_revision,
                     ownership=worktree_owner,
                     origin=_origin_for(worktree_owner),
@@ -951,7 +937,6 @@ class ResourceLedgerStore:
         self,
         key: TaskLifecycleKey,
         *,
-        binding_epoch: int,
         binding_revision: int,
         branch_name: str,
         live_branch_present: bool,
@@ -968,7 +953,6 @@ class ResourceLedgerStore:
         current = OwnershipCurrent(
             normalized.task_id,
             normalized.lifecycle_generation,
-            binding_epoch,
             binding_revision,
             branch_name,
         )
@@ -977,7 +961,6 @@ class ResourceLedgerStore:
                 normalized,
                 kind="local_branch",
                 portable_ref=_branch_portable_ref(branch_name),
-                epoch=binding_epoch,
                 revision=binding_revision,
                 ownership="caller_owned",
                 origin="conservative_recovery",
@@ -991,7 +974,6 @@ class ResourceLedgerStore:
                     normalized,
                     kind="linked_worktree",
                     portable_ref=_worktree_portable_ref(branch_name),
-                    epoch=binding_epoch,
                     revision=binding_revision,
                     ownership="caller_owned",
                     origin="conservative_recovery",
@@ -1007,7 +989,6 @@ class ResourceLedgerStore:
                     normalized,
                     kind="remote_branch",
                     portable_ref=portable,
-                    epoch=binding_epoch,
                     revision=binding_revision,
                     ownership="caller_owned",
                     origin="conservative_recovery",
@@ -1043,7 +1024,6 @@ class ResourceLedgerStore:
         self,
         key: TaskLifecycleKey,
         *,
-        expected_epoch: int,
         expected_revision: int,
         source_branch_name: str,
         target_branch_name: str,
@@ -1060,14 +1040,13 @@ class ResourceLedgerStore:
         if (
             ledger is None
             or current is None
-            or current.binding_epoch != expected_epoch
             or current.binding_revision != expected_revision
             or current.branch_name != source
         ):
             raise LifecycleContractError(
                 "resource_ownership_conflict",
                 "ownership",
-                "Repeat rebind against the fresh current ledger epoch, revision and branch.",
+                "Repeat rebind against the fresh current ledger revision and branch.",
             )
         successor_revision = expected_revision + 1
         resources: list[ResourceIncarnation] = []
@@ -1100,7 +1079,6 @@ class ResourceLedgerStore:
                 key,
                 kind="local_branch",
                 portable_ref=_branch_portable_ref(target),
-                epoch=expected_epoch,
                 revision=successor_revision,
                 ownership=branch_owner,
                 origin=_origin_for(branch_owner),
@@ -1120,7 +1098,6 @@ class ResourceLedgerStore:
                     key,
                     kind="linked_worktree",
                     portable_ref=_worktree_portable_ref(target),
-                    epoch=expected_epoch,
                     revision=successor_revision,
                     ownership=worktree_owner,
                     origin=_origin_for(worktree_owner),
@@ -1139,7 +1116,6 @@ class ResourceLedgerStore:
         expected = OwnershipCurrent(
             key.task_id,
             key.lifecycle_generation,
-            expected_epoch,
             successor_revision,
             target,
         )
@@ -1155,7 +1131,6 @@ class ResourceLedgerStore:
         self,
         key: TaskLifecycleKey,
         *,
-        expected_epoch: int,
         expected_revision: int,
         remote_name: str,
         repository_ref: str,
@@ -1168,7 +1143,6 @@ class ResourceLedgerStore:
         if (
             ledger is None
             or current is None
-            or current.binding_epoch != expected_epoch
             or current.binding_revision != expected_revision
         ):
             raise LifecycleContractError(
@@ -1188,7 +1162,6 @@ class ResourceLedgerStore:
             key,
             kind="remote_branch",
             portable_ref=portable,
-            epoch=expected_epoch,
             revision=expected_revision,
             ownership=owner,
             origin="publication" if owner == "guru_owned" else "caller_preexisting",
@@ -1207,7 +1180,6 @@ class ResourceLedgerStore:
                 and existing.resource_id == resource.resource_id
                 and existing.portable_ref == resource.portable_ref
                 and existing.ownership == resource.ownership
-                and existing.binding_epoch == resource.binding_epoch
                 and existing.binding_revision == resource.binding_revision
             ):
                 if existing.expected_cleanup_head == expected_cleanup_head:
@@ -1294,7 +1266,6 @@ class ResourceLedgerStore:
             key,
             kind="remote_branch",
             portable_ref=portable,
-            epoch=0,
             revision=ledger.ledger_revision,
             ownership="caller_owned",
             origin="retained_control",
@@ -1315,7 +1286,6 @@ class ResourceLedgerStore:
         branch_name: str,
         *,
         key: TaskLifecycleKey,
-        allowed_current_epoch: int | None,
         allowed_current_revision: int | None,
     ) -> bool:
         branch_ref = f"refs/heads/{normalize_branch_name(branch_name)}"
@@ -1327,7 +1297,6 @@ class ResourceLedgerStore:
                 allowed = (
                     ledger.key == normalized_key
                     and row.state == "current"
-                    and row.binding_epoch == allowed_current_epoch
                     and row.binding_revision == allowed_current_revision
                 )
                 if not allowed:

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-cleanup-task-resources-output-manual-cleanup-required-3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "task_id", "lifecycle_generation", "finish_result_id", "candidates"],
+  "properties": {
+    "exit_id": {"const": "manual_cleanup_required"},
+    "task_id": {"type": "string", "minLength": 1},
+    "lifecycle_generation": {"type": "integer", "minimum": 0},
+    "finish_result_id": {"type": "string", "minLength": 1},
+    "candidates": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["candidate_id", "kind", "branch_name", "registered_worktree_state", "remote_identity", "live_head"],
+      "properties": {
+        "candidate_id": {"type": "string", "pattern": "^cleanup-candidate:[0-9a-f]{32}$"},
+        "kind": {"enum": ["local_branch", "linked_worktree", "remote_branch"]},
+        "branch_name": {"type": "string", "minLength": 1},
+        "registered_worktree_state": {"enum": ["registered", "not_registered"]},
+        "remote_identity": {"type": ["string", "null"]},
+        "remote_name": {"type": "string", "minLength": 1},
+        "live_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "checkout_path": {"type": "string", "minLength": 1}
+      }
+    }}
+  }
+}

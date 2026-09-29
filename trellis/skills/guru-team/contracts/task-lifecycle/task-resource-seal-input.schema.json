@@ -25,7 +25,7 @@
   "$defs": {
     "taskId": {
       "type": "string",
-      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
     },
     "identifier": {
       "type": "string",

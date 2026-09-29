@@ -23,14 +23,13 @@ This directory is substrate only. It does not register a Skill, select a
 workflow edge or activate a production package.
 
 `task-branch-binding.schema.json` is the closed durable common-dir record for
-the current task-to-branch association. Its exact six fields are
-`schema_version`, `task_id`, `lifecycle_generation`, integer opaque
-`binding_epoch`, `binding_revision`, and portable `branch_name`. Repository
+the current task-to-branch association. Its exact five fields are
+`schema_version`, `task_id`, `lifecycle_generation`, `binding_revision`,
+and portable `branch_name`. Repository
 identity comes from the Git common-dir. The record never stores a checkout
 path, Git HEAD, session identity, or resource ownership. Initial creation and
-full control-state loss create a new epoch at revision zero; one-sided recovery
-strictly reuses the surviving epoch and revision; rebind preserves the epoch
-while incrementing the revision.
+full control-state loss start at revision zero; one-sided recovery reuses the
+surviving revision; rebind increments the revision.
 
 `BranchBindingRefDTO` remains an unchanged public DTO in the shared catalog.
 It is not the durable branch record and consumers must not serialize it as one.
@@ -41,8 +40,8 @@ paths, Git identities, byte digests, and the resource-ledger revision because
 those facts are retired with the transaction. The two closed routes are
 `same_checkout_new_ref` and `existing_target`; neither route changes the six-
 field durable binding identity. The target revision is stored separately, but
-the unchanged rebind epoch is derived only from `source_binding.binding_epoch`
-so the checkpoint cannot encode contradictory source and target epochs.
+the source binding's task identity, generation, and revision bind the
+checkpoint to the exact pre-state.
 
 Same-checkout rollback eligibility begins before `git switch -c`: a failing
 `post-checkout` hook may return non-zero after Git has already created and
@@ -94,8 +93,9 @@ complete responsibility inventory identity.
 `task-resource-cleanup-resolution.schema.json` separates ordinary Guru-owned
 cleanup, terminal manual selection, and already-clean results. Ordinary
 Cleanup includes only `guru_owned + cleanup_pending` resources and excludes
-caller-owned, unknown-ownership, and `refs/heads/guru-task-lifecycle/*`
-retained control refs.
+caller-owned, unknown-ownership, and retained control refs under
+`refs/heads/guru-task-lifecycle/*` or
+`refs/heads/guru-task-lifecycle-id/*`.
 
 C5 remains substrate only. It does not activate D443/D436, create a planned
 Skill package, change the production workflow, or publish installed/platform

@@ -96,7 +96,7 @@ class RuntimeTest(unittest.TestCase):
         branch = "task-b" if name == "b" else "reactivated-a" if generation == 1 else "main"
         binding = bind.BranchBindingStore(repository).establish(key, branch)
         bind.ResourceLedgerStore(repository).establish_current(
-            key, binding_epoch=binding.binding_epoch, binding_revision=binding.binding_revision,
+            key, binding_revision=binding.binding_revision,
             branch_name=branch, branch_ownership="caller_owned", worktree_ownership="not_applicable",
         )
 
@@ -234,7 +234,7 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 branch = "main" if name == "a" else "task-b"
                 binding = bind.BranchBindingStore(repository).establish(key, branch)
                 bind.ResourceLedgerStore(repository).establish_current(
-                    key, binding_epoch=binding.binding_epoch, binding_revision=binding.binding_revision,
+                    key, binding_revision=binding.binding_revision,
                     branch_name=branch, branch_ownership="caller_owned", worktree_ownership="not_applicable",
                 )
             with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "package-fixture"}):
@@ -270,7 +270,7 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 key = bind.TaskLifecycleKey("a", 1)
                 binding = bind.BranchBindingStore(repository).establish(key, "reactivated-a")
                 bind.ResourceLedgerStore(repository).establish_current(
-                    key, binding_epoch=binding.binding_epoch, binding_revision=binding.binding_revision,
+                    key, binding_revision=binding.binding_revision,
                     branch_name="reactivated-a", branch_ownership="caller_owned", worktree_ownership="not_applicable",
                 )
                 before = session.read_bytes()
@@ -290,20 +290,23 @@ class FixedForkIntegrationTest(unittest.TestCase):
                     "commit", "-qm", "reactivate")
                 rebound = Path(directory) / "rebound-a"
                 git(root, "worktree", "add", "-qb", "rebound-a", str(rebound), "reactivated-a")
-                with self.assertRaisesRegex(ValueError, "ambiguous_task_identity"):
-                    port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                resolved = port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                self.assertEqual(resolved.workspace, root.resolve())
+                self.assertEqual(resolved.task_ref, ".trellis/tasks/a")
                 old = bind.BranchBindingStore(repository).read(key)
                 bind.ResourceLedgerStore(repository).rebind_current(
-                    key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
+                    key, expected_revision=old.binding_revision,
                     source_branch_name=old.branch_name, target_branch_name="rebound-a",
                     expected_cleanup_head=git(root, "rev-parse", "HEAD"),
                     target_branch_ownership="caller_owned", target_worktree_ownership="caller_owned",
                     worktree_reassociated=False,
                 )
                 bind.BranchBindingStore(repository).advance(
-                    key, expected_epoch=old.binding_epoch, expected_revision=old.binding_revision,
+                    key, expected_revision=old.binding_revision,
                     branch_name="rebound-a",
                 )
+                resolved = port.resolve_task_identity(port.repository_facts(root), "a", 1)
+                self.assertEqual(resolved.workspace, rebound.resolve())
                 session.unlink()
                 self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
                 self.assertEqual(invoke("resume_current_task", generation=1)["exit_id"], "session_resumed")

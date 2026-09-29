@@ -29,7 +29,6 @@ def valid_branch_binding() -> dict:
         "schema_version": "1.0",
         "task_id": TASK_ID,
         "lifecycle_generation": GENERATION,
-        "binding_epoch": 7,
         "binding_revision": 0,
         "branch_name": BRANCH_NAME,
     }
@@ -89,7 +88,7 @@ def valid_payloads() -> dict[str, dict]:
             "result_id": "source-correction:1",
         },
         "DeliveryTargetRefDTO": {**base, "target_relation_id": "target:1"},
-        "BranchBindingRefDTO": {**base, "binding_epoch": 0, "binding_revision": 1},
+        "BranchBindingRefDTO": {**base, "binding_revision": 1},
         "CheckoutAcquisitionPlanDTO": {**artifact, "route": "adopt_invocation_checkout", "branch_ref": "codex/task", "decision_head": COMMIT, "task_artifact_expectation": "required", "invocation_checkout": "/tmp/task", "transaction_id": "checkout:1", "result_id": "checkout-result:1"},
         "CheckoutCandidateDTO": {"candidate_id": "candidate:1", "path": "/tmp/task", "head": COMMIT, "branch_ref": "codex/task", "topology": "linked", "dirty_paths": [], "discovered_at": "2026-09-22T00:00:00Z", "validation_state": "valid", "reason_code": None},
         "CheckoutResolutionDTO": {"resolution_kind": "checkout_resolved", "reason_code": "unique_candidate", "selected_candidate_id": "candidate:1"},
@@ -129,7 +128,6 @@ def valid_resource() -> dict:
         "acquisition_origin": "guru_created",
         "ownership": "guru_owned",
         "portable_ref": {"kind": "local_branch", "ref": f"refs/heads/{BRANCH_NAME}"},
-        "binding_epoch": 7,
         "binding_revision": 0,
         "state": "cleanup_pending",
         "responsibility_role": "retired_cleanup",
@@ -138,7 +136,7 @@ def valid_resource() -> dict:
 
 
 class ContractTests(unittest.TestCase):
-    def test_branch_binding_schema_is_draft_2020_12_and_exactly_six_fields(self):
+    def test_branch_binding_schema_is_draft_2020_12_and_exactly_five_fields(self):
         schema = load_contract("task-branch-binding.schema.json")
         Draft202012Validator.check_schema(schema)
         validator = Draft202012Validator(schema)
@@ -151,12 +149,12 @@ class ContractTests(unittest.TestCase):
                 "schema_version",
                 "task_id",
                 "lifecycle_generation",
-                "binding_epoch",
                 "binding_revision",
                 "branch_name",
             },
         )
         for field, value in {
+            "binding_epoch": 7,
             "path": "/tmp/task",
             "head": COMMIT,
             "session_id": "session:1",
@@ -173,9 +171,6 @@ class ContractTests(unittest.TestCase):
             ("lifecycle_generation", True),
             ("lifecycle_generation", -1),
             ("lifecycle_generation", 1.5),
-            ("binding_epoch", True),
-            ("binding_epoch", -1),
-            ("binding_epoch", 1.5),
             ("binding_revision", True),
             ("binding_revision", -1),
             ("binding_revision", 1.5),
@@ -270,8 +265,8 @@ class ContractTests(unittest.TestCase):
                 with self.subTest(route=route, field=field, value=value):
                     self.assertTrue(list(validator.iter_errors({**payload, field: value})))
 
-            for epoch in (True, -1, 1.5):
-                with self.subTest(route=route, source_binding_epoch=epoch):
+            for revision in (True, -1, 1.5):
+                with self.subTest(route=route, source_binding_revision=revision):
                     self.assertTrue(
                         list(
                             validator.iter_errors(
@@ -279,7 +274,7 @@ class ContractTests(unittest.TestCase):
                                     **payload,
                                     "source_binding": {
                                         **payload["source_binding"],
-                                        "binding_epoch": epoch,
+                                        "binding_revision": revision,
                                     },
                                 }
                             )
@@ -311,7 +306,6 @@ class ContractTests(unittest.TestCase):
                 "repository_ref": "castbox/guru-trellis",
                 "ref": f"refs/heads/guru-task-lifecycle/{TASK_ID}",
             },
-            "binding_epoch": 0,
             "binding_revision": 4,
             "state": "retained",
             "responsibility_role": "retained_control",
@@ -713,9 +707,29 @@ class ContractTests(unittest.TestCase):
                 {**payload, "receipt_ref": "refs/heads/guru-task-lifecycle/another-task"},
             )
 
+    def test_handoff_receipt_ref_projects_git_invalid_task_ids(self):
+        from hashlib import sha256
+
+        payload = valid_payloads()["HandoffRefDTO"]
+        for task_id in ["task.lock", "task.", "task..child"]:
+            expected_ref = "refs/heads/guru-task-lifecycle-id/" + sha256(task_id.encode("utf-8")).hexdigest()
+            with self.subTest(task_id=task_id):
+                self.assertEqual(
+                    validate_dto("HandoffRefDTO", {**payload, "task_id": task_id, "receipt_ref": expected_ref})["receipt_ref"],
+                    expected_ref,
+                )
+                with self.assertRaises(LifecycleContractError):
+                    validate_dto("HandoffRefDTO", {**payload, "task_id": task_id, "receipt_ref": f"refs/heads/guru-task-lifecycle/{task_id}"})
+
     def test_git_and_repository_primitives_use_closed_value_domains(self):
         payloads = valid_payloads()
         for task_id in ["task.lock", "task.", "task..child"]:
+            with self.subTest(task_id=task_id):
+                self.assertEqual(
+                    validate_dto("TaskLifecycleDTO", {**payloads["TaskLifecycleDTO"], "task_id": task_id})["task_id"],
+                    task_id,
+                )
+        for task_id in ["-task", "task/name", "task space"]:
             with self.subTest(task_id=task_id), self.assertRaises(LifecycleContractError):
                 validate_dto("TaskLifecycleDTO", {**payloads["TaskLifecycleDTO"], "task_id": task_id})
         self.assertEqual(

@@ -14,6 +14,8 @@ from typing import Any
 from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
+from runtime.task_lifecycle.identity import origin_matches
+from runtime.task_lifecycle.source import task_source_with_review
 
 
 DIMENSION_IDS = [
@@ -39,7 +41,6 @@ _CLOSING_KEYWORD = re.compile(
     r"(?im)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s*"
     r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b"
 )
-_ISSUE_URL = re.compile(r"github\.com/[^/]+/[^/]+/issues/(\d+)")
 
 
 def parse(parser: argparse.ArgumentParser, argv: list[str]) -> argparse.Namespace:
@@ -169,7 +170,7 @@ def dirty_paths(repo: Path) -> list[str]:
     return paths
 
 
-def task_facts(repo: Path, target: Path) -> dict[str, str]:
+def task_facts(repo: Path, target: Path, reviewed_source: dict[str, Any] | None = None) -> dict[str, Any]:
     metadata_path = target / "task.json"
     _lstat_below(repo, metadata_path, "task_ref", "file")
     try:
@@ -193,12 +194,16 @@ def task_facts(repo: Path, target: Path) -> dict[str, str]:
         stderr=subprocess.PIPE,
     )
     base_ref = remote_ref if probe.returncode == 0 else base_branch
+    try:
+        source = task_source_with_review(metadata, reviewed_source)
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", "task.source", "Review the current task source before Delivery review.", 3) from exc
     return {
         "branch": branch,
         "base_ref": base_ref,
         "base_head": git(repo, "rev-parse", base_ref),
         "head": git(repo, "rev-parse", "HEAD"),
-        "scope": str(metadata.get("scope") or ""),
+        "source": source,
     }
 
 
@@ -270,7 +275,7 @@ def cycle_ref(task_ref: str, reviewed_head: str, payload: dict[str, str]) -> str
     )
 
 
-def validate_semantic(package_root: Path, public: dict[str, Any], semantic: dict[str, Any], scope: str) -> str:
+def validate_semantic(package_root: Path, repo: Path, public: dict[str, Any], semantic: dict[str, Any], source: dict[str, Any]) -> str:
     validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
     if semantic["profile"] != public["profile"] or semantic["mode"] != public["mode"]:
         raise CommandError("schema_mismatch", "semantic_result", "Author the result for the exact public input.")
@@ -333,9 +338,15 @@ def validate_semantic(package_root: Path, public: dict[str, Any], semantic: dict
     body = semantic["pr_payload"]["body"]
     if _CLOSING_KEYWORD.search(body):
         raise CommandError("schema_mismatch", "pr_payload.body", "Delivery PRs use Refs only; remove closing keywords.")
-    match = _ISSUE_URL.search(scope)
-    if match and not re.search(rf"(?i)\bRefs\s+#?{re.escape(match.group(1))}\b", body):
-        raise CommandError("schema_mismatch", "pr_payload.body", "Reference the task Issue with Refs only.")
+    if source["kind"] == "issue":
+        qualified = re.search(
+            rf"(?i)\bRefs\s+{re.escape(source['repo_ref'])}#{source['number']}\b", body
+        )
+        local = origin_matches(repo, source["repo_ref"]) and re.search(
+            rf"(?i)\bRefs\s+#?{source['number']}\b", body
+        )
+        if not qualified and not local:
+            raise CommandError("schema_mismatch", "pr_payload.body", "Reference the exact task Issue with Refs only.")
     return exit_id
 
 
@@ -350,7 +361,7 @@ def validate_gate(package_root: Path, repo: Path, value: dict[str, Any], expecte
     if value["facts_sha256"] != digest(unsigned):
         raise CommandError("stale_identity", "facts_sha256", "Repeat Delivery Review from current facts.", 3)
     target = task_dir(repo, value["task_ref"])
-    facts = task_facts(repo, target)
+    facts = task_facts(repo, target, value["semantic_result"].get("reviewed_source"))
     if facts["head"] != value["reviewed_head"] or value["branch_review_commit"] != value["reviewed_head"]:
         raise CommandError("stale_identity", "reviewed_head", "Repeat review for current committed HEAD.", 3)
     if facts["base_ref"] != value["base_ref"] or facts["base_head"] != value["base_head"]:
@@ -359,9 +370,10 @@ def validate_gate(package_root: Path, repo: Path, value: dict[str, Any], expecte
         raise CommandError("stale_identity", "worktree", "Commit or remove all post-review changes.", 3)
     exit_id = validate_semantic(
         package_root,
+        repo,
         {"profile": value["profile"], "mode": value["mode"]},
         value["semantic_result"],
-        facts["scope"],
+        facts["source"],
     )
     if expected_exit and exit_id != expected_exit:
         raise CommandError("stale_identity", "typed_exit", "Use the current checked typed exit.", 3)

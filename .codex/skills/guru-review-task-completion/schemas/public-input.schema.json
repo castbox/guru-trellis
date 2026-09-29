@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "guru-review-task-completion-input-aggregate-2.0",
   "$defs": {
-    "task_id": {"type": "string", "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
     "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))[^/\\\\]+$|^\\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[^/\\\\]+$"},
     "artifact": {
       "type": "object", "additionalProperties": false,

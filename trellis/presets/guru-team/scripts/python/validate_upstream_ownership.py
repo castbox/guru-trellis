@@ -396,10 +396,18 @@ def _validate_repository(
             errors.append(ownership_error("managed_asset_not_regular", relative, "canonical managed asset must be a regular file"))
 
     package_root = repo_root / SKILL_PACKAGE_ROOT_RELATIVE
-    package_ids = sorted(
-        candidate.name for candidate in package_root.iterdir()
-        if candidate.is_dir() and not candidate.is_symlink()
-    ) if package_root.is_dir() else []
+    package_ids = []
+    if package_root.is_dir():
+        for candidate in package_root.iterdir():
+            if not candidate.is_dir() or candidate.is_symlink():
+                continue
+            files = [path for path in candidate.rglob("*") if path.is_file()]
+            if any(
+                path.suffix != ".pyc" and "__pycache__" not in path.relative_to(candidate).parts
+                for path in files
+            ):
+                package_ids.append(candidate.name)
+        package_ids.sort()
     active_package_ids = sorted(active_skill_ids)
     planned_package_ids = sorted(set(package_ids) & set(planned_skill_ids))
     for skill_id in planned_package_ids:

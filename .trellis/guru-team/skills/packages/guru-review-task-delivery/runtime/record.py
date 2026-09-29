@@ -29,13 +29,13 @@ def record(package_root: Path, repo: Path, public: dict, semantic: dict, dry_run
     target = task_dir(repo, public["task_ref"])
     if rel(repo, target) != public["task_ref"]:
         raise CommandError("stale_identity", "task_ref", "Use the exact current task.", 3)
-    facts = task_facts(repo, target)
+    facts = task_facts(repo, target, semantic.get("reviewed_source"))
     branch_review_commit = public["branch_review_commit"]
     if branch_review_commit != facts["head"]:
         raise CommandError("stale_identity", "branch_review_commit", "Review the exact current HEAD.", 3)
     if dirty_paths(repo):
         raise CommandError("stale_identity", "worktree", "Commit or remove all post-review changes.", 3)
-    exit_id = validate_semantic(package_root, public, semantic, facts["scope"])
+    exit_id = validate_semantic(package_root, repo, public, semantic, facts["source"])
     value = {
         "schema_version": "1.0",
         "skill_id": "guru-review-task-delivery",

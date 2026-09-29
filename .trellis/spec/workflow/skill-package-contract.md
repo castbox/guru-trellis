@@ -899,7 +899,7 @@ missing package/marker state.
 `guru-approve-task-plan` is the only semantic owner of Phase 1 planning
 approval. Its interface uses `judgment_mode=semantic`, declares the same eight
 ordered entry preconditions in workflow and standalone modes
-(`runtime_dependency`, `task_workspace`, `current_authority`,
+(`runtime_dependency`, `task_checkout`, `current_authority`,
 `planning_documents`, `docs_ssot`, `wording_result`, `issue_scope`, and
 `invocation_freshness`), and owns the package-local runtime commands
 `record-planning-approval` and `check-planning-approval`.
@@ -1356,7 +1356,7 @@ and live Git facts. Absolute mappings stay only in ignored runtime files.
 check and of the single ignored-runtime `phase2-check.json` checkpoint. It declares
 `judgment_mode=semantic`, the exact five-stage semantic profile, and identical
 workflow/standalone preconditions in this order: `runtime_dependency`,
-`task_workspace`, `approved_planning`, `live_implementation`,
+`task_checkout`, `approved_planning`, `live_implementation`,
 `validation_scope`, `docs_ssot`, `issue_scope`, and `invocation_freshness`.
 
 The Skill owns repository check selection, scope qualification before severity,

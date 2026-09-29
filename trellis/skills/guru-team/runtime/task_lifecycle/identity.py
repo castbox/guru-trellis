@@ -12,9 +12,10 @@ from .git_facts import commit_path_bytes, inspect_repository
 from .source import legacy_archive_source, normalize_repo_ref
 
 
-TASK_ID_PATTERN = re.compile(r"^(?!.*\.\.)(?!.*(?:\.lock|\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$")
+TASK_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 ACTIVE_TASK_REF = re.compile(r"^\.trellis/tasks/(?!archive(?:/|$))[^/]+$")
 ARCHIVE_TASK_REF = re.compile(r"^\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[^/]+$")
+LEGACY_LOCAL_ISSUE_HINT = re.compile(r"^GitHub Issue #([1-9][0-9]*)$")
 _MISSING = object()
 
 
@@ -50,7 +51,7 @@ def normalize_task_id(value: Any, *, field_path: str = "task_id") -> str:
         raise LifecycleContractError(
             "invalid_task_id",
             field_path,
-            "Use a control-ref-safe [A-Za-z0-9][A-Za-z0-9._-]* value without '..', a trailing dot or a .lock suffix.",
+            "Use an [A-Za-z0-9][A-Za-z0-9._-]* value.",
         )
     return value
 
@@ -241,22 +242,27 @@ def discover_archived_issue_candidate(
         if not isinstance(summary, dict) or not isinstance(task, dict):
             continue
         try:
-            origin_matches = _origin_matches(repository.context_path, source_repo)
+            matches_origin = origin_matches(repository.context_path, source_repo)
             source = legacy_archive_source(
-                task, summary, artifact.task_ref, repo_ref=source_repo if origin_matches else None,
+                task, summary, artifact.task_ref, repo_ref=source_repo if matches_origin else None,
             )
         except LifecycleContractError:
             continue
-        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number")) == (
-            "issue", source_repo, issue_number,
+        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
+            "issue", source_repo, issue_number, "exact_source",
         )
         github = summary.get("github", {})
         indexed_legacy_source = (
-            source == {"kind": "no_issue"} and "source" not in task and origin_matches
+            source == {"kind": "no_issue"} and "source" not in task and matches_origin
             and isinstance(github, dict) and isinstance(github.get("source_issues"), list)
             and issue_number in github["source_issues"]
         )
-        if not (exact_source or indexed_legacy_source):
+        local_hint = LEGACY_LOCAL_ISSUE_HINT.fullmatch(task.get("scope", "")) if isinstance(task.get("scope"), str) else None
+        hinted_legacy_candidate = (
+            source == {"kind": "no_issue"} and "source" not in task and matches_origin
+            and local_hint is not None and int(local_hint[1]) == issue_number
+        )
+        if not (exact_source or indexed_legacy_source or hinted_legacy_candidate):
             continue
         if (
             task.get("id") != artifact.task_id
@@ -275,13 +281,14 @@ def discover_archived_issue_candidate(
     return matches[0]
 
 
-def _origin_matches(repo_root: Path, repo_ref: str) -> bool:
+def origin_matches(repo_root: Path, repo_ref: str) -> bool:
     result = subprocess.run(
         ["git", "remote", "get-url", "origin"], cwd=repo_root, text=True, capture_output=True, check=False,
     )
     if result.returncode != 0:
         return False
-    url = result.stdout.strip()
+    url = result.stdout.strip().casefold()
+    repo_ref = repo_ref.casefold()
     return url in (f"https://github.com/{repo_ref}", f"https://github.com/{repo_ref}.git",
                    f"git@github.com:{repo_ref}", f"git@github.com:{repo_ref}.git",
                    f"ssh://git@github.com/{repo_ref}", f"ssh://git@github.com/{repo_ref}.git")
@@ -289,5 +296,5 @@ def _origin_matches(repo_root: Path, repo_ref: str) -> bool:
 
 __all__ = [
     "ArchivedIssueCandidate", "TaskArtifactIdentity", "discover_archived_issue_candidate", "lifecycle_generation", "normalize_generation", "normalize_task_id",
-    "normalize_task_ref", "resolve_task_id", "resolve_task_ref", "task_id_key", "task_inventory",
+    "normalize_task_ref", "origin_matches", "resolve_task_id", "resolve_task_ref", "task_id_key", "task_inventory",
 ]

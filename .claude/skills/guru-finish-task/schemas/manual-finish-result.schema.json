@@ -11,6 +11,7 @@
     "finish_result_id": {"type": "string", "pattern": "^finish:v1:[0-9a-f]{16}$"},
     "finish_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "target_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
-    "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"}
+    "archive_ref": {"type": "string", "pattern": "^\\.trellis/tasks/archive/"},
+    "head_branch": {"type": "string", "minLength": 1}
   }
 }

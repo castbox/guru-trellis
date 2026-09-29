@@ -5,12 +5,12 @@
     "profile":{"const":"task_branch_rebind"},"mode":{"enum":["workflow","standalone"]},"action":{"enum":["execute","recover"]},
     "plan":{
       "type":"object","additionalProperties":false,
-      "required":["route","task_id","task_ref","lifecycle_generation","expected_status","current_checkout","target_branch_name","expected_epoch","expected_revision","pre_state","target_checkout","target_head","selected_base_ref","reviewed_base_head"],
+      "required":["route","task_id","task_ref","lifecycle_generation","expected_status","current_checkout","target_branch_name","expected_revision","pre_state","target_checkout","target_head","selected_base_ref","reviewed_base_head"],
       "properties":{
         "route":{"enum":["same_checkout_new_ref","existing_target"]},"task_id":{"type":"string","minLength":1},
         "task_ref":{"type":"string","minLength":1},"lifecycle_generation":{"type":"integer","minimum":0},
         "expected_status":{"enum":["planning","in_progress"]},"current_checkout":{"type":"string","minLength":1},
-        "target_branch_name":{"type":"string","minLength":1},"expected_epoch":{"type":"integer","minimum":0},
+        "target_branch_name":{"type":"string","minLength":1},
         "expected_revision":{"type":"integer","minimum":0},"target_checkout":{"type":["string","null"]},
         "target_head":{"type":["string","null"]},"selected_base_ref":{"type":"string","minLength":1},
         "reviewed_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},

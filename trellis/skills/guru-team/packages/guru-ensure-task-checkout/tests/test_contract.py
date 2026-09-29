@@ -44,7 +44,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             binding = BranchBindingStore(repository).establish(key, "main")
             self.assertEqual(module.invoke(root, payload)["exit_id"], "binding_required")
             ResourceLedgerStore(repository).establish_current(
-                key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                key, binding_revision=0,
                 branch_name="main", branch_ownership="caller_owned", worktree_ownership="not_applicable",
             )
             resolved = module.invoke(root, payload)
@@ -69,7 +69,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             key = TaskLifecycleKey("demo", 0)
             binding = BranchBindingStore(repository).establish(key, "main")
             ResourceLedgerStore(repository).establish_current(
-                key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                key, binding_revision=0,
                 branch_name="main", branch_ownership="caller_owned", worktree_ownership="not_applicable",
             )
             import importlib.util
@@ -101,7 +101,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             key = TaskLifecycleKey("demo", 0)
             binding = BranchBindingStore(repository).establish(key, "task-branch")
             ResourceLedgerStore(repository).establish_current(
-                key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                key, binding_revision=0,
                 branch_name="task-branch", branch_ownership="guru_owned", worktree_ownership="guru_owned",
             )
             import importlib.util
@@ -139,7 +139,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             key = TaskLifecycleKey("demo", 0)
             binding = BranchBindingStore(repository).establish(key, "task-branch")
             ResourceLedgerStore(repository).establish_current(
-                key, binding_epoch=binding.binding_epoch, binding_revision=0,
+                key, binding_revision=0,
                 branch_name="task-branch", branch_ownership="caller_owned", worktree_ownership="not_applicable",
             )
             import importlib.util

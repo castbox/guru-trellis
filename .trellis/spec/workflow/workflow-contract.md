@@ -604,6 +604,12 @@ freshly reviews the exact owned branch, worktree and ignored runtime resources,
 requires an independent confirmation, and preserves every previous lifecycle
 result when cleanup is partial. A Reactivate invalidates the prior Finish
 receipt, so old success cannot delete current resources.
+If the terminal resource ledger is missing, manual selection also requires the
+exact same-generation manual Finish result from the common-dir store; archived
+status alone does not authorize resource deletion.
+For a noncanonical legacy active task, Closure may freeze a freshly reviewed
+non-exact source without a metadata-only write. Finish consumes that frozen
+source and materializes it in the required archive metadata mutation.
 
 `guru-reactivate-task` handles only a normally finished original task. It
 preserves TaskId, source and accepted scope, verifies archive/base identity,

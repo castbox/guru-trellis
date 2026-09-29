@@ -1,6 +1,6 @@
 # Design SSOT
 
-唯一 current Design authority：[`versions/current-main-0.6.17-guru.67/design-main.md`](./versions/current-main-0.6.17-guru.67/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#434 原子激活后的 registry（34 packages / 155 exits / 104 commands，零 planned）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.67/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 为 33 mandatory invokes / 153 exits。Architecture 为 `.67` / `active`；`.66` 及更早版本保持 immutable。
+唯一 current Design authority：[`versions/current-main-0.6.17-guru.68/design-main.md`](./versions/current-main-0.6.17-guru.68/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#454 generation 7 后的 registry（34 packages / 155 exits / 104 commands，零 planned）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.68/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 为 33 mandatory invokes / 153 exits。Architecture 为 `.68` / `active`；`.67` 及更早版本保持 immutable。
 
 `.62` Design source binding 同时承接 C4 范围内的 Finalizer provenance recovery guard：初始 reprepare 在无 predecessor transaction 时按真实 Git ancestry 接受 strict historical ancestor，并由 application-level replacement transaction 保存 exact `pre_push_remote_head`；后续 pre-mutation preflight 必须复用该 remote identity。该段只闭合 `REQ-048` / `TST-032` 的设计映射，不把 C4 变成 Finalizer、C5-C7 或 production activation。
 
@@ -10,7 +10,8 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.67` | [`design-main.md`](./versions/current-main-0.6.17-guru.67/design-main.md) |
+| `active` | `current-main-0.6.17-guru.68` | [`design-main.md`](./versions/current-main-0.6.17-guru.68/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.67` | [`design-main.md`](./versions/current-main-0.6.17-guru.67/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.66` | [`design-main.md`](./versions/current-main-0.6.17-guru.66/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.65` | [`design-main.md`](./versions/current-main-0.6.17-guru.65/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.64` | [`design-main.md`](./versions/current-main-0.6.17-guru.64/design-main.md) |

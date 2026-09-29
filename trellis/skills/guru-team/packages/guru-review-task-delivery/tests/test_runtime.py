@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import subprocess
 import sys
@@ -17,6 +18,7 @@ sys.path.insert(0, str(PACKAGE / "runtime"))
 from invoke import run as invoke  # noqa: E402
 from runtime.io import CommandError  # noqa: E402
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository  # noqa: E402
+from runtime.task_lifecycle.closure_result import read_terminal_closure_result  # noqa: E402
 
 
 TASK_REF = ".trellis/tasks/09-18-435-active-task-delivery-loop"
@@ -31,6 +33,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         subprocess.run(["git", "init", "-q", "-b", "main", str(self.repo)], check=True)
         self.git("config", "user.name", "Test")
         self.git("config", "user.email", "test@example.invalid")
+        self.git("remote", "add", "origin", "git@github.com:castbox/guru-trellis.git")
         (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
         (self.repo / "base.txt").write_text("base\n")
         self.git("add", ".")
@@ -169,6 +172,107 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
                     self.invoke(semantic)
                 self.assertEqual("schema_mismatch", raised.exception.code)
                 self.assertFalse(self.checkpoint().exists())
+
+    def test_issue_reference_uses_structured_source_not_free_text_scope(self):
+        task_file = self.repo / TASK_REF / "task.json"
+        metadata = json.loads(task_file.read_text())
+        metadata["source"] = {"kind": "no_issue"}
+        task_file.write_text(json.dumps(metadata))
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "no issue task")
+        self.head = self.git("rev-parse", "HEAD")
+        semantic = self.semantic()
+        semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs #435", "")
+        self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
+
+        metadata["source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                              "number": 436, "disposition": "reference_only"}
+        metadata["scope"] = "delivery review without an Issue URL"
+        task_file.write_text(json.dumps(metadata))
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "structured issue source")
+        self.head = self.git("rev-parse", "HEAD")
+        with self.assertRaises(CommandError) as caught:
+            self.invoke(self.semantic())
+        self.assertEqual(caught.exception.field_path, "pr_payload.body")
+        semantic = self.semantic()
+        semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs #435", "Refs #436")
+        self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
+
+    def test_cross_repository_source_requires_qualified_issue_reference(self):
+        task_file = self.repo / TASK_REF / "task.json"
+        metadata = json.loads(task_file.read_text())
+        metadata["source"] = {"kind": "issue", "repo_ref": "other/repo",
+                              "number": 435, "disposition": "reference_only"}
+        task_file.write_text(json.dumps(metadata))
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "cross repository source")
+        self.head = self.git("rev-parse", "HEAD")
+        with self.assertRaises(CommandError) as caught:
+            self.invoke(self.semantic())
+        self.assertEqual(caught.exception.field_path, "pr_payload.body")
+        semantic = self.semantic()
+        semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs #435", "Refs castbox/guru-trellis#435")
+        with self.assertRaises(CommandError):
+            self.invoke(semantic)
+        semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs castbox/guru-trellis#435", "Refs other/repo#435")
+        self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
+
+    def test_same_repository_short_reference_ignores_github_name_case(self):
+        task_file = self.repo / TASK_REF / "task.json"
+        metadata = json.loads(task_file.read_text())
+        metadata["source"] = {"kind": "issue", "repo_ref": "CastBox/Guru-Trellis",
+                              "number": 435, "disposition": "exact_source"}
+        task_file.write_text(json.dumps(metadata))
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "case variant issue source")
+        self.head = self.git("rev-parse", "HEAD")
+        self.assertEqual(self.invoke(self.semantic())["exit_id"], "ready")
+
+    def test_noncanonical_legacy_source_requires_fresh_non_exact_review(self):
+        task_file = self.repo / TASK_REF / "task.json"
+        metadata = json.loads(task_file.read_text())
+        metadata["scope"] = "GitHub Issue #435"
+        task_file.write_text(json.dumps(metadata))
+        self.git("add", TASK_REF)
+        self.git("commit", "-qm", "legacy task source")
+        self.head = self.git("rev-parse", "HEAD")
+        with self.assertRaises(CommandError) as caught:
+            self.invoke(self.semantic())
+        self.assertEqual(caught.exception.field_path, "task.source")
+
+        semantic = self.semantic()
+        semantic["reviewed_source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                                       "number": 435, "disposition": "reference_only"}
+        before = task_file.read_bytes()
+        self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
+        self.assertEqual(task_file.read_bytes(), before)
+
+        closure_package = PACKAGE.parent / "guru-complete-task-closure"
+        spec = importlib.util.spec_from_file_location("delivery_legacy_closure", closure_package / "runtime/invoke.py")
+        assert spec and spec.loader
+        closure = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(closure)
+        closure_public = json.loads((closure_package / "examples/public-input.json").read_text())
+        closure_public["completion_result"]["task_id"] = self.key.task_id
+        closure_public["binding_ref"]["task_id"] = self.key.task_id
+        closure_public["source"] = semantic["reviewed_source"]
+        closure_public["action_set"] = [{"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 435},
+                                          "disposition": "no_close_authority"}]
+        closure_semantic = json.loads((closure_package / "examples/semantic-result.json").read_text())
+        closure_semantic["reviewed_action_set"] = closure_public["action_set"]
+        closure_output = closure.run(closure_package, {}, ["--root", str(self.repo),
+            "--input", str(self.write("closure-input.json", closure_public)),
+            "--semantic-result", str(self.write("closure-semantic.json", closure_semantic))])
+        self.assertEqual(closure_output["exit_id"], "no_mutation")
+        self.assertEqual(read_terminal_closure_result(inspect_repository(self.repo),
+                         closure_output["result_ref"])["source"], semantic["reviewed_source"])
+        self.assertEqual(task_file.read_bytes(), before)
+
+        semantic["reviewed_source"]["disposition"] = "exact_source"
+        with self.assertRaises(CommandError) as caught:
+            self.invoke(semantic)
+        self.assertEqual(caught.exception.field_path, "task.source")
 
     def test_publish_review_stale_reentry_uses_ordinary_fresh_review_input(self):
         public = self.public()

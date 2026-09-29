@@ -12,9 +12,9 @@
     "expected_candidate_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "recovery": {
       "type": "object", "additionalProperties": false,
-      "required": ["expected_epoch", "expected_revision", "expected_branch_name", "expected_head"],
+      "required": ["expected_revision", "expected_branch_name", "expected_head"],
       "properties": {
-        "expected_epoch": {"type": "integer", "minimum": 0}, "expected_revision": {"type": "integer", "minimum": 0},
+        "expected_revision": {"type": "integer", "minimum": 0},
         "expected_branch_name": {"type": "string", "minLength": 1}, "expected_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
       }
     }

@@ -28,6 +28,7 @@ compatible pre-cutover version.
 | `guru-stage0-create-task-workspace-output-invalid-task-state-2.0` | `retired_without_replacement` |
 | `guru-stage0-create-task-workspace-output-refresh-review-2.0` | `retired_without_replacement` |
 | `guru-stage0-create-task-workspace-workflow-created-input-2.0` | `retired_without_replacement` |
+| `guru-stage0-invocation-workspace-mutation-1.0` | `retired_without_replacement` |
 | `https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-plan-2.0.json` | `retired_without_replacement` |
 | `https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json` | `retired_without_replacement` |
 | `guru-review-task-publication` | `retired_without_replacement` (new Delivery Review has different authority) |
@@ -35,6 +36,8 @@ compatible pre-cutover version.
 | `check-task-publication-review` | `retired_without_replacement` |
 | `invoke-guru-review-task-publication` | `retired_without_replacement` |
 | `review-task-publication-content-identity` | `retired_without_replacement` |
+| `guru-production-review-task-publication-workflow-return-to-task-work-input-1.0` | `retired_without_replacement` |
+| `guru-production-review-task-publication-stop-blocked-input-1.0` | `retired_without_replacement` |
 | `guru-finalize-task` | `retired_without_replacement` (Finish does not publish Delivery) |
 | `preview-finalization` | `retired_without_replacement` |
 | `record-finalization-gate` | `retired_without_replacement` |
@@ -42,6 +45,8 @@ compatible pre-cutover version.
 | `execute-finalization-transition` | `retired_without_replacement` |
 | `invoke-guru-finalize-task` | `retired_without_replacement` |
 | `finalize-task-content-identity` | `retired_without_replacement` |
+| `guru-finalize-task-workflow-published-input-1.0` | `retired_without_replacement` |
+| `guru-finalize-task-stop-blocked-input-1.0` | `retired_without_replacement` |
 | `guru-merge-task-pr` | `retired_without_replacement` (Delivery Merge has a new result) |
 | `preview-task-pr-merge` | `retired_without_replacement` |
 | `record-task-pr-merge` | `retired_without_replacement` |
@@ -49,6 +54,9 @@ compatible pre-cutover version.
 | `execute-task-pr-merge` | `retired_without_replacement` |
 | `watch-task-pr-checks` | `retired_without_replacement` |
 | `invoke-task-pr-merge` | `retired_without_replacement` |
+| `guru-merge-task-pr-workflow-merged-input-1.0` | `retired_without_replacement` |
+| `guru-merge-task-pr-stop-merge-blocked-input-1.0` | `retired_without_replacement` |
+| `guru-merge-task-pr-stop-closure-mismatch-input-1.0` | `retired_without_replacement` |
 | `guru-restore-archived-task` | `retired_without_replacement` (Reactivate requires a normally finished archive) |
 | `restore-archived-task` | `retired_without_replacement` |
 | `prepare-task.sh` | `retired_without_replacement` |

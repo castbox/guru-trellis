@@ -245,7 +245,7 @@ business-task workflow has 33 mandatory invokes and 153 external exits.
 <!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"cleaned","consumer":{"kind":"stop","id":"task-cleanup-complete"}} -->
 <!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"remaining_resources","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
 <!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"blocked","consumer":{"kind":"stop","id":"task-cleanup-blocked"}} -->
-<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"manual_selection_required","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
+<!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"manual_cleanup_required","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
 <!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"handoff_cleanup_complete","consumer":{"kind":"stop","id":"task-handoff-cleanup-await-destination"}} -->
 <!-- guru-skill-exit: {"skill":"guru-cleanup-task-resources","exit":"handoff_cleanup_remaining","consumer":{"kind":"skill","id":"guru-cleanup-task-resources"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-reactivate-task","required":true} -->
@@ -543,7 +543,7 @@ Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycl
 [trellis-continuation]
 ### Guru active-task continuation
 
-Use the current TaskId/generation session binding when present. Resolve its current task_ref, TaskBranchBinding and checkout from live Git facts, then reread `task.json.status` before choosing an owner. In explicit-task mode, require an explicitly selected and validated TaskId; an invocation checkout or directory name never establishes identity. Missing branch binding enters `guru-establish-task-branch-binding`; ambiguous or conflicting identity stops at `invalid-task-state`. Do not infer identity from old mappings or previous dialogue.
+Use the current TaskId/generation session binding when present. Resolve its current task_ref, TaskBranchBinding and checkout from live Git facts, then reread `task.json.status` before choosing an owner. The generic Trellis `task.py current` / `get_context.py` result is context only, not proof of a Guru branch binding; always use `guru-ensure-task-checkout` before task operations. In explicit-task mode, require an explicitly selected and validated TaskId; an invocation checkout or directory name never establishes identity. Missing branch binding enters `guru-establish-task-branch-binding`; ambiguous or conflicting identity stops at `invalid-task-state`. Do not infer identity from old mappings or previous dialogue.
 
 The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block for the exact bound task. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Delivery/Completion owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
 

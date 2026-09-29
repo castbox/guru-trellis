@@ -120,8 +120,8 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> 
     binding = BranchBindingStore(repository).read(key)
     ownership = ResourceLedgerStore(repository).read_current(key)
     if binding is None or ownership is None or (
-        binding.binding_epoch, binding.binding_revision, binding.branch_name
-    ) != (ownership.binding_epoch, ownership.binding_revision, ownership.branch_name):
+        binding.binding_revision, binding.branch_name
+    ) != (ownership.binding_revision, ownership.branch_name):
         raise LifecycleContractError(
             "session_branch_unresolved", "branch_binding",
             "Resolve one current branch binding and matching resource ownership before session binding.",

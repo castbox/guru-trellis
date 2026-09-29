@@ -103,9 +103,9 @@ class IdentityTests(unittest.TestCase):
                 resolve_task_ref(repo, ".trellis/tasks/09-20-demo")
 
     def test_task_id_uses_exact_ascii_domain(self):
-        for value in ["demo", "Demo_1.2", "9-task", "HEAD", "task.LOCK"]:
+        for value in ["demo", "Demo_1.2", "9-task", "HEAD", "task.LOCK", "task.lock", "task.", "task..child"]:
             self.assertEqual(normalize_task_id(value), value)
-        for value in ["", "-demo", "demo/task", "task.lock", "task.", "task..child", "Straße", None, True]:
+        for value in ["", "-demo", "demo/task", "Straße", None, True]:
             with self.subTest(value=value), self.assertRaises(LifecycleContractError):
                 normalize_task_id(value)
 
@@ -151,6 +151,36 @@ class IdentityTests(unittest.TestCase):
         new_head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
         with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
             discover_archived_issue_candidate(self.repo, "example/repo", 154, new_head)
+
+    def test_archived_issue_discovery_ignores_non_exact_structured_sources(self):
+        subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)
+        subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/repo.git"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
+        for task_id, disposition in (
+            ("original-task", "exact_source"),
+            ("reference-task", "reference_only"),
+            ("followup-task", "follow_up"),
+            ("parent-task", "parent"),
+        ):
+            archive_ref = f".trellis/tasks/archive/2026-09/{task_id}"
+            task = self.write_task(archive_ref, task_id)
+            metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
+            metadata.update(status="completed", source={
+                "kind": "issue", "repo_ref": "example/repo", "number": 154,
+                "disposition": disposition,
+            })
+            (task / "task.json").write_text(json.dumps(metadata), encoding="utf-8")
+            (task / "finish-summary.json").write_text(json.dumps({
+                "schema_version": 2, "task": {"archive_dir": archive_ref, "status": "completed"},
+                "github": {"source_issues": [154]},
+            }), encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "archive exact and referenced tasks"], cwd=self.repo, check=True)
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True,
+                              text=True, capture_output=True).stdout.strip()
+        candidate = discover_archived_issue_candidate(self.repo, "example/repo", 154, head)
+        self.assertEqual(candidate.task_id, "original-task")
 
     def test_legacy_local_issue_scope_needs_matching_origin_even_with_empty_index(self):
         subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)

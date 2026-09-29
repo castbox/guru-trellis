@@ -771,6 +771,9 @@ class BranchReviewContractTest(unittest.TestCase):
 
     def test_current_interface_wording_matches_profiles_gate_and_exits(self):
         interface = json.loads((PACKAGE / "interface.json").read_text())
+        boundary = next(row for row in interface["entry_preconditions"] if row["id"] == "workspace_boundary")
+        self.assertIn("TaskBranchBinding", boundary["evidence"])
+        self.assertNotIn("mapping", json.dumps(boundary).lower())
         public = interface["public_contracts"]
         self.assertEqual(
             "guru-production-review-branch-input-aggregate-5.0",

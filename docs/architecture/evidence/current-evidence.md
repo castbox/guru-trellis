@@ -410,3 +410,71 @@ Global package suite 保持 `19/20`，preset suite 保持 `85/86`；前者是 un
 本 evidence 不证明 C4-C7、D443、D436、E434、production activation、完整 installer/upgrade/workflow-switch/
 multi-platform Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。promotion-created
 diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
+
+## EVD-043: #454 Generation 7 TaskId Domain Candidate
+
+This records the pre-Fork-PR-21 candidate. The current source and post-fix
+validation are recorded in `EVD-044` below; this older result is not the final
+Branch Review or Delivery gate.
+
+固定 Fork 为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，
+tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`，main CI `36460551909`
+成功。提升前候选 `origin/main@4d7cd74f3803ca924ac3802dcc12afd1f2cac06c...
+HEAD@63de89e3a47686f8b1fd505ba6fae89ce5658931` 的完整 Branch Review
+通过；34 包隔离测试为 `685 passed, 2 skipped`，installer/upgrade/Fork
+定向子集 `90 passed`，source/installed、Claude/Codex/Cursor drift、sidecar 与
+`git diff --check` 已定向检查。先前更宽 installer 运行的 `172 passed, 2 failed`
+未整体重跑，不把它计为通过。promotion-created diff 与最终同候选审查、
+远端 Delivery/merge/Closure/Finish/Cleanup 尚未在此条中证明；完整 Release matrix
+和 marketplace 不属于本次验收。
+
+## EVD-044: #454 Final Source Candidate Before Branch Review
+
+Fixed Fork PR #21 merged to `castbox/Trellis` main at
+`a9e0b5dcb40e9dd0a54f990ad4d215e427939856`, tree
+`38a2e226a03ca7899ae3504bf3763dc1aac0cb35`; main push CI
+`36486251351` succeeded. Its installed Guru Team session reader returns
+`binding_required` on a missing current TaskBranchBinding rather than using
+an old checkout copy. The official template and Guru dogfood session script
+are byte-identical. Ordinary Trellis retains its no-binding fallback.
+
+The fixed Fork checkout passed frozen install, build and `validate-source`.
+On the Guru candidate, 34 package suites passed in isolated processes with
+two scoped skips; shared lifecycle kernel 142/142, Architecture owner 26/26,
+RDT owner 9/9, and installer/Fork/preset combination 189/189 passed. The
+new installed-reader binding-loss regression passed. Source and installed
+package validators, preset reapply, selected Claude/Codex/Cursor drift,
+task validation and `git diff --check` passed; no `.new` or `.bak` sidecar
+remains. Full multi-platform Release matrix, marketplace and business-repo
+production validation were not run. This evidence does not substitute for
+fresh Phase 2, committed complete-range Branch Review, two independent
+zero-finding reviews, Delivery or terminal closeout.
+
+## EVD-045: #454 TaskId History And Manual Cleanup Finding Fix
+
+The next independent review of `origin/main@4d7cd74f...7d40f6b8` found two
+normal-path gaps: TaskId reuse after a checkout and control-state loss when
+only a remote-tracking ref retained the prior task, and manual deletion of
+another active task's remote branch after its commit was merged to main.
+Neither finding was a malicious-input or concurrency scenario; that review
+did not pass Branch Review or count toward the two zero-finding rounds.
+
+Fork PR #22 merged as `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
+tree `31a83927ed215fb23c04f357e259b45a39c13b7b`; main CI run
+`36519692082` succeeded. The Fork task writer now checks visible local and
+remote-tracking task artifacts before creation, while non-Git Trellis keeps
+its prior directory-based behavior. Guru's creation preflight checks the
+same reachable refs. Terminal manual Cleanup rejects a selected local or
+remote HEAD carrying another active TaskId/generation even when its commit
+and artifact survive on main; it still does not infer historical ownership.
+
+Fork's commit hook passed 2318 tests across 100 files. The Guru finding-fix
+real-Git creation/Cleanup subset passed 56 tests; the 34 isolated package
+suites passed 689 tests with two scoped skips. The current source/installed
+package projection, preset reapply and declared Claude/Codex/Cursor drift
+passed with no sidecars. Shared lifecycle, Architecture/RDT, Phase 2, full
+committed Branch Review, two final independent reviews and live Delivery
+remain separate gates; this entry does not claim them. The legacy
+`guru-create-task-workspace` throwaway verifier is not a current package
+gate and its retired-path tests are not claimed as passing. Marketplace is
+unused and the full multi-platform Release matrix remains a dedicated gate.

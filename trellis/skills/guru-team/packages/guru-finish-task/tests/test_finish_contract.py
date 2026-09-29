@@ -362,7 +362,7 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     key = TaskLifecycleKey("demo", 0)
     binding_store = BranchBindingStore(store.repository)
     binding = binding_store.establish(key, "codex/demo")
-    store.establish_current(key, binding_epoch=binding.binding_epoch, binding_revision=0, branch_name="codex/demo", branch_ownership="guru_owned", worktree_ownership="not_applicable")
+    store.establish_current(key, binding_revision=0, branch_name="codex/demo", branch_ownership="guru_owned", worktree_ownership="not_applicable")
     shutil.rmtree(old_archive)
 
     archive_ref = ".trellis/tasks/archive/2026-09/demo"
@@ -453,9 +453,12 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert store.read(key).finish_head == git(repo, "rev-parse", "HEAD")
     assert git(repo, "rev-parse", "refs/remotes/origin/main") != store.read(key).finish_head
     assert store.cleanup_resolution(TaskLifecycleKey("demo", 0), finish_result_id=finished["finish_result_id"], inventory_id=finished["inventory_id"]).resolution_kind == "ordinary_cleanup"
+    fallback = json.loads(FINISH.manual_result_path(repo, key).read_text())
+    assert fallback["finish_result_id"] == finished["finish_result_id"]
+    assert fallback["head_branch"] == "codex/demo"
+    validate_json(fallback, PACKAGE / "schemas/manual-finish-result.schema.json", "manual_finish_result")
     repeated = invoke()
     assert repeated["exit_id"] == "success"
-    git(repo, "switch", "-q", "main")
     cleanup_package = PACKAGE.parent / "guru-cleanup-task-resources"
     cleanup_spec = importlib.util.spec_from_file_location("guru_cleanup_after_finish", cleanup_package / "runtime/invoke.py")
     assert cleanup_spec and cleanup_spec.loader
@@ -465,6 +468,14 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     cleanup_semantic = tmp_path / "cleanup-semantic.json"
     cleanup_input.write_text(json.dumps({"profile": "normal", "mode": "standalone", **{key: finished[key] for key in ("task_id", "lifecycle_generation", "finish_result_id", "inventory_id")}}))
     cleanup_semantic.write_text(json.dumps({"profile": "normal", "mode": "standalone", "route": {"typed_exit": "cleaned"}}))
+    ledger_path = store.path_for(key)
+    sealed_ledger = ledger_path.read_bytes()
+    ledger_path.unlink()
+    missing_ledger = cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
+                                                        "--semantic-result", str(cleanup_semantic)])
+    assert missing_ledger["exit_id"] == "manual_cleanup_required", missing_ledger
+    ledger_path.write_bytes(sealed_ledger)
+    git(repo, "switch", "-q", "main")
     assert cleanup.run(cleanup_package, {}, ["--root", str(repo), "--input", str(cleanup_input),
                                              "--semantic-result", str(cleanup_semantic), "--confirmed-cleanup"])["exit_id"] == "cleaned"
     assert store.read(key).resources[0].state == "resolved"
@@ -515,6 +526,27 @@ def test_finish_archive_is_discoverable_by_source_issue(tmp_path):
     spec.loader.exec_module(module)
     preview = module.preview(repo, {"issue_refs": ["#454"]}, 20)
     assert [row["finish_summary_path"] for row in preview["candidates"]] == [f"{archive_ref}/finish-summary.json"]
+
+
+def test_finish_materializes_closure_reviewed_legacy_source(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+    task_ref = ".trellis/tasks/demo"
+    task_dir = repo / task_ref
+    task_dir.mkdir(parents=True)
+    (task_dir / "task.json").write_text(json.dumps({"id": "demo", "status": "in_progress",
+                                                    "lifecycle_generation": 0, "scope": "GitHub Issue #454"}))
+    source = {"kind": "issue", "repo_ref": "example/repo", "number": 454,
+              "disposition": "reference_only"}
+    assert FINISH.closure_source_current(repo, {"task_id": "demo", "lifecycle_generation": 0}, source)
+    archive_ref = ".trellis/tasks/archive/2026-09/demo"
+    FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref),
+                           archive_ref, Path(archive_ref), source)
+    archived = json.loads((repo / archive_ref / "task.json").read_text())
+    summary = json.loads((repo / archive_ref / "finish-summary.json").read_text())
+    assert archived["source"] == source
+    assert summary["index"]["search_terms"]["issue_refs"] == ["#454"]
 
 
 def test_finish_archive_retires_only_its_generation_sessions(tmp_path):

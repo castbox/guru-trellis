@@ -92,7 +92,7 @@
   "$defs": {
     "taskId": {
       "type": "string",
-      "pattern": "^(?!.*\\.\\.)(?!.*(?:\\.lock|\\.)$)[A-Za-z0-9][A-Za-z0-9._-]*$"
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
     },
     "identifier": {
       "type": "string",
@@ -108,11 +108,14 @@
     },
     "branchRef": {
       "type": "string",
-      "pattern": "^refs/heads/(?!-)(?!HEAD$)(?!/)(?!guru-task-lifecycle(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+      "pattern": "^refs/heads/(?!-)(?!HEAD$)(?!/)(?!guru-task-lifecycle(?:-id)?(?:/|$))(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
     },
     "retainedControlRef": {
       "type": "string",
-      "pattern": "^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)(?!.*[\\u0000-\\u0020\\u007F])(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"
+      "oneOf": [
+        {"pattern": "^refs/heads/(?=guru-task-lifecycle(?:/|$))(?!-)(?!HEAD$)(?!/)(?!.*[\\u0000-\\u0020\\u007F])(?!.*(?:^|/)\\.)(?!.*(?:^|/)[^/]*\\.lock(?:/|$))(?!.*\\.\\.)(?!.*@\\{)(?!.*[ ~^:?*\\[\\]\\\\])(?!.*[./]$)[^/]+(?:/[^/]+)*$"},
+        {"pattern": "^refs/heads/guru-task-lifecycle-id/[0-9a-f]{64}$"}
+      ]
     },
     "commit": {
       "type": "string",
@@ -215,7 +218,6 @@
         "acquisition_origin",
         "ownership",
         "portable_ref",
-        "binding_epoch",
         "binding_revision",
         "state",
         "responsibility_role",
@@ -241,7 +243,6 @@
             {"$ref": "#/$defs/remoteBranchRef"}
           ]
         },
-        "binding_epoch": {"type": "integer", "minimum": 0},
         "binding_revision": {"type": "integer", "minimum": 0},
         "state": {"enum": ["current", "cleanup_pending", "retained", "resolved"]},
         "responsibility_role": {

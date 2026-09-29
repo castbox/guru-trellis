@@ -277,6 +277,9 @@ printf '%s\\n' post-commit >> "{hook_log}"
 
  def test_launchers_are_executable_and_bind_interface_validators(self):
   interface=json.loads((PACKAGE/"interface.json").read_text())
+  boundary=next(row for row in interface["entry_preconditions"] if row["id"]=="workspace_boundary")
+  self.assertIn("TaskBranchBinding",boundary["evidence"])
+  self.assertNotIn("mapping",json.dumps(boundary).lower())
   for validator in interface["validators"]:
    wrapper=PACKAGE/validator["command"]
    self.assertTrue(os.access(wrapper,os.X_OK),wrapper)

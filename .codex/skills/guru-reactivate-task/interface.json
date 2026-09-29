@@ -54,7 +54,7 @@
       {"id":"blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"},"payload_kind":"structured_json","contract":{"kind":"json_schema","schema_id":"guru-reactivate-blocked-route-2.0","path":"consumers/stop/production/reactivate-blocked.schema.json"}}
     ],
     "projections":[
-      {"id":"planning","exit_id":"reactivated_to_planning","consumer_input_id":"planning","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_id","target":"task_id"},{"source":"task_ref","target":"task_ref"},{"source":"lifecycle_generation","target":"lifecycle_generation"},{"source":"binding_epoch","target":"binding_epoch"},{"source":"binding_revision","target":"binding_revision"},{"source":"session_outcome","target":"session_outcome"}]},
+      {"id":"planning","exit_id":"reactivated_to_planning","consumer_input_id":"planning","operation":"select","mappings":[{"source":"exit_id","target":"exit_id"},{"source":"task_id","target":"task_id"},{"source":"task_ref","target":"task_ref"},{"source":"lifecycle_generation","target":"lifecycle_generation"},{"source":"binding_revision","target":"binding_revision"},{"source":"session_outcome","target":"session_outcome"}]},
       {"id":"session","exit_id":"session_binding_recovery_required","consumer_input_id":"session","operation":"direct"},
       {"id":"resume","exit_id":"resume_reactivation","consumer_input_id":"resume","operation":"direct"},
       {"id":"source","exit_id":"source_correction_required","consumer_input_id":"source","operation":"direct"},

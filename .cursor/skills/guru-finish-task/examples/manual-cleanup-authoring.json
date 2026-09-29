@@ -1,1 +1,1 @@
-{"profile":"manual","mode":"workflow","selected_targets":[{"resource_id":"manual:example","kind":"local_branch","portable_ref":{"kind":"local_branch","ref":"refs/heads/example-task"},"expected_cleanup_head":"1111111111111111111111111111111111111111"}]}
+{"profile":"select_explicit_cleanup_targets","mode":"workflow","selected_candidate_ids":[]}

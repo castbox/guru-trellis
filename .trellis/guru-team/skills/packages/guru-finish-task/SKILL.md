@@ -12,6 +12,9 @@ Closure-frozen source with the current task source and rereads every
 required-closed Issue; drift returns
 `closure_refresh_required` for Closure's semantic re-entry. A bookkeeping
 merge is not a business Delivery and never closes an Issue.
+For a noncanonical legacy task still lacking `task.json.source`, the exact
+Closure-frozen non-exact source is used until the already-required archive
+metadata write materializes it; a short Issue scope never grants close authority.
 
 The normal transaction has three independently confirmed mutations: local
 archive projection, bookkeeping commit/push/PR publication, and expected-head

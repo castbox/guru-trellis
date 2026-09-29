@@ -110,7 +110,7 @@ class CompositionTests(unittest.TestCase):
         self.git("branch", "legacy-task")
         resources = ResourceLedgerStore(inspect_repository(self.repo))
         resources.establish_current(
-            TaskLifecycleKey(TASK_ID, 1), binding_epoch=7, binding_revision=0,
+            TaskLifecycleKey(TASK_ID, 1), binding_revision=0,
             branch_name="legacy-task", branch_ownership="caller_owned",
             worktree_ownership="not_applicable",
         )
@@ -134,6 +134,39 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "task_identity_already_exists")
         self.assertFalse((self.repo / TASK_REF).exists())
 
+    def test_creation_rejects_identity_on_unregistered_local_branch(self) -> None:
+        sibling = Path(self.temporary.name) / "prior-task"
+        self.git("worktree", "add", "-b", "prior-task", str(sibling))
+        archived = sibling / ".trellis/tasks/archive/2026-09/prior-task"
+        archived.mkdir(parents=True)
+        (archived / "task.json").write_text(
+            json.dumps({"id": TASK_ID, "status": "completed", "lifecycle_generation": 0}), encoding="utf-8",
+        )
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "prior task"], cwd=sibling, check=True)
+        self.git("worktree", "remove", str(sibling))
+        self.assertIsNone(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)))
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "task_identity_already_exists")
+
+    def test_creation_rejects_identity_on_remote_tracking_branch(self) -> None:
+        sibling = Path(self.temporary.name) / "prior-task"
+        self.git("worktree", "add", "-b", "prior-task", str(sibling))
+        task = sibling / ".trellis/tasks/09-25-prior-task"
+        task.mkdir(parents=True)
+        (task / "task.json").write_text(
+            json.dumps({"id": TASK_ID, "status": "in_progress", "lifecycle_generation": 0}), encoding="utf-8",
+        )
+        subprocess.run(["git", "add", ".trellis/tasks"], cwd=sibling, check=True)
+        subprocess.run(["git", "commit", "-qm", "prior task"], cwd=sibling, check=True)
+        prior_head = self.git("rev-parse", "prior-task")
+        self.git("worktree", "remove", str(sibling))
+        self.git("update-ref", "refs/remotes/origin/prior-task", prior_head)
+        with self.assertRaises(LifecycleContractError) as raised:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition())
+        self.assertEqual(raised.exception.code, "task_identity_already_exists")
+
     def test_recovery_rejects_branch_ledger_disagreement(self) -> None:
         plan = self.acquisition("provision_linked_worktree")
         inputs = prepare_creation_inputs(self.repo, self.creation(), plan)
@@ -149,14 +182,13 @@ class CompositionTests(unittest.TestCase):
         key = TaskLifecycleKey(TASK_ID, 0)
         binding = BranchBindingStore(repository).establish(key, "codex/new-task")
         ResourceLedgerStore(repository).establish_current(
-            key, binding_epoch=binding.binding_epoch, binding_revision=0,
+            key, binding_revision=0,
             branch_name="unrelated-branch", branch_ownership=acquired.branch_ownership,
             worktree_ownership=acquired.worktree_ownership,
         )
         with self.assertRaises(LifecycleContractError) as raised:
             recover_created_control_state(
-                inputs, acquired, expected_epoch=binding.binding_epoch,
-                expected_result_id=inputs.result_id,
+                inputs, acquired, expected_result_id=inputs.result_id,
             )
         self.assertEqual(raised.exception.code, "creation_result_mismatch")
 
@@ -199,7 +231,7 @@ class CompositionTests(unittest.TestCase):
         else:
             self.assertEqual(len(ledger.resources), 1)
         recovered = recover_created_control_state(
-            inputs, acquired, expected_epoch=binding.binding_epoch, expected_result_id=inputs.result_id,
+            inputs, acquired, expected_result_id=inputs.result_id,
         )
         self.assertEqual(recovered, binding)
         self.assertEqual(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), ledger)
@@ -207,22 +239,21 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaises(LifecycleContractError) as raised:
             recover_created_control_state(
                 inputs, replace(acquired, branch_ownership=wrong_owner),
-                expected_epoch=binding.binding_epoch, expected_result_id=inputs.result_id,
+                expected_result_id=inputs.result_id,
             )
         self.assertEqual(raised.exception.code, "creation_acquisition_mismatch")
         with self.assertRaises(LifecycleContractError) as raised:
             establish_created_control_state(inputs, acquired)
         self.assertEqual(raised.exception.code, "creation_control_state_exists")
-        for epoch, result_id in ((binding.binding_epoch + 1, inputs.result_id), (binding.binding_epoch, "task-created:other")):
-            with self.assertRaises(LifecycleContractError):
-                recover_created_control_state(inputs, acquired, expected_epoch=epoch, expected_result_id=result_id)
+        with self.assertRaises(LifecycleContractError):
+            recover_created_control_state(inputs, acquired, expected_result_id="task-created:other")
         data = json.loads((task / "task.json").read_text())
         data["source"] = {"kind": "no_issue"} if inputs.reviewed_source["kind"] == "issue" else {
             "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454,
         }
         (task / "task.json").write_text(json.dumps(data))
         with self.assertRaises(LifecycleContractError) as raised:
-            recover_created_control_state(inputs, acquired, expected_epoch=binding.binding_epoch, expected_result_id=inputs.result_id)
+            recover_created_control_state(inputs, acquired, expected_result_id=inputs.result_id)
         self.assertEqual(raised.exception.code, "creation_identity_mismatch")
         self.assertEqual(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), ledger)
 
@@ -284,11 +315,11 @@ class CompositionTests(unittest.TestCase):
                 raise OSError("session store unavailable")
 
         absent = SessionPort(None)
-        explicit = bind_created_session(absent, inputs, acquired, expected_epoch=binding.binding_epoch)
+        explicit = bind_created_session(absent, inputs, acquired)
         self.assertEqual(explicit.status, "explicit_task_mode")
         self.assertEqual(absent.writes, 0)
         failing = SessionPort("codex-test")
-        failed = bind_created_session(failing, inputs, acquired, expected_epoch=binding.binding_epoch)
+        failed = bind_created_session(failing, inputs, acquired)
         self.assertEqual(failed.status, "session_write_failed")
         self.assertEqual(failing.writes, 1)
         self.assertEqual(BranchBindingStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), binding)
@@ -331,9 +362,9 @@ class CompositionTests(unittest.TestCase):
         checkpoint.write_text(json.dumps(approval), encoding="utf-8")
         repository = inspect_repository(self.repo)
         key = TaskLifecycleKey(TASK_ID, 0)
-        BranchBindingStore(repository).establish(key, "main", binding_epoch=7)
+        BranchBindingStore(repository).establish(key, "main")
         ResourceLedgerStore(repository).establish_current(
-            key, binding_epoch=7, binding_revision=0, branch_name="main",
+            key, binding_revision=0, branch_name="main",
             branch_ownership="caller_owned", worktree_ownership="not_applicable",
         )
 

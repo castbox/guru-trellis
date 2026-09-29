@@ -41,7 +41,7 @@
     },
     {
       "id": "owned_resources",
-      "evidence": "common-dir resource ledger or exact user-selected manual targets",
+      "evidence": "common-dir resource ledger or exact user-selected live candidate IDs",
       "binding": "this task only",
       "freshness": "fresh discovery"
     },
@@ -92,10 +92,10 @@
       "id": "self_authoring",
       "path": "examples/self-authoring.json"
     },
-    {"id": "manual_input", "path": "examples/public-manual-input.json"},
+    {"id": "selection_input", "path": "examples/public-selection-input.json"},
     {"id": "handoff_input", "path": "examples/public-handoff-input.json"},
-    {"id": "manual_selection_output", "path": "examples/public-manual-selection-output.json"},
-    {"id": "manual_authoring", "path": "examples/manual-authoring.json"},
+    {"id": "manual_cleanup_required_output", "path": "examples/public-manual-cleanup-required-output.json"},
+    {"id": "selection_authoring", "path": "examples/selection-authoring.json"},
     {"id": "handoff_complete_output", "path": "examples/public-handoff-complete-output.json"},
     {"id": "handoff_remaining_output", "path": "examples/public-handoff-remaining-output.json"},
     {"id": "handoff_authoring", "path": "examples/handoff-authoring.json"}
@@ -125,7 +125,7 @@
       "id": "blocked_output",
       "path": "schemas/public-blocked-output.schema.json"
     },
-    {"id": "manual_selection_output", "path": "schemas/public-manual-selection-output.schema.json"},
+    {"id": "manual_cleanup_required_output", "path": "schemas/public-manual-cleanup-required-output.schema.json"},
     {"id": "handoff_complete_output", "path": "schemas/public-handoff-complete-output.schema.json"},
     {"id": "handoff_remaining_output", "path": "schemas/public-handoff-remaining-output.schema.json"}
   ],
@@ -156,19 +156,19 @@
     },
     {
       "id": "blocked",
-      "evidence": "resource ownership is ambiguous",
+      "evidence": "resource identity, freshness, cleanliness or current non-use failed validation",
       "consumer": {
         "kind": "stop",
         "id": "task-cleanup-blocked"
       }
     },
-    {"id": "manual_selection_required", "evidence": "terminal ownership missing or selected manual targets await confirmation", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}},
+    {"id": "manual_cleanup_required", "evidence": "terminal ownership missing or selected candidates await confirmation", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}},
     {"id": "handoff_cleanup_complete", "evidence": "the exact source handoff inventory was resolved and its result recorded", "consumer": {"kind": "stop", "id": "task-handoff-cleanup-await-destination"}},
     {"id": "handoff_cleanup_remaining", "evidence": "the exact source handoff inventory still needs confirmation or deletion", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}}
   ],
   "reentry": {
-    "identity": "TaskId, generation, sealed Finish result and ledger inventory",
-    "freshness": "resolve current ledger and revalidate every target before deletion",
+    "identity": "TaskId, generation, Finish result and ledger inventory or selected candidate IDs",
+    "freshness": "resolve current ledger or rediscover selected candidates and revalidate every target before deletion",
     "stale_behavior": "fail_closed"
   },
   "tests": [
@@ -203,14 +203,14 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-cleanup-task-resources-input-2.0",
+        "schema_id": "guru-cleanup-task-resources-input-3.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
           "id": "normal",
           "schema": {
-            "schema_id": "guru-cleanup-task-resources-input-2.0",
+            "schema_id": "guru-cleanup-task-resources-input-3.0",
             "path": "schemas/public-input.schema.json"
           },
           "example": {
@@ -222,8 +222,8 @@
             "value": "normal"
           }
         },
-        {"id": "manual", "schema": {"schema_id": "guru-cleanup-task-resources-input-2.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "manual_input", "path": "examples/public-manual-input.json"}, "discriminator": {"field": "profile", "value": "manual"}},
-        {"id": "machine_handoff", "schema": {"schema_id": "guru-cleanup-task-resources-input-2.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "handoff_input", "path": "examples/public-handoff-input.json"}, "discriminator": {"field": "profile", "value": "machine_handoff"}}
+        {"id": "select_explicit_cleanup_targets", "schema": {"schema_id": "guru-cleanup-task-resources-input-3.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "selection_input", "path": "examples/public-selection-input.json"}, "discriminator": {"field": "profile", "value": "select_explicit_cleanup_targets"}},
+        {"id": "machine_handoff", "schema": {"schema_id": "guru-cleanup-task-resources-input-3.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "handoff_input", "path": "examples/public-handoff-input.json"}, "discriminator": {"field": "profile", "value": "machine_handoff"}}
       ]
     },
     "invocation": {
@@ -235,7 +235,7 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-cleanup-task-resources-output-aggregate-2.0",
+        "schema_id": "guru-cleanup-task-resources-output-aggregate-3.0",
         "path": "schemas/public-output.schema.json"
       },
       "error_example": {
@@ -290,7 +290,7 @@
         },
         "consumer_use_ids": ["blocked"]
       },
-      {"exit_id": "manual_selection_required", "schema": {"schema_id": "guru-cleanup-task-resources-output-manual-selection-2.0", "path": "schemas/public-manual-selection-output.schema.json"}, "example": {"id": "manual_selection_output", "path": "examples/public-manual-selection-output.json"}, "consumer_use_ids": ["manual"]},
+      {"exit_id": "manual_cleanup_required", "schema": {"schema_id": "guru-cleanup-task-resources-output-manual-cleanup-required-3.0", "path": "schemas/public-manual-cleanup-required-output.schema.json"}, "example": {"id": "manual_cleanup_required_output", "path": "examples/public-manual-cleanup-required-output.json"}, "consumer_use_ids": ["selection"]},
       {"exit_id": "handoff_cleanup_complete", "schema": {"schema_id": "guru-cleanup-task-resources-output-handoff-complete-2.0", "path": "schemas/public-handoff-complete-output.schema.json"}, "example": {"id": "handoff_complete_output", "path": "examples/public-handoff-complete-output.json"}, "consumer_use_ids": ["handoff_terminal"]},
       {"exit_id": "handoff_cleanup_remaining", "schema": {"schema_id": "guru-cleanup-task-resources-output-handoff-remaining-2.0", "path": "schemas/public-handoff-remaining-output.schema.json"}, "example": {"id": "handoff_remaining_output", "path": "examples/public-handoff-remaining-output.json"}, "consumer_use_ids": ["handoff_self"]}
     ],
@@ -337,7 +337,7 @@
         "payload_kind": "structured_json",
         "contract": {"kind": "json_schema", "schema_id": "guru-cleanup-task-resources-blocked-stop-2.0", "path": "consumers/stop/production/cleanup-blocked.schema.json"}
       },
-      {"id": "manual", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "manual", "seed_fields": ["task_id", "lifecycle_generation", "finish_result_id"], "authoring_fields": ["profile", "mode", "cleanup_state", "selected_targets"], "authoring_example": {"id": "manual_authoring", "path": "examples/manual-authoring.json"}}},
+      {"id": "selection", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "select_explicit_cleanup_targets", "seed_fields": ["task_id", "lifecycle_generation", "finish_result_id"], "authoring_fields": ["profile", "mode", "selected_candidate_ids"], "authoring_example": {"id": "selection_authoring", "path": "examples/selection-authoring.json"}}},
       {"id": "handoff_terminal", "consumer": {"kind": "stop", "id": "task-handoff-cleanup-await-destination"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-cleanup-task-resources-handoff-await-destination-2.0", "path": "consumers/stop/production/handoff-await-destination.schema.json"}},
       {"id": "handoff_self", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}, "payload_kind": "structured_json", "contract": {"kind": "skill_input_authoring_seed", "interface_path": "packages/guru-cleanup-task-resources/interface.json", "input_kind": "structured_json", "profile_id": "machine_handoff", "seed_fields": ["task_id", "lifecycle_generation", "handoff_inventory"], "authoring_fields": ["profile", "mode"], "authoring_example": {"id": "handoff_authoring", "path": "examples/handoff-authoring.json"}}}
     ],
@@ -365,7 +365,7 @@
         "consumer_input_id": "blocked",
         "operation": "direct"
       },
-      {"id": "manual", "exit_id": "manual_selection_required", "consumer_input_id": "manual", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "finish_result_id", "target": "finish_result_id"}]},
+      {"id": "selection", "exit_id": "manual_cleanup_required", "consumer_input_id": "selection", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "finish_result_id", "target": "finish_result_id"}]},
       {"id": "handoff_terminal", "exit_id": "handoff_cleanup_complete", "consumer_input_id": "handoff_terminal", "operation": "direct"},
       {"id": "handoff_self", "exit_id": "handoff_cleanup_remaining", "consumer_input_id": "handoff_self", "operation": "select", "mappings": [{"source": "task_id", "target": "task_id"}, {"source": "lifecycle_generation", "target": "lifecycle_generation"}, {"source": "handoff_inventory", "target": "handoff_inventory"}]}
     ],

@@ -5,13 +5,15 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+import re
+import subprocess
 from typing import Any
 
 from .branch_store import BranchBinding, BranchBindingStore, TaskLifecycleKey
 from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionResult
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
-from .git_facts import find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_worktree_registrations, local_branch_head
+from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head
 from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_inventory
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
@@ -114,7 +116,6 @@ def establish_created_control_state(inputs: CreationInputs, result: CheckoutAcqu
         binding = branches.establish(key, inputs.acquisition.branch_ref.removeprefix("refs/heads/"))
         resources.establish_current(
             key,
-            binding_epoch=binding.binding_epoch,
             binding_revision=binding.binding_revision,
             branch_name=binding.branch_name,
             branch_ownership=result.branch_ownership,
@@ -130,7 +131,7 @@ def establish_created_control_state(inputs: CreationInputs, result: CheckoutAcqu
 
 
 def recover_created_control_state(
-    inputs: CreationInputs, result: CheckoutAcquisitionResult, *, expected_epoch: int, expected_result_id: str,
+    inputs: CreationInputs, result: CheckoutAcquisitionResult, *, expected_result_id: str,
 ) -> BranchBinding:
     """Rematerialize an exact result without repeating a task or control-state write."""
 
@@ -142,8 +143,7 @@ def recover_created_control_state(
     binding = BranchBindingStore(repository).read(key)
     ledger = ResourceLedgerStore(repository).read(key)
     if (
-        binding is None or ledger is None or type(expected_epoch) is not int
-        or binding.binding_epoch != expected_epoch or binding.binding_revision != 0
+        binding is None or ledger is None or binding.binding_revision != 0
         or binding.branch_ref != canonical_head_ref(inputs.acquisition.branch_ref)
     ):
         raise LifecycleContractError("creation_result_mismatch", "control_state", "Recover only the exact initial branch result.")
@@ -154,7 +154,7 @@ def recover_created_control_state(
     if (
         ledger.ledger_revision != 1
         or {row.responsibility_role for row in current} != expected
-        or any(row.binding_epoch != expected_epoch or row.binding_revision != 0 for row in current)
+        or any(row.binding_revision != 0 for row in current)
         or any(row.branch_ref != binding.branch_ref for row in current if row.responsibility_role in {"current_branch", "current_worktree"})
         or any(row.ownership != result.branch_ownership for row in current if row.responsibility_role == "current_branch")
         or any(row.ownership != result.worktree_ownership for row in current if row.responsibility_role == "current_worktree")
@@ -168,14 +168,13 @@ def bind_created_session(
     inputs: CreationInputs,
     result: CheckoutAcquisitionResult,
     *,
-    expected_epoch: int,
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> SessionAdapterResult:
     """Bind a completed creation; session failure never undoes task ownership."""
 
     recover_created_control_state(
-        inputs, result, expected_epoch=expected_epoch, expected_result_id=inputs.result_id,
+        inputs, result, expected_result_id=inputs.result_id,
     )
     return bind_session(
         official,
@@ -236,6 +235,24 @@ def prepare_creation_inputs(
             for row in task_inventory(registration.path)
         ):
             raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
+    for _branch_ref, head in list_task_history_branch_refs(repository):
+        tree = subprocess.run(
+            ["git", f"--git-dir={repository.common_dir}", "ls-tree", "-r", "--name-only", head, "--", ".trellis/tasks"],
+            capture_output=True, text=True, check=True,
+        )
+        for path in tree.stdout.splitlines():
+            if not re.fullmatch(r"\.trellis/tasks/(?:archive/.+/)?[^/]+/task\.json", path):
+                continue
+            payload = commit_path_bytes(repository, head, path)
+            try:
+                metadata = json.loads(payload) if payload is not None else None
+            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise LifecycleContractError("invalid_task_identity", path, "Resolve the task artifact on the local branch.") from exc
+            if isinstance(metadata, dict) and (
+                str(metadata.get("id", "")).casefold() == task_id.casefold()
+                or path.removesuffix("/task.json") == task_ref
+            ):
+                raise LifecycleContractError("task_identity_already_exists", "task_id", "Select an unused TaskId and TaskRef.")
     if any(
         ledger.task_id.casefold() == task_id.casefold()
         and any(row.state != "resolved" for row in ledger.resources)
@@ -316,8 +333,7 @@ def _activation_inputs(
     binding = BranchBindingStore(repository).read(key)
     ownership = ResourceLedgerStore(repository).read_current(key)
     if binding is None or ownership is None or (
-        binding.binding_epoch != ownership.binding_epoch
-        or binding.binding_revision != ownership.binding_revision
+        binding.binding_revision != ownership.binding_revision
         or binding.branch_name != ownership.branch_name
     ):
         raise LifecycleContractError("activation_branch_unresolved", "branch_binding", "Establish matching current branch and ownership first.")

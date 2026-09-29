@@ -56,7 +56,7 @@ class BranchBindingTests(unittest.TestCase):
         ledger = ResourceLedgerStore(self.repo)
         self.assertEqual(ledger.read_current(self.key).branch_name, "task/demo")
         recovery = {**self.input, "action": "recover", "recovery": {
-            "expected_epoch": binding.binding_epoch, "expected_revision": binding.binding_revision,
+            "expected_revision": binding.binding_revision,
             "expected_branch_name": binding.branch_name, "expected_head": self.head,
         }}
         before = (store.snapshot(self.key), ledger.snapshot(self.key))
@@ -67,7 +67,7 @@ class BranchBindingTests(unittest.TestCase):
 
     def test_stale_selected_head_and_recovery_before_write(self) -> None:
         self.assertEqual(self.invoke({**self.input, "action": "recover", "recovery": {
-            "expected_epoch": 0, "expected_revision": 0, "expected_branch_name": "task/demo", "expected_head": self.head,
+            "expected_revision": 0, "expected_branch_name": "task/demo", "expected_head": self.head,
         }})["exit_id"], "blocked")
         stale = {**self.input, "expected_candidate_head": "a" * 40}
         self.assertEqual(self.invoke(stale)["exit_id"], "selection_required")

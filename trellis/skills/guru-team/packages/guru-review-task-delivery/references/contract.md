@@ -63,8 +63,9 @@ Dimension order:
 9. `pr_payload_truthfulness`
 10. `base_and_live_facts`
 
-The PR body must use an ordinary `Refs #<issue>` reference for Issue-backed
-work and must not contain GitHub closing keywords. It must state the delivered
+The PR body must use `Refs #<issue>` for a source Issue in the PR repository,
+or `Refs <owner>/<repo>#<issue>` for a cross-repository source Issue. It must
+not contain GitHub closing keywords. It must state the delivered
 slice, validation performed, remaining work, unverified boundaries, and safety
 or deployment impact truthfully. It must not claim task completion or Issue
 closure. A task without an external Issue emits no Issue reference.
