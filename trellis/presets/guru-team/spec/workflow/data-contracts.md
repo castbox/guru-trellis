@@ -1968,12 +1968,12 @@ moves the archive to the active locator, increments the generation, and enters
 planning. Its package-local transaction and shared branch/resource owners bind
 the new checkout; it does not create old task/workspace mappings. Prior Finish
 receipts cannot seed Cleanup for the new generation.
-Legacy Issue discovery treats an old finish-summary index as a hint, not a
-mandatory source authority: the committed task source and unique terminal Git
-archive decide the match. Old schema-2 archives with absent generation, or
-generation zero plus a matching retired `task.json.archive_dir`, use legacy
-committed-archive verification only without a C5 ledger. Other explicit
-generations require the current Finish seal or exact manual Cleanup receipt.
+Archives carrying retired personnel fields are never Reactivate
+candidates. An exact TaskId or strictly matched Issue clue may return only the
+`unsupported_legacy_task` read-only diagnostic; no finish-summary index,
+source correction, generation-zero rule, or legacy archive verification can
+restore them. Reactivate accepts only an archive that already satisfies the
+current task schema and current Finish/Cleanup contract.
 
 ### Task identity and session binding (#443, selected by #434)
 

@@ -72,5 +72,8 @@ Issue checks. A merged old PR with a divergent remote head, such as
 `castbox/ai-chat-roleplay-backend#154` / PR #156, is not a reusable Delivery
 result; a prepared old Finalizer preview is not executable proof. Do not edit
 that business repository, reuse its merged PR, or silently bypass Finalizer.
-Normally finished old archives can enter current Reactivate only after unique
-source Issue, TaskId, finish-summary/index and archived Git identity checks.
+Normally finished archives that already satisfy the current task schema can
+enter current Reactivate after the required identity and Finish/Cleanup checks.
+Archives carrying retired personnel fields are permanently read-only: exact
+TaskId or Issue lookup returns `unsupported_legacy_task` and never restores or
+increments their generation.

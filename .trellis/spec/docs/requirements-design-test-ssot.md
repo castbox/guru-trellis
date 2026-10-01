@@ -2,13 +2,13 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.69`
+- version：`current-main-0.6.17-guru.70`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
-- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.69` / `active`
-- source binding：reviewed #467 release preparation contribution + inherited immutable `current-main-0.6.17-guru.68` authority promoted to `current-main-0.6.17-guru.69`；current registry 为 34 packages / 155 exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits，fixed Fork source 为 `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`。`.68` 的 #434/#454 graph 为 immutable inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。前一版本既有安装的退役受管资产删除、完整多平台 Release matrix 与业务仓生产验证未由本 projection 证明。
+- Architecture inheritance：`docs/architecture/README.md`，`current-main-0.6.17-guru.70` / `active`
+- source binding：reviewed #481 task-personnel retirement contribution + inherited immutable `current-main-0.6.17-guru.69` authority promoted to `current-main-0.6.17-guru.70`；current registry 为 34 packages / 155 exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits，fixed Fork source 为 `64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，CLI/core `0.7.0-castbox.1`。`.69` 的 #434/#454 graph 为 immutable inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。前一版本既有安装的退役受管资产删除、完整多平台 Release matrix 与业务仓生产验证未由本 projection 证明。
 - Finalizer recovery mapping：`FIN454-C4-P1-004` 不创建新 RDT identity；它继续映射 `REQ-048 -> DES-046 -> TST-032/SCN-044`，以同一 unbound transaction、合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、无 Open PR 与 transaction-owned remote endpoints 构成最小充分绑定。
 
 ## 读取与更新
