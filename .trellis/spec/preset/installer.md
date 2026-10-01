@@ -290,7 +290,8 @@ precondition parity, question/scope/action invariants, zero persisted
 authorization fields, stdout-only
 pre-task behavior, active-task bindings, the query-only prepare path consuming
 the current post-sync digest through the shared resolver/sync core, and the
-workspace Skill's independent mutation-time freshness checks, `trellis update`,
+`guru-create-task`'s task-date, selected-base, and checkout freshness checks at
+creation time, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 
 The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed
