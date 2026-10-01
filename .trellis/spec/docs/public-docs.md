@@ -133,9 +133,12 @@ All three public README files must describe the final ownership boundary:
   source/installed/ownership/platform/dogfood validation are one documented
   sequence.
 
-All three README files must state that current task identity comes only from
-`task.json`, ignored runtime mapping, current checkout, and live Git worktree
-facts. They must document `finish-summary.json` as output of the normal current
+All three README files must state that current task identity is TaskId and
+lifecycle generation from current task metadata. Path-free session focus or an
+explicit TaskId selects the task; TaskBranchBinding owns the branch, and live
+registered Git worktree facts resolve the checkout. Ignored runtime mapping and
+checkout paths are not task identity or checkout-path authority. They must
+document `finish-summary.json` as output of the normal current
 `guru-team.finish-work` path only, with no alternate summary command. Public
 package documentation keeps live ids such as `invoke-guru-check-task` and
 `guru-stage0-*`, and lists only schemas, examples, fixtures, and eval contracts
@@ -168,61 +171,36 @@ also state that equivalent metadata/formatting deltas refresh only directly
 affected owner identity, while material authority/scope/design/acceptance
 changes rerun their semantic owners.
 
-Public Intake docs must name active semantic `guru-create-task-workspace` as
-the sole consumer of `guru-review-change-request:ready` and the sole
-issue/branch/worktree/task mutation owner. All three README files list its
-ignored-runtime schemas `guru-task-workspace-plan-2.0` and
-`guru-task-workspace-result-3.0`, runtime commands
-`record-task-workspace-plan`, `create-task-workspace`, and
-`check-task-workspace-result`, and exits `created`, `refresh_review`, and
-`blocked` with unique consumers. Refusal stops before recording and returns no
-typed exit.
+Public Intake docs name the independent active semantic owners
+`guru-create-issue` and `guru-create-task` after
+`guru-review-change-request:ready`. The reviewed draft's exact Issue mutation
+returns to fresh Sync and Intake; only a separately reviewed existing-Issue or
+standalone request can create a task. Before task creation, docs show the exact
+TaskId, TaskRef, selected base, branch, checkout and resource ownership, and
+obtain current-dialogue confirmation for those side effects. Issue creation and
+task creation each retain their own current result recovery and typed exits;
+the retired `guru-create-task-workspace` package is not a current route.
 
-Docs distinguish the two confirmations: a reviewed draft may create only the
-exact issue and immediately returns `refresh_review`; the later open-issue
-invocation obtains a fresh workspace/task confirmation. They state the fixed
-assignee order, ignored `.trellis/.runtime/guru-team/**` mappings, exact object
-reuse/blocking, and the
-A/B two-order local merge fixture. `prepare-task` is query-only; all issue,
-branch, worktree, task, artifact, and runtime mutations belong exclusively to
-`guru-create-task-workspace`.
+Public docs state that `guru-create-task` uses the source-locked Fixed Fork's
+official `task.py create --no-start`, then materializes TaskId/source and the
+current branch/resource binding. Its public input and official `task.json`
+contain no task `creator` or `assignee`, and no login is inferred from GitHub,
+Git author, session, or local identity files. A missing session context key
+uses explicit-task mode; current schema-2 session binding does not reintroduce
+personnel identity. Recovery rereads the exact task and binding without
+creating another task or checkout.
 
-Docs also state that the reviewed-draft GitHub adapter forwards the reviewed
-title/body bytes without trimming or appending a newline before the live reread
-and created-issue binding check.
-
-They also document retry recovery: before create, exact open-issue
-title/body/labels plus creation-at-or-after-plan facts yield a 0/1/>1 decision;
-one match is recovered, zero creates once, and multiple block. Complete Intake
-re-entry for a workflow-created issue carries the full checker-passed
-created-issue result and validates it against the fresh context canonical live
-existing-issue identity. That context uses `kind=issue` and null
-`issue_binding`; a bare binding digest is not accepted.
-
-Public docs state that the plan binds `post_sync_resolution_sha256` and the
-executor revalidates the reviewed local facts plus the current remote HEAD with
-read-only `git ls-remote` before the first confirmed mutation. It does not
-fetch, fast-forward, or update refs. A remote advance routes to
-`refresh_review` with local state unchanged so the next Intake round invokes
-the sole authoritative `guru-sync-base`; unchanged identity continues normally.
-
-Public docs state that the workspace executor calls official
-`common.task_store.cmd_create` through an isolated adapter and passes the
-reviewed creator and assignee explicitly. They must state that
-`task.json.creator` and `task.json.assignee` both equal the reviewed login,
-missing ownership fails before writes, and historical identity files keep their
-exact bytes without becoming owner input.
-
-Guru install commands and prompts do not initialize or read a developer identity
-and do not use `TRELLIS_DEVELOPER`, `TRELLIS_USER`, `-u`, or `--user`. When init
-creates a bootstrap task, docs require explicit `--creator` and `--assignee`;
-task filtering uses `task.py list --assignee <name>` rather than `--mine`.
-Trellis `0.6.17` retains retired command stubs and preserves historical
-`.trellis/.developer`, `.trellis/workspace/**`, and `.trellis/agent-traces/**`
-bytes, but normal runtime does not read, index, copy, migrate, restore, or delete
-those roots. Guru task workspace/mapping always means the isolated task
-checkout/worktree plus ignored runtime mapping, never the retired journal
-workspace namespace.
+Guru install commands and prompts do not initialize or read a developer
+identity and do not use `TRELLIS_DEVELOPER`, `TRELLIS_USER`, `-u`, `--user`,
+`--creator`, `--assignee`, or `--mine` for task identity or task creation. The
+source-locked Fork leaves historical `.trellis/.developer`,
+`.trellis/workspace/**`, and `.trellis/agent-traces/**` bytes untouched; normal
+Guru runtime does not read, index, copy, migrate, restore, or delete those
+roots. Old personnel-bearing task archives retain TaskId for non-reuse and
+only the strictly bounded read-only rejection diagnosis; they are not current
+lifecycle or Reactivate candidates. Guru resolves a task checkout from its
+current TaskBranchBinding and live registered Git worktrees; ignored runtime
+state and the retired journal workspace namespace are not checkout-path authority.
 
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /

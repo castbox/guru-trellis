@@ -261,14 +261,17 @@ restore, or delete `.trellis/.developer` or `.trellis/workspace/**`. A clean
 fixture begins from an initialized repository where those official paths are
 absent and proves all Guru operations leave them absent. A preservation fixture
 begins with existing official identity/journal bytes and proves Guru operations
-leave them unchanged. Trellis `0.6.17` retains retired command stubs but normal
-runtime no longer consumes these historical roots.
+leave them unchanged. Retired Trellis `0.6.17` command stubs are pinned-old
+facts; the source-locked current Fork and Guru runtime do not consume these
+historical roots.
 
-The installed workspace verification invokes the isolated official
-`common.task_store.cmd_create` adapter in both fixture shapes. It proves the
-reviewed creator and assignee are passed explicitly, both
-`task.json.assignee` and `task.json.creator` equal the reviewed login, missing
-ownership fails before writes, and existing identity bytes remain exact.
+The installed task-creation verification uses the exact built, source-locked
+Fork and the active `guru-create-task` wrapper in clean and historical-data
+fixtures. It proves official `task.py create --no-start` creates a task without
+`creator` or `assignee` input or `task.json` fields, establishes the current
+TaskId/branch/resource binding, and leaves historical identity bytes exact.
+Old personnel-bearing archives are limited to TaskId non-reuse and bounded
+read-only rejection diagnosis, never current lifecycle recovery.
 
 Fresh install and update/reapply verification must exercise a selected-platform
 standalone wrapper with the full preset runtime. Missing runtime, runtime drift,
@@ -287,7 +290,8 @@ precondition parity, question/scope/action invariants, zero persisted
 authorization fields, stdout-only
 pre-task behavior, active-task bindings, the query-only prepare path consuming
 the current post-sync digest through the shared resolver/sync core, and the
-workspace Skill's independent mutation-time freshness checks, `trellis update`,
+`guru-create-task`'s task-date, selected-base, and checkout freshness checks at
+creation time, `trellis update`,
 workflow re-selection, preset reapply, and a final recursive zero-sidecar scan.
 
 The shared `scripts/bash/run-skill-command.sh` dispatcher is also a managed

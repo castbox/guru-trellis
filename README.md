@@ -129,9 +129,11 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
 managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
 
 Guru 正常路径不初始化或读取任务人员身份，也不读取或写入旧
-`.trellis/workspace/**` journal/index。新 task 不带人员参数；session 仅按
-TaskId 与 lifecycle generation 绑定，不从人员身份推断任务。文档中的 Guru task workspace/mapping 仅表示
-task 的隔离 checkout/worktree 及其 ignored runtime mapping，不是旧 journal workspace。
+`.trellis/workspace/**` journal/index。新 task 不带人员参数；当前任务身份来自
+task metadata 中的 TaskId 与 lifecycle generation，不从人员身份推断。
+path-free session focus 只负责选择任务；无 session context key 时显式选择 TaskId。
+TaskBranchBinding 负责当前 branch，checkout 由该绑定和已注册的 live Git worktree
+事实解析。ignored runtime mapping 和 checkout 路径均不是任务身份或 checkout 路径权威。
 既有 `.trellis/.developer`、`.trellis/workspace/**` 与 `.trellis/agent-traces/**` 保持原字节，
 不迁移、不删除，也不作为 current task、owner 或 recovery 输入。
 
