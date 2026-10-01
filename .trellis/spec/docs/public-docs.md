@@ -133,9 +133,12 @@ All three public README files must describe the final ownership boundary:
   source/installed/ownership/platform/dogfood validation are one documented
   sequence.
 
-All three README files must state that current task identity comes only from
-`task.json`, ignored runtime mapping, current checkout, and live Git worktree
-facts. They must document `finish-summary.json` as output of the normal current
+All three README files must state that current task identity is TaskId and
+lifecycle generation from current task metadata. Path-free session focus or an
+explicit TaskId selects the task; TaskBranchBinding owns the branch, and live
+registered Git worktree facts resolve the checkout. Ignored runtime mapping and
+checkout paths are not task identity or checkout-path authority. They must
+document `finish-summary.json` as output of the normal current
 `guru-team.finish-work` path only, with no alternate summary command. Public
 package documentation keeps live ids such as `invoke-guru-check-task` and
 `guru-stage0-*`, and lists only schemas, examples, fixtures, and eval contracts
