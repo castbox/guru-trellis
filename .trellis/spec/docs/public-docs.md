@@ -195,9 +195,9 @@ source-locked Fork leaves historical `.trellis/.developer`,
 Guru runtime does not read, index, copy, migrate, restore, or delete those
 roots. Old personnel-bearing task archives retain TaskId for non-reuse and
 only the strictly bounded read-only rejection diagnosis; they are not current
-lifecycle or Reactivate candidates. Guru task checkout mapping means the
-isolated worktree plus ignored runtime binding, never the retired journal
-workspace namespace.
+lifecycle or Reactivate candidates. Guru resolves a task checkout from its
+current TaskBranchBinding and live registered Git worktrees; ignored runtime
+state and the retired journal workspace namespace are not checkout-path authority.
 
 Public docs that describe Phase 0 must name `guru-sync-base` as the active
 selected-base closed-loop owner, list stable exits `synced` / `skipped` /
