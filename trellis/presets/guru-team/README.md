@@ -39,6 +39,9 @@ key, select an explicit TaskId. The
 `check-task-checkout-boundary.sh` command checks TaskId/generation, current
 TaskBranchBinding and live Git checkout. It does not read `task.json.branch`,
 `worktree_path`, old task/workspace mappings or a persisted checkout path.
+The current checkout is resolved from TaskBranchBinding and live registered
+Git worktree facts; ignored runtime mapping and checkout paths are neither
+task identity nor checkout-path authority.
 
 Old `prepare-task.sh`, `start-task.sh`, task-workspace, Publication,
 Finalizer, PR-Merge and `finish-work.sh` companion entrypoints are not

@@ -29,8 +29,10 @@ Current task identity is TaskId and lifecycle generation from current task
 metadata, not a checkout path, session or branch name. Path-free session focus
 selects the task; without a session context key, select an explicit TaskId.
 Current branch authority is TaskBranchBinding in the Git common directory;
-current execution location comes from live Git checkout resolution. Missing
-binding enters `guru-establish-task-branch-binding`. The public
+current execution location comes from live registered Git worktree facts.
+Ignored runtime mapping and checkout paths are neither task identity nor
+checkout-path authority. Missing binding enters
+`guru-establish-task-branch-binding`. The public
 `check-task-checkout-boundary.sh` validates the current task and checkout
 before writes; it does not rebuild old task/workspace mappings. `guru-activate-task`
 owns the status-only Planning activation; do not call the former `start-task.sh`
