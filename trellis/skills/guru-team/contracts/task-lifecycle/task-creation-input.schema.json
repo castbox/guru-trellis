@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-task-creation-input-1.0",
+  "$id": "guru-task-creation-input-2.0",
   "title": "Reviewed task creation requirements",
   "type": "object",
   "additionalProperties": false,

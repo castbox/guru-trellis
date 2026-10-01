@@ -16,47 +16,17 @@ import sys
 from io import StringIO
 from unittest import mock
 
-GURU_FINISH_ENTRIES = (
-    ".codex/prompts/guru-finish-work.md",
-    ".claude/commands/guru/finish-work.md",
-    ".cursor/commands/guru-finish-work.md",
-    ".opencode/commands/guru-finish-work.md",
-)
-
-PLANNED_SKILL_IDS: list[str] = []
-PLANNED_SKILL_ROWS: list[dict[str, str]] = []
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import apply_guru_team_trellis_preset as preset
 import validate_upstream_ownership as ownership
+from installer_test_support import (
+    GURU_FINISH_ENTRIES, PLANNED_SKILL_IDS, PLANNED_SKILL_ROWS,
+    RUNTIME_RESULT as _RUNTIME_RESULT, copy_canonical_source, setUpModule, tearDownModule,
+)
 from retired_script_reapply_tests import RetiredScriptReapplyTests
 
 
-_RUNTIME_RESULT = {
-    "status": "ok",
-    "action": "reused",
-    "runtime_identity": "0123456789abcdef01234567",
-    "interpreter": sys.executable,
-}
 _ensure_managed_python_runtime = preset.ensure_managed_python_runtime
-_runtime_patchers: list[mock._patch] = []
-
-
-def setUpModule() -> None:
-    _runtime_patchers.extend([
-        mock.patch.object(
-            preset,
-            "ensure_managed_python_runtime",
-            return_value=_RUNTIME_RESULT,
-        ),
-    ])
-    for patcher in _runtime_patchers:
-        patcher.start()
-
-
-def tearDownModule() -> None:
-    for patcher in reversed(_runtime_patchers):
-        patcher.stop()
 
 
 class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
@@ -65,27 +35,7 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
         cls.repo = preset.guru_root_from_script()
 
     def copy_source(self, target: Path) -> None:
-        for relative in (
-            Path("trellis/presets/guru-team/ownership"),
-            Path("trellis/presets/guru-team/overlays"),
-            Path("trellis/workflows/guru-team"),
-            Path("trellis/skills/guru-team"),
-            Path(".trellis/guru-team"),
-            Path(".agents/skills"),
-            Path(".claude/skills"),
-            Path(".codex/skills"),
-            Path(".cursor/skills"),
-        ):
-            source = self.repo / relative
-            if source.exists():
-                shutil.copytree(source, target / relative)
-        for relative in (
-            ownership.EXTENSION_RELATIVE,
-            ownership.INSTALLER_RELATIVE,
-        ):
-            destination = target / relative
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(self.repo / relative, destination)
+        copy_canonical_source(self.repo, target)
 
     def test_activation_registers_all_canonical_packages(self) -> None:
         payload = ownership.validate_repository(self.repo)
@@ -2183,8 +2133,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.6.17-guru.43")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.6.17")
+        self.assertEqual(installed["extension"]["version"], "0.7.0-guru.1")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.7.0-castbox.1")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2663,8 +2613,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.6.17")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.17"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.7.0-castbox.1")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.7.0-castbox.1"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],

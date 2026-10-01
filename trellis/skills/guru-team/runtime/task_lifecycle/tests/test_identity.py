@@ -18,6 +18,7 @@ from runtime.task_lifecycle.identity import (
     normalize_task_ref,
     resolve_task_id,
     resolve_task_ref,
+    task_inventory,
 )
 
 
@@ -30,12 +31,23 @@ class IdentityTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def write_task(self, task_ref: str, task_id: str, generation=object()) -> Path:
+    def write_task(self, task_ref: str, task_id: str, generation=object(), *, modern: bool = False) -> Path:
         directory = self.repo / task_ref
         directory.mkdir(parents=True)
         payload = {"id": task_id, "name": directory.name, "status": "in_progress"}
         if type(generation) is int or isinstance(generation, (str, bool, float)) or generation is None:
             payload["lifecycle_generation"] = generation
+        if modern or "/archive/" not in task_ref:
+            payload.update({
+                "source": {"kind": "no_issue"}, "title": "Example", "description": "Example",
+                "dev_type": None, "scope": None, "package": None, "priority": "P2",
+                "createdAt": "2026-09-20", "completedAt": "2026-09-20",
+                "base_branch": "main", "worktree_path": None, "commit": None,
+                "pr_url": None, "children": [], "parent": None, "relatedFiles": [],
+                "notes": "", "meta": {},
+            })
+            if modern:
+                payload["status"] = "completed"
         (directory / "task.json").write_text(json.dumps(payload), encoding="utf-8")
         return directory
 
@@ -51,7 +63,7 @@ class IdentityTests(unittest.TestCase):
     def test_archive_changes_locator_without_changing_lifecycle_key(self):
         active_ref = ".trellis/tasks/09-20-demo"
         archived_ref = ".trellis/tasks/archive/2026-09/09-20-demo"
-        directory = self.write_task(active_ref, "demo", 3)
+        directory = self.write_task(active_ref, "demo", 3, modern=True)
         destination = self.repo / archived_ref
         destination.parent.mkdir(parents=True)
         shutil.move(str(directory), str(destination))
@@ -61,16 +73,53 @@ class IdentityTests(unittest.TestCase):
 
     def test_missing_generation_reads_as_zero_and_invalid_values_fail(self):
         self.write_task(".trellis/tasks/09-20-legacy", "legacy")
-        self.assertEqual(resolve_task_id(self.repo, "legacy").lifecycle_generation, 0)
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            resolve_task_id(self.repo, "legacy")
         for value in [True, -1, 1.0, "1", None]:
             with self.subTest(value=value), self.assertRaises(LifecycleContractError):
                 normalize_generation(value)
 
+    def test_retired_personnel_archive_is_diagnostic_only(self):
+        archived = ".trellis/tasks/archive/2026-09/09-19-old"
+        directory = self.write_task(archived, "old-id", 0, modern=True)
+        metadata_path = directory / "task.json"
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        metadata.update(creator="team", assignee="team")
+        metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+        current = ".trellis/tasks/09-20-current"
+        self.write_task(current, "current-id", 0)
+        before = metadata_path.read_bytes()
+        self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
+        self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            resolve_task_id(self.repo, "old-id")
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            resolve_task_ref(self.repo, archived, expected_task_id="old-id")
+        self.assertEqual(metadata_path.read_bytes(), before)
+
+    def test_old_active_task_fields_are_not_current_candidates(self):
+        ref = ".trellis/tasks/09-20-current"
+        path = self.write_task(ref, "current-id", 0) / "task.json"
+        current = json.loads(path.read_text(encoding="utf-8"))
+        for field, value in (
+            ("creator", "team"), ("assignee", "team"),
+            ("delivery_target", {"repo_ref": "example/repo", "branch_ref": "main"}),
+        ):
+            with self.subTest(field=field):
+                path.write_text(json.dumps({**current, field: value}), encoding="utf-8")
+                with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+                    resolve_task_ref(self.repo, ref)
+        path.write_text(json.dumps(current), encoding="utf-8")
+        self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
+
     def test_exact_and_casefold_collisions_fail_repository_resolution(self):
-        self.write_task(".trellis/tasks/09-20-first", "Task-A", 0)
+        current = ".trellis/tasks/09-20-first"
+        self.write_task(current, "Task-A", 0)
         self.write_task(".trellis/tasks/archive/2026-09/09-19-second", "task-a", 1)
         with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
             resolve_task_id(self.repo, "Task-A")
+        with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
+            resolve_task_ref(self.repo, current, expected_task_id="Task-A")
 
     def test_exact_duplicate_task_ids_fail_repository_resolution(self):
         self.write_task(".trellis/tasks/09-20-first", "task-a", 0)
@@ -115,7 +164,7 @@ class IdentityTests(unittest.TestCase):
         subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
         subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
         archive_ref = ".trellis/tasks/archive/2026-09/legacy-task"
-        task = self.write_task(archive_ref, "immutable-task-id")
+        task = self.write_task(archive_ref, "immutable-task-id", 2)
         metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
         metadata.update({"status": "completed", "scope": "GitHub issue: https://github.com/example/repo/issues/154"})
         (task / "task.json").write_text(json.dumps(metadata), encoding="utf-8")
@@ -129,12 +178,11 @@ class IdentityTests(unittest.TestCase):
         subprocess.run(["git", "commit", "-qm", "archive legacy task"], cwd=self.repo, check=True)
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
 
-        candidate = discover_archived_issue_candidate(self.repo, "example/repo", 154, head)
-        self.assertEqual((candidate.task_id, candidate.task_ref, candidate.archive_head),
-                         ("immutable-task-id", archive_ref, head))
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 154, head)
         for repo_ref, number in (("other/repo", 154), ("example/repo", 155)):
             with self.subTest(repo_ref=repo_ref, number=number), self.assertRaisesRegex(
-                LifecycleContractError, "archived_issue_candidate_not_unique"
+                LifecycleContractError, "archived_issue_candidate_not_found"
             ):
                 discover_archived_issue_candidate(self.repo, repo_ref, number, head)
 
@@ -164,7 +212,7 @@ class IdentityTests(unittest.TestCase):
             ("parent-task", "parent"),
         ):
             archive_ref = f".trellis/tasks/archive/2026-09/{task_id}"
-            task = self.write_task(archive_ref, task_id)
+            task = self.write_task(archive_ref, task_id, 0, modern=True)
             metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
             metadata.update(status="completed", source={
                 "kind": "issue", "repo_ref": "example/repo", "number": 154,
@@ -182,7 +230,7 @@ class IdentityTests(unittest.TestCase):
         candidate = discover_archived_issue_candidate(self.repo, "example/repo", 154, head)
         self.assertEqual(candidate.task_id, "original-task")
 
-    def test_legacy_local_issue_scope_needs_matching_origin_even_with_empty_index(self):
+    def test_noncanonical_legacy_issue_scope_is_not_a_locator(self):
         subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.repo, check=True)
         subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=self.repo, check=True)
         subprocess.run(["git", "config", "user.name", "Test"], cwd=self.repo, check=True)
@@ -198,17 +246,17 @@ class IdentityTests(unittest.TestCase):
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
         subprocess.run(["git", "commit", "-qm", "archive local issue"], cwd=self.repo, check=True)
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
-        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
+        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_found"):
             discover_archived_issue_candidate(self.repo, "example/repo", 237, head)
         subprocess.run(["git", "remote", "add", "origin", "git@github.com:example/repo.git"], cwd=self.repo, check=True)
-        self.assertEqual(discover_archived_issue_candidate(self.repo, "example/repo", 237, head).task_id,
-                         "immutable-task-id")
+        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_found"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 237, head)
         subprocess.run(["git", "remote", "set-url", "origin", "ssh://git@github.com/example/repo.git"], cwd=self.repo, check=True)
-        self.assertEqual(discover_archived_issue_candidate(self.repo, "example/repo", 237, head).task_id,
-                         "immutable-task-id")
+        with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_found"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 237, head)
         for repo_ref, number in (("other/repo", 237), ("example/repo", 238)):
             with self.subTest(repo_ref=repo_ref, number=number), self.assertRaisesRegex(
-                LifecycleContractError, "archived_issue_candidate_not_unique"
+                LifecycleContractError, "archived_issue_candidate_not_found"
             ):
                 discover_archived_issue_candidate(self.repo, repo_ref, number, head)
 
@@ -229,10 +277,10 @@ class IdentityTests(unittest.TestCase):
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
         subprocess.run(["git", "commit", "-qm", "archive unstructured source"], cwd=self.repo, check=True)
         head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repo, check=True, text=True, capture_output=True).stdout.strip()
-        candidate = discover_archived_issue_candidate(self.repo, "example/repo", 17, head)
-        self.assertEqual((candidate.task_id, candidate.task_ref), ("legacy-task-id", archive_ref))
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            discover_archived_issue_candidate(self.repo, "example/repo", 17, head)
         for repo_ref, number in (("other/repo", 17), ("example/repo", 18)):
-            with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_unique"):
+            with self.assertRaisesRegex(LifecycleContractError, "archived_issue_candidate_not_found"):
                 discover_archived_issue_candidate(self.repo, repo_ref, number, head)
 
 

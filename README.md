@@ -20,19 +20,19 @@ Finalizer 或 `ready_for_merge`。当前 Branch Review 的 `archived_review_pass
 止于 `legacy-archived-review-disposition-required`，须核对任务、归档、PR、
 本地/远端 HEAD、base 与旧 Finalizer 事实后，在兼容的 pinned-old 版本完成，
 或逐案人工处置；不得伪投影为新 Delivery/Completion/Finish 结果。正常完成的
-旧归档若需再次工作，使用当前 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md)
-重新验证唯一 TaskId、来源 Issue 和终态 Git 身份。旧链在途 residue 不是
-Reactivate 的正常结束输入；详见 [当前 workflow](trellis/workflows/guru-team/workflow.md)。
+旧归档若含退役的任务人员字段，只保留 TaskId 防复用，并可在严格限定的只读
+来源定位后返回拒绝诊断，不进入 Reactivate 或 Finish recovery。符合当前上游
+task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md)。
+旧链在途 residue 不是 Reactivate 的正常结束输入；详见 [当前 workflow](trellis/workflows/guru-team/workflow.md)。
 
 ## 当前框架来源
 
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到已审查的 Fork lifecycle primitive、跨工作树续接、
-无 context key 回退、显式及派生 TaskId 校验、远端历史 TaskId 唯一性、五字段绑定读取与缺失 binding 拒绝旧 checkout 回退的修复 commit
-`8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`，对应 main CI `36519692082`。
-CLI/core 仍为 `0.6.17`，不依赖上游 `v0.6.18`。
+当前 source candidate 固定到包含上游任务人员身份退役 PR #24 的
+`64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，对应成功 main CI `36755826713`。
+Fork CLI/core 均为 `0.7.0-castbox.1`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -70,9 +70,9 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 组件 | 固定版本 |
 | --- | --- |
 | Current target Guru Trellis repo tag | `v0.6.17-guru.2` |
-| Target Guru Team extension revision | `0.6.17-guru.43` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.6.17` @ `8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` |
-| Reviewed Fork lifecycle primitive CI identity | `36519692082` |
+| Target Guru Team extension revision | `0.7.0-guru.1` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.1` @ `64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac` |
+| Reviewed Fork CI identity | `36755826713` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标
@@ -86,10 +86,8 @@ ref，不能把本地样本或已发布 predecessor 描述为当前 source candi
 
 ```bash
 : "${GURU_WORKFLOW_SOURCE:?请设置已审查的 Guru marketplace ref}"
-: "${GURU_TASK_OWNER:?请设置 bootstrap task 的 creator/assignee}"
 cd "$TARGET_REPO"
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
-  --creator "$GURU_TASK_OWNER" --assignee "$GURU_TASK_OWNER" \
   --workflow guru-team \
   --workflow-source "$GURU_WORKFLOW_SOURCE"
 (cd "$GURU_SOURCE" && bash trellis/presets/guru-team/scripts/bash/apply.sh \
@@ -103,16 +101,7 @@ cd "$TARGET_REPO"
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run
 ```
 
-dry-run 输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:` 时，审查将被替换的
-managed 文件后只执行：
-
-```bash
-: "${GURU_TASK_OWNER:?请设置 migration task 的 assignee}" && \
-node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --force --migrate \
-  --assignee "$GURU_TASK_OWNER" --skip-all
-```
-
-否则只执行：
+审查 dry-run 输出及受管文件的本地修改后，保留本地修改时执行：
 
 ```bash
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --skip-all
@@ -139,9 +128,9 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
 升级完成后必须处理全部 `.new` / `.bak`，再验证 source/installed/platform equality、
 managed inventory、受管 Python runtime、dogfood drift 和递归零 sidecar，才能声明升级成功。
 
-Guru 正常路径不初始化或读取 developer identity，不记录 session，也不读取或写入旧
-`.trellis/workspace/**` journal/index。新 task 显式提供 `--creator` 与 `--assignee`，查询
-个人任务使用 `task.py list --assignee <name>`。文档中的 Guru task workspace/mapping 仅表示
+Guru 正常路径不初始化或读取任务人员身份，也不读取或写入旧
+`.trellis/workspace/**` journal/index。新 task 不带人员参数；session 仅按
+TaskId 与 lifecycle generation 绑定，不从人员身份推断任务。文档中的 Guru task workspace/mapping 仅表示
 task 的隔离 checkout/worktree 及其 ignored runtime mapping，不是旧 journal workspace。
 既有 `.trellis/.developer`、`.trellis/workspace/**` 与 `.trellis/agent-traces/**` 保持原字节，
 不迁移、不删除，也不作为 current task、owner 或 recovery 输入。
@@ -297,9 +286,8 @@ stage/cell/command/exit/error-tail；无法解析终态时显式记录
 
 源仓的安装/update 验收使用隔离环境：核验锁定 Fork checkout 和构建产物，再通过
 `node "$FORK_SOURCE/packages/cli/bin/trellis.js"` 执行 clean initial workflow/preset
-install 与目标项目的 `update --dry-run`；只在输出包含 `MIGRATION REQUIRED` 或
-`Retirement conflicts:`、已审查 managed replacement 且提供显式 assignee 时执行同一 CLI 的
-`update --force --migrate --assignee <owner> --skip-all`，否则执行 `update --skip-all`。
+install 与目标项目的 `update --dry-run`；审查 managed replacement 与本地修改后，
+保留本地修改的非交互路径使用同一 CLI 的 `update --skip-all`。
 版本号相同不代替源码 SHA 证明，原发行包不参与当前正常路径。
 `--skip-all` 保留项目已有修改并以非交互方式继续。随后完成 marketplace
 `--create-new` preview、active switch 与 canonical preset reapply。最后验证 package、

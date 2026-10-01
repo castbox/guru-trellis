@@ -19,6 +19,19 @@ from runtime.task_lifecycle.identity import resolve_task_id
 PACKAGE = Path(__file__).resolve().parents[1]
 
 
+def current_task(status: str, generation: int = 0) -> dict:
+    return {
+        "id": "demo", "name": "demo", "lifecycle_generation": generation,
+        "source": {"kind": "no_issue"}, "title": "Demo",
+        "description": "Reviewed task", "status": status,
+        "dev_type": None, "scope": None, "package": None, "priority": "P2",
+        "createdAt": "2026-09-20", "completedAt": None,
+        "base_branch": "main", "worktree_path": None, "commit": None,
+        "pr_url": None, "children": [], "parent": None,
+        "relatedFiles": [], "notes": "", "meta": {},
+    }
+
+
 class EnsureCheckoutTests(unittest.TestCase):
     def test_binding_then_unique_checkout_resolution(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -26,7 +39,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
             task = root / ".trellis/tasks/demo"
             task.mkdir(parents=True)
-            (task / "task.json").write_text(json.dumps({"id": "demo", "status": "in_progress", "lifecycle_generation": 0}), encoding="utf-8")
+            (task / "task.json").write_text(json.dumps(current_task("in_progress")), encoding="utf-8")
             subprocess.run(["git", "add", ".trellis/tasks/demo/task.json"], cwd=root, check=True)
             subprocess.run(
                 ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture"],
@@ -59,7 +72,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
             task = root / ".trellis/tasks/demo"
             task.mkdir(parents=True)
-            (task / "task.json").write_text(json.dumps({"id": "demo", "status": "planning", "lifecycle_generation": 1}), encoding="utf-8")
+            (task / "task.json").write_text(json.dumps(current_task("planning", 1)), encoding="utf-8")
             subprocess.run(["git", "add", ".trellis/tasks/demo/task.json"], cwd=root, check=True)
             subprocess.run(
                 ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture"],
@@ -94,7 +107,7 @@ class EnsureCheckoutTests(unittest.TestCase):
             task = linked / ".trellis/tasks/demo"
             task.mkdir(parents=True)
             (task / "task.json").write_text(
-                json.dumps({"id": "demo", "status": "planning", "lifecycle_generation": 0}), encoding="utf-8"
+                json.dumps(current_task("planning")), encoding="utf-8"
             )
             self.assertFalse((root / ".trellis/tasks/demo/task.json").exists())
             repository = inspect_repository(root)

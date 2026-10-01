@@ -1,0 +1,29 @@
+{
+  "id": "481-retire-task-personnel",
+  "name": "481-retire-task-personnel",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 481,
+    "disposition": "exact_source"
+  },
+  "title": "退役 Guru 任务人员身份体系并适配上游 PR #24",
+  "description": "交付 castbox/guru-trellis#481 的无人员任务接口、历史归档拒绝边界和安装态验证",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/481",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-01",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

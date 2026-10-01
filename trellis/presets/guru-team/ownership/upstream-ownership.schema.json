@@ -24,7 +24,7 @@
       "const": "guru-team-upstream-ownership"
     },
     "target_trellis_cli": {
-      "const": "0.6.17"
+      "const": "0.7.0-castbox.1"
     },
     "inventory_source": {
       "type": "string",

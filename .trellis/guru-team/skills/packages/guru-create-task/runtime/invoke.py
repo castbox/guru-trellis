@@ -77,10 +77,9 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         raise LifecycleContractError("official_task_store_missing", "task.py", "Install the Fixed Fork task store in the selected checkout.")
     command = [
         sys.executable, str(script), "create", task["title"],
-        "--description", task["description"], "--slug", directory,
+        "--description", task["description"], "--slug", slug,
         "--task-id", inputs.task_id,
         "--source-json", json.dumps(inputs.reviewed_source, separators=(",", ":")),
-        "--creator", task["creator"], "--assignee", task["assignee"],
         "--base-branch", inputs.selected_base_ref.removeprefix("refs/heads/"),
         "--no-start",
     ]
@@ -101,14 +100,13 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
             or metadata.get("id") != inputs.task_id or metadata.get("source") != inputs.reviewed_source):
         raise LifecycleContractError("official_task_create_failed", "task.json", "Use the exact new planning task.")
     for legacy in (
-        "branch", "worktree_path", "base_head", "entry_head", "workspace_slug",
-        "workspace_path", "workspace_mode", "source_checkout", "commit", "pr_url",
+        "branch", "base_head", "entry_head", "workspace_slug",
+        "workspace_path", "workspace_mode", "source_checkout",
         "issue", "issue_url", "source_issue_url", "close_issues", "related_issues",
         "followup_issues", "archive_dir",
     ):
         metadata.pop(legacy, None)
     metadata["lifecycle_generation"] = 0
-    metadata["delivery_target"] = inputs.delivery_target
     metadata["scope"] = task["scope"]
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

@@ -46,6 +46,19 @@ class CompositionTests(unittest.TestCase):
     def git(self, *args: str) -> str:
         return subprocess.check_output(["git", *args], cwd=self.repo, text=True).strip()
 
+    @staticmethod
+    def task_metadata(status: str, source: dict | None = None, base_branch: str = "main") -> dict:
+        return {
+            "id": TASK_ID, "name": "09-25-new-task", "lifecycle_generation": 0,
+            "source": source or {"kind": "no_issue"}, "title": "New task",
+            "description": "Reviewed scope", "status": status, "dev_type": None,
+            "scope": None, "package": None, "priority": "P2",
+            "createdAt": "2026-09-25", "completedAt": None,
+            "base_branch": base_branch, "worktree_path": None, "commit": None,
+            "pr_url": None, "children": [], "parent": None,
+            "relatedFiles": [], "notes": "", "meta": {},
+        }
+
     def creation(self, profile: str = "standalone_request") -> dict:
         return {
             "task_id": TASK_ID,
@@ -241,10 +254,7 @@ class CompositionTests(unittest.TestCase):
         acquired = acquire_checkout(plan)
         task = acquired.checkout.path / TASK_REF
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({
-            "id": TASK_ID, "status": "planning", "lifecycle_generation": 0,
-            "source": inputs.reviewed_source, "delivery_target": inputs.delivery_target,
-        }), encoding="utf-8")
+        (task / "task.json").write_text(json.dumps(self.task_metadata("planning", inputs.reviewed_source)), encoding="utf-8")
         self.git("branch", "unrelated-branch")
         repository = inspect_repository(self.repo)
         key = TaskLifecycleKey(TASK_ID, 0)
@@ -283,10 +293,7 @@ class CompositionTests(unittest.TestCase):
         task = acquired.checkout.path / TASK_REF
         task.mkdir(parents=True)
         (task / "task.json").write_text(
-            json.dumps({
-                "id": TASK_ID, "status": "planning", "lifecycle_generation": 0,
-                "source": inputs.reviewed_source, "delivery_target": inputs.delivery_target,
-            }), encoding="utf-8",
+            json.dumps(self.task_metadata("planning", inputs.reviewed_source)), encoding="utf-8",
         )
         binding = establish_created_control_state(inputs, acquired)
         self.assertEqual(binding.binding_revision, 0)
@@ -317,7 +324,7 @@ class CompositionTests(unittest.TestCase):
             recover_created_control_state(inputs, acquired, expected_result_id="task-created:other")
         data = json.loads((task / "task.json").read_text())
         data["source"] = {"kind": "no_issue"} if inputs.reviewed_source["kind"] == "issue" else {
-            "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454,
+            "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source",
         }
         (task / "task.json").write_text(json.dumps(data))
         with self.assertRaises(LifecycleContractError) as raised:
@@ -355,10 +362,7 @@ class CompositionTests(unittest.TestCase):
         acquired = acquire_checkout(plan)
         task = self.repo / TASK_REF
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({
-            "id": TASK_ID, "status": "planning", "lifecycle_generation": 0,
-            "source": inputs.reviewed_source, "delivery_target": inputs.delivery_target,
-        }), encoding="utf-8")
+        (task / "task.json").write_text(json.dumps(self.task_metadata("planning", inputs.reviewed_source)), encoding="utf-8")
         binding = establish_created_control_state(inputs, acquired)
 
         class SessionPort:
@@ -398,7 +402,7 @@ class CompositionTests(unittest.TestCase):
         self.git("branch", "base", self.base_head)
         path = self.repo / TASK_REF
         path.mkdir(parents=True)
-        (path / "task.json").write_text(json.dumps({"id": TASK_ID, "status": "planning", "lifecycle_generation": 0, "base_branch": "base"}), encoding="utf-8")
+        (path / "task.json").write_text(json.dumps(self.task_metadata("planning", base_branch="base")), encoding="utf-8")
         for name in ("prd.md", "design.md", "implement.md"):
             (path / name).write_text(f"# {name}\n", encoding="utf-8")
         self.git("add", ".")

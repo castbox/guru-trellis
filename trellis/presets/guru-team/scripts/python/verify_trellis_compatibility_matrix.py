@@ -59,7 +59,7 @@ SCHEMA_VERSION = "1.0"
 SHARED_PLATFORM = "shared"
 PLATFORM_PATH_RE = re.compile(r"^\.(claude|codex|cursor|opencode)/")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
-VERSION_RE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+)(?![0-9])")
+VERSION_RE = re.compile(r"^\s*([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)\s*$", re.MULTILINE)
 SIDECAR_SUFFIXES = (".new", ".bak")
 DEFAULT_BEFORE_TAG = "v0.6.5-guru.10"
 DEFAULT_BEFORE_CLI = "0.6.5"
@@ -1117,10 +1117,10 @@ def source_state(repo_root: Path) -> dict[str, Any]:
 
 
 def _parse_cli_version(output: str) -> str:
-    matched = VERSION_RE.search(output)
-    if not matched:
+    matches = VERSION_RE.findall(output)
+    if not matches:
         raise MatrixError(f"cannot parse Trellis CLI version from: {output!r}")
-    return matched.group(1)
+    return matches[-1]
 
 
 def validate_fork_source(repo_root: Path, source: Path) -> dict[str, Any]:
@@ -1543,10 +1543,6 @@ def _workflow_source_requires_local_sample(repo_root: Path, workflow_source: str
     return current_branch != "main" or bool(dirty)
 
 
-def _dry_run_requires_retirement_migration(output: str) -> bool:
-    return "MIGRATION REQUIRED" in output or "Retirement conflicts:" in output
-
-
 def _install_workflow(
     target: Path,
     binary: Sequence[str],
@@ -1565,11 +1561,6 @@ def _install_workflow(
             "push an exact ref or set TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1 and "
             "report the unpublished local-sample boundary"
         )
-    identity_arguments = (
-        ("--creator", "matrix-owner", "--assignee", "matrix-owner")
-        if cli_version == "0.6.17"
-        else ("--user", "matrix-owner")
-    )
     workflow_arguments = (
         ("--workflow", "native")
         if local_sample
@@ -1581,7 +1572,6 @@ def _install_workflow(
             "init",
             "-y",
             platform_init_flag(platform),
-            *identity_arguments,
             *workflow_arguments,
         ),
         cwd=target,
@@ -2262,44 +2252,23 @@ def _run_cell(
         # No CLI self-upgrade: a separately validated predecessor is required.
         binary = tuple(source["command"])
         actual_after_upgrade = _assert_version(binary, target_cli, env)
-        dry_run = _run(
+        _run(
             (*binary, "update", "--dry-run"),
             cwd=target,
             env=env,
             capture=True,
             log=cell_root / "trellis-update-dry-run.log",
         )
-        if _dry_run_requires_retirement_migration(dry_run):
-            _run(
-                (
-                    *binary,
-                    "update",
-                    "--force",
-                    "--migrate",
-                    "--assignee",
-                    "matrix-owner",
-                    "--skip-all",
-                ),
-                cwd=target,
-                env=env,
-                log=cell_root / "trellis-update.log",
-            )
-            update_mode = "migrate"
-            expected_managed_workflow = (
-                fork_source.resolve()
-                / "packages/cli/src/templates/trellis/workflow.md"
-            )
-        else:
-            _run(
-                (*binary, "update", "--skip-all"),
-                cwd=target,
-                env=env,
-                log=cell_root / "trellis-update.log",
-            )
-            update_mode = "update"
-            expected_managed_workflow = (
-                source_root / "trellis/workflows/guru-team/workflow.md"
-            )
+        _run(
+            (*binary, "update", "--skip-all"),
+            cwd=target,
+            env=env,
+            log=cell_root / "trellis-update.log",
+        )
+        update_mode = "update"
+        expected_managed_workflow = (
+            source_root / "trellis/workflows/guru-team/workflow.md"
+        )
         local_sample = _workflow_source_requires_local_sample(repo_root, workflow_source)
         if local_sample and not allow_local_sample:
             raise MatrixError(

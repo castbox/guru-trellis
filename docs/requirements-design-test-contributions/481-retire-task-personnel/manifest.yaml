@@ -1,0 +1,18 @@
+schema_version: "1.0"
+task_ref: "481-retire-task-personnel"
+task_locator: ".trellis/tasks/10-01-481-retire-task-personnel"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/481"
+status: "implementation_candidate"
+source_version: "current-main-0.6.17-guru.69"
+expected_current_version: "current-main-0.6.17-guru.69"
+target_version: "current-main-0.6.17-guru.70"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/481-retire-task-personnel/requirements.md"
+  design: "docs/requirements-design-test-contributions/481-retire-task-personnel/design.md"
+  test: "docs/requirements-design-test-contributions/481-retire-task-personnel/test.md"
+  traceability: "docs/requirements-design-test-contributions/481-retire-task-personnel/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.69"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/481-retire-task-personnel.md"

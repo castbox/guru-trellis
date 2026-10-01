@@ -2,16 +2,16 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.6.17-guru.43",
+  "version": "0.7.0-guru.1",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
-  "target_trellis_cli": "0.6.17",
+  "target_trellis_cli": "0.7.0-castbox.1",
   "requires": {
-    "trellis_cli": "0.6.17"
+    "trellis_cli": "0.7.0-castbox.1"
   },
   "tested": {
     "trellis_cli": [
-      "0.6.17"
+      "0.7.0-castbox.1"
     ]
   },
   "public_api": {
@@ -468,7 +468,7 @@
         "guru-cleanup-task-resources-input-3.0",
         "guru-complete-task-closure-input-2.0",
         "guru-create-issue-input-1.0",
-        "guru-create-task-input-1.0",
+        "guru-create-task-input-2.0",
         "guru-ensure-task-checkout-input-1.0",
         "guru-establish-task-branch-binding-input-1.0",
         "guru-establish-task-identity-input-1.0",

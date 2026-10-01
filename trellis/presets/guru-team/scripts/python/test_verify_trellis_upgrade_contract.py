@@ -189,6 +189,10 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
         cls.matrix_text = MATRIX_HELPER.read_text(encoding="utf-8")
         cls.matrix = load_matrix_helper()
 
+    def test_cli_version_parser_ignores_update_banner_and_keeps_suffix(self):
+        output = "Trellis update available: 0.6.17 -> 0.7.0-castbox.1\n0.7.0-castbox.1\n"
+        self.assertEqual(self.matrix._parse_cli_version(output), "0.7.0-castbox.1")
+
     def fork_fixture(self, root: Path) -> tuple[Path, Path]:
         root = root.resolve()
         source, repo = root / "fork checkout", root / "extension"
@@ -535,7 +539,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
                  mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
-                 mock.patch.object(self.matrix, "_run", return_value="MIGRATION REQUIRED") as run, \
+                 mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
@@ -549,22 +553,14 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual(init.call_args.args[1], before)
             self.assertEqual([call.args[0] for call in run.call_args_list], [
                 (*target, "update", "--dry-run"),
-                (
-                    *target,
-                    "update",
-                    "--force",
-                    "--migrate",
-                    "--assignee",
-                    "matrix-owner",
-                    "--skip-all",
-                ),
+                (*target, "update", "--skip-all"),
             ])
             self.assertEqual(switch.call_args.args[1], target)
             self.assertEqual(
                 switch.call_args.args[5],
-                (root / "fork/packages/cli/src/templates/trellis/workflow.md"),
+                root / "cell/before-source/trellis/workflows/guru-team/workflow.md",
             )
-            self.assertEqual(result["update_mode"], "migrate")
+            self.assertEqual(result["update_mode"], "update")
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {
@@ -681,22 +677,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             )
             self.assertEqual(result["update_mode"], "update")
 
-    def test_dry_run_retirement_migration_markers(self) -> None:
-        for output in (
-            "MIGRATION REQUIRED",
-            "Retirement conflicts: .trellis/config.yaml, AGENTS.md",
-        ):
-            with self.subTest(output=output):
-                self.assertTrue(
-                    self.matrix._dry_run_requires_retirement_migration(output)
-                )
-        self.assertFalse(
-            self.matrix._dry_run_requires_retirement_migration(
-                "This will UPGRADE: 0.6.16 to 0.6.17"
-            )
-        )
-
-    def test_install_workflow_uses_version_specific_explicit_identity(self) -> None:
+    def test_install_workflow_omits_task_personnel_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             target = root / "target"
@@ -704,33 +685,20 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             with mock.patch.object(
                 self.matrix, "_workflow_source_requires_local_sample", return_value=False
             ), mock.patch.object(self.matrix, "_run") as runner:
-                for version, expected in (
-                    ("0.6.16", ("--user", "matrix-owner")),
-                    (
-                        "0.6.17",
-                        (
-                            "--creator",
-                            "matrix-owner",
-                            "--assignee",
-                            "matrix-owner",
-                        ),
-                    ),
-                ):
-                    with self.subTest(version=version):
-                        self.matrix._install_workflow(
-                            target,
-                            ("node", "trellis.js"),
-                            {},
-                            "codex",
-                            "fixture",
-                            root,
-                            False,
-                            version,
-                            root / f"{version}.log",
-                        )
-                        command = runner.call_args.args[0]
-                        start = command.index(expected[0])
-                        self.assertEqual(command[start : start + len(expected)], expected)
+                self.matrix._install_workflow(
+                    target,
+                    ("node", "trellis.js"),
+                    {},
+                    "codex",
+                    "fixture",
+                    root,
+                    False,
+                    "0.7.0-castbox.1",
+                    root / "install.log",
+                )
+                command = runner.call_args.args[0]
+                self.assertEqual(command[:4], ("node", "trellis.js", "init", "-y"))
+                self.assertTrue({"--user", "--creator", "--assignee"}.isdisjoint(command))
 
     def test_install_workflow_uses_native_init_for_unpublished_local_sample(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1472,17 +1440,9 @@ exit 23
             run_cell.assert_not_called()
             self.assertEqual(list((root / "work").iterdir()), [])
 
-    def test_matrix_executor_uses_exact_upgrade_and_conditional_migrate(self) -> None:
+    def test_matrix_executor_uses_exact_update_without_personnel_migration(self) -> None:
         dry_run = self.matrix_text.index('(*binary, "update", "--dry-run")')
-        conditional = self.matrix_text.index(
-            "if _dry_run_requires_retirement_migration(dry_run):", dry_run
-        )
-        migrate = self.matrix_text.index(
-            '"--force",\n                    "--migrate",\n                    "--assignee",', conditional
-        )
-        normal = self.matrix_text.index(
-            '(*binary, "update", "--skip-all")', migrate
-        )
+        normal = self.matrix_text.index('(*binary, "update", "--skip-all")', dry_run)
         workflow_call = self.matrix_text.index(
             "_preview_and_switch_workflow(", normal
         )
@@ -1493,9 +1453,8 @@ exit 23
             reapply : self.matrix_text.index("\n        )", reapply) + len("\n        )")
         ]
         self.assertNotIn('"upgrade", "--tag"', self.matrix_text)
-        self.assertLess(dry_run, conditional)
-        self.assertLess(conditional, migrate)
-        self.assertLess(migrate, normal)
+        self.assertNotIn('"--migrate"', self.matrix_text)
+        self.assertLess(dry_run, normal)
         self.assertLess(normal, workflow_call)
         self.assertLess(workflow_call, reapply)
         self.assertIn("previous_root=source_root", reapply_call)
