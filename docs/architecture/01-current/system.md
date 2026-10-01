@@ -241,3 +241,13 @@ TaskId 的旧 ledger 不再阻断新任务；提议 TaskId/TaskRef 和目标 led
 该目标仍待 post-Finish exact-candidate gate、annotated tag 与 GitHub Release，
 不因 `.69` current promotion 变成已发布事实；registry/production 计数保持
 34/155/104 与 33/153。
+
+`ARCH-CUR-047`（`source_confirmed` + `reviewed`）：#481 以固定 Fork PR #24 提交
+`64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`（CLI/core `0.7.0-castbox.1`）
+和 extension `0.7.0-guru.1` 退役任务 creator/assignee/user/developer 身份及
+create-task 人员接口。Guru 不在严格官方 task.json 中写额外 delivery target；
+reviewed target 只在调用局部使用。当前 schema 的任务与归档保留 #454 的
+TaskId/generation、session/branch binding 和资源归属；旧格式归档只保留
+TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成为 lifecycle 候选。
+#292 Phase 1 author 边界未变。registry/production 数量保持 34/155/104 和
+33/153；代表性新装已验证，旧版本升级及完整 Release matrix 未验证。

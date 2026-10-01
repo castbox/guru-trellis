@@ -3,11 +3,11 @@
 ## Identity
 
 - Contribution identity: `architecture-contribution-481-retire-task-personnel-v1`.
-- State: `phase2_reviewed_candidate`; task: `.trellis/tasks/10-01-481-retire-task-personnel`.
+- State: `independently_reviewed_promotion_candidate`; task: `.trellis/tasks/10-01-481-retire-task-personnel`.
 - Source: `castbox/guru-trellis#481`; predecessor: `current-main-0.6.17-guru.69` / active.
 - Guru contract: `guru-maintain-architecture-baseline:2.0`; project contract: `guru-trellis-architecture-change-contract-v1`; constitution: `guru-trellis-design-constitution-v1` / current.
 - Change path: `target_native`; expected current identity: `current-main-0.6.17-guru.69`.
-- Promotion: pending implementation, Phase 2, independent committed full-diff Branch Review, and expected-current review. No shared current authority changes at Planning.
+- Promotion: implementation, Phase 2 and independent committed full-diff Branch Review passed for `fb22d5cd5a61c6b92153a9e9454308c1c8335f8e`; expected `.69` current identity reviewed. The `.70` shared-authority diff requires fresh Phase 2, commit and full Branch Review before Publication.
 
 ## Boundary And Decision
 
