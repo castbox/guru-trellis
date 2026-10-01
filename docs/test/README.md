@@ -46,4 +46,4 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [`test-strategy.md`](./versions/current-main-0.6.5-guru.35/test-strategy.md) |
 | `released-history` | `v0.6.5-guru.9` | [`README.md`](./versions/v0.6.5-guru.9/README.md) |
 
-历史 `.68/active` 快照完整继承 immutable `.67` 并承接 #454 generation 7；其 Architecture 当时为 `.68/active`，现已由 `.69` 取代。当前 `.69` 的 promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review；专门 Release matrix 和业务仓生产验证仍未验证。
+历史 `.68/active` 快照完整继承 immutable `.67` 并承接 #454 generation 7；其 Architecture 当时为 `.68/active`，现已由 `.70` 取代。当前 `.70` 的 promotion-created diff 仍须 fresh Phase 2、Task Commit 与完整 Branch Review；专门 Release matrix 和业务仓生产验证仍未验证。

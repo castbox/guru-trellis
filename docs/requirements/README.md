@@ -44,8 +44,8 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前框架源码固定为 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`，成功 main CI `36519692082`，CLI/core `0.6.17`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.6.17-guru.43`，target repository axis 为 `v0.6.17-guru.2`。前一正式版本 `v0.6.17-guru.1` 与历史版本保持 immutable；目标 `.2` 尚待 exact-candidate tag 与 GitHub Release。
-当前 `.69` 完整继承 immutable `.68`，并承接 #467 TaskId 创建预检与 release target/升级清理合同；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.69/active`。promotion-created diff 尚需 fresh Phase 2、Task Commit 与完整 Branch Review；前一版本既有安装的退役资产删除须由 Stage 2 实证，完整 Release matrix 和业务仓生产验证不在本次通过声明内。
+当前 `.70` 的框架源码固定为 `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，成功 main CI `36755826713`，CLI/core `0.7.0-castbox.1`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.7.0-guru.1`，target repository axis 仍为未发布的 `v0.6.17-guru.2`。前一正式版本 `v0.6.17-guru.1` 与历史版本保持 immutable；目标 `.2` 尚待 exact-candidate tag 与 GitHub Release。
+历史 `.69` 继承 `.68` 并承接 #467 TaskId 创建预检与 release target/升级清理合同；其 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`、CLI/core `0.6.17` 与 extension `0.6.17-guru.43` 只作 predecessor provenance。当前 `.70` 继承其有效合同并按 #481 退役任务人员身份；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.70/active`。代表性新装已验证；前驱安装升级、完整 Release matrix、远端 marketplace 和业务仓生产安装仍未验证。
 
 `.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。
 
@@ -111,4 +111,4 @@ inventory 只承接 current-to-target trace，不替代前两份 Requirements �
 
 旧路径 `requirement-main.md` 与 `guru-team-trellis-flow.md` 仅保留迁移导航，不定义 current。
 
-历史 `.65` 完整继承 `.64` 并吸收 reviewed #454 D443 contribution；当时 Architecture 对应 `.65/active`。D436 随后在 `.66` 提升为非激活 package authority；E434 与 #434 activation 在该前驱阶段仍是后续边界。`.67` 是 #434 的 immutable predecessor。本次 `.68` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；完整 Release Gate matrix 由专门 Issue 承担。
+历史 `.65` 完整继承 `.64` 并吸收 reviewed #454 D443 contribution；当时 Architecture 对应 `.65/active`。D436 随后在 `.66` 提升为非激活 package authority；E434 与 #434 activation 在该前驱阶段仍是后续边界。`.67` 是 #434 的 immutable predecessor。当前 `.70` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review，随后才进入 Publication；完整 Release Gate matrix 由专门 Issue 承担。
