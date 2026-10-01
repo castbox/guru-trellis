@@ -958,12 +958,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-01T10:15:02Z",
+  "installed_at": "2026-10-01T11:16:15Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "987635b025db3b5835317b7e7b5326baa83c275f",
-    "commit": "987635b025db3b5835317b7e7b5326baa83c275f",
-    "tree_state": "dirty",
+    "ref": "76556b4dc1c3bbf73afdf065f78e03d58a44e4e2",
+    "commit": "76556b4dc1c3bbf73afdf065f78e03d58a44e4e2",
+    "tree_state": "clean",
     "is_mutable_ref": false
   },
   "install": {
@@ -1032,7 +1032,7 @@
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
       ".trellis/spec/workflow/workflow-contract.md": "0b720e6cc3e0f92c2cd750c1fa097c5df39ef11bcd297f7627697678eb65cfd1",
       ".trellis/spec/workflow/skill-package-contract.md": "0ff9faf4215aa6eb5c2ccafe7a8d09c86a1b7f66ce9a19a7e63ddb4a8052b11b",
-      ".trellis/spec/workflow/data-contracts.md": "d67ac479b3d7f99d651c275a8624272c13917d61530817bb95715238675384c1",
+      ".trellis/spec/workflow/data-contracts.md": "a401667d7cb09d6cb3ced2926a862a0d9480cbb53c294c3cdd89d2cbaf4d120d",
       ".trellis/spec/workflow/companion-scripts.md": "4d197a1db7300f551cfe665e2503089eaa521bdd52f9e970ecd419005a34ebe9",
       ".trellis/spec/workflow/quality-guidelines.md": "0fb85984909718b63c016f453c60c55a98a3882b38bdc7eee0d10b3c2c18ebc2",
       ".trellis/guru-team/trellis-source.json": "8731f1da162a50511baaf602f4dffd0276fc10610572c2992a69c9f0e90d8dbe"
@@ -1207,7 +1207,7 @@
       {
         "id": "guru-reactivate-task",
         "interface_sha256": "c0db94e27d536e11913e448716df4c7fa41ffd09d0fe19df7e0341e3b2718317",
-        "tree_sha256": "f672b12b74d24d50f95817a490686ed231fb291ea110f6c8098a8a244b87462f"
+        "tree_sha256": "b8e43e8172f0cacd220298e9f42efbb0a0c5208a5ceebcff34bfc157a5046327"
       },
       {
         "id": "guru-rebind-task-branch",
@@ -8474,7 +8474,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "20c457aac20b968d33b7a1ac89a2b1ebcb9a2609e850eb397cbb26fbfd9c0841",
+        "sha256": "2f1990b5502abcaecea220067bdefa2b8b8a6bc45195a0a374534a7138633832",
         "executable": false,
         "action": "unchanged"
       },
@@ -32190,7 +32190,7 @@
       {
         "path": ".agents/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "20c457aac20b968d33b7a1ac89a2b1ebcb9a2609e850eb397cbb26fbfd9c0841",
+        "sha256": "2f1990b5502abcaecea220067bdefa2b8b8a6bc45195a0a374534a7138633832",
         "executable": false,
         "action": "unchanged"
       },
@@ -32358,7 +32358,7 @@
       {
         "path": ".codex/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "20c457aac20b968d33b7a1ac89a2b1ebcb9a2609e850eb397cbb26fbfd9c0841",
+        "sha256": "2f1990b5502abcaecea220067bdefa2b8b8a6bc45195a0a374534a7138633832",
         "executable": false,
         "action": "unchanged"
       },
@@ -32526,7 +32526,7 @@
       {
         "path": ".claude/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "20c457aac20b968d33b7a1ac89a2b1ebcb9a2609e850eb397cbb26fbfd9c0841",
+        "sha256": "2f1990b5502abcaecea220067bdefa2b8b8a6bc45195a0a374534a7138633832",
         "executable": false,
         "action": "unchanged"
       },
@@ -32694,7 +32694,7 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "20c457aac20b968d33b7a1ac89a2b1ebcb9a2609e850eb397cbb26fbfd9c0841",
+        "sha256": "2f1990b5502abcaecea220067bdefa2b8b8a6bc45195a0a374534a7138633832",
         "executable": false,
         "action": "unchanged"
       },
