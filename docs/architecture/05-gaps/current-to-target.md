@@ -38,3 +38,9 @@ installed/声明平台投影，`ARCH-GAP-009` 的 production graph 子缺口和 
 目标身份冲突 fail-closed。前一版本退役受管资产的真实升级清理、exact-candidate
 发布 gate、tag、smoke 与 GitHub Release 尚待 Stage 2/3；完整多平台 Release
 matrix 和业务仓生产安装仍属独立 `unverified` 边界。
+
+`.70` 的 #481 关闭任务人员字段/接口与 PR #24 官方 task schema 不匹配的局部缺陷；
+旧归档仅保留 TaskId 防复用和严格只读拒绝诊断，#454 绑定与资源归属仍由原 owner
+持有。旧 `0.6.17` Trellis 安装无法由当前 `0.7.0-castbox.1` Fork update，前驱
+升级、远端 marketplace、完整多平台 Release matrix 和生产安装均为独立
+`unverified` 边界，不因代表性新装通过而关闭。

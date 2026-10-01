@@ -981,10 +981,13 @@ For a normally finished archived task, `guru-reactivate-task` first verifies
 the original TaskId, source, archive Git identity, accepted scope and current
 base. It increments the lifecycle generation and routes to Planning or its
 declared session/source/recovery owner. Old Finish/Cleanup receipts cannot
-operate on the new generation. Legacy archives are discovered by source Issue
-only as candidates, followed by unique terminal identity validation. An old
-in-flight Finalizer residue is not a Reactivate entry: use pinned-old or an
-explicit per-case manual disposition without bridging old DTOs.
+operate on the new generation. Archives containing retired task personnel
+fields are not lifecycle candidates. Their TaskIds remain reserved; exact
+TaskId or strictly unique source Issue clues may locate one solely for a
+read-only unsupported-format diagnostic. Only archives conforming to the
+current upstream task schema can enter Reactivate. An old in-flight Finalizer
+residue is not a Reactivate entry: use pinned-old or an explicit per-case
+manual disposition without bridging old DTOs.
 
 ## Global Integration Boundaries
 

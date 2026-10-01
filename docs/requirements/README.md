@@ -6,7 +6,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.69` | [requirement-main.md](./versions/current-main-0.6.17-guru.69/requirement-main.md) | reviewed #467 release preparation；完整继承 immutable `.68`，Architecture 为 `.69/active` |
+| `active` | `current-main-0.6.17-guru.70` | [requirement-main.md](./versions/current-main-0.6.17-guru.70/requirement-main.md) | reviewed #481 task-personnel retirement；完整继承 immutable `.69`，Architecture 为 `.70/active` |
+| `superseded` | `current-main-0.6.17-guru.69` | [requirement-main.md](./versions/current-main-0.6.17-guru.69/requirement-main.md) | reviewed #467 release preparation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.68` | [requirement-main.md](./versions/current-main-0.6.17-guru.68/requirement-main.md) | reviewed #454 generation 7 TaskId/domain and terminal recovery；immutable history |
 | `superseded` | `current-main-0.6.17-guru.67` | [requirement-main.md](./versions/current-main-0.6.17-guru.67/requirement-main.md) | reviewed #434 atomic activation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.66` | [requirement-main.md](./versions/current-main-0.6.17-guru.66/requirement-main.md) | #454 D436 非激活 terminal lifecycle packages；immutable history |

@@ -9,14 +9,20 @@ from typing import Any, Iterator
 
 from .errors import LifecycleContractError
 from .git_facts import commit_path_bytes, inspect_repository
-from .source import legacy_archive_source, normalize_repo_ref
+from .source import normalize_repo_ref, normalize_source
 
 
 TASK_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 ACTIVE_TASK_REF = re.compile(r"^\.trellis/tasks/(?!archive(?:/|$))[^/]+$")
 ARCHIVE_TASK_REF = re.compile(r"^\.trellis/tasks/archive/[0-9]{4}-[0-9]{2}/[^/]+$")
-LEGACY_LOCAL_ISSUE_HINT = re.compile(r"^GitHub Issue #([1-9][0-9]*)$")
+LEGACY_URL_ISSUE_HINT = re.compile(r"^GitHub issue: https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/([1-9][0-9]*)$")
 _MISSING = object()
+_CURRENT_TASK_FIELDS = frozenset({
+    "id", "name", "lifecycle_generation", "source", "title", "description",
+    "status", "dev_type", "scope", "package", "priority", "createdAt",
+    "completedAt", "base_branch", "worktree_path", "commit", "pr_url",
+    "children", "parent", "relatedFiles", "notes", "meta",
+})
 
 
 @dataclass(frozen=True)
@@ -25,6 +31,7 @@ class TaskArtifactIdentity:
     task_ref: str
     lifecycle_generation: int
     lifecycle_state: str
+    legacy: bool = False
 
     @property
     def lifecycle_key(self) -> tuple[str, int]:
@@ -171,28 +178,55 @@ def _read_task_metadata(repo_root: Path, task_ref: str) -> dict[str, Any]:
 def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
     ref = normalize_task_ref(task_ref)
     data = _read_task_metadata(repo_root, ref)
+    archived = ref.startswith(".trellis/tasks/archive/")
+    current = _current_task_metadata(data, archived=archived)
+    legacy = archived and not current
+    if not archived and not current:
+        raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema.")
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
         ref,
-        lifecycle_generation(data, field_path=f"{ref}/task.json.lifecycle_generation"),
-        "archived" if ref.startswith(".trellis/tasks/archive/") else "active",
+        0 if legacy else lifecycle_generation(data, field_path=f"{ref}/task.json.lifecycle_generation"),
+        "archived" if archived else "active",
+        legacy,
     )
 
 
-def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
+def _current_task_metadata(data: dict[str, Any], *, archived: bool) -> bool:
+    if set(data) not in (_CURRENT_TASK_FIELDS, _CURRENT_TASK_FIELDS | {"branch"}):
+        return False
+    try:
+        lifecycle_generation(data)
+        normalize_source(data["source"])
+    except LifecycleContractError:
+        return False
+    required_strings = ("name", "title", "description", "status", "priority", "createdAt", "notes")
+    nullable_strings = ("dev_type", "scope", "package", "completedAt", "base_branch", "worktree_path", "commit", "pr_url", "parent")
+    return (
+        (not archived or data["status"] == "completed")
+        and all(isinstance(data[field], str) for field in required_strings)
+        and all(data[field] is None or isinstance(data[field], str) for field in nullable_strings)
+        and all(isinstance(data[field], list) and all(isinstance(item, str) for item in data[field])
+                for field in ("children", "relatedFiles"))
+        and isinstance(data["meta"], dict)
+        and ("branch" not in data or data["branch"] is None or isinstance(data["branch"], str))
+    )
+
+
+def _task_identities(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
     root = repo_root.resolve()
-    rows = tuple(_read_identity(root, ref) for ref in _task_refs(root))
-    by_fold: dict[str, list[TaskArtifactIdentity]] = {}
-    for row in rows:
-        by_fold.setdefault(row.task_id.casefold(), []).append(row)
-    conflicts = [group for group in by_fold.values() if len(group) > 1]
-    if conflicts:
-        raise LifecycleContractError(
-            "task_id_casefold_collision",
-            "task_id",
-            "Assign repository-unique exact and case-fold TaskIds before lifecycle resolution.",
-        )
-    return rows
+    rows = []
+    for ref in _task_refs(root):
+        try:
+            rows.append(_read_identity(root, ref))
+        except LifecycleContractError:
+            if not ref.startswith(".trellis/tasks/archive/"):
+                raise
+    return tuple(rows)
+
+
+def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
+    return tuple(row for row in _task_identities(repo_root) if not row.legacy)
 
 
 def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
@@ -218,12 +252,16 @@ def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
 
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:
     selected = _read_identity(repo_root.resolve(), normalize_task_ref(task_ref))
-    rows = task_inventory(repo_root)
+    if selected.legacy:
+        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old archives are read-only diagnostics, not lifecycle candidates.")
+    rows = _task_identities(repo_root)
     current = next((row for row in rows if row.task_ref == selected.task_ref), None)
     if current is None:
         raise LifecycleContractError(
             "invalid_task_ref", selected.task_ref, "Resolve one canonical task artifact from the repository inventory."
         )
+    if len([row for row in rows if row.task_id.casefold() == current.task_id.casefold()]) > 1:
+        raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve the duplicate TaskId before lifecycle use.")
     if expected_task_id is not None and current.task_id != normalize_task_id(expected_task_id, field_path="expected_task_id"):
         raise LifecycleContractError(
             "invalid_task_identity", "expected_task_id", "Use the immutable TaskId declared by the selected task artifact."
@@ -233,26 +271,32 @@ def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | 
 
 def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
     requested = normalize_task_id(task_id)
-    rows = task_inventory(repo_root)
-    matches = [row for row in rows if row.task_id == requested]
+    rows = _task_identities(repo_root)
+    matches = [row for row in rows if row.task_id.casefold() == requested.casefold()]
     if not matches:
         raise LifecycleContractError("task_not_found", "task_id", "Select an existing active or archived TaskId.")
     if len(matches) != 1:
-        raise LifecycleContractError("invalid_task_identity", "task_id", "Repair duplicate canonical task artifacts.")
+        raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve duplicate canonical task artifacts.")
+    if matches[0].legacy:
+        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old archives are read-only diagnostics, not lifecycle candidates.")
+    if matches[0].task_id != requested:
+        raise LifecycleContractError("invalid_task_identity", "task_id", "Use the exact TaskId spelling.")
     return matches[0]
 
 
 def discover_archived_issue_candidate(
     repo_root: Path, repo_ref: str, issue_number: int, archive_head: str,
 ) -> ArchivedIssueCandidate:
-    """Discover a legacy archive by Issue; the Reactivate owner still verifies terminal Finish."""
+    """Locate one exact Issue archive; legacy matches are diagnostic only."""
 
     repository = inspect_repository(repo_root)
     source_repo = normalize_repo_ref(repo_ref)
     if type(issue_number) is not int or issue_number < 1:
         raise LifecycleContractError("invalid_source_relation", "issue_number", "Use a positive source Issue number.")
     matches: list[ArchivedIssueCandidate] = []
-    for artifact in task_inventory(repo_root):
+    origin_is_source = origin_matches(repository.context_path, source_repo)
+    identities = _task_identities(repo_root)
+    for artifact in identities:
         if artifact.lifecycle_state != "archived":
             continue
         summary_ref = f"{artifact.task_ref}/finish-summary.json"
@@ -268,43 +312,54 @@ def discover_archived_issue_candidate(
             continue
         if not isinstance(summary, dict) or not isinstance(task, dict):
             continue
-        try:
-            matches_origin = origin_matches(repository.context_path, source_repo)
-            source = legacy_archive_source(
-                task, summary, artifact.task_ref, repo_ref=source_repo if matches_origin else None,
+        if "source" in task:
+            try:
+                source = normalize_source(task["source"])
+            except LifecycleContractError:
+                continue
+            matched = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
+                "issue", source_repo, issue_number, "exact_source",
             )
-        except LifecycleContractError:
-            continue
-        exact_source = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
-            "issue", source_repo, issue_number, "exact_source",
-        )
-        github = summary.get("github", {})
-        indexed_legacy_source = (
-            source == {"kind": "no_issue"} and "source" not in task and matches_origin
-            and isinstance(github, dict) and isinstance(github.get("source_issues"), list)
-            and issue_number in github["source_issues"]
-        )
-        local_hint = LEGACY_LOCAL_ISSUE_HINT.fullmatch(task.get("scope", "")) if isinstance(task.get("scope"), str) else None
-        hinted_legacy_candidate = (
-            source == {"kind": "no_issue"} and "source" not in task and matches_origin
-            and local_hint is not None and int(local_hint[1]) == issue_number
-        )
-        if not (exact_source or indexed_legacy_source or hinted_legacy_candidate):
+        else:
+            clues: list[set[int]] = []
+            github = summary.get("github", {})
+            indexed = github.get("source_issues") if isinstance(github, dict) else None
+            if origin_is_source and isinstance(indexed, list) and indexed:
+                numbers = {number for number in indexed if type(number) is int and number > 0}
+                if numbers:
+                    clues.append(numbers)
+            scope = task.get("scope", "")
+            url_hint = LEGACY_URL_ISSUE_HINT.fullmatch(scope) if isinstance(scope, str) else None
+            if url_hint and url_hint[1] == source_repo:
+                clues.append({int(url_hint[2])})
+            if url_hint and url_hint[1] != source_repo and any(issue_number in clue for clue in clues):
+                raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue repositories require manual disposition.")
+            if len(clues) > 1 and any(clue != clues[0] for clue in clues[1:]) and any(issue_number in clue for clue in clues):
+                raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue clues require manual disposition.")
+            matched = bool(clues) and all(clue == {issue_number} for clue in clues)
+        if not matched:
             continue
         if (
             task.get("id") != artifact.task_id
-            or normalize_generation(task.get("lifecycle_generation", 0)) != artifact.lifecycle_generation
+            or (not artifact.legacy and normalize_generation(task.get("lifecycle_generation", 0)) != artifact.lifecycle_generation)
             or task.get("status") != "completed"
             or summary.get("task", {}).get("archive_dir") != artifact.task_ref
             or summary.get("task", {}).get("status") != "completed"
         ):
             continue
         matches.append(ArchivedIssueCandidate(artifact.task_id, artifact.task_ref, artifact.lifecycle_generation, archive_head))
+    if not matches:
+        raise LifecycleContractError(
+            "archived_issue_candidate_not_found", "source_issue",
+            "No archive has a unique exact source Issue clue; continue normal task discovery.",
+        )
     if len(matches) != 1:
         raise LifecycleContractError(
             "archived_issue_candidate_not_unique", "source_issue",
             "Review the exact source Issue and archive Git identity before Reactivate.",
         )
+    if any(row.legacy for row in identities if row.task_ref == matches[0].task_ref):
+        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old archives are read-only diagnostics, not Reactivate candidates.")
     return matches[0]
 
 

@@ -61,7 +61,7 @@ class CreateTaskTests(unittest.TestCase):
             },
             "task": {
                 "title": "Example task", "description": "Reviewed delivery scope",
-                "creator": "team", "assignee": "team", "scope": "Reviewed scope",
+                "scope": "Reviewed scope",
             },
         }
 
@@ -99,16 +99,19 @@ class CreateTaskTests(unittest.TestCase):
         task = json.loads((self.root / self.ref / "task.json").read_text(encoding="utf-8"))
         self.assertEqual(task["source"], {"kind": "no_issue"})
         self.assertEqual(task["status"], "planning")
+        self.assertNotIn("delivery_target", task)
+        self.assertNotIn("creator", task)
+        self.assertNotIn("assignee", task)
         self.assertNotIn("branch", task)
-        self.assertNotIn("worktree_path", task)
+        self.assertIsNone(task["worktree_path"])
         before = self.git("status", "--porcelain")
         self.assertEqual(self.invoke({**self.payload, "action": "recover_created_task_result"}), result)
         self.assertEqual(self.git("status", "--porcelain"), before)
         self.assertEqual(self.invoke(self.payload)["exit_id"], "invalid_task_state")
 
-    def test_distinct_task_id_can_reuse_a_historical_slug(self) -> None:
+    def test_unrelated_legacy_archive_does_not_block_creation(self) -> None:
         prefix = "01-01" if Path(self.ref).name[:5] != "01-01" else "01-02"
-        prior = self.root / ".trellis/tasks/archive/2025-01" / f"{prefix}-example-task"
+        prior = self.root / ".trellis/tasks/archive/2025-01" / f"{prefix}-historical-task"
         prior.mkdir(parents=True)
         (prior / "task.json").write_text(json.dumps({
             "id": "historical-task-id", "name": "example-task", "status": "completed",
@@ -135,6 +138,15 @@ class CreateTaskTests(unittest.TestCase):
         mismatch["acquisition"]["decision_head"] = "a" * 40
         self.assertEqual(self.invoke(mismatch)["exit_id"], "blocked")
         self.assertFalse((self.root / self.ref).exists())
+
+    def test_retired_personnel_input_is_rejected_before_creation(self) -> None:
+        for field in ("creator", "assignee"):
+            with self.subTest(field=field):
+                old = json.loads(json.dumps(self.payload))
+                old["task"][field] = "team"
+                with self.assertRaises(MODULE.CommandError):
+                    self.invoke(old)
+                self.assertFalse((self.root / self.ref).exists())
 
     def test_stale_shanghai_task_date_refreshes_without_creating(self) -> None:
         stale = json.loads(json.dumps(self.payload))
@@ -181,7 +193,7 @@ class CreateTaskTests(unittest.TestCase):
             self.assertEqual(self.invoke(self.payload),
                              {"exit_id": "refresh_review", "reason_code": "creation_date_stale"})
         self.assertEqual(len(official_calls), 1)
-        self.assertEqual(official_calls[0][official_calls[0].index("--slug") + 1], Path(self.ref).name)
+        self.assertEqual(official_calls[0][official_calls[0].index("--slug") + 1], "example-task")
         self.assertEqual(official_calls[0][official_calls[0].index("--task-id") + 1],
                          self.payload["creation"]["task_id"])
         self.assertFalse((self.root / self.ref).exists())

@@ -24,6 +24,12 @@ changes before or during official creation, return `refresh_review` and review
 a new TaskRef; do not create a task under a different date. Read-only result
 recovery retains the original TaskRef across dates.
 
+Public input schema `guru-create-task-input-2.0` removes the retired task
+`creator` and `assignee` fields. Rereview a 1.0 request and omit those fields;
+the closed 2.0 schema rejects them before acquisition. The reviewed delivery
+target remains call-local and is never added to official `task.json`. The
+official creator receives the slug body without its date prefix.
+
 Use `record-task-plan` for objective preconditions, `create-task` for the
 official Fixed Fork `task.py create --no-start` followed by TaskId/source
 materialization and C4/C5 control-state establishment, then

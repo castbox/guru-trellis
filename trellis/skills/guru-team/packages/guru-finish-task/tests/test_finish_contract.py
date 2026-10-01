@@ -28,6 +28,18 @@ def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True).stdout.strip()
 
 
+def current_task_metadata(task_id, generation, source, status="in_progress"):
+    return {
+        "id": task_id, "name": task_id, "lifecycle_generation": generation,
+        "source": source, "title": task_id, "description": "Reviewed task",
+        "status": status, "dev_type": None, "scope": None, "package": None,
+        "priority": "P2", "createdAt": "2026-09-20", "completedAt": None,
+        "base_branch": "main", "worktree_path": None, "commit": None,
+        "pr_url": None, "children": [], "parent": None,
+        "relatedFiles": [], "notes": "", "meta": {},
+    }
+
+
 def write_fake_gh(path):
     path.write_text(
         """#!/usr/bin/env python3
@@ -134,7 +146,7 @@ def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutati
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
     source = {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"}
-    (task / "task.json").write_text(json.dumps({"id": public["closure_result"]["task_id"], "lifecycle_generation": 1, "source": source}))
+    (task / "task.json").write_text(json.dumps(current_task_metadata(public["closure_result"]["task_id"], 1, source)))
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
     input_path.write_text(json.dumps(public))
@@ -158,8 +170,8 @@ def test_changed_source_role_refreshes_closure_before_finish_archive(tmp_path, m
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({"id": "example-task", "lifecycle_generation": 1,
-        "source": {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "reference_only"}}))
+    (task / "task.json").write_text(json.dumps(current_task_metadata("example-task", 1,
+        {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "reference_only"})))
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
     input_path.write_text(json.dumps(public))
@@ -186,7 +198,7 @@ def test_semantic_resume_finish_returns_complete_self_projection(tmp_path, monke
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({"id": "example-task", "lifecycle_generation": 1}))
+    (task / "task.json").write_text(json.dumps(current_task_metadata("example-task", 1, {"kind": "no_issue"})))
     monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "no_mutation", "action_set": []})
     semantic = {
         "profile": "closure_completed",
@@ -350,7 +362,14 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     (old_archive / "legacy-finish-summary.json").write_text("{}\n")
     task = repo / ".trellis/tasks/demo"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({"id": "demo", "title": "Demo", "status": "in_progress", "base_branch": "main", "lifecycle_generation": 0, "source": {"kind": "no_issue"}}))
+    (task / "task.json").write_text(json.dumps({
+        "id": "demo", "name": "demo", "lifecycle_generation": 0,
+        "source": {"kind": "no_issue"}, "title": "Demo", "description": "Completed task",
+        "status": "in_progress", "dev_type": None, "scope": None, "package": None,
+        "priority": "P2", "createdAt": "2026-09-19", "completedAt": None,
+        "base_branch": "main", "worktree_path": None, "commit": None, "pr_url": None,
+        "children": [], "parent": None, "relatedFiles": [], "notes": "", "meta": {},
+    }))
     for name in ("prd.md", "design.md", "implement.md"):
         (task / name).write_text("x\n")
     git(repo, "add", ".")
@@ -528,25 +547,23 @@ def test_finish_archive_is_discoverable_by_source_issue(tmp_path):
     assert [row["finish_summary_path"] for row in preview["candidates"]] == [f"{archive_ref}/finish-summary.json"]
 
 
-def test_finish_materializes_closure_reviewed_legacy_source(tmp_path):
+def test_finish_rejects_legacy_task_without_rewriting_source(tmp_path):
     repo = tmp_path / "repo"
     repo.mkdir()
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
     task_ref = ".trellis/tasks/demo"
     task_dir = repo / task_ref
     task_dir.mkdir(parents=True)
-    (task_dir / "task.json").write_text(json.dumps({"id": "demo", "status": "in_progress",
-                                                    "lifecycle_generation": 0, "scope": "GitHub Issue #454"}))
+    metadata = task_dir / "task.json"
+    metadata.write_text(json.dumps({"id": "demo", "status": "in_progress",
+                                    "lifecycle_generation": 0, "scope": "GitHub Issue #454"}))
+    before = metadata.read_bytes()
     source = {"kind": "issue", "repo_ref": "example/repo", "number": 454,
               "disposition": "reference_only"}
-    assert FINISH.closure_source_current(repo, {"task_id": "demo", "lifecycle_generation": 0}, source)
-    archive_ref = ".trellis/tasks/archive/2026-09/demo"
-    FINISH.project_archive(repo, {"task_ref": task_ref, "task_id": "demo"}, Path(task_ref),
-                           archive_ref, Path(archive_ref), source)
-    archived = json.loads((repo / archive_ref / "task.json").read_text())
-    summary = json.loads((repo / archive_ref / "finish-summary.json").read_text())
-    assert archived["source"] == source
-    assert summary["index"]["search_terms"]["issue_refs"] == ["#454"]
+    with pytest.raises(CommandError, match="stale_identity"):
+        FINISH.closure_source_current(repo, {"task_id": "demo", "lifecycle_generation": 0}, source)
+    assert metadata.read_bytes() == before
+    assert not (repo / ".trellis/tasks/archive/2026-09/demo").exists()
 
 
 def test_finish_archive_retires_only_its_generation_sessions(tmp_path):

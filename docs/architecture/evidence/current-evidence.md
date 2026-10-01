@@ -485,3 +485,19 @@ TaskId 聚焦测试 22/22、完整 lifecycle 148/148，通过 source/installed�
 声明平台投影、preset reapply 与 drift。Architecture/RDT `.69` 晋升形成的
 新字节还须 fresh Phase 2、Task Commit 与完整 Branch Review。前一版本既有安装
 升级时退役资产的实际删除，以及最终 tag/Release，均未由本条证明。
+
+## EVD-046: #481 task-personnel retirement candidate
+
+已合并 Fork PR #24 的精确 source lock 为
+`castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，tree
+`a964088ffa3f8df0deafc8f042f91911e3e8ecbe`，CLI/core
+`0.7.0-castbox.1`，成功 CI `36755826713`；source validator 已通过。
+Guru 候选的 lifecycle 152/152、create-task 13/13、Reactivate 25/25、
+Finish 56/56、session 8/8（另 1 项环境 skip）、checkout 4/4、branch 3/3、
+installer 101/101、compatibility contract 73/73 通过。代表性 Codex 新装验证
+native loading、preset apply、两次 reapply、同候选 update、template hash 与
+session binding；dogfood drift 通过且无残留 `.new`/`.bak`。旧 dogfood
+`.trellis/.version=0.6.17` 的 update 被该 Fork 明确拒绝，旧版本升级不能记为通过。
+历史 `test_434_activation_candidate.py` 有 3 失败、1 跳过，不记为通过的 #481 gate。
+完整多平台 Release/前驱升级矩阵、远端 marketplace、生产安装，以及本次
+promotion-created diff 的 fresh Phase 2 和完整 committed Branch Review 尚未由本条证明。

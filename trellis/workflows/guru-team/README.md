@@ -37,11 +37,11 @@ or upstream `task.py start` to perform that transition.
 ## Installation
 
 当前目标仓库 tag 为 `v0.6.17-guru.2`，extension revision 为
-`0.6.17-guru.43`；两者须在 exact-candidate 验证、tag 和 Release 完成后
-才成为已发布事实。官方 CLI/core 保持 `0.6.17`。
+`0.7.0-guru.1`；两者须在 exact-candidate 验证、tag 和 Release 完成后
+才成为已发布事实。Fork CLI/core 为 `0.7.0-castbox.1`。
 
-Use the source-locked Trellis Fork checkout (`castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
-successful main push CI `36519692082`)
+Use the source-locked Trellis Fork checkout (`castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`,
+successful main CI `36755826713`)
 and a matching reviewed Guru
 source. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
@@ -54,10 +54,11 @@ exact CLI build. Remote marketplace installation is not a #434 gate.
 
 The old complete Publication -> Finalizer -> Merge -> Restore graph belongs
 only to a pinned compatible old version. The current graph has no old DTO
-adapter, dual reader, or mixed-graph mode. Old archived tasks discovered by
-source Issue require committed task source, unique TaskId and terminal Git
-archive identity before Reactivate; the old finish summary/index is only a
-candidate hint.
+adapter, dual reader, or mixed-graph mode. Archived tasks with retired
+personnel fields are never Reactivate or Finish recovery candidates. Their
+TaskIds remain reserved; exact source clues may only locate one for a read-only
+rejection diagnostic. Archives conforming to the current task schema use the
+current Reactivate contract.
 Old Finalizer residue or a closed Issue alone is not a normally finished archive.
 An in-flight old task, including a terminal PR or divergent remote/local head,
 needs exact-case old-version completion or explicit manual disposition; do not

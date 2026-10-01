@@ -593,8 +593,10 @@ Ignored `workspaces/*.json` and `tasks/*.json` mappings are retired historical
 artifacts: current Guru runtime neither reads nor writes them. Task creation
 uses `guru-create-task` and the official task store; checkout acquisition is
 call-local, and branch association lives in the Git common-dir binding store.
-Creator and assignee are ordinary portable task metadata, not prerequisites
-for TaskId, source, session, checkout, or resource ownership.
+Current task metadata has no personnel identity. Retired personnel fields in
+old task records make them unsupported current candidates; their TaskIds remain
+reserved against reuse. Exact source clues may locate an old archive only for
+a read-only rejection diagnostic, never for lifecycle recovery.
 
 ### Active-task continuation data boundary
 
@@ -1966,12 +1968,12 @@ moves the archive to the active locator, increments the generation, and enters
 planning. Its package-local transaction and shared branch/resource owners bind
 the new checkout; it does not create old task/workspace mappings. Prior Finish
 receipts cannot seed Cleanup for the new generation.
-Legacy Issue discovery treats an old finish-summary index as a hint, not a
-mandatory source authority: the committed task source and unique terminal Git
-archive decide the match. Old schema-2 archives with absent generation, or
-generation zero plus a matching retired `task.json.archive_dir`, use legacy
-committed-archive verification only without a C5 ledger. Other explicit
-generations require the current Finish seal or exact manual Cleanup receipt.
+Archives carrying retired personnel fields are never Reactivate
+candidates. An exact TaskId or strictly matched Issue clue may return only the
+`unsupported_legacy_task` read-only diagnostic; no finish-summary index,
+source correction, generation-zero rule, or legacy archive verification can
+restore them. Reactivate accepts only an archive that already satisfies the
+current task schema and current Finish/Cleanup contract.
 
 ### Task identity and session binding (#443, selected by #434)
 
@@ -2010,7 +2012,7 @@ Checkout path、workspace path、session identity、authorization、generic evid
 snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
 的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
 
-Fork `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983` 独占 immutable `task.json.id`、generation、
+Fork `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac` 独占 immutable `task.json.id`、generation、
 TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
 alias、dual-read 或 dual-write。该 catalog 与 runtime 是当前 package-neutral substrate；

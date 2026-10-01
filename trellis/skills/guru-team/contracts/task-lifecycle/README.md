@@ -101,7 +101,7 @@ C5 remains substrate only. It does not activate D443/D436, create a planned
 Skill package, change the production workflow, or publish installed/platform
 projections; those transitions remain owned by E434.
 
-The C6 `task-creation-input.schema.json` separates reviewed
+The C6 `task-creation-input.schema.json` (2.0) separates reviewed
 `existing_issue | standalone_request` source from accepted scope identity and
 portable delivery target. Its selected base ref/head and C3 checkout acquisition
 plan are call-local preconditions, not durable task authority. The C3 provision
@@ -110,15 +110,19 @@ creates Guru-owned branch and worktree, the second creates only a Guru-owned
 worktree, and the third reuses caller-owned resources. Primary and linked
 adoption preserve caller ownership. After the official task creator writes a
 generation-zero planning artifact containing the reviewed `source` and
-`delivery_target`, `establish_created_control_state` composes the initial C4
+official `base_branch`, `establish_created_control_state` composes the initial C4
 binding and C5 ledger. `recover_created_control_state` reads the exact stable
-task/source/target, binding epoch, ledger and deterministic
+task/source/base, binding epoch, ledger and deterministic
 `task-created:<TaskId>` result identity without another mutation. Accepted
 scope remains the separate reviewed input, not a substitute source or closure
 decision; the future package must check its own scope authority and live Issue.
 `bind_created_session` runs the C5 official-backed adapter only after the exact
 initial creation state is verified. Missing context enters explicit-task mode;
 session write failure does not roll back the established task or ownership.
+The 2.0 create input removes task personnel; old requests containing `creator`
+or `assignee` are rejected rather than adapted. Legacy archives contribute
+TaskId collision facts and, for an exact TaskId or Issue match, read-only
+unsupported-format diagnostics. They never become current lifecycle candidates.
 
 `task-activation-input.schema.json` requires a planning result, current task
 incarnation, selected base ref, base-current reviewed base HEAD or reconciled

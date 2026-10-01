@@ -17,6 +17,9 @@ Workflow and standalone modes use identical preconditions and freshness.
 Standalone removes only global routing; it does not remove the complete Guru
 Team runtime or current-evidence requirement. Load `trellis-brainstorm` as the
 questioning method, while this Skill retains every semantic decision.
+Its current upstream contract supplies requirement exploration only; Guru's
+task creation, activation and completion owners remain separate. Clarification
+does not require or establish a task personnel identity.
 
 Before a newly observed scenario can become a proposal, user question, scope
 decision, task update, or new-task draft, this owner supplies only candidate

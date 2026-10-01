@@ -93,11 +93,10 @@ def _created_checkout(inputs: CreationInputs, result: CheckoutAcquisitionResult)
     try:
         metadata = json.loads((live.path / inputs.task_ref / "task.json").read_text(encoding="utf-8"))
         source = normalize_source(metadata.get("source"))
-        target = normalize_delivery_target(metadata.get("delivery_target"))
     except (OSError, ValueError, LifecycleContractError) as exc:
         raise LifecycleContractError("creation_identity_mismatch", "task_ref", "Read the created planning task.") from exc
-    if metadata.get("status") != "planning" or source != inputs.reviewed_source or target != inputs.delivery_target:
-        raise LifecycleContractError("creation_identity_mismatch", "task_ref", "Recover only the exact reviewed task source and target.")
+    if metadata.get("status") != "planning" or source != inputs.reviewed_source or metadata.get("base_branch") != inputs.selected_base_ref.removeprefix("refs/heads/"):
+        raise LifecycleContractError("creation_identity_mismatch", "task_ref", "Recover only the exact reviewed task source and base.")
 
 
 def establish_created_control_state(inputs: CreationInputs, result: CheckoutAcquisitionResult) -> BranchBinding:

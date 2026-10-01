@@ -30,6 +30,12 @@ class LifecycleHelperTests(unittest.TestCase):
         (task / "task.json").write_text(json.dumps({
             "id": "example-id", "name": "example", "status": "in_progress",
             "lifecycle_generation": 2, "branch": "retired-branch-is-not-authority",
+            "source": {"kind": "no_issue"}, "title": "Example",
+            "description": "Reviewed task", "dev_type": None, "scope": None,
+            "package": None, "priority": "P2", "createdAt": "2026-09-20",
+            "completedAt": None, "base_branch": "main", "worktree_path": None,
+            "commit": None, "pr_url": None, "children": [], "parent": None,
+            "relatedFiles": [], "notes": "", "meta": {},
         }), encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-qm", "fixture")

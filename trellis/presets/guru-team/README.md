@@ -9,11 +9,11 @@ The installer never edits upstream Trellis source or a global npm package.
 ## Apply And Verify
 
 当前目标仓库 tag 为 `v0.6.17-guru.2`，extension revision 为
-`0.6.17-guru.43`；发布事实以 exact-candidate 验证、tag 和 GitHub Release
-为准。官方 CLI/core 保持 `0.6.17`。
+`0.7.0-guru.1`；发布事实以 exact-candidate 验证、tag 和 GitHub Release
+为准。Fork CLI/core 为 `0.7.0-castbox.1`。
 
-Use the source-locked, built `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`
-CLI (successful main push CI `36519692082`) and a matching reviewed Guru
+Use the source-locked, built `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`
+CLI (successful main CI `36755826713`) and a matching reviewed Guru
 source. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:
@@ -42,10 +42,11 @@ Finalizer, PR-Merge and `finish-work.sh` companion entrypoints are not
 installed as current public commands. They are not compatibility aliases.
 The exact public-ID dispositions are in `MIGRATION-434.md`; a replacement ID
 identifies a new contract, not an adapter for an old payload.
-Historical old-chain tasks must finish on a pinned compatible old version or
-receive exact-case manual disposition. A normally finished legacy archive may
-enter current Reactivate only after source Issue, TaskId and terminal Git
-identity validation; a partial Finalizer residue may not.
+Historical tasks with retired personnel fields remain read-only. Their TaskIds
+prevent reuse, while exact source clues may locate one solely to explain why
+Reactivate and Finish recovery reject it. A normally finished archive that
+conforms to the current upstream task schema remains eligible for the current
+Reactivate contract.
 
 Canonical source validation, installed graph/manifest verification, a
 representative clean local workflow sample + preset install, current platform actual-load

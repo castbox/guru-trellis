@@ -21,6 +21,19 @@ def git(root, *args):
     return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
 
 
+def current_task(name):
+    return {
+        "id": name, "name": name, "lifecycle_generation": 0,
+        "source": {"kind": "no_issue"}, "title": name,
+        "description": "Reviewed task", "status": "in_progress",
+        "dev_type": None, "scope": None, "package": None, "priority": "P2",
+        "createdAt": "2026-09-20", "completedAt": None,
+        "base_branch": "main", "worktree_path": None, "commit": None,
+        "pr_url": None, "children": [], "parent": None,
+        "relatedFiles": [], "notes": "", "meta": {},
+    }
+
+
 def request(profile, task_id="a", generation=0, **extra):
     value = {"profile": profile, "mode": "standalone", "task_id": task_id,
              "lifecycle_generation": generation, "continuation_id": "run-1", **extra}
@@ -80,7 +93,7 @@ class RuntimeTest(unittest.TestCase):
         for name, workspace in (("a", self.root), ("b", self.other)):
             task = workspace / ".trellis/tasks" / name
             task.mkdir(parents=True)
-            (task / "task.json").write_text(json.dumps({"id": name, "status": "in_progress", "lifecycle_generation": 0}))
+            (task / "task.json").write_text(json.dumps(current_task(name)))
             git(workspace, "add", ".trellis")
             git(workspace, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "task")
         self.port = OfficialPort(self.root, self.other)

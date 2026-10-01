@@ -43,10 +43,9 @@ def check_linked_session(scripts: Path, hooks: Path) -> None:
             for name in ("session-start.py", "inject-workflow-state.py"):
                 shutil.copy2(hooks / name, root / ".codex/hooks" / name)
 
-        # The supported creator auto-starts this explicit session in the linked checkout.
+        # Task creation auto-starts this explicit session in the linked checkout.
         run(linked, sys.executable, ".trellis/scripts/task.py", "create", "Linked session probe",
-            "--slug", "linked-session-probe", "--description", "Cross-worktree fixture",
-            "--creator", "fixture", "--assignee", "fixture")
+            "--slug", "linked-session-probe", "--description", "Cross-worktree fixture")
         linked_current = json.loads(run(linked, sys.executable, ".trellis/scripts/task.py", "current", "--json"))
         expected = linked_current["current_task"]
         assert expected is not None, linked_current
@@ -74,7 +73,7 @@ def check_linked_session(scripts: Path, hooks: Path) -> None:
         # A second honest session starts its own task; it must not replace the first binding.
         run(main, sys.executable, ".trellis/scripts/task.py", "create", "Foreign session probe",
             "--slug", "foreign-session-probe", "--description", "Isolation fixture",
-            "--creator", "fixture", "--assignee", "fixture", session="codex_foreign_probe")
+            session="codex_foreign_probe")
         for root in (main, linked):
             current = json.loads(run(root, sys.executable, ".trellis/scripts/task.py", "current", "--json"))
             assert current["current_task"] == expected, current

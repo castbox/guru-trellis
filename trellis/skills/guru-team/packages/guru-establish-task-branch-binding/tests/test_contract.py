@@ -31,7 +31,16 @@ class BranchBindingTests(unittest.TestCase):
         self.git("checkout", "-qb", "task/demo")
         task = self.root / ".trellis/tasks/demo"
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({"id": "demo", "status": "planning", "lifecycle_generation": 0}), encoding="utf-8")
+        (task / "task.json").write_text(json.dumps({
+            "id": "demo", "name": "demo", "lifecycle_generation": 0,
+            "source": {"kind": "no_issue"}, "title": "Demo",
+            "description": "Reviewed task", "status": "planning",
+            "dev_type": None, "scope": None, "package": None, "priority": "P2",
+            "createdAt": "2026-09-20", "completedAt": None,
+            "base_branch": "main", "worktree_path": None, "commit": None,
+            "pr_url": None, "children": [], "parent": None,
+            "relatedFiles": [], "notes": "", "meta": {},
+        }), encoding="utf-8")
         self.git("add", ".")
         self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "task")
         self.head = self.git("rev-parse", "HEAD")

@@ -178,3 +178,11 @@ installed manifest，Shared/Codex/Claude/Cursor source 保持同一合同。
 新版本已退役且未被本地修改的 Skill、命令、package 文件和平台投影；本地修改保留并
 报 conflict/sidecar。实际退役清理以 exact candidate 的 predecessor existing-install
 cell 证明；focused clean cell 与静态投影不能代替该证据。
+
+`ARCH-INT-035`（#481 current）：canonical extension `0.7.0-guru.1`、dogfood Guru
+投影、声明的 Shared/Codex/Claude/Cursor 入口及代表性 Codex 新装使用同一无人员
+接口合同，Fork source lock 固定 PR #24 的 `64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`。
+旧 `.69` pin 只保留 predecessor provenance。新装、两次 reapply、同候选 update、
+模板 hash、session binding 与 drift 已定向验证；`0.6.17` dogfood 的官方
+Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级通过。
+远端 marketplace、生产安装和完整 Release matrix 均未验证。

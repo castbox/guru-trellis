@@ -1,7 +1,7 @@
 {
   "schema_version": "4.0",
   "inventory_id": "guru-team-upstream-ownership",
-  "target_trellis_cli": "0.6.17",
+  "target_trellis_cli": "0.7.0-castbox.1",
   "inventory_source": "castbox/Trellis@43fffc170927c85d9f7fc106cc5a059e80d4530b:packages/cli/src/types/ai-tools.ts#AI_TOOLS",
   "inventory_version": "trellis-ai-tools-2026-09-19",
   "inventory_sha256": "bceda2df084a5f649f7661615588c33dc43221e7cce6c196673a9bc0bfa34171",

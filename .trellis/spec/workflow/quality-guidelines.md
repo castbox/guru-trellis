@@ -607,8 +607,8 @@ Non-current ownership or installed manifests, unknown claims, and unexpected
 overlay paths must fail current-contract validation. Validation must run dogfood
 apply/drift and sidecar checks and exercise clean
 marketplace init, preview/switch, preset apply, installed invocation,
-the selected version upgrade followed by dry-run-selected
-`trellis update --migrate --skip-all` or `trellis update --skip-all`, and
+the selected exact CLI version followed by `trellis update --dry-run` and
+`trellis update --skip-all`, and
 workflow/preset reapply. The update and preset preserve paths do not use
 `--force`; the workflow switch uses explicit `--force` only after byte-equal
 managed-before and expected-preview validation proves replacement is safe.
@@ -823,11 +823,9 @@ such evidence, Issue, PR, README, and release-facing text must explicitly avoid
 claiming that the pressure matrix, model stability, or non-recurrence passed.
 
 Installation validation uses this exact sequence: clean initial marketplace
-workflow and preset installation; isolated disposable npm prefix with
-`trellis upgrade --tag latest` and before/after CLI version checks; project
-`trellis update --dry-run`, followed by exactly one of
-`trellis update --migrate --skip-all` when output says `MIGRATION REQUIRED` or
-`trellis update --skip-all` otherwise; `--skip-all` preserves existing project
+workflow and preset installation; the validated exact candidate CLI with
+before/after version checks; project `trellis update --dry-run`, followed by
+`trellis update --skip-all`; `--skip-all` preserves existing project
 modifications and continues non-interactively. Before both the initial and
 post-update marketplace workflow switches, the verifier rejects pre-existing
 `.new` / `.bak` sidecars and requires the active workflow bytes to equal the

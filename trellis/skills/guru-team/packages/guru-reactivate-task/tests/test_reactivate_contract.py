@@ -37,8 +37,14 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     git(repo, "commit", "-qm", "initial")
     archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
     archive.mkdir(parents=True)
-    metadata = {"id": "demo", "status": "completed", "source": {"kind": "no_issue"},
-                "completedAt": "2026-09-19", "worktree_path": "/old/machine/path"}
+    metadata = {
+        "id": "demo", "name": "demo", "status": "completed", "source": {"kind": "no_issue"},
+        "title": "Demo", "description": "Completed task", "dev_type": None,
+        "scope": "Reviewed scope", "package": None, "priority": "P2",
+        "createdAt": "2026-09-19", "completedAt": "2026-09-19",
+        "base_branch": "main", "worktree_path": None, "commit": None, "pr_url": None,
+        "children": [], "parent": None, "relatedFiles": [], "notes": "", "meta": {},
+    }
     if unstructured_scope:
         metadata.pop("source")
         metadata["scope"] = "workflow,preset,docs,companion-scripts"
@@ -143,7 +149,7 @@ def test_reactivate_acquires_checkout_and_recovers_exact_transaction(tmp_path, a
     metadata_path = checkout / ".trellis/tasks/09-19-demo/task.json"
     before = metadata_path.read_bytes()
     metadata = json.loads(before)
-    assert metadata["status"] == "planning" and "worktree_path" not in metadata
+    assert metadata["status"] == "planning" and metadata["worktree_path"] is None
     repository_facts = inspect_repository(repo)
     key = TaskLifecycleKey("demo", 3)
     binding = BranchBindingStore(repository_facts).read(key)
@@ -173,140 +179,19 @@ def test_reactivate_accepts_distinct_merge_head_and_bookkeeping_head(tmp_path):
 
 
 @pytest.mark.parametrize("schema_version", [1, 2])
-def test_committed_legacy_archive_reactivates_and_recovers(tmp_path, schema_version):
-    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version)
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    first = execute(repo, public, semantic, confirmed=True)
-    assert first["exit_id"] == "session_binding_recovery_required"
-    assert (first["task_id"], first["lifecycle_generation"]) == ("demo", 1)
-    assert execute(repo, public, semantic, confirmed=True) == first
-    semantic["route"] = "resume_reactivation"
-    assert execute(repo, public, semantic, confirmed=False)["exit_id"] == "resume_reactivation"
-
-
-def test_explicit_zero_generation_legacy_schema_two_archive_reactivates(tmp_path):
-    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=2, legacy_explicit_generation=True)
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    first = execute(repo, public, semantic, confirmed=True)
-    assert (first["exit_id"], first["lifecycle_generation"]) == ("session_binding_recovery_required", 1)
-
-
-def test_explicit_zero_generation_without_legacy_locator_requires_seal(tmp_path):
-    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=2,
-                            legacy_explicit_generation=True, legacy_locator=False)
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    from runtime.task_lifecycle.errors import LifecycleContractError
-    with pytest.raises(LifecycleContractError, match="finish_result_unsealed"):
-        execute(repo, public, semantic, confirmed=True)
-    assert not (tmp_path / "worktrees/new").exists()
-
-
-@pytest.mark.parametrize("schema_version", [1, 2])
-@pytest.mark.parametrize("local_issue_scope", [False, True])
-def test_legacy_scope_source_correction_and_reactivation_recovery(tmp_path, schema_version, local_issue_scope):
-    repo, head = repository(tmp_path, legacy=True, legacy_scope=True, legacy_schema_version=schema_version,
-                            local_issue_scope=local_issue_scope)
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    semantic.pop("acquisition")
-    semantic.pop("session_outcome")
-    semantic.pop("selected_base_ref")
-    semantic.pop("reviewed_base_head")
-    semantic["route"] = "source_correction_required"
-    current_source = ({"kind": "no_issue"} if local_issue_scope else
-                      {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 131,
-                       "disposition": "exact_source"})
-    semantic["source_correction"] = {
-        **correction(), "lifecycle_generation": 0,
-        "current_source": current_source,
-    }
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
-    corrected = json.loads((repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json").read_text())
-    assert corrected["source"] == semantic["source_correction"]["reviewed_source"]
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    semantic["source_correction"] = {
-        **correction(), "lifecycle_generation": 0,
-        "current_source": current_source,
-    }
-    first = execute(repo, public, semantic, confirmed=True)
-    assert first["exit_id"] == "session_binding_recovery_required"
-    assert execute(repo, public, semantic, confirmed=True) == first
-
-
-@pytest.mark.parametrize("schema_version", [1, 2])
-def test_legacy_unstructured_scope_can_correct_source_before_reactivation(tmp_path, schema_version):
+@pytest.mark.parametrize("legacy_scope", [False, True])
+def test_legacy_archive_is_read_only_rejected(tmp_path, schema_version, legacy_scope):
     repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version,
-                            unstructured_scope=True)
-    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
+                            legacy_scope=legacy_scope)
+    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json"
+    before = archive.read_bytes()
+    target = tmp_path / "worktrees/new"
+    public, semantic = inputs(repo, head, target, generation=0)
     from runtime.task_lifecycle.errors import LifecycleContractError
-    with pytest.raises(LifecycleContractError, match="source_review_required"):
+    with pytest.raises(LifecycleContractError, match="unsupported_legacy_task"):
         execute(repo, public, semantic, confirmed=True)
-    assert not (tmp_path / "worktrees/new").exists()
-    for field in ("acquisition", "session_outcome", "selected_base_ref", "reviewed_base_head"):
-        semantic.pop(field)
-    semantic["route"] = "source_correction_required"
-    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
-    corrected = json.loads((archive / "task.json").read_text())
-    assert corrected["source"] == semantic["source_correction"]["reviewed_source"]
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
-
-
-def test_legacy_summary_backfill_revision_keeps_unique_terminal_archive(tmp_path):
-    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=1, unstructured_scope=True)
-    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
-    summary = json.loads((archive / "finish-summary.json").read_text())
-    summary["index"] = {"outcome": "revised backfill"}
-    (archive / "finish-summary.json").write_text(json.dumps(summary))
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "revise archived summary backfill")
-    head = git(repo, "rev-parse", "HEAD")
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    for field in ("acquisition", "session_outcome", "selected_base_ref", "reviewed_base_head"):
-        semantic.pop(field)
-    semantic["route"] = "source_correction_required"
-    semantic["source_correction"] = {**correction(), "lifecycle_generation": 0}
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "source_correction_required"
-
-
-@pytest.mark.parametrize("schema_version", [1, 2])
-@pytest.mark.parametrize("condition", ["missing_git_archive", "wrong_task_identity", "wrong_summary", "old_finalizer_residue"])
-def test_legacy_archive_requires_unique_committed_terminal_identity(tmp_path, condition, schema_version):
-    repo, head = repository(tmp_path, legacy=True, legacy_schema_version=schema_version)
-    archive = repo / ".trellis/tasks/archive/2026-09/09-19-demo"
-    if condition == "missing_git_archive":
-        original_task = (archive / "task.json").read_bytes()
-        original_summary = (archive / "finish-summary.json").read_bytes()
-        git(repo, "rm", "-rq", str(archive.relative_to(repo)))
-        git(repo, "commit", "-qm", "remove archive")
-        # The artifact is present on disk but no longer belongs to the selected base.
-        archive.mkdir(parents=True)
-        (archive / "task.json").write_bytes(original_task)
-        (archive / "finish-summary.json").write_bytes(original_summary)
-        head = git(repo, "rev-parse", "HEAD")
-    elif condition == "wrong_task_identity":
-        path = archive / "task.json"
-        task = json.loads(path.read_text())
-        task["source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454}
-        path.write_text(json.dumps(task))
-    elif condition == "wrong_summary":
-        path = archive / "finish-summary.json"
-        summary = json.loads(path.read_text())
-        summary["generated_at"] = "uncommitted"
-        path.write_text(json.dumps(summary))
-    else:
-        path = repo / ".trellis/.runtime/guru-team/finalization-transaction/demo/finalization-transaction.json"
-        path.parent.mkdir(parents=True)
-        path.write_text(json.dumps({"task_ref": ".trellis/tasks/09-19-demo", "next_transition": "push_archive"}))
-    public, semantic = inputs(repo, head, tmp_path / "worktrees/new", generation=0)
-    from runtime.task_lifecycle.errors import LifecycleContractError
-    with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
-        execute(repo, public, semantic, confirmed=True)
-    assert not (tmp_path / "worktrees/new").exists()
+    assert archive.read_bytes() == before
+    assert not target.exists()
 
 
 @pytest.mark.parametrize("legacy_receipt", [False, True])

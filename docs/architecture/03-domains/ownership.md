@@ -100,3 +100,10 @@ Finish 的 cleaned receipt。任何 Git HEAD、Issue、checkout、developer 或 
 `prepare_creation_inputs` 只检验提议 TaskId/TaskRef 与目标 resource ledger。
 Architecture 与 RDT 各自串行晋升 shared current，release 编排只消费其结果，
 不新增 task writer、版本状态 writer 或安装资产 owner。
+
+`ARCH-DOM-032`（#481 current）：official Fork 单写人员字段已删除的 task.json；
+Guru create-task 单写 reviewed 调用输入和既有 TaskId/generation 控制态，不再投影
+人员身份。旧归档由 inventory owner 仅提取实际 TaskId 防复用，exact TaskId 或严格
+exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不接收其生命周期
+候选。session adapter、TaskBranchBinding、common-dir resource ledger 与 checkout
+继续各自单写，caller/guru 归属不从旧归档推断。#292 独占 Phase 1 author。
