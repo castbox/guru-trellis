@@ -25,7 +25,9 @@ seal, never a historical receipt. The Finish bookkeeping PR is not a business
 Delivery. Reactivate starts from a normally finished archived TaskId and a
 current base, preserving the identity and incrementing its lifecycle generation.
 
-Task identity is `task.json.id`, not a checkout path, session or branch name.
+Current task identity is TaskId and lifecycle generation from current task
+metadata, not a checkout path, session or branch name. Path-free session focus
+selects the task; without a session context key, select an explicit TaskId.
 Current branch authority is TaskBranchBinding in the Git common directory;
 current execution location comes from live Git checkout resolution. Missing
 binding enters `guru-establish-task-branch-binding`. The public
