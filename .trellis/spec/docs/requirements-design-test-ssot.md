@@ -19,4 +19,4 @@
 
 ## Freshness
 
-每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。软件四轴与 current knowledge identity 独立；`.68` snapshot 不证明 `.69` promotion-created diff 之后的 fresh Phase 2、Task Commit、完整 Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。`R467/D467/T467` current delta 与双向 trace 在三层 `.69` authority 定义；`R454-G7/D454-G7/T454-G7`、`R434/D434/T434` 与 C2-C7/D443/D436 作为 inherited history 保留。
+每次 gate 必须重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 和 source binding。locator 不存在、版本不一致、traceability 断裂或 projection 落后时，不得沿用本页，进入 owner `repair`。软件四轴与 current knowledge identity 独立；`.69` snapshot 不证明 `.70` promotion-created diff 之后的 fresh Phase 2、Task Commit、完整 Branch Review、Publication、push、PR、merge、tag、Release 或 Issue closure。`R481/D481/T481` current delta 与双向 trace 在三层 `.70` authority 定义；`.69` 的 `R467/D467/T467`、`R454-G7/D454-G7/T454-G7`、`R434/D434/T434` 与 C2-C7/D443/D436 作为 inherited history 保留。
