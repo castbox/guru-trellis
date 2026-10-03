@@ -4,11 +4,11 @@ Safe git-add helpers for Trellis-owned paths.
 Why this module exists
 ----------------------
 A real user incident: a project's `.gitignore` listed `.trellis/` (company-wide
-template / personal habit). When `add_session.py` and `task.py archive` ran
-their auto-commit and `git add` failed with `ignored by .gitignore`, the AI
+template / personal habit). When `task.py archive` ran, its auto-commit
+and `git add` failed with `ignored by .gitignore`; the AI
 agent driving the workflow "fixed" it by retrying with
 `git add -f .trellis/` — which fan-out-included every ignored subtree
-(`.trellis/.backup-*/`, `.trellis/worktrees/`, `.trellis/.template-hashes.json`,
+(`.trellis/worktrees/`, `.trellis/.template-hashes.json`,
 `.trellis/.runtime/`), committing 548 files / 83474 lines of caches/backups.
 
 Design
@@ -45,7 +45,6 @@ from .paths import (
 # warning to the user can show concrete subpaths to ignore individually
 # instead of ignoring the whole `.trellis/` tree.
 TRELLIS_IGNORED_SUBPATHS = (
-    ".trellis/.backup-*",
     ".trellis/worktrees/",
     ".trellis/.template-hashes.json",
     ".trellis/.runtime/",

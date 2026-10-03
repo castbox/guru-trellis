@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from .io import read_json as _io_read_json
-from .history_paths import RetiredDataPathError, require_active_path
+from .path_boundary import ProjectPathError, require_project_path
 from .session_storage import (
     SessionBindingError, SessionRecord, read_record, record_exists, records, remove_records,
     repository_facts, resolve_task_identity, session_path, sessions_directory,
@@ -219,10 +219,10 @@ def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
     # symlink (/tmp on macOS does), and resolve() is what collapses `..`
     # instead of leaving it for a lexical relative_to() to wave through.
     try:
-        require_active_path(candidate, repo_root)
+        require_project_path(candidate, repo_root)
         resolved = candidate.resolve()
         workflow_real = (root / DIR_WORKFLOW).resolve()
-    except (OSError, RetiredDataPathError):
+    except (OSError, ProjectPathError):
         return None
 
     try:
@@ -245,7 +245,7 @@ def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
 
 def _runtime_sessions_dir(repo_root: Path) -> Path:
     directory = repo_root / DIR_WORKFLOW / DIR_RUNTIME / DIR_SESSIONS
-    require_active_path(directory, repo_root)
+    require_project_path(directory, repo_root)
     return directory
 
 
@@ -385,7 +385,7 @@ def _shell_ticket_dirs(repo_root: Path) -> tuple[Path, ...]:
         runtime_dir / DIR_LEGACY_CURSOR_SHELL_TICKETS,
     )
     for directory in directories:
-        require_active_path(directory, repo_root)
+        require_project_path(directory, repo_root)
     return directories
 
 
@@ -560,7 +560,7 @@ def resolve_context_key(
 
 def _read_json(path: Path, repo_root: Path) -> dict[str, Any] | None:
     """Tolerant read of a session runtime file, non-objects included."""
-    require_active_path(path, repo_root)
+    require_project_path(path, repo_root)
     data = _io_read_json(path)
     return data if isinstance(data, dict) else None
 
@@ -618,7 +618,7 @@ def resolve_active_task(
                 None, "none", invocation_root=root, repository_common_dir=facts.common_dir)
         return ActiveTask(None, "none", context_key, invocation_root=root,
                           repository_common_dir=facts.common_dir)
-    except RetiredDataPathError:
+    except ProjectPathError:
         raise
     except (ValueError, OSError, RuntimeError) as exc:
         return ActiveTask(None, "session" if context_key else "none", context_key, True,
@@ -638,7 +638,7 @@ def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
     directory = sessions_directory(repo_root, facts)
     files = sorted(directory.glob("*.json")) if directory.is_dir() else []
     for file in files:
-        require_active_path(file, repo_root)
+        require_project_path(file, repo_root)
     if len(files) != 1:
         return None
 

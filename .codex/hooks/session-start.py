@@ -149,25 +149,25 @@ def _has_curated_jsonl_entry(jsonl_path: Path, repo_root: Path) -> bool:
     return False
 
 
-def _is_active_path(path: Path, repo_root: Path) -> bool:
+def _is_project_path(path: Path, repo_root: Path) -> bool:
     scripts_dir = repo_root / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    from common.history_paths import is_active_path  # type: ignore[import-not-found]
+    from common.path_boundary import is_project_path  # type: ignore[import-not-found]
 
-    return is_active_path(path, repo_root)
+    return is_project_path(path, repo_root)
 
 
 def read_file(path: Path, repo_root: Path, fallback: str = "") -> str:
     scripts_dir = repo_root / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    from common.history_paths import RetiredDataPathError, require_active_path  # type: ignore[import-not-found]
+    from common.path_boundary import ProjectPathError, require_project_path  # type: ignore[import-not-found]
 
     try:
-        require_active_path(path, repo_root)
+        require_project_path(path, repo_root)
         return path.read_text(encoding="utf-8")
-    except (FileNotFoundError, PermissionError, RetiredDataPathError):
+    except (FileNotFoundError, PermissionError, ProjectPathError):
         return fallback
 
 
@@ -342,7 +342,7 @@ def _run_git(repo_root: Path, args: list[str]) -> str:
 def _format_git_state(repo_root: Path) -> str:
     branch = _run_git(repo_root, ["branch", "--show-current"]) or "(detached)"
     dirty_lines = [
-        line for line in _run_git(repo_root, ["status", "--porcelain", "--", ".", ":(exclude).trellis/workspace", ":(exclude).trellis/agent-traces", ":(exclude).trellis/.developer", ":(exclude).trellis/.backup-*"]).splitlines()
+        line for line in _run_git(repo_root, ["status", "--porcelain", "--", "."]).splitlines()
         if line.strip()
     ]
     dirty_text = "clean" if not dirty_lines else f"dirty {len(dirty_lines)} paths"
@@ -359,10 +359,10 @@ def _repo_relative(repo_root: Path, path: Path) -> str:
 def _collect_spec_index_paths(trellis_dir: Path) -> list[str]:
     paths: list[str] = []
     repo_root = trellis_dir.parent
-    if not _is_active_path(trellis_dir / "spec", repo_root):
+    if not _is_project_path(trellis_dir / "spec", repo_root):
         return paths
     guides_index = trellis_dir / "spec" / "guides" / "index.md"
-    if _is_active_path(guides_index, repo_root) and guides_index.is_file():
+    if _is_project_path(guides_index, repo_root) and guides_index.is_file():
         paths.append(".trellis/spec/guides/index.md")
 
     spec_dir = trellis_dir / "spec"
@@ -370,17 +370,17 @@ def _collect_spec_index_paths(trellis_dir: Path) -> list[str]:
         return paths
 
     for sub in sorted(spec_dir.iterdir()):
-        if not _is_active_path(sub, repo_root) or not sub.is_dir() or sub.name.startswith(".") or sub.name == "guides":
+        if not _is_project_path(sub, repo_root) or not sub.is_dir() or sub.name.startswith(".") or sub.name == "guides":
             continue
         index_file = sub / "index.md"
-        if _is_active_path(index_file, repo_root) and index_file.is_file():
+        if _is_project_path(index_file, repo_root) and index_file.is_file():
             paths.append(f".trellis/spec/{sub.name}/index.md")
             continue
         for nested in sorted(sub.iterdir()):
-            if not _is_active_path(nested, repo_root) or not nested.is_dir():
+            if not _is_project_path(nested, repo_root) or not nested.is_dir():
                 continue
             nested_index = nested / "index.md"
-            if _is_active_path(nested_index, repo_root) and nested_index.is_file():
+            if _is_project_path(nested_index, repo_root) and nested_index.is_file():
                 paths.append(f".trellis/spec/{sub.name}/{nested.name}/index.md")
 
     return paths

@@ -20,7 +20,7 @@ The Trellis task system is stored entirely under `.trellis/tasks/` in the user p
 
 | File | Purpose |
 | --- | --- |
-| `task.json` | Task metadata: status, assignee, priority, branch, parent/child tasks, and similar fields. |
+| `task.json` | Task metadata: status, priority, branch, parent/child tasks, and similar fields. |
 | `prd.md` | Requirements, constraints, and acceptance criteria. Lightweight tasks may be PRD-only. |
 | `design.md` | Technical design for complex tasks: boundaries, contracts, data flow, compatibility, tradeoffs. |
 | `implement.md` | Execution plan for complex tasks: ordered checklist, validation commands, review gates, rollback points. |
@@ -37,7 +37,6 @@ The Trellis task system is stored entirely under `.trellis/tasks/` in the user p
 | `id` / `name` / `title` | Task identity and title. |
 | `status` | Status such as `planning`, `in_progress`, `review`, or `completed`. |
 | `priority` | `P0`, `P1`, `P2`, `P3`. |
-| `creator` / `assignee` | Creator and assignee. |
 | `package` | Target package in a monorepo; may be empty. |
 | `branch` / `base_branch` | Working branch and PR target branch. |
 | `children` / `parent` | Parent/child task relationships. |
@@ -59,7 +58,7 @@ Use child tasks for deliverables that can move through planning, implementation,
 Create new children with:
 
 ```bash
-python3 ./.trellis/scripts/task.py create "<child title>" --creator <creator> --assignee <assignee> --description "<one-line summary>" --slug <child-slug> --parent <parent-dir>
+python3 ./.trellis/scripts/task.py create "<child title>" --description "<one-line summary>" --slug <child-slug> --parent <parent-dir>
 ```
 
 Link or unlink existing tasks with:
@@ -108,7 +107,7 @@ Rules:
 ## Common Commands
 
 ```bash
-python3 ./.trellis/scripts/task.py create "<title>" --creator <creator> --assignee <assignee> --description "<one-line summary>" --slug <slug>
+python3 ./.trellis/scripts/task.py create "<title>" --description "<one-line summary>" --slug <slug>
 python3 ./.trellis/scripts/task.py current --source
 python3 ./.trellis/scripts/task.py add-context <task> implement <file> <reason>
 python3 ./.trellis/scripts/task.py validate <task>

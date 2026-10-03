@@ -42,7 +42,7 @@ from .git import (
     run_git_retry_index_lock,
     stderr_indicates_index_lock,
 )
-from .history_paths import require_active_path
+from .path_boundary import require_project_path
 from .io import describe_json_read_failure, read_json_checked, write_json
 from .log import Colors, colored
 from .paths import (
@@ -117,7 +117,7 @@ def ensure_tasks_dir(repo_root: Path) -> Path:
     """Ensure tasks directory exists."""
     tasks_dir = get_tasks_dir(repo_root)
     archive_dir = tasks_dir / "archive"
-    require_active_path(archive_dir, repo_root)
+    require_project_path(archive_dir, repo_root)
 
     if not tasks_dir.exists():
         tasks_dir.mkdir(parents=True)
@@ -132,16 +132,16 @@ def ensure_tasks_dir(repo_root: Path) -> Path:
 def _find_archived_task_by_dir_name(tasks_dir: Path, dir_name: str, repo_root: Path) -> Path | None:
     """Find an archived task directory with the exact active-task dir name."""
     archive_dir = tasks_dir / DIR_ARCHIVE
-    require_active_path(archive_dir, repo_root)
+    require_project_path(archive_dir, repo_root)
     if not archive_dir.is_dir():
         return None
 
     for month_dir in sorted(archive_dir.iterdir()):
-        require_active_path(month_dir, repo_root)
+        require_project_path(month_dir, repo_root)
         if not month_dir.is_dir():
             continue
         candidate = month_dir / dir_name
-        require_active_path(candidate, repo_root)
+        require_project_path(candidate, repo_root)
         if candidate.is_dir():
             return candidate
 
@@ -167,30 +167,6 @@ def _report_read_failure(path: Path, reason: str | None) -> None:
     problem, hint = describe_json_read_failure(path, reason)
     print(colored(f"Error: {problem}", Colors.RED), file=sys.stderr)
     print(hint, file=sys.stderr)
-
-
-def _ensure_children_list(data: dict) -> list:
-    """The task's `children` as a list, repaired in place if it is not one.
-
-    `.get(key, default)` returns the default only when the key is *absent*. A
-    task.json carrying `"children": null` — older format, or hand-edited —
-    yields None, and every caller below goes on to use the result as a list.
-    In `cmd_create` that raise lands *after* the new task.json is written,
-    leaving a task on disk its parent does not reference.
-
-    The repair is written into `data` rather than only returned, because the
-    unlink path removes a name it may not find and would otherwise persist the
-    malformed value untouched — no crash, but the next caller inherits it.
-
-    Anything that is not a list is discarded rather than coerced: a string
-    would iterate per character and a dict per key, each producing a plausible
-    child set that is not one.
-    """
-    children = data.get("children")
-    if not isinstance(children, list):
-        children = []
-        data["children"] = children
-    return children
 
 
 def _report_write_failure(path: Path) -> None:
@@ -417,13 +393,6 @@ def cmd_create(args: argparse.Namespace) -> int:
         # Inferred: default_package → None (no task.json yet for create)
         package = resolve_package(repo_root=repo_root)
 
-    creator = (getattr(args, "creator", None) or "").strip()
-    assignee = (getattr(args, "assignee", None) or "").strip()
-    missing = [flag for flag, value in (("--creator", creator), ("--assignee", assignee)) if not value]
-    if missing:
-        print("Error: explicit task ownership required: " + ", ".join(missing), file=sys.stderr)
-        return 2
-
     ensure_tasks_dir(repo_root)
 
     # Generate slug if not provided. A title-derived slug is sanitized by
@@ -507,7 +476,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     task_dir = tasks_dir / dir_name
     task_json_path = task_dir / FILE_TASK_JSON
     for filename in (FILE_TASK_JSON, "prd.md", "implement.jsonl", "check.jsonl"):
-        require_active_path(task_dir / filename, repo_root)
+        require_project_path(task_dir / filename, repo_root)
     if task_dir.exists() and getattr(args, "force", False):
         print(colored(f"Error: task_id_collision: --force cannot replace an existing task: {dir_name}", Colors.RED), file=sys.stderr)
         return 1
@@ -600,15 +569,12 @@ def cmd_create(args: argparse.Namespace) -> int:
         "scope": None,
         "package": package,
         "priority": args.priority,
-        "creator": creator,
-        "assignee": assignee,
         "createdAt": today,
         "completedAt": None,
         "base_branch": base_branch,
         "worktree_path": None,
         "commit": None,
         "pr_url": None,
-        "subtasks": [],
         "children": [],
         "parent": None,
         "relatedFiles": [],
@@ -659,7 +625,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         parent_json_path = parent_dir / FILE_TASK_JSON
 
         # Add child to parent's children list
-        parent_children = _ensure_children_list(parent_data)
+        parent_children = parent_data["children"]
         if dir_name not in parent_children:
             parent_children.append(dir_name)
             parent_data["children"] = parent_children
@@ -885,7 +851,7 @@ def _plan_jsonl_rewrites(
     replacement = f"{new_rel}/"
 
     for jsonl_name in _JSONL_NAMES:
-        require_active_path(task_dir / jsonl_name, repo_root)
+        require_project_path(task_dir / jsonl_name, repo_root)
     for jsonl_name in _JSONL_NAMES:
         jsonl_path = task_dir / jsonl_name
         if not jsonl_path.is_file():
@@ -911,9 +877,7 @@ def _plan_backrefs(
 ) -> tuple[list[tuple[Path, dict, list[str]]], list[Path]]:
     """Plan back-reference rewrites in the other active tasks.
 
-    Returns ``(changes, unreadable)``. ``subtasks`` is the legacy spelling of
-    ``children`` and is still carried in older task.json files, so both lists
-    are rewritten.
+    Returns ``(changes, unreadable)``. Only current task records are rewritten.
     """
     changes: list[tuple[Path, dict, list[str]]] = []
     unreadable: list[Path] = []
@@ -921,13 +885,13 @@ def _plan_backrefs(
     for candidate in sorted(tasks_dir.iterdir()):
         if candidate.name == DIR_ARCHIVE:
             continue
-        require_active_path(candidate, repo_root)
+        require_project_path(candidate, repo_root)
         if not candidate.is_dir() or candidate.name == DIR_ARCHIVE:
             continue
         if candidate == task_dir:
             continue
         json_path = candidate / FILE_TASK_JSON
-        require_active_path(json_path, repo_root)
+        require_project_path(json_path, repo_root)
         if not json_path.is_file():
             continue
 
@@ -940,14 +904,10 @@ def _plan_backrefs(
         if data.get("parent") == old_name:
             data["parent"] = new_name
             labels.append("parent")
-        for list_field in ("children", "subtasks"):
-            values = data.get(list_field)
-            if not isinstance(values, list):
-                continue
-            for index, value in enumerate(values):
-                if value == old_name:
-                    values[index] = new_name
-                    labels.append(f"{list_field}[{index}]")
+        for index, value in enumerate(data["children"]):
+            if value == old_name:
+                data["children"][index] = new_name
+                labels.append(f"children[{index}]")
 
         if labels:
             changes.append((json_path, data, labels))
@@ -981,7 +941,7 @@ def _plan_reported_refs(
 
     def maintained_files(directory: Path):
         for child in sorted(directory.iterdir()):
-            if child.name in {"workspace", "agent-traces", ".developer", "__pycache__"} or child.name.startswith(".backup-"):
+            if child.name == "__pycache__":
                 continue
             if child.is_symlink():
                 continue
@@ -1062,7 +1022,7 @@ def _apply_rename(plan: _RenamePlan, repo_root: Path) -> int:
     """
     try:
         for jsonl_name in _JSONL_NAMES:
-            require_active_path(plan.task_dir / jsonl_name, repo_root)
+            require_project_path(plan.task_dir / jsonl_name, repo_root)
     except ValueError as exc:
         print(colored(f"Error: {exc}", Colors.RED), file=sys.stderr)
         return 1
@@ -1321,7 +1281,7 @@ def cmd_archive(args: argparse.Namespace) -> int:
     # marked the task completed, re-parented its children and cleared the
     # sessions pointing at it — all of which would have to be undone by hand.
     archive_dest_check = archive_destination_for(task_dir)
-    require_active_path(archive_dest_check, repo_root)
+    require_project_path(archive_dest_check, repo_root)
     if archive_dest_check.exists():
         print(colored(
             f"Error: refusing to archive '{task_name}': "
@@ -1666,7 +1626,7 @@ def cmd_add_subtask(args: argparse.Namespace) -> int:
         return 1
 
     # Add child to parent's children list
-    parent_children = _ensure_children_list(parent_data)
+    parent_children = parent_data["children"]
     child_dir_name = child_dir.name
     if child_dir_name not in parent_children:
         parent_children.append(child_dir_name)
@@ -1737,7 +1697,7 @@ def cmd_remove_subtask(args: argparse.Namespace) -> int:
         return 1
 
     # Remove child from parent's children list
-    parent_children = _ensure_children_list(parent_data)
+    parent_children = parent_data["children"]
     child_dir_name = child_dir.name
     if child_dir_name in parent_children:
         parent_children.remove(child_dir_name)

@@ -80,11 +80,11 @@ def _load_config(repo_root: Path | None = None) -> dict:
     config must not take down ``task.py create``. A parse failure is reported
     once on stderr so it is not invisible. Historical aliases fail closed.
     """
-    from .history_paths import require_active_path
+    from .path_boundary import require_project_path
 
     root = repo_root if repo_root is not None else get_repo_root()
     config_file = _get_config_path(root)
-    require_active_path(config_file, root)
+    require_project_path(config_file, root)
     try:
         content = config_file.read_text(encoding="utf-8")
     except (OSError, IOError):

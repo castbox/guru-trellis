@@ -238,7 +238,7 @@ class FixedForkIntegrationTest(unittest.TestCase):
             for name, workspace in (("a", root), ("b", other)):
                 task = workspace / ".trellis/tasks" / name
                 task.mkdir(parents=True)
-                (task / "task.json").write_text(json.dumps({"id": name, "status": "in_progress", "lifecycle_generation": 0}))
+                (task / "task.json").write_text(json.dumps(current_task(name)))
                 git(workspace, "add", ".trellis/tasks")
                 git(workspace, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "task")
             repository = bind.inspect_repository(root)

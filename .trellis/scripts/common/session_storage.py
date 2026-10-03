@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .history_paths import RetiredDataPathError, require_active_path
+from .path_boundary import ProjectPathError, require_project_path
 from .io import JSON_READ_MISSING, read_json_checked, write_json
 from .task_utils import TASK_ID_PATTERN, TaskIdentityError, lifecycle_generation
 
@@ -99,7 +99,7 @@ def repository_facts(root: Path) -> RepositoryFacts:
 
 def validate_workspace(root: Path, facts: RepositoryFacts) -> Path:
     root = root.resolve()
-    require_active_path(root / ".trellis", root)
+    require_project_path(root / ".trellis", root)
     if facts.common_dir is None:
         if root != facts.invocation_root:
             raise SessionBindingError(f"foreign_workspace: {root}")
@@ -129,7 +129,7 @@ def workspace_roots(facts: RepositoryFacts) -> tuple[Path, ...]:
     roots: set[Path] = set()
     for worktree in facts.worktrees:
         candidate = worktree / suffix
-        require_active_path(candidate / ".trellis", candidate)
+        require_project_path(candidate / ".trellis", candidate)
         if (candidate / ".trellis").is_dir():
             roots.add(validate_workspace(candidate, facts))
     return tuple(sorted(roots))
@@ -142,7 +142,7 @@ def _bound_task_workspace(
     if facts.common_dir is None:
         return None
     path = facts.common_dir / "trellis" / "task-branches" / task_id / f"{generation}.json"
-    require_active_path(path, facts.invocation_root)
+    require_project_path(path, facts.invocation_root)
     binding, reason = read_json_checked(path)
     if reason == JSON_READ_MISSING:
         if (facts.invocation_root / ".trellis" / "guru-team" / "extension.json").is_file():
@@ -171,8 +171,8 @@ def sessions_directory(root: Path, facts: RepositoryFacts) -> Path:
         if facts.common_dir is not None
         else root / ".trellis" / ".runtime" / "sessions"
     )
-    require_active_path(directory, root)
-    require_active_path(directory, facts.invocation_root)
+    require_project_path(directory, root)
+    require_project_path(directory, facts.invocation_root)
     return directory
 
 
@@ -180,8 +180,8 @@ def session_path(root: Path, key: str, facts: RepositoryFacts) -> Path:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", key):
         raise SessionBindingError("invalid_context_key")
     path = sessions_directory(root, facts) / f"{key}.json"
-    require_active_path(path, root)
-    require_active_path(path, facts.invocation_root)
+    require_project_path(path, root)
+    require_project_path(path, facts.invocation_root)
     return path
 
 
@@ -194,8 +194,8 @@ def unsupported_checkout_session_paths(
     paths: list[Path] = []
     for workspace in workspace_roots(facts):
         path = workspace / ".trellis" / ".runtime" / "sessions" / f"{key}.json"
-        require_active_path(path, workspace)
-        require_active_path(path, facts.invocation_root)
+        require_project_path(path, workspace)
+        require_project_path(path, facts.invocation_root)
         if record_exists(path):
             paths.append(path)
     return tuple(sorted(paths))
@@ -230,10 +230,10 @@ def task_location(
             else get_tasks_dir(workspace) / normalized
         )
     try:
-        require_active_path(candidate, workspace)
-        require_active_path(candidate / "task.json", workspace)
+        require_project_path(candidate, workspace)
+        require_project_path(candidate / "task.json", workspace)
         tasks = get_tasks_dir(workspace)
-    except RetiredDataPathError as exc:
+    except ProjectPathError as exc:
         raise SessionBindingError(f"invalid_task_path: {exc}") from exc
     try:
         relative = candidate.resolve().relative_to(tasks.resolve())
@@ -254,8 +254,8 @@ def task_location(
 
 
 def read_record(path: Path, root: Path, facts: RepositoryFacts) -> SessionRecord:
-    require_active_path(path, root)
-    require_active_path(path, facts.invocation_root)
+    require_project_path(path, root)
+    require_project_path(path, facts.invocation_root)
     data, reason = read_json_checked(path)
     if data is None:
         raise SessionBindingError(f"binding_{reason}: {path}")
@@ -325,13 +325,13 @@ def resolve_task_identity(
     bound_workspace = _bound_task_workspace(facts, task_id, generation, workspaces)
     for workspace in (bound_workspace,) if bound_workspace is not None else workspaces:
         tasks = workspace / ".trellis" / "tasks"
-        require_active_path(tasks, workspace)
+        require_project_path(tasks, workspace)
         if not tasks.is_dir():
             continue
         for directory in sorted(tasks.iterdir()):
             if directory.name == "archive":
                 continue
-            require_active_path(directory, workspace)
+            require_project_path(directory, workspace)
             if not directory.is_dir():
                 continue
             task_json = directory / "task.json"
@@ -340,8 +340,8 @@ def resolve_task_identity(
                 for value in _visible_identity_candidates(directory.name)
             )
             try:
-                require_active_path(task_json, workspace)
-            except RetiredDataPathError:
+                require_project_path(task_json, workspace)
+            except ProjectPathError:
                 if visible_match:
                     raise SessionBindingError(
                         f"invalid_task_metadata_path: {task_json}"
@@ -402,7 +402,7 @@ def resolve_task_identity(
 
 
 def write_record(path: Path, data: dict[str, Any], root: Path) -> None:
-    require_active_path(path, root)
+    require_project_path(path, root)
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         if not write_json(path, data):
@@ -418,7 +418,7 @@ def write_record(path: Path, data: dict[str, Any], root: Path) -> None:
 def remove_records(selected: list[SessionRecord]) -> int:
     removed = 0
     for record in selected:
-        require_active_path(record.path, record.root)
+        require_project_path(record.path, record.root)
         try:
             record.path.unlink()
         except OSError as exc:

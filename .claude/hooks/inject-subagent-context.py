@@ -264,42 +264,15 @@ def _real_path_contained(base_real: str, target_real: str) -> bool:
         return False
 
 
-def _is_historical_path(file_path: str, base_path: str | None = None) -> bool:
-    """Check requested paths and targets under a resolved external workflow root."""
-    absolute = os.path.abspath(file_path)
-    parts = absolute.replace("\\", "/").split("/")
-    protected = {".developer", "workspace", "agent-traces"}
-    if any(
-        part == ".trellis" and (
-            parts[index + 1] in protected or parts[index + 1].startswith(".backup-")
-        )
-        for index, part in enumerate(parts[:-1])
-    ):
-        return True
-    if base_path is not None:
-        workflow_real = os.path.realpath(os.path.join(base_path, ".trellis"))
-        try:
-            if os.path.commonpath([workflow_real, absolute]) == workflow_real:
-                first = os.path.relpath(absolute, workflow_real).replace("\\", "/").split("/")[0]
-                return first in protected or first.startswith(".backup-")
-        except ValueError:
-            return False
-    return False
-
-
 def _read_file_bytes(base_path: str, file_path: str) -> bytes | None:
     """Read raw file bytes, return None if file doesn't exist."""
     full_path = os.path.join(base_path, file_path)
-    if _is_historical_path(full_path):
-        return None
     try:
         root_real = os.path.realpath(base_path)
         # `.trellis` may itself be a symlink into a store outside the repo
         # (#567); its real location is a second legitimate containment base.
         workflow_real = os.path.realpath(os.path.join(base_path, ".trellis"))
         full_real = os.path.realpath(full_path)
-        if _is_historical_path(full_real, base_path):
-            return None
         if not _real_path_contained(root_real, full_real) and not (
             _real_path_contained(workflow_real, full_real)
         ):
@@ -402,8 +375,6 @@ def _materialize_directory(
     """Read all .md files in a directory, applying the same per-file and
     total caps as a single-file JSONL entry."""
     full_path = os.path.join(base_path, dir_path)
-    if _is_historical_path(full_path) or _is_historical_path(os.path.realpath(full_path), base_path):
-        return []
     if not os.path.exists(full_path) or not os.path.isdir(full_path):
         return []
 
@@ -413,7 +384,6 @@ def _materialize_directory(
             f
             for f in os.listdir(full_path)
             if f.endswith(".md")
-            and not _is_historical_path(os.path.join(full_path, f))
             and os.path.isfile(os.path.join(full_path, f))
         )
         for filename in md_files[:max_files]:
@@ -445,8 +415,6 @@ def read_jsonl_entries(base_path: str, jsonl_path: str) -> list[dict]:
         [{"file": path, "type": "file" | "directory", "reason": reason}, ...]
     """
     full_path = os.path.join(base_path, jsonl_path)
-    if _is_historical_path(full_path) or _is_historical_path(os.path.realpath(full_path), base_path):
-        return []
     if not os.path.exists(full_path):
         print(
             f"[inject-subagent-context] WARN: {jsonl_path} not found — "

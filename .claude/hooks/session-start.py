@@ -173,25 +173,25 @@ def should_skip_injection() -> bool:
     return any(os.environ.get(var) == "1" for var in non_interactive_vars)
 
 
-def _is_active_path(path: Path, repo_root: Path) -> bool:
+def _is_project_path(path: Path, repo_root: Path) -> bool:
     scripts_dir = repo_root / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    from common.history_paths import is_active_path  # type: ignore[import-not-found]
+    from common.path_boundary import is_project_path  # type: ignore[import-not-found]
 
-    return is_active_path(path, repo_root)
+    return is_project_path(path, repo_root)
 
 
 def read_file(path: Path, repo_root: Path, fallback: str = "") -> str:
     scripts_dir = repo_root / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    from common.history_paths import RetiredDataPathError, require_active_path  # type: ignore[import-not-found]
+    from common.path_boundary import ProjectPathError, require_project_path  # type: ignore[import-not-found]
 
     try:
-        require_active_path(path, repo_root)
+        require_project_path(path, repo_root)
         return path.read_text(encoding="utf-8")
-    except (FileNotFoundError, PermissionError, RetiredDataPathError):
+    except (FileNotFoundError, PermissionError, ProjectPathError):
         return fallback
 
 
@@ -223,7 +223,7 @@ def _run_git(repo_root: Path, args: list[str]) -> str:
 def _format_git_state(repo_root: Path) -> str:
     branch = _run_git(repo_root, ["branch", "--show-current"]) or "(detached)"
     dirty_lines = [
-        line for line in _run_git(repo_root, ["status", "--porcelain", "--", ".", ":(exclude).trellis/workspace", ":(exclude).trellis/agent-traces", ":(exclude).trellis/.developer", ":(exclude).trellis/.backup-*"]).splitlines()
+        line for line in _run_git(repo_root, ["status", "--porcelain", "--", "."]).splitlines()
         if line.strip()
     ]
     dirty_text = "clean" if not dirty_lines else f"dirty {len(dirty_lines)} paths"
@@ -311,8 +311,8 @@ def _persist_context_key_for_bash(context_key: str | None, repo_root: Path) -> N
     env_file = os.environ.get("CLAUDE_ENV_FILE")
     if not env_file:
         return
-    if not _is_active_path(Path(os.path.abspath(env_file)), repo_root):
-        print("[WARN] Retired identity/history cannot be used as CLAUDE_ENV_FILE.", file=sys.stderr)
+    if not _is_project_path(Path(os.path.abspath(env_file)), repo_root):
+        print("[WARN] CLAUDE_ENV_FILE must be inside the project.", file=sys.stderr)
         return
     export_line = f"export TRELLIS_CONTEXT_ID={shlex.quote(context_key)}"
     try:
@@ -583,14 +583,14 @@ def _check_legacy_spec(trellis_dir: Path, is_mono: bool, packages: dict) -> str 
         return None
 
     spec_dir = trellis_dir / "spec"
-    if not _is_active_path(spec_dir, trellis_dir.parent) or not spec_dir.is_dir():
+    if not _is_project_path(spec_dir, trellis_dir.parent) or not spec_dir.is_dir():
         return None
 
     # Check for legacy flat spec dirs (spec/backend/, spec/frontend/ with index.md)
     has_legacy = False
     for legacy_name in ("backend", "frontend"):
         legacy_dir = spec_dir / legacy_name
-        if (_is_active_path(legacy_dir / "index.md", trellis_dir.parent)
+        if (_is_project_path(legacy_dir / "index.md", trellis_dir.parent)
                 and legacy_dir.is_dir() and (legacy_dir / "index.md").is_file()):
             has_legacy = True
             break
@@ -601,7 +601,7 @@ def _check_legacy_spec(trellis_dir: Path, is_mono: bool, packages: dict) -> str 
     # Check which packages are missing spec/<pkg>/ directory
     missing = [
         name for name in sorted(packages.keys())
-        if not _is_active_path(spec_dir / name, trellis_dir.parent) or not (spec_dir / name).is_dir()
+        if not _is_project_path(spec_dir / name, trellis_dir.parent) or not (spec_dir / name).is_dir()
     ]
 
     if not missing:
@@ -683,10 +683,10 @@ def _resolve_spec_scope(
 def _collect_spec_index_paths(trellis_dir: Path, allowed_pkgs: set | None) -> list[str]:
     paths: list[str] = []
     repo_root = trellis_dir.parent
-    if not _is_active_path(trellis_dir / "spec", repo_root):
+    if not _is_project_path(trellis_dir / "spec", repo_root):
         return paths
     guides_index = trellis_dir / "spec" / "guides" / "index.md"
-    if _is_active_path(guides_index, repo_root) and guides_index.is_file():
+    if _is_project_path(guides_index, repo_root) and guides_index.is_file():
         paths.append(".trellis/spec/guides/index.md")
 
     spec_dir = trellis_dir / "spec"
@@ -694,21 +694,21 @@ def _collect_spec_index_paths(trellis_dir: Path, allowed_pkgs: set | None) -> li
         return paths
 
     for sub in sorted(spec_dir.iterdir()):
-        if not _is_active_path(sub, repo_root) or not sub.is_dir() or sub.name.startswith(".") or sub.name == "guides":
+        if not _is_project_path(sub, repo_root) or not sub.is_dir() or sub.name.startswith(".") or sub.name == "guides":
             continue
 
         index_file = sub / "index.md"
-        if _is_active_path(index_file, repo_root) and index_file.is_file():
+        if _is_project_path(index_file, repo_root) and index_file.is_file():
             paths.append(f".trellis/spec/{sub.name}/index.md")
             continue
 
         if allowed_pkgs is not None and sub.name not in allowed_pkgs:
             continue
         for nested in sorted(sub.iterdir()):
-            if not _is_active_path(nested, repo_root) or not nested.is_dir():
+            if not _is_project_path(nested, repo_root) or not nested.is_dir():
                 continue
             nested_index = nested / "index.md"
-            if _is_active_path(nested_index, repo_root) and nested_index.is_file():
+            if _is_project_path(nested_index, repo_root) and nested_index.is_file():
                 paths.append(f".trellis/spec/{sub.name}/{nested.name}/index.md")
 
     return paths

@@ -71,10 +71,10 @@ def get_tasks_dir(repo_root: Path | None = None) -> Path:
     if repo_root is None:
         repo_root = get_repo_root()
     # Local import: the shared guard uses this module's path constants.
-    from .history_paths import require_active_path
+    from .path_boundary import require_project_path
 
     tasks_dir = repo_root / DIR_WORKFLOW / DIR_TASKS
-    require_active_path(tasks_dir, repo_root)
+    require_project_path(tasks_dir, repo_root)
     return tasks_dir
 
 
@@ -150,13 +150,13 @@ def resolve_task_ref(task_ref: str, repo_root: Path | None = None) -> Path | Non
     # resolve() collapses `..` and follows symlinks, so a task directory that
     # links outside the repo is refused too. Both sides are resolved because
     # repo_root itself may sit behind a symlink (/tmp on macOS does).
-    from .history_paths import RetiredDataPathError, require_active_path
+    from .path_boundary import ProjectPathError, require_project_path
 
     try:
-        require_active_path(candidate, repo_root)
+        require_project_path(candidate, repo_root)
         resolved = candidate.resolve()
         workflow_real = (root / DIR_WORKFLOW).resolve()
-    except (OSError, RetiredDataPathError):
+    except (OSError, ProjectPathError):
         return None
 
     try:
