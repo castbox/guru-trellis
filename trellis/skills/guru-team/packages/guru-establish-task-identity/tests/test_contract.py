@@ -30,31 +30,61 @@ class TaskIdentityTests(unittest.TestCase):
         self.input = {"profile": "active_task", "mode": "workflow", "task_id": "demo", "task_ref": ".trellis/tasks/demo", "lifecycle_generation": 0}
 
     def task(self, **fields: object) -> None:
-        self.task_file.write_text(json.dumps({"id": "demo", "status": "planning", **fields}), encoding="utf-8")
+        current = {
+            "id": "demo", "name": "demo", "lifecycle_generation": 0,
+            "source": {"kind": "no_issue"}, "title": "Current identity",
+            "description": "Reviewed task identity", "status": "planning",
+            "dev_type": None, "scope": None, "package": None, "priority": "P2",
+            "createdAt": "2026-10-04", "completedAt": None,
+            "base_branch": "main", "worktree_path": None, "commit": None,
+            "pr_url": None, "children": [], "parent": None,
+            "relatedFiles": [], "notes": "", "meta": {},
+        }
+        self.task_file.write_text(json.dumps({**current, **fields}), encoding="utf-8")
 
     def invoke(self, **fields: object) -> dict:
         result = MODULE.invoke(self.root, {**self.input, **fields})
         validate_json(result, PACKAGE / "schemas/public-output.schema.json", "output")
         return result
 
-    def test_current_source_and_canonical_legacy_scope(self) -> None:
-        self.task(source={"kind": "no_issue"})
-        before = self.task_file.read_bytes()
-        self.assertEqual(self.invoke()["source"], {"kind": "no_issue"})
-        self.assertEqual(self.task_file.read_bytes(), before)
-        self.task(scope="GitHub issue: https://github.com/castbox/guru-trellis/issues/454")
-        before = self.task_file.read_bytes()
-        self.assertEqual(self.invoke()["source"], {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source"})
-        self.assertEqual(self.task_file.read_bytes(), before)
+    def test_current_issue_and_no_issue_sources_resolve_read_only(self) -> None:
+        for source in (
+            {"kind": "no_issue"},
+            {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 481,
+             "disposition": "exact_source"},
+        ):
+            with self.subTest(source=source):
+                self.task(source=source)
+                before = self.task_file.read_bytes()
+                result = self.invoke()
+                self.assertEqual(result["exit_id"], "identity_established")
+                self.assertEqual(result["source"], source)
+                self.assertEqual(result["task_id"], "demo")
+                self.assertEqual(result["lifecycle_generation"], 0)
+                self.assertEqual(self.task_file.read_bytes(), before)
 
-    def test_ambiguous_legacy_requires_review_and_never_writes(self) -> None:
-        self.task(scope="independent task")
+    def test_missing_source_is_unsupported_even_with_legacy_scope_or_review(self) -> None:
+        for scope in (
+            "GitHub issue: https://github.com/castbox/guru-trellis/issues/454",
+            "independent task",
+        ):
+            with self.subTest(scope=scope):
+                self.task(scope=scope)
+                data = json.loads(self.task_file.read_text())
+                del data["source"]
+                self.task_file.write_text(json.dumps(data))
+                before = self.task_file.read_bytes()
+                expected = {"exit_id": "blocked", "reason_code": "unsupported_legacy_task"}
+                self.assertEqual(self.invoke(), expected)
+                self.assertEqual(self.invoke(reviewed_source={"kind": "no_issue"}), expected)
+                self.assertEqual(self.task_file.read_bytes(), before)
+
+    def test_incomplete_legacy_identity_is_rejected_without_rewriting(self) -> None:
+        self.task_file.write_text(json.dumps({"id": "demo", "status": "planning"}))
         before = self.task_file.read_bytes()
-        self.assertEqual(self.invoke()["exit_id"], "source_review_required")
-        self.assertEqual(self.invoke(reviewed_source={"kind": "no_issue"})["source"], {"kind": "no_issue"})
+        self.assertEqual(self.invoke(),
+                         {"exit_id": "blocked", "reason_code": "unsupported_legacy_task"})
         self.assertEqual(self.task_file.read_bytes(), before)
-        with self.assertRaisesRegex(Exception, "schema_mismatch"):
-            self.invoke(reviewed_source={"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454, "disposition": "exact_source"})
 
     def test_stale_generation_or_source_override_fails_closed(self) -> None:
         self.task(lifecycle_generation=1, source={"kind": "no_issue"})

@@ -20,10 +20,10 @@ Context distinguishes the current-session task from the project task inventory. 
 Run:
 
 ```bash
-git status --porcelain -- . ':(exclude).trellis/workspace' ':(exclude).trellis/agent-traces' ':(exclude).trellis/.developer' ':(exclude).trellis/.backup-*'
+git status --porcelain
 ```
 
-The command excludes retired historical data before Git examines files. Classify task metadata changes separately from code; leave unrelated changes untouched.
+Classify task metadata changes separately from code; leave unrelated changes untouched.
 
 For each remaining dirty path, decide whether it belongs to **the current task** or to **other parallel work** (e.g., another terminal window editing the same repo). Heuristics:
 

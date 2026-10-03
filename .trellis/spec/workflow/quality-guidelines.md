@@ -135,6 +135,26 @@ Throwaway installer matrix; that unrun matrix is reported explicitly.
 
 ## Required Checks
 
+### Official Source-Repository Dogfood Projection
+
+When a source-lock change alters official task scripts or bundled platform
+entries, run `verify_dogfood_upstream_projection.py --repo-root . --fork-source
+<exact-built-fork-checkout> --json` and
+`test_verify_dogfood_upstream_projection.py`. The validator must compare actual
+dogfood files with the locked Fork's official template collectors and official
+hash function, including `.template-hashes.json` and the generated `.version`.
+Guru-managed overlay drift alone does not prove official scripts are current.
+The tests exercise the real dogfood Issue/no-Issue create, list/context and
+retired-argument refusal without substituting an externally supplied task CLI.
+
+This is a source-repository projection gate. It does not install a compatibility
+adapter, rewrite historical tasks/workspaces, or establish an old-install
+upgrade path. Editable platform config stays with its merge owner; custom Guru
+workflow and overlays stay with their managed owners. Refresh `.version` only
+after regenerating the official projection, never to bypass the Fork's
+old-install guard. Report representative clean installation and the unrun
+remote marketplace/upgrade/Release matrix as distinct validation boundaries.
+
 Use these checks before committing workflow or preset changes:
 
 ```bash
@@ -1374,8 +1394,12 @@ matrix. It must cover:
   payload for every DTO, and rejection of additional machine path, session,
   authorization, generic evidence, or undeclared Git fields;
 - TaskId exact validation and case-fold collision rejection, TaskId/TaskRef
-  separation across rename and archive, legacy missing generation `0`, and
-  rejection of boolean, negative, floating, string, and null generations;
+  separation across rename and archive, historical C2 helper normalization of
+  missing generation to `0`, and rejection of boolean, negative, floating,
+  string, and null generations. That helper result does not admit an old record
+  to the current lifecycle: the #481 Fork requires an explicit generation and
+  current task schema; old archives only reserve TaskIds and provide bounded
+  read-only refusal diagnostics;
 - closed `IssueSource | NoIssueSource`, portable repository/branch target
   normalization, and minimal TaskIdentity/TaskLifecycle/TaskArtifact/result/
   transaction/reason constructors;

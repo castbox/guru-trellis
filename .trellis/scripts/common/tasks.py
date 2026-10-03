@@ -17,7 +17,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from .io import describe_json_read_failure, read_json_checked
-from .history_paths import RetiredDataPathError, require_active_path
+from .path_boundary import ProjectPathError, require_project_path
 from .paths import FILE_TASK_JSON, get_repo_root
 from .types import TaskInfo
 
@@ -39,8 +39,8 @@ def load_task(task_dir: Path, repo_root: Path | None = None) -> TaskInfo | None:
     """
     task_json = task_dir / FILE_TASK_JSON
     try:
-        require_active_path(task_json, repo_root if repo_root is not None else get_repo_root())
-    except RetiredDataPathError as exc:
+        require_project_path(task_json, repo_root if repo_root is not None else get_repo_root())
+    except ProjectPathError as exc:
         print(f"[WARN] Skipping task '{task_dir.name}': {exc}", file=sys.stderr)
         return None
     if not task_json.is_file():
@@ -58,7 +58,6 @@ def load_task(task_dir: Path, repo_root: Path | None = None) -> TaskInfo | None:
         directory=task_dir,
         title=data.get("title") or data.get("name") or "unknown",
         status=data.get("status", "unknown"),
-        assignee=data.get("assignee", ""),
         priority=data.get("priority", "P2"),
         children=tuple(data.get("children", [])),
         parent=data.get("parent"),
@@ -79,7 +78,7 @@ def iter_active_tasks(tasks_dir: Path, repo_root: Path | None = None) -> Iterato
         TaskInfo for each valid task.
     """
     root = repo_root if repo_root is not None else get_repo_root()
-    require_active_path(tasks_dir, root)
+    require_project_path(tasks_dir, root)
     if not tasks_dir.is_dir():
         return
 
@@ -87,8 +86,8 @@ def iter_active_tasks(tasks_dir: Path, repo_root: Path | None = None) -> Iterato
         if d.name == "archive":
             continue
         try:
-            require_active_path(d, root)
-        except RetiredDataPathError as exc:
+            require_project_path(d, root)
+        except ProjectPathError as exc:
             print(f"[WARN] Skipping task '{d.name}': {exc}", file=sys.stderr)
             continue
         if not d.is_dir():

@@ -2003,8 +2003,10 @@ catalog；consumer 必须选择一个 named `$defs/*DTO`，不得把 catalog 顶
 
 稳定 `TaskId`、可变 `TaskRef` 与 `lifecycle_generation` 是三类独立事实。`TaskId` 使用
 `[A-Za-z0-9][A-Za-z0-9._-]*`、精确字节比较，并在 repository inventory 中额外拒绝 case-fold collision；
-active rename、archive locator move 与 Reactivate 均不改变 TaskId。Legacy task 缺失 generation 时读取为 `0`，
-但 boolean、负数、浮点、字符串与 null 均非法。`TaskLifecycleKey` 只由 TaskId 与 generation 组成，TaskRef 不参与
+active rename、archive locator move 与 Reactivate 均不改变 TaskId。C2 substrate 的 legacy helper 曾将缺失 generation
+归一化为 `0`；这不构成当前 task schema 的接受或恢复路径。#481 当前 Fork 要求显式 generation，缺失字段的旧记录
+不得进入当前 lifecycle；旧归档只保留 TaskId 防复用及限定的只读拒绝诊断。Boolean、负数、浮点、字符串与 null
+均非法。`TaskLifecycleKey` 只由 TaskId 与 generation 组成，TaskRef 不参与
 相等性。
 
 Source relation 是封闭的 `IssueSource | NoIssueSource`；Delivery target 只保存 portable `repo_ref + branch_ref`。

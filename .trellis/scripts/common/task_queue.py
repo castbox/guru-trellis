@@ -5,7 +5,6 @@ Task queue utility functions.
 Provides:
     list_tasks_by_status   - List tasks by status
     list_pending_tasks     - List tasks with pending status
-    list_tasks_by_assignee - List tasks by assignee
     get_task_stats         - Get P0/P1/P2/P3 counts
 """
 
@@ -31,7 +30,6 @@ def _task_to_dict(t) -> dict:
         "id": t.raw.get("id", ""),
         "title": t.title,
         "status": t.status,
-        "assignee": t.assignee or "-",
         "dir": t.dir_name,
         "children": list(t.children),
         "parent": t.parent,
@@ -53,7 +51,7 @@ def list_tasks_by_status(
         repo_root: Repository root path. Defaults to auto-detected.
 
     Returns:
-        List of task info dicts with keys: priority, id, title, status, assignee.
+        List of task info dicts with keys: priority, id, title, status.
     """
     if repo_root is None:
         repo_root = get_repo_root()
@@ -79,37 +77,6 @@ def list_pending_tasks(repo_root: Path | None = None) -> list[dict]:
         List of task info dicts.
     """
     return list_tasks_by_status("planning", repo_root)
-
-
-def list_tasks_by_assignee(
-    assignee: str,
-    filter_status: str | None = None,
-    repo_root: Path | None = None
-) -> list[dict]:
-    """List tasks assigned to a specific developer.
-
-    Args:
-        assignee: Developer name.
-        filter_status: Optional status filter.
-        repo_root: Repository root path. Defaults to auto-detected.
-
-    Returns:
-        List of task info dicts.
-    """
-    if repo_root is None:
-        repo_root = get_repo_root()
-
-    tasks_dir = get_tasks_dir(repo_root)
-    results = []
-
-    for t in iter_active_tasks(tasks_dir, repo_root):
-        if (t.assignee or "-") != assignee:
-            continue
-        if filter_status and t.status != filter_status:
-            continue
-        results.append(_task_to_dict(t))
-
-    return results
 
 
 def get_task_stats(repo_root: Path | None = None) -> dict[str, int]:
@@ -157,4 +124,4 @@ if __name__ == "__main__":
     print()
     print("Pending tasks:")
     for task in list_pending_tasks():
-        print(f"  {task['priority']}|{task['id']}|{task['title']}|{task['status']}|{task['assignee']}")
+        print(f"  {task['priority']}|{task['id']}|{task['title']}|{task['status']}")

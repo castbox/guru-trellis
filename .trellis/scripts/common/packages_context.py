@@ -19,7 +19,7 @@ from .paths import (
     DIR_WORKFLOW,
     get_repo_root,
 )
-from .history_paths import is_active_path
+from .path_boundary import is_project_path
 from .tasks import load_task
 from .active_task import resolve_active_task
 from .session_storage import SessionBindingError
@@ -36,12 +36,12 @@ def _scan_spec_layers(spec_dir: Path, repo_root: Path, package: str | None = Non
     For single-repo: scans spec/
     """
     target = spec_dir / package if package else spec_dir
-    if not is_active_path(target, repo_root) or not target.is_dir():
+    if not is_project_path(target, repo_root) or not target.is_dir():
         return []
     return sorted(
         d.name for d in target.iterdir()
-        if d.name != "guides" and is_active_path(d, repo_root) and d.is_dir()
-        and is_active_path(d / "index.md", repo_root)
+        if d.name != "guides" and is_project_path(d, repo_root) and d.is_dir()
+        and is_project_path(d / "index.md", repo_root)
     )
 
 
@@ -216,7 +216,7 @@ def get_context_packages_text(repo_root: Path | None = None) -> str:
 
     # Also show shared guides
     guides_dir = repo_root / DIR_WORKFLOW / DIR_SPEC / "guides"
-    if is_active_path(guides_dir / "index.md", repo_root) and guides_dir.is_dir():
+    if is_project_path(guides_dir / "index.md", repo_root) and guides_dir.is_dir():
         lines.append("### Shared Guides (always included)")
         lines.append("Path: .trellis/spec/guides/index.md")
         lines.append("")

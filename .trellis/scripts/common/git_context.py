@@ -29,7 +29,7 @@ from .continuation_contract import (
     ContinuationContractError,
     extract_continuation_contract,
 )
-from .history_paths import require_active_path
+from .path_boundary import require_project_path
 from .paths import DIR_WORKFLOW, get_repo_root
 from .trellis_config import read_trellis_config
 from .workflow_phase import (
@@ -61,9 +61,9 @@ def main() -> None:
     parser.add_argument(
         "--mode",
         "-m",
-        choices=["default", "record", "packages", "phase", "continuation"],
+        choices=["default", "packages", "phase", "continuation"],
         default="default",
-        help="Output mode: default (full context), record (retired), packages (package info only), phase (workflow step extraction), continuation (workflow-owned continuation contract)",
+        help="Output mode: default (full context), packages (package info only), phase (workflow step extraction), continuation (workflow-owned continuation contract)",
     )
     parser.add_argument(
         "--step",
@@ -76,9 +76,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.mode == "record":
-        parser.exit(2, "Record mode is retired; use default context and task.py finish/archive.\n")
-    elif args.mode == "packages":
+    if args.mode == "packages":
         if args.json:
             print(json.dumps(get_context_packages_json(), indent=2, ensure_ascii=False))
         else:
@@ -98,7 +96,7 @@ def main() -> None:
         print(content, end="")
     elif args.mode == "continuation":
         workflow_path = get_repo_root() / DIR_WORKFLOW / "workflow.md"
-        require_active_path(workflow_path, get_repo_root())
+        require_project_path(workflow_path, get_repo_root())
         try:
             content = extract_continuation_contract(workflow_path)
         except ContinuationContractError as exc:

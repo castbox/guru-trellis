@@ -217,11 +217,11 @@ def load_breadcrumbs(root: Path) -> dict[str, str]:
     scripts_dir = root / ".trellis" / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
-    from common.history_paths import RetiredDataPathError, require_active_path  # type: ignore[import-not-found]
+    from common.path_boundary import ProjectPathError, require_project_path  # type: ignore[import-not-found]
 
     try:
-        require_active_path(workflow, root)
-    except RetiredDataPathError:
+        require_project_path(workflow, root)
+    except ProjectPathError:
         return {}
     if not workflow.is_file():
         return {}

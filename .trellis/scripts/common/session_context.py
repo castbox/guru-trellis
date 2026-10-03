@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 from .active_task import resolve_active_task, resolve_context_key
-from .history_paths import RetiredDataPathError, is_active_path
+from .path_boundary import ProjectPathError, is_project_path
 from .config import get_git_packages
 from .git import run_git
 from .packages_context import get_packages_section
@@ -92,7 +92,7 @@ def _collect_git_repo_info(name: str, rel_path: str, repo_dir: Path) -> dict | N
         return None
 
     status_rc, status_out, _ = run_git(
-        ["status", "--porcelain", "--", ".", ":(exclude).trellis/workspace", ":(exclude).trellis/agent-traces", ":(exclude).trellis/.developer", ":(exclude).trellis/.backup-*"],
+        ["status", "--porcelain", "--", "."],
         cwd=repo_dir,
         timeout=_GIT_PROBE_TIMEOUT_SECONDS,
     )
@@ -142,14 +142,14 @@ def _collect_root_git_info(repo_root: Path) -> dict:
     branch = branch_out.strip() or "unknown"
 
     status_rc, status_out, _ = run_git(
-        ["status", "--porcelain", "--", ".", ":(exclude).trellis/workspace", ":(exclude).trellis/agent-traces", ":(exclude).trellis/.developer", ":(exclude).trellis/.backup-*"],
+        ["status", "--porcelain", "--", "."],
         cwd=repo_root,
         timeout=_GIT_PROBE_TIMEOUT_SECONDS,
     )
     status_lines = [line for line in status_out.splitlines() if line.strip()]
 
     _, short_out, _ = run_git(
-        ["status", "--short", "--", ".", ":(exclude).trellis/workspace", ":(exclude).trellis/agent-traces", ":(exclude).trellis/.developer", ":(exclude).trellis/.backup-*"],
+        ["status", "--short", "--", "."],
         cwd=repo_root,
         timeout=_GIT_PROBE_TIMEOUT_SECONDS,
     )
@@ -186,7 +186,7 @@ def _discover_child_git_repos(repo_root: Path) -> list[tuple[str, str]]:
         if depth >= _POLYREPO_SCAN_MAX_DEPTH:
             return
         abs_dir = repo_root / rel_dir
-        if not is_active_path(abs_dir, repo_root):
+        if not is_project_path(abs_dir, repo_root):
             return
         try:
             children = sorted(abs_dir.iterdir(), key=lambda p: p.name)
@@ -194,7 +194,7 @@ def _discover_child_git_repos(repo_root: Path) -> list[tuple[str, str]]:
             return
 
         for child in children:
-            if not is_active_path(child, repo_root):
+            if not is_project_path(child, repo_root):
                 continue
             if not child.is_dir() or not is_candidate_dir(child):
                 continue
@@ -244,7 +244,7 @@ def _collect_package_git_info(
     result = []
     for pkg_name, pkg_path in git_pkgs.items():
         pkg_dir = repo_root / pkg_path
-        if not is_active_path(pkg_dir, repo_root):
+        if not is_project_path(pkg_dir, repo_root):
             continue
         info = _collect_git_repo_info(pkg_name, pkg_path, pkg_dir)
         if info is not None:
@@ -317,7 +317,7 @@ def _append_package_git_context(lines: list[str], package_git_info: list[dict]) 
 
 
 def _read_project_version(repo_root: Path) -> str | None:
-    if not is_active_path(repo_root / DIR_WORKFLOW / ".version", repo_root):
+    if not is_project_path(repo_root / DIR_WORKFLOW / ".version", repo_root):
         return None
     try:
         version = (repo_root / DIR_WORKFLOW / ".version").read_text(
@@ -446,13 +446,13 @@ def _mark_update_check_attempted(
     repo_root: Path,
     context_key: str | None = None,
 ) -> bool:
-    if not is_active_path(repo_root / DIR_WORKFLOW / ".runtime", repo_root):
+    if not is_project_path(repo_root / DIR_WORKFLOW / ".runtime", repo_root):
         return False
     try:
         marker_path = _update_marker_path(repo_root, context_key)
-    except RetiredDataPathError:
+    except ProjectPathError:
         return False
-    if not is_active_path(marker_path, repo_root):
+    if not is_project_path(marker_path, repo_root):
         return False
     if marker_path.exists():
         return False
@@ -471,13 +471,13 @@ def get_update_hint(repo_root: Path, context_key: str | None = None) -> str | No
     (`get_context.py`) used to be the only caller, so hook-driven platforms —
     Claude Code included — never saw the reminder at all.
     """
-    if not is_active_path(repo_root / DIR_WORKFLOW / ".runtime", repo_root):
+    if not is_project_path(repo_root / DIR_WORKFLOW / ".runtime", repo_root):
         return None
     try:
         marker_path = _update_marker_path(repo_root, context_key)
-    except RetiredDataPathError:
+    except ProjectPathError:
         return None
-    if not is_active_path(marker_path, repo_root):
+    if not is_project_path(marker_path, repo_root):
         return None
     if marker_path.exists():
         return None
@@ -641,7 +641,7 @@ def get_context_text(repo_root: Path | None = None) -> str:
 
         # Check for prd.md
         prd_file = current_task_dir / "prd.md"
-        if is_active_path(prd_file, active.task_workspace_root) and prd_file.is_file():
+        if is_project_path(prd_file, active.task_workspace_root) and prd_file.is_file():
             lines.append("")
             lines.append("[!] This task has prd.md - read it for task details")
     else:
@@ -662,7 +662,7 @@ def get_context_text(repo_root: Path | None = None) -> str:
         t = all_tasks[name]
         progress = children_progress(t.children, all_statuses)
         prefix = "  " * indent
-        lines.append(f"{prefix}- {name}/ ({t.status}){progress} @{t.assignee or '-'}")
+        lines.append(f"{prefix}- {name}/ ({t.status}){progress}")
         task_count += 1
         for child in t.children:
             if child in all_tasks:

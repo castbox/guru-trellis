@@ -23,13 +23,13 @@ from __future__ import annotations
 import re
 
 from .paths import DIR_WORKFLOW, get_repo_root
-from .history_paths import require_active_path
+from .path_boundary import require_project_path
 
 
 def _workflow_md_path():
     root = get_repo_root()
     path = root / DIR_WORKFLOW / "workflow.md"
-    require_active_path(path, root)
+    require_project_path(path, root)
     return path
 
 # Match a line that *is* a platform marker: "[A, B, C]" or "[/A, B, C]"

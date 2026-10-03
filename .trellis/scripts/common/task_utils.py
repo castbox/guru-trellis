@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 
 from .io import read_json_checked
 from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
-from .history_paths import RetiredDataPathError, require_active_path
+from .path_boundary import ProjectPathError, require_project_path
 
 if TYPE_CHECKING:
     import subprocess
@@ -75,10 +75,8 @@ class TaskIdentity:
 
 
 def lifecycle_generation(data: dict, source: Path | str) -> int:
-    """Read a strict generation, defaulting an absent legacy field to zero."""
-    if "lifecycle_generation" not in data:
-        return 0
-    value = data["lifecycle_generation"]
+    """Read the required non-negative lifecycle generation."""
+    value = data.get("lifecycle_generation")
     if type(value) is not int or value < 0:
         raise TaskIdentityError(
             f"invalid_lifecycle_generation: {source}: expected non-negative integer"
@@ -94,7 +92,7 @@ def task_identity_from_data(data: dict, source: Path | str) -> TaskIdentity:
 
 
 def read_task_identity(task_json: Path, repo_root: Path) -> TaskIdentity:
-    require_active_path(task_json, repo_root)
+    require_project_path(task_json, repo_root)
     data, reason = read_json_checked(task_json)
     if data is None:
         raise TaskIdentityError(f"task_metadata_{reason}: {task_json}")
@@ -110,25 +108,25 @@ def _visible_identity_candidates(task_ref: str) -> set[str]:
 
 
 def _task_directories(tasks_dir: Path, repo_root: Path):
-    require_active_path(tasks_dir, repo_root)
+    require_project_path(tasks_dir, repo_root)
     if not tasks_dir.is_dir():
         return
     for candidate in sorted(tasks_dir.iterdir()):
         if candidate.name == "archive":
             continue
-        require_active_path(candidate, repo_root)
+        require_project_path(candidate, repo_root)
         if candidate.is_dir():
             yield candidate
     archive = tasks_dir / "archive"
-    require_active_path(archive, repo_root)
+    require_project_path(archive, repo_root)
     if not archive.is_dir():
         return
     for month in sorted(archive.iterdir()):
-        require_active_path(month, repo_root)
+        require_project_path(month, repo_root)
         if not month.is_dir():
             continue
         for candidate in sorted(month.iterdir()):
-            require_active_path(candidate, repo_root)
+            require_project_path(candidate, repo_root)
             if candidate.is_dir():
                 yield candidate
 
@@ -148,7 +146,7 @@ def task_id_collisions(
         if excluded is not None and directory.resolve() == excluded:
             continue
         task_json = directory / FILE_TASK_JSON
-        require_active_path(task_json, repo_root)
+        require_project_path(task_json, repo_root)
         data, reason = read_json_checked(task_json)
         if data is None:
             if any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
@@ -198,7 +196,7 @@ def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = 
         Absolute path to task directory, or None if not found or ambiguous.
     """
     root = repo_root if repo_root is not None else get_repo_root()
-    require_active_path(tasks_dir, root)
+    require_project_path(tasks_dir, root)
     if not task_name or not tasks_dir or not tasks_dir.is_dir():
         return None
 
@@ -208,7 +206,7 @@ def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = 
 
     # Try exact match first
     exact_match = tasks_dir / task_name
-    require_active_path(exact_match / FILE_TASK_JSON, root)
+    require_project_path(exact_match / FILE_TASK_JSON, root)
     if exact_match.is_dir():
         return exact_match
 
@@ -218,8 +216,8 @@ def find_task_by_name(task_name: str, tasks_dir: Path, repo_root: Path | None = 
         if not d.name.endswith(f"-{task_name}"):
             continue
         try:
-            require_active_path(d / FILE_TASK_JSON, root)
-        except RetiredDataPathError as exc:
+            require_project_path(d / FILE_TASK_JSON, root)
+        except ProjectPathError as exc:
             print(f"[WARN] Skipping task '{d.name}': {exc}", file=sys.stderr)
             continue
         if d.is_dir():
@@ -363,7 +361,7 @@ def resolve_lifecycle_target(
                     else:
                         locals_ = []
                     for candidate in locals_:
-                        require_active_path(candidate / FILE_TASK_JSON, root)
+                        require_project_path(candidate / FILE_TASK_JSON, root)
                         if candidate.is_dir() and (
                             root != active.task_workspace_root or
                             candidate.resolve() != active.resolved_task_path.resolve()
@@ -437,7 +435,7 @@ def resolve_task_dir(target_dir: str, repo_root: Path) -> Path | None:
             return None
 
     try:
-        require_active_path(candidate / FILE_TASK_JSON, repo_root)
+        require_project_path(candidate / FILE_TASK_JSON, repo_root)
         resolved = candidate.resolve()
         tasks_lexical = get_tasks_dir(repo_root.resolve())
         tasks_resolved = tasks_lexical.resolve()
