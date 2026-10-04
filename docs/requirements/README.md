@@ -1,12 +1,15 @@
 # Requirements SSOT
 
+唯一 current authority 是 `current-main-0.6.17-guru.71` / `active`；本版[入口](./versions/current-main-0.6.17-guru.71/requirement-main.md)明确继承 immutable `.70` 的全部有效合同，仅追加已审查的 `R490/D490/T490` 与当前 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f`。Architecture 为 `.71/active`；旧 `.70` 及以下正文保留 predecessor provenance，不能覆盖本版 identity/source/验证边界。软件版本未由知识 promotion 发布，#489 独占 release proof。
+
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
 ## 当前入口与版本矩阵
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.70` | [requirement-main.md](./versions/current-main-0.6.17-guru.70/requirement-main.md) | reviewed #481 task-personnel retirement；完整继承 immutable `.69`，Architecture 为 `.70/active` |
+| `active` | `current-main-0.6.17-guru.71` | [requirement-main.md](./versions/current-main-0.6.17-guru.71/requirement-main.md) | reviewed #490；薄继承 immutable `.70`，Architecture `.71/active` |
+| `superseded` | `current-main-0.6.17-guru.70` | [requirement-main.md](./versions/current-main-0.6.17-guru.70/requirement-main.md) | reviewed #481；immutable history |
 | `superseded` | `current-main-0.6.17-guru.69` | [requirement-main.md](./versions/current-main-0.6.17-guru.69/requirement-main.md) | reviewed #467 release preparation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.68` | [requirement-main.md](./versions/current-main-0.6.17-guru.68/requirement-main.md) | reviewed #454 generation 7 TaskId/domain and terminal recovery；immutable history |
 | `superseded` | `current-main-0.6.17-guru.67` | [requirement-main.md](./versions/current-main-0.6.17-guru.67/requirement-main.md) | reviewed #434 atomic activation；immutable history |
@@ -44,8 +47,8 @@
 | `superseded` | `current-main-0.6.5-guru.35` | [requirement-main.md](./versions/current-main-0.6.5-guru.35/requirement-main.md) | #266 激活的历史 current snapshot |
 | `released` | `v0.6.5-guru.9` | [requirement-main.md](./versions/v0.6.5-guru.9/requirement-main.md) | `source_confirmed`，tag commit `56b5f411…` |
 
-当前 `.70` 的框架源码固定为 `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，成功 main CI `36755826713`，CLI/core `0.7.0-castbox.1`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.7.0-guru.1`，target repository axis 仍为未发布的 `v0.6.17-guru.2`。前一正式版本 `v0.6.17-guru.1` 与历史版本保持 immutable；目标 `.2` 尚待 exact-candidate tag 与 GitHub Release。
-历史 `.69` 继承 `.68` 并承接 #467 TaskId 创建预检与 release target/升级清理合同；其 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`、CLI/core `0.6.17` 与 extension `0.6.17-guru.43` 只作 predecessor provenance。当前 `.70` 继承其有效合同并按 #481 退役任务人员身份；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.70/active`。代表性新装已验证；前驱安装升级、完整 Release matrix、远端 marketplace 和业务仓生产安装仍未验证。
+历史 `.70` 的框架源码固定为 `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，成功 main CI `36755826713`，CLI/core `0.7.0-castbox.1`，package manager `pnpm@10.32.1`；Guru current extension revision 为 `0.7.0-guru.1`，target repository axis 仍为未发布的 `v0.6.17-guru.2`。前一正式版本 `v0.6.17-guru.1` 与历史版本保持 immutable；目标 `.2` 尚待 exact-candidate tag 与 GitHub Release。
+历史 `.69` 继承 `.68` 并承接 #467 TaskId 创建预检与 release target/升级清理合同；其 `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`、CLI/core `0.6.17` 与 extension `0.6.17-guru.43` 只作 predecessor provenance。历史 `.70` 继承其有效合同并按 #481 退役任务人员身份；registry 为 34 active packages / 155 exits / 104 commands、零 planned，production workflow 为 33 mandatory invokes / 153 exits，Architecture 为 `.70/active`。代表性新装已验证；前驱安装升级、完整 Release matrix、远端 marketplace 和业务仓生产安装仍未验证。
 
 `.62` Requirements source binding 还显式承接既有 Finalizer `REQ-048` 的 recovery guard：无 predecessor transaction 时，初始 provenance reprepare 可接受 absent、exact reviewed HEAD 或 strict historical ancestor；ahead、diverged、unknown/unprovable commit 必须在 mutation 前 fail closed。executor 创建的 replacement transaction 保存 exact `pre_push_remote_head`，后续 pre-mutation preflight 必须复核同一 remote identity；该闭合不新增 C4 public requirement owner，也不改变 C5-C7、D443、D436、E434 或 #434 activation 边界。
 

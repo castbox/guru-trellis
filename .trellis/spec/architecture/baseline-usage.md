@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.70`
+- version：`current-main-0.6.17-guru.71`
 - status：`active`
-- source binding：reviewed #481 task-personnel retirement contribution + inherited immutable `.69` authority；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ARCH-CUR-047` / `ARCH-DOM-032` / `ARCH-INT-035` / `EVD-046`，fixed Fork source 为 `64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，CLI/core `0.7.0-castbox.1`。`.69` 的 #434/#454 graph 保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。前一正式版本既有安装的退役受管资产删除、完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
+- source binding：reviewed #490 reference-only/source-adoption contribution + explicit immutable `.70` inheritance；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ARCH-CUR-048` / `ARCH-DOM-033` / `ARCH-INT-036` / `EVD-047`，fixed Fork source 为 `9c36002a324c16a09a85b6aa5a380b74aabf801f`，CLI/core `0.7.0-castbox.1`。`.69` 的 #434/#454 graph 保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。前一正式版本既有安装的退役受管资产删除、完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

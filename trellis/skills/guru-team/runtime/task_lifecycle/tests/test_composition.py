@@ -109,9 +109,14 @@ class CompositionTests(unittest.TestCase):
         with self.assertRaises(LifecycleContractError):
             prepare_creation_inputs(self.repo, payload, self.acquisition())
         payload = self.creation("existing_issue")
-        payload["reviewed_source"]["disposition"] = "reference_only"
-        with self.assertRaises(LifecycleContractError):
-            prepare_creation_inputs(self.repo, payload, self.acquisition())
+        for disposition in ("exact_source", "reference_only"):
+            payload["reviewed_source"]["disposition"] = disposition
+            self.assertEqual(prepare_creation_inputs(self.repo, payload, self.acquisition()).reviewed_source,
+                             payload["reviewed_source"])
+        for disposition in ("follow_up", "parent"):
+            payload["reviewed_source"]["disposition"] = disposition
+            with self.assertRaises(LifecycleContractError):
+                prepare_creation_inputs(self.repo, payload, self.acquisition())
         path = self.repo / TASK_REF
         path.mkdir(parents=True)
         (path / "task.json").write_text(json.dumps({"id": TASK_ID, "status": "planning"}), encoding="utf-8")

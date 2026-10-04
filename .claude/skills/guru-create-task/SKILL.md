@@ -10,6 +10,10 @@ with `target.kind=existing_issue | standalone_request`, after the current
 Intake and Sync decision. Never create or select a GitHub Issue here. For an
 existing Issue, reread its live identity and accepted scope; for a standalone
 request preserve `source.kind=no_issue` without invented closure semantics.
+Issue creation input accepts `exact_source | reference_only` and preserves the
+reviewed disposition through official creation and result recovery.
+`reference_only` does not grant source-Issue closure; `follow_up | parent` remain
+unsupported creation inputs.
 
 Review the exact TaskId, date-prefixed TaskRef, title, ordinary scope, selected
 base and delivery target. Choose one checkout acquisition route:

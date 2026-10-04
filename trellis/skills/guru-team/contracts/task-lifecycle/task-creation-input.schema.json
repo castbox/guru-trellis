@@ -27,7 +27,7 @@
               "kind": {"const": "issue"},
               "repo_ref": {"type": "string", "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"},
               "number": {"type": "integer", "minimum": 1},
-              "disposition": {"const": "exact_source"}
+              "disposition": {"enum": ["exact_source", "reference_only"]}
             }
           }
         }

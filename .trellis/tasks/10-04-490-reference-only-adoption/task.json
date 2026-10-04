@@ -1,0 +1,29 @@
+{
+  "id": "issue-490-reference-only-adoption",
+  "name": "490-reference-only-adoption",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 490,
+    "disposition": "exact_source"
+  },
+  "title": "Guru reference-only 创建与上游 adoption",
+  "description": "修复Guru reference_only正式创建合同并采用Trellis#25已合并来源。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "# Guru reference-only 创建与上游 adoption\n\n在 castbox/guru-trellis 的现有 creator/schema 中正式接受 reference_only Issue source；保持 exact_source、no_issue、TaskId/generation、session、branch/checkout/resource ownership 与 Closure 合同。\n\n采用已合并并通过 CI 的 castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f（PR #26，CLI/core 0.7.0-castbox.1），通过正常官方生成与 preset reapply 同步 source lock、dogfood、installed 和当前说明/测试。仅添加 exact_source/reference_only 创建支持，不添加 follow_up/parent 创建，不迁移历史任务，不新增 writer 或关闭动作。\n\n验收：正常 guru-create-task 正式入口创建 reference-only、result recovery 与 source identity 保留；no_issue/exact_source 回归；canonical/installed/platform validator、官方 source projection、相关 package/runtime tests、一个代表性干净安装/update/reapply与 sidecar/drift 检查通过。完整多平台/native-host矩阵由独立 owner承担。\n\n这是从当前对话承接的独立 prerequisite Issue 修复范围，不承担 #489 的 Stage 1、tag、Release 或 Issue closure。#489 发布准备继续单独按 reference_only 流程执行。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-04",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

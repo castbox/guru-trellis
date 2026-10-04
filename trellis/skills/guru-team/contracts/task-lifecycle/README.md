@@ -103,7 +103,10 @@ projections; those transitions remain owned by E434.
 
 The C6 `task-creation-input.schema.json` (2.0) separates reviewed
 `existing_issue | standalone_request` source from accepted scope identity and
-portable delivery target. Its selected base ref/head and C3 checkout acquisition
+portable delivery target. Issue creation accepts `exact_source | reference_only`
+without changing source identity during official creation or result recovery.
+`reference_only` never grants exact-source closure; `follow_up | parent` remain
+unsupported creation inputs. Its selected base ref/head and C3 checkout acquisition
 plan are call-local preconditions, not durable task authority. The C3 provision
 dispositions are `new_branch | existing_branch | existing_checkout`: the first
 creates Guru-owned branch and worktree, the second creates only a Guru-owned

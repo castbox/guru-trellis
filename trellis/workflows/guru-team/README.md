@@ -44,8 +44,8 @@ or upstream `task.py start` to perform that transition.
 `0.7.0-guru.1`；两者须在 exact-candidate 验证、tag 和 Release 完成后
 才成为已发布事实。Fork CLI/core 为 `0.7.0-castbox.1`。
 
-Use the source-locked Trellis Fork checkout (`castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`,
-successful main CI `36755826713`)
+Use the source-locked Trellis Fork checkout (`castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`,
+successful main CI `37179218822`)
 and a matching reviewed Guru
 source. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying

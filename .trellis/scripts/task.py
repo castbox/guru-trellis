@@ -597,7 +597,7 @@ def main() -> int:
     p_create.add_argument("--task-id", help="Stable TaskId independent of the directory slug")
     p_create.add_argument(
         "--source-json",
-        help="Structured task source JSON (default: no_issue; issue create requires exact_source)",
+        help="Structured task source JSON (default: no_issue; issue create accepts exact_source or reference_only)",
     )
     p_create.add_argument("--priority", "-p", default="P2", help="Priority (P0-P3)")
     p_create.add_argument(
