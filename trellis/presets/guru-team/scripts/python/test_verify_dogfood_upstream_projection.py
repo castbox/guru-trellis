@@ -67,6 +67,11 @@ class DogfoodTaskBehaviorTests(unittest.TestCase):
                   "number": 481, "disposition": "exact_source"}
         self.assertEqual(self.create(source)["source"], source)
 
+    def test_reference_only_create_preserves_disposition(self) -> None:
+        source = {"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                  "number": 490, "disposition": "reference_only"}
+        self.assertEqual(self.create(source)["source"], source)
+
     def test_list_and_context_contain_task_without_personnel(self) -> None:
         self.create()
         listed = self.run_script("task.py", "list", "--json")

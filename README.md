@@ -30,8 +30,8 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到包含上游任务人员身份退役 PR #24 的
-`64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，对应成功 main CI `36755826713`。
+当前 source candidate 固定到包含上游任务人员身份退役 PR #24 与 reference-only 创建 PR #26 的
+`9c36002a324c16a09a85b6aa5a380b74aabf801f`，对应成功 main CI `37179218822`。
 Fork CLI/core 均为 `0.7.0-castbox.1`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
@@ -71,8 +71,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | --- | --- |
 | Current target Guru Trellis repo tag | `v0.6.17-guru.2` |
 | Target Guru Team extension revision | `0.7.0-guru.1` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.1` @ `64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac` |
-| Reviewed Fork CI identity | `36755826713` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.1` @ `9c36002a324c16a09a85b6aa5a380b74aabf801f` |
+| Reviewed Fork CI identity | `37179218822` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标

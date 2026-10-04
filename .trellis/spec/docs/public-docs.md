@@ -37,7 +37,7 @@ opt-in user choice, not as the team default or automated validation path.
 Stable install and upgrade docs must keep four version axes explicit. The current
 target Guru repo tag is `v0.6.17-guru.2`; the target extension revision is
 `0.7.0-guru.1`; the current main/source framework lock is
-`castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`, CLI/core `0.7.0-castbox.1`, package
+`castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
 manager `pnpm@10.32.1`. The predecessor `v0.6.17-guru.1` does not prove
 the current framework-source adoption. Stable workflow marketplace and preset sources for
 one installation use the same immutable release tag; an unreleased reviewed

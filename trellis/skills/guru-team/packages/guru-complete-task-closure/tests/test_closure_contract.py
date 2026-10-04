@@ -53,13 +53,26 @@ def fake_gh(tmp_path):
 def invoke(tmp_path, public, semantic, env, confirmed=False):
     if not (tmp_path / ".git").exists():
         subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    task = tmp_path / ".trellis/tasks/example-task"
-    if not task.exists():
-        task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({
-            "id": "example-task", "status": "in_progress", "lifecycle_generation": 0,
-            "source": public["source"],
-        }))
+    # Use the current official writer for supported no_issue/exact/reference fixtures.
+    # follow_up/parent remain read-only lifecycle roles, not creation capabilities.
+    if not list((tmp_path / ".trellis/tasks").glob("*/task.json")):
+        source = copy.deepcopy(public["source"] if isinstance(public["source"], dict)
+                               else fixture()[0]["source"])
+        if source.get("disposition") in ("follow_up", "parent"):
+            source["disposition"] = "reference_only"
+        official = PACKAGE.parents[4] / ".trellis/scripts/task.py"
+        created = subprocess.run(
+            [sys.executable, str(official), "create", "Closure fixture", "--slug", "example-task",
+             "--task-id", "example-task", "--description", "Current Closure source regression",
+             "--source-json", json.dumps(source), "--base-branch", "main", "--no-start"],
+            cwd=tmp_path, text=True, capture_output=True, env=env, check=False,
+        )
+        assert created.returncode == 0, created.stdout + created.stderr
+        task_file = next((tmp_path / ".trellis/tasks").glob("*/task.json"))
+        if source != public["source"]:
+            metadata = json.loads(task_file.read_text())
+            metadata["source"] = public["source"]
+            task_file.write_text(json.dumps(metadata))
     inp = tmp_path / "input.json"
     review = tmp_path / "semantic.json"
     inp.write_text(json.dumps(public))
@@ -145,7 +158,7 @@ def test_current_task_source_role_mismatch_stops_before_provider(tmp_path):
     assert not log.exists()
 
 
-def test_exact_legacy_scope_is_read_only_source_normalization(tmp_path):
+def test_exact_legacy_scope_is_rejected_without_metadata_write(tmp_path):
     public, semantic = fixture()
     env, _, log = fake_gh(tmp_path)
     task = tmp_path / ".trellis/tasks/example-task"
@@ -154,13 +167,13 @@ def test_exact_legacy_scope_is_read_only_source_normalization(tmp_path):
                 "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/436"}
     (task / "task.json").write_text(json.dumps(metadata))
     pending = invoke(tmp_path, public, semantic, env)
-    assert pending.returncode == 0, pending.stderr
-    assert json.loads(pending.stdout)["exit_id"] == "resume_closure"
+    assert pending.returncode == 3
+    assert json.loads(pending.stderr)["field_path"] == "task.source"
     assert json.loads((task / "task.json").read_text()) == metadata
     assert not log.exists()
 
 
-def test_noncanonical_legacy_source_is_frozen_without_task_metadata_write(tmp_path):
+def test_noncanonical_legacy_source_is_rejected_without_metadata_write(tmp_path):
     public, semantic = fixture()
     public["source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 436,
                         "disposition": "reference_only"}
@@ -173,10 +186,8 @@ def test_noncanonical_legacy_source_is_frozen_without_task_metadata_write(tmp_pa
                 "scope": "GitHub Issue #436"}
     (task / "task.json").write_text(json.dumps(metadata))
     result = invoke(tmp_path, public, semantic, env)
-    assert result.returncode == 0, result.stderr
-    output = json.loads(result.stdout)
-    assert output["exit_id"] == "no_mutation"
-    assert read_terminal_closure_result(inspect_repository(tmp_path), output["result_ref"])["source"] == public["source"]
+    assert result.returncode == 3
+    assert json.loads(result.stderr)["field_path"] == "task.source"
     assert json.loads((task / "task.json").read_text()) == metadata
     assert not log.exists()
 

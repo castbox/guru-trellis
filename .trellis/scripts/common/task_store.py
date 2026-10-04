@@ -299,12 +299,12 @@ def _parse_create_source(raw: str | None) -> dict | None:
         and not source["repo_ref"].endswith(".git")
         and type(source["number"]) is int
         and source["number"] > 0
-        and source["disposition"] == "exact_source"
+        and source["disposition"] in ("exact_source", "reference_only")
     ):
         return source
     print(
         "Error: --source-json must be no_issue or an issue with repo_ref, "
-        "positive number, and exact_source disposition",
+        "positive number, and exact_source or reference_only disposition",
         file=sys.stderr,
     )
     return None

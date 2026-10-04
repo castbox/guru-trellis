@@ -12,8 +12,8 @@ The installer never edits upstream Trellis source or a global npm package.
 `0.7.0-guru.1`；发布事实以 exact-candidate 验证、tag 和 GitHub Release
 为准。Fork CLI/core 为 `0.7.0-castbox.1`。
 
-Use the source-locked, built `castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`
-CLI (successful main CI `36755826713`) and a matching reviewed Guru
+Use the source-locked, built `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`
+CLI (successful main CI `37179218822`) and a matching reviewed Guru
 source. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:

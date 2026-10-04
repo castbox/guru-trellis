@@ -287,6 +287,49 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual((data["id"], data["source"], data["lifecycle_generation"]),
                          ("example-task", {"kind": "no_issue"}, 0))
 
+    def assert_public_creation_and_recovery(self, source: dict) -> None:
+        # Real public launchers, the official writer, and the production source reader.
+        env = {key: value for key, value in os.environ.items()
+               if not key.startswith(("TRELLIS_", "CODEX_", "CLAUDE_", "CURSOR_", "GIT_"))}
+
+        def public(package: Path, payload: dict) -> dict:
+            completed = subprocess.run(
+                ["bash", str(package / "scripts/invoke.sh"), "--root", str(self.root), "--input", "-"],
+                input=json.dumps(payload), text=True, capture_output=True, env=env, check=False,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            return json.loads(completed.stdout)
+
+        request = json.loads(json.dumps(self.payload))
+        request["creation"].update(source_profile="existing_issue" if source["kind"] == "issue"
+                                   else "standalone_request", reviewed_source=source)
+        created = public(PACKAGE, request)
+        self.assertEqual(created, {"exit_id": "created", "task_id": "example-task",
+                                  "task_ref": self.ref, "lifecycle_generation": 0})
+        metadata_path = self.root / self.ref / "task.json"
+        before = metadata_path.read_bytes()
+        self.assertEqual(json.loads(before)["source"], source)
+        recovered = public(PACKAGE, {**request, "action": "recover_created_task_result"})
+        self.assertEqual(recovered, created)
+        self.assertEqual(metadata_path.read_bytes(), before)
+        identity = public(PACKAGE.parent / "guru-establish-task-identity", {
+            "profile": "active_task", "mode": "standalone", "task_id": "example-task",
+            "task_ref": self.ref, "lifecycle_generation": 0,
+        })
+        self.assertEqual(identity["exit_id"], "identity_established")
+        self.assertEqual(identity["source"], source)
+
+    def test_public_reference_only_creation_recovery_and_source_identity(self) -> None:
+        self.assert_public_creation_and_recovery({"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                                                 "number": 490, "disposition": "reference_only"})
+
+    def test_public_exact_source_creation_recovery_and_source_identity(self) -> None:
+        self.assert_public_creation_and_recovery({"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                                                 "number": 490, "disposition": "exact_source"})
+
+    def test_public_no_issue_creation_recovery_and_source_identity(self) -> None:
+        self.assert_public_creation_and_recovery({"kind": "no_issue"})
+
     def test_provision_new_linked_checkout_and_exact_source(self) -> None:
         self.git("switch", "-q", "main")
         self.git("branch", "-D", "codex/example-task")
