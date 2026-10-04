@@ -8,9 +8,16 @@ The installer never edits upstream Trellis source or a global npm package.
 
 ## Apply And Verify
 
-当前目标仓库 tag 为 `v0.6.17-guru.2`，extension revision 为
+当前目标仓库 tag 为 `v0.7.0-guru.1`，extension revision 为
 `0.7.0-guru.1`；发布事实以 exact-candidate 验证、tag 和 GitHub Release
 为准。Fork CLI/core 为 `0.7.0-castbox.1`。
+predecessor 是已发布的 `v0.6.17-guru.2`。发布后，preset 使用 `v0.7.0-guru.1`
+immutable tag 的 Guru checkout，workflow marketplace source 使用同一 tag 的
+`gh:castbox/guru-trellis/trellis#v0.7.0-guru.1`；未发布验证使用同一可寻址的
+完整 candidate SHA。
+
+旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
+本版本不支持旧安装原地升级，不提供兼容双读或自动迁移；拒绝不代表升级成功。
 
 Use the source-locked, built `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`
 CLI (successful main CI `37179218822`) and a matching reviewed Guru
