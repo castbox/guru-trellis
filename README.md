@@ -69,18 +69,20 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Current target Guru Trellis repo tag | `v0.6.17-guru.2` |
+| Current target Guru Trellis repo tag | `v0.7.0-guru.1` |
 | Target Guru Team extension revision | `0.7.0-guru.1` |
 | Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.1` @ `9c36002a324c16a09a85b6aa5a380b74aabf801f` |
 | Reviewed Fork CI identity | `37179218822` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。目标
-`v0.6.17-guru.2` 在 preparation PR 合并、exact-candidate gate、tag 和 GitHub Release
-完成前不构成已发布事实；其 predecessor 是已发布的 `v0.6.17-guru.1`，累计范围以
-predecessor 至最终 candidate 的完整 diff 为准。当前未发布源码验证使用已审查 Guru
-checkout；以下 `GURU_WORKFLOW_SOURCE` 必须设置为该 checkout 对应的可寻址 marketplace
-ref，不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
+`v0.7.0-guru.1` 在 preparation PR 合并、exact-candidate gate、tag 和 GitHub Release
+完成前不构成已发布事实；其 predecessor 是已发布的 `v0.6.17-guru.2`，累计范围以
+predecessor 至最终 candidate 的完整 diff 为准。发布后，以下 `GURU_WORKFLOW_SOURCE`
+使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.1`，`GURU_SOURCE` 使用同一
+immutable tag 的 checkout。未发布验证则将两者绑定同一可寻址的完整 candidate SHA，
+marketplace source 为 `gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`。
+不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
 
 新仓库的非交互安装入口：
 
@@ -94,7 +96,11 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
   --repo "$TARGET_REPO")
 ```
 
-已有仓库先核验/构建同一固定 Fork，再预览 update：
+旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
+本版本不支持旧安装原地升级，不提供兼容双读或自动迁移；下列 update/reapply
+步骤仅适用于与当前 Fork 版本兼容的安装，拒绝不能作为升级成功。
+
+已有兼容仓库先核验/构建同一固定 Fork，再预览 update：
 
 ```bash
 cd "$TARGET_REPO"

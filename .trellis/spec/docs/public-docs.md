@@ -35,14 +35,21 @@ is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must keep four version axes explicit. The current
-target Guru repo tag is `v0.6.17-guru.2`; the target extension revision is
+target Guru repo tag is `v0.7.0-guru.1`; the target extension revision is
 `0.7.0-guru.1`; the current main/source framework lock is
 `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
-manager `pnpm@10.32.1`. The predecessor `v0.6.17-guru.1` does not prove
+manager `pnpm@10.32.1`. The published predecessor `v0.6.17-guru.2` does not prove
 the current framework-source adoption. Stable workflow marketplace and preset sources for
-one installation use the same immutable release tag; an unreleased reviewed
-checkout is identified as such and never described as tag-pinned release
-provenance. Unpinned or branch sources remain mutable latest/canary inputs.
+one installation use the same immutable `v0.7.0-guru.1` tag after publication.
+Before publication, marketplace and preset use the same addressable full
+candidate SHA; an unreleased reviewed checkout is identified as such and never
+described as tag-pinned release provenance. Unpinned or branch sources remain
+mutable latest/canary inputs.
+
+The current Fork's update rejects old `0.6.17` installations before accessing
+legacy project data and preserves that data unchanged. Public docs must state
+this compatibility boundary, must not promise an in-place upgrade, dual reader
+or automatic migration, and must not describe rejection as an upgrade success.
 
 Current knowledge authority is `current-main-0.6.17-guru.71`; it is not a
 product release axis. Read current Requirements/Design/Test deltas through the
