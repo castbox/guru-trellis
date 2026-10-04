@@ -251,3 +251,5 @@ TaskId/generation、session/branch binding 和资源归属；旧格式归档只�
 TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成为 lifecycle 候选。
 #292 Phase 1 author 边界未变。registry/production 数量保持 34/155/104 和
 33/153；代表性新装已验证，旧版本升级及完整 Release matrix 未验证。
+
+`ARCH-CUR-048`（`source_confirmed` + `reviewed`）：#490 在既有 C6 正式创建合同中接受 exact_source/reference_only，source 原值通过 official writer、恢复和 identity reader 保留；no_issue/exact_source、TaskId/generation/session/branch/resource/Closure 不变。current Fork 为 `9c36002a324c16a09a85b6aa5a380b74aabf801f` / main CI `37179218822`，CLI/core `0.7.0-castbox.1`，extension `0.7.0-guru.1`。旧 ARCH-CUR-047 pin 属 predecessor；人员身份退役等有效合同继续继承，registry/production 计数不变。EVD-047 的 scoped 证据不表示 release matrix、remote/native-host 或软件发布。

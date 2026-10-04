@@ -44,3 +44,5 @@ matrix 和业务仓生产安装仍属独立 `unverified` 边界。
 持有。旧 `0.6.17` Trellis 安装无法由当前 `0.7.0-castbox.1` Fork update，前驱
 升级、远端 marketplace、完整多平台 Release matrix 和生产安装均为独立
 `unverified` 边界，不因代表性新装通过而关闭。
+
+`.71` 仅关闭 #490 当前 C6 disposition 拒绝/source未采用的局部缺陷，不新建或重新打开GAP；ARCH-GAP-006/008闭合保持。release/native-host/remote/predecessor refusal证据保持#489独立未验证边界，knowledge promotion不关闭它们。

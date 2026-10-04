@@ -1,6 +1,6 @@
 # #490 reference-only 与官方来源 adoption contribution
 
-Identity：`architecture-contribution-490-reference-only-adoption-v1`；state：`implementation_candidate`；task：`.trellis/tasks/10-04-490-reference-only-adoption`；source：castbox/guru-trellis#490；expected current：`current-main-0.6.17-guru.70`。绑定 `guru-maintain-architecture-baseline:2.0`、`guru-trellis-architecture-change-contract-v1`、current `guru-trellis-design-constitution-v1`。change path 为 `target_native`；不改变 ADR-015 的 Fork/Guru ownership 和 ADR-009 的 source/closure ownership，无新 ADR。
+Identity：`architecture-contribution-490-reference-only-adoption-v1`；state：`reviewed_promoted`；task：`.trellis/tasks/10-04-490-reference-only-adoption`；source：castbox/guru-trellis#490；expected current：`current-main-0.6.17-guru.70`。绑定 `guru-maintain-architecture-baseline:2.0`、`guru-trellis-architecture-change-contract-v1`、current `guru-trellis-design-constitution-v1`。change path 为 `target_native`；不改变 ADR-015 的 Fork/Guru ownership 和 ADR-009 的 source/closure ownership，无新 ADR。
 
 ## Required concerns
 
@@ -20,4 +20,6 @@ Identity：`architecture-contribution-490-reference-only-adoption-v1`；state：
 
 `guru-trellis-architecture-convergence:repository:1` 在 planning 适用且 blocking。规划 review pass：九项 concerns 完整，target_native 唯一路径，owner 和单 writer 未扩大，没有额外状态、双读或无退出兼容机制。此结论只证明规划满足 current contract，不证明实现或安装。
 
-实现证据：正式 create-task/recovery/source identity fixture 16/16、current lifecycle 152/152、Closure 18/18 与 dogfood 9/9 已通过；source checker 核验真实 Fork identity、main CI 与 183 个官方文件，canonical/source、installed、Claude/Codex/Cursor projection、ownership 与 drift 均通过。一个代表性 Codex focused clean install、同候选双次 update/reapply、session binding 与零 sidecar 已通过；该次使用 local marketplace sample，native load 为 projection parity。独立 committed review 和 promotion 仍是后续必需门禁。完整发布矩阵、predecessor 拒绝无写证明、public marketplace/tag smoke/Release 由 #489 继续；本 contribution 不把上游已通过 CI 等同于 Guru release proof。
+实现证据：正式 create-task/recovery/source identity fixture 16/16、current lifecycle 152/152、Closure 18/18 与 dogfood 9/9 已通过；source checker 核验真实 Fork identity、main CI 与 183 个官方文件，canonical/source、installed、Claude/Codex/Cursor projection、ownership 与 drift 均通过。一个代表性 Codex focused clean install、同候选双次 update/reapply、session binding 与零 sidecar 已通过；该次使用 local marketplace sample，native load 为 projection parity。独立 pre-promotion committed review 已完成，并已由唯一 owner promotion；promotion-created diff 的 fresh check/commit/独立完整 review 仍是后续必需门禁。完整发布矩阵、predecessor 拒绝无写证明、public marketplace/tag smoke/Release 由 #489 继续；本 contribution 不把上游已通过 CI 等同于 Guru release proof。
+
+Promotion：已按 expected current `.70` 串行晋升至 `current-main-0.6.17-guru.71`，current 条目为 ARCH-CUR-048/ARCH-DOM-033/ARCH-INT-036/EVD-047。独立 pre-promotion complete committed review 已完成；promotion-created diff 的 fresh Phase2/TaskCommit/独立完整BranchReview仍须另行完成。无新ADR。

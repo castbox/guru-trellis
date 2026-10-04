@@ -186,3 +186,5 @@ cell 证明；focused clean cell 与静态投影不能代替该证据。
 模板 hash、session binding 与 drift 已定向验证；`0.6.17` dogfood 的官方
 Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级通过。
 远端 marketplace、生产安装和完整 Release matrix 均未验证。
+
+`ARCH-INT-036`（#490 current）：canonical source lock、dogfood official template/hash 与 Guru installed/Claude/Codex/Cursor projection 同步采用 `9c36002a324c16a09a85b6aa5a380b74aabf801f`；upstream 所有权不转移给 Guru。183 official files 和声明平台投影通过；代表性 Codex clean/current-update/reapply 使用 local workflow sample，native load 为 projection parity。remote/native-host/full matrix、前驱拒绝无写证明和 release 流程仍由 #489 独立验证。

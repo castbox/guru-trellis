@@ -19,3 +19,5 @@ State: task-owned evidence; passing commands do not replace independent Phase 2/
 - Focused Codex installation: passed for local marketplace sample clean init, initial preset, two same-candidate update/reapply operations, session binding and zero sidecars; native_load is projection_parity. This does not establish remote marketplace or native-host execution.
 
 Full multi-platform/native-host release matrix, predecessor 0.6.17 refusal/no-write proof, public remote marketplace, tag smoke, Release and production installation remain unverified here and owned by #489.
+
+Promotion：current authority 为三层 `current-main-0.6.17-guru.71`，完整有效 `.70` 合同以薄继承保留；本贡献作为历史来源。promotion-created diff 须 fresh Phase2/commit/独立完整BranchReview；验证边界不变。

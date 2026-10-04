@@ -501,3 +501,7 @@ session binding；dogfood drift 通过且无残留 `.new`/`.bak`。旧 dogfood
 历史 `test_434_activation_candidate.py` 有 3 失败、1 跳过，不记为通过的 #481 gate。
 完整多平台 Release/前驱升级矩阵、远端 marketplace、生产安装，以及本次
 promotion-created diff 的 fresh Phase 2 和完整 committed Branch Review 尚未由本条证明。
+
+## EVD-047: #490 reference-only/source adoption
+
+已独立读取正式 creator 16/16、current lifecycle 152/152、Closure 18/18、dogfood 9/9 证据，source/installed/platform validator 与183-file official projection通过；直接 live回读 CI37179218822 success at9c36002a。Focused Codex local-workflow sample clean install、initial preset、两次 same-candidate update/reapply、session/template 与零 drift/sidecar通过，native_load=projection_parity。pre-promotion完整committed review已通过，promotion-created diff仍须fresh Phase2/commit/不同reviewer完整Branch Review。remote/native-host/full matrix、predecessor refusal/no-write、tag/Release尚未由本条证明，归#489。

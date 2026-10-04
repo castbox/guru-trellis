@@ -107,3 +107,5 @@ Guru create-task 单写 reviewed 调用输入和既有 TaskId/generation 控制�
 exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不接收其生命周期
 候选。session adapter、TaskBranchBinding、common-dir resource ledger 与 checkout
 继续各自单写，caller/guru 归属不从旧归档推断。#292 独占 Phase 1 author。
+
+`ARCH-DOM-033`（#490 current）：Guru creator 仍拥有 C6 正式输入/恢复，official task.py 仍单写 task.json；reference_only 是现有 source disposition，无新 writer/owner/public Skill，不能授予 Issue closure。Closure/session/branch/checkout/resource 的原 ownership 保留；follow_up/parent 不是新任务创建能力。Architecture/RDT 各自仅通过 expected-current `.70 -> .71` promotion 更新 shared authority。
