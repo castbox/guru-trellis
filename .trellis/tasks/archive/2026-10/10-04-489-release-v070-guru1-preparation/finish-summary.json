@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-04T15:53:06Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-04-489-release-v070-guru1-preparation",
+    "title": "#489 对齐 v0.7.0-guru.1 发布准备文档",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-04-489-release-v070-guru1-preparation",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/489-release-v070-guru1-preparation",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#489 对齐 v0.7.0-guru.1 发布准备文档",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation",
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/design.md",
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/implement.md",
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/prd.md",
+          ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#489"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/489-release-v070-guru1-preparation"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation",
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/design.md",
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/implement.md",
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/prd.md",
+        ".trellis/tasks/archive/2026-10/10-04-489-release-v070-guru1-preparation/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#489 对齐 v0.7.0-guru.1 发布准备文档；#489；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
