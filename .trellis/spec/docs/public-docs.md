@@ -46,10 +46,14 @@ candidate SHA; an unreleased reviewed checkout is identified as such and never
 described as tag-pinned release provenance. Unpinned or branch sources remain
 mutable latest/canary inputs.
 
-The current Fork's update rejects old `0.6.17` installations before accessing
-legacy project data and preserves that data unchanged. Public docs must state
-this compatibility boundary, must not promise an in-place upgrade, dual reader
-or automatic migration, and must not describe rejection as an upgrade success.
+The released `v0.7.0-guru.1` Fork's update rejects old installations before
+accessing legacy project data and preserves that data unchanged. Public docs
+must retain that release boundary. The #495 successor candidate defines an
+independent explicit migration for core `0.6.16` / Guru `0.6.16-guru.41`;
+it needs its own formal Fork implementation/source lock and actual migration,
+owner re-entry and post-write rollback evidence. Ordinary runtime remains
+current-only. Do not describe rejection, dirty local builds or a planned
+successor tag as fixed-source upgrade/release success.
 
 Current knowledge authority is `current-main-0.6.17-guru.71`; it is not a
 product release axis. Read current Requirements/Design/Test deltas through the

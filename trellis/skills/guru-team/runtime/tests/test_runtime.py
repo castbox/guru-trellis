@@ -578,7 +578,7 @@ class SharedRuntimeTests(unittest.TestCase):
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
         manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
-        self.assertEqual(len(active), 34)
+        self.assertEqual(len(active), 35)
         self.assertEqual({row["id"] for row in active}, set(manifest["public_api"]["skill_contracts"]["active_skill_ids"]))
         for row in active:
             with self.subTest(skill=row["id"]):
@@ -712,6 +712,12 @@ class SharedRuntimeTests(unittest.TestCase):
                 "status": "in_progress",
                 "base_branch": "main",
                 "lifecycle_generation": 0,
+                "name": "context", "title": "Context fixture",
+                "source": {"kind": "no_issue"}, "description": "Context fixture",
+                "dev_type": None, "scope": None, "package": None,
+                "priority": "P2", "createdAt": "2026-10-06", "completedAt": None,
+                "worktree_path": None, "commit": None, "pr_url": None,
+                "children": [], "parent": None, "relatedFiles": [], "notes": "", "meta": {},
             }))
             subprocess.run(["git", "config", "user.name", "Kernel Test"], cwd=repo, check=True)
             subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)

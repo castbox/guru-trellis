@@ -1,0 +1,468 @@
+{
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
+  "id": "guru-upgrade-installation",
+  "name": "guru-upgrade-installation",
+  "description": "Upgrade a supported legacy installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "not_applicable",
+      "entry_precondition_ids": []
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "target_source",
+        "legacy_inventory",
+        "reviewed_actions",
+        "recovery_boundary"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "target_source",
+      "evidence": "Complete canonical target source, its managed interpreter and fixed Fork CLI.",
+      "binding": "exact source and target checkout for this invocation",
+      "freshness": "reread before preview, write, resume or rollback"
+    },
+    {
+      "id": "legacy_inventory",
+      "evidence": "Supported core/Guru versions, old manifest hashes, all active tasks and live Git/session facts.",
+      "binding": "exact source and target checkout for this invocation",
+      "freshness": "reread before preview, write, resume or rollback"
+    },
+    {
+      "id": "reviewed_actions",
+      "evidence": "AI-owned source/field/path dispositions and current-dialogue side-effect confirmation; authorization is never serialized.",
+      "binding": "exact source and target checkout for this invocation",
+      "freshness": "reread before preview, write, resume or rollback"
+    },
+    {
+      "id": "recovery_boundary",
+      "evidence": "Exact private preimages and completed writes; no newer business or control work before rollback.",
+      "binding": "exact source and target checkout for this invocation",
+      "freshness": "reread before preview, write, resume or rollback"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_initial_upgrade_input",
+      "path": "examples/public-initial_upgrade-input.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_resume_input",
+      "path": "examples/public-resume-input.json"
+    },
+    {
+      "id": "public_resume_required_output",
+      "path": "examples/public-resume_required-output.json"
+    },
+    {
+      "id": "public_rollback_input",
+      "path": "examples/public-rollback-input.json"
+    },
+    {
+      "id": "public_rolled_back_output",
+      "path": "examples/public-rolled_back-output.json"
+    },
+    {
+      "id": "public_upgraded_output",
+      "path": "examples/public-upgraded-output.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "private_plan_schema",
+      "path": "schemas/private-plan.schema.json"
+    },
+    {
+      "id": "private_recovery_schema",
+      "path": "schemas/private-recovery.schema.json"
+    },
+    {
+      "id": "public_blocked_output_schema",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_initial_upgrade_input_schema",
+      "path": "schemas/public-initial_upgrade-input.schema.json"
+    },
+    {
+      "id": "public_input_schema",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error_schema",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_resume_input_schema",
+      "path": "schemas/public-resume-input.schema.json"
+    },
+    {
+      "id": "public_resume_required_output_schema",
+      "path": "schemas/public-resume_required-output.schema.json"
+    },
+    {
+      "id": "public_rollback_input_schema",
+      "path": "schemas/public-rollback-input.schema.json"
+    },
+    {
+      "id": "public_rolled_back_output_schema",
+      "path": "schemas/public-rolled_back-output.schema.json"
+    },
+    {
+      "id": "public_upgraded_output_schema",
+      "path": "schemas/public-upgraded-output.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "invoke",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-upgrade-installation",
+      "objective_scope": "Execute/check exact legacy version, reviewed actions, preimages and current bytes; never decide semantic scope or approval."
+    },
+    {
+      "id": "preview",
+      "command": "scripts/preview.sh",
+      "runtime_command": "preview-installation-upgrade",
+      "objective_scope": "Execute/check exact legacy version, reviewed actions, preimages and current bytes; never decide semantic scope or approval."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "upgraded",
+      "evidence": "AI consumes actual migration facts and current owner results before returning this exit.",
+      "consumer": {
+        "kind": "stop",
+        "id": "upgrade-installation-upgraded"
+      }
+    },
+    {
+      "id": "resume_required",
+      "evidence": "AI consumes actual migration facts and current owner results before returning this exit.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-upgrade-installation"
+      }
+    },
+    {
+      "id": "rolled_back",
+      "evidence": "AI consumes actual migration facts and current owner results before returning this exit.",
+      "consumer": {
+        "kind": "stop",
+        "id": "upgrade-installation-rolled-back"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "AI consumes actual migration facts and current owner results before returning this exit.",
+      "consumer": {
+        "kind": "stop",
+        "id": "upgrade-installation-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "target source, target checkout and migration recovery reference",
+    "freshness": "source and completed managed bytes must match; changed ordinary state returns to fresh review",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-upgrade-installation-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "initial_upgrade",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-initial_upgrade-input-1.0",
+            "path": "schemas/public-initial_upgrade-input.schema.json"
+          },
+          "example": {
+            "id": "initial_upgrade_input",
+            "path": "examples/public-initial_upgrade-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "initial_upgrade"
+          }
+        },
+        {
+          "id": "resume",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-resume-input-1.0",
+            "path": "schemas/public-resume-input.schema.json"
+          },
+          "example": {
+            "id": "resume_input",
+            "path": "examples/public-resume-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "resume"
+          }
+        },
+        {
+          "id": "rollback",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-rollback-input-1.0",
+            "path": "schemas/public-rollback-input.schema.json"
+          },
+          "example": {
+            "id": "rollback_input",
+            "path": "examples/public-rollback-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "rollback"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-upgrade-installation-public-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--root",
+        ".",
+        "--input",
+        "examples/public-initial_upgrade-input.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "upgraded",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-public-upgraded-output-1.0",
+          "path": "schemas/public-upgraded-output.schema.json"
+        },
+        "example": {
+          "id": "upgraded_output",
+          "path": "examples/public-upgraded-output.json"
+        },
+        "consumer_use_ids": [
+          "project_upgraded"
+        ]
+      },
+      {
+        "exit_id": "resume_required",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-public-resume_required-output-1.0",
+          "path": "schemas/public-resume_required-output.schema.json"
+        },
+        "example": {
+          "id": "resume_required_output",
+          "path": "examples/public-resume_required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_resume_required"
+        ]
+      },
+      {
+        "exit_id": "rolled_back",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-public-rolled_back-output-1.0",
+          "path": "schemas/public-rolled_back-output.schema.json"
+        },
+        "example": {
+          "id": "rolled_back_output",
+          "path": "examples/public-rolled_back-output.json"
+        },
+        "consumer_use_ids": [
+          "project_rolled_back"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-public-blocked-output-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "upgraded_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "upgrade-installation-upgraded"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-upgrade-installation-stop-upgraded-1.0",
+          "path": "consumers/stop/production/upgrade-installation-upgraded.schema.json"
+        }
+      },
+      {
+        "id": "resume_required_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-upgrade-installation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
+          "profile_id": "resume",
+          "input_kind": "structured_json"
+        }
+      },
+      {
+        "id": "rolled_back_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "upgrade-installation-rolled-back"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-upgrade-installation-stop-rolled_back-1.0",
+          "path": "consumers/stop/production/upgrade-installation-rolled_back.schema.json"
+        }
+      },
+      {
+        "id": "blocked_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "upgrade-installation-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-upgrade-installation-stop-blocked-1.0",
+          "path": "consumers/stop/production/upgrade-installation-blocked.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_upgraded",
+        "exit_id": "upgraded",
+        "consumer_input_id": "upgraded_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_resume_required",
+        "exit_id": "resume_required",
+        "consumer_input_id": "resume_required_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "profile",
+            "target": "profile"
+          },
+          {
+            "source": "recovery_ref",
+            "target": "recovery_ref"
+          }
+        ]
+      },
+      {
+        "id": "project_rolled_back",
+        "exit_id": "rolled_back",
+        "consumer_input_id": "rolled_back_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "migration_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-private-recovery-1.0",
+          "path": "schemas/private-recovery.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

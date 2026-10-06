@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-private-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "root",
+    "source",
+    "source_ref",
+    "fork",
+    "plan",
+    "phase",
+    "controls",
+    "old_managed",
+    "preimages",
+    "business_before"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fork": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan": {
+      "type": "object"
+    },
+    "phase": {
+      "enum": [
+        "core",
+        "guru",
+        "preset",
+        "complete"
+      ]
+    },
+    "controls": {
+      "type": "object"
+    },
+    "old_managed": {
+      "type": "array"
+    },
+    "preimages": {
+      "type": "object"
+    },
+    "business_before": {
+      "type": "string"
+    },
+    "control_before": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "task_after_core": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "baseline": {
+      "type": "object"
+    },
+    "business_after": {
+      "type": "string"
+    },
+    "failure": {
+      "type": "object"
+    }
+  }
+}

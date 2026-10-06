@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .io import read_json_checked
+from .io import JSON_READ_MISSING, read_json_checked, read_task_inventory_record
 from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
 from .path_boundary import ProjectPathError, require_project_path
 
@@ -147,8 +147,10 @@ def task_id_collisions(
             continue
         task_json = directory / FILE_TASK_JSON
         require_project_path(task_json, repo_root)
-        data, reason = read_json_checked(task_json)
+        data, reason = read_task_inventory_record(task_json)
         if data is None:
+            if "archive" not in directory.relative_to(tasks_dir).parts and reason != JSON_READ_MISSING:
+                raise TaskIdentityError(f"task_metadata_{reason}: {task_json}")
             if any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
                 conflicts.append(f"{directory}: unreadable task.json ({reason})")
             continue

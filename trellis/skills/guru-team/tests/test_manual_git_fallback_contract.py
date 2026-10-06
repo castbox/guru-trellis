@@ -124,14 +124,14 @@ class ManualGitFallbackContractTest(unittest.TestCase):
     def test_existing_public_inventory_is_unchanged(self) -> None:
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 34)
+        self.assertEqual(len(active), 35)
         exits = commands = 0
         for row in active:
             interface = json.loads((SKILLS / row["interface"]).read_text(encoding="utf-8"))
             exits += len(interface["external_exits"])
             package_commands = SKILLS / row["package"] / "commands.json"
             commands += len(json.loads(package_commands.read_text(encoding="utf-8"))["commands"])
-        self.assertEqual((exits, commands), (155, 104))
+        self.assertEqual((exits, commands), (159, 106))
         self.assertEqual(self.workflow.count("<!-- guru-skill-invoke:"), 33)
         self.assertEqual(self.workflow.count("<!-- guru-skill-exit:"), 153)
         self.assertEqual(self.workflow.count("<!-- guru-workflow-target:"), 62)

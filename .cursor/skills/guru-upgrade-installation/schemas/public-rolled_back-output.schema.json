@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-public-rolled_back-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "installed_version"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "rolled_back"
+    },
+    "installed_version": {
+      "const": "0.6.16-guru.41"
+    }
+  }
+}

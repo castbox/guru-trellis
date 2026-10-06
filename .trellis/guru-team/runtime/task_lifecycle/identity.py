@@ -23,6 +23,9 @@ _CURRENT_TASK_FIELDS = frozenset({
     "completedAt", "base_branch", "worktree_path", "commit", "pr_url",
     "children", "parent", "relatedFiles", "notes", "meta",
 })
+_LEGACY_TASK_FIELDS = (_CURRENT_TASK_FIELDS - {"lifecycle_generation", "source"}) | {
+    "branch", "creator", "assignee", "subtasks",
+}
 
 
 @dataclass(frozen=True)
@@ -180,8 +183,8 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
     data = _read_task_metadata(repo_root, ref)
     archived = ref.startswith(".trellis/tasks/archive/")
     current = _current_task_metadata(data, archived=archived)
-    legacy = archived and not current
-    if not archived and not current:
+    legacy = not current and (archived or _known_legacy_active_metadata(data))
+    if not current and not legacy:
         raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema.")
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
@@ -189,6 +192,25 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
         0 if legacy else lifecycle_generation(data, field_path=f"{ref}/task.json.lifecycle_generation"),
         "archived" if archived else "active",
         legacy,
+    )
+
+
+def _known_legacy_active_metadata(data: dict[str, Any]) -> bool:
+    """Recognize old headers for reservation only, never lifecycle use."""
+
+    if (
+        not set(data) <= _LEGACY_TASK_FIELDS
+        or not {"id", "name", "title", "status", "creator", "assignee"} <= set(data)
+    ):
+        return False
+    strings = {"id", "name", "title", "description", "status", "priority", "createdAt", "notes", "creator", "assignee"}
+    nullable = {"dev_type", "scope", "package", "completedAt", "base_branch", "worktree_path", "commit", "pr_url", "parent", "branch"}
+    return (
+        all(isinstance(data[field], str) for field in strings & set(data))
+        and all(data[field] is None or isinstance(data[field], str) for field in nullable & set(data))
+        and all(isinstance(data[field], list) and all(isinstance(item, str) for item in data[field])
+                for field in {"children", "relatedFiles", "subtasks"} & set(data))
+        and ("meta" not in data or isinstance(data["meta"], dict))
     )
 
 
@@ -238,6 +260,13 @@ def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
     for item in _task_refs(root):
         if item == ref:
             return True
+        if not item.startswith(".trellis/tasks/archive/"):
+            if not (root / item / "task.json").exists():
+                continue
+            existing = _read_identity(root, item)
+            if existing.task_id.casefold() == key:
+                return True
+            continue
         try:
             data = _read_task_metadata(root, item)
             existing_key = task_id_key(data.get("id"), field_path=f"{item}/task.json.id")
@@ -253,7 +282,7 @@ def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:
     selected = _read_identity(repo_root.resolve(), normalize_task_ref(task_ref))
     if selected.legacy:
-        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old archives are read-only diagnostics, not lifecycle candidates.")
+        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old records reserve identity but are not lifecycle candidates.")
     rows = _task_identities(repo_root)
     current = next((row for row in rows if row.task_ref == selected.task_ref), None)
     if current is None:
@@ -278,7 +307,7 @@ def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
     if len(matches) != 1:
         raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve duplicate canonical task artifacts.")
     if matches[0].legacy:
-        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old archives are read-only diagnostics, not lifecycle candidates.")
+        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old records reserve identity but are not lifecycle candidates.")
     if matches[0].task_id != requested:
         raise LifecycleContractError("invalid_task_identity", "task_id", "Use the exact TaskId spelling.")
     return matches[0]

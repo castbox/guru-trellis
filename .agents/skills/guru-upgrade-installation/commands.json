@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-upgrade-installation",
+  "commands": [
+    {
+      "id": "invoke-guru-upgrade-installation",
+      "owner": "guru-upgrade-installation",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Target repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input profile.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--plan",
+          "required": false,
+          "kind": "json",
+          "description": "Owner-private reviewed migration actions.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--fork",
+          "required": false,
+          "kind": "string",
+          "description": "Fixed Fork CLI entrypoint.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "invoke",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "preview-installation-upgrade",
+      "owner": "guru-upgrade-installation",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Target repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input profile.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--plan",
+          "required": false,
+          "kind": "json",
+          "description": "Owner-private reviewed migration actions.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--fork",
+          "required": false,
+          "kind": "string",
+          "description": "Fixed Fork CLI entrypoint.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_json_object",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "internal_error"
+      ],
+      "side_effect": "repo_read",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "preview",
+      "runtime_role": "preview"
+    }
+  ]
+}

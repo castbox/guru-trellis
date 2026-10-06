@@ -36,6 +36,16 @@ merge status substitutes for a typed Completion result.
 
 ## Ownership
 
+`guru-upgrade-installation` is a standalone-only semantic boundary for explicit
+old-installation upgrade, loaded with the complete reviewed target source and
+its current runtime before the old target can satisfy installed validation.
+The target repo is invocation context; it is not the dispatcher/runtime source.
+This bounded entry exception does not make copied packages self-contained or
+weaken normal installed Skill preconditions. Its Interface owns independent
+initial/resume/rollback inputs and upgraded/resume_required/rolled_back/blocked
+outputs. Private action plans and backups have only same-owner recovery consumers;
+neither public outputs nor private state carry user authorization.
+
 `trellis/skills/guru-team/` is the only canonical source for reusable Guru
 Team workflow skill packages. The global workflow owns phase order, mandatory
 invocation, cross-skill transitions, and typed-exit consumers. Each active

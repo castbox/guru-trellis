@@ -62,6 +62,13 @@ violation.
 
 ## Current Manifest Boundary
 
+The independent `guru-upgrade-installation` boundary may validate the exact
+supported old provenance and retire exact Guru-managed assets before a fresh
+current preset installation. It never writes a synthetic current manifest,
+widens Guru namespace claims, or manages upstream `trellis-*` paths. Fork
+migration remains the core/schema owner. Ordinary apply and validators below
+continue to consume only current provenance.
+
 A fresh target may begin without an installed Guru manifest. Once an installed
 manifest exists, every installer and validator path accepts only the complete
 current schema and current ownership contract. Missing required fields,
@@ -103,9 +110,8 @@ closed before target mutation.
 
 For a current installation:
 
-1. run the selected Trellis version update, then `trellis update --dry-run` and
-   exactly one preserve-mode live update: `trellis update --migrate --skip-all`
-   when migration is required or `trellis update --skip-all` otherwise;
+1. verify the selected current Fork, then `trellis update --dry-run` and
+   exactly one preserve-mode live update: `trellis update --skip-all`;
 2. reselect the `guru-team` marketplace workflow;
 3. reapply the current Guru preset;
 4. resolve current managed-asset `.new`/`.bak` conflicts;
@@ -114,7 +120,10 @@ For a current installation:
 
 A non-current installed or ownership manifest is invalid input and stops this
 flow. Continuing requires a fresh target or a complete current manifest; the
-validator has no schema-version-specific branch.
+validator has no schema-version-specific branch. A supported old installation
+uses the separate `guru-upgrade-installation` owner and formal `trellis migrate`
+entry before returning to this current-only flow; `update --migrate` is not a
+current migration entry.
 
 ## Public Skill And Eval Assets
 

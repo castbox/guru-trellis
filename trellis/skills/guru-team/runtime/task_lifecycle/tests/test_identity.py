@@ -19,6 +19,7 @@ from runtime.task_lifecycle.identity import (
     resolve_task_id,
     resolve_task_ref,
     task_inventory,
+    task_identity_exists,
 )
 
 
@@ -120,6 +121,63 @@ class IdentityTests(unittest.TestCase):
             resolve_task_id(self.repo, "Task-A")
         with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
             resolve_task_ref(self.repo, current, expected_task_id="Task-A")
+
+    def test_mixed_inventory_reserves_known_legacy_without_selecting_it(self):
+        current = ".trellis/tasks/10-06-current"
+        self.write_task(current, "current-id", 0)
+        for minimal in (False, True):
+            old_ref = f".trellis/tasks/08-03-old-{minimal}"
+            old = self.repo / old_ref
+            old.mkdir()
+            payload = {
+                "id": f"old-{minimal}", "name": "Old", "title": "Old task",
+                "status": "in_progress", "creator": "team", "assignee": "team",
+                "branch": "feat/old", "base_branch": "main", "scope": None,
+            }
+            if not minimal:
+                payload.update(description="Preserved", children=[], subtasks=[],
+                               relatedFiles=[], notes="", meta={"business": "preserved"})
+            path = old / "task.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            before = path.read_bytes()
+            self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
+            self.assertEqual(resolve_task_ref(self.repo, current).task_id, "current-id")
+            self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
+            self.assertTrue(task_identity_exists(self.repo, payload["id"], ".trellis/tasks/10-06-new"))
+            self.assertTrue(task_identity_exists(self.repo, "new-id", old_ref))
+            for select in (lambda: resolve_task_id(self.repo, payload["id"]),
+                           lambda: resolve_task_ref(self.repo, old_ref)):
+                with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+                    select()
+            self.assertEqual(path.read_bytes(), before)
+        payload["id"] = "CURRENT-ID"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        for select in (lambda: resolve_task_id(self.repo, "current-id"),
+                       lambda: resolve_task_ref(self.repo, current)):
+            with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
+                select()
+
+    def test_unrelated_bad_current_records_remain_blocking(self):
+        current = ".trellis/tasks/10-06-current"
+        self.write_task(current, "current-id", 0)
+        other_ref = ".trellis/tasks/10-06-other"
+        path = self.write_task(other_ref, "other-id", 0) / "task.json"
+        valid = json.loads(path.read_text())
+        cases = [
+            {**valid, "lifecycle_generation": "0"},
+            {**valid, "source": {"kind": "unknown"}},
+            {**valid, "unexpected": "ordinary mistake"},
+            {key: value for key, value in valid.items() if key != "id"},
+            {key: value for key, value in valid.items() if key != "lifecycle_generation"},
+        ]
+        for payload in [*cases, "broken-json"]:
+            with self.subTest(payload=payload):
+                path.write_text(payload if isinstance(payload, str) else json.dumps(payload))
+                for select in (lambda: resolve_task_id(self.repo, "current-id"),
+                               lambda: resolve_task_ref(self.repo, current),
+                               lambda: task_identity_exists(self.repo, "new-id", ".trellis/tasks/10-06-new")):
+                    with self.assertRaises(LifecycleContractError):
+                        select()
 
     def test_exact_duplicate_task_ids_fail_repository_resolution(self):
         self.write_task(".trellis/tasks/09-20-first", "task-a", 0)

@@ -12,6 +12,17 @@ cover the current managed inventory.
 
 ## Boundary
 
+### Explicit old-installation migration
+
+`guru-upgrade-installation` owns the independent #495 legacy boundary for
+core `0.6.16` / Guru `0.6.16-guru.41`; its complete target-source package owns
+inventory, reviewed old provenance conversion, recovery and rollback.
+It calls the formal Fork migration and current preset, without making a
+non-current manifest acceptable to ordinary apply. Source-lock and successor
+validation remain necessary; a local dirty Fork is development evidence only.
+See the package contract and `MIGRATION-495.md`. Historical roots and business
+customizations remain outside migration ownership.
+
 `trellis/presets/guru-team/scripts/bash/apply.sh` is a Bash wrapper. The
 installer logic lives in
 `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`.
@@ -452,9 +463,10 @@ Guru-owned paths.
 
 Do not overwrite unknown current Guru-owned edits. Throwaway verification must
 validate the expected workflow preview `.new`, perform the initial switch, run
-the selected version upgrade, run `trellis update --dry-run`, then execute
-exactly one preserve-mode live update: `trellis update --migrate --skip-all`
-when migration is required or `trellis update --skip-all` otherwise. It then
+the selected current Fork, run `trellis update --dry-run`, then execute
+exactly one preserve-mode live update: `trellis update --skip-all`. A supported
+old installation first uses the independent #495 migration entry; ordinary
+`update --migrate` is not a supported replacement. The current flow then
 reapplies the marketplace workflow and preset. Successful completion requires
 all current ownership conflicts and recursive `.new`/`.bak` sidecars to be
 resolved.
@@ -786,7 +798,7 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, and descriptor-selected platform package/corpus byte identity,
-wrapper executable modes, the current 34-Skill/155-package-exit/104-command
+wrapper executable modes, the current 35-Skill/159-package-exit/106-command
 closure and 33-invoke/153-production-exit workflow graph, and current
 ownership schema 4.0 with 22 descriptors, 43 managed claims, and 22 overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.

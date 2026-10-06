@@ -27,6 +27,12 @@ discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate
 
+An explicit old-installation upgrade request enters standalone
+`guru-upgrade-installation` from the reviewed target source package before
+current installed-runtime preflight. It is outside business-task Intake.
+Load that package's current contract and consume only its declared exits;
+ordinary update, preset apply, and task readers remain current-only.
+
 Explicit independent Git/GitHub requests use
 [Manual Git/GitHub Operations](#manual-gitgithub-operations), not task-mode
 selection or an inferred lifecycle continuation.
@@ -78,8 +84,9 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"baseline_incomplete","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-bootstrap-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"blocked","consumer":{"kind":"stop","id":"requirements-design-test-ssot-blocked"}} -->
-The candidate graph has 34 active Skills and 155 package exits. The
-business-task workflow has 33 mandatory invokes and 153 external exits.
+The active package and exit inventories come from the current registry and
+Interfaces. Standalone installation upgrade and extension verification are
+outside the business-task workflow's mandatory invokes.
 ### Cross-phase normal-scenario qualification owner
 <!-- guru-skill-invoke: {"skill":"guru-qualify-normal-scenario","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-normal-scenario","exit":"classified","consumer":{"kind":"workflow","id":"guru-normal-scenario-classified-router"}} -->
