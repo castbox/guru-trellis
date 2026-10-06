@@ -38,3 +38,18 @@
 上述隔离升级仍为 `local_candidate`，不是正式 `source_locked`/remote provider 证明。首个 Delivery slice 只交付正式验收用候选代码与合同；按[顺序说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6018378988)，固定远端可读同一 Guru HEAD 后才执行正式 public/provider 验收。MIG-495-06 的来源与真实在途缺口继续保留，全部 MIG-495-01..09 齐备前不进入 merge/Completion。此前 blocked Phase 2 不复用；首 slice 的 fresh Architecture/Phase 2 仍待执行。
 
 独立 committed full-diff review 与 RDT/Architecture serialized promotion 仍待执行，shared `.71` 未改。完整多平台矩阵、新 tag/Release、真实业务安装由各自独立边界承担，未执行。
+
+## PR #195 精确来源补证
+
+再次读取 PR #195 exact HEAD `a9e65e0419c1e35f73ca6faf3c7b09d2ce370d4c`
+的 manifest Git blob `cda4c620fcf2ab6050db365610c8153c639fc725`，
+与本地同一已存在 Git 对象原字节一致。core 为 `0.6.16`，Guru 为
+`0.6.16-guru.41`；Guru source 为 clean、固定
+`a32ffdca61f432bc6c3e0557fe68486c1422d08f`，Fork lock 为
+`ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` / CLI `0.6.16`。
+4896 个旧 managed 路径的 hash 来源已核对，其中 58 个未展开 hash 由
+manifest 的 exact Guru source 解析；没有 hash 冲突或现存 managed 文件字节修改。
+记录中的 `.cursor/commands/guru-finish-work.md` 在该树中缺失，迁移预览须显式处置。
+该补证关闭先前“PR #195 完整安装来源未知”的读取缺口，仍不证明代表性
+public 迁移/交付处置已执行，也不提供真实旧 Finalizer/Finish 在途样本。
+真实业务 checkout、refs、工作区内容及远端交付均未修改。

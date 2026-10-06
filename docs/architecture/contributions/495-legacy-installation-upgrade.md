@@ -8,13 +8,13 @@ Identity：`architecture-contribution-495-legacy-installation-upgrade-v1`；stat
 | --- | --- |
 | authority-binding | applicable：live #495 修订 #481 迁移拒绝，完整继承无人员/current-only；共享 .71 和历史 tag 不先行改写。 |
 | constitution-binding | applicable：官方 Fork/core extension 与 source package、完整 task 身份、单 writer、局部私有备份和单向出口；无原则例外，不建立评分表。 |
-| boundary-and-decision | applicable：Fork core/task writer，Guru 资产转换/编排，既有生命周期 owners；ADR-015 不变，迁移拒绝的修订仅为候选。 |
+| boundary-and-decision | applicable：Fork core/task writer，Guru 资产转换/编排，既有生命周期 owners；ADR-015 不变，迁移拒绝的修订由 task-owned [ADR-017 候选](./495-legacy-installation-upgrade-adr.md) 承载。 |
 | owner-and-single-writer | applicable：migration 无新的 task binding/session store；current preset 唯一 current Guru 安装 writer，shared current 只由串行 promotion。 |
 | compatibility-and-exit | applicable：旧 parser 只在 standalone migration；成功后 current-only，历史 bytes保留且不成为 authority；停止旧来源支持时删除局部 parser。 |
 | gap-and-deviation | applicable：旧仓无法升级的实际差距；正式 Fork source lock/CI 已验证，本地实现不证明同一远端 Guru HEAD 的正式安装与全部旧交付验收，未完成目标保留 unverified。 |
 | parallel-scope | applicable：此 task 只写隔离贡献/已批准 source/code/tests，真实 downstream及其它worktrees只读，不竞争 shared current。 |
 | evidence-and-freshness | applicable：真实 core0.6.16/Guru41 到后继；public安装、两个 owner接续、普通部分恢复、写后rollback、preservation和distribution；每个gate fresh读取。 |
-| review-and-promotion | applicable：完整 Phase2、committed独立BranchReview之后 expected-current-bound promotion；其新增diff再次check/commit/review。 |
+| review-and-promotion | applicable：完整 Phase2、committed独立BranchReview之后 expected-current-bound promotion contribution 与 ADR-017 候选；其新增diff再次check/commit/review，shared current 晋升前 ADR 保持 proposed。 |
 
 ## Before / after 与 evidence
 
