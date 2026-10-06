@@ -188,3 +188,5 @@ Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级�
 远端 marketplace、生产安装和完整 Release matrix 均未验证。
 
 `ARCH-INT-036`（#490 current）：canonical source lock、dogfood official template/hash 与 Guru installed/Claude/Codex/Cursor projection 同步采用 `9c36002a324c16a09a85b6aa5a380b74aabf801f`；upstream 所有权不转移给 Guru。183 official files 和声明平台投影通过；代表性 Codex clean/current-update/reapply 使用 local workflow sample，native load 为 projection parity。remote/native-host/full matrix、前驱拒绝无写证明和 release 流程仍由 #489 独立验证。
+
+`ARCH-INT-037`（#495候选）：canonical source lock固定正式Fork PR27 merge `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，tree `3741c14ccd36289584697c4c57c9daf2dd979f5f`，parent `9c36002a324c16a09a85b6aa5a380b74aabf801f`，CI `37473087582`。standalone package、Guru preset、dogfood及声明平台投影一致；official生成资产仍由Fork拥有。183文件official projection、source/installed/reapply/drift与零sidecar通过；现有local_candidate实际升级/current update不能替代固定远端GuruHEAD的source_locked/provider验证。完整矩阵/软件发布/真实业务安装未执行。

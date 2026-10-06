@@ -46,3 +46,7 @@ matrix 和业务仓生产安装仍属独立 `unverified` 边界。
 `unverified` 边界，不因代表性新装通过而关闭。
 
 `.71` 仅关闭 #490 当前 C6 disposition 拒绝/source未采用的局部缺陷，不新建或重新打开GAP；ARCH-GAP-006/008闭合保持。release/native-host/remote/predecessor refusal证据保持#489独立未验证边界，knowledge promotion不关闭它们。
+
+## ARCH-GAP-012：受支持旧安装升级验收
+
+状态：`open`。CURRENT：#495迁移候选代码/合同与本地public迁移、任务owner接续、普通恢复、写后rollback及current update/reapply已验证；TARGET：全部MIG-495-01..09真实证据齐备。Owner：#495同一任务；closure condition：固定same-remote-GuruHEAD的source_locked public升级与同源marketplace/provider，以及完整MIG06旧PR/merge处置/genuine支持来源旧Finalizer/Finish在途代表验证。exact PR195旧安装来源已读取，不是public处置完成；PR210/58历史merged终态不提供在途证明。知识`.72`只提升候选，不能关闭本GAP或允许merge/Completion；其它GAP及Release/真实业务安装独立边界不变。

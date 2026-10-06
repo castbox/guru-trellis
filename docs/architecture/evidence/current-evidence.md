@@ -505,3 +505,11 @@ promotion-created diff 的 fresh Phase 2 和完整 committed Branch Review 尚�
 ## EVD-047: #490 reference-only/source adoption
 
 已独立读取正式 creator 16/16、current lifecycle 152/152、Closure 18/18、dogfood 9/9 证据，source/installed/platform validator 与183-file official projection通过；直接 live回读 CI37179218822 success at9c36002a。Focused Codex local-workflow sample clean install、initial preset、两次 same-candidate update/reapply、session/template 与零 drift/sidecar通过，native_load=projection_parity。pre-promotion完整committed review已通过，promotion-created diff仍须fresh Phase2/commit/不同reviewer完整Branch Review。remote/native-host/full matrix、predecessor refusal/no-write、tag/Release尚未由本条证明，归#489。
+
+## EVD-048：#495迁移候选与本地证据
+
+绑定expected `.71 -> .72`知识晋升与正式Fork PR27 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`/CI37473087582。候选core411pass/1历史SQLite skip、CLI1879pass，lint/typecheck/build通过；clean built source与183文件official投影/9tests通过。Guru installer101、upgrade73、ownership9、migration14通过；runtime64完整轮62pass/2dependency失败后原样重试2pass，不称单轮64通过。
+
+public六场景6/6证明planning/dirty未发布dev接续、mixed/deferred正式creator、普通partial recovery、无新工作实际写后精确rollback/旧runtime smoke，以及新meta/notes禁止覆盖。current `.2` dry-run/update与local canonical workflow/apply/reapply、3844hash/preservation/零drift-sidecar通过，10真实业务checkout/Fork状态保持；共享managed Python cache为bootstrap边界。上述Guru来源是local_candidate，不证明remote source_locked/provider。
+
+PR195 exact HEAD旧manifest的4896 managed来源核对、58未展开hash解析、零冲突/现存编辑、一条absent路径只关闭来源读取缺口；openPR处置与真实旧Finalizer/Finish在途完整验收仍缺，merged历史终态不能替代。ARCH-GAP012保持open，全部MIG01..09完成前禁止merge/Completion。本次promotion-generated diff必须重新fresh Phase2/TaskCommit/不同reviewer完整BranchReview；本条不声明该后续gate通过。完整矩阵/软件发布/真实业务安装未执行。

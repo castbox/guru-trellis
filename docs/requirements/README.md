@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current authority 是 `current-main-0.6.17-guru.71` / `active`；本版[入口](./versions/current-main-0.6.17-guru.71/requirement-main.md)明确继承 immutable `.70` 的全部有效合同，仅追加已审查的 `R490/D490/T490` 与当前 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f`。Architecture 为 `.71/active`；旧 `.70` 及以下正文保留 predecessor provenance，不能覆盖本版 identity/source/验证边界。软件版本未由知识 promotion 发布，#489 独占 release proof。
+唯一 current authority 是 `current-main-0.6.17-guru.72` / `active`；[本版入口](./versions/current-main-0.6.17-guru.72/requirement-main.md)完整继承 immutable `.71` 有效合同，并按 #495 仅修订独立迁移边界。当前Fork `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，extension `0.7.0-guru.2` 未发布候选，Architecture `.72/active`。本地候选证据不证明same-remote-HEAD source_locked/provider或完整MIG-495-06；全部最终验收齐备前不得merge/Completion。软件发布/真实业务安装/完整Release矩阵保持独立。下文 `.71` 及更早条目只作immutable predecessor provenance。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +8,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.71` | [requirement-main.md](./versions/current-main-0.6.17-guru.71/requirement-main.md) | reviewed #490；薄继承 immutable `.70`，Architecture `.71/active` |
+| `active` | `current-main-0.6.17-guru.72` | [requirement-main.md](./versions/current-main-0.6.17-guru.72/requirement-main.md) | reviewed #495 migration candidate; immutable .71 inheritance; final acceptance pending |
+| `superseded` | `current-main-0.6.17-guru.71` | [requirement-main.md](./versions/current-main-0.6.17-guru.71/requirement-main.md) | reviewed #490；薄继承 immutable `.70`，Architecture `.71/active` |
 | `superseded` | `current-main-0.6.17-guru.70` | [requirement-main.md](./versions/current-main-0.6.17-guru.70/requirement-main.md) | reviewed #481；immutable history |
 | `superseded` | `current-main-0.6.17-guru.69` | [requirement-main.md](./versions/current-main-0.6.17-guru.69/requirement-main.md) | reviewed #467 release preparation；immutable history |
 | `superseded` | `current-main-0.6.17-guru.68` | [requirement-main.md](./versions/current-main-0.6.17-guru.68/requirement-main.md) | reviewed #454 generation 7 TaskId/domain and terminal recovery；immutable history |
