@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.71`
+- version：`current-main-0.6.17-guru.72`
 - status：`active`
-- source binding：reviewed #490 reference-only/source-adoption contribution + explicit immutable `.70` inheritance；active registry 为 34 Skills / 155 package exits / 104 commands，零 planned IDs，production workflow 为 33 mandatory invokes / 153 exits。current 增量见 `ARCH-CUR-048` / `ARCH-DOM-033` / `ARCH-INT-036` / `EVD-047`，fixed Fork source 为 `9c36002a324c16a09a85b6aa5a380b74aabf801f`，CLI/core `0.7.0-castbox.1`。`.69` 的 #434/#454 graph 保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/完整 Branch Review。前一正式版本既有安装的退役受管资产删除、完整多平台 Release matrix 与业务仓生产验证不由本 projection 证明。
+- source binding：reviewed #495 migration candidate contribution + explicit immutable `.71` inheritance；active registry 为 35 Skills / 159 package exits / 106 commands，零 planned IDs；migration standalone-only，business workflow 保持 33 mandatory invokes / 153 exits。current 增量见 `ARCH-CUR-049` / `ARCH-DOM-034` / `ARCH-INT-037` / accepted `ADR-017` / open `ARCH-GAP-012` / `EVD-048`，fixed Fork source 为 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，CLI/core `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 是未发布候选。`.71` 的 #490 与更早有效合同保持 inherited authority；promotion-created diff 须 fresh Phase 2/commit/不同 reviewer 完整 Branch Review。本地候选知识不证明 same-remote-HEAD `source_locked`/marketplace/preset provider、完整 `MIG-495-06`、merge/Completion、软件发布、真实业务安装或完整多平台 Release matrix；全部 `MIG-495-01..09` 最终验收仍属于同一任务，迁移 GAP 保持 open。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

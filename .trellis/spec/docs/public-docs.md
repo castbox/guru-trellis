@@ -34,12 +34,12 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The current
-target Guru repo tag is `v0.7.0-guru.1`; the target extension revision is
-`0.7.0-guru.1`; the current main/source framework lock is
+Stable install and upgrade docs must keep four version axes explicit. The published
+Guru repo tag is `v0.7.0-guru.1`; its extension revision is
+`0.7.0-guru.1`; its historical framework lock is
 `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
 manager `pnpm@10.32.1`. The published predecessor `v0.6.17-guru.2` does not prove
-the current framework-source adoption. Stable workflow marketplace and preset sources for
+successor framework-source adoption. Stable workflow marketplace and preset sources for
 one installation use the same immutable `v0.7.0-guru.1` tag after publication.
 Before publication, marketplace and preset use the same addressable full
 candidate SHA; an unreleased reviewed checkout is identified as such and never
@@ -50,14 +50,29 @@ The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
 must retain that release boundary. The #495 successor candidate defines an
 independent explicit migration for core `0.6.16` / Guru `0.6.16-guru.41`;
-it needs its own formal Fork implementation/source lock and actual migration,
-owner re-entry and post-write rollback evidence. Ordinary runtime remains
+its current framework lock is
+`castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
+`0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
+the unreleased `0.7.0-guru.2` candidate. Read that lock from
+`trellis/presets/guru-team/source/trellis-source.json`. Formal migration acceptance
+requires a remote-addressable full Guru HEAD shared by source-loaded migration,
+workflow marketplace and preset provider. Local migration, owner re-entry and
+post-write rollback evidence does not prove that same-source acceptance. Ordinary runtime remains
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.71`; it is not a
+Current knowledge authority is `current-main-0.6.17-guru.72` / `active`; it is not a
 product release axis. Read current Requirements/Design/Test deltas through the
-three layer READMEs. The inherited R443 session-binding authority, R410
+three layer READMEs: reviewed `R495/D495/T495` migration candidate knowledge
+inherits immutable `.71`, including `R490/D490/T490` and older valid contracts.
+The current registry has 35 active Skills, 159 package exits and 106 commands,
+with zero planned ids; standalone-only `guru-upgrade-installation` leaves the
+business workflow at 33 mandatory invokes / 153 exits. Architecture `.72`
+projects `ARCH-CUR-049`, `ARCH-DOM-034`, `ARCH-INT-037`, accepted `ADR-017`,
+open `ARCH-GAP-012` and local candidate evidence `EVD-048`.
+Same-remote-HEAD `source_locked`/provider and complete `MIG-495-06` acceptance
+remain pending; this knowledge cannot allow merge/Completion, prove Release,
+or prove installation into a real business checkout. The inherited R443 session-binding authority, R410
 release axes, R408 source/session boundary and older pins remain
 historical authority. Do not rewrite history or claim post-promotion checks,
 remote mutation, tag, GitHub Release, or Issue closure from this knowledge
