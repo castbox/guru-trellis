@@ -71,6 +71,11 @@ global npm installations or node_modules to bypass the old-version guard.
    target bytes before force apply; current preset then performs a real fresh
    install and current installed validation. User config and unknown edits are
    preserved; unresolved edits/sidecars produce same-owner resume facts.
+   Retire only empty directories left by the reviewed old managed paths;
+   retain unknown or preserved content. Validate the actual target through its
+   installed runtime before returning `upgraded`; staged validation alone
+   cannot establish live installation validity. A failed live check returns
+   `resume_required` without weakening the current validator.
    Legal existing config values remain intact; official necessary additive
    config is allowed. Compare historical/business/spec/planning bytes and modes
    explicitly rather than treating an untouched path as migration proof.

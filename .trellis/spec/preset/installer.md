@@ -23,6 +23,15 @@ validation remain necessary; a local dirty Fork is development evidence only.
 See the package contract and `MIGRATION-495.md`. Historical roots and business
 customizations remain outside migration ownership.
 
+Retiring reviewed old Guru-managed files must also retire their empty asset
+directories. Remove only empty directories derived from those exact owned
+paths; preserve directories containing unknown or retained local content.
+Before migration returns `upgraded`, validate the actual target through its
+installed runtime after preset activation. A staged file projection cannot
+prove that the live target has no retired Skill roots or private `tests/`
+directories. Failure remains `resume_required`; the current installed validator
+does not accept a legacy allowlist.
+
 `trellis/presets/guru-team/scripts/bash/apply.sh` is a Bash wrapper. The
 installer logic lives in
 `trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py`.

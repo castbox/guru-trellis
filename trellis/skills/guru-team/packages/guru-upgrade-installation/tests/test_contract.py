@@ -189,17 +189,22 @@ class MigrationContractTests(unittest.TestCase):
             checkpoint["business_before"] = business_state(root, paths)
             record = self.current_record()
             write_json(path, record)
-            checkpoint["plan"].update({"dependency_mode": "local_candidate", "workflow": {"action": "preserve"}, "selected_platforms": ["codex"]})
+            checkpoint["plan"].update({"dependency_mode": "local_candidate", "workflow": {"action": "preserve"}, "selected_platforms": ["codex"], "guru_decisions": []})
             checkpoint["plan"]["core_plan"]["tasks"] = [{"task_ref": ref}]
             checkpoint["task_after_core"] = task_token(root, checkpoint)
-            checkpoint.update({"phase": "preset", "root": str(root), "source": str(root), "source_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(), "fork": "/unused"})
+            checkpoint.update({"phase": "preset", "root": str(root), "source": str(root), "source_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(), "fork": "/unused", "old_managed": []})
             save_baseline(root, recovery, checkpoint)
             fixed = checkpoint["task_after_core"]
             record["meta"]["new_work"] = "native task writer result"
             write_json(path, record)
             with patch("owner.source_root", return_value=root), patch("owner.installer") as install:
                 install.return_value.install_assets.return_value = {"skill_packages": {"status": "ok"}, "overlays": {"status": "ok"}, "skill_installed_validation": {"returncode": 0}}
-                self.assertEqual(resume(PACKAGE, root, recovery, checkpoint)["exit_id"], "upgraded")
+                # This unit fixture has no activated target launcher. Even a
+                # successful staged result cannot publish installation success.
+                self.assertEqual(resume(PACKAGE, root, recovery, checkpoint)["exit_id"], "resume_required")
+                self.assertEqual(checkpoint["phase"], "preset")
+                with patch("owner.command", return_value='{"status":"passed"}'):
+                    self.assertEqual(resume(PACKAGE, root, recovery, checkpoint)["exit_id"], "upgraded")
             self.assertEqual(checkpoint["task_after_core"], fixed)
             self.assertEqual(rollback(root, recovery, checkpoint), {"exit_id": "blocked", "reason": "task_work_since_core_migration"})
             self.assertEqual(json.loads(path.read_text())["meta"]["new_work"], "native task writer result")

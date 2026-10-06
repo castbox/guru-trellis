@@ -308,6 +308,7 @@ independent review before shared baseline promotion.
                              extra=["--fork", str(self.cli), "--plan", str(plan_path)])
         if result["exit_id"] == "upgraded":
             self.assertIn("formal_fork_source_lock", result["unverified"])
+            self.assert_live_installed()
             self.assertEqual(result["installed_version"], "0.7.0-guru.2")
             self.assertEqual((self.root / ".trellis/.version").read_text().strip(), "0.7.0-castbox.2")
             self.assertIn("Preserve this user-owned paragraph.\n", (self.root / "AGENTS.md").read_text())
@@ -568,6 +569,51 @@ independent review before shared baseline promotion.
         self.assert_native_session(self.task_id, self.task_ref)
         return checkout
 
+    def live_installed(self) -> subprocess.CompletedProcess[str]:
+        runtime = self.root / ".trellis/guru-team/runtime"
+        return run(self.root, ["bash", str(runtime / "resolve-python.sh"), str(self.root), str(runtime),
+                               "-m", "runtime.validate", "--root", str(self.root), "--mode", "installed", "--json"],
+                   environment={"PYTHONPATH": str(self.root / ".trellis/guru-team")})
+
+    def assert_live_installed(self) -> None:
+        validation = self.live_installed()
+        self.assertEqual(validation.returncode, 0, validation.stdout + validation.stderr)
+        self.assertEqual(json.loads(validation.stdout)["status"], "passed")
+
+    def test_nonempty_retired_directories_preserved_and_live_failure_requires_resume(self) -> None:
+        old = self.commit_task("planning")
+        local_paths = [".agents/skills/guru-finalize-task/local-notes.md",
+                       ".codex/skills/guru-finalize-task/local-notes.md",
+                       ".trellis/guru-team/skills/packages/guru-check-task/tests/local-notes.md"]
+        for relative in local_paths:
+            self.write(relative, "Ordinary project-local guidance retained during upgrade.\n")
+        before = {relative: (self.root / relative).read_bytes() for relative in local_paths}
+        result = self.upgrade(old, {"kind": "no_issue"})
+        self.assertEqual(result["exit_id"], "resume_required", result)
+        for relative, content in before.items():
+            self.assertEqual((self.root / relative).read_bytes(), content)
+        # Staging succeeded but the actual target still contains retained local
+        # content in retired/private directories, so success is not published.
+        validation = self.live_installed()
+        self.assertNotEqual(validation.returncode, 0)
+        errors = json.loads(validation.stdout)["errors"]
+        self.assertTrue(any("unknown workflow skill copy" in error for error in errors))
+        self.assertTrue(any("package-private tests directory" in error for error in errors))
+        recovery = self.root / ".git/guru-team/install-upgrade" / result["recovery_ref"]
+        checkpoint = json.loads((recovery / "checkpoint.json").read_text())
+        self.assertEqual(checkpoint["phase"], "preset")
+        self.assertEqual(json.loads((self.root / ".trellis/guru-team/extension.json").read_text())["skill_packages"]["status"], "ok")
+        # Resolve the local content, then consume the original public recovery.
+        for relative in local_paths:
+            (self.root / relative).unlink()
+        resumed = self.public("guru-upgrade-installation", {
+            "profile": "resume", "recovery_ref": result["recovery_ref"],
+        })
+        self.assertEqual(resumed["exit_id"], "upgraded", resumed)
+        self.assert_live_installed()
+        for relative in local_paths:
+            self.assertFalse((self.root / relative).parent.exists())
+
     def test_full_planning_task_reenters_current_owners_without_schema_commit(self) -> None:
         old = self.commit_task("planning")
         before = self.preserved_snapshot()
@@ -758,6 +804,7 @@ independent review before shared baseline promotion.
             "profile": "resume", "recovery_ref": partial["recovery_ref"],
         })
         self.assertEqual(resumed["exit_id"], "upgraded", resumed)
+        self.assert_live_installed()
         rolled_back = self.public("guru-upgrade-installation", {
             "profile": "rollback", "recovery_ref": resumed["recovery_ref"],
         })

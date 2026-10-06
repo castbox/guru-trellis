@@ -306,6 +306,17 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
             checkpoint["phase"] = "preset"
             save_baseline(root, recovery, checkpoint)
         if checkpoint["phase"] == "preset":
+            module = installer(source)
+            # File retirement leaves directories outside the preset's staged
+            # file inventory. Prune only parents of reviewed retired paths;
+            # retained or unknown content makes rmdir stop without deleting it.
+            decisions = {x["path"]: x for x in plan["guru_decisions"]}
+            for row in sorted(checkpoint["old_managed"], key=lambda row: len(Path(row["path"]).parts), reverse=True):
+                if row["owner"] != "guru" or decisions.get(row["path"], {}).get("action") == "preserve":
+                    continue
+                path = relative_file(root, row["path"])
+                if not path.exists():
+                    module.prune_empty_managed_skill_parents(root, path)
             wf = plan["workflow"]
             if wf["action"] == "replace":
                 pending = relative_file(root, ".trellis/workflow.md.new")
@@ -330,12 +341,21 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
                 pending.unlink(missing_ok=True)
                 # Workflow provider backup is preserved in migration preimages.
                 relative_file(root, ".trellis/workflow.md.bak").unlink(missing_ok=True)
-            module = installer(source)
             result = module.install_assets(source / "trellis/workflows/guru-team", root / ".trellis/guru-team", root, set(plan["selected_platforms"]))
             if (result["skill_packages"]["status"] != "ok" or result["overlays"]["status"] != "ok"
                     or result["skill_installed_validation"].get("returncode") != 0):
                 raise MigrationError("Current preset has unresolved managed edits or sidecars")
             validate_task_dispositions(root, plan)
+        # Validate the activated target, not merely the staged file projection.
+        runtime_assets = root / ".trellis/guru-team/runtime"
+        live_validation = json.loads(command([
+            "env", "PYTHONPATH=" + str(root / ".trellis/guru-team"),
+            "bash", str(runtime_assets / "resolve-python.sh"), str(root), str(runtime_assets),
+            "-m", "runtime.validate", "--root", str(root), "--mode", "installed", "--json",
+        ], root))
+        if live_validation.get("status") != "passed":
+            raise MigrationError("Actual target installed validation failed; review retained local content")
+        if checkpoint["phase"] == "preset":
             checkpoint["phase"] = "complete"
             save_baseline(root, recovery, checkpoint)
         return {"exit_id": "upgraded", "installed_version": TARGET_GURU,
