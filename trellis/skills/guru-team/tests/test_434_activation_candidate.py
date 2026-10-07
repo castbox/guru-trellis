@@ -221,7 +221,7 @@ class ActivationCandidateTests(unittest.TestCase):
 
     def test_candidate_packages_and_unique_skill_consumers(self) -> None:
         self.assertEqual((len(self.ids), sum(len(i["external_exits"]) for i in self.interfaces.values())),
-                         (34, 155))
+                         (35, 159))
         for skill, interface in self.interfaces.items():
             outputs = interface["public_contracts"]["outputs"]
             projections = interface["public_contracts"]["projections"]
@@ -244,7 +244,7 @@ class ActivationCandidateTests(unittest.TestCase):
         self.assertFalse(RETIRED & active)
         result = package_validator.validate(ROOT, "source")
         self.assertEqual((result["status"], result["active_packages"], result["commands"]),
-                         ("passed", 34, 104))
+                         ("passed", 35, 106))
 
     def test_selected_interface_schema_is_installed(self) -> None:
         registry = read_json(SKILLS / "registry.json")

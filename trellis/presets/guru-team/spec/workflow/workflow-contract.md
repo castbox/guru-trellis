@@ -69,9 +69,10 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current source registry has 34 active packages, 155 package exits, and 104
+The current source registry has 35 active packages, 159 package exits, and 106
 commands. The business-task workflow declares 33 mandatory invocations and 153
-external exits; `guru-verify-extension-installation` is standalone-only. These
+external exits; `guru-verify-extension-installation` and
+`guru-upgrade-installation` are standalone-only. These
 counts are checks against the live registry and workflow markers, not an
 alternative routing authority.
 
@@ -164,6 +165,12 @@ emits one call-local typed exit and creates no qualification artifact,
 checkpoint, persistent state store, handoff, or result locator.
 
 ## Phase Route
+
+Explicit old-installation upgrades enter standalone `guru-upgrade-installation`
+from the reviewed target source, outside business-task Intake/current target
+preflight. Its current Interface owns all local behavior and typed exits;
+the global workflow declares only terminal consumers. Successful installation
+does not imply task re-entry, Planning approval or Release qualification.
 
 ### Architecture stage consumption
 

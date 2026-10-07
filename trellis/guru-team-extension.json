@@ -2,16 +2,16 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.7.0-guru.1",
+  "version": "0.7.0-guru.2",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
-  "target_trellis_cli": "0.7.0-castbox.1",
+  "target_trellis_cli": "0.7.0-castbox.2",
   "requires": {
-    "trellis_cli": "0.7.0-castbox.1"
+    "trellis_cli": "0.7.0-castbox.2"
   },
   "tested": {
     "trellis_cli": [
-      "0.7.0-castbox.1"
+      "0.7.0-castbox.2"
     ]
   },
   "public_api": {
@@ -562,7 +562,11 @@
         "guru-task-free-change-input-interaction-resume-1.0",
         "guru-task-free-change-input-selected-route-1.0",
         "guru-workflow-mode-input-aggregate-1.0",
-        "guru-workflow-mode-input-initial-1.0"
+        "guru-workflow-mode-input-initial-1.0",
+        "guru-upgrade-installation-input-aggregate-1.0",
+        "guru-upgrade-installation-public-initial_upgrade-input-1.0",
+        "guru-upgrade-installation-public-resume-input-1.0",
+        "guru-upgrade-installation-public-rollback-input-1.0"
       ],
       "typed_output_schema_ids": [
         "baseline_incomplete",
@@ -715,7 +719,11 @@
         "guru-workflow-mode-output-blocked-1.0",
         "guru-workflow-mode-output-standard-intake-1.0",
         "guru-workflow-mode-output-task-free-1.0",
-        "repair_required"
+        "repair_required",
+        "guru-upgrade-installation-public-upgraded-output-1.0",
+        "guru-upgrade-installation-public-resume_required-output-1.0",
+        "guru-upgrade-installation-public-rolled_back-output-1.0",
+        "guru-upgrade-installation-public-blocked-output-1.0"
       ],
       "legacy_typed_output_schema_ids": [
         "guru-stage0-clarify-requirements-output-clear-1.0",
@@ -745,7 +753,8 @@
         "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-7.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
         "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json",
-        "https://github.com/castbox/guru-trellis/schemas/guru-archived-review-gate-1.0.json"
+        "https://github.com/castbox/guru-trellis/schemas/guru-archived-review-gate-1.0.json",
+        "guru-upgrade-installation-private-recovery-1.0"
       ],
       "artifact_schema_ids": [
         "guru-base-sync-result-1.0",
@@ -796,6 +805,7 @@
         "guru-review-task-delivery",
         "guru-select-workflow-mode",
         "guru-sync-base",
+        "guru-upgrade-installation",
         "guru-verify-extension-installation"
       ],
       "planned_skill_ids": [],
@@ -951,7 +961,9 @@
       "execute-base-candidate",
       "record-base-reconciliation",
       "check-base-reconciliation",
-      "invoke-guru-reconcile-task-base"
+      "invoke-guru-reconcile-task-base",
+      "invoke-guru-upgrade-installation",
+      "preview-installation-upgrade"
     ]
   },
   "release_notes": "README.md#guru-team-extension-version"

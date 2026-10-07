@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-stop-upgraded-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "installed_version",
+    "recovery_ref",
+    "unverified"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "upgraded"
+    },
+    "installed_version": {
+      "const": "0.7.0-guru.2"
+    },
+    "recovery_ref": {
+      "type": "string",
+      "pattern": "^[a-f0-9-]{36}$"
+    },
+    "unverified": {
+      "type": "array",
+      "items": {
+        "const": "formal_fork_source_lock"
+      },
+      "uniqueItems": true
+    }
+  }
+}

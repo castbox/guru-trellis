@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "Installer/source/installed provenance and reapply contract; native injection truncates this file: load its complete applicable contract through child-side reads before edits/review"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Core versus Guru managed-path ownership and old data preservation"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Canonical overlay and dogfood synchronization"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Closed semantic profiles, public DTO and private migration state; native injection truncates this file: load its complete applicable contract through child-side reads before edits/review"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Executor/validator/recorder boundaries; native injection truncates this file: load its complete applicable contract through child-side reads before edits/review"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Current schema and lifecycle contracts; native injection truncates this file: load its complete applicable contract through child-side reads before edits/review"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Issue-scoped validation and deferred full release matrix; native injection truncates this file: load its complete applicable contract through child-side reads before edits/review"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "One-time migration versus forbidden normal runtime compatibility"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Planning and independent project Architecture checks"}

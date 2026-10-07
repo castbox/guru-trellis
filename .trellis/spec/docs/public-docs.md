@@ -34,34 +34,52 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The current
-target Guru repo tag is `v0.7.0-guru.1`; the target extension revision is
-`0.7.0-guru.1`; the current main/source framework lock is
+Stable install and upgrade docs must keep four version axes explicit. The published
+Guru repo tag is `v0.7.0-guru.1`; its extension revision is
+`0.7.0-guru.1`; its historical framework lock is
 `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
 manager `pnpm@10.32.1`. The published predecessor `v0.6.17-guru.2` does not prove
-the current framework-source adoption. Stable workflow marketplace and preset sources for
+successor framework-source adoption. Stable workflow marketplace and preset sources for
 one installation use the same immutable `v0.7.0-guru.1` tag after publication.
 Before publication, marketplace and preset use the same addressable full
 candidate SHA; an unreleased reviewed checkout is identified as such and never
 described as tag-pinned release provenance. Unpinned or branch sources remain
 mutable latest/canary inputs.
 
-The current Fork's update rejects old `0.6.17` installations before accessing
-legacy project data and preserves that data unchanged. Public docs must state
-this compatibility boundary, must not promise an in-place upgrade, dual reader
-or automatic migration, and must not describe rejection as an upgrade success.
+The released `v0.7.0-guru.1` Fork's update rejects old installations before
+accessing legacy project data and preserves that data unchanged. Public docs
+must retain that release boundary. The #495 successor candidate defines an
+independent explicit migration for core `0.6.16` / Guru `0.6.16-guru.41`;
+its current framework lock is
+`castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
+`0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
+the unreleased `0.7.0-guru.2` candidate. Read that lock from
+`trellis/presets/guru-team/source/trellis-source.json`. Formal migration acceptance
+requires a remote-addressable full Guru HEAD shared by source-loaded migration,
+workflow marketplace and preset provider. Local migration, owner re-entry and
+post-write rollback evidence does not prove that same-source acceptance. Ordinary runtime remains
+current-only. Do not describe rejection, dirty local builds or a planned
+successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.71`; it is not a
-product release axis. Read current Requirements/Design/Test deltas through the
-three layer READMEs. The inherited R443 session-binding authority, R410
-release axes, R408 source/session boundary and older pins remain
-historical authority. Do not rewrite history or claim post-promotion checks,
-remote mutation, tag, GitHub Release, or Issue closure from this knowledge
-snapshot. Existing retired internal API cleanup and old lifecycle stay in force.
-Automatic failure reporting and independently requested manual Git/gh operations
-reference the canonical workflow boundary; manual results never backfill Guru
-gates, Finalizer, or archive state. Native, mock, installed, and unverified
-evidence remain distinct in the Test authority.
+Current knowledge authority is `current-main-0.6.17-guru.73` / `active`; it is not a
+product release axis. Read current Requirements/Design/Test through the three
+layer READMEs: reviewed `R495/D495/T495` fixed-source acceptance inherits
+immutable `.72`, including `.71` and older valid contracts. The current registry
+remains 35 active Skills / 159 exits / 106 commands, zero planned ids;
+standalone-only migration leaves business workflow at 33 invokes / 153 exits.
+Architecture `.73` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
+accepted ADR-017 / ARCH-GAP-012 / EVD-049; EVD-048 retains local candidate history.
+The unique acceptance contribution separates fixed `6a563f5f` source_locked /
+provider / actual installed execution, real live PR/merge diagnosis, and accepted
+old-writer constructed inflight evidence. Retain first failures and same-owner
+recovery; do not claim single-run 7/7, genuine business inflight or real GitHub
+publication from test doubles. Post-promotion Phase2/TaskCommit/independent full
+BranchReview still gate Delivery/merge/Completion; knowledge does not prove those
+later steps, release, real-business installation or the full cumulative matrix.
+A later docs-only HEAD does not become an exact-source rerun merely by inheritance.
+Historical pins and retired internal API/lifecycle boundaries remain unchanged.
+Manual Git/gh results never backfill Guru gates, transactions or archives.
+Native, mock, installed and unverified evidence remain distinct in Test authority.
 
 Prompts in `README.md` are meant to be copied into an AI coding session in a
 target business repository. They should tell the AI to:

@@ -50,7 +50,7 @@ WORKFLOW_ROOT_RELATIVE = Path("trellis/workflows/guru-team")
 
 SCHEMA_VERSION = "4.0"
 INVENTORY_ID = "guru-team-upstream-ownership"
-TARGET_TRELLIS_CLI = "0.7.0-castbox.1"
+TARGET_TRELLIS_CLI = "0.7.0-castbox.2"
 EXPECTED_SHARED_MANAGED_PATHS = [
     ".trellis/guru-team/",
     ".trellis/guru-team/skills/",

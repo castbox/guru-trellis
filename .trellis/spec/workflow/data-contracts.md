@@ -582,6 +582,14 @@ names only after the new tag is verified.
 
 ## Task Identity and Local Runtime
 
+The independent #495 migration may explicitly convert supported old active
+records into the current Fork schema. Exact TaskId is preserved; missing
+generation/source and legacy branch/path fields are resolved through the
+migration contract and current owners, never a normal-reader fallback.
+History retains original bytes and non-reuse semantics. Migration private
+path backups and completed actions serve only recovery/rollback; they are not
+TaskBranchBinding, session authority, current gates or a public audit DTO.
+
 Current AI-first tasks use official Trellis `task.json` as their tracked task
 identity and create no Guru-owned durable Intake aggregate. Runtime resolves
 the worktree from the canonical TaskId/lifecycle generation artifact, its Git
@@ -1997,6 +2005,23 @@ session identity. No authorization or alternate session store is persisted.
 
 ## Task Lifecycle Substrate (#454 C2)
 
+#495 mixed inventory keeps known old active records as TaskId/TaskRef
+reservations only. The recognized old shape has no `source` or
+`lifecycle_generation`, carries the old creator/assignee header, and uses only
+known old fields with valid types. It is excluded from `task_inventory`, never
+projected as a current DTO, and direct selection remains
+`unsupported_legacy_task`. Current targets resolve normally alongside unrelated
+old records; exact/casefold identity collisions and invalid current records,
+JSON or missing ids still block. Creation checks the same active record
+boundary and preserves raw historical identity reservations. Empty directories
+reserve their own target path but do not become task records.
+
+The standalone migration may explicitly preserve reviewed deferred old active
+records using a private TaskRef/expected-bytes projection. That projection has
+only migration preservation and installed validation consumers, never a
+lifecycle, binding, session or gate consumer. Omitted old records remain a
+migration blocker. Normal runtime performs no old-task conversion or dual read.
+
 Task lifecycle 的 canonical shared contract 位于
 `trellis/skills/guru-team/contracts/task-lifecycle/task-lifecycle-dtos.schema.json`。它是 Draft 2020-12
 catalog；consumer 必须选择一个 named `$defs/*DTO`，不得把 catalog 顶层 `oneOf` 当作任意 public output。
@@ -2014,7 +2039,8 @@ Checkout path、workspace path、session identity、authorization、generic evid
 snapshot 不进入 public DTO。Operation-specific commit/head 字段只允许出现在 catalog 已声明且具有直接 consumer
 的 named DTO；它们不形成 tracked task、session 或跨阶段通用 authority。
 
-Fork `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f` 独占 immutable `task.json.id`、generation、
+Fork `castbox/Trellis` 的精确当前来源由 `trellis/presets/guru-team/source/trellis-source.json`
+唯一声明；该 Fork 独占 immutable `task.json.id`、generation、
 TaskId-to-TaskRef resolution 与 path-free session primitive。Guru runtime 只读取并验证这些 official primitives；
 不得复制 `.trellis/scripts/common/**`、创建 durable identity index、第二 session store、mapping compatibility reader、
 alias、dual-read 或 dual-write。该 catalog 与 runtime 是当前 package-neutral substrate；

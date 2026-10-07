@@ -10,7 +10,10 @@ from pathlib import Path
 from typing import Any
 
 from .path_boundary import ProjectPathError, require_project_path
-from .io import JSON_READ_MISSING, read_json_checked, write_json
+from .io import (
+    JSON_READ_MISSING, JSON_READ_KNOWN_LEGACY_TASK,
+    read_json_checked, read_task_inventory_record, write_json,
+)
 from .task_utils import TASK_ID_PATTERN, TaskIdentityError, lifecycle_generation
 
 
@@ -347,9 +350,9 @@ def resolve_task_identity(
                         f"invalid_task_metadata_path: {task_json}"
                     )
                 continue
-            data, reason = read_json_checked(task_json)
+            data, reason = read_task_inventory_record(task_json)
             if data is None:
-                if visible_match:
+                if visible_match or reason != JSON_READ_MISSING:
                     raise SessionBindingError(
                         f"task_metadata_{reason}: {task_json}"
                     )
@@ -364,6 +367,8 @@ def resolve_task_identity(
             if candidate_id != task_id:
                 casefold_conflicts.append((directory, candidate_id))
                 continue
+            if reason == JSON_READ_KNOWN_LEGACY_TASK:
+                raise SessionBindingError(f"unsupported_legacy_task: {task_json}")
             try:
                 candidate_generation = lifecycle_generation(data, task_json)
             except TaskIdentityError as exc:

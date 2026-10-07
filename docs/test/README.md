@@ -1,6 +1,6 @@
 # Test Strategy / Test Plan SSOT
 
-唯一 current authority 是 `current-main-0.6.17-guru.71` / `active`；本版[入口](./versions/current-main-0.6.17-guru.71/test-strategy.md)明确继承 immutable `.70` 的全部有效合同，仅追加已审查的 `R490/D490/T490` 与当前 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f`。Architecture 为 `.71/active`；旧 `.70` 及以下正文保留 predecessor provenance，不能覆盖本版 identity/source/验证边界。软件版本未由知识 promotion 发布，#489 独占 release proof。
+唯一 current authority 是 `current-main-0.6.17-guru.73` / `active`；[本版入口](./versions/current-main-0.6.17-guru.73/test-strategy.md)完整继承 immutable `.72` 有效合同，并承接 #495 [固定来源验收贡献](../requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md)。Fork `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 为未发布候选，Architecture `.73/active`。MIG-495-01..09 证据区分首次失败/恢复、真实 live PR/merge、旧正式 writer 构造快照与新固定 `6a563f5f` source_locked/provider/actual installed；不声明单轮七场景全通过。晋升 diff 仍须 fresh Phase2/commit/独立完整 Branch Review，后续 merge/Completion 不能复用晋升前 gate。软件发布、真实业务安装、完整累计矩阵保持独立未验证；下文 `.72` 及更早条目只作 immutable predecessor provenance。
 
 历史 `.70` authority：[`versions/current-main-0.6.17-guru.70/test-strategy.md`](./versions/current-main-0.6.17-guru.70/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.70/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.70/active` 和 evidence；`.69` 及更早版本保持 immutable。
 
@@ -10,7 +10,9 @@
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.71` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.71/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.73` | [test-strategy.md](./versions/current-main-0.6.17-guru.73/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.72` | [test-strategy.md](./versions/current-main-0.6.17-guru.72/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.71` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.71/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.70` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.70/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.69` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.69/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.68` | [`test-strategy.md`](./versions/current-main-0.6.17-guru.68/test-strategy.md) |

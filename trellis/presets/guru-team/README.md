@@ -8,19 +8,22 @@ The installer never edits upstream Trellis source or a global npm package.
 
 ## Apply And Verify
 
-当前目标仓库 tag 为 `v0.7.0-guru.1`，extension revision 为
-`0.7.0-guru.1`；发布事实以 exact-candidate 验证、tag 和 GitHub Release
-为准。Fork CLI/core 为 `0.7.0-castbox.1`。
-predecessor 是已发布的 `v0.6.17-guru.2`。发布后，preset 使用 `v0.7.0-guru.1`
-immutable tag 的 Guru checkout，workflow marketplace source 使用同一 tag 的
-`gh:castbox/guru-trellis/trellis#v0.7.0-guru.1`；未发布验证使用同一可寻址的
-完整 candidate SHA。
+当前 extension candidate revision 为 `0.7.0-guru.2`，尚未发布；
+predecessor 是已发布的 `v0.7.0-guru.1`。Fork CLI/core 为 `0.7.0-castbox.2`。
+候选验证的 preset 与 workflow marketplace 使用同一可寻址的完整 Guru candidate SHA；
+正式发布后才使用同一 immutable Guru tag。Fork main CI 成功不替代 Guru
+exact-candidate、installed/lifecycle 或发布门禁。
 
 旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
-本版本不支持旧安装原地升级，不提供兼容双读或自动迁移；拒绝不代表升级成功。
+已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；拒绝不代表升级成功。
+后继 `0.7.0-guru.2` / Fork `0.7.0-castbox.2` 候选提供独立 semantic
+`guru-upgrade-installation`，从目标 source package 加载，普通 apply 保持严格。
+支持来源、固定依赖前置条件和验收状态见 [MIGRATION-495.md](./MIGRATION-495.md)。
+后继 Fork source/成功 main CI 已固定，Guru 候选完整验收与发布仍未完成；
+普通 runtime 无兼容双读或自动迁移。
 
-Use the source-locked, built `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`
-CLI (successful main CI `37179218822`) and a matching reviewed Guru
+Use the source-locked, built `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`
+CLI (successful main CI `37473087582`) and a matching reviewed Guru
 source. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:

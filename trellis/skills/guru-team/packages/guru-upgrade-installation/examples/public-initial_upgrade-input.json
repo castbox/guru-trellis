@@ -1,0 +1,5 @@
+{
+  "profile": "initial_upgrade",
+  "source_profile": "core0.6.16-guru0.6.16-guru.41",
+  "target_source_ref": "0123456789abcdef0123456789abcdef01234567"
+}

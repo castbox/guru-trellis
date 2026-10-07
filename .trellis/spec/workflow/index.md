@@ -53,11 +53,11 @@ Before editing workflow behavior:
   request enters `guru-create-task`.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - The live registry and selected Interfaces, not old cardinalities, define the
-  active packages. This #434 candidate has 34 active packages, 155 exits, and
-  104 commands; the business workflow has 33 mandatory invokes and 153 exits.
+  active packages. The current candidate has 35 active packages, 159 exits, and
+  106 commands; the business workflow has 33 mandatory invokes and 153 exits.
   `production-current-v4` remains a four-package submanifest, not the complete
   Delivery/Completion lifecycle selector. The standalone extension verifier
-  does not enter a business task.
+  and installation migration do not enter the business-task graph.
 - `discover-skill-contract` is the stable deterministic public discovery
   command. It returns the selected current Interface contract and portable errors; the
   exact package invocation remains package-owned and callers do not import the

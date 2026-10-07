@@ -159,7 +159,11 @@ class CompositionTests(unittest.TestCase):
         archived = sibling / ".trellis/tasks/archive/2026-09/09-20-old"
         active.mkdir(parents=True)
         archived.mkdir(parents=True)
-        (active / "task.json").write_text(json.dumps({"id": "old-task"}), encoding="utf-8")
+        (active / "task.json").write_text(json.dumps({
+            "id": "old-task", "name": "old-task", "title": "Old task",
+            "status": "in_progress", "creator": "team", "assignee": "team",
+            "branch": "legacy", "base_branch": "main", "scope": None,
+        }), encoding="utf-8")
         (archived / "task.json").write_text(json.dumps({"id": "old-task"}), encoding="utf-8")
         (sibling / ".trellis/tasks/09-21-empty").mkdir()
         self.assertEqual(prepare_creation_inputs(self.repo, self.creation(), self.acquisition()).task_id, TASK_ID)

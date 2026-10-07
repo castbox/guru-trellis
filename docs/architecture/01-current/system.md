@@ -253,3 +253,5 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 33/153；代表性新装已验证，旧版本升级及完整 Release matrix 未验证。
 
 `ARCH-CUR-048`（`source_confirmed` + `reviewed`）：#490 在既有 C6 正式创建合同中接受 exact_source/reference_only，source 原值通过 official writer、恢复和 identity reader 保留；no_issue/exact_source、TaskId/generation/session/branch/resource/Closure 不变。current Fork 为 `9c36002a324c16a09a85b6aa5a380b74aabf801f` / main CI `37179218822`，CLI/core `0.7.0-castbox.1`，extension `0.7.0-guru.1`。旧 ARCH-CUR-047 pin 属 predecessor；人员身份退役等有效合同继续继承，registry/production 计数不变。EVD-047 的 scoped 证据不表示 release matrix、remote/native-host 或软件发布。
+
+`ARCH-CUR-049`（`source_confirmed` + `reviewed`）：#495 独立 standalone `guru-upgrade-installation` 支持精确 core `0.6.16` / Guru `.41` 单向迁移；Fork `8868c47c` / CLI `0.7.0-castbox.2` 单写 core/task，Guru `0.7.0-guru.2` 候选单写自身受管资产并复用 current owners。known-legacy 仅占用身份，deferred/preserve 不成为 lifecycle authority；正常 runtime current-only。MIG01..09 的固定远端 `6a563f5f` / source_locked/provider、current 接续、恢复/回退及 accepted 旧正式 writer 构造在途已定向验证，见 EVD-049 与 ARCH-GAP-012；旧 EVD-048 是候选历史。registry35/159/106，business33/153 不变；构造 provider 不证明真实 GitHub 发布或业务原始事务。

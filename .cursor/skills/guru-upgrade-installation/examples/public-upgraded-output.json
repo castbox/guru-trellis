@@ -1,0 +1,8 @@
+{
+  "exit_id": "upgraded",
+  "installed_version": "0.7.0-guru.2",
+  "recovery_ref": "12345678-1234-1234-1234-123456789abc",
+  "unverified": [
+    "formal_fork_source_lock"
+  ]
+}

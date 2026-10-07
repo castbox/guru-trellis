@@ -40,10 +40,10 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
     def test_activation_registers_all_canonical_packages(self) -> None:
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
-        self.assertEqual(payload["active_skill_count"], 34)
+        self.assertEqual(payload["active_skill_count"], 35)
         self.assertEqual(payload["planned_skill_count"], 0)
         self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
-        self.assertEqual(payload["canonical_package_count"], 34)
+        self.assertEqual(payload["canonical_package_count"], 35)
 
         registry = json.loads(
             (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
@@ -2133,8 +2133,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
         self.assertEqual(installed["extension"]["extension_id"], "guru-team")
         self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
-        self.assertEqual(installed["extension"]["version"], "0.7.0-guru.1")
-        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.7.0-castbox.1")
+        self.assertEqual(installed["extension"]["version"], "0.7.0-guru.2")
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.7.0-castbox.2")
         public_api = installed["extension"]["public_api"]
         canonical = json.loads(
             (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
@@ -2229,7 +2229,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
         )
         for field, expected_count in (
-            ("private_artifact_schema_ids", 21),
+            ("private_artifact_schema_ids", 22),
         ):
             self.assertEqual(
                 public_api["skill_contracts"][field],
@@ -2613,8 +2613,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertIn("check-skill-packages", public_api["companion_scripts"])
         self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
-        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.7.0-castbox.1")
-        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.7.0-castbox.1"])
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.7.0-castbox.2")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.7.0-castbox.2"])
         self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
         self.assertEqual(
             installed["install"]["managed_asset_hashes"],

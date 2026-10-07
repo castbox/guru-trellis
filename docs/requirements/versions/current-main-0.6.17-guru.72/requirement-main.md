@@ -1,0 +1,18 @@
+# 旧安装单向迁移需求
+
+版本：`current-main-0.6.17-guru.72`；状态：`active`；predecessor：`current-main-0.6.17-guru.71`。完整继承[不可变前驱合同](../current-main-0.6.17-guru.71/requirement-main.md)；除下文明确修订的独立迁移边界外，既有 requirement/design/test、无人员模型、source disposition、owner、历史拒绝边界、NFR 与 trace 继续有效。前驱 source、计数和证据只表示历史快照。Architecture：`docs/architecture/README.md` / `current-main-0.6.17-guru.72` / `active`。知识版本不是软件发布。
+
+当前 Fork：`castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，main CI `37473087582`，CLI/core `0.7.0-castbox.2`。extension `0.7.0-guru.2` 是未发布候选；历史 tag/Release 不追溯修改。
+
+- `R495-01`：支持精确 core `0.6.16` / Guru `0.6.16-guru.41` 来源。写前 inventory、逐文件/任务预览、AI 语义审查与对话内副作用确认；来源和目标均不可凭版本号推断。
+- `R495-02`：真实更新 core、workflow、Guru preset 与 provenance，保留业务代码/spec/规划、有效配置、平台定制及无关 dirty/untracked；有效设置允许官方必要 additive 配置，历史归档、journal、identity 和 traces 原字节保留。
+- `R495-03`：完整/精简旧活动 task 转换为 current schema；保留合法非 UUID TaskId，明确 generation/source/关系/未知字段处置，退役 active personnel，不推断关闭意图。
+- `R495-04`：planning 保留身份/规划进入当前规划；未发布 in_progress 保留已有 commit 与未提交业务工作，经 fresh 当前规划审查进入 dev/check。必须实际执行 current identity/branch/checkout/session owners、真实脱敏项目 Architecture baseline、两类 qualifications 与语义 gates，不能以结构/schema pass 替代接续。
+- `R495-05`：已有 PR、merge、旧 Finalizer/Finish 在途逐案读取 live facts，给出具体处置；旧 gate 不成为 current pass，不重复外部副作用。
+- `R495-06`：私有备份与普通部分写入恢复；真实更新与转换后、尚无新版业务工作时支持回退并证明旧 runtime 可运行；部分迁移暂停期间或完成后出现新工作均禁止覆盖式回退，resume 不得吸收新增事实重置基线。
+- `R495-07`：通过 Fork 正式迁移实现和固定 source lock 集成；当前普通 runtime 继续 current-only。验证 source/installed、canonical/dogfood、声明平台投影、inventory/runtime、reapply/drift 与零 sidecar。
+- `R495-08`：合法 current/已迁移目标与无关 known-legacy active 共存时创建及 ref/id/branch/checkout/session 正常运行；旧记录仅保留 id/ref 占用，direct old、目标占用/同身份冲突和坏 current/JSON/id 仍拒绝。迁移允许已诊断 deferred 旧记录原地保留，核心与 installed inventory 接受 reviewed preserve；未诊断遗漏仍阻塞，不恢复旧 runtime 双读或 all-converted 声明。
+
+#495 只修订 #481 的“不提供独立旧安装迁移”；当前运行仍不消费旧人员/生命周期格式。已接受的全部 MIG-495-01..09 保持最终验收 authority；首 Delivery slice 只交付正式验收用迁移候选代码与合同，远端同源 public/provider 和 MIG-495-06 完整代表验收仍是同一任务剩余工作。缺失时不得合并或完成。
+
+来源：[live #495](https://github.com/castbox/guru-trellis/issues/495)及[顺序说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6018378988)。[本版唯一 trace](./traceability.md)承接设计与测试；任务贡献作为来源历史保留。

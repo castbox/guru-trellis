@@ -18,6 +18,7 @@
 | `ADR-014` | accepted | Stable task identity与official Trellis session store保持authority；独立binding owner承接resume/rebind/switch/reactivate/manual recovery，#434前保持workflow-deferred |
 | `ADR-015` | accepted | TaskId/TaskRef/generation与stage evidence分离；Fork/Guru owner边界固定，base pair只服务operation-scoped consumer，不形成durable identity或第二store |
 | `ADR-016` | accepted | 业务 Delivery 与 Task Completion/Closure/Finish/Cleanup 分离；同 TaskId 多次交付及新代 Reactivate，#434 原子图激活并退休旧边 |
+| `ADR-017` | accepted | 精确旧来源只在独立一次性迁移读取；current-only、唯一writers、固定恢复/回退锚点与删除出口，最终验收仍open |
 
 后续 supersede 时保留 predecessor/successor identity 与历史边界，不改写旧决策为 current evidence。
 
@@ -33,3 +34,5 @@
 `ADR-014` 正文见 [`014-task-identity-session-binding.md`](./014-task-identity-session-binding.md)。
 `ADR-015` 正文见 [`015-task-lifecycle-state-model.md`](./015-task-lifecycle-state-model.md)。
 `ADR-016` 正文见 [`016-task-delivery-lifecycle.md`](./016-task-delivery-lifecycle.md)。
+
+`ADR-017`正文见 [`017-legacy-installation-upgrade.md`](./017-legacy-installation-upgrade.md)。

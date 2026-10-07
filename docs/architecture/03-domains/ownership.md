@@ -109,3 +109,5 @@ exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不�
 继续各自单写，caller/guru 归属不从旧归档推断。#292 独占 Phase 1 author。
 
 `ARCH-DOM-033`（#490 current）：Guru creator 仍拥有 C6 正式输入/恢复，official task.py 仍单写 task.json；reference_only 是现有 source disposition，无新 writer/owner/public Skill，不能授予 Issue closure。Closure/session/branch/checkout/resource 的原 ownership 保留；follow_up/parent 不是新任务创建能力。Architecture/RDT 各自仅通过 expected-current `.70 -> .71` promotion 更新 shared authority。
+
+`ARCH-DOM-034`（#495 reviewed）：AI migration owner 判断来源/任务/交付处置/恢复回退；Fork migration executor 单写 core/task，Guru migration/preset 单写 Guru 安装，既有 identity/branch/checkout/session/Planning owners 承接 current 合同。known-legacy reservation/deferred bytes 只供占用及保留/installed inventory，不新增 task/session writer。rollback 只消费固定 task-content/control 基线，新工作禁止覆盖，resume 不重置基线。旧 writer observer 仅在原 writer 之后只读复制 fixture；test provider 不拥有真实 delivery facts。共享知识仅 Architecture/RDT owners expected-current 串行晋升；ADR-017 退出与删除责任不变。

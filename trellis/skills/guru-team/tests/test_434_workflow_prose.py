@@ -120,7 +120,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_installed_workflow_contract_selects_current_graph(self) -> None:
         contract = (SPEC / "workflow-contract.md").read_text(encoding="utf-8")
         current = contract.split("## Integrated Public Graph\n", 1)[1].split("\n## ", 1)[0]
-        self.assertIn("34 active packages", current)
+        self.assertIn("35 active packages", current)
         self.assertIn("Delivery Review\n-> Delivery Publish -> Delivery Merge -> whole-task Completion", current)
         self.assertIn("no current production edge", current)
         self.assertNotIn("`guru-review-branch:passed -> guru-review-task-publication`", current)
@@ -135,7 +135,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_project_spec_index_routes_to_current_lifecycle(self) -> None:
         index = PROJECT_INDEX.read_text(encoding="utf-8")
         current = index.split("## Local Architecture\n", 1)[1].split("\n## Required Validation", 1)[0]
-        self.assertIn("34 active packages, 155 exits", current)
+        self.assertIn("35 active packages, 159 exits", current)
         self.assertIn("`guru-review-task-delivery`", current)
         self.assertIn("`guru-review-task-completion`", current)
         self.assertIn("pinned-old history only", current)
@@ -156,14 +156,14 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         current = guide.split("## Required Checks\n", 1)[1].split(
             "### Retired #389 Task Workspace Fixture (historical only)", 1
         )[0]
-        self.assertIn("34 active Skills, 155 external exits, and 104 commands", current)
+        self.assertIn("35 active Skills, 159 external exits, and 106 commands", current)
         self.assertIn("33 invokes and 153 exits", current)
         self.assertIn("six-package/23-exit Workspace graph is pinned-old", current)
         self.assertIn("32/142/102 and 22/98 counts are pinned-old", current)
         self.assertNotIn("workspace `created` cannot be serialized", current)
         entire_guide = guide.split("## Normal Scenario Qualification Quality\n", 1)[0]
         self.assertNotIn("32-Skill/142-exit/102-command current", entire_guide)
-        self.assertIn("34-Skill/155-exit/104-command current package closure", entire_guide)
+        self.assertIn("35-Skill/159-exit/106-command current package closure", entire_guide)
 
     def test_current_installer_and_quality_guidance_exclude_retired_entries(self) -> None:
         guide = (SPEC / "quality-guidelines.md").read_text(encoding="utf-8")
@@ -190,7 +190,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         )[0]
         self.assertIn("Delivery/Completion graph", current)
         self.assertIn("## Retired Task Finalization Package Activation (pinned-old only)", installer)
-        self.assertIn("34-Skill/155-package-exit/104-command", installer)
+        self.assertIn("35-Skill/159-package-exit/106-command", installer)
         self.assertIn("install one current Task Delivery graph", installer)
         self.assertNotIn("install only current Finalizer and Publication", installer)
         self.assertNotIn("The business Finalizer may consume this current manifest", installer)
