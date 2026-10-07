@@ -525,3 +525,9 @@ EVD-048/v1/.72 为不可变前驱证据；本条不把旧首次失败删除或�
 ## EVD-050：#495 版本系列本地 slice
 
 expected `.73→.74`；[唯一增量 Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md)拥有实际结果与首次失败/恢复边界。19 tag 全归组，G1..G8 actual before/preview/upgrade/实际来源回退/smoke，current linked control/session 与 lifecycle 横向覆盖；正式 Fork PR28/CI 固定 `.3`。26 package/2helper、Skill/overlay canonical-only及暂停新工作四格和 companion组合、source/installed/drift已定向验证。三个回退finding修复并关闭，`11ef591c...6cd766dd` 完整独立复审及正式 Branch Review passed；该 pass 不覆盖本次晋升 diff。REMOTE 同 Guru public/source_locked/provider/deferred 尚缺，旧 EVD-049 不代替；不声称 full-suite全通过、Release、真实业务安装或累计矩阵。
+
+## EVD-051：#495 精确后继远端验收
+
+expected `.74→.75`；来源 [PR498](https://github.com/castbox/guru-trellis/pull/498) 精确 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean远端fetch/bootstrap，正式Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`/main CI `37647767799`，CLI/core `.7.0-castbox.3`。结果仅由[唯一family Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md#精确远端来源与修复后验收evd-051)拥有：G1/native G8 source_locked/provider/installed/实际来源回退与oldsmoke，native G8 inside/outside/mode新工作保护、reapply，以及native oldwriter deferred均通过。31package/2helper、两AGENTS修复closure及完整123路径正式Branch Review已通过；不代替本晋升difffresh gates。
+
+EVD-050/.74本地历史不改写，e6首次G1误阻止回退及bdf默认AGENTS新工作finding保留。当前accepted MIG-495-01..12证据齐备，ARCH-GAP-012 closed；Issue仍OPEN。后继文档HEAD不声称同源重跑；merge/Completion/Closure/Finish、软件Release、真实业务安装/原始在途及完整累计矩阵未由本条证明。

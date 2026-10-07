@@ -49,4 +49,4 @@ matrix 和业务仓生产安装仍属独立 `unverified` 边界。
 
 ## ARCH-GAP-012：受支持旧安装升级验收
 
-状态：`open`（范围扩展后远端同源验收 pending）。CURRENT：`.73` MIG-495-01..09 固定来源验收保留为 EVD-049 历史；新增全部两系列的19 tag/G1..G8、本地定制/current控制保留/实际来源回退路径已代表性验证，见 EVD-050。剩余最小动作：先完成 `.74` 晋升后的 fresh Phase2/commit/完整独立 Branch Review，发布 Refs-only 同一 Guru 候选，再完成同 source 的 public/source_locked/provider/deferred 验收；缺失时不得宣称整体完成或关闭 #495。Owner：#495 同一任务；ADR-017/018 current-only 与删除出口不变，Release/真实业务安装/累计矩阵保持独立边界。
+状态：`closed`（accepted MIG-495-01..12 的代表性来源升级证据齐备）。`.73`固定来源/EVD-049、`.74`本地分组/EVD-050保持历史；EVD-051精确远端ecd与正式Fork `.3`补齐同源public/provider/deferred、G1/native G8实际来源回退和暂停新工作保护。19tag/G1..G8/lifecycle/current linked不变证据按实际差异归属复用，无逐版本等价重跑。Owner仍为#495同一任务；ADR-017/018 current-only/唯一owners/删除出口不变。该GAP闭合仅是accepted migration证据判断，不自动merge/Completion/Closure/Finish或关闭Issue；晋升diff仍须fresh Phase2/commit/完整独立复审。Release、真实业务安装、业务原始在途、完整累计矩阵保持独立未验证边界。

@@ -1,6 +1,6 @@
 # R495 / D495 / T495 增量 Trace
 
-状态：reviewed_promoted（本地可执行 slice，authority `.74`）；原 `.73` trace 继承不改写。
+状态：reviewed_promoted（已审查升级与同源远端验收，successor authority `.75`）；原 `.73` trace 继承不改写。
 
 | behavior | design responsibility | scenario |
 | --- | --- | --- |

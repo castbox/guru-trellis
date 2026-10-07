@@ -1,6 +1,6 @@
 # D495 版本系列升级增量候选
 
-状态：reviewed_promoted（本地可执行 slice，authority `.74`）；继承 immutable Architecture `.73`（Git 历史），current [Architecture `.74/active`](../../architecture/README.md) 承接本地 slice，完整 mechanism owner 见 generation 1 [design](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/design.md)。
+状态：reviewed_promoted（已审查升级与同源远端验收，successor authority `.75`）；继承 immutable Architecture `.73`（Git 历史），successor [Architecture `.75/active`](../../architecture/README.md) 承接本地 slice，完整 mechanism owner 见 generation 1 [design](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/design.md)。
 
 | 责任 ID | 后继职责 / consumer |
 | --- | --- |
@@ -10,9 +10,11 @@
 | D-MIG-495-LIFECYCLE | 保留合法 current task/control/session；known legacy 由既有正式 owner 转换或接续，不制造当前 gate。 |
 | D-MIG-495-RECOVERY | 既有私有备份记录实际 before 与确实受影响控制面；回退恢复该来源，新业务工作阻止覆盖。 |
 
-Public initial selector 演进为 `guru0.6-family` / `guru0.7.0-family`，同步 schema、Interface、受控 consumer 和文档；旧 fixed selector 不增加 alias。升级与回退 output 各自拥有最小 consumer DTO，实际恢复版本不固化 `.41`。候选 Guru `.3` 采用已固定的正式 Fork `.3` source lock，Guru 同源远端验收仍待候选发布；无第二状态机、writer 或新业务 workflow phase。
+Public initial selector 演进为 `guru0.6-family` / `guru0.7.0-family`，同步 schema、Interface、受控 consumer 和文档；旧 fixed selector 不增加 alias。升级与回退 output 各自拥有最小 consumer DTO，实际恢复版本不固化 `.41`。候选 Guru `.3` 采用已固定的正式 Fork `.3` source lock，Guru exact ecd 同源远端验收已完成；无第二状态机、writer 或新业务 workflow phase。
 
 
 受管定制执行：既有 preset 接收 migration owner 的薄 `migration_preserved_paths` 参数，仅用于已审查 exact companion preserve；默认为空。定制退出 canonical managed ownership，后续普通 reapply 的 unknown-local-edit 机制保留文件并明确 `.new`，冲突文件不 chmod。旧 `config.yml` 为 user-owned。Skill/overlay 当前接口要求保持，不兼容定制显式 resume/合并，不把旧接口当 current pass。
 
-正式 Fork 已固定到 `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / 成功 main CI `37647767799`；该精确源码本地构建与来源验证通过。Guru 远端可寻址 exact source/provider 验收仍待候选发布。
+正式 Fork 已固定到 `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / 成功 main CI `37647767799`；该精确源码本地构建与来源验证通过。Guru 远端可寻址 exact ecd source/provider 验收已完成。
+
+AGENTS mixed ownership 复用正式 Fork `collectTemplateFiles` 的精确 core projection 与真实 preset AI-first block projection，不复制 merge 算法；原 preimages/business-before 不变。无论 AGENTS 是否显式 preserve，preset 写前均保护暂停新增块内偏好与mode；外部新段落可resume保留，rollback按完整bytes/mode资格阻止覆盖。不新增 checkpoint、anchor、writer或public API。

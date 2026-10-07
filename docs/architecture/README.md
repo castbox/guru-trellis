@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.74`；状态：`active`；predecessor：`current-main-0.6.17-guru.73`；source baseline：[已审查版本系列贡献](./contributions/495-upgrade-version-families.md) + immutable `.73` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
+版本：`current-main-0.6.17-guru.75`；状态：`active`；predecessor：`current-main-0.6.17-guru.74`；source baseline：[已审查版本系列贡献](./contributions/495-upgrade-version-families.md) + immutable `.74` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.74` 是唯一 active；`.73` 及更早为 immutable superseded history。沿 ADR-017 与 ADR-018 一次性迁移，current-only/唯一 owners 不变。Current：ARCH-CUR-049、ARCH-DOM-034、ARCH-INT-037、ARCH-GAP-012、EVD-050；EVD-049 是历史固定来源验收。registry35/159/106，business33/153 不变。
+版本历史：`current-main-0.6.17-guru.75` 是唯一 active；`.74` 及更早为 immutable superseded history。沿 ADR-017 与 ADR-018 一次性迁移，current-only/唯一 owners 不变。Current：ARCH-CUR-049、ARCH-DOM-034、ARCH-INT-037、closed ARCH-GAP-012、EVD-051；EVD-049 是历史固定来源验收。registry35/159/106，business33/153 不变。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
@@ -18,7 +18,7 @@
 
 历史 `.73` 固定 Fork `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CI `37473087582`，CLI/core `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 为未发布候选。完整代表性验收由 [唯一增量结果](../requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md) 承接；固定远端 Guru `6a563f5f` 的 public/source_locked/provider、真实 PR195 deferred/merge 诊断与 accepted 旧正式 writer 在途快照已有证据，首次失败及 same-owner 恢复仍单列。该知识晋升不证明新文档 HEAD 重跑、真实业务原始在途、真实业务安装、软件发布或完整矩阵；晋升 diff 必须 fresh Phase2/commit/不同 reviewer 完整 Branch Review 后才进入 Delivery/merge/Completion。
 
-当前 `.74` 固定 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / main CI `37647767799`，CLI/core `0.7.0-castbox.3`、Guru `0.7.0-guru.3` 未发布候选；本地分组验收由 EVD-050 承接。远端同 Guru source 验收尚缺，#495 保持 open；晋升后重新 Phase2/commit/完整 Branch Review。
+当前 `.75` 固定 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / main CI `37647767799`，CLI/core `0.7.0-castbox.3`、Guru `0.7.0-guru.3` 未发布候选；本地分组历史由 EVD-050保留；EVD-051承接精确远端ecd同源验收，accepted MIG-495-01..12已齐备、ARCH-GAP-012 closed。#495仍open，merge/Completion/Closure/Finish未执行；晋升后重新 Phase2/commit/完整 Branch Review。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 

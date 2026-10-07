@@ -110,4 +110,6 @@ exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不�
 
 `ARCH-DOM-033`（#490 current）：Guru creator 仍拥有 C6 正式输入/恢复，official task.py 仍单写 task.json；reference_only 是现有 source disposition，无新 writer/owner/public Skill，不能授予 Issue closure。Closure/session/branch/checkout/resource 的原 ownership 保留；follow_up/parent 不是新任务创建能力。Architecture/RDT 各自仅通过 expected-current `.70 -> .71` promotion 更新 shared authority。
 
-`ARCH-DOM-034`（#495 reviewed）：AI migration owner 判断真实来源、定制/interface 协调与 task/delivery/recovery 处置；Fork 单写 core/task，Guru/preset 单写安装，current lifecycle owners 单写当前控制面。备份锚点不因 resume 吸收新工作；required Skill/overlay projection 与原 preimages 允许 canonical-only 回退，暂停新增工作阻塞覆盖。共享 RDT/Architecture 由 expected-current `.73→.74` 串行晋升；ADR-018 扩展来源，保留 ADR-017 owners/current-only/删除出口。
+`ARCH-DOM-034`（#495 reviewed）：AI migration owner 判断真实来源、定制/interface 协调与 task/delivery/recovery 处置；Fork 单写 core/task，Guru/preset 单写安装，current lifecycle owners 单写当前控制面。备份锚点不因 resume 吸收新工作；required Skill/overlay projection 与原 preimages 允许 canonical-only 回退，暂停新增工作阻塞覆盖。共享 RDT/Architecture 由 expected-current `.74→.75` 串行晋升；ADR-018 扩展来源，保留 ADR-017 owners/current-only/删除出口。
+
+AGENTS core/preset精确projection由正式Fork collector/installer拥有；migration复用原preimages保护所有默认或preserve安装的暂停新工作，完整bytes/mode回退资格不新增writer/state。

@@ -54,7 +54,9 @@ independent explicit migration for all `v0.6.x-guru.*` and
 assets, and task/control differences. The local successor candidates are Guru
 `0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the formal `.3` Fork lock is
 `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
-CI `37647767799`. Same-source Guru acceptance remains pending. The historical `.2` framework lock is
+CI `37647767799`. Same-source Guru acceptance is verified at exact
+`ecd152add05dbeb6df1873f0917ca3a62914ca7a`; a later docs-only HEAD is not a rerun.
+The historical `.2` framework lock is
 `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
 `0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
 the historical unreleased `0.7.0-guru.2` candidate. Read the formal lock from
@@ -65,21 +67,23 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.74` / `active`; it is not a
+Current knowledge authority is `current-main-0.6.17-guru.75` / `active`; it is not a
 product release axis. Read Requirements/Design/Test through the three layer
-READMEs: reviewed version-family local slice thinly inherits immutable `.73`.
+READMEs: reviewed version-family acceptance thinly inherits immutable `.74`.
 All normal `v0.6.x-guru.*` / `v0.7.0-guru.*` sources are supported; actual
 manifest/ownership/task differences group representative acceptance, not a
 version whitelist. Registry remains 35 active Skills / 159 exits / 106 commands,
 zero planned ids; business workflow remains 33 invokes / 153 exits.
-Architecture `.74` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
-ADR-018 / open ARCH-GAP-012 / EVD-050. ADR-017 owners/current-only/deletion exits
+Architecture `.75` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
+ADR-018 / closed ARCH-GAP-012 / EVD-051. ADR-017 owners/current-only/deletion exits
 remain effective; its fixed-source restriction is superseded. EVD-049 retains
 historical `.73` fixed `6a563f5f` source_locked/provider/inflight evidence and
 cannot prove the new Guru source. The unique family Test contribution owns local
 representative actual upgrade, custom/current-state preservation, partial
-recovery, actual-source rollback and new-work protection. REMOTE same-Guru
-source/public/provider/deferred acceptance remains pending candidate publication.
+recovery, actual-source rollback and new-work protection. EVD-051 binds exact Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean remote
+source/public/provider/deferred acceptance, G1/native G8 actual-source rollback
+and native AGENTS pause-work protection. EVD-050/.74 retains local history;
+Issue remains OPEN and downstream merge/Completion/Closure/Finish are separate.
 Retain first failures and same-owner recovery; do not claim full-suite pass,
 genuine business inflight or GitHub publication from test doubles. Promotion-created
 diff requires fresh Phase2/TaskCommit/independent full BranchReview before Delivery;
