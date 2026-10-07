@@ -20,6 +20,61 @@ from owner import MigrationError, formal_guru_source, old_manifest, old_paths, b
 
 
 class MigrationContractTests(unittest.TestCase):
+    def submodule_fixture(self, directory, checkout):
+        root = Path(directory) / "business"
+        source = Path(directory) / "submodule-source"
+        root.mkdir()
+        source.mkdir()
+        for argv in (["git", "init", "-q"], ["git", "config", "user.email", "fixture@example.invalid"], ["git", "config", "user.name", "Fixture"]):
+            subprocess.run(argv, cwd=source, check=True, capture_output=True)
+        (source / "policy.txt").write_text("first policy\n")
+        subprocess.run(["git", "add", "."], cwd=source, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-qm", "first policy"], cwd=source, check=True, capture_output=True)
+        first = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
+        (source / "policy.txt").write_text("second policy\n")
+        subprocess.run(["git", "commit", "-qam", "second policy"], cwd=source, check=True, capture_output=True)
+        recovery, checkpoint, paths = self.fixture(root)
+        subprocess.run(["git", "-c", "protocol.file.allow=always", "submodule", "add", str(source), "compliance"], cwd=root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-qm", "add compliance"], cwd=root, check=True, capture_output=True)
+        if checkout != "initialized":
+            subprocess.run(["git", "submodule", "deinit", "-f", "compliance"], cwd=root, check=True, capture_output=True)
+            if checkout == "missing":
+                (root / "compliance").rmdir()
+        return root, recovery, checkpoint, paths, first
+
+    def test_business_state_accepts_real_gitlinks_in_normal_checkout_states(self):
+        for checkout in ("deinitialized", "initialized", "missing"):
+            with self.subTest(checkout=checkout), tempfile.TemporaryDirectory() as directory:
+                root, recovery, checkpoint, paths, _ = self.submodule_fixture(directory, checkout)
+                index = subprocess.check_output(["git", "ls-files", "--stage", "compliance"], cwd=root, text=True)
+                self.assertTrue(index.startswith("160000 "))
+                before = business_state(root, paths)
+                (root / "managed.txt").write_text("next managed runtime\n")
+                self.assertEqual(business_state(root, paths), before)
+                checkpoint["business_before"] = before
+                save_baseline(root, recovery, checkpoint)
+                self.assertEqual(checkpoint["business_after"], before)
+                (root / "business.txt").write_text("new ordinary business work\n")
+                self.assertNotEqual(business_state(root, paths), before)
+                self.assertEqual(rollback(root, recovery, checkpoint)["reason"], "business_work_since_migration")
+                if checkout != "missing":
+                    with self.assertRaises(MigrationError):
+                        snapshot(root, recovery, {"compliance"}, {})
+
+    def test_business_state_retains_gitlink_and_ordinary_file_index_binding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _, paths, first = self.submodule_fixture(directory, "initialized")
+            before = business_state(root, paths)
+            subprocess.run(["git", "checkout", "-q", first], cwd=root / "compliance", check=True, capture_output=True)
+            subprocess.run(["git", "add", "compliance"], cwd=root, check=True, capture_output=True)
+            self.assertNotEqual(business_state(root, paths), before)
+            before = business_state(root, paths)
+            subprocess.run(["git", "add", "business.txt"], cwd=root, check=True, capture_output=True)
+            self.assertNotEqual(business_state(root, paths), before)
+            before = business_state(root, paths)
+            (root / "business.txt").chmod(0o755)
+            self.assertNotEqual(business_state(root, paths), before)
+
     def test_formal_bin_and_built_entry_use_same_original_preimage_collector(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

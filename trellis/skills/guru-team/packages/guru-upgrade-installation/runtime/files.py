@@ -59,11 +59,15 @@ def repo_files(root: Path) -> list[str]:
 
 
 def business_state(root: Path, managed_paths: set[str], projections: dict[str, dict] | None = None) -> str:
+    index = git(root, "ls-files", "--stage", "-z")
+    # Gitlinks bind submodules by index OID, not by regular-file preimages.
+    gitlinks = {entry.partition("\t")[2] for entry in index.split("\0")
+                if entry.startswith("160000 ")}
     facts = {
         "head": git(root, "rev-parse", "HEAD"),
-        "index": git(root, "ls-files", "--stage", "-z"),
+        "index": index,
         "files": {p: state(relative_file(root, p)) for p in repo_files(root)
-                  if p not in managed_paths and not p.startswith((".trellis/tasks/archive/", ".trellis/workspace/", ".trellis/agent-traces/")) and p != ".trellis/.developer"},
+                  if p not in gitlinks and p not in managed_paths and not p.startswith((".trellis/tasks/archive/", ".trellis/workspace/", ".trellis/agent-traces/")) and p != ".trellis/.developer"},
     }
     for path, projected in (projections or {}).items():
         if path in facts["files"]:
