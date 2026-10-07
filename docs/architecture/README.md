@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.72`；状态：`active`；predecessor：`current-main-0.6.17-guru.71`；source baseline：reviewed [#495 migration candidate contribution](./contributions/495-legacy-installation-upgrade.md) + inherited immutable `.71` authority；#305 的 `EVO-001..007` 仍是独立 target authority。精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
+版本：`current-main-0.6.17-guru.73`；状态：`active`；predecessor：`current-main-0.6.17-guru.72`；source baseline：reviewed [#495 fixed-source acceptance contribution](./contributions/495-legacy-installation-upgrade-acceptance.md) + immutable `.72` authority（由 Git 历史保存）。#305 的 `EVO-001..007` 仍为独立 target authority；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.72` 是唯一 active Architecture baseline；`.71` 及更早 identities保持immutable superseded history。本版继承无人员/current-only、source/TaskId/session/branch/checkout及Delivery/Completion ownership，并按ADR-017增加独立一次性迁移。见ARCH-CUR-049、ARCH-DOM-034、ARCH-INT-037、ARCH-GAP-012与EVD-048。registry为35 Skills /159 package exits /106 commands、零planned；migration standalone-only，business graph仍为33 invokes/153 exits。迁移最终验收保持open，当前知识不证明remote来源/MIG06完成。
+版本历史：`current-main-0.6.17-guru.73` 是唯一 active；`.72` 及更早 identities 为 immutable superseded history。无人员/current-only、source/TaskId/session/branch/checkout 与 Delivery/Completion ownership 不变；沿 ADR-017 一次性迁移。Current：ARCH-CUR-049、ARCH-DOM-034、ARCH-INT-037、ARCH-GAP-012、EVD-049；EVD-048 保留候选历史。registry 35 Skills/159 exits/106 commands，零 planned；migration standalone-only，business graph 33 invokes/153 exits。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
@@ -16,7 +16,7 @@
 
 `.71` 历史固定 Fork 为 `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`，CI `37179218822`，CLI/core `0.7.0-castbox.1`，extension `0.7.0-guru.1`。既有 C6/writer/recovery/source/Closure owner 不变，无 ADR/GAP/兼容双读增量。代表性 Codex local-workflow sample clean/current-update/reapply 与 projection parity 已验证；remote/native-host/full matrix、predecessor refusal/no-write、tag/Release 由 #489 独立完成。knowledge promotion 不表示发布，promotion-created diff 须 fresh Phase 2/commit/独立完整 Branch Review。
 
-`.72` 当前固定 Fork为 `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，main CI `37473087582`，CLI/core `0.7.0-castbox.2`，extension `0.7.0-guru.2`未发布候选。本地source/installed/迁移/owner接续/partial recovery/写后rollback/current update与reapply已定向验证，same-remote-HEAD source_locked/provider和完整MIG-495-06仍未验收；缺失时不得merge/Completion。知识晋升不发布软件、不升级真实业务仓，也不关闭迁移GAP；promotion-created diff必须fresh Phase2/commit/不同reviewer完整Branch Review。
+`.73` 固定 Fork `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CI `37473087582`，CLI/core `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 为未发布候选。完整代表性验收由 [唯一增量结果](../requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md) 承接；固定远端 Guru `6a563f5f` 的 public/source_locked/provider、真实 PR195 deferred/merge 诊断与 accepted 旧正式 writer 在途快照已有证据，首次失败及 same-owner 恢复仍单列。该知识晋升不证明新文档 HEAD 重跑、真实业务原始在途、真实业务安装、软件发布或完整矩阵；晋升 diff 必须 fresh Phase2/commit/不同 reviewer 完整 Branch Review 后才进入 Delivery/merge/Completion。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 

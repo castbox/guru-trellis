@@ -49,4 +49,4 @@ matrix 和业务仓生产安装仍属独立 `unverified` 边界。
 
 ## ARCH-GAP-012：受支持旧安装升级验收
 
-状态：`open`。CURRENT：#495迁移候选代码/合同与本地public迁移、任务owner接续、普通恢复、写后rollback及current update/reapply已验证；TARGET：全部MIG-495-01..09真实证据齐备。Owner：#495同一任务；closure condition：固定same-remote-GuruHEAD的source_locked public升级与同源marketplace/provider，以及完整MIG06旧PR/merge处置/genuine支持来源旧Finalizer/Finish在途代表验证。exact PR195旧安装来源已读取，不是public处置完成；PR210/58历史merged终态不提供在途证明。知识`.72`只提升候选，不能关闭本GAP或允许merge/Completion；其它GAP及Release/真实业务安装独立边界不变。
+状态：`acceptance_satisfied`，本版晋升 diff 完成 fresh Phase2/commit/独立完整 Branch Review 后转为 `closed`；这些后续门禁未执行前禁止 merge/Completion。CURRENT：全部 MIG-495-01..09 的代表性证据已齐备，详见 EVD-049 与唯一验收 test；七场景首轮 5/7，两原失败样本 same-owner 恢复及剩余断言通过。MIG06 依 live comment6028281048 接受 core `.16`/Guru `.41` 正式旧 writer 生成的隔离在途快照；真实 PR195 deferred、PR58/210 merged 诊断、新 source_locked 原字节/模式保留分别取证，构造 provider 不证明真实发布或业务原始事务。Owner：#495 同一任务；闭合仅限受支持代表性迁移验收，不移除 ADR-017 兼容出口/删除条件，不证明 Release、真实业务安装或完整累计矩阵。`.72` 的 open 状态与 EVD-048 保留为 Git 历史，旧 gate 不复用。

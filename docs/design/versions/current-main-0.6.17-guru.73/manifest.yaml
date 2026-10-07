@@ -1,0 +1,18 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.73
+status: active
+predecessor: current-main-0.6.17-guru.72
+source_binding: "reviewed #495 fixed-source acceptance contribution + immutable .72 inheritance + Architecture .73/active + containing Git identity"
+inheritance_locator: docs/design/versions/current-main-0.6.17-guru.72/design-main.md
+extension_manifest_version: 0.7.0-guru.2
+target_trellis_cli: 0.7.0-castbox.2
+framework_source: castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.73/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.73/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 35
+external_exit_count: 159
+command_count: 106
+provenance: "MIG-495-01..09 fixed-source evidence; first failures and same-owner recovery retained; constructed old-writer inflight and live delivery separately scoped; no release/business-install/full-matrix proof; fresh post-promotion gates required"
