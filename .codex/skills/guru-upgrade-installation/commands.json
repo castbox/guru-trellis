@@ -27,7 +27,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed migration actions.",
+          "description": "Owner-private reviewed migration actions; on resume, unchanged decisions with a reviewed successor workflow provider ref.",
           "repeatable": false,
           "conflicts": []
         },

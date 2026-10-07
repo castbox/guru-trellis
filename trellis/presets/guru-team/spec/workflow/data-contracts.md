@@ -582,6 +582,13 @@ names only after the new tag is verified.
 
 ## Task Identity and Local Runtime
 
+Inventory discovers active and archived task directories by the presence of
+`task.json`. Historical evidence-only directories without that artifact are
+preserved and do not reserve a TaskId or become lifecycle candidates. Existing
+metadata still receives normal validation; an explicit TaskRef whose artifact
+is missing still fails closed. Migration preview and residual legacy inventory
+must use the same artifact-based discovery boundary.
+
 The independent #495 migration may explicitly convert supported old active
 records into the current Fork schema. Exact TaskId is preserved; missing
 generation/source and legacy branch/path fields are resolved through the

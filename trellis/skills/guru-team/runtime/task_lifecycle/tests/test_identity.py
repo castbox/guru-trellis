@@ -179,6 +179,32 @@ class IdentityTests(unittest.TestCase):
                     with self.assertRaises(LifecycleContractError):
                         select()
 
+    def test_evidence_only_directories_are_not_task_identities(self):
+        current = ".trellis/tasks/10-06-current"
+        self.write_task(current, "current-id", 0)
+        evidence_refs = (
+            ".trellis/tasks/07-27-fix-profile-sheet-language-reopen",
+            ".trellis/tasks/archive/2026-07/07-27-evidence",
+        )
+        before = {}
+        for ref in evidence_refs:
+            directory = self.repo / ref
+            (directory / "reviews").mkdir(parents=True)
+            for name in ("evidence.jsonl", "reviews/check.md"):
+                path = directory / name
+                path.write_text("Preserved historical evidence\n", encoding="utf-8")
+                before[path] = path.read_bytes()
+
+        self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
+        self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
+        self.assertEqual(resolve_task_ref(self.repo, current).task_id, "current-id")
+        self.assertFalse(task_identity_exists(self.repo, "new-id", ".trellis/tasks/10-06-new"))
+        for ref in evidence_refs:
+            self.assertTrue(task_identity_exists(self.repo, "new-id", ref))
+            with self.assertRaisesRegex(LifecycleContractError, "task_not_found"):
+                resolve_task_ref(self.repo, ref)
+        self.assertEqual({path: path.read_bytes() for path in before}, before)
+
     def test_exact_duplicate_task_ids_fail_repository_resolution(self):
         self.write_task(".trellis/tasks/09-20-first", "task-a", 0)
         self.write_task(".trellis/tasks/archive/2026-09/09-19-second", "task-a", 1)

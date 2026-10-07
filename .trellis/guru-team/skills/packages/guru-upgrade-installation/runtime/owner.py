@@ -425,7 +425,7 @@ def validate_task_dispositions(root: Path, plan: dict) -> None:
     current = {row.task_ref for row in task_inventory(root) if row.lifecycle_state == "active"}
     task_root = root / ".trellis/tasks"
     active = {p.relative_to(root).as_posix() for p in task_root.iterdir()
-              if p.name != "archive" and p.is_dir()} if task_root.exists() else set()
+              if p.name != "archive" and p.is_dir() and (p / "task.json").exists()} if task_root.exists() else set()
     if active - current != refs:
         raise MigrationError("Active legacy task inventory differs from reviewed deferred dispositions")
 
@@ -453,7 +453,60 @@ def preserve_customizations(root: Path, source: Path, module, plan: dict) -> Non
             raise MigrationError(f"Preserved customization requires reconciliation: {path}")
 
 
-def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
+def update_resume_source(package: Path, root: Path, recovery: Path, checkpoint: dict, plan: dict) -> None:
+    """Project an explicitly reviewed successor into the same pending transaction."""
+    source = source_root(package)
+    if checkpoint["root"] != str(root) or checkpoint["source"] != str(source):
+        raise MigrationError("Recovery belongs to another source or checkout")
+    previous = checkpoint["source_ref"]
+    head = git(source, "rev-parse", "HEAD")
+    old_plan = checkpoint["plan"]
+    if head == previous:
+        if plan != old_plan:
+            raise MigrationError("Same-source resume requires the unchanged migration plan")
+        return
+    if checkpoint["phase"] != "guru" or old_plan["dependency_mode"] != "source_locked":
+        raise MigrationError("Reviewed source update requires the pending Guru phase and formal source lock")
+    if git(source, "rev-parse", old_plan["workflow"]["provider_ref"] + "^{commit}") != previous:
+        raise MigrationError("Recovery workflow provider does not bind its source")
+    if plan["workflow"]["provider_ref"] != head:
+        raise MigrationError("Reviewed resume provider must identify the current source HEAD")
+    expected = {**old_plan, "workflow": {**old_plan["workflow"], "provider_ref": head}}
+    if plan != expected:
+        raise MigrationError("Resume source update cannot change migration decisions")
+    # Ancestry is a normal source continuity fact, not a semantic compatibility gate.
+    if git(source, "merge-base", previous, head) != previous:
+        raise MigrationError("Resume source must be a successor of the recovery source")
+    for path in ("trellis/guru-team-extension.json", "trellis/presets/guru-team/source/trellis-source.json"):
+        if git(source, "rev-parse", previous + ":" + path) != git(source, "rev-parse", head + ":" + path):
+            raise MigrationError("Resume source update changed the target manifest or Fork source lock")
+    formal_guru_source(source, head)
+    lock = json.loads((source / "trellis/presets/guru-team/source/trellis-source.json").read_text())
+    if lock["cli_version"] != TARGET_CORE:
+        raise MigrationError("The formal migration-capable Fork source lock is not available")
+    sys.path.insert(0, str(source / "trellis/presets/guru-team/scripts/python"))
+    from verify_trellis_compatibility_matrix import validate_fork_source
+    verified = validate_fork_source(source, fork_checkout_root(Path(checkpoint["fork"])))
+    if verified["cli_version"] != TARGET_CORE:
+        raise MigrationError("Formal fixed Fork source lock is not available")
+    module = installer(source)
+    paths = {path.as_posix() for path in module.managed_transaction_paths(
+        root, root / ".trellis/guru-team", set(plan["selected_platforms"]), None)}
+    paths |= {".trellis/guru-team/extension.json", ".trellis/workflow.md", ".trellis/workflow.md.new", ".trellis/workflow.md.bak"}
+    paths |= {path + suffix for path in list(paths) for suffix in (".new", ".bak")}
+    covered = {key[5:] for key in checkpoint["preimages"] if key.startswith("repo:")}
+    if paths - covered:
+        raise MigrationError("Resume successor has target paths outside the original recovery preimages")
+    validate_task_dispositions(root, old_plan)
+    checkpoint["source_ref"] = head
+    checkpoint["plan"] = plan
+    # Keep the original preimages and fixed rollback anchors; do not re-baseline.
+    write_json(recovery / "checkpoint.json", checkpoint)
+
+
+def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, reviewed_plan: dict | None = None) -> dict:
+    if reviewed_plan is not None:
+        update_resume_source(package, root, recovery, checkpoint, reviewed_plan)
     if checkpoint["root"] != str(root) or checkpoint["source"] != str(source_root(package)):
         raise MigrationError("Recovery belongs to another source or checkout")
     source = source_root(package)
@@ -640,7 +693,7 @@ def run(package_root: Path, metadata: dict, argv: list[str]) -> dict:
             validate_json(checkpoint, package_root / "schemas/private-recovery.schema.json", "recovery")
             if checkpoint["root"] != str(root):
                 raise MigrationError("Recovery checkout mismatch")
-            result = rollback(root, recovery, checkpoint) if profile == "rollback" else resume(package_root, root, recovery, checkpoint)
+            result = rollback(root, recovery, checkpoint) if profile == "rollback" else resume(package_root, root, recovery, checkpoint, plan)
         validate_json(result, package_root / f"schemas/public-{result['exit_id']}-output.schema.json", "output")
         return result
     except MigrationError as exc:

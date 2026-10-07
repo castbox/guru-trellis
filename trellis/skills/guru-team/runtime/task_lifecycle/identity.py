@@ -104,6 +104,8 @@ def lifecycle_generation(metadata: dict[str, Any], *, field_path: str = "task.li
 
 
 def _task_refs(repo_root: Path) -> Iterator[str]:
+    """Discover metadata-backed tasks, leaving historical evidence directories alone."""
+
     tasks = repo_root / ".trellis" / "tasks"
     if tasks.is_symlink():
         raise LifecycleContractError(
@@ -119,7 +121,7 @@ def _task_refs(repo_root: Path) -> Iterator[str]:
                 "invalid_task_ref", candidate.relative_to(repo_root).as_posix(),
                 "Keep canonical task artifacts free of symlink-backed components.",
             )
-        if not candidate.is_dir():
+        if not candidate.is_dir() or not (candidate / "task.json").exists():
             continue
         yield candidate.relative_to(repo_root).as_posix()
     archive = tasks / "archive"
@@ -145,7 +147,7 @@ def _task_refs(repo_root: Path) -> Iterator[str]:
                     "invalid_task_ref", candidate.relative_to(repo_root).as_posix(),
                     "Keep canonical task artifacts free of symlink-backed components.",
                 )
-            if not candidate.is_dir():
+            if not candidate.is_dir() or not (candidate / "task.json").exists():
                 continue
             yield candidate.relative_to(repo_root).as_posix()
 
@@ -257,6 +259,9 @@ def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
     key = task_id_key(task_id)
     ref = normalize_task_ref(task_ref)
     root = repo_root.resolve()
+    # Creation must not reuse an occupied locator, even for evidence-only history.
+    if (root / ref).exists():
+        return True
     for item in _task_refs(root):
         if item == ref:
             return True

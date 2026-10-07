@@ -124,6 +124,29 @@ can invalidate rollback eligibility even when installation completes. New
 valid current tasks are allowed; explicitly deferred old task bytes must remain
 exact and their diagnosis cannot be silently omitted.
 
+A source checkout HEAD change normally remains blocked. Only while the private
+recovery is in `phase=guru` (core complete, preset not yet entered), an explicit
+resume `--plan PLAN` may select a reviewed committed successor from the same
+source checkout. AI first reads the complete old-to-successor source diff,
+including preset ownership/content and workflow changes, and judges that the
+remaining writes still carry the original accepted migration scope. Show the
+exact source switch, recovery reference and target writes before invocation;
+obtain current-dialogue confirmation only when the switch changes the confirmed
+action or presents a real choice. No approval or review process is serialized.
+The plan must remain identical except `workflow.provider_ref`, which names the
+current exact HEAD; the checkpoint's prior workflow ref must bind its old source.
+The executor checks source ancestry, formal clean source, identical target Guru
+manifest and Fork source lock, the original verified fixed Fork, and coverage
+of all successor preset paths and sidecars by the original recovery preimages.
+It checks current task dispositions before recording only the new source ref
+and workflow ref. These objective checks do not establish semantic compatibility.
+It never restarts core, creates another recovery, extends preimages or refreshes
+fixed rollback anchors. New target paths, changed decisions/dependencies and
+other pending phases block this narrow source update. Same-source `--plan` is
+an unchanged-plan no-op; ordinary resume without `--plan` retains its existing
+strict source binding. Review broader source changes separately rather than
+editing private checkpoint facts to bypass this contract.
+
 Rollback is a separately reviewed write using only the recovery reference.
 AI first checks whether newer tasks, deliveries, commits or business/control
 work exist. The executor compares the refreshed managed baseline and local
