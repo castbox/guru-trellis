@@ -94,6 +94,9 @@ class MigrationContractTests(unittest.TestCase):
                 checkpoint["preimages"] = snapshot(root, recovery, paths, {})
                 plan = checkpoint["plan"]
                 plan.update({"selected_platforms": ["codex"], "guru_decisions": [{"path": target, "action": "preserve"}]})
+                (root / "canonical.md").write_text("required current canonical contract\n")
+                paths.add("canonical.md")
+                checkpoint["preimages"] = snapshot(root, recovery, paths, {})
                 with patch("owner.installer") as module:
                     module.return_value.MANAGED_ASSET_PATHS = []
                     module.return_value.managed_source_projections.return_value = {Path(target): root / "canonical.md"}
@@ -106,6 +109,31 @@ class MigrationContractTests(unittest.TestCase):
                     self.assertEqual(rollback(root, recovery, checkpoint)["exit_id"], "rolled_back")
                 self.assertEqual(path.read_text(), "old customized contract\n")
                 self.assertEqual(path.stat().st_mode & 0o777, 0o640)
+
+    def test_unresolved_package_and_overlay_new_work_blocks_rollback(self):
+        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recovery, checkpoint, paths = self.fixture(root)
+                path = root / target
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("old customized contract\n")
+                (root / "canonical.md").write_text("required current canonical contract\n")
+                paths.update({target, "canonical.md"})
+                checkpoint["preimages"] = snapshot(root, recovery, paths, {})
+                plan = checkpoint["plan"]
+                plan.update({"selected_platforms": ["codex"], "guru_decisions": [{"path": target, "action": "preserve"}]})
+                with patch("owner.installer") as module:
+                    module.return_value.MANAGED_ASSET_PATHS = []
+                    module.return_value.managed_source_projections.return_value = {Path(target): root / "canonical.md"}
+                    checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan, root))
+                    fixed = checkpoint["business_before"]
+                    save_baseline(root, recovery, checkpoint)
+                    path.write_text("old customized contract\nnew preference during pause\n")
+                    save_baseline(root, recovery, checkpoint)
+                    self.assertEqual(checkpoint["business_before"], fixed)
+                    self.assertEqual(rollback(root, recovery, checkpoint), {"exit_id": "blocked", "reason": "business_work_since_migration"})
+                self.assertIn("new preference during pause", path.read_text())
 
     def test_preserved_core_and_workflow_work_blocks_rollback_after_pause(self):
         for kind, target in (("core", "managed.txt"), ("workflow", ".trellis/workflow.md")):

@@ -134,6 +134,10 @@ the existing fixed business-before comparison; a normal edit during a pause
 can survive resume but cannot be overwritten by rollback. Required current package/overlay
 reconciliation follows the preset's existing source projection as managed work;
 consuming its canonical `.new` alone permits rollback to the old customized preimage.
+Before restore, each required preserved projection must still match its backed-up
+bytes/mode or canonical bytes with the preimage or installer source mode. Other
+local edits during unresolved reconciliation block rollback even after resume
+refreshes the managed baseline; no new rollback anchor is recorded.
 A failed resume cannot absorb newer deferred notes into rollback
 eligibility by refreshing its baseline. Managed
 Python pointer paths and aliases are excluded from the latter token. Resume

@@ -38,6 +38,7 @@
 
 - 独立 committed `11ef591c...168c80ef` review：core `AGENTS.md` / workflow preserve 的新增规则在未解决Skill冲突时再次resume后被rollback恢复前像覆盖；真实public样本复现，BR-495-PRESERVED-CORE-WORK在 `5d4282ff` 修复，finding owner closure及不同reviewer复审确认新字节保护成立。不变更此前G1..G8通过事实，不将该review称passed。
 - 独立 committed `11ef591c...5d4282ff` 复审实际复现 BR-495-RECONCILIATION-ROLLBACK：仅消费必须的canonical Skill `.new`、无新业务工作，成功resume后仍误阻止rollback。当前候选将必需package/overlay协调保留为managed，复用原business-before锚点；25 package回归（Skill/overlay子场景）及actual public暂停→仅canonical协调→upgraded `.3`→rolled_back `.2`通过，恢复旧定制bytes/modes。core/workflow实际暂停新工作保护再次通过；仍需修复提交、finding closure与不同reviewer完整复审，远端同源验收未完成。
+- `02da7d99` 的 closure 和完整复审实际发现 BR-495-UNRESOLVED-SKILL-WORK：未消费canonical `.new`，暂停中新加Skill偏好，再次resume仍失败后rollback丢失新增字节；不将该提交称review通过。当前修复复用既有preimages及同一required projection，在restore前仅允许旧bytes/mode或canonical迁移bytes与旧/installer source mode，其它新增内容阻止回退，无新锚点。26 package及2helper通过；Skill/overlay各canonical-only和new-work四格actual public验收通过，另有companion新工作与canonical Skill协调组合仍blocked并保留新bytes。修复提交和不同reviewer完整复审仍待完成。
 
 - Fork完整CLI首次1884通过/1 ENOENT：工作树未初始化marketplace子模块；未声称全套通过。
 - Preset首轮101项/2失败：版本期待仍为`.2`（修正`.3`后单项通过）；missinghash reapply的package conflict在独立重跑未复现。首次单项从scripts cwd运行temporary lifecycle不可用，改repo root后通过。

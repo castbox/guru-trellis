@@ -256,29 +256,39 @@ def preserved_core_work_during_partial_pause():
         write(area / 'result.json', {'initial': initial, 'resumed': resumed, 'rollback': rolled, 'preserved_path': target, 'new_bytes': 'retained'})
 
 def canonical_reconciliation_rollback():
-    area = Path(tempfile.mkdtemp(prefix='G8-canonical-reconciliation-', dir=BASE))
-    root = area / 'repo'
-    shutil.copytree(BASE / 'G8-current2/repo', root)
-    skill = '.codex/skills/guru-check-task/SKILL.md'
-    target = root / skill
-    target.write_text(target.read_text() + '\nLocal check preference before migration.\n')
-    before = target.read_bytes(), target.stat().st_mode & 0o777
-    plan = json.loads((BASE / 'G8-current2/plan.json').read_text())
-    plan['guru_decisions'] = [{'path': skill, 'action': 'preserve', 'expected_sha256': digest(target)}]
-    plan['workflow']['provider_ref'] = HEAD
-    plan_path = area / 'plan.json'
-    write(plan_path, plan)
-    initial = public(root, {'profile': 'initial_upgrade', 'source_profile': 'guru0.7.0-family', 'target_source_ref': HEAD}, plan_path)
-    assert initial['exit_id'] == 'resume_required', initial
-    pending = Path(str(target) + '.new')
-    target.write_bytes(pending.read_bytes())
-    pending.unlink()
-    resumed = public(root, {'profile': 'resume', 'recovery_ref': initial['recovery_ref']})
-    assert resumed['exit_id'] == 'upgraded', resumed
-    rolled = public(root, {'profile': 'rollback', 'recovery_ref': initial['recovery_ref']})
-    assert rolled == {'exit_id': 'rolled_back', 'installed_version': '0.7.0-guru.2'}, rolled
-    assert (target.read_bytes(), target.stat().st_mode & 0o777) == before
-    print('canonical reconciliation', area, initial, resumed, rolled, 'old customized bytes/modes restored', flush=True)
+    for asset in ('.codex/skills/guru-check-task/SKILL.md', '.codex/prompts/guru-finish-work.md'):
+        for action in ('canonical', 'new-work'):
+            area = Path(tempfile.mkdtemp(prefix='G8-reconciliation-' + action + '-', dir=BASE))
+            root = area / 'repo'
+            shutil.copytree(BASE / 'G8-current2/repo', root)
+            target = root / asset
+            target.write_text(target.read_text() + '\nLocal preference before migration.\n')
+            before = target.read_bytes(), target.stat().st_mode & 0o777
+            plan = json.loads((BASE / 'G8-current2/plan.json').read_text())
+            plan['guru_decisions'] = [{'path': asset, 'action': 'preserve', 'expected_sha256': digest(target)}]
+            plan['workflow']['provider_ref'] = HEAD
+            plan_path = area / 'plan.json'
+            write(plan_path, plan)
+            initial = public(root, {'profile': 'initial_upgrade', 'source_profile': 'guru0.7.0-family', 'target_source_ref': HEAD}, plan_path)
+            assert initial['exit_id'] == 'resume_required', initial
+            pending = Path(str(target) + '.new')
+            assert pending.is_file()
+            if action == 'canonical':
+                target.write_bytes(pending.read_bytes())
+                pending.unlink()
+            else:
+                newer = before[0] + b'\nNormal new preference during reconciliation pause.\n'
+                target.write_bytes(newer)
+            resumed = public(root, {'profile': 'resume', 'recovery_ref': initial['recovery_ref']})
+            assert resumed['exit_id'] == ('upgraded' if action == 'canonical' else 'resume_required'), resumed
+            rolled = public(root, {'profile': 'rollback', 'recovery_ref': initial['recovery_ref']})
+            if action == 'canonical':
+                assert rolled == {'exit_id': 'rolled_back', 'installed_version': '0.7.0-guru.2'}, rolled
+                assert (target.read_bytes(), target.stat().st_mode & 0o777) == before
+            else:
+                assert rolled == {'exit_id': 'blocked', 'reason': 'business_work_since_migration'}, rolled
+                assert target.read_bytes() == newer
+            print('reconciliation', asset, action, area, initial, resumed, rolled, 'expected bytes/modes retained', flush=True)
 
 if __name__ == '__main__':
     BASE.mkdir(parents=True, exist_ok=True)

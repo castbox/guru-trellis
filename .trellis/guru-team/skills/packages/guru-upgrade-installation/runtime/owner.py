@@ -313,9 +313,7 @@ def business_managed_paths(paths: set[str], plan: dict, root: Path) -> set[str]:
     preserved = {row["path"] for row in plan.get("guru_decisions", []) if row["action"] == "preserve"}
     if preserved:
         module = installer(source_root(Path(__file__).resolve().parent.parent))
-        projections = module.managed_source_projections(root, root / ".trellis/guru-team", set(plan["selected_platforms"]))
-        reconciled = {path.as_posix() for path in projections} - preserved_companions(root, module, plan)
-        preserved -= reconciled
+        preserved -= required_reconciliations(root, module, plan).keys()
     preserved.update(row["path"] for row in plan.get("core_plan", {}).get("file_decisions", [])
                      if row["action"] == "preserve")
     if plan.get("workflow", {}).get("action") == "preserve":
@@ -353,19 +351,21 @@ def preserved_companions(root: Path, module, plan: dict) -> set[str]:
             if row["action"] == "preserve" and row["path"] in companion_paths}
 
 
-def preserve_customizations(root: Path, source: Path, module, plan: dict) -> None:
+def required_reconciliations(root: Path, module, plan: dict) -> dict[str, Path]:
     projections = module.managed_source_projections(root, root / ".trellis/guru-team", set(plan["selected_platforms"]))
-    for chosen in plan["guru_decisions"]:
-        path = Path(chosen["path"])
-        if chosen["action"] != "preserve" or path not in projections or chosen["path"] in preserved_companions(root, module, plan):
-            continue
-        target = relative_file(root, chosen["path"])
-        canonical = projections[path]
+    companions = preserved_companions(root, module, plan)
+    return {row["path"]: projections[Path(row["path"])] for row in plan["guru_decisions"]
+            if row["action"] == "preserve" and Path(row["path"]) in projections and row["path"] not in companions}
+
+
+def preserve_customizations(root: Path, source: Path, module, plan: dict) -> None:
+    for path, canonical in required_reconciliations(root, module, plan).items():
+        target = relative_file(root, path)
         if target.exists() and target.read_bytes() != canonical.read_bytes():
-            pending = relative_file(root, chosen["path"] + ".new")
+            pending = relative_file(root, path + ".new")
             pending.parent.mkdir(parents=True, exist_ok=True)
             pending.write_bytes(canonical.read_bytes())
-            raise MigrationError(f"Preserved customization requires reconciliation: {chosen['path']}")
+            raise MigrationError(f"Preserved customization requires reconciliation: {path}")
 
 
 def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
@@ -488,6 +488,19 @@ def rollback(root: Path, recovery: Path, checkpoint: dict) -> dict:
         return {"exit_id": "blocked", "reason": "task_work_since_core_migration"}
     if "baseline" not in checkpoint or current_baseline(root, checkpoint) != checkpoint["baseline"]:
         return {"exit_id": "blocked", "reason": "managed_or_control_work_since_migration"}
+    plan = checkpoint["plan"]
+    if any(row["action"] == "preserve" for row in plan.get("guru_decisions", [])):
+        module = installer(source_root(Path(__file__).resolve().parent.parent))
+        for path, canonical in required_reconciliations(root, module, plan).items():
+            before = checkpoint["preimages"]["repo:" + path]
+            current = state(relative_file(root, path))
+            old = {key: before[key] for key in ("sha256", "mode")}
+            proposal = state(canonical)
+            # Consuming .new retains the preimage mode; preset application may
+            # apply the canonical source mode. Neither accepts unrelated edits.
+            if current != old and not (current["sha256"] == proposal["sha256"]
+                                       and current["mode"] in {old["mode"], proposal["mode"]}):
+                return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     if business_state(root, business_managed_paths(paths, checkpoint["plan"], root)) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
         return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     restore(root, recovery, checkpoint)
