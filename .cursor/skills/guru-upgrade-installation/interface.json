@@ -3,7 +3,7 @@
   "schema_version": "1.6",
   "id": "guru-upgrade-installation",
   "name": "guru-upgrade-installation",
-  "description": "Upgrade a supported legacy installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.",
+  "description": "Upgrade any normal Guru 0.6.x or 0.7.0 family installation to a successor from its complete source, preserving custom/current task state with bounded recovery and actual-source rollback.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {

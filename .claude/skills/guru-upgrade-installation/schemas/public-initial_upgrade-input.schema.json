@@ -13,7 +13,10 @@
       "const": "initial_upgrade"
     },
     "source_profile": {
-      "const": "core0.6.16-guru0.6.16-guru.41"
+      "enum": [
+        "guru0.6-family",
+        "guru0.7.0-family"
+      ]
     },
     "target_source_ref": {
       "type": "string",

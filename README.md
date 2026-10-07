@@ -30,9 +30,9 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到包含上游任务人员身份退役 PR #24、reference-only 创建 PR #26
-与显式旧安装迁移 PR #27 的 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，
-对应成功 main CI `37473087582`。Fork CLI/core 均为 `0.7.0-castbox.2`。
+当前 source candidate 固定到包含上游任务人员身份退役 PR #24、reference-only 创建 PR #26、显式旧安装迁移 PR #27 与系列/current task 支持 PR #28 的
+`cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`，
+对应成功 main CI `37647767799`。Fork CLI/core 均为 `0.7.0-castbox.3`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -70,14 +70,14 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 组件 | 固定版本 |
 | --- | --- |
 | Published Guru predecessor tag | `v0.7.0-guru.1` |
-| Current Guru candidate revision (unreleased) | `0.7.0-guru.2` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.2` @ `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` |
-| Reviewed Fork CI identity | `37473087582` |
+| Current Guru development candidate (unreleased) | `0.7.0-guru.3` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` |
+| Reviewed Fork CI identity | `37647767799` |
 | Fork package manager | `pnpm@10.32.1` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
 已发布的 `v0.7.0-guru.1` 是本迁移候选的 predecessor，不含 #495 迁移能力。
-当前 Guru `0.7.0-guru.2` 尚未发布；Fork 已合并及 main CI 成功不等于 Guru
+当前 Guru `0.7.0-guru.3` 仍为开发候选，Fork `0.7.0-castbox.3` 正式 lock/CI 已固定；Fork 合并及 main CI 成功不等于 Guru
 exact-candidate、installed/lifecycle 或发布门禁通过。候选验证将 `GURU_WORKFLOW_SOURCE`
 与 `GURU_SOURCE` 绑定同一可寻址的完整 Guru candidate SHA，marketplace source 为
 `gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`。正式发布后，二者才使用
@@ -99,10 +99,7 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
 旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；下列普通 update/reapply
 步骤仅适用于与所选 Fork 版本兼容的安装，拒绝不能作为升级成功。
-后继迁移候选 `0.7.0-guru.2` / Fork `0.7.0-castbox.2` 通过独立
-`guru-upgrade-installation` 承接 core `0.6.16` / Guru `0.6.16-guru.41`。
-后继 Fork source 与成功 main CI 已固定；Guru 候选完整验收与发布仍未完成。
-已固定依赖不证明真实业务仓升级、远端 marketplace 或完整多平台门禁通过。
+后继系列迁移候选 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 的同源远端验收仍待候选发布。历史 `.2` 依赖与 `.41` 证据只证明原固定范围，下列来源构建命令读取当前 `.3` lock，不证明尚未执行的 Guru 远端升级。
 入口和恢复边界见 [旧安装迁移说明](trellis/presets/guru-team/MIGRATION-495.md)。
 普通 runtime 不提供兼容双读或自动迁移。
 

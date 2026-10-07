@@ -17,9 +17,8 @@ from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.identity import task_inventory
 
-SOURCE_PROFILE = "core0.6.16-guru0.6.16-guru.41"
-TARGET_CORE = "0.7.0-castbox.2"
-TARGET_GURU = "0.7.0-guru.2"
+TARGET_CORE = "0.7.0-castbox.3"
+TARGET_GURU = "0.7.0-guru.3"
 
 
 def formal_guru_source(source: Path, requested_ref: str) -> None:
@@ -51,21 +50,80 @@ def installer(source: Path):
     return module
 
 
+def source_profile(version: str) -> str:
+    if re.fullmatch(r"0\.6\.\d+-guru\.\d+", version):
+        return "guru0.6-family"
+    if re.fullmatch(r"0\.7\.0-guru\.\d+", version):
+        return "guru0.7.0-family"
+    raise MigrationError("Source is outside the supported Guru 0.6.x / 0.7.0 families")
+
+
 def old_manifest(root: Path) -> dict:
     value = json.loads(relative_file(root, ".trellis/guru-team/extension.json").read_text(encoding="utf-8"))
-    if (value.get("schema_version") != "2.0" or value.get("extension", {}).get("version") != "0.6.16-guru.41"
-            or value["extension"].get("target_trellis_cli") != "0.6.16"):
-        raise MigrationError("Only core 0.6.16 / Guru 0.6.16-guru.41 is supported")
+    if value.get("schema_version") not in {"1.0", "2.0"}:
+        raise MigrationError("Unknown installation manifest schema")
+    extension = value.get("extension", {})
+    source_profile(extension.get("version", ""))
+    core = extension.get("target_trellis_cli", "")
+    if not re.fullmatch(r"0\.6\.\d+|0\.7\.0-castbox\.\d+", core):
+        raise MigrationError("Missing or unsupported actual installed core contract")
     provenance = value.get("source", {})
-    if provenance.get("repo") != "https://github.com/castbox/guru-trellis.git" or not provenance.get("commit"):
-        raise MigrationError("Missing fixed legacy Guru source provenance")
+    repo = "castbox/guru-trellis"
+    # Same bounded GitHub transport identities used by current origin_matches.
+    source_repos = {prefix + repo + suffix for prefix in
+                    ("https://github.com/", "git@github.com:", "ssh://git@github.com/")
+                    for suffix in ("", ".git")}
+    if provenance.get("repo") not in source_repos or not provenance.get("commit"):
+        raise MigrationError("Missing legacy Guru source provenance")
     return value
 
 
-def old_paths(manifest: dict, source: Path | None = None) -> dict[str, str]:
-    hashes = dict(manifest["install"]["managed_asset_hashes"])
+def legacy_source_commits(manifest: dict, source: Path) -> list[str]:
+    # Early receipts describe the observed working tree, sometimes a release
+    # predecessor. Formal tags supply exact canonical bytes, never target hashes.
+    candidates = [manifest["source"]["commit"]]
+    ref = manifest["source"].get("ref", "")
+    if re.fullmatch(r"v0\.(?:6\.\d+|7\.0)-guru\.\d+", ref):
+        candidates.append(ref)
+    candidates += git(source, "tag", "--list", "v0.6.*-guru.*", "v0.7.0-guru.*").splitlines()
+    result = []
+    expected = manifest.get("extension", {})
+    for candidate in candidates:
+        try:
+            commit = git(source, "rev-parse", candidate + "^{commit}")
+            extension = json.loads(command(["git", "show", commit + ":trellis/guru-team-extension.json"], source))
+        except (MigrationError, ValueError):
+            continue
+        if expected and (extension.get("version") != expected.get("version")
+                         or extension.get("target_trellis_cli") != expected.get("target_trellis_cli")):
+            continue
+        if commit not in result:
+            result.append(commit)
+    if not result:
+        raise MigrationError("Acquire the exact installed release/source objects before preview")
+    return result
+
+
+def legacy_source_paths(path: str) -> list[str]:
+    if path.startswith(".trellis/guru-team/"):
+        return ["trellis/workflows/guru-team/" + path.removeprefix(".trellis/guru-team/")]
+    # Package receipts normally own this mapping. Early installers projected
+    # overlay bytes directly, including upstream-owned claims handed to Fork.
+    paths = ["trellis/presets/guru-team/overlays/" + path]
+    parts = Path(path).parts
+    if len(parts) >= 4 and parts[1] == "skills" and parts[2].startswith("guru-"):
+        paths.insert(0, "trellis/skills/guru-team/packages/" + "/".join(parts[2:]))
+    if path.startswith(".trellis/spec/workflow/"):
+        paths.insert(0, "trellis/workflows/guru-team/spec/" + path.removeprefix(".trellis/spec/workflow/"))
+    return paths
+
+
+def old_paths(manifest: dict, source: Path | None = None, root: Path | None = None) -> dict[str, str | None]:
+    hashes = dict(manifest["install"].get("managed_asset_hashes", {}))
     for name in ("skill_packages", "overlays"):
-        section = manifest[name]
+        section = manifest.get(name)
+        if section is None:
+            continue
         if section.get("status") != "ok" or section.get("conflicts") or section.get("sidecars"):
             raise MigrationError("Resolve the old installation's recorded conflicts and sidecars first")
         for row in section["files"]:
@@ -74,34 +132,39 @@ def old_paths(manifest: dict, source: Path | None = None) -> dict[str, str]:
                 raise MigrationError(f"Conflicting old managed hash: {row['path']}")
             hashes[row["path"]] = row["sha256"]
     missing = set(manifest["install"].get("managed_assets", [])) - set(hashes) - {".trellis/guru-team/extension.json"}
+    # No Guru retirement of upstream files: their source ownership belongs to
+    # the Fork even when an early Guru receipt claimed them.
+    missing = {p for p in missing if guru_owned(p)}
     if missing:
-        commit = manifest["source"]["commit"]
-        if source is None or not re.fullmatch(r"[a-f0-9]{40}", commit):
-            raise MigrationError("Read the exact legacy source commit to resolve missing managed hashes")
-        if git(source, "rev-parse", commit + "^{commit}") != commit:
-            raise MigrationError("Legacy source object identity mismatch")
-        legacy_extension = json.loads(command(["git", "show", commit + ":trellis/guru-team-extension.json"], source))
-        if legacy_extension["version"] != "0.6.16-guru.41":
-            raise MigrationError("Legacy source version differs from installed provenance")
-        for p in sorted(missing):
-            if p.startswith(".trellis/guru-team/"):
-                source_path = "trellis/workflows/guru-team/" + p.removeprefix(".trellis/guru-team/")
-            elif p in {".codex/prompts/guru-finish-work.md", ".cursor/commands/guru-finish-work.md", ".claude/commands/guru/finish-work.md"}:
-                source_path = "trellis/presets/guru-team/overlays/" + p
+        if source is None:
+            raise MigrationError("Read the exact legacy source to resolve missing managed hashes")
+        commits = legacy_source_commits(manifest, source)
+        for path in sorted(missing):
+            candidates = set()
+            for commit in commits:
+                for source_path in legacy_source_paths(path):
+                    original = subprocess.run(["git", "show", commit + ":" + source_path], cwd=source, capture_output=True)
+                    if original.returncode == 0:
+                        candidates.add(hashlib.sha256(original.stdout).hexdigest())
+                        break
+            current = state(relative_file(root, path))["sha256"] if root is not None else None
+            if current in candidates:
+                hashes[path] = current
+            elif len(candidates) == 1:
+                hashes[path] = next(iter(candidates))
             else:
-                raise MigrationError(f"Missing legacy managed source mapping: {p}")
-            original = subprocess.run(["git", "show", commit + ":" + source_path], cwd=source, capture_output=True)
-            if original.returncode:
-                raise MigrationError(f"Exact legacy source bytes unavailable: {p}")
-            hashes[p] = hashlib.sha256(original.stdout).hexdigest()
-    for p, digest in hashes.items():
-        # Legacy manifests may have upstream claims: the Fork owns those files.
-        if not isinstance(digest, str) or len(digest) != 64:
-            raise MigrationError(f"Missing exact managed bytes: {p}")
+                # Missing/ambiguous historical bytes never authorize deletion.
+                # The AI must explicitly preserve or replace the actual preimage.
+                hashes[path] = None
+    for path, digest in hashes.items():
+        if digest is not None and not re.fullmatch(r"[a-f0-9]{64}", digest):
+            raise MigrationError(f"Invalid exact managed hash: {path}")
     return hashes
 
 
 def guru_owned(path: str) -> bool:
+    if path == ".trellis/guru-team/config.yml":
+        return False  # Materialized user configuration, never retired asset bytes.
     parts = Path(path).parts
     if len(parts) >= 3 and parts[:2] == (".trellis", "guru-team"):
         return True
@@ -124,13 +187,13 @@ def controls(root: Path, plan: dict) -> dict[str, Path]:
     return result
 
 
-def core_preview(root: Path, fork: Path, core_plan: dict) -> dict:
+def core_preview(root: Path, fork: Path, core_plan: dict, installed_core: str) -> dict:
     # Temporary plan remains outside the repository. No target runtime needed.
     from runtime.temporary_lifecycle import temporary_directory
     with temporary_directory("installation_upgrade_core_preview") as directory:
         path = Path(directory) / "core-plan.json"
         write_json(path, core_plan)
-        return json.loads(command(["node", str(fork), "migrate", "--from", "0.6.16", "--plan", str(path), "--dry-run"], root))
+        return json.loads(command(["node", str(fork), "migrate", "--from", installed_core, "--plan", str(path), "--dry-run"], root))
 
 
 def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Path | None) -> dict:
@@ -139,10 +202,18 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
         raise MigrationError("Preview an initial_upgrade; recovery reads its own private checkpoint")
     if git(source, "rev-parse", public["target_source_ref"] + "^{commit}") != git(source, "rev-parse", "HEAD"):
         raise MigrationError("Target source ref does not resolve to this checkout HEAD")
-    if (root / ".trellis/.version").read_text().strip() != "0.6.16":
-        raise MigrationError("Installed core is not the supported 0.6.16 source")
     manifest = old_manifest(root)
-    hashes = old_paths(manifest, source)
+    installed_core = (root / ".trellis/.version").read_text().strip()
+    if not re.fullmatch(r"0\.6\.\d+|0\.7\.0-castbox\.\d+", installed_core):
+        raise MigrationError("Live core is outside the supported predecessor contracts")
+    actual_profile = source_profile(manifest["extension"]["version"])
+    if public["source_profile"] != actual_profile:
+        raise MigrationError("Source family selector differs from actual installed version")
+    if manifest["extension"]["version"] == TARGET_GURU:
+        raise MigrationError("This target is already installed; use ordinary reapply")
+    if actual_profile == "guru0.7.0-family" and int(manifest["extension"]["version"].rsplit(".", 1)[1]) >= int(TARGET_GURU.rsplit(".", 1)[1]):
+        raise MigrationError("Upgrade requires a successor target version")
+    hashes = old_paths(manifest, source, root)
     rows = []
     for p, expected in sorted(hashes.items()):
         current = state(relative_file(root, p))
@@ -156,14 +227,15 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
                       "id": record.get("id"), "status": record.get("status"), "fields": sorted(record),
                       "branch": record.get("branch"), "base_branch": record.get("base_branch"),
                       "worktree_path": record.get("worktree_path"), "pr_url": record.get("pr_url")})
-    payload = {"status": "preview", "source_profile": SOURCE_PROFILE, "managed": rows, "tasks": tasks,
+    payload = {"status": "preview", "source_profile": actual_profile, "installed_core": installed_core, "installed_version": manifest["extension"]["version"],
+               "recorded_core": manifest["extension"]["target_trellis_cli"], "managed": rows, "tasks": tasks,
                "git_status": git(root, "status", "--porcelain=v1", "-z"),
                "worktrees": git(root, "worktree", "list", "--porcelain"),
                "legacy_source": manifest["source"], "selected_platforms": manifest["install"]["selected_platforms"]}
     if plan is not None:
         if fork is None:
             raise MigrationError("Supply the fixed Fork CLI entrypoint for core preview")
-        payload["core"] = core_preview(root, fork, plan["core_plan"])
+        payload["core"] = core_preview(root, fork, plan["core_plan"], installed_core)
         module = installer(source)
         selected = set(plan["selected_platforms"])
         payload["preset_paths"] = sorted(p.as_posix() for p in module.managed_transaction_paths(root, root / ".trellis/guru-team", selected, None))
@@ -227,16 +299,24 @@ def begin(package: Path, root: Path, public: dict, plan: dict, fork: Path) -> tu
     recovery = Path(git(root, "rev-parse", "--absolute-git-dir")) / "guru-team/install-upgrade" / reference
     checkpoint = {"schema_version": "1.0", "root": str(root), "source": str(source), "source_ref": git(source, "rev-parse", "HEAD"),
                   "fork": str(fork), "plan": plan, "phase": "core", "controls": {k: str(v) for k, v in ctrl.items()},
+                  "old_installation": {"core": facts["installed_core"], "guru": facts["installed_version"], "source": facts["legacy_source"]},
                   "old_managed": facts["managed"], "preimages": snapshot(root, recovery, paths, ctrl),
-                  "business_before": business_state(root, paths)}
+                  "business_before": business_state(root, business_managed_paths(paths, plan))}
     checkpoint["control_before"] = control_token(checkpoint)
     write_json(recovery / "checkpoint.json", checkpoint)
     return recovery, checkpoint
 
 
+def business_managed_paths(paths: set[str], plan: dict) -> set[str]:
+    # Explicit preservation hands ownership to user content. Keep these bytes
+    # and modes in the existing fixed business-before comparison on every phase.
+    preserved = {row["path"] for row in plan.get("guru_decisions", []) if row["action"] == "preserve"}
+    return paths - preserved
+
+
 def save_baseline(root: Path, recovery: Path, checkpoint: dict) -> None:
     checkpoint["baseline"] = current_baseline(root, checkpoint)
-    checkpoint["business_after"] = business_state(root, {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")})
+    checkpoint["business_after"] = business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"]))
     write_json(recovery / "checkpoint.json", checkpoint)
 
 
@@ -258,6 +338,27 @@ def validate_task_dispositions(root: Path, plan: dict) -> None:
         raise MigrationError("Active legacy task inventory differs from reviewed deferred dispositions")
 
 
+def preserved_companions(root: Path, module, plan: dict) -> set[str]:
+    companion_paths = {".trellis/guru-team/" + p.as_posix() for p in module.MANAGED_ASSET_PATHS}
+    return {row["path"] for row in plan["guru_decisions"]
+            if row["action"] == "preserve" and row["path"] in companion_paths}
+
+
+def preserve_customizations(root: Path, source: Path, module, plan: dict) -> None:
+    projections = module.managed_source_projections(root, root / ".trellis/guru-team", set(plan["selected_platforms"]))
+    for chosen in plan["guru_decisions"]:
+        path = Path(chosen["path"])
+        if chosen["action"] != "preserve" or path not in projections or chosen["path"] in preserved_companions(root, module, plan):
+            continue
+        target = relative_file(root, chosen["path"])
+        canonical = projections[path]
+        if target.exists() and target.read_bytes() != canonical.read_bytes():
+            pending = relative_file(root, chosen["path"] + ".new")
+            pending.parent.mkdir(parents=True, exist_ok=True)
+            pending.write_bytes(canonical.read_bytes())
+            raise MigrationError(f"Preserved customization requires reconciliation: {chosen['path']}")
+
+
 def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
     if checkpoint["root"] != str(root) or checkpoint["source"] != str(source_root(package)):
         raise MigrationError("Recovery belongs to another source or checkout")
@@ -270,7 +371,7 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
         formal_guru_source(source, checkpoint["source_ref"])
     if checkpoint["phase"] == "complete" and (
             current_baseline(root, checkpoint) != checkpoint["baseline"]
-            or business_state(root, {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}) != checkpoint["business_after"]):
+            or business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"])) != checkpoint["business_after"]):
         return {"exit_id": "blocked", "reason": "work_since_completed_migration"}
     try:
         if checkpoint["phase"] != "core":
@@ -278,7 +379,7 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
         if checkpoint["phase"] == "core":
             core_path = recovery / "core-plan.json"
             write_json(core_path, plan["core_plan"])
-            result = json.loads(command(["node", str(fork), "migrate", "--from", "0.6.16", "--plan", str(core_path)], root))
+            result = json.loads(command(["node", str(fork), "migrate", "--from", checkpoint["old_installation"]["core"], "--plan", str(core_path)], root))
             if result["status"] != "migrated":
                 raise MigrationError("Core migration did not complete")
             checkpoint["task_after_core"] = task_token(root, checkpoint)
@@ -341,7 +442,9 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
                 pending.unlink(missing_ok=True)
                 # Workflow provider backup is preserved in migration preimages.
                 relative_file(root, ".trellis/workflow.md.bak").unlink(missing_ok=True)
-            result = module.install_assets(source / "trellis/workflows/guru-team", root / ".trellis/guru-team", root, set(plan["selected_platforms"]))
+            preserve_customizations(root, source, module, plan)
+            result = module.install_assets(source / "trellis/workflows/guru-team", root / ".trellis/guru-team", root, set(plan["selected_platforms"]),
+                                           migration_preserved_paths=preserved_companions(root, module, plan))
             if (result["skill_packages"]["status"] != "ok" or result["overlays"]["status"] != "ok"
                     or result["skill_installed_validation"].get("returncode") != 0):
                 raise MigrationError("Current preset has unresolved managed edits or sidecars")
@@ -376,13 +479,13 @@ def rollback(root: Path, recovery: Path, checkpoint: dict) -> dict:
         return {"exit_id": "blocked", "reason": "task_work_since_core_migration"}
     if "baseline" not in checkpoint or current_baseline(root, checkpoint) != checkpoint["baseline"]:
         return {"exit_id": "blocked", "reason": "managed_or_control_work_since_migration"}
-    if business_state(root, paths) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
+    if business_state(root, business_managed_paths(paths, checkpoint["plan"])) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
         return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     restore(root, recovery, checkpoint)
     if current_baseline(root, checkpoint) != {k: {"sha256": v["sha256"], "mode": v["mode"]} for k, v in checkpoint["preimages"].items()}:
         raise MigrationError("Restored bytes or modes do not match the preimage")
     shutil.rmtree(recovery)
-    return {"exit_id": "rolled_back", "installed_version": "0.6.16-guru.41"}
+    return {"exit_id": "rolled_back", "installed_version": checkpoint["old_installation"]["guru"]}
 
 
 def run(package_root: Path, metadata: dict, argv: list[str]) -> dict:

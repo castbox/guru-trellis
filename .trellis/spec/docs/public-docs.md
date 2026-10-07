@@ -49,11 +49,15 @@ mutable latest/canary inputs.
 The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
 must retain that release boundary. The #495 successor candidate defines an
-independent explicit migration for core `0.6.16` / Guru `0.6.16-guru.41`;
-its current framework lock is
+independent explicit migration for all `v0.6.x-guru.*` and
+`v0.7.0-guru.*` normal installations, grouped by actual manifest, managed
+assets, and task/control differences. The local successor candidates are Guru
+`0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the formal `.3` Fork lock is
+`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
+CI `37647767799`. Same-source Guru acceptance remains pending. The historical `.2` framework lock is
 `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
 `0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
-the unreleased `0.7.0-guru.2` candidate. Read that lock from
+the historical unreleased `0.7.0-guru.2` candidate. Read the formal lock from
 `trellis/presets/guru-team/source/trellis-source.json`. Formal migration acceptance
 requires a remote-addressable full Guru HEAD shared by source-loaded migration,
 workflow marketplace and preset provider. Local migration, owner re-entry and

@@ -1,6 +1,6 @@
 ---
 name: guru-upgrade-installation
-description: Upgrade a supported legacy installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.
+description: Upgrade a supported Guru 0.6.x or 0.7.0 family installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.
 ---
 
 Load this standalone semantic Skill from the complete target canonical source

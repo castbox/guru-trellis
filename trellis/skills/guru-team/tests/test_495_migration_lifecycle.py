@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 
 REPO = Path(__file__).resolve().parents[4]
 PACKAGES = REPO / "trellis/skills/guru-team/packages"
-PROFILE = "core0.6.16-guru0.6.16-guru.41"
+PROFILE = "guru0.6-family"
 
 
 def json_identity(value: object) -> str:
@@ -104,7 +104,7 @@ class MigrationLifecycleTests(unittest.TestCase):
         cls.manifest = json.loads((cls.legacy / ".trellis/guru-team/extension.json").read_text())
         if ((cls.legacy / ".trellis/.version").read_text().strip() != "0.6.16"
                 or cls.manifest["extension"]["version"] != "0.6.16-guru.41"):
-            raise AssertionError("This acceptance requires the exact supported legacy installation.")
+            raise AssertionError("This acceptance requires the exact .41 legacy representative; other families have grouped acceptance.")
 
     def setUp(self) -> None:
         self.temporary = Path(tempfile.mkdtemp(prefix="guru-495-lifecycle-"))
@@ -258,7 +258,7 @@ independent review before shared baseline promotion.
 
     def upgrade(self, record: dict, source: dict, *, preserve_edit: str | None = None) -> dict:
         projection = reviewed_projection(record, source)
-        core_plan = {"schema_version": "1.0", "target_version": "0.7.0-castbox.2",
+        core_plan = {"schema_version": "1.0", "target_version": "0.7.0-castbox.3",
                      "tasks": [{"task_ref": self.task_ref,
                                 "expected_sha256": digest(self.root / self.task_ref / "task.json"),
                                 "record": projection}], "file_decisions": [],
@@ -309,8 +309,8 @@ independent review before shared baseline promotion.
         if result["exit_id"] == "upgraded":
             self.assertIn("formal_fork_source_lock", result["unverified"])
             self.assert_live_installed()
-            self.assertEqual(result["installed_version"], "0.7.0-guru.2")
-            self.assertEqual((self.root / ".trellis/.version").read_text().strip(), "0.7.0-castbox.2")
+            self.assertEqual(result["installed_version"], "0.7.0-guru.3")
+            self.assertEqual((self.root / ".trellis/.version").read_text().strip(), "0.7.0-castbox.3")
             self.assertIn("Preserve this user-owned paragraph.\n", (self.root / "AGENTS.md").read_text())
             self.assert_configuration_preserved()
             self.assertEqual((self.root / self.deferred_ref / "task.json").read_bytes(), self.deferred_before)

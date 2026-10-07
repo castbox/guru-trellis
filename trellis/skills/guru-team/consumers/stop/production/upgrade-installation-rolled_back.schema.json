@@ -12,7 +12,8 @@
       "const": "rolled_back"
     },
     "installed_version": {
-      "const": "0.6.16-guru.41"
+      "type": "string",
+      "pattern": "^0\\.(?:6\\.\\d+|7\\.0)-guru\\.\\d+$"
     }
   }
 }

@@ -103,7 +103,7 @@ def task_token(root: Path, checkpoint: dict) -> str:
     plan = checkpoint["plan"]["core_plan"]
     # Preserved deferred task preimages are also part of rollback restoration.
     return content_token({row["task_ref"]: relative_file(root, row["task_ref"] + "/task.json")
-                          for row in plan["tasks"] + plan.get("deferred_tasks", [])})
+                          for row in plan["tasks"] + plan.get("deferred_tasks", []) + plan.get("current_tasks", [])})
 
 
 def control_token(checkpoint: dict) -> str:
