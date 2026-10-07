@@ -15,6 +15,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
 if any((not os.environ.get(key) for key in ('TRELLIS_495_FAMILIES_ROOT', 'TRELLIS_FIXED_FORK_SOURCE', 'TRELLIS_495_CORE_SOURCE'))):
     raise unittest.SkipTest('Explicit isolated output, built Fork and historical core source are required; no family migration proof.')
@@ -254,18 +255,44 @@ def preserved_core_work_during_partial_pause():
         assert (root / target).read_bytes() == newer
         write(area / 'result.json', {'initial': initial, 'resumed': resumed, 'rollback': rolled, 'preserved_path': target, 'new_bytes': 'retained'})
 
+def canonical_reconciliation_rollback():
+    area = Path(tempfile.mkdtemp(prefix='G8-canonical-reconciliation-', dir=BASE))
+    root = area / 'repo'
+    shutil.copytree(BASE / 'G8-current2/repo', root)
+    skill = '.codex/skills/guru-check-task/SKILL.md'
+    target = root / skill
+    target.write_text(target.read_text() + '\nLocal check preference before migration.\n')
+    before = target.read_bytes(), target.stat().st_mode & 0o777
+    plan = json.loads((BASE / 'G8-current2/plan.json').read_text())
+    plan['guru_decisions'] = [{'path': skill, 'action': 'preserve', 'expected_sha256': digest(target)}]
+    plan['workflow']['provider_ref'] = HEAD
+    plan_path = area / 'plan.json'
+    write(plan_path, plan)
+    initial = public(root, {'profile': 'initial_upgrade', 'source_profile': 'guru0.7.0-family', 'target_source_ref': HEAD}, plan_path)
+    assert initial['exit_id'] == 'resume_required', initial
+    pending = Path(str(target) + '.new')
+    target.write_bytes(pending.read_bytes())
+    pending.unlink()
+    resumed = public(root, {'profile': 'resume', 'recovery_ref': initial['recovery_ref']})
+    assert resumed['exit_id'] == 'upgraded', resumed
+    rolled = public(root, {'profile': 'rollback', 'recovery_ref': initial['recovery_ref']})
+    assert rolled == {'exit_id': 'rolled_back', 'installed_version': '0.7.0-guru.2'}, rolled
+    assert (target.read_bytes(), target.stat().st_mode & 0o777) == before
+    print('canonical reconciliation', area, initial, resumed, rolled, 'old customized bytes/modes restored', flush=True)
+
 if __name__ == '__main__':
     BASE.mkdir(parents=True, exist_ok=True)
     requested = set(sys.argv[1:])
     run_custom = 'custom' in requested
     run_new_work = 'new-work' in requested
     run_partial_pause = 'partial-pause' in requested
-    requested.difference_update({'custom', 'new-work', 'partial-pause'})
+    run_reconciliation = 'reconciliation' in requested
+    requested.difference_update({'custom', 'new-work', 'partial-pause', 'reconciliation'})
     for name, ref in [('065', 'v0.6.5'), ('0615', 'v0.6.15'), ('0616', 'v0.6.16'), ('0617', 'v0.6.17'), ('070', '9c36002a324c16a09a85b6aa5a380b74aabf801f'), ('0702', '8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1')]:
-        if any(((not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) or row[0] in requested) and row[2] == name for row in GROUPS)):
+        if any(((not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) and (not run_reconciliation) or row[0] in requested) and row[2] == name for row in GROUPS)):
             prepare_core(name, ref)
     for row in GROUPS:
-        if not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) or row[0] in requested:
+        if not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) and (not run_reconciliation) or row[0] in requested:
             try:
                 group(*row)
             except Exception as exc:
@@ -277,3 +304,5 @@ if __name__ == '__main__':
         preserved_work_during_pause()
     if run_partial_pause:
         preserved_core_work_during_partial_pause()
+    if run_reconciliation:
+        canonical_reconciliation_rollback()

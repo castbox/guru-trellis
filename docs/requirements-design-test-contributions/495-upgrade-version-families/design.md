@@ -10,7 +10,7 @@
 | D-MIG-495-LIFECYCLE | 保留合法 current task/control/session；known legacy 由既有正式 owner 转换或接续，不制造当前 gate。 |
 | D-MIG-495-RECOVERY | 既有私有备份记录实际 before 与确实受影响控制面；回退恢复该来源，新业务工作阻止覆盖。 |
 
-Public initial selector 演进为 `guru0.6-family` / `guru0.7.0-family`，同步 schema、Interface、受控 consumer 和文档；旧 fixed selector 不增加 alias。升级与回退 output 各自拥有最小 consumer DTO，实际恢复版本不固化 `.41`。候选 Guru `.3` / Fork `.3` 的正式 source lock 待固定；无第二状态机、writer 或新业务 workflow phase。
+Public initial selector 演进为 `guru0.6-family` / `guru0.7.0-family`，同步 schema、Interface、受控 consumer 和文档；旧 fixed selector 不增加 alias。升级与回退 output 各自拥有最小 consumer DTO，实际恢复版本不固化 `.41`。候选 Guru `.3` 采用已固定的正式 Fork `.3` source lock，Guru 同源远端验收仍待候选发布；无第二状态机、writer 或新业务 workflow phase。
 
 
 受管定制执行：既有 preset 接收 migration owner 的薄 `migration_preserved_paths` 参数，仅用于已审查 exact companion preserve；默认为空。定制退出 canonical managed ownership，后续普通 reapply 的 unknown-local-edit 机制保留文件并明确 `.new`，冲突文件不 chmod。旧 `config.yml` 为 user-owned。Skill/overlay 当前接口要求保持，不兼容定制显式 resume/合并，不把旧接口当 current pass。

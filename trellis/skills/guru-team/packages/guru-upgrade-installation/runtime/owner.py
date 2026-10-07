@@ -301,16 +301,21 @@ def begin(package: Path, root: Path, public: dict, plan: dict, fork: Path) -> tu
                   "fork": str(fork), "plan": plan, "phase": "core", "controls": {k: str(v) for k, v in ctrl.items()},
                   "old_installation": {"core": facts["installed_core"], "guru": facts["installed_version"], "source": facts["legacy_source"]},
                   "old_managed": facts["managed"], "preimages": snapshot(root, recovery, paths, ctrl),
-                  "business_before": business_state(root, business_managed_paths(paths, plan))}
+                  "business_before": business_state(root, business_managed_paths(paths, plan, root))}
     checkpoint["control_before"] = control_token(checkpoint)
     write_json(recovery / "checkpoint.json", checkpoint)
     return recovery, checkpoint
 
 
-def business_managed_paths(paths: set[str], plan: dict) -> set[str]:
-    # Explicit preservation hands ownership to user content. Keep these bytes
-    # and modes in the existing fixed business-before comparison on every phase.
+def business_managed_paths(paths: set[str], plan: dict, root: Path) -> set[str]:
+    # User-owned preservation stays in the fixed business-before comparison.
+    # Required current package/overlay reconciliation remains managed work.
     preserved = {row["path"] for row in plan.get("guru_decisions", []) if row["action"] == "preserve"}
+    if preserved:
+        module = installer(source_root(Path(__file__).resolve().parent.parent))
+        projections = module.managed_source_projections(root, root / ".trellis/guru-team", set(plan["selected_platforms"]))
+        reconciled = {path.as_posix() for path in projections} - preserved_companions(root, module, plan)
+        preserved -= reconciled
     preserved.update(row["path"] for row in plan.get("core_plan", {}).get("file_decisions", [])
                      if row["action"] == "preserve")
     if plan.get("workflow", {}).get("action") == "preserve":
@@ -320,7 +325,7 @@ def business_managed_paths(paths: set[str], plan: dict) -> set[str]:
 
 def save_baseline(root: Path, recovery: Path, checkpoint: dict) -> None:
     checkpoint["baseline"] = current_baseline(root, checkpoint)
-    checkpoint["business_after"] = business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"]))
+    checkpoint["business_after"] = business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"], root))
     write_json(recovery / "checkpoint.json", checkpoint)
 
 
@@ -375,7 +380,7 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
         formal_guru_source(source, checkpoint["source_ref"])
     if checkpoint["phase"] == "complete" and (
             current_baseline(root, checkpoint) != checkpoint["baseline"]
-            or business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"])) != checkpoint["business_after"]):
+            or business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"], root)) != checkpoint["business_after"]):
         return {"exit_id": "blocked", "reason": "work_since_completed_migration"}
     try:
         if checkpoint["phase"] != "core":
@@ -483,7 +488,7 @@ def rollback(root: Path, recovery: Path, checkpoint: dict) -> dict:
         return {"exit_id": "blocked", "reason": "task_work_since_core_migration"}
     if "baseline" not in checkpoint or current_baseline(root, checkpoint) != checkpoint["baseline"]:
         return {"exit_id": "blocked", "reason": "managed_or_control_work_since_migration"}
-    if business_state(root, business_managed_paths(paths, checkpoint["plan"])) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
+    if business_state(root, business_managed_paths(paths, checkpoint["plan"], root)) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
         return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     restore(root, recovery, checkpoint)
     if current_baseline(root, checkpoint) != {k: {"sha256": v["sha256"], "mode": v["mode"]} for k, v in checkpoint["preimages"].items()}:

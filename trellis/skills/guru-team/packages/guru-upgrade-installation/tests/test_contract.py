@@ -57,7 +57,7 @@ class MigrationContractTests(unittest.TestCase):
             plan = checkpoint["plan"]
             plan.update({"dependency_mode": "local_candidate", "workflow": {"action": "preserve"}, "selected_platforms": ["codex"], "guru_decisions": [{"path": "managed.txt", "action": "preserve"}]})
             checkpoint.update({"phase": "preset", "root": str(root), "source": str(root), "source_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(), "fork": "/unused", "old_managed": []})
-            checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan))
+            checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan, root))
             save_baseline(root, recovery, checkpoint)
             fixed = checkpoint["business_before"]
             newer = "normal user customization during pause\n"
@@ -81,6 +81,32 @@ class MigrationContractTests(unittest.TestCase):
                 old_manifest(root)
             self.assertEqual(before, path.read_bytes())
 
+    def test_required_package_and_overlay_reconciliation_restores_customized_preimage(self):
+        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recovery, checkpoint, paths = self.fixture(root)
+                path = root / target
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("old customized contract\n")
+                path.chmod(0o640)
+                paths.add(target)
+                checkpoint["preimages"] = snapshot(root, recovery, paths, {})
+                plan = checkpoint["plan"]
+                plan.update({"selected_platforms": ["codex"], "guru_decisions": [{"path": target, "action": "preserve"}]})
+                with patch("owner.installer") as module:
+                    module.return_value.MANAGED_ASSET_PATHS = []
+                    module.return_value.managed_source_projections.return_value = {Path(target): root / "canonical.md"}
+                    checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan, root))
+                    fixed = checkpoint["business_before"]
+                    save_baseline(root, recovery, checkpoint)
+                    path.write_text("required current canonical contract\n")
+                    save_baseline(root, recovery, checkpoint)
+                    self.assertEqual(checkpoint["business_before"], fixed)
+                    self.assertEqual(rollback(root, recovery, checkpoint)["exit_id"], "rolled_back")
+                self.assertEqual(path.read_text(), "old customized contract\n")
+                self.assertEqual(path.stat().st_mode & 0o777, 0o640)
+
     def test_preserved_core_and_workflow_work_blocks_rollback_after_pause(self):
         for kind, target in (("core", "managed.txt"), ("workflow", ".trellis/workflow.md")):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
@@ -94,7 +120,7 @@ class MigrationContractTests(unittest.TestCase):
                 plan = checkpoint["plan"]
                 plan.update({"workflow": {"action": "preserve"}, "guru_decisions": []})
                 plan["core_plan"]["file_decisions"] = [{"path": target, "action": "preserve"}] if kind == "core" else []
-                checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan))
+                checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan, root))
                 fixed = checkpoint["business_before"]
                 save_baseline(root, recovery, checkpoint)
                 path.write_text("normal new work during pause\n")
