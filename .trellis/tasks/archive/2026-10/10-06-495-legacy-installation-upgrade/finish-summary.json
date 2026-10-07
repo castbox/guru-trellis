@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-07T09:58:55Z",
+  "generated_at": "2026-10-07T20:46:18Z",
   "generator": "guru-team.finalize-task",
   "task": {
     "slug": "10-06-495-legacy-installation-upgrade",
@@ -11,7 +11,7 @@
   },
   "git": {
     "base_branch": "main",
-    "branch": "codex/495-legacy-installation-upgrade",
+    "branch": "codex/495-upgrade-version-families",
     "commits": [],
     "changed_paths": []
   },
@@ -51,7 +51,7 @@
       ],
       "pr_refs": [],
       "branches": [
-        "codex/495-legacy-installation-upgrade"
+        "codex/495-upgrade-version-families"
       ],
       "paths": [
         ".trellis/tasks/archive/2026-10/10-06-495-legacy-installation-upgrade",
