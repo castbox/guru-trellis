@@ -14,7 +14,8 @@
     "controls",
     "old_managed",
     "preimages",
-    "business_before"
+    "business_before",
+    "old_installation"
   ],
   "properties": {
     "schema_version": {
@@ -75,6 +76,28 @@
     },
     "failure": {
       "type": "object"
+    },
+    "old_installation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "core",
+        "guru",
+        "source"
+      ],
+      "properties": {
+        "core": {
+          "type": "string",
+          "pattern": "^0\\.(?:6\\.\\d+|7\\.0-castbox\\.\\d+)$"
+        },
+        "guru": {
+          "type": "string",
+          "pattern": "^0\\.(?:6\\.\\d+|7\\.0)-guru\\.\\d+$"
+        },
+        "source": {
+          "type": "object"
+        }
+      }
     }
   }
 }

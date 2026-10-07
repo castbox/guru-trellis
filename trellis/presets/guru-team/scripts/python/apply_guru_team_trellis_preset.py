@@ -2475,6 +2475,8 @@ def install_assets(
     dst: Path,
     repo: Path,
     platforms: set[str] | None = None,
+    *,
+    migration_preserved_paths: set[str] | None = None,
 ) -> dict[str, Any]:
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
@@ -2522,6 +2524,7 @@ def install_assets(
             source_validation=source_validation,
             upstream_ownership_validation=upstream_ownership_validation,
             managed_python=managed_python,
+            migration_preserved_paths=migration_preserved_paths or set(),
         )
         result["python_runtime"] = python_runtime
         result["managed_transaction"] = {
@@ -2610,6 +2613,7 @@ def _install_assets_in_place(
     source_validation: dict[str, Any],
     upstream_ownership_validation: dict[str, Any],
     managed_python: Path,
+    migration_preserved_paths: set[str] | None = None,
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
@@ -2656,30 +2660,23 @@ def _install_assets_in_place(
                 "reason": "unknown_local_spec_edit",
                 "sidecar": sidecar,
             })
-    for relative in MANAGED_ASSET_PATHS:
-        result = copy_managed(src / relative, dst / relative)
-        rel_path = Path(result["path"]).relative_to(repo).as_posix()
-        if result["action"] == "installed":
-            installed.append(rel_path)
-        elif result["action"] == "unchanged":
-            unchanged.append(rel_path)
-        elif result["action"] == "updated_managed":
-            updated_managed.append(rel_path)
-            backup = result.get("backup")
-            if backup:
-                managed_backups.append(Path(backup).relative_to(repo).as_posix())
+    from migration_companion_assets import install_companions, collect_companion_results, ensure_companion_modes
+
+    preserved = migration_preserved_paths or set()
+    companion_results = install_companions(
+        src, dst, repo, MANAGED_ASSET_PATHS, previous_manifest, preserved, copy_managed, copy_managed_spec,
+    )
+    collect_companion_results(
+        repo, companion_results, installed, unchanged, updated_managed,
+        managed_backups, new_copies, managed_spec_sidecars, managed_spec_conflicts,
+    )
 
     target_config = dst / "config.yml"
     if not target_config.exists():
         shutil.copyfile(src / MANAGED_CONFIG, target_config)
         installed.append(target_config.relative_to(repo).as_posix())
 
-    for script in (
-        dst / path for path in MANAGED_ASSET_PATHS
-        if path.parts[:2] == ("scripts", "bash")
-    ):
-        if script.exists():
-            ensure_executable(script)
+    ensure_companion_modes(dst, repo, MANAGED_ASSET_PATHS, preserved, companion_results, ensure_executable)
 
     selected = platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
     skill_packages = install_skill_packages(repo, guru_root, dst, selected, previous_manifest)

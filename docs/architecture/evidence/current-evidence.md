@@ -521,3 +521,13 @@ expected `.72 -> .73` 承接 [验收增量](../../requirements-design-test-contr
 真实 PR195 OPEN/deferred 的 old task/live base/head 区别、PR58/210 merged但无确认TaskRef/trailer，均只读诊断，不构造当前 MergeResult/Completion。MIG06 原始业务在途不可取得，依据 live scope 使用正式native旧task/plan/recorder/checker/writer/executor/archive、本地Git与canonical test doubles；原路径正常终态，observer仅复制正式writer已写出的push_content。新source_locked public迁移 deferred/preserve，首次失败后一次resume upgraded/unverified[]，16旧文件bytes/modes及refs保持；directold明确unsupported_legacy_task，新current neighbor正式创建后installed再次通过。
 
 EVD-048/v1/.72 为不可变前驱证据；本条不把旧首次失败删除或说成网络，不证明业务原始在途/真实GitHub发布/new文档HEAD重跑/当前旧gate/Release/真实业务安装/完整累计矩阵。晋升前 committed review 仅放行 expected-current promotion；晋升diff仍须freshPhase2/TaskCommit/不同reviewer完整BranchReview，再按正式Delivery/merge/Completion owners承接。
+
+## EVD-050：#495 版本系列本地 slice
+
+expected `.73→.74`；[唯一增量 Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md)拥有实际结果与首次失败/恢复边界。19 tag 全归组，G1..G8 actual before/preview/upgrade/实际来源回退/smoke，current linked control/session 与 lifecycle 横向覆盖；正式 Fork PR28/CI 固定 `.3`。26 package/2helper、Skill/overlay canonical-only及暂停新工作四格和 companion组合、source/installed/drift已定向验证。三个回退finding修复并关闭，`11ef591c...6cd766dd` 完整独立复审及正式 Branch Review passed；该 pass 不覆盖本次晋升 diff。REMOTE 同 Guru public/source_locked/provider/deferred 尚缺，旧 EVD-049 不代替；不声称 full-suite全通过、Release、真实业务安装或累计矩阵。
+
+## EVD-051：#495 精确后继远端验收
+
+expected `.74→.75`；来源 [PR498](https://github.com/castbox/guru-trellis/pull/498) 精确 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean远端fetch/bootstrap，正式Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`/main CI `37647767799`，CLI/core `.7.0-castbox.3`。结果仅由[唯一family Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md#精确远端来源与修复后验收evd-051)拥有：G1/native G8 source_locked/provider/installed/实际来源回退与oldsmoke，native G8 inside/outside/mode新工作保护、reapply，以及native oldwriter deferred均通过。31package/2helper、两AGENTS修复closure及完整123路径正式Branch Review已通过；不代替本晋升difffresh gates。
+
+EVD-050/.74本地历史不改写，e6首次G1误阻止回退及bdf默认AGENTS新工作finding保留。当前accepted MIG-495-01..12证据齐备，ARCH-GAP-012 closed；Issue仍OPEN。后继文档HEAD不声称同源重跑；merge/Completion/Closure/Finish、软件Release、真实业务安装/原始在途及完整累计矩阵未由本条证明。

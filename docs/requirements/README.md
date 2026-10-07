@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current authority 是 `current-main-0.6.17-guru.73` / `active`；[本版入口](./versions/current-main-0.6.17-guru.73/requirement-main.md)完整继承 immutable `.72` 有效合同，并承接 #495 [固定来源验收贡献](../requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md)。Fork `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 为未发布候选，Architecture `.73/active`。MIG-495-01..09 证据区分首次失败/恢复、真实 live PR/merge、旧正式 writer 构造快照与新固定 `6a563f5f` source_locked/provider/actual installed；不声明单轮七场景全通过。晋升 diff 仍须 fresh Phase2/commit/独立完整 Branch Review，后续 merge/Completion 不能复用晋升前 gate。软件发布、真实业务安装、完整累计矩阵保持独立未验证；下文 `.72` 及更早条目只作 immutable predecessor provenance。
+唯一 current authority 是 `current-main-0.6.17-guru.75` / `active`；[本版入口](./versions/current-main-0.6.17-guru.75/requirement-main.md)薄继承 immutable `.74`，承接 #495 全系列升级的[唯一验收结果](../requirements-design-test-contributions/495-upgrade-version-families/test.md)。Architecture `.75/active`；正式 Fork `.3` 固定，Guru `.3` 仍为未发布软件候选。精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，EVD-051关闭 accepted migration GAP；Issue仍OPEN，晋升 diff 必须 fresh Phase2/commit/完整独立 Branch Review，不表示merge、Completion、业务升级或Release。`.74`及更早证据保留为历史。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +8,9 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.73` | [requirement-main.md](./versions/current-main-0.6.17-guru.73/requirement-main.md) | reviewed #495 fixed-source acceptance; immutable .72 inheritance; fresh post-promotion gates required |
+| `active` | `current-main-0.6.17-guru.75` | [requirement-main.md](./versions/current-main-0.6.17-guru.75/requirement-main.md) | reviewed #495 exact ecd remote acceptance; immutable .74 inheritance; fresh post-promotion gates required |
+| `superseded` | `current-main-0.6.17-guru.74` | [requirement-main.md](./versions/current-main-0.6.17-guru.74/requirement-main.md) | reviewed #495 version-family local slice; immutable .73 inheritance; remote acceptance pending |
+| `superseded` | `current-main-0.6.17-guru.73` | [requirement-main.md](./versions/current-main-0.6.17-guru.73/requirement-main.md) | reviewed #495 fixed-source acceptance; immutable .72 inheritance; fresh post-promotion gates required |
 | `superseded` | `current-main-0.6.17-guru.72` | [requirement-main.md](./versions/current-main-0.6.17-guru.72/requirement-main.md) | reviewed #495 migration candidate; immutable .71 inheritance; final acceptance pending |
 | `superseded` | `current-main-0.6.17-guru.71` | [requirement-main.md](./versions/current-main-0.6.17-guru.71/requirement-main.md) | reviewed #490；薄继承 immutable `.70`，Architecture `.71/active` |
 | `superseded` | `current-main-0.6.17-guru.70` | [requirement-main.md](./versions/current-main-0.6.17-guru.70/requirement-main.md) | reviewed #481；immutable history |

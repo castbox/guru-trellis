@@ -1,8 +1,14 @@
 # Explicit source-loaded installation migration
 
 `judgment_mode=semantic`. This owner has no workflow-mode entry. Initial,
-resume and rollback use independent public inputs. Only core `0.6.16` with
-Guru `0.6.16-guru.41` is supported. Old conversion belongs to the formal Fork
+resume and rollback use independent public inputs.
+All normal `v0.6.x-guru.*` and `v0.7.0-guru.*` installations are supported
+when the selected target is a successor. The installed extension, core, schema
+and exact receipt/source bytes determine the migration path, not a revision
+whitelist. Public `source_profile` is `guru0.6-family` or `guru0.7.0-family`;
+callers of the former fixed `.41` selector must replace it with `guru0.6-family`.
+Command/profile/exit ids remain unchanged, and published tags remain immutable.
+Old conversion belongs to the formal Fork
 migration and this source-loaded package; ordinary update, preset apply and
 lifecycle target readers stay current-only. Shared identity inventory may
 recognize known legacy headers solely for identity reservation and diagnosis.
@@ -19,17 +25,30 @@ global npm installations or node_modules to bypass the old-version guard.
 
 1. Read current public profiles and command help. For `initial_upgrade`, obtain
    the exact target source ref and old profile. Run `preview.sh --root TARGET
-   --input INPUT` to read old versions, fixed provenance, exact managed hashes,
+   --input INPUT` to read old versions, observed provenance, exact managed hashes,
    task field/branch/PR clues, dirty state and registered worktrees. Also inspect
    user config/spec/platform customization, archives and current session facts
    without treating historical personnel or old gates as current authority.
    Read the complete old `.template-hashes.json`, compare it with target
    templates, and explicitly decide remove/preserve for retired receipt-owned
    paths. Current template actions alone are not the old ownership inventory.
-   Missing expanded Guru companion hashes must resolve to original bytes at
-   the installed manifest's exact `source.commit`. If a shallow source checkout
-   lacks that OID, prepare it by explicit formal remote acquisition before the
-   zero-write preview; the executor has no automatic network/history fallback.
+   Schema 1.0 receipts can lack package/overlay domains; schema 2.0 receipts
+   can lack expanded hashes. Use recorded file hashes first. Resolve missing
+   hashes from the observed old source commit and matching formal release
+   sources, checking actual extension/core contracts. Early dirty/mutable
+   receipts can name an installer predecessor; they are observed facts, not
+   invalid installations. The same castbox/guru-trellis repository may use
+   HTTPS, SCP-style SSH or ssh:// Git origin forms, with or without .git.
+   Never use target source hashes as old hashes. Match
+   the actual old bytes against exact old sources; absent/ambiguous provenance
+   requires explicit preserve/replace of the actual preimage. Acquire missing
+   release objects before the zero-write preview; no network fallback occurs
+   inside the executor. A normal core-only update can leave an older core
+   requirement in the receipt; preview reports recorded and live cores separately
+   and passes the supported live core to Fork migrate. Old asset sources still
+   match the receipt's recorded extension/core contract.
+   Early upstream-owned overlay claims belong to the Fork
+   and cannot be retired by Guru.
 2. AI owns every source/field/relationship projection. Preserve legal TaskId,
    initialize missing generation to zero, retire creator/assignee and empty
    subtasks. Supply complete current records to the Fork. Preserve valid
@@ -39,6 +58,9 @@ global npm installations or node_modules to bypass the old-version guard.
    creation date is the schema's empty string, never the migration date.
    Unknown fields and nonempty relations require explicit lossless disposition.
    Inventory may contain both valid current and known legacy active records.
+   Current tasks go in `core_plan.current_tasks` as `{task_ref,expected_sha256}`
+   and preserve raw bytes/modes, id, generation, source, status, relations and
+   meta. Do not reconvert them or rebuild valid binding/session/control.
    Select each legacy record for conversion or explicitly defer it using the
    Fork's private `core_plan.deferred_tasks` rows, each containing `task_ref`
    and the exact old raw-byte `expected_sha256`. Converted/deferred refs are
@@ -71,6 +93,12 @@ global npm installations or node_modules to bypass the old-version guard.
    target bytes before force apply; current preset then performs a real fresh
    install and current installed validation. User config and unknown edits are
    preserved; unresolved edits/sidecars produce same-owner resume facts.
+   Explicit preserved companion paths pass as a thin executor projection to
+   the same preset. Their bytes/modes remain local and leave managed_assets
+   ownership; a later ordinary reapply uses that existing provenance to retain
+   them and report a canonical conflict proposal rather than overwrite them.
+   Package/overlay contracts that require canonical bytes remain conflicts
+   until reconciled; preservation cannot fabricate current validation.
    Retire only empty directories left by the reviewed old managed paths;
    retain unknown or preserved content. Validate the actual target through its
    installed runtime before returning `upgraded`; staged validation alone
@@ -101,7 +129,34 @@ AI first checks whether newer tasks, deliveries, commits or business/control
 work exist. The executor compares the refreshed managed baseline and local
 business token, plus two fixed rollback-only tokens: converted and explicitly
 deferred task content at core completion, and non-preset control content before
-the first write. A failed resume cannot absorb newer deferred notes into rollback
+the first write. Explicitly preserved core/workflow, companion and retired Guru paths remain user-owned in
+the existing fixed business-before comparison; a normal edit during a pause
+can survive resume but cannot be overwritten by rollback. Required current package/overlay
+reconciliation follows the preset's existing source projection as managed work;
+consuming its canonical `.new` alone permits rollback to the old customized preimage.
+Before restore, each required preserved projection must still match its backed-up
+bytes/mode or canonical bytes with the preimage or installer source mode. Other
+local edits during unresolved reconciliation block rollback even after resume
+refreshes the managed baseline; no new rollback anchor is recorded.
+For a preserved user-owned `AGENTS.md`, business comparison projects only the
+exact target preset AI-first block append/replacement on its original backed-up
+bytes and mode to the old state. It reuses the preset operation and existing
+preimage, including ordinary reapply and older checkpoints; no new anchor is
+written. New outside content, block edits or mode changes remain business work
+and block restore even when a paused resume refreshes the baseline.
+Every `AGENTS.md` also receives a local preimage-based rollback eligibility
+check, independently of core preserve decisions. The exact official Fork
+collector runs on original preimage bytes for reviewed core updates; only
+original, core-only or core-plus-preset bytes/mode permit restoration. This
+protects outside user content in default/native installations without changing
+the existing business token or adding an anchor. Both the formal Fork bin
+launcher and local built entry resolve to the same CLI package collector.
+Before preset resume, that same fixed preimage projection checks the
+AGENTS principles region and mode. An original or exact migration region permits
+the writer; newer region or mode changes remain untouched and return the
+existing `resume_required` failure path. New outside paragraphs still permit
+normal resume because the preset preserves them, and subsequently block rollback.
+A failed resume cannot absorb newer deferred notes into rollback
 eligibility by refreshing its baseline. Managed
 Python pointer paths and aliases are excluded from the latter token. Resume
 and baseline refresh never replace these anchors. Older recovery checkpoints
@@ -145,7 +200,8 @@ not this semantic judgment. `upgraded` reports installed version, the rollback
 reference and formal dependency boundary to stop `upgrade-installation-upgraded`;
 report task-level results in the current conversation. `resume_required` selects
 this owner's resume input by the thin profile/reference projection.
-`rolled_back` reports the restored version to stop
+`rolled_back` reports the actual before-installation Guru version (never a
+fixed `.41`), captured with core/source identity before the first write, to stop
 `upgrade-installation-rolled-back`; `blocked` reports a concrete reason to stop
 `upgrade-installation-blocked`. Each public field has that direct consumer;
 backup rows, old records, complete inventories and business hashes are private.

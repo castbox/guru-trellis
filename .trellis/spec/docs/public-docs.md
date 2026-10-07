@@ -49,11 +49,17 @@ mutable latest/canary inputs.
 The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
 must retain that release boundary. The #495 successor candidate defines an
-independent explicit migration for core `0.6.16` / Guru `0.6.16-guru.41`;
-its current framework lock is
+independent explicit migration for all `v0.6.x-guru.*` and
+`v0.7.0-guru.*` normal installations, grouped by actual manifest, managed
+assets, and task/control differences. The local successor candidates are Guru
+`0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the formal `.3` Fork lock is
+`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
+CI `37647767799`. Same-source Guru acceptance is verified at exact
+`ecd152add05dbeb6df1873f0917ca3a62914ca7a`; a later docs-only HEAD is not a rerun.
+The historical `.2` framework lock is
 `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
 `0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
-the unreleased `0.7.0-guru.2` candidate. Read that lock from
+the historical unreleased `0.7.0-guru.2` candidate. Read the formal lock from
 `trellis/presets/guru-team/source/trellis-source.json`. Formal migration acceptance
 requires a remote-addressable full Guru HEAD shared by source-loaded migration,
 workflow marketplace and preset provider. Local migration, owner re-entry and
@@ -61,22 +67,29 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.73` / `active`; it is not a
-product release axis. Read current Requirements/Design/Test through the three
-layer READMEs: reviewed `R495/D495/T495` fixed-source acceptance inherits
-immutable `.72`, including `.71` and older valid contracts. The current registry
-remains 35 active Skills / 159 exits / 106 commands, zero planned ids;
-standalone-only migration leaves business workflow at 33 invokes / 153 exits.
-Architecture `.73` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
-accepted ADR-017 / ARCH-GAP-012 / EVD-049; EVD-048 retains local candidate history.
-The unique acceptance contribution separates fixed `6a563f5f` source_locked /
-provider / actual installed execution, real live PR/merge diagnosis, and accepted
-old-writer constructed inflight evidence. Retain first failures and same-owner
-recovery; do not claim single-run 7/7, genuine business inflight or real GitHub
-publication from test doubles. Post-promotion Phase2/TaskCommit/independent full
-BranchReview still gate Delivery/merge/Completion; knowledge does not prove those
-later steps, release, real-business installation or the full cumulative matrix.
-A later docs-only HEAD does not become an exact-source rerun merely by inheritance.
+Current knowledge authority is `current-main-0.6.17-guru.75` / `active`; it is not a
+product release axis. Read Requirements/Design/Test through the three layer
+READMEs: reviewed version-family acceptance thinly inherits immutable `.74`.
+All normal `v0.6.x-guru.*` / `v0.7.0-guru.*` sources are supported; actual
+manifest/ownership/task differences group representative acceptance, not a
+version whitelist. Registry remains 35 active Skills / 159 exits / 106 commands,
+zero planned ids; business workflow remains 33 invokes / 153 exits.
+Architecture `.75` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
+ADR-018 / closed ARCH-GAP-012 / EVD-051. ADR-017 owners/current-only/deletion exits
+remain effective; its fixed-source restriction is superseded. EVD-049 retains
+historical `.73` fixed `6a563f5f` source_locked/provider/inflight evidence and
+cannot prove the new Guru source. The unique family Test contribution owns local
+representative actual upgrade, custom/current-state preservation, partial
+recovery, actual-source rollback and new-work protection. EVD-051 binds exact Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean remote
+source/public/provider/deferred acceptance, G1/native G8 actual-source rollback
+and native AGENTS pause-work protection. EVD-050/.74 retains local history;
+Issue remains OPEN and downstream merge/Completion/Closure/Finish are separate.
+Retain first failures and same-owner recovery; do not claim full-suite pass,
+genuine business inflight or GitHub publication from test doubles. Promotion-created
+diff requires fresh Phase2/TaskCommit/independent full BranchReview before Delivery;
+knowledge promotion does not prove later gates, whole-task Completion, release,
+real-business installation or the full cumulative matrix. A later docs-only HEAD
+does not become an exact-source rerun merely by inheritance.
 Historical pins and retired internal API/lifecycle boundaries remain unchanged.
 Manual Git/gh results never backfill Guru gates, transactions or archives.
 Native, mock, installed and unverified evidence remain distinct in Test authority.

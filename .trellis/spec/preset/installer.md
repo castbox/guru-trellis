@@ -15,12 +15,12 @@ cover the current managed inventory.
 ### Explicit old-installation migration
 
 `guru-upgrade-installation` owns the independent #495 legacy boundary for
-core `0.6.16` / Guru `0.6.16-guru.41`; its complete target-source package owns
+all normal `v0.6.x-guru.*` and `v0.7.0-guru.*` source installations; its complete target-source package owns
 inventory, reviewed old provenance conversion, recovery and rollback.
 It calls the formal Fork migration and current preset, without making a
 non-current manifest acceptable to ordinary apply. Source-lock and successor
 validation remain necessary; a local dirty Fork is development evidence only.
-See the package contract and `MIGRATION-495.md`. Historical roots and business
+Source tag/extension/core, receipt schema, managed ownership and task format are independent. Known schema1/2 receipts normalize only at this upgrade boundary; current tasks and valid controls retain their bytes/state. Missing hashes use verified old source bytes, and local modifications stay explicit conflicts. Group equivalent migration contracts rather than repeating full tests per revision; rollback restores each actual before version. See the package contract and `MIGRATION-495.md`. Historical roots and business
 customizations remain outside migration ownership.
 
 Retiring reviewed old Guru-managed files must also retire their empty asset
@@ -847,3 +847,14 @@ and 102 commands. The global business workflow projection is 22 invokes, 98 exit
 `guru-finish-work` entries and combined integration suite; those entries route
 only Publication, Finalizer, and Merge. Upstream `trellis-finish-work` assets
 remain under official Trellis ownership.
+
+
+### Reviewed migration companion preservation
+
+The explicit migration owner may project reviewed `preserve` companion paths
+into the existing preset executor. Those exact preimages retain bytes/modes and
+leave canonical managed ownership; no persistent parallel state is introduced.
+Ordinary reapply preserves these local paths, emits canonical `.new` for
+reconciliation, and never chmods a conflicting custom shell file. Runtime
+Skill/overlay compatibility still uses the current interface contract. Legacy
+`config.yml` claims never authorize retirement of materialized user settings.

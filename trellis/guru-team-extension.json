@@ -2,16 +2,16 @@
   "schema_version": "1.0",
   "extension_id": "guru-team",
   "name": "Guru Team Trellis Extension",
-  "version": "0.7.0-guru.2",
+  "version": "0.7.0-guru.3",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
-  "target_trellis_cli": "0.7.0-castbox.2",
+  "target_trellis_cli": "0.7.0-castbox.3",
   "requires": {
-    "trellis_cli": "0.7.0-castbox.2"
+    "trellis_cli": "0.7.0-castbox.3"
   },
   "tested": {
     "trellis_cli": [
-      "0.7.0-castbox.2"
+      "0.7.0-castbox.3"
     ]
   },
   "public_api": {
