@@ -129,7 +129,7 @@ AI first checks whether newer tasks, deliveries, commits or business/control
 work exist. The executor compares the refreshed managed baseline and local
 business token, plus two fixed rollback-only tokens: converted and explicitly
 deferred task content at core completion, and non-preset control content before
-the first write. Reviewed preserved companion content remains user-owned in
+the first write. All explicitly preserved Guru, core and workflow paths remain user-owned in
 the existing fixed business-before comparison; a normal edit during a pause
 can survive resume but cannot be overwritten by rollback. A failed resume cannot absorb newer deferred notes into rollback
 eligibility by refreshing its baseline. Managed

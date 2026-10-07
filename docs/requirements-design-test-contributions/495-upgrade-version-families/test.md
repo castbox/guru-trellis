@@ -9,7 +9,7 @@
 | FAMILY | 19 正式 tag 来源/hash 投影核验；G1..G8 真实旧 installer before → public零写入preview → actual `.3` upgrade → actual source-specific rollback → old get_context smoke 通过。 |
 | 差异补测 | 真旧 G1 SSH origin receipt实际upgrade/来源rollback通过；G6 `.41/core.6.17`、G7 `.1` 配置、G8 `.2` current task 各 actual upgrade/rollback/smoke 通过。 |
 | TASK / PLAN / DEV / MIXED | G6 真 before 的七项 lifecycle 场景全部通过（203秒）；planning/dev正式owner接续、current creator、非UUID/full/minimal、mixed inventory与dirty/untracked保留。 |
-| PARTIAL / NEW-WORK | lifecycle 七项覆盖部分恢复、新任务/notes写入后阻止覆盖回退。23 package tests通过；public 暂停→新增companion编辑→解决Skill.new→resume成功→rollback返回business_work_since_migration，新bytes保留。 |
+| PARTIAL / NEW-WORK | lifecycle 七项覆盖部分恢复、新任务/notes写入后阻止覆盖回退。24 package tests通过；public 暂停→新增companion编辑→解决Skill.new→resume成功→rollback返回business_work_since_migration，新bytes保留；独立committed review发现的core/workflow显式preserve路径已修复：两条actualpublic partial pause→新规则→再次resume_required→rollback blocked/newbytes retained通过。 |
 | PRESERVE | G1 config.yml bytes/modes、业务dirty/untracked保留；custom companion 0640、unknown目录和私有config setting在upgrade/reapply/rollback保持。ordinaryreapply保留custom并报告canonical.new。custom Bash同样保留0640权限；原恢复点resume成功后actual rollback通过。 |
 | LINKED / current control/session | 真实 `.2` C4→C3→Bind 正式 writer 生成 branch/resource/session；linked upgrade `.3`、current session_resumed、rollback `.2`、old session_resumed 通过，task/control bytes/modes、primary 与 common pointer 保持。 |
 | DELIVERY | 原 `.73` PR195/merged诊断与固定a32旧正式writer构造作为历史来源证据继承：本轮不改旧writer、deferred处置或远端副作用；current task anchor和family选择不使其变为current gate。同一新Guru远端源的deferred public/provider复验归REMOTE剩余工作；不声称新payload/原始业务在途已验证。 |
@@ -35,6 +35,8 @@
 各组receipt由对应旧installer生成，均实际写入升级与回退，最后旧runtime smoke通过。组明细与19tag归属由PRD拥有，本表只记录实际代表结果。
 
 ## 首次失败和恢复边界
+
+- 独立 committed `11ef591c...168c80ef` review：core `AGENTS.md` / workflow preserve 的新增规则在未解决Skill冲突时再次resume后被rollback恢复前像覆盖；真实public样本复现，BR-495-PRESERVED-CORE-WORK已在候选修复并通过两条实际public回归；待修复提交后的closure与不同fresh reviewer完整复审。不变更此前G1..G8通过事实，不将该review称passed。
 
 - Fork完整CLI首次1884通过/1 ENOENT：工作树未初始化marketplace子模块；未声称全套通过。
 - Preset首轮101项/2失败：版本期待仍为`.2`（修正`.3`后单项通过）；missinghash reapply的package conflict在独立重跑未复现。首次单项从scripts cwd运行temporary lifecycle不可用，改repo root后通过。

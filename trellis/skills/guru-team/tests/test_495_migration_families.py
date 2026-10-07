@@ -225,17 +225,47 @@ def preserved_work_during_pause():
     assert rolled == {'exit_id': 'blocked', 'reason': 'business_work_since_migration'}, rolled
     assert (root / companion).read_bytes() == newer
     write(area / 'result.json', {'initial': initial, 'resumed': resumed, 'rollback': rolled, 'new_companion_bytes': 'preserved'})
+def preserved_core_work_during_partial_pause():
+    for kind, target in (('core', 'AGENTS.md'), ('workflow', '.trellis/workflow.md')):
+        area = BASE / ('G8-preserved-partial-pause-' + kind)
+        area.mkdir(exist_ok=True)
+        root = area / 'repo'
+        shutil.copytree(BASE / 'G8-current2/repo', root)
+        skill = '.codex/skills/guru-check-task/SKILL.md'
+        (root / skill).write_text((root / skill).read_text() + '\nLocal check preference before migration.\n')
+        plan = json.loads((BASE / 'G8-current2/plan.json').read_text())
+        plan['guru_decisions'] = [{'path': skill, 'action': 'preserve', 'expected_sha256': digest(root / skill)}]
+        plan['workflow']['provider_ref'] = HEAD
+        if kind == 'workflow':
+            plan['workflow']['action'] = 'preserve'
+        else:
+            assert any(row['path'] == target and row['action'] == 'preserve' for row in plan['core_plan']['file_decisions'])
+        plan_path = area / 'plan.json'
+        write(plan_path, plan)
+        initial = public(root, {'profile': 'initial_upgrade', 'source_profile': 'guru0.7.0-family', 'target_source_ref': HEAD}, plan_path)
+        assert initial['exit_id'] == 'resume_required', initial
+        newer = (root / target).read_bytes() + b'\n# Normal new business rule during migration pause.\n'
+        (root / target).write_bytes(newer)
+        resumed = public(root, {'profile': 'resume', 'recovery_ref': initial['recovery_ref']})
+        assert resumed['exit_id'] == 'resume_required', resumed
+        assert (root / target).read_bytes() == newer
+        rolled = public(root, {'profile': 'rollback', 'recovery_ref': initial['recovery_ref']})
+        assert rolled == {'exit_id': 'blocked', 'reason': 'business_work_since_migration'}, rolled
+        assert (root / target).read_bytes() == newer
+        write(area / 'result.json', {'initial': initial, 'resumed': resumed, 'rollback': rolled, 'preserved_path': target, 'new_bytes': 'retained'})
+
 if __name__ == '__main__':
     BASE.mkdir(parents=True, exist_ok=True)
     requested = set(sys.argv[1:])
     run_custom = 'custom' in requested
     run_new_work = 'new-work' in requested
-    requested.difference_update({'custom', 'new-work'})
+    run_partial_pause = 'partial-pause' in requested
+    requested.difference_update({'custom', 'new-work', 'partial-pause'})
     for name, ref in [('065', 'v0.6.5'), ('0615', 'v0.6.15'), ('0616', 'v0.6.16'), ('0617', 'v0.6.17'), ('070', '9c36002a324c16a09a85b6aa5a380b74aabf801f'), ('0702', '8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1')]:
-        if any(((not requested and (not run_custom) and (not run_new_work) or row[0] in requested) and row[2] == name for row in GROUPS)):
+        if any(((not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) or row[0] in requested) and row[2] == name for row in GROUPS)):
             prepare_core(name, ref)
     for row in GROUPS:
-        if not requested and (not run_custom) and (not run_new_work) or row[0] in requested:
+        if not requested and (not run_custom) and (not run_new_work) and (not run_partial_pause) or row[0] in requested:
             try:
                 group(*row)
             except Exception as exc:
@@ -245,3 +275,5 @@ if __name__ == '__main__':
         custom_preservation()
     if run_new_work:
         preserved_work_during_pause()
+    if run_partial_pause:
+        preserved_core_work_during_partial_pause()

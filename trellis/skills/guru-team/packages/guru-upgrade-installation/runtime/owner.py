@@ -311,6 +311,10 @@ def business_managed_paths(paths: set[str], plan: dict) -> set[str]:
     # Explicit preservation hands ownership to user content. Keep these bytes
     # and modes in the existing fixed business-before comparison on every phase.
     preserved = {row["path"] for row in plan.get("guru_decisions", []) if row["action"] == "preserve"}
+    preserved.update(row["path"] for row in plan.get("core_plan", {}).get("file_decisions", [])
+                     if row["action"] == "preserve")
+    if plan.get("workflow", {}).get("action") == "preserve":
+        preserved.add(".trellis/workflow.md")
     return paths - preserved
 
 

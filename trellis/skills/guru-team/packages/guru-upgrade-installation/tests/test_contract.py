@@ -81,6 +81,28 @@ class MigrationContractTests(unittest.TestCase):
                 old_manifest(root)
             self.assertEqual(before, path.read_bytes())
 
+    def test_preserved_core_and_workflow_work_blocks_rollback_after_pause(self):
+        for kind, target in (("core", "managed.txt"), ("workflow", ".trellis/workflow.md")):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recovery, checkpoint, paths = self.fixture(root)
+                path = root / target
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("preserved before pause\n")
+                paths.add(target)
+                checkpoint["preimages"] = snapshot(root, recovery, paths, {})
+                plan = checkpoint["plan"]
+                plan.update({"workflow": {"action": "preserve"}, "guru_decisions": []})
+                plan["core_plan"]["file_decisions"] = [{"path": target, "action": "preserve"}] if kind == "core" else []
+                checkpoint["business_before"] = business_state(root, business_managed_paths(paths, plan))
+                fixed = checkpoint["business_before"]
+                save_baseline(root, recovery, checkpoint)
+                path.write_text("normal new work during pause\n")
+                save_baseline(root, recovery, checkpoint)
+                self.assertEqual(checkpoint["business_before"], fixed)
+                self.assertEqual(rollback(root, recovery, checkpoint), {"exit_id": "blocked", "reason": "business_work_since_migration"})
+                self.assertEqual(path.read_text(), "normal new work during pause\n")
+
     def test_formal_source_requires_committed_clean_canonical_candidate(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
