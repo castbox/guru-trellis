@@ -40,7 +40,7 @@ or upstream `task.py start` to perform that transition.
 
 ## Installation
 
-当前开发 extension candidate 为 `0.7.0-guru.3`，目标 Fork CLI/core 为 `0.7.0-castbox.3`，均尚未发布；predecessor 是已发布的 `v0.7.0-guru.1`。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 仍为未发布候选，同源远端验收待完成。
+当前开发 extension candidate 为 `0.7.0-guru.3`，目标 Fork CLI/core 为 `0.7.0-castbox.3`，均尚未发布；predecessor 是已发布的 `v0.7.0-guru.1`。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。
 候选验证的 workflow marketplace source 与 preset 使用同一可寻址的完整 Guru
 candidate SHA；正式发布后才使用同一 immutable Guru tag。Fork main CI 成功
 不替代 Guru exact-candidate、installed/lifecycle 或发布门禁。
@@ -50,7 +50,7 @@ candidate SHA；正式发布后才使用同一 immutable Guru tag。Fork main CI
 后继 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 开发候选通过独立 standalone
 `guru-upgrade-installation` 承接全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装；
 显式升级请求从目标 source package 加载该 Skill，不先进入 business Intake。
-见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；正式 Fork source/CI 已固定，Guru 分组基础验收已完成，同源远端验收仍待完成，普通 runtime 无兼容双读或自动迁移。
+见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成，普通 runtime 无兼容双读或自动迁移。
 
 Use the source-locked Trellis Fork checkout (`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`,
 successful main CI `37647767799`)

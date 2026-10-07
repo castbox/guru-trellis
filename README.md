@@ -99,7 +99,7 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
 旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；下列普通 update/reapply
 步骤仅适用于与所选 Fork 版本兼容的安装，拒绝不能作为升级成功。
-后继系列迁移候选 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 的同源远端验收仍待候选发布。历史 `.2` 依赖与 `.41` 证据只证明原固定范围，下列来源构建命令读取当前 `.3` lock，不证明尚未执行的 Guru 远端升级。
+后继系列迁移候选 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，结果由 [唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接。Guru 软件版本尚未发布，后继文档 HEAD 不代表重新运行验收。历史 `.2` 依赖与 `.41` 证据只证明原固定范围；下列构建命令读取当前 `.3` lock，本身不证明 Guru 升级。真实业务安装、Release 和完整累计矩阵仍未验证。
 入口和恢复边界见 [旧安装迁移说明](trellis/presets/guru-team/MIGRATION-495.md)。
 普通 runtime 不提供兼容双读或自动迁移。
 

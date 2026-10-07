@@ -8,7 +8,7 @@ The installer never edits upstream Trellis source or a global npm package.
 
 ## Apply And Verify
 
-当前开发 extension candidate 为 `0.7.0-guru.3`，目标 Fork CLI/core 为 `0.7.0-castbox.3`，均尚未发布；predecessor 是已发布的 `v0.7.0-guru.1`。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 仍为未发布候选，同源远端验收待完成。
+当前开发 extension candidate 为 `0.7.0-guru.3`，目标 Fork CLI/core 为 `0.7.0-castbox.3`，均尚未发布；predecessor 是已发布的 `v0.7.0-guru.1`。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。
 候选验证的 preset 与 workflow marketplace 使用同一可寻址的完整 Guru candidate SHA；
 正式发布后才使用同一 immutable Guru tag。Fork main CI 成功不替代 Guru
 exact-candidate、installed/lifecycle 或发布门禁。
@@ -18,7 +18,7 @@ exact-candidate、installed/lifecycle 或发布门禁。
 后继 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 开发候选提供独立 semantic
 `guru-upgrade-installation`，从目标 source package 加载，普通 apply 保持严格。
 支持来源、固定依赖前置条件和验收状态见 [MIGRATION-495.md](./MIGRATION-495.md)。
-正式 Fork source/CI 已固定，Guru 分组基础验收已完成，同源远端验收仍待完成；
+正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成；
 普通 runtime 无兼容双读或自动迁移。
 
 Use the source-locked, built `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`
