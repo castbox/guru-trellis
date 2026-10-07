@@ -1,5 +1,16 @@
 # #495 旧业务仓原地升级 — 需求草稿
 
+## 规划修订时的事实快照（后续结果见验收贡献）
+
+以下为构造执行前的规划快照；规划行为合同仍有效。后续实际结果由 [acceptance test](../../../docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md) 承载，不能把下文待执行状态当作当前验收结论。
+
+当前固定 Guru 候选为 `6a563f5f06cb1284c0935b3a2be68524d93df988`，PR #496 OPEN / non-draft。固定 Fork 为 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，source lock 已同步。当前 RDT / Architecture authority 为 `current-main-0.6.17-guru.72`；后文 `.71` 的 initial planning 与 expected-current 信息仅是已执行阶段的历史说明，不作为本轮 gate 输入。
+
+同一远端 `6a563f5f` 的 source_locked 七场景首轮 5/7、exit 1；两份原失败样本后续恢复及原 canonical 剩余断言通过，原失败日志保留。同 provider update/preview/force/reapply 与 actual installed 验证通过，3853 managed hash rows 无 mismatch、sidecars 为零。两次 initial 调用在目标写入前仅返回 internal_error，原因未知，不将其统称网络故障。该证据仍不证明完整 MIG-495-06、Issue Completion 或 Release。
+
+MIG-495-06 构造在途 sample 尚未执行。[代表样本范围说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6028281048)已发布并复读为当前验收 authority；本轮规划按该说明更新，fresh gates 尚待执行。后续 RDT/Architecture 变更应新建 reviewed successor 并按 expected-current promotion，不覆写 immutable `.72` 的已发布历史合同。完整多平台 Release 矩阵与真实业务安装仍不在本任务验证范围。
+
+
 状态：实现中的同范围规划修订；本轮 Planning gates 待重新执行，不以先前规划通过替代当前修订审查。
 需求 authority：[castbox/guru-trellis#495](https://github.com/castbox/guru-trellis/issues/495)，2026-10-06 live 正文及[混合库存范围说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6014030676)；本文件只定义本任务的 accepted delta。验证顺序以已发布并 live 复读的[顺序澄清说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6018378988)为依据。
 
@@ -15,7 +26,7 @@
 | --- | --- |
 | 最低旧来源 | core `0.6.16`，Guru `0.6.16-guru.41`；进一步校验旧 manifest、任务格式和 source provenance |
 | 当前 before | Guru extension `0.7.0-guru.1`；固定 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f` / CLI `0.7.0-castbox.1` |
-| 目标 | Guru `0.7.0-guru.2` 候选尚未正式交付；Fork CLI `0.7.0-castbox.2` 已经 PR #27 合并至 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，合并后 push CI `37473087582` 已成功，source lock 尚待同步；二者均未发布版本，不用当前 before 版本声称支持 |
+| 目标 | Guru `0.7.0-guru.2` 候选尚未正式交付；Fork CLI `0.7.0-castbox.2` 已经 PR #27 合并至 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`，合并后 push CI `37473087582` 已成功，source lock 已同步；二者均未发布版本，不用当前 before 版本声称支持 |
 | 运行模型 | 当前无人员 schema、当前 lifecycle owners；旧 parser 只存在于独立迁移入口 |
 | 成功接续 | planning；尚未发布的 in_progress，经 fresh 当前规划审查进入开发/check |
 | 单列诊断 | 已有 PR、已 merge、旧 Finalizer/Finish 在途、真实缺失或冲突状态 |
@@ -38,7 +49,7 @@
 | MIG-495-03 | 保留合法非 UUID TaskId，初始化 generation，退役人员字段，转换已知 schema 差异，保留规划与业务事实 | 完整旧记录及两种精简记录进入 current schema；非空关系不丢失；未知字段逐项诊断 |
 | MIG-495-04 | 由 AI 根据来源正文/live facts 明确 structured source；不猜测关闭意图；由 current owners 建立 branch/checkout/session | GitHub exact_source 与 reference_only 均明确审查；TAPD 事实保留且不虚构 GitHub source |
 | MIG-495-05 | planning 接续当前 Planning；未发布 in_progress 保留 commit、未提交改动，经 fresh review 接续当前 dev/check | 两种任务实际 owner re-entry；不能只通过 schema 校验 |
-| MIG-495-06 | 读取已有 PR/merge/旧在途事务 live facts，给出任务级支持或逐案处置；旧 gate 不转成 current pass | 已有 PR、merge、在途各 1 个代表性样本诊断；无重复 commit/push/PR/merge |
+| MIG-495-06 | 读取已有 PR/merge/旧在途事务 live facts，给出任务级支持或逐案处置；旧 gate 不转成 current pass | 已有 PR、merge 各 1 个真实 live 样本，以及 1 个固定旧版本正式 writer 生成的隔离构造在途样本；逐案诊断、保留原字节，无重复 commit/push/PR/merge |
 | MIG-495-07 | 更新前备份；部分写入的普通失败可识别并恢复；更新及 task 转换后、无新版业务工作时可回退 | 真实 post-write rollback 恢复旧安装可运行及旧数据；普通失败恢复后不重复转换 |
 | MIG-495-08 | 固定候选 source lock、source/installed/canonical/dogfood、平台投影、inventory/runtime/reapply/drift/sidecar 验证 | 本 Issue 定向验证通过；累计多平台矩阵明确留给独立 owner |
 | MIG-495-09 | 合法 current/已迁移任务与无关旧 active 共存时，创建、TaskRef/TaskId 解析、branch/checkout/session 正常接续；已诊断暂不能接续旧任务可原地保留 | 混合 current-installed 与 migration-continuation 样本；当前正式 creator/owners 成功，旧目标/占用/同身份冲突/坏当前记录仍拒绝；遗漏旧 active 阻塞迁移 |
@@ -51,12 +62,12 @@
 
 混合库存继承 `R467-02` 的目标局部阻塞合同。仅正向识别已知旧记录，读取其 TaskId/TaskRef 作身份占用与诊断，不将其作为 current lifecycle candidate。直接旧目标、目标 TaskId/TaskRef 占用、同身份大小写冲突、current 自身坏 generation/source/额外未知字段、坏 JSON 或缺 id 仍 fail closed；不得笼统捕获 `unsupported_legacy_task` 后跳过全部错误。迁移对已诊断旧记录显式作 preserve/deferred 处置，原字节保留；未审查/遗漏旧记录仍阻塞，不宣称所有任务已转换。
 
-MIG-495-07 的新工作保护覆盖部分迁移期间：core/task 已写而 Guru 因普通冲突停止后，正常 task writer 新增 meta 等业务事实必须阻止覆盖式回退，后续 resume 不得把这些工作吸收到可回退基线。MIG-495-02 保留有效配置与用户设置，允许官方必要的 additive 配置；历史/journal/业务/spec/规划继续要求原字节保留。MIG-495-05 必须使用真实脱敏项目 Architecture baseline、实际两类 qualifications 和语义 Planning gates，结构校验成功不等于 semantic pass。
+MIG-495-07 的新工作保护覆盖部分迁移期间：core/task 已写而 Guru 因普通冲突停止后，正常 task writer 写入 meta 中的新增业务事实必须阻止覆盖式回退，后续 resume 不得把这些工作吸收到可回退基线。MIG-495-02 保留有效配置与用户设置，允许官方必要的 additive 配置；历史/journal/业务/spec/规划继续要求原字节保留。MIG-495-05 必须使用真实脱敏项目 Architecture baseline、实际两类 qualifications 和语义 Planning gates，结构校验成功不等于 semantic pass。
 
 ## 不包含与完成定义
 
 不恢复人员体系，不新增正常 runtime 双读、历史批量迁移、自动 Issue 关闭或任务完成，不改业务代码或生产配置，不 rewrite Git 历史，不引入锁、额外 fault injection 或攻击模型。普通 stale、mismatch、失配、部分写入与错误传播属于范围。
 
-完成需要 MIG-495-01..09 的真实证据、已固定可复现目标候选与可执行升级/恢复/回退说明。正式 Fork source lock、混合库存修复、代表性迁移或语义接续证据尚未完成时必须明确未验证，不能宣称 #495 已解决。
+完成需要 MIG-495-01..09 的真实证据、已固定可复现目标候选与可执行升级/恢复/回退说明。任何一项正式 Fork source lock、混合库存、代表性迁移或语义接续验收缺失时必须明确未验证，不能宣称 #495 已解决。
 
-验证顺序不改变完成定义：先证明本地候选与正式 Fork 来源，经 fresh gates 形成 Refs-only 候选 Delivery，再用固定且远端可读的同一 Guru commit 完成真实 `source_locked` public/provider 隔离验收。候选发布不代表 #495 完成；MIG-495-01..09 全部真实证据齐备后才允许合并与最终 Completion。MIG-495-06 的 live PR、merge、支持旧来源的真实在途样本仍逐项要求，不用历史终态或模拟状态替代。
+验证顺序不改变完成定义：先证明本地候选与正式 Fork 来源，经 fresh gates 形成 Refs-only 候选 Delivery，再用固定且远端可读的同一 Guru commit 完成真实 `source_locked` public/provider 隔离验收。候选发布不代表 #495 完成；MIG-495-01..09 全部真实证据齐备后才允许合并与最终 Completion。MIG-495-06 的已有 PR、merge 保持真实 live facts；在途项使用明确标注的隔离构造样本：固定旧 .41 正式 plan builder/recorder/checker/transaction writer/executor 在正常 Happy Path 写非 terminal 状态后，由只读 observer 保存临时快照，随后原路径正常完成。该样本复用旧 canonical 测试入口的 test provider，不证明真实 GitHub 发布或真实业务原始在途；不得手填 checkpoint/hash/gate、修改生产控制流或故意失败。旧状态只用于诊断、preserve 和 pinned-old/manual 边界验证，不能冒充 current gate 或 Completion。历史终态不能替代此构造在途证据。

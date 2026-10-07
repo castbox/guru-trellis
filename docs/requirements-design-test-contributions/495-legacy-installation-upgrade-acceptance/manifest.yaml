@@ -1,0 +1,21 @@
+schema_version: "1.0"
+task_ref: "495-legacy-installation-upgrade-acceptance"
+task_locator: ".trellis/tasks/10-06-495-legacy-installation-upgrade"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/495"
+status: "reviewed_candidate"
+source_version: "current-main-0.6.17-guru.72"
+expected_current_version: "current-main-0.6.17-guru.72"
+candidate_successor_version: "current-main-0.6.17-guru.73"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+shared_current_write: false
+contribution:
+  requirements: "docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/requirements.md"
+  design: "docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/design.md"
+  test: "docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md"
+  traceability: "docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.72"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/495-legacy-installation-upgrade-acceptance.md"

@@ -1,6 +1,17 @@
 # #495 旧安装单向迁移 — 设计草稿
 
-状态：实现中的同范围规划修订；本轮受影响 Planning gates 待重新执行。
+## 规划修订时的事实快照（后续结果见验收贡献）
+
+以下为构造执行前的规划快照；规划行为合同仍有效。后续实际结果由 [acceptance test](../../../docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md) 承载，不能把下文待执行状态当作当前验收结论。
+
+当前固定 Guru 候选为 `6a563f5f06cb1284c0935b3a2be68524d93df988`，PR #496 OPEN / non-draft。固定 Fork 为 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，source lock 已同步。当前 RDT / Architecture authority 为 `current-main-0.6.17-guru.72`；后文 `.71` 的 initial planning 与 expected-current 信息仅是已执行阶段的历史说明，不作为本轮 gate 输入。
+
+同一远端 `6a563f5f` 的 source_locked 七场景首轮 5/7、exit 1；两份原失败样本后续恢复及原 canonical 剩余断言通过，原失败日志保留。同 provider update/preview/force/reapply 与 actual installed 验证通过，3853 managed hash rows 无 mismatch、sidecars 为零。两次 initial 调用在目标写入前仅返回 internal_error，原因未知，不将其统称网络故障。该证据仍不证明完整 MIG-495-06、Issue Completion 或 Release。
+
+MIG-495-06 构造在途 sample 尚未执行。[代表样本范围说明](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6028281048)已发布并复读为当前验收 authority；本轮规划按该说明更新，fresh gates 尚待执行。后续 RDT/Architecture 变更应新建 reviewed successor 并按 expected-current promotion，不覆写 immutable `.72` 的已发布历史合同。完整多平台 Release 矩阵与真实业务安装仍不在本任务验证范围。
+
+
+状态：同范围规划；修订时的 Planning 待执行描述为历史快照，当前结果须由 fresh gate 判断。
 accepted behavior 见 [prd.md](./prd.md)，本文件拥有机制及职责。
 
 ## 机制与取舍
@@ -11,11 +22,11 @@ accepted behavior 见 [prd.md](./prd.md)，本文件拥有机制及职责。
 
 迁移 Skill 应从目标 canonical/source package 加载，不能要求旧安装先通过 current runtime 检查才能获得升级能力。公开 id 拟为 `guru-upgrade-installation`，`judgment_mode=semantic`，standalone 路径；新旧格式隔离在该 package 的 migration 模块中，不进入共享 current identity/source reader。Fork 新增显式 `trellis migrate --from 0.6.16 --plan <core-plan.json> --dry-run` 预览及去掉 `--dry-run` 的执行入口；plan 是 Guru executor 提供的 private、已审查字段与受管动作投影。目标固定候选为 Fork CLI `0.7.0-castbox.2` / Guru `0.7.0-guru.2`，二者当前均无发布 tag；实现及验证完成后文档才把这些拟定命令称为可执行入口。
 
-## 正式来源验收与候选发布顺序
+## 已执行阶段的正式来源验收与候选发布顺序（历史，不作为本轮 Gate 输入）
 
 `formal_guru_source` 要求 Guru HEAD 已提交目标 manifest/package 且 canonical source clean；`source_locked` 使用 `gh:castbox/guru-trellis/trellis#<同一 Guru HEAD>`，该 commit 必须远端可读。验证分为本地候选验证与候选发布后的正式同源验收：前者完成正式 Fork lock/CI、本地 package/installed/reapply/drift、隔离 lifecycle/恢复/回退及可执行旧交付状态诊断，后者对固定远端 Guru commit 执行真实 public migration 与 marketplace/provider 验收。`local_candidate` 只提供本地候选证据，不代替正式 `source_locked`。
 
-首个 Delivery slice 交付验收用候选代码与合同。它在完整独立 committed Branch Review 后，先按 expected-current promotion 已实现候选代码/合同与本地证据，再对 promotion-created diff 执行 fresh Phase 2/commit/独立完整 Branch Review；之后才发布 Refs-only PR。候选 knowledge 和 PR 明确列出剩余正式验收和 MIG-495-06 证据，不关闭迁移目标或相关 GAP、不声称正式 source_locked 验收通过。失败返回同一 TaskId 修复并重新执行受影响 gates；所有 MIG-495-01..09 满足前停止在合并及 Completion 门禁。该顺序不新增 runtime 分叉，不放松 provenance/CI，也不执行版本发布或真实业务升级。
+首个 Delivery slice 交付验收用候选代码与合同。它在完整独立 committed Branch Review 后，先按 expected-current promotion 已实现候选代码/合同与本地证据，再对 promotion-created diff 执行 fresh Phase 2/commit/独立完整 Branch Review；之后才发布 Refs-only PR。候选 knowledge 和 PR 明确列出剩余正式验收和 MIG-495-06 证据，不关闭迁移目标或 `ARCH-GAP-012`、不声称正式 source_locked 验收通过。失败返回同一 TaskId 修复并重新执行受影响 gates；所有 MIG-495-01..09 满足前停止在合并及 Completion 门禁。该顺序不新增 runtime 分叉，不放松 provenance/CI，也不执行版本发布或真实业务升级。
 
 ## 职责与数据边界
 
@@ -83,13 +94,21 @@ checkout acquisition 的 clean 要求仅用于获取新 checkout，不能错用�
 
 rollback 适用于 managed update 与 task conversion 已发生、且尚未开始新版本业务工作。比较迁移后基线与当前 task/control/managed/Git 业务状态，AI 判断是否出现新任务、新交付、业务工作；有新增工作则禁止覆盖式回退并给出保留/另案处置。备份恢复只写清单路径、保留无关 dirty/untracked；还原被改 session/control，删除本迁移新增受管文件，执行旧 runtime smoke 和原字节比对。rollback 不 reset branch、不 rewind commit、不删除远端 PR。
 
-部分 core/task 成功时，即按 `coreplan.tasks` 固定 task-content token，并绑定相关非 preset control 的初始基线；它只有 rollback 直接 consumer，不能在 resume 时重新取当前 task 作为可覆盖基线。普通冲突暂停期间通过 native task writer 产生的新 meta/业务事实必须保留，且阻止 resume 后覆盖式回退。无需全链 audit、独立长期 control-capture 步骤、锁或额外 fault injection。
+部分 core/task 成功时，即按 `coreplan.tasks` 固定 task-content token，并绑定 Git common-dir / checkout Git-dir 下 Python active.json 及 reviewed plan.controls 中 Trellis/Guru 私有 control 的初始基线；它只有 rollback 直接 consumer，不能在 resume 时重新取当前 task 作为可覆盖基线。普通冲突暂停期间通过 native task writer 产生的新 meta/业务事实必须保留，且阻止 resume 后覆盖式回退。无需全链 audit、独立长期 control-capture 步骤、锁或额外 fault injection。
 
-保留比较按各自 ownership：历史/journal/业务/spec/规划执行原字节与 mode 对比；有效 config 与用户设置按语义保持，允许正式 owner 添加必需 `dispatch_mode` 等设置，不用整个 config 原字节相等否定合法官方添加。Planning 接续样本必须有真实脱敏项目 Architecture baseline、actual normal-scenario/solution-mechanism invokes、Architecture/wording/Planning 语义 owner gates；record/check/invoke 只证明结构与客观绑定。
+保留比较按各自 ownership：历史/journal/业务/spec/规划执行原字节与 mode 对比；有效 config 与用户设置按语义保持，允许正式 owner 添加必需 `dispatch_mode` 设置，不用整个 config 原字节相等否定合法官方添加。Planning 接续样本必须有真实脱敏项目 Architecture baseline、actual normal-scenario/solution-mechanism invokes、Architecture/wording/Planning 语义 owner gates；record/check/invoke 只证明结构与客观绑定。
+
+## MIG-495-06 构造在途样本
+
+指定业务仓及工作树不存在原始非 terminal 事务；在途项以固定旧 Guru source `a32ffdca61f432bc6c3e0557fe68486c1422d08f` 的隔离构造样本验收，已有 PR/merge 仍读取真实 live facts。构造只在 temporary Git/local bare 和去敏任务中复用该版本 canonical 测试入口。provider 明确为 test double；正式 plan builder、recorder/checker、serializer/schema、transaction writer 与 executor 不替换。
+
+只读 observer 在 original writer 正式写入首次非 terminal `push_content` 后保存完整临时 repo/runtime/local bare 快照，再让原 Happy Path 正常结束。事务字段和 digest 不手工生成或修改，不故意使流程失败，不使用 crash/signal/锁或额外 fault injection。快照的 task 与旧 gate 只保留原字节，不成为当前 authority。
+
+用同一固定新 Guru source_locked/public 入口审查该旧 task 并明确 deferred/preserved；比较迁移前后旧 task/transaction/gate bytes/modes 和 local bare refs，验证无重复 commit/push/PR/merge，安装及无关 current owners 可继续。旧在途的处置为 pinned-old/manual，当前 Completion/Finish 不消费旧结果；构造证明不声称真实业务原始事务、live GitHub 发布或旧路径自动恢复。真实业务 checkout/worktrees 与业务 PR 保持只读。
 
 ## Architecture 与 Docs SSOT Plan
 
-current Architecture/RDT 为 `current-main-0.6.17-guru.71`；constitution 为 `guru-trellis-design-constitution-v1`，change contract 为 `guru-trellis-architecture-change-contract-v1`。此任务有 architecture impact：选择 `legacy_boundary_convergence`，真实旧来源的解析仅在一次迁移边界，成功出口 current-only；可重复服务其它同来源仓库不意味着普通 runtime 兼容。
+current Architecture/RDT 为 `current-main-0.6.17-guru.72`；constitution 为 `guru-trellis-design-constitution-v1`，change contract 为 `guru-trellis-architecture-change-contract-v1`。此任务有 architecture impact：选择 `legacy_boundary_convergence`，真实旧来源的解析仅在一次迁移边界，成功出口 current-only；可重复服务其它同来源仓库不意味着普通 runtime 兼容。
 
 维护单写：Fork core/schema writer、Guru migration/preset writer、既有 C4/C5/session owners 各自独占职责；当前 shared authority 仅 serialized promotion 更新。ADR 候选用于显式修订 #481 不迁移决策，保留原无人员/current-only决策。无需机械逐原则评分；最小 DTO/private backup 和复用 owners 控制新增复杂度。
 
@@ -99,11 +118,11 @@ canonical 更新后通过正式 apply 同步 dogfood，逐个处理 .new/.bak �
 
 ### Planning Architecture contribution
 
-task-owned contribution identity：`architecture-contribution-495-legacy-installation-upgrade-plan-v1`；本节是 Planning candidate，后续代码及独立 Branch Review 后形成 `docs/architecture/contributions/495-legacy-installation-upgrade.md`。expected current：`current-main-0.6.17-guru.71`。当前 gate 仅审查设计，不把目标描述标为已实现。
+task-owned contribution identity：`architecture-contribution-495-legacy-installation-upgrade-acceptance-plan-v2`；本节是 Planning candidate，后续代表样本执行及独立 Branch Review 后形成 `docs/architecture/contributions/495-legacy-installation-upgrade-acceptance.md`；既有 v1 contribution 作为已晋升候选来源保留。expected current：`current-main-0.6.17-guru.72`。当前 gate 仅审查设计，不把目标描述标为已实现。
 
 | Required concern | Applicability / decision |
 | --- | --- |
-| authority-binding | applicable：Guru Architecture 2.0、current .71、project v1 与 live #495 accepted delta 同时绑定；历史 #481 不迁移条款由 #495显式修订 |
+| authority-binding | applicable：Guru Architecture 2.0、current .72、project v1 与 live #495 accepted delta 同时绑定；历史 #481 不迁移条款由 #495显式修订 |
 | constitution-binding | applicable：官方扩展面、完整 task identity、职责隔离、最小私有恢复状态与单向收敛对应 current constitution五个 identity；无原则例外 |
 | boundary-and-decision | applicable：D-MIG-495-CORE / GURU / LIFECYCLE 按原 writer拆分；继承 ADR-015；ADR 候选明确旧安装迁移决策的变化 |
 | owner-and-single-writer | applicable：Fork 独占 core/task schema，Guru migration独占旧 Guru转换，C4/C5/session仍由既有 owners写；shared current只经 promotion |
