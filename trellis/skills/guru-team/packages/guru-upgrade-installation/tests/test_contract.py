@@ -16,10 +16,25 @@ SKILLS = PACKAGE.parents[1]
 sys.path.insert(0, str(SKILLS))
 sys.path.insert(0, str(PACKAGE / "runtime"))
 from files import business_state, control_token, current_baseline, snapshot, state, task_token, write_json
-from owner import MigrationError, formal_guru_source, old_manifest, old_paths, business_managed_paths, guru_owned, source_profile, preview, core_preview, preserve_customizations, resume, rollback, save_baseline, validate_task_dispositions, installer, source_root, migration_business_state
+from owner import MigrationError, formal_guru_source, old_manifest, old_paths, business_managed_paths, guru_owned, source_profile, preview, core_preview, preserve_customizations, resume, rollback, save_baseline, validate_task_dispositions, installer, source_root, migration_business_state, core_agents_projection
 
 
 class MigrationContractTests(unittest.TestCase):
+    def test_formal_bin_and_built_entry_use_same_original_preimage_collector(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cli = root / "fork/packages/cli"
+            (cli / "dist/commands").mkdir(parents=True)
+            (cli / "package.json").write_text('{"type":"module"}')
+            (cli / "dist/commands/update.js").write_text("import fs from 'node:fs';export async function collectTemplateFiles(root,options){if(options.registrySpecs!==false)throw Error('Unexpected registry scan');return new Map([['AGENTS.md',fs.readFileSync(root+'/AGENTS.md','utf8')+'Official core delta\\n']]);}")
+            before = root / "preimage"
+            before.mkdir()
+            original = b"Original user instructions\r\n"
+            (before / "AGENTS.md").write_bytes(original)
+            for entry in (cli / "bin/trellis.js", cli / "dist/cli/index.js"):
+                self.assertEqual(core_agents_projection(before, entry), original + b"Official core delta\n")
+                self.assertEqual((before / "AGENTS.md").read_bytes(), original)
+
     def agents_fixture(self, root, older_block):
         recovery, checkpoint, paths = self.fixture(root)
         module = installer(source_root(PACKAGE))
@@ -89,15 +104,19 @@ class MigrationContractTests(unittest.TestCase):
             self.assertEqual(migration_business_state(root, recovery, checkpoint), business_state(root, managed))
 
     def test_resume_preset_writer_preserves_pause_agents_work_before_rollback(self):
-        for older_block in (False, True):
+        for older_block, core_preserve in ((False, True), (True, True), (False, False), (True, False)):
             for edit in ("none", "outside", "inside", "mode"):
-                with self.subTest(older_block=older_block, edit=edit), tempfile.TemporaryDirectory() as directory:
+                with self.subTest(older_block=older_block, core_preserve=core_preserve, edit=edit), tempfile.TemporaryDirectory() as directory, patch("owner.core_agents_projection", side_effect=lambda root, fork: (root / "AGENTS.md").read_bytes()):
                     root = Path(directory)
                     recovery, checkpoint, original, module = self.agents_fixture(root, older_block)
                     # Resume starts from a normal pre-preset backup, then the
                     # real principles writer runs before installed validation.
                     path = root / "AGENTS.md"
                     path.write_bytes(original)
+                    if not core_preserve:
+                        checkpoint["plan"]["core_plan"]["file_decisions"] = []
+                        paths = {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}
+                        checkpoint["business_before"] = business_state(root, business_managed_paths(paths, checkpoint["plan"], root))
                     checkpoint.update({"phase": "preset", "root": str(root), "source": str(root), "source_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(), "fork": "/unused", "old_managed": []})
                     checkpoint["plan"].update({"dependency_mode": "local_candidate", "workflow": {"action": "preserve"}, "selected_platforms": ["codex"], "guru_decisions": []})
                     def write_preset(*args, **kwargs):

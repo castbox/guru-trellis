@@ -144,8 +144,15 @@ bytes and mode to the old state. It reuses the preset operation and existing
 preimage, including ordinary reapply and older checkpoints; no new anchor is
 written. New outside content, block edits or mode changes remain business work
 and block restore even when a paused resume refreshes the baseline.
-Before preset resume, that same fixed preimage projection checks the preserved
-AGENTS principles region and mode. An original or exact preset region permits
+Every `AGENTS.md` also receives a local preimage-based rollback eligibility
+check, independently of core preserve decisions. The exact official Fork
+collector runs on original preimage bytes for reviewed core updates; only
+original, core-only or core-plus-preset bytes/mode permit restoration. This
+protects outside user content in default/native installations without changing
+the existing business token or adding an anchor. Both the formal Fork bin
+launcher and local built entry resolve to the same CLI package collector.
+Before preset resume, that same fixed preimage projection checks the
+AGENTS principles region and mode. An original or exact migration region permits
 the writer; newer region or mode changes remain untouched and return the
 existing `resume_required` failure path. New outside paragraphs still permit
 normal resume because the preset preserves them, and subsequently block rollback.

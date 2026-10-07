@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -49,6 +50,14 @@ def installer(source: Path):
     assert spec and spec.loader
     spec.loader.exec_module(module)
     return module
+
+
+def fork_checkout_root(fork: Path) -> Path:
+    # The formal bin launcher and local built dist entry share one package.
+    for parent in fork.parents:
+        if parent.name == "cli" and parent.parent.name == "packages" and (parent / "package.json").is_file():
+            return parent.parent.parent
+    raise MigrationError("Use the fixed Fork CLI package entry")
 
 
 def source_profile(version: str) -> str:
@@ -283,7 +292,7 @@ def begin(package: Path, root: Path, public: dict, plan: dict, fork: Path) -> tu
         lock = json.loads((source / "trellis/presets/guru-team/source/trellis-source.json").read_text())
         if lock["cli_version"] != TARGET_CORE:
             raise MigrationError("The formal migration-capable Fork source lock is not available")
-        cli_root = fork.parents[3]
+        cli_root = fork_checkout_root(fork)
         verifier_root = source / "trellis/presets/guru-team/scripts/python"
         sys.path.insert(0, str(verifier_root))
         from verify_trellis_compatibility_matrix import validate_fork_source
@@ -340,24 +349,38 @@ def migration_business_state(root: Path, recovery: Path, checkpoint: dict) -> st
         # bytes. Only its deterministic result is migration work; outside or
         # inside user edits retain their actual state and block rollback.
         module = installer(source_root(Path(__file__).resolve().parent.parent))
-        proposal = agents_preset_projection(recovery, before, module)
-        if proposal and current == proposal[0]:
+        proposals = agents_migration_projections(recovery, before, module, checkpoint)
+        if any(current == proposal[0] for proposal in proposals):
             projections["AGENTS.md"] = old
     return business_state(root, managed, projections)
 
 
-def agents_preset_projection(recovery: Path, before: dict, module):
+def core_agents_projection(root: Path, fork: Path) -> bytes:
+    # Use the formal updater's mixed-ownership merge, not a second copy of its
+    # template/block algorithm. The input directory contains only old preimage.
+    update = fork_checkout_root(fork) / "packages/cli/dist/commands/update.js"
+    script = "const {collectTemplateFiles}=await import(process.argv[1]);const files=await collectTemplateFiles(process.argv[2],{registrySpecs:false});process.stdout.write(Buffer.from(files.get('AGENTS.md'),'utf8').toString('base64'));"
+    return base64.b64decode(command(["node", "--input-type=module", "-e", script, update.as_uri(), str(root)], root))
+
+
+def agents_migration_projections(recovery: Path, before: dict, module, checkpoint: dict):
     with tempfile.TemporaryDirectory(prefix="guru-agents-projection-") as directory:
         projected_root = Path(directory)
         projected = projected_root / "AGENTS.md"
-        projected.write_bytes((recovery / before["backup"]).read_bytes())
-        projected.chmod(before["mode"])
+        if before["sha256"] is not None:
+            projected.write_bytes((recovery / before["backup"]).read_bytes())
+            projected.chmod(before["mode"])
+        preserve = any(row["path"] == "AGENTS.md" and row["action"] == "preserve"
+                       for row in checkpoint["plan"]["core_plan"].get("file_decisions", []))
+        if not preserve:
+            projected.write_bytes(core_agents_projection(projected_root, Path(checkpoint["fork"])))
+        proposals = [(state(projected), projected.read_bytes())] if projected.exists() else []
         try:
             module.ensure_agents_ai_first_principles(projected_root)
         except SystemExit:
             # Keep the preset's existing ordinary failure/recovery semantics.
-            return None
-        return state(projected), projected.read_bytes()
+            return proposals
+        return proposals + [(state(projected), projected.read_bytes())]
 
 
 def agents_principles_region(data: bytes, module) -> bytes | None:
@@ -373,21 +396,19 @@ def agents_principles_region(data: bytes, module) -> bytes | None:
 
 def preserve_agents_work(root: Path, recovery: Path, checkpoint: dict, module) -> None:
     before = checkpoint["preimages"].get("repo:AGENTS.md")
-    if not before or before["sha256"] is None:
-        return
-    paths = {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}
-    if "AGENTS.md" in business_managed_paths(paths, checkpoint["plan"], root):
+    if not before:
         return
     current = state(relative_file(root, "AGENTS.md"))
     old = {key: before[key] for key in ("sha256", "mode")}
     if current == old:
         return
-    proposal = agents_preset_projection(recovery, before, module)
-    if proposal is None:
+    proposals = agents_migration_projections(recovery, before, module, checkpoint)
+    if not proposals:
         raise MigrationError("AGENTS principles require review before preset resume")
-    original = (recovery / before["backup"]).read_bytes()
-    if current["mode"] != old["mode"] or current["sha256"] is None or agents_principles_region(relative_file(root, "AGENTS.md").read_bytes(), module) not in (
-            agents_principles_region(original, module), agents_principles_region(proposal[1], module)):
+    original = (recovery / before["backup"]).read_bytes() if before["sha256"] is not None else b""
+    regions = [agents_principles_region(original, module)] + [agents_principles_region(data, module) for _, data in proposals]
+    modes = {old["mode"]} | {proposal[0]["mode"] for proposal in proposals}
+    if current["mode"] not in modes or current["sha256"] is None or agents_principles_region(relative_file(root, "AGENTS.md").read_bytes(), module) not in regions:
         raise MigrationError("AGENTS principles or mode changed since preview; preserve new work before resume")
 
 
@@ -554,6 +575,14 @@ def rollback(root: Path, recovery: Path, checkpoint: dict) -> dict:
         return {"exit_id": "blocked", "reason": "task_work_since_core_migration"}
     if "baseline" not in checkpoint or current_baseline(root, checkpoint) != checkpoint["baseline"]:
         return {"exit_id": "blocked", "reason": "managed_or_control_work_since_migration"}
+    before = checkpoint["preimages"].get("repo:AGENTS.md")
+    if before:
+        current = state(relative_file(root, "AGENTS.md"))
+        old = {key: before[key] for key in ("sha256", "mode")}
+        if current != old:
+            module = installer(source_root(Path(__file__).resolve().parent.parent))
+            if not any(current == proposal[0] for proposal in agents_migration_projections(recovery, before, module, checkpoint)):
+                return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     plan = checkpoint["plan"]
     if any(row["action"] == "preserve" for row in plan.get("guru_decisions", [])):
         module = installer(source_root(Path(__file__).resolve().parent.parent))
