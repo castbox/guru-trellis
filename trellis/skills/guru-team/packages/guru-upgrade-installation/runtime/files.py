@@ -58,13 +58,16 @@ def repo_files(root: Path) -> list[str]:
     return sorted(set(result.split("\0")) - {""})
 
 
-def business_state(root: Path, managed_paths: set[str]) -> str:
+def business_state(root: Path, managed_paths: set[str], projections: dict[str, dict] | None = None) -> str:
     facts = {
         "head": git(root, "rev-parse", "HEAD"),
         "index": git(root, "ls-files", "--stage", "-z"),
         "files": {p: state(relative_file(root, p)) for p in repo_files(root)
                   if p not in managed_paths and not p.startswith((".trellis/tasks/archive/", ".trellis/workspace/", ".trellis/agent-traces/")) and p != ".trellis/.developer"},
     }
+    for path, projected in (projections or {}).items():
+        if path in facts["files"]:
+            facts["files"][path] = projected
     # Only this local rollback comparison token persists, never a business index.
     return hashlib.sha256(json.dumps(facts, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 

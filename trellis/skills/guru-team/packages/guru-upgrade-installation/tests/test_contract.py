@@ -16,10 +16,120 @@ SKILLS = PACKAGE.parents[1]
 sys.path.insert(0, str(SKILLS))
 sys.path.insert(0, str(PACKAGE / "runtime"))
 from files import business_state, control_token, current_baseline, snapshot, state, task_token, write_json
-from owner import MigrationError, formal_guru_source, old_manifest, old_paths, business_managed_paths, guru_owned, source_profile, preview, core_preview, preserve_customizations, resume, rollback, save_baseline, validate_task_dispositions
+from owner import MigrationError, formal_guru_source, old_manifest, old_paths, business_managed_paths, guru_owned, source_profile, preview, core_preview, preserve_customizations, resume, rollback, save_baseline, validate_task_dispositions, installer, source_root, migration_business_state
 
 
 class MigrationContractTests(unittest.TestCase):
+    def agents_fixture(self, root, older_block):
+        recovery, checkpoint, paths = self.fixture(root)
+        module = installer(source_root(PACKAGE))
+        original = b"# Business instructions\nKeep this paragraph.\n"
+        if older_block:
+            original += ("\n" + module.AGENTS_AI_FIRST_START_MARKER + "\nOld principles\n" + module.AGENTS_AI_FIRST_END_MARKER + "\nBusiness tail.\n").encode()
+        path = root / "AGENTS.md"
+        path.write_bytes(original)
+        path.chmod(0o640)
+        paths.add("AGENTS.md")
+        checkpoint["preimages"] = snapshot(root, recovery, paths, {})
+        checkpoint["plan"]["core_plan"]["file_decisions"] = [{"path": "AGENTS.md", "action": "preserve"}]
+        checkpoint["business_before"] = business_state(root, business_managed_paths(paths, checkpoint["plan"], root))
+        module.ensure_agents_ai_first_principles(root)
+        return recovery, checkpoint, original, module
+
+    def test_preset_agents_append_and_replace_allow_actual_source_rollback(self):
+        for older_block in (False, True):
+            with self.subTest(older_block=older_block), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                recovery, checkpoint, original, module = self.agents_fixture(root, older_block)
+                fixed = checkpoint["business_before"]
+                save_baseline(root, recovery, checkpoint)
+                self.assertEqual(checkpoint["business_after"], fixed)
+                module.ensure_agents_ai_first_principles(root)  # ordinary reapply
+                self.assertEqual(migration_business_state(root, recovery, checkpoint), fixed)
+                self.assertEqual(rollback(root, recovery, checkpoint)["exit_id"], "rolled_back")
+                self.assertEqual((root / "AGENTS.md").read_bytes(), original)
+                self.assertEqual((root / "AGENTS.md").stat().st_mode & 0o777, 0o640)
+
+    def test_agents_user_work_inside_outside_or_mode_survives_pause_and_blocks_rollback(self):
+        for older_block in (False, True):
+            for edit in ("outside", "inside", "mode"):
+                with self.subTest(older_block=older_block, edit=edit), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    recovery, checkpoint, original, module = self.agents_fixture(root, older_block)
+                    save_baseline(root, recovery, checkpoint)
+                    fixed = checkpoint["business_before"]
+                    path = root / "AGENTS.md"
+                    if edit == "outside":
+                        path.write_bytes(path.read_bytes() + b"New business paragraph during pause.\n")
+                    elif edit == "inside":
+                        path.write_text(path.read_text().replace(module.AGENTS_AI_FIRST_END_MARKER, "New user principle.\n" + module.AGENTS_AI_FIRST_END_MARKER))
+                    else:
+                        path.chmod(0o600)
+                    newer = state(path)
+                    save_baseline(root, recovery, checkpoint)  # normal resume baseline
+                    self.assertEqual(checkpoint["business_before"], fixed)
+                    self.assertEqual(rollback(root, recovery, checkpoint), {"exit_id": "blocked", "reason": "business_work_since_migration"})
+                    self.assertEqual(state(path), newer)
+
+    def test_agents_projection_does_not_change_existing_preset_failure_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            recovery, checkpoint, paths = self.fixture(root)
+            path = root / "AGENTS.md"
+            module = installer(source_root(PACKAGE))
+            path.write_text("Business instructions\n" + module.AGENTS_AI_FIRST_START_MARKER + "\nIncomplete old block\n")
+            paths.add("AGENTS.md")
+            checkpoint["preimages"] = snapshot(root, recovery, paths, {})
+            checkpoint["plan"]["core_plan"]["file_decisions"] = [{"path": "AGENTS.md", "action": "preserve"}]
+            managed = business_managed_paths(paths, checkpoint["plan"], root)
+            with patch("owner.installer") as load:
+                self.assertEqual(migration_business_state(root, recovery, checkpoint), business_state(root, managed))
+                load.assert_not_called()  # unchanged old bytes need no projection
+            path.write_text(path.read_text() + "New business work\n")
+            self.assertEqual(migration_business_state(root, recovery, checkpoint), business_state(root, managed))
+
+    def test_resume_preset_writer_preserves_pause_agents_work_before_rollback(self):
+        for older_block in (False, True):
+            for edit in ("none", "outside", "inside", "mode"):
+                with self.subTest(older_block=older_block, edit=edit), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    recovery, checkpoint, original, module = self.agents_fixture(root, older_block)
+                    # Resume starts from a normal pre-preset backup, then the
+                    # real principles writer runs before installed validation.
+                    path = root / "AGENTS.md"
+                    path.write_bytes(original)
+                    checkpoint.update({"phase": "preset", "root": str(root), "source": str(root), "source_ref": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(), "fork": "/unused", "old_managed": []})
+                    checkpoint["plan"].update({"dependency_mode": "local_candidate", "workflow": {"action": "preserve"}, "selected_platforms": ["codex"], "guru_decisions": []})
+                    def write_preset(*args, **kwargs):
+                        module.ensure_agents_ai_first_principles(root)
+                        return {"skill_packages": {"status": "ok"}, "overlays": {"status": "ok"}, "skill_installed_validation": {"returncode": 0}}
+                    with patch("owner.source_root", return_value=root), patch("owner.installer", return_value=module), patch.object(module, "managed_source_projections", return_value={}), patch.object(module, "install_assets", side_effect=write_preset) as writer, patch("owner.command", side_effect=MigrationError("Installed runtime temporarily unavailable")):
+                        self.assertEqual(resume(PACKAGE, root, recovery, checkpoint)["exit_id"], "resume_required")
+                        writer.assert_called_once()
+                    if edit == "outside":
+                        path.write_bytes(path.read_bytes() + b"New business preference.\n")
+                    elif edit == "inside":
+                        path.write_text(path.read_text().replace(module.AGENTS_AI_FIRST_END_MARKER, "New user preference.\n" + module.AGENTS_AI_FIRST_END_MARKER))
+                    elif edit == "mode":
+                        path.chmod(0o600)
+                    newer = state(path)
+                    with patch("owner.source_root", return_value=root), patch("owner.installer", return_value=module), patch.object(module, "managed_source_projections", return_value={}), patch.object(module, "install_assets", side_effect=write_preset) as writer, patch("owner.command", return_value='{"status":"passed"}'):
+                        result = resume(PACKAGE, root, recovery, checkpoint)
+                        if edit in ("inside", "mode"):
+                            self.assertEqual(result["exit_id"], "resume_required")
+                            writer.assert_not_called()
+                        else:
+                            self.assertEqual(result["exit_id"], "upgraded")
+                            writer.assert_called_once()
+                    self.assertEqual(state(path), newer)
+                    rolled = rollback(root, recovery, checkpoint)
+                    if edit == "none":
+                        self.assertEqual(rolled["exit_id"], "rolled_back")
+                        self.assertEqual(path.read_bytes(), original)
+                    else:
+                        self.assertEqual(rolled, {"exit_id": "blocked", "reason": "business_work_since_migration"})
+                        self.assertEqual(state(path), newer)
+
     def test_independent_profiles_outputs_and_resume_projection(self):
         interface = json.loads((PACKAGE / "interface.json").read_text())
         for profile in interface["public_contracts"]["input"]["profiles"]:

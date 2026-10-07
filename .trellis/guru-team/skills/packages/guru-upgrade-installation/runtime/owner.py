@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -323,8 +324,71 @@ def business_managed_paths(paths: set[str], plan: dict, root: Path) -> set[str]:
 
 def save_baseline(root: Path, recovery: Path, checkpoint: dict) -> None:
     checkpoint["baseline"] = current_baseline(root, checkpoint)
-    checkpoint["business_after"] = business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"], root))
+    checkpoint["business_after"] = migration_business_state(root, recovery, checkpoint)
     write_json(recovery / "checkpoint.json", checkpoint)
+
+
+def migration_business_state(root: Path, recovery: Path, checkpoint: dict) -> str:
+    paths = {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}
+    managed = business_managed_paths(paths, checkpoint["plan"], root)
+    projections = {}
+    before = checkpoint["preimages"].get("repo:AGENTS.md")
+    current = state(relative_file(root, "AGENTS.md")) if before else None
+    old = {key: before[key] for key in ("sha256", "mode")} if before else None
+    if before and before["sha256"] is not None and "AGENTS.md" not in managed and current != old:
+        # Reuse the preset's exact bounded-region operation on the fixed old
+        # bytes. Only its deterministic result is migration work; outside or
+        # inside user edits retain their actual state and block rollback.
+        module = installer(source_root(Path(__file__).resolve().parent.parent))
+        proposal = agents_preset_projection(recovery, before, module)
+        if proposal and current == proposal[0]:
+            projections["AGENTS.md"] = old
+    return business_state(root, managed, projections)
+
+
+def agents_preset_projection(recovery: Path, before: dict, module):
+    with tempfile.TemporaryDirectory(prefix="guru-agents-projection-") as directory:
+        projected_root = Path(directory)
+        projected = projected_root / "AGENTS.md"
+        projected.write_bytes((recovery / before["backup"]).read_bytes())
+        projected.chmod(before["mode"])
+        try:
+            module.ensure_agents_ai_first_principles(projected_root)
+        except SystemExit:
+            # Keep the preset's existing ordinary failure/recovery semantics.
+            return None
+        return state(projected), projected.read_bytes()
+
+
+def agents_principles_region(data: bytes, module) -> bytes | None:
+    lines = data.splitlines(keepends=True)
+    start = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == module.AGENTS_AI_FIRST_START_MARKER.encode()]
+    end = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == module.AGENTS_AI_FIRST_END_MARKER.encode()]
+    if not start and not end:
+        return None
+    if len(start) != 1 or len(end) != 1 or start[0] >= end[0]:
+        raise MigrationError("AGENTS principles changed since preview; review before resume")
+    return b"".join(lines[start[0]:end[0] + 1])
+
+
+def preserve_agents_work(root: Path, recovery: Path, checkpoint: dict, module) -> None:
+    before = checkpoint["preimages"].get("repo:AGENTS.md")
+    if not before or before["sha256"] is None:
+        return
+    paths = {k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}
+    if "AGENTS.md" in business_managed_paths(paths, checkpoint["plan"], root):
+        return
+    current = state(relative_file(root, "AGENTS.md"))
+    old = {key: before[key] for key in ("sha256", "mode")}
+    if current == old:
+        return
+    proposal = agents_preset_projection(recovery, before, module)
+    if proposal is None:
+        raise MigrationError("AGENTS principles require review before preset resume")
+    original = (recovery / before["backup"]).read_bytes()
+    if current["mode"] != old["mode"] or current["sha256"] is None or agents_principles_region(relative_file(root, "AGENTS.md").read_bytes(), module) not in (
+            agents_principles_region(original, module), agents_principles_region(proposal[1], module)):
+        raise MigrationError("AGENTS principles or mode changed since preview; preserve new work before resume")
 
 
 def validate_task_dispositions(root: Path, plan: dict) -> None:
@@ -380,7 +444,8 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
         formal_guru_source(source, checkpoint["source_ref"])
     if checkpoint["phase"] == "complete" and (
             current_baseline(root, checkpoint) != checkpoint["baseline"]
-            or business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, checkpoint["plan"], root)) != checkpoint["business_after"]):
+            or (migration_business_state(root, recovery, checkpoint) != checkpoint["business_after"]
+                and business_state(root, business_managed_paths({k[5:] for k in checkpoint["preimages"] if k.startswith("repo:")}, plan, root)) != checkpoint["business_after"])):
         return {"exit_id": "blocked", "reason": "work_since_completed_migration"}
     try:
         if checkpoint["phase"] != "core":
@@ -452,6 +517,7 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict) -> dict:
                 # Workflow provider backup is preserved in migration preimages.
                 relative_file(root, ".trellis/workflow.md.bak").unlink(missing_ok=True)
             preserve_customizations(root, source, module, plan)
+            preserve_agents_work(root, recovery, checkpoint, module)
             result = module.install_assets(source / "trellis/workflows/guru-team", root / ".trellis/guru-team", root, set(plan["selected_platforms"]),
                                            migration_preserved_paths=preserved_companions(root, module, plan))
             if (result["skill_packages"]["status"] != "ok" or result["overlays"]["status"] != "ok"
@@ -501,7 +567,11 @@ def rollback(root: Path, recovery: Path, checkpoint: dict) -> dict:
             if current != old and not (current["sha256"] == proposal["sha256"]
                                        and current["mode"] in {old["mode"], proposal["mode"]}):
                 return {"exit_id": "blocked", "reason": "business_work_since_migration"}
-    if business_state(root, business_managed_paths(paths, checkpoint["plan"], root)) != checkpoint["business_after"] or checkpoint["business_after"] != checkpoint["business_before"]:
+    business = migration_business_state(root, recovery, checkpoint)
+    # Existing backups may have recorded the preset block as business_after.
+    # The fixed before token, exact managed baseline and preimage projection
+    # suffice; refreshing after never makes newer user work rollback eligible.
+    if business != checkpoint["business_before"]:
         return {"exit_id": "blocked", "reason": "business_work_since_migration"}
     restore(root, recovery, checkpoint)
     if current_baseline(root, checkpoint) != {k: {"sha256": v["sha256"], "mode": v["mode"]} for k, v in checkpoint["preimages"].items()}:

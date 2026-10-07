@@ -970,11 +970,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-07T17:06:37Z",
+  "installed_at": "2026-10-07T18:40:46Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "02da7d9915fd570fda269d79c7f5046d1d5d41ef",
-    "commit": "02da7d9915fd570fda269d79c7f5046d1d5d41ef",
+    "ref": "e6ba7dcce0b95fece34f913a467cb7e15f70a678",
+    "commit": "e6ba7dcce0b95fece34f913a467cb7e15f70a678",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1270,7 +1270,7 @@
       {
         "id": "guru-upgrade-installation",
         "interface_sha256": "c341fd5c252654419df6f6f61f7af40b054dc2eda3353ebc6305f94fb4ffc9e4",
-        "tree_sha256": "f0e86d37419a100e504a0769cf53743f300e93e2cd505de53a62af0e6a46480b"
+        "tree_sha256": "ce9203e7405e920dd10ffae8a4a04b9a4bd8fb146a2f03cb49d238e7fb1f02d7"
       },
       {
         "id": "guru-verify-extension-installation",
@@ -11957,7 +11957,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "b7bea15ea8a464334715465c86920b86b81955e984ef6d3397c08872ada0f23e",
+        "sha256": "4f1267433acfe094e394dd41fa166bac2884cf91643dc4b9c16ac1a20e693fb4",
         "executable": false,
         "action": "unchanged"
       },
@@ -11971,7 +11971,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/files.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/files.py",
-        "sha256": "37acecd5857048dab25bc457c4a76adbed9067f01e4ca8ef733e07a732d0908f",
+        "sha256": "ff0f2767e8cc6435afdd00a965fd271c9eae9fda9d778c6f9772455f49a012f5",
         "executable": false,
         "action": "unchanged"
       },
@@ -11985,7 +11985,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
-        "sha256": "76fc376594ef95e7999a7f31dbbc2ffb80e207f0bf47c76c66af7d2cba164904",
+        "sha256": "653e8947bbd285197f64007f02de1455d6abfc0aa26cb989d426aa84e482fc8f",
         "executable": false,
         "action": "unchanged"
       },
@@ -42064,7 +42064,7 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "b7bea15ea8a464334715465c86920b86b81955e984ef6d3397c08872ada0f23e",
+        "sha256": "4f1267433acfe094e394dd41fa166bac2884cf91643dc4b9c16ac1a20e693fb4",
         "executable": false,
         "action": "unchanged"
       },
@@ -42197,7 +42197,7 @@
       {
         "path": ".codex/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "b7bea15ea8a464334715465c86920b86b81955e984ef6d3397c08872ada0f23e",
+        "sha256": "4f1267433acfe094e394dd41fa166bac2884cf91643dc4b9c16ac1a20e693fb4",
         "executable": false,
         "action": "unchanged"
       },
@@ -42330,7 +42330,7 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "b7bea15ea8a464334715465c86920b86b81955e984ef6d3397c08872ada0f23e",
+        "sha256": "4f1267433acfe094e394dd41fa166bac2884cf91643dc4b9c16ac1a20e693fb4",
         "executable": false,
         "action": "unchanged"
       },
@@ -42463,7 +42463,7 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "b7bea15ea8a464334715465c86920b86b81955e984ef6d3397c08872ada0f23e",
+        "sha256": "4f1267433acfe094e394dd41fa166bac2884cf91643dc4b9c16ac1a20e693fb4",
         "executable": false,
         "action": "unchanged"
       },
