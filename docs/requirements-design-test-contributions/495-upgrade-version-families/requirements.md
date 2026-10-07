@@ -1,6 +1,6 @@
 # R495 版本系列升级增量候选
 
-状态：draft_candidate；继承 immutable current `.73` 的 MIG-495-01..09。当前增量 authority 是 [范围修正评论](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6040798771)及 generation 1 [PRD](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/prd.md)。共享 current 尚未晋升。
+状态：reviewed_promoted（本地可执行 slice，authority `.74`）；继承 immutable current `.73` 的 MIG-495-01..09。当前增量 authority 是 [范围修正评论](https://github.com/castbox/guru-trellis/issues/495#issuecomment-6040798771)及 generation 1 [PRD](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/prd.md)。共享 current `.74` 承接本贡献；远端整体验收仍未完成。
 
 MIG-495-10 拥有全部 `v0.6.x-guru.*` / `v0.7.0-guru.*` 正常安装的后继升级：19 个现存正式 tag 全部有来源投影归属，G1..G8 各实际迁移合同代表执行；未来同系列符合相同合同的来源进入同入口，不声称未存在版本已实测。release tag、extension revision、实际 core 与 exact source 分开核验。来源分组唯一明细见 PRD，公开操作投影见 MIGRATION-495。
 

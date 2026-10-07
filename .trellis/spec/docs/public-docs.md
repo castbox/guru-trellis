@@ -65,22 +65,27 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.73` / `active`; it is not a
-product release axis. Read current Requirements/Design/Test through the three
-layer READMEs: reviewed `R495/D495/T495` fixed-source acceptance inherits
-immutable `.72`, including `.71` and older valid contracts. The current registry
-remains 35 active Skills / 159 exits / 106 commands, zero planned ids;
-standalone-only migration leaves business workflow at 33 invokes / 153 exits.
-Architecture `.73` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
-accepted ADR-017 / ARCH-GAP-012 / EVD-049; EVD-048 retains local candidate history.
-The unique acceptance contribution separates fixed `6a563f5f` source_locked /
-provider / actual installed execution, real live PR/merge diagnosis, and accepted
-old-writer constructed inflight evidence. Retain first failures and same-owner
-recovery; do not claim single-run 7/7, genuine business inflight or real GitHub
-publication from test doubles. Post-promotion Phase2/TaskCommit/independent full
-BranchReview still gate Delivery/merge/Completion; knowledge does not prove those
-later steps, release, real-business installation or the full cumulative matrix.
-A later docs-only HEAD does not become an exact-source rerun merely by inheritance.
+Current knowledge authority is `current-main-0.6.17-guru.74` / `active`; it is not a
+product release axis. Read Requirements/Design/Test through the three layer
+READMEs: reviewed version-family local slice thinly inherits immutable `.73`.
+All normal `v0.6.x-guru.*` / `v0.7.0-guru.*` sources are supported; actual
+manifest/ownership/task differences group representative acceptance, not a
+version whitelist. Registry remains 35 active Skills / 159 exits / 106 commands,
+zero planned ids; business workflow remains 33 invokes / 153 exits.
+Architecture `.74` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
+ADR-018 / open ARCH-GAP-012 / EVD-050. ADR-017 owners/current-only/deletion exits
+remain effective; its fixed-source restriction is superseded. EVD-049 retains
+historical `.73` fixed `6a563f5f` source_locked/provider/inflight evidence and
+cannot prove the new Guru source. The unique family Test contribution owns local
+representative actual upgrade, custom/current-state preservation, partial
+recovery, actual-source rollback and new-work protection. REMOTE same-Guru
+source/public/provider/deferred acceptance remains pending candidate publication.
+Retain first failures and same-owner recovery; do not claim full-suite pass,
+genuine business inflight or GitHub publication from test doubles. Promotion-created
+diff requires fresh Phase2/TaskCommit/independent full BranchReview before Delivery;
+knowledge promotion does not prove later gates, whole-task Completion, release,
+real-business installation or the full cumulative matrix. A later docs-only HEAD
+does not become an exact-source rerun merely by inheritance.
 Historical pins and retired internal API/lifecycle boundaries remain unchanged.
 Manual Git/gh results never backfill Guru gates, transactions or archives.
 Native, mock, installed and unverified evidence remain distinct in Test authority.

@@ -521,3 +521,7 @@ expected `.72 -> .73` 承接 [验收增量](../../requirements-design-test-contr
 真实 PR195 OPEN/deferred 的 old task/live base/head 区别、PR58/210 merged但无确认TaskRef/trailer，均只读诊断，不构造当前 MergeResult/Completion。MIG06 原始业务在途不可取得，依据 live scope 使用正式native旧task/plan/recorder/checker/writer/executor/archive、本地Git与canonical test doubles；原路径正常终态，observer仅复制正式writer已写出的push_content。新source_locked public迁移 deferred/preserve，首次失败后一次resume upgraded/unverified[]，16旧文件bytes/modes及refs保持；directold明确unsupported_legacy_task，新current neighbor正式创建后installed再次通过。
 
 EVD-048/v1/.72 为不可变前驱证据；本条不把旧首次失败删除或说成网络，不证明业务原始在途/真实GitHub发布/new文档HEAD重跑/当前旧gate/Release/真实业务安装/完整累计矩阵。晋升前 committed review 仅放行 expected-current promotion；晋升diff仍须freshPhase2/TaskCommit/不同reviewer完整BranchReview，再按正式Delivery/merge/Completion owners承接。
+
+## EVD-050：#495 版本系列本地 slice
+
+expected `.73→.74`；[唯一增量 Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md)拥有实际结果与首次失败/恢复边界。19 tag 全归组，G1..G8 actual before/preview/upgrade/实际来源回退/smoke，current linked control/session 与 lifecycle 横向覆盖；正式 Fork PR28/CI 固定 `.3`。26 package/2helper、Skill/overlay canonical-only及暂停新工作四格和 companion组合、source/installed/drift已定向验证。三个回退finding修复并关闭，`11ef591c...6cd766dd` 完整独立复审及正式 Branch Review passed；该 pass 不覆盖本次晋升 diff。REMOTE 同 Guru public/source_locked/provider/deferred 尚缺，旧 EVD-049 不代替；不声称 full-suite全通过、Release、真实业务安装或累计矩阵。

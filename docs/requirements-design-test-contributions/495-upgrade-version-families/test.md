@@ -1,6 +1,6 @@
 # T495 版本系列升级增量验收
 
-状态：draft_candidate；本轮完整 task 验收未完成。分组与最小矩阵见 generation 1 [implement](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/implement.md)。所有正式 tag 有来源/资产投影归属，每种实际迁移路径选代表；任务格式和状态独立横向覆盖，不以旧 generation 0 pass 覆盖本轮 runtime。
+状态：reviewed_promoted（本地可执行 slice，authority `.74`）；本轮完整 task 验收未完成。分组与最小矩阵见 generation 1 [implement](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/implement.md)。所有正式 tag 有来源/资产投影归属，每种实际迁移路径选代表；任务格式和状态独立横向覆盖，不以旧 generation 0 pass 覆盖本轮 runtime。
 
 ## 当前结果
 
@@ -37,8 +37,8 @@
 ## 首次失败和恢复边界
 
 - 独立 committed `11ef591c...168c80ef` review：core `AGENTS.md` / workflow preserve 的新增规则在未解决Skill冲突时再次resume后被rollback恢复前像覆盖；真实public样本复现，BR-495-PRESERVED-CORE-WORK在 `5d4282ff` 修复，finding owner closure及不同reviewer复审确认新字节保护成立。不变更此前G1..G8通过事实，不将该review称passed。
-- 独立 committed `11ef591c...5d4282ff` 复审实际复现 BR-495-RECONCILIATION-ROLLBACK：仅消费必须的canonical Skill `.new`、无新业务工作，成功resume后仍误阻止rollback。当前候选将必需package/overlay协调保留为managed，复用原business-before锚点；25 package回归（Skill/overlay子场景）及actual public暂停→仅canonical协调→upgraded `.3`→rolled_back `.2`通过，恢复旧定制bytes/modes。core/workflow实际暂停新工作保护再次通过；仍需修复提交、finding closure与不同reviewer完整复审，远端同源验收未完成。
-- `02da7d99` 的 closure 和完整复审实际发现 BR-495-UNRESOLVED-SKILL-WORK：未消费canonical `.new`，暂停中新加Skill偏好，再次resume仍失败后rollback丢失新增字节；不将该提交称review通过。当前修复复用既有preimages及同一required projection，在restore前仅允许旧bytes/mode或canonical迁移bytes与旧/installer source mode，其它新增内容阻止回退，无新锚点。26 package及2helper通过；Skill/overlay各canonical-only和new-work四格actual public验收通过，另有companion新工作与canonical Skill协调组合仍blocked并保留新bytes。修复提交和不同reviewer完整复审仍待完成。
+- 独立 committed `11ef591c...5d4282ff` 复审实际复现 BR-495-RECONCILIATION-ROLLBACK：仅消费必须的canonical Skill `.new`、无新业务工作，成功resume后仍误阻止rollback。当前候选将必需package/overlay协调保留为managed，复用原business-before锚点；25 package回归（Skill/overlay子场景）及actual public暂停→仅canonical协调→upgraded `.3`→rolled_back `.2`通过，恢复旧定制bytes/modes。core/workflow实际暂停新工作保护再次通过；修复提交 `02da7d99`；closure于 `6cd766dd` 完成，最终完整复审通过；远端同源验收未完成。
+- `02da7d99` 的 closure 和完整复审实际发现 BR-495-UNRESOLVED-SKILL-WORK：未消费canonical `.new`，暂停中新加Skill偏好，再次resume仍失败后rollback丢失新增字节；不将该提交称review通过。当前修复复用既有preimages及同一required projection，在restore前仅允许旧bytes/mode或canonical迁移bytes与旧/installer source mode，其它新增内容阻止回退，无新锚点。26 package及2helper通过；Skill/overlay各canonical-only和new-work四格actual public验收通过，另有companion新工作与canonical Skill协调组合仍blocked并保留新bytes。修复提交 `6cd766dd`；finding closure与不同reviewer完整复审已通过，正式 public Branch Review passed；该 pass 不覆盖知识晋升 diff。
 
 - Fork完整CLI首次1884通过/1 ENOENT：工作树未初始化marketplace子模块；未声称全套通过。
 - Preset首轮101项/2失败：版本期待仍为`.2`（修正`.3`后单项通过）；missinghash reapply的package conflict在独立重跑未复现。首次单项从scripts cwd运行temporary lifecycle不可用，改repo root后通过。
@@ -46,4 +46,4 @@
 - 最新preset完整101项/1失败因dogfood未同步；最终apply的6个backup已核验为本轮旧生成副本并消费，reapply零sidecar，clean-fixture重跑通过。
 - 正式lock切换首次101项/1 failure/38 errors：inventory到`.3`但schema/validator仍为`.2`，在preset写前阻塞；补齐常量后ownership检查通过，原custom Bash样本从same recovery恢复，不复制首轮pass。
 
-没有真实业务安装、正式Guru tag/Release或完整累计多平台Release矩阵的通过声明。知识贡献仍待完整独立committed review与受控promotion，测试通过不替代这些gate。
+没有真实业务安装、正式Guru tag/Release或完整累计多平台Release矩阵的通过声明。本地贡献已由 `11ef591c...6cd766dd` 完整独立复审及正式 Branch Review 接受并晋升 `.74`；晋升 diff 必须 fresh Phase2/commit/完整复审，测试不替代 gates。

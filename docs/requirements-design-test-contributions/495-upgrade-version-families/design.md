@@ -1,6 +1,6 @@
 # D495 版本系列升级增量候选
 
-状态：draft_candidate；继承 [Architecture `.73/active`](../../architecture/README.md)，完整 mechanism owner 见 generation 1 [design](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/design.md)。
+状态：reviewed_promoted（本地可执行 slice，authority `.74`）；继承 immutable Architecture `.73`（Git 历史），current [Architecture `.74/active`](../../architecture/README.md) 承接本地 slice，完整 mechanism owner 见 generation 1 [design](../../../.trellis/tasks/10-06-495-legacy-installation-upgrade/design.md)。
 
 | 责任 ID | 后继职责 / consumer |
 | --- | --- |
