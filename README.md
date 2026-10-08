@@ -75,7 +75,7 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `5c760463680ffc10a3f26957b330c57a4b0c3ff8` |
 | Reviewed Fork CI identity | `37735554354` |
 | Fork package manager | `pnpm@10.32.1` |
-| 当前 knowledge authority（非软件版本） | `current-main-0.6.17-guru.75` / `active` |
+| 当前 knowledge authority（非软件版本） | `current-main-0.6.17-guru.76` / `active` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
 已发布的 `v0.7.0-guru.1` 是本迁移候选的 predecessor，不含 #495 迁移能力。

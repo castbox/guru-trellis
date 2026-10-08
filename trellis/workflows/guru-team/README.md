@@ -58,7 +58,7 @@ exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的
 显式升级请求从目标 source package 加载该 Skill，不先进入 business Intake。
 见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成，普通 update/reapply 不替代迁移，普通 runtime 无兼容双读或自动迁移。
 迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](../../presets/guru-team/MIGRATION-495.md) 合同。
-当前 knowledge authority 为 `current-main-0.6.17-guru.75` / `active`，不是软件发布版本。
+当前 knowledge authority 为 `current-main-0.6.17-guru.76` / `active`，不是软件发布版本。
 
 Use the source-locked Trellis Fork checkout (`castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`,
 successful main CI `37735554354`)
