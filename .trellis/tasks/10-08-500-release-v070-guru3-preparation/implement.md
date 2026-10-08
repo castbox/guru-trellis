@@ -1,7 +1,7 @@
 # 发布准备实施计划
 
-1. 复核 #500、current main、predecessor、manifest/source lock 与四个公开文档。读取 Architecture/RDT .75 authority，记录本次稳定范围，不复制历史验收为新证据。
-2. 在现有 public-docs spec 明确 .3 目标映射与候选/发布后 immutable 来源条件；同步三份 README。校准 architecture usage 的旧 .73 投影。固定 extension/source lock；历史文档和 evidence 不重写。
+1. 复核 #500、current main、predecessor、manifest/source lock 与四个公开文档。读取 Architecture/RDT .76 authority，记录本次稳定范围，不复制历史验收为新证据。
+2. 校准 public-docs、architecture usage、RDT usage 与 MIGRATION-495 四处当前投影为 .76 / 5c760463 / CI 37735554354；三份 README 已一致，仅复核。固定 extension/source lock；cc5f9a、ecd152、EVD-051 保留历史验收归属，EVD-052 不冒充最终 Release gate。
 3. 调用 Architecture/RDT task_impact_sync 判断实际 delta；有真实增量才写隔离贡献。复用既有 migration entry，不实现新 runtime/API/兼容机制。
 4. 运行 source/installed package validator、Shared/Codex/Claude/Cursor source parity、私有 release Skill parity、upstream ownership、preset reapply、dogfood drift 与 git diff --check。检查 reapply 变更和 .new/.bak，逐个处理本 task 引入的冲突。
 5. scoped Phase 2 后由 guru-create-task-commit 创建精确提交；guru-review-branch 独立审核完整 origin/main...HEAD。零开放 P0-P3 后，Architecture/RDT owner 串行处理真实贡献 promotion。

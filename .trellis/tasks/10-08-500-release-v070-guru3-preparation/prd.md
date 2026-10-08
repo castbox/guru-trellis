@@ -3,14 +3,16 @@
 ## 来源与交付边界
 需求来源为 https://github.com/castbox/guru-trellis/issues/500 。本 task 的 source disposition 是 reference_only，独立交付 Stage 1 准备内容；终态归档由 Completion/Closure 后的 Finish owner 承接。Stage 2 exact-candidate、tag、tag-pinned smoke、GitHub Release 和 Issue closure 由同一 Release Issue 在准备 Delivery/Finish 合并后继续承接，不属于本 task Completion。
 
+本 generation 只修正 #503 合入后仍指向旧 source/knowledge 的四处当前文档投影：public-docs、baseline-usage、MIGRATION-495、requirements-design-test-ssot usage。三份 README 已一致，仅复核；历史 cc5f9a/ecd152 同源验收保持历史归属。
+
 ## R500-01 版本身份
-根 README、workflow README、preset README 与 public-docs spec 明确 repository 目标 tag v0.7.0-guru.3、extension 0.7.0-guru.3、Fork CLI/core 0.7.0-castbox.3、source castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c、pnpm@10.32.1、CI 37647767799、已发布 predecessor v0.7.0-guru.1。版本轴独立，不发布中间 .2，不递增 extension，不改 source lock。
+根 README、workflow README、preset README 与 public-docs spec 明确 repository 目标 tag v0.7.0-guru.3、extension 0.7.0-guru.3、Fork CLI/core 0.7.0-castbox.3、source castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8、pnpm@10.32.1、CI 37735554354、已发布 predecessor v0.7.0-guru.1。版本轴独立，不发布中间 .2，不递增 extension，继承 #503 已合入的 source lock，不再改 lock。
 
 ## R500-02 来源与升级文档
 未发布候选的 marketplace/preset 指向同一完整远端 SHA；只有目标 tag 已发布且远端核验匹配后，使用同一 immutable tag。公开文字不得提前宣称 candidate gate 或 Release 成功。安装入口继续使用官方 workflow marketplace/preset；旧安装走 guru-upgrade-installation，覆盖已接受的 0.6.x/0.7.0 系列，按实际 receipt/ownership/core/task 区分正常来源，保留业务定制、dirty/untracked 和当前任务状态。普通 update/reapply 不替代迁移；legacy nonterminal pinned-old/deferred 与实际来源 rollback 边界保持原合同。
 
 ## R500-03 Docs authority
-以 docs/requirements/README.md、docs/design/README.md、docs/test/README.md、docs/architecture/README.md 的 active .75 为事实来源；修正 public-docs 与 architecture usage 中的版本/来源投影漂移。Architecture/RDT owner 判定 no-op 或真实贡献；仅真实 requirement/design/test 或 Architecture 增量形成隔离 contribution，并在独立 pre-promotion Branch Review 后串行 promotion。历史 authority、tag、manifest、归档和首次失败证据不溯源改写。
+以 docs/requirements/README.md、docs/design/README.md、docs/test/README.md、docs/architecture/README.md 的 active .76 为事实来源；修正 public-docs、architecture usage 与 RDT usage 中的版本/来源投影漂移。仅镜像既有 authority，不新增知识晋升或改变 RDT/Architecture authority。Architecture/RDT owner 判定 no-op 或真实贡献；仅真实 requirement/design/test 或 Architecture 增量形成隔离 contribution，并在独立 pre-promotion Branch Review 后串行 promotion。历史 authority、tag、manifest、归档和首次失败证据不溯源改写。
 
 ## R500-04 独立准备交付
 完整准备 diff 完成 scoped Phase 2、精确 task commit 和独立 origin/main...HEAD Branch Review。若 promotion 改变 delivery bytes，再执行 fresh Phase 2、commit、完整独立 Branch Review。Delivery PR 为中文 Refs #500；Completion 仅覆盖上述完整准备范围，Closure 为 no_mutation。Finish 与资源 cleanup 按各 owner 合同执行。
