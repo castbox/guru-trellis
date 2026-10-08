@@ -37,8 +37,8 @@ opt-in user choice, not as the team default or automated validation path.
 Stable install and upgrade docs must keep four version axes explicit. The official
 release target is repository tag `v0.7.0-guru.3`, extension revision
 `0.7.0-guru.3`, Fork CLI/core `0.7.0-castbox.3`, source
-`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, package manager
-`pnpm@10.32.1`, and reviewed Fork CI `37647767799`. These axes are independent;
+`castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`, package manager
+`pnpm@10.32.1`, and reviewed Fork CI `37735554354`. These axes are independent;
 do not increment the extension or publish an intermediate `.2` tag for this
 release. Preparing these docs does not publish the target or pass its candidate gate.
 The published Guru predecessor tag is `v0.7.0-guru.1`; its extension revision is
@@ -60,10 +60,13 @@ must retain that release boundary. The #495 successor candidate defines an
 independent explicit migration for all `v0.6.x-guru.*` and
 `v0.7.0-guru.*` normal installations, grouped by actual manifest, managed
 assets, and task/control differences. The successor release targets are Guru
-`0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the formal `.3` Fork lock is
+`0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the historical #495 `.3` Fork lock is
 `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
-CI `37647767799`. Same-source Guru acceptance is verified at exact
-`ecd152add05dbeb6df1873f0917ca3a62914ca7a`; a later docs-only HEAD is not a rerun.
+CI `37647767799`. Historical same-source Guru acceptance is verified at exact
+`ecd152add05dbeb6df1873f0917ca3a62914ca7a` / EVD-051; a later HEAD is not a rerun.
+The current #503 Fork lock is
+`castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`, successful main
+CI `37735554354`; CLI/core and extension version axes remain unchanged.
 The historical `.2` framework lock is
 `castbox/Trellis@8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`, CLI/core
 `0.7.0-castbox.2`, package manager `pnpm@10.32.1`, and its extension revision is
@@ -75,15 +78,18 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.75` / `active`; it is not a
+Current knowledge authority is `current-main-0.6.17-guru.76` / `active`; it is not a
 product release axis. Read Requirements/Design/Test through the three layer
-READMEs: reviewed version-family acceptance thinly inherits immutable `.74`.
+READMEs: reviewed #503 identity-responsibility contribution thinly inherits
+immutable `.75`, including its historical #495 version-family acceptance.
 All normal `v0.6.x-guru.*` / `v0.7.0-guru.*` sources are supported; actual
 manifest/ownership/task differences group representative acceptance, not a
 version whitelist. Registry remains 35 active Skills / 159 exits / 106 commands,
 zero planned ids; business workflow remains 33 invokes / 153 exits.
-Architecture `.75` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
-ADR-018 / closed ARCH-GAP-012 / EVD-051. ADR-017 owners/current-only/deletion exits
+Architecture `.76` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
+ADR-018 / closed ARCH-GAP-012 / EVD-052. EVD-052 proves only #503 source and
+representative clean-installed candidate checks; it is not the final #500 Release
+gate. ADR-017 owners/current-only/deletion exits
 remain effective; its fixed-source restriction is superseded. EVD-049 retains
 historical `.73` fixed `6a563f5f` source_locked/provider/inflight evidence and
 cannot prove the new Guru source. The unique family Test contribution owns local

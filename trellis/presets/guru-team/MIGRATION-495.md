@@ -1,6 +1,6 @@
 # 旧业务仓原地升级（#495 后继候选）
 
-目标开发候选为 Guru `0.7.0-guru.3` / Fork `0.7.0-castbox.3`，Guru 软件版本尚未发布。精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的正式同源定向验收已完成，结果由 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接；后继文档 HEAD 不代表重跑，真实业务安装、Release 和完整累计矩阵仍未验证。Fork PR28 已合并；唯一 source lock 为 `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`、成功 main CI `37647767799`，该精确源码本地构建通过。正式 Guru source_locked 升级要求包含当前实现的固定、远端可寻址 Guru commit。已发布 `v0.7.0-guru.1` 本身不含迁移器，但属于新迁移器的合法来源。
+目标开发候选为 Guru `0.7.0-guru.3` / Fork `0.7.0-castbox.3`，Guru 软件版本尚未发布。精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的历史 #495 正式同源定向验收已完成，结果由 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接；后继 HEAD 不代表重跑，真实业务安装、Release 和完整累计矩阵仍未验证。历史验收 source lock 为 Fork PR28 的 `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`、成功 main CI `37647767799`，该精确源码本地构建通过。当前 #503 source lock 为 `5c760463680ffc10a3f26957b330c57a4b0c3ff8`、成功 main CI `37735554354`，以 canonical `source/trellis-source.json` 为准；current knowledge authority 为 `current-main-0.6.17-guru.76` / `active`。#503 EVD-052 仅证明 source/代表性 clean-installed 候选，不是 #500 最终 Release gate。正式 Guru source_locked 升级要求包含当前实现的固定、远端可寻址 Guru commit。已发布 `v0.7.0-guru.1` 本身不含迁移器，但属于新迁移器的合法来源。
 
 ## 支持合同与来源分组
 
