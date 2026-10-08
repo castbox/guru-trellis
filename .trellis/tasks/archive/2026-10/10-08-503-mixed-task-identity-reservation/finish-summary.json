@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-08T10:05:59Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-08-503-mixed-task-identity-reservation",
+    "title": "修复新任务创建被无关旧 worktree 混合任务记录阻塞",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-08-503-mixed-task-identity-reservation",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/503-mixed-task-identity-reservation",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "修复新任务创建被无关旧 worktree 混合任务记录阻塞",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation",
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/design.md",
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/implement.md",
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/prd.md",
+          ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#503"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/503-mixed-task-identity-reservation"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation",
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/design.md",
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/implement.md",
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/prd.md",
+        ".trellis/tasks/archive/2026-10/10-08-503-mixed-task-identity-reservation/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复新任务创建被无关旧 worktree 混合任务记录阻塞；#503；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
