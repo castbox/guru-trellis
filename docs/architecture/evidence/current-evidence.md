@@ -531,3 +531,9 @@ expected `.73→.74`；[唯一增量 Test](../../requirements-design-test-contri
 expected `.74→.75`；来源 [PR498](https://github.com/castbox/guru-trellis/pull/498) 精确 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean远端fetch/bootstrap，正式Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`/main CI `37647767799`，CLI/core `.7.0-castbox.3`。结果仅由[唯一family Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md#精确远端来源与修复后验收evd-051)拥有：G1/native G8 source_locked/provider/installed/实际来源回退与oldsmoke，native G8 inside/outside/mode新工作保护、reapply，以及native oldwriter deferred均通过。31package/2helper、两AGENTS修复closure及完整123路径正式Branch Review已通过；不代替本晋升difffresh gates。
 
 EVD-050/.74本地历史不改写，e6首次G1误阻止回退及bdf默认AGENTS新工作finding保留。当前accepted MIG-495-01..12证据齐备，ARCH-GAP-012 closed；Issue仍OPEN。后继文档HEAD不声称同源重跑；merge/Completion/Closure/Finish、软件Release、真实业务安装/原始在途及完整累计矩阵未由本条证明。
+
+## EVD-052：#503 身份职责与代表性安装
+
+实现范围 `761e8514a955239a3b14c69932c3d370ddad13ea...62c60bb0646c067e60b8dcd43ecc324975131947` 的完整初始 Branch Review 已通过；九项 concerns 无新增或恶化 GAP，ADR-017/018 与 migration owners/退出保持。执行结果仅由[唯一 Test](../../requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md)拥有：runtime156、create22零 SKIP、source-lock73、projection9、平台2、source/installed validators及保全/恢复证据通过。实际 clean-installed fixture 证明候选安装行为，不证明 Backend 原仓升级或 #378 intake 恢复。
+
+expected `.75→.76` 的知识晋升 diff 仍须 fresh Phase2/TaskCommit/完整独立 Branch Review；不把旧候选执行重标为后继 HEAD 重跑。软件 Release、业务安装与部署未验证；EVD-051 历史对象及含义保持。

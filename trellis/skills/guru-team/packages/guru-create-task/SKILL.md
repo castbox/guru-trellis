@@ -55,3 +55,11 @@ task-creation-blocked`, or `invalid_task_state -> invalid-task-state`.
 An unchanged base with invocation branch HEAD mismatch is blocked; a changed
 acquisition route requires a new semantic review. Never use task/workspace
 mappings, `task.json.branch` or checkout paths as durable identity.
+
+Metadata and occupied-identity failures may carry one optional `diagnostic`
+with `field_path` and `remediation`. The declared stop consumer uses these
+call-local facts to explain the exact failing record and its disposition; they
+are not task identity or a persisted inventory. Preserve the reason code and
+stop. For unsupported old/mixed records, use `guru-upgrade-installation` for
+reviewed per-record migration or manual disposition; never silently skip,
+convert, or delete the record. Old minimal blocked/invalid outputs remain valid.

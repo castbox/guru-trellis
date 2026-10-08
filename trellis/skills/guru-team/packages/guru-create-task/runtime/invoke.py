@@ -217,9 +217,16 @@ def invoke(root: Path, data: dict[str, Any]) -> dict[str, Any]:
     except LifecycleContractError as exc:
         if exc.code in {"creation_base_stale", "creation_date_stale"}:
             return {"exit_id": "refresh_review", "reason_code": exc.code}
+        diagnostic = {}
+        if exc.code in {
+            "task_identity_already_exists", "invalid_task_identity", "invalid_task_metadata",
+            "invalid_task_id", "unsupported_legacy_task", "invalid_lifecycle_generation",
+            "invalid_task_ref", "task_not_found",
+        }:
+            diagnostic = {"diagnostic": {"field_path": exc.field_path, "remediation": exc.remediation}}
         if exc.code in {"task_identity_already_exists", "creation_identity_mismatch", "creation_control_state_exists", "creation_result_mismatch", "invalid_task_identity"}:
-            return {"exit_id": "invalid_task_state", "reason_code": exc.code}
-        return {"exit_id": "blocked", "reason_code": exc.code}
+            return {"exit_id": "invalid_task_state", "reason_code": exc.code, **diagnostic}
+        return {"exit_id": "blocked", "reason_code": exc.code, **diagnostic}
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
@@ -234,7 +241,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
         if data["action"] != "create_task":
             raise CommandError("invalid_arguments", "action", "Record only a fresh task creation plan.")
         _require_current_task_date(data["creation"]["task_ref"])
-        prepare_creation_inputs(Path(args.root).resolve(), data["creation"], _plan(Path(args.root).resolve(), data))
+        try:
+            prepare_creation_inputs(Path(args.root).resolve(), data["creation"], _plan(Path(args.root).resolve(), data))
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, f"{exc.code}: {exc.remediation}", 3) from exc
         return {"status": "ready", "task_id": data["creation"]["task_id"]}
     if command_id in {"check-task-creation-result", "recover-created-task-result"}:
         data = {**data, "action": "recover_created_task_result"}

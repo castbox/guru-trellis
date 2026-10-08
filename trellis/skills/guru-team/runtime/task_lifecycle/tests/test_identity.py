@@ -19,7 +19,7 @@ from runtime.task_lifecycle.identity import (
     resolve_task_id,
     resolve_task_ref,
     task_inventory,
-    task_identity_exists,
+    task_identity_reservation,
 )
 
 
@@ -143,8 +143,8 @@ class IdentityTests(unittest.TestCase):
             self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
             self.assertEqual(resolve_task_ref(self.repo, current).task_id, "current-id")
             self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
-            self.assertTrue(task_identity_exists(self.repo, payload["id"], ".trellis/tasks/10-06-new"))
-            self.assertTrue(task_identity_exists(self.repo, "new-id", old_ref))
+            self.assertIsNotNone(task_identity_reservation(self.repo, payload["id"], ".trellis/tasks/10-06-new"))
+            self.assertIsNotNone(task_identity_reservation(self.repo, "new-id", old_ref))
             for select in (lambda: resolve_task_id(self.repo, payload["id"]),
                            lambda: resolve_task_ref(self.repo, old_ref)):
                 with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
@@ -157,25 +157,48 @@ class IdentityTests(unittest.TestCase):
             with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
                 select()
 
-    def test_unrelated_bad_current_records_remain_blocking(self):
-        current = ".trellis/tasks/10-06-current"
+    def test_reservation_ignores_non_identity_fields_but_selected_is_strict(self):
+        current = ".trellis/tasks/10-08-current"
         self.write_task(current, "current-id", 0)
-        other_ref = ".trellis/tasks/10-06-other"
-        path = self.write_task(other_ref, "other-id", 0) / "task.json"
-        valid = json.loads(path.read_text())
-        cases = [
-            {**valid, "lifecycle_generation": "0"},
-            {**valid, "source": {"kind": "unknown"}},
-            {**valid, "unexpected": "ordinary mistake"},
-            {key: value for key, value in valid.items() if key != "id"},
-            {key: value for key, value in valid.items() if key != "lifecycle_generation"},
-        ]
-        for payload in [*cases, "broken-json"]:
+        ref = ".trellis/tasks/09-23-old"
+        path = self.repo / ref / "task.json"
+        path.parent.mkdir()
+        old = {"id": "old-id", "name": "old", "title": "Old", "status": "in_progress",
+               "creator": "team", "assignee": "team", "subtasks": [], "lifecycle_generation": 1}
+        for changes in ({}, {"lifecycle_generation": True}, {"lifecycle_generation": -1},
+                        {"lifecycle_generation": "1"}, {"lifecycle_generation": None},
+                        {"source": {"kind": "unknown"}}, {"unexpected": "ordinary mistake"},
+                        {"status": None}, {"assignee": None}):
+            with self.subTest(changes=changes):
+                path.write_text(json.dumps({**old, **changes}))
+                path.chmod(0o640)
+                before = (path.read_bytes(), path.stat().st_mode)
+                self.assertIsNone(task_identity_reservation(self.repo, "fresh-id", ".trellis/tasks/10-08-fresh"))
+                self.assertIsNotNone(task_identity_reservation(self.repo, "OLD-ID", ".trellis/tasks/10-08-fresh"))
+                self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
+                self.assertEqual(resolve_task_ref(self.repo, current).task_id, "current-id")
+                for select in (lambda: resolve_task_id(self.repo, "old-id"), lambda: resolve_task_ref(self.repo, ref)):
+                    with self.assertRaises(LifecycleContractError) as caught:
+                        select()
+                    self.assertEqual(caught.exception.code, "unsupported_legacy_task")
+                    self.assertEqual(caught.exception.field_path, ref)
+                    self.assertIn("guru-upgrade-installation", caught.exception.remediation)
+                # Full inventory remains a migration consumer with the original classifier.
+                with self.assertRaises(LifecycleContractError):
+                    task_inventory(self.repo)
+                self.assertEqual((path.read_bytes(), path.stat().st_mode), before)
+
+    def test_bad_active_identity_blocks_scans_and_resolution(self):
+        current = ".trellis/tasks/10-08-current"
+        self.write_task(current, "current-id", 0)
+        ref = ".trellis/tasks/10-08-other"
+        path = self.write_task(ref, "other-id", 0) / "task.json"
+        for payload in ({"id": "bad/id"}, {}, [], "broken-json"):
             with self.subTest(payload=payload):
                 path.write_text(payload if isinstance(payload, str) else json.dumps(payload))
                 for select in (lambda: resolve_task_id(self.repo, "current-id"),
                                lambda: resolve_task_ref(self.repo, current),
-                               lambda: task_identity_exists(self.repo, "new-id", ".trellis/tasks/10-06-new")):
+                               lambda: task_identity_reservation(self.repo, "new-id", ".trellis/tasks/10-08-new")):
                     with self.assertRaises(LifecycleContractError):
                         select()
 
@@ -198,9 +221,9 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
         self.assertEqual(resolve_task_id(self.repo, "current-id").task_ref, current)
         self.assertEqual(resolve_task_ref(self.repo, current).task_id, "current-id")
-        self.assertFalse(task_identity_exists(self.repo, "new-id", ".trellis/tasks/10-06-new"))
+        self.assertIsNone(task_identity_reservation(self.repo, "new-id", ".trellis/tasks/10-06-new"))
         for ref in evidence_refs:
-            self.assertTrue(task_identity_exists(self.repo, "new-id", ref))
+            self.assertIsNotNone(task_identity_reservation(self.repo, "new-id", ref))
             with self.assertRaisesRegex(LifecycleContractError, "task_not_found"):
                 resolve_task_ref(self.repo, ref)
         self.assertEqual({path: path.read_bytes() for path in before}, before)

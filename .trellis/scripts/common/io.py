@@ -24,7 +24,7 @@ JSON_READ_EMPTY = "empty"
 JSON_READ_UNDECODABLE = "undecodable"
 JSON_READ_UNSUPPORTED_FIELDS = "unsupported-fields"
 JSON_READ_INVALID_TASK_SCHEMA = "invalid-task-schema"
-JSON_READ_KNOWN_LEGACY_TASK = "known-legacy-task"
+JSON_READ_INVALID_TASK_ID = "invalid-task-id"
 
 TASK_RECORD_FIELDS = frozenset({
     "id", "name", "lifecycle_generation", "source", "title", "description",
@@ -49,46 +49,18 @@ TASK_SOURCE_DISPOSITIONS = frozenset({
 })
 
 
-def is_known_legacy_task_record(data: object) -> bool:
-    """Recognize old task headers for identity reservation, never lifecycle use."""
-    if not isinstance(data, dict):
-        return False
-    allowed = (TASK_RECORD_FIELDS - {"source", "lifecycle_generation"}) | {
-        "creator", "assignee", "subtasks",
-    }
-    required = {"id", "name", "title", "status", "creator", "assignee"}
-    if not data.keys() <= allowed or not required <= data.keys():
-        return False
-    strings = TASK_STRING_FIELDS | {"creator", "assignee"}
-    arrays = TASK_STRING_ARRAY_FIELDS | {"subtasks"}
-    return (
-        all(isinstance(data[field], str) for field in strings & data.keys())
-        and bool(TASK_ID_PATTERN.fullmatch(data["id"]))
-        and all(data[field] is None or isinstance(data[field], str)
-                for field in TASK_NULLABLE_STRING_FIELDS & data.keys())
-        and all(isinstance(data[field], list)
-                and all(isinstance(item, str) for item in data[field])
-                for field in arrays & data.keys())
-        and ("meta" not in data or _is_json_object(data["meta"]))
-    )
+def read_task_id_reservation(path: Path) -> tuple[str | None, str | None]:
+    """Read only the immutable identity needed to reserve a task locator.
 
-
-def read_task_inventory_record(path: Path) -> tuple[dict | None, str | None]:
-    """Read current records or positively known old identities for scanners only.
-
-    Ordinary readers/writers remain strict. The legacy reason prevents a
-    scanner from treating a reserved identity as a current task candidate.
+    Non-identity fields are deliberately not lifecycle or migration authority.
     """
-    data, reason = read_json_checked(path)
-    if reason not in {JSON_READ_UNSUPPORTED_FIELDS, JSON_READ_INVALID_TASK_SCHEMA}:
-        return data, reason
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+    data, reason = _read_json_object_checked(path)
+    if data is None:
         return None, reason
-    if is_known_legacy_task_record(raw):
-        return raw, JSON_READ_KNOWN_LEGACY_TASK
-    return None, reason
+    task_id = data.get("id")
+    if not isinstance(task_id, str) or not TASK_ID_PATTERN.fullmatch(task_id):
+        return None, JSON_READ_INVALID_TASK_ID
+    return task_id, None
 
 
 def _has_unsupported_task_fields(path: Path, data: object) -> bool:
@@ -184,6 +156,18 @@ def read_json_checked(path: Path) -> tuple[dict | None, str | None]:
     a state file that parses to ``{}`` carries none of the fields callers read,
     and treating it as success would silently rebuild it from defaults.
     """
+    data, reason = _read_json_object_checked(path)
+    if data is None:
+        return None, reason
+    if _has_unsupported_task_fields(path, data):
+        return None, JSON_READ_UNSUPPORTED_FIELDS
+    if _has_invalid_task_schema(path, data):
+        return None, JSON_READ_INVALID_TASK_SCHEMA
+    return data, None
+
+
+def _read_json_object_checked(path: Path) -> tuple[dict | None, str | None]:
+    """Decode an object without assigning a consumer's schema to it."""
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
@@ -206,10 +190,6 @@ def read_json_checked(path: Path) -> tuple[dict | None, str | None]:
         return None, JSON_READ_NOT_OBJECT
     if not data:
         return None, JSON_READ_EMPTY
-    if _has_unsupported_task_fields(path, data):
-        return None, JSON_READ_UNSUPPORTED_FIELDS
-    if _has_invalid_task_schema(path, data):
-        return None, JSON_READ_INVALID_TASK_SCHEMA
     return data, None
 
 
