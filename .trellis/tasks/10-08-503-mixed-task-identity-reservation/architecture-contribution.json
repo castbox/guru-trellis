@@ -74,7 +74,7 @@
     {
       "id": "review-and-promotion",
       "applicability": "applicable",
-      "rationale": "independent Branch Review 尚未执行；expected current .75 promotion 后 fresh Phase2/commit/Review。"
+      "rationale": "完整 initial committed Branch Review 已通过；expected .75→.76 串行晋升，晋升diff必须fresh Phase2/commit/Review。"
     }
   ],
   "owner_transition": {
@@ -224,12 +224,16 @@
     "reason": "精确 reservation 分类和同一 stop 诊断的局部修订不改变 ADR-017/018 current-only、owner、迁移退出或原则例外；不创建第二 compatibility path。"
   },
   "review": {
-    "status": "pending",
-    "independent": false,
-    "committed_range": null
+    "status": "reviewed",
+    "independent": true,
+    "committed_range": {
+      "base_ref": "origin/main",
+      "base_head": "761e8514a955239a3b14c69932c3d370ddad13ea",
+      "review_head": "62c60bb0646c067e60b8dcd43ecc324975131947"
+    }
   },
   "promotion": {
-    "state": "required",
-    "promoted_identity": ""
+    "state": "promoted",
+    "promoted_identity": "current-main-0.6.17-guru.76"
   }
 }

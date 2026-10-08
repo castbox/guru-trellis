@@ -113,3 +113,7 @@ exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不�
 `ARCH-DOM-034`（#495 reviewed）：AI migration owner 判断真实来源、定制/interface 协调与 task/delivery/recovery 处置；Fork 单写 core/task，Guru/preset 单写安装，current lifecycle owners 单写当前控制面。备份锚点不因 resume 吸收新工作；required Skill/overlay projection 与原 preimages 允许 canonical-only 回退，暂停新增工作阻塞覆盖。共享 RDT/Architecture 由 expected-current `.74→.75` 串行晋升；ADR-018 扩展来源，保留 ADR-017 owners/current-only/删除出口。
 
 AGENTS core/preset精确projection由正式Fork collector/installer拥有；migration复用原preimages保护所有默认或preserve安装的暂停新工作，完整bytes/mode回退资格不新增writer/state。
+
+## #503 身份职责后继（.76）
+
+`ARCH-DOM-034` 的 #503 successor：Guru substrate reader 拥有身份占用/selected 严格读取，Fork 官方 task writer 已由独立 #29 交付。migration owner 与单写边界不变；无第二索引/store/writer。task contribution 与 expected-current `.75→.76` RDT/Architecture 晋升分别由对应 owner 串行执行。

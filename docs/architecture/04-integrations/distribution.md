@@ -190,3 +190,7 @@ Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级�
 `ARCH-INT-036`（#490 current）：canonical source lock、dogfood official template/hash 与 Guru installed/Claude/Codex/Cursor projection 同步采用 `9c36002a324c16a09a85b6aa5a380b74aabf801f`；upstream 所有权不转移给 Guru。183 official files 和声明平台投影通过；代表性 Codex clean/current-update/reapply 使用 local workflow sample，native load 为 projection parity。remote/native-host/full matrix、前驱拒绝无写证明和 release 流程仍由 #489 独立验证。
 
 `ARCH-INT-037`（#495 reviewed exact-source acceptance）：正式 Fork PR28 merge `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / main CI `37647767799`，CLI/core `0.7.0-castbox.3`；Guru `0.7.0-guru.3` 未发布候选。official assets 由 Fork 拥有，marketplace/preset 仍是扩展入口。已验证本地来源分组 actual upgrade/recovery/rollback 与 installed/drift；精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的 public/source_locked/provider/deferred 与默认AGENTS三格保护通过（EVD-051），软件 Release、真实业务安装、完整累计矩阵未执行。历史 `6a563f5f` / Fork PR27 固定来源结果仅见 EVD-049，不重标为新 source。
+
+## #503 身份职责后继（.76）
+
+`ARCH-INT-037` 的 #503 successor：正式 Fork PR30 merge `5c760463680ffc10a3f26957b330c57a4b0c3ff8`，parents `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / `a776a97cd5699f6324582ae57245542f80576a6c`，tree `9f044e4233edc90fd2b3169442ea13e5d1951780`，main CI `37735554354` 成功。official 四脚本及183文件投影、source-lock/build/installed validators、drift/reapply 支撑 EVD-052；CLI/core `.3` 与 Guru `.3` 轴不变，不冒充软件发布。
