@@ -1,0 +1,21 @@
+schema_version: "1.0"
+task_ref: "503-mixed-task-identity-reservation"
+task_locator: ".trellis/tasks/10-08-503-mixed-task-identity-reservation"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/503"
+status: "reviewed_candidate"
+source_version: "current-main-0.6.17-guru.75"
+expected_current_version: "current-main-0.6.17-guru.75"
+candidate_successor_version: "current-main-0.6.17-guru.76"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+shared_current_write: false
+contribution:
+  requirements: "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/requirements.md"
+  design: "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/design.md"
+  test: "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md"
+  traceability: "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.75"
+  status: "active"
+architecture_contribution: ".trellis/tasks/10-08-503-mixed-task-identity-reservation/architecture-contribution.json"

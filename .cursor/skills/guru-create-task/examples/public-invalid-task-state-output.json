@@ -1,1 +1,8 @@
-{"exit_id":"invalid_task_state","reason_code":"task_identity_already_exists"}
+{
+  "exit_id": "invalid_task_state",
+  "reason_code": "task_identity_already_exists",
+  "diagnostic": {
+    "field_path": "/example/checkout/.trellis/tasks/10-08-existing/task.json",
+    "remediation": "Resolve the existing task or select an unused TaskId and TaskRef."
+  }
+}

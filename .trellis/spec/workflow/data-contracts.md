@@ -2012,16 +2012,28 @@ session identity. No authorization or alternate session store is persisted.
 
 ## Task Lifecycle Substrate (#454 C2)
 
-#495 mixed inventory keeps known old active records as TaskId/TaskRef
-reservations only. The recognized old shape has no `source` or
-`lifecycle_generation`, carries the old creator/assignee header, and uses only
-known old fields with valid types. It is excluded from `task_inventory`, never
-projected as a current DTO, and direct selection remains
-`unsupported_legacy_task`. Current targets resolve normally alongside unrelated
-old records; exact/casefold identity collisions and invalid current records,
-JSON or missing ids still block. Creation checks the same active record
-boundary and preserves raw historical identity reservations. Empty directories
-reserve their own target path but do not become task records.
+Identity reservation and lifecycle capability have distinct consumers.
+Reservation reads only a legal TaskId and canonical TaskRef from each metadata
+object. Unrelated source, generation, status or other non-identity fields do
+not affect occupancy. Exact/casefold TaskId collisions, occupied target paths,
+registered worktrees, branch history and unresolved resource-ledger occupancy
+retain their existing rejection rules. Active bad JSON, non-object metadata,
+or missing/invalid id cannot establish identity and remain concrete errors;
+archive and branch-history missing-data handling retains its existing policy.
+Empty directories reserve their own target path but do not become task records.
+
+Selected ref/id resolution first establishes identity and uniqueness, then
+strictly validates the selected current schema, source and generation. A
+reservation is never a current TaskLifecycleDTO or permission to execute a
+legacy task. Invalid selected targets retain a specific record locator and the
+formal upgrade/per-case disposition route. Newly created targets still receive
+full current validation. Scans do not mutate historical records.
+
+#495 inventory and migration classification retain their complete-schema
+contract: recognized old headers have no source/generation, only known fields
+and valid types. Their inventory exclusion and current-only lifecycle rules
+are not widened by identity reservation. Migration does not use the minimal
+reservation projection as disposition authority.
 
 The standalone migration may explicitly preserve reviewed deferred old active
 records using a private TaskRef/expected-bytes projection. That projection has

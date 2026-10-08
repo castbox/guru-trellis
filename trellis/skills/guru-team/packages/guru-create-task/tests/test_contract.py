@@ -28,8 +28,16 @@ SOURCE = PACKAGE.parents[4]
 
 class CreateTaskTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temporary.cleanup)
+        retained = os.environ.get("GURU_CREATE_TASK_INSTALLED_FIXTURE_ROOT")
+        if retained and self._testMethodName == "test_clean_installed_mixed_history_public_creation_and_rejection":
+            # Optional inspection locator for this representative installed probe.
+            # Require a new directory; reruns never replace an existing fixture.
+            fixture = Path(retained).resolve()
+            fixture.mkdir(parents=True, exist_ok=False)
+            self.temporary = SimpleNamespace(name=str(fixture))
+        else:
+            self.temporary = tempfile.TemporaryDirectory()
+            self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name) / "repo"
         self.root.mkdir()
         self.git("init", "-q", "-b", "main")
@@ -318,6 +326,200 @@ class CreateTaskTests(unittest.TestCase):
         })
         self.assertEqual(identity["exit_id"], "identity_established")
         self.assertEqual(identity["source"], source)
+
+    def public_call(self, packages: Path, skill: str, payload: dict, *, validator: str | None = None, root: Path | None = None):
+        env = {key: value for key, value in os.environ.items()
+               if not key.startswith(("TRELLIS_", "CODEX_", "CLAUDE_", "CURSOR_", "GIT_"))}
+        env["TRELLIS_CONTEXT_ID"] = "mixed-task-fixture"
+        if validator:
+            wrapper = (SOURCE / "trellis/workflows/guru-team/scripts/bash/run-skill-command.sh"
+                       if packages == PACKAGE.parent else packages.parent.parent / "scripts/bash/run-skill-command.sh")
+            command = ["bash", str(wrapper),
+                       "--package-root", str(packages / skill), "--validator", validator, "--"]
+        else:
+            command = ["bash", str(packages / skill / "scripts/invoke.sh")]
+        if skill == "guru-bind-task-session":
+            # Contract fixture for the semantic resume owner after the preceding
+            # public creation/checkout assertions establish this exact lifecycle.
+            owner = {**payload, "route": "resume", "resume_target": "phase-1",
+                     "ai_review_gate": {"status": "passed", "summary": "Fixture resumes the just-created planning lifecycle."}}
+            owner_path = Path(self.temporary.name) / "resume-owner.json"
+            owner_path.write_text(json.dumps(owner))
+            command += ["--owner-result", str(owner_path)]
+        completed = subprocess.run([*command, "--root", str(root or self.root), "--input", "-"],
+                                   input=json.dumps(payload), text=True, capture_output=True, env=env)
+        self.assertTrue(completed.stdout.strip(), completed.stderr)
+        return completed, json.loads(completed.stdout)
+
+    def mixed_sibling(self) -> Path:
+        sibling = Path(self.temporary.name) / "historical"
+        self.git("worktree", "add", "-q", "-b", "historical", str(sibling))
+        path = sibling / ".trellis/tasks/09-23-old/task.json"
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({"id": "historical-task", "name": "old", "title": "Old task",
+                                   "status": "in_progress", "creator": "team", "assignee": "team",
+                                   "subtasks": [], "lifecycle_generation": 1}), encoding="utf-8")
+        path.chmod(0o640)
+        return path.resolve()
+
+    def test_public_mixed_history_create_ensure_bind_and_read_only_recovery(self):
+        path = self.mixed_sibling()
+        before = (path.read_bytes(), path.stat().st_mode)
+        sibling_status = subprocess.check_output(["git", "status", "--porcelain"], cwd=path.parents[3])
+        for skill, payload, expected in (
+            ("guru-create-task", self.payload, "created"),
+            ("guru-ensure-task-checkout", {"profile": "active_task", "mode": "workflow",
+                "task_id": "example-task", "lifecycle_generation": 0}, "checkout_resolved"),
+            ("guru-bind-task-session", {"profile": "resume_current_task", "mode": "standalone",
+                "task_id": "example-task", "lifecycle_generation": 0,
+                "continuation_id": "fixture-resume"}, "session_resumed"),
+            ("guru-establish-task-identity", {"profile": "active_task", "mode": "standalone",
+                "task_id": "example-task", "task_ref": self.ref,
+                "lifecycle_generation": 0}, "identity_established"),
+            ("guru-create-task", {**self.payload, "action": "recover_created_task_result"}, "created"),
+        ):
+            completed, output = self.public_call(PACKAGE.parent, skill, payload)
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            self.assertEqual(output["exit_id"], expected, output)
+        self.assertEqual((path.read_bytes(), path.stat().st_mode), before)
+        self.assertEqual(subprocess.check_output(["git", "status", "--porcelain"], cwd=path.parents[3]), sibling_status)
+
+    def test_public_non_identity_changes_do_not_block_creation_but_selection_rejects(self):
+        path = self.mixed_sibling()
+        original = json.loads(path.read_text())
+        for changes in ({"lifecycle_generation": "1"}, {"lifecycle_generation": None},
+                        {"source": {"kind": "unknown"}}, {"status": None},
+                        {"unexpected": "ordinary historical field"}):
+            with self.subTest(changes=changes):
+                path.write_text(json.dumps({**original, **changes}))
+                before = (path.read_bytes(), path.stat().st_mode)
+                completed, result = self.public_call(PACKAGE.parent, "guru-create-task", self.payload, validator="record_plan")
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                self.assertEqual(result["status"], "ready")
+                completed, selected = self.public_call(PACKAGE.parent, "guru-establish-task-identity", {
+                    "profile": "active_task", "mode": "standalone", "task_id": "historical-task",
+                    "task_ref": ".trellis/tasks/09-23-old", "lifecycle_generation": 1,
+                }, root=path.parents[3])
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                self.assertEqual(selected["reason_code"], "unsupported_legacy_task")
+                self.assertEqual((path.read_bytes(), path.stat().st_mode), before)
+                self.assertFalse((self.root / self.ref).exists())
+
+    def test_public_mixed_history_errors_report_locator_before_mutation(self):
+        path = self.mixed_sibling()
+        original = json.loads(path.read_text())
+        cases = [(dict(original, id="example-task"), "invalid_task_state", "task_identity_already_exists"),
+                 (dict(original, id="EXAMPLE-TASK"), "invalid_task_state", "task_identity_already_exists"),
+                 (dict(original, id="bad/id"), "blocked", "invalid_task_id"),
+                 ({k: v for k, v in original.items() if k != "id"}, "blocked", "invalid_task_id"),
+                 ([], "blocked", "invalid_task_metadata"),
+                 ("broken JSON", "blocked", "invalid_task_metadata")]
+        before_branches = self.git("branch", "--list")
+        before_worktrees = self.git("worktree", "list", "--porcelain")
+        for metadata, exit_id, reason in cases:
+            with self.subTest(reason=reason, metadata=metadata):
+                path.write_text(metadata if isinstance(metadata, str) else json.dumps(metadata))
+                before = (path.read_bytes(), path.stat().st_mode)
+                completed, output = self.public_call(PACKAGE.parent, "guru-create-task", self.payload)
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                self.assertEqual((output["exit_id"], output["reason_code"]), (exit_id, reason))
+                self.assertTrue(output["diagnostic"]["field_path"].startswith(str(path.parent)))
+                self.assertTrue(output["diagnostic"]["remediation"])
+                if reason == "unsupported_legacy_task":
+                    self.assertIn("guru-upgrade-installation", output["diagnostic"]["remediation"])
+                validate_json(output, PACKAGE / "consumers/stop/production" / (
+                    "invalid-task-state.schema.json" if exit_id == "invalid_task_state" else "blocked.schema.json"), "stop")
+                self.assertEqual((path.read_bytes(), path.stat().st_mode), before)
+                self.assertFalse((self.root / self.ref).exists())
+                self.assertEqual(self.git("branch", "--list"), before_branches)
+                self.assertEqual(self.git("worktree", "list", "--porcelain"), before_worktrees)
+                self.assertFalse((self.root / ".git/trellis/task-resources/example-task").exists())
+        # The normal objective preflight reports its declared invocation error,
+        # rather than converting the lifecycle failure into internal_error.
+        with tempfile.TemporaryDirectory() as directory:
+            input_path = Path(directory) / "input.json"
+            input_path.write_text(json.dumps(self.payload))
+            with self.assertRaises(MODULE.CommandError) as caught:
+                MODULE.run(PACKAGE, {"id": "record-task-plan"}, ["--root", str(self.root), "--input", str(input_path)])
+        self.assertEqual(caught.exception.code, "stale_identity")
+        self.assertIn(str(path), caught.exception.field_path)
+        completed, error = self.public_call(PACKAGE.parent, "guru-create-task", self.payload, validator="record_plan")
+        self.assertEqual(completed.returncode, 3, completed.stdout + completed.stderr)
+        self.assertEqual(error["code"], "stale_identity")
+        self.assertIn(str(path), error["field_path"])
+        self.assertIn("invalid_task_metadata", error["remediation"])
+
+    def test_public_occupied_target_directory_refuses_before_mutation(self):
+        directory = self.root / self.ref
+        directory.mkdir(parents=True)
+        before_branches = self.git("branch", "--list")
+        before_worktrees = self.git("worktree", "list", "--porcelain")
+        completed, output = self.public_call(PACKAGE.parent, "guru-create-task", self.payload)
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(output["reason_code"], "task_identity_already_exists")
+        self.assertEqual(output["diagnostic"]["field_path"], str(directory.resolve()))
+        self.assertEqual(list(directory.iterdir()), [])
+        self.assertEqual(self.git("branch", "--list"), before_branches)
+        self.assertEqual(self.git("worktree", "list", "--porcelain"), before_worktrees)
+        self.assertFalse((self.root / ".git/trellis/task-resources/example-task").exists())
+
+    def test_optional_diagnostic_preserves_minimal_stop_contracts(self):
+        for exit_id, suffix in (("blocked", "blocked"), ("invalid_task_state", "invalid-task-state")):
+            minimal = {"exit_id": exit_id, "reason_code": "example"}
+            for schema in (PACKAGE / f"schemas/public-{suffix}-output.schema.json",
+                           PACKAGE / f"consumers/stop/production/{suffix}.schema.json",
+                           PACKAGE / "schemas/public-output.schema.json"):
+                validate_json(minimal, schema, "minimal")
+                validate_json({**minimal, "diagnostic": {"field_path": "record/task.json", "remediation": "Review this record."}}, schema, "diagnostic")
+                with self.assertRaises(MODULE.CommandError):
+                    validate_json({**minimal, "diagnostic": {"field_path": "record/task.json"}}, schema, "invalid")
+
+    def test_clean_installed_mixed_history_public_creation_and_rejection(self):
+        installer = SOURCE / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
+        (self.root / ".trellis/workflow.md").write_bytes((SOURCE / "trellis/workflows/guru-team/workflow.md").read_bytes())
+        (self.root / ".gitignore").write_text(".trellis/.runtime/\n")
+        applied = subprocess.run([sys.executable, str(installer), "--repo", str(self.root), "--json"],
+                                 text=True, capture_output=True)
+        self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
+        self.git("add", ".")
+        self.git("commit", "-qm", "install current preset")
+        head = self.git("rev-parse", "HEAD")
+        self.git("branch", "-f", "main", head)
+        self.payload["creation"]["reviewed_base_head"] = head
+        self.payload["acquisition"]["decision_head"] = head
+        path = self.mixed_sibling()
+        before = (path.read_bytes(), path.stat().st_mode)
+        packages = self.root / ".trellis/guru-team/skills/packages"
+        bad = json.loads(path.read_text()); bad["id"] = "bad/id"
+        path.write_text(json.dumps(bad))
+        failed, output = self.public_call(packages, "guru-create-task", self.payload)
+        self.assertEqual(failed.returncode, 0, failed.stdout + failed.stderr)
+        self.assertEqual(output["reason_code"], "invalid_task_id")
+        self.assertIn(str(path.parent), output["diagnostic"]["field_path"])
+        self.assertFalse((self.root / self.ref).exists())
+        path.write_bytes(before[0])
+        completed, plan = self.public_call(packages, "guru-create-task", self.payload, validator="record_plan")
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(plan["status"], "ready")
+        completed, selected = self.public_call(packages, "guru-establish-task-identity", {
+            "profile": "active_task", "mode": "standalone", "task_id": "historical-task",
+            "task_ref": ".trellis/tasks/09-23-old", "lifecycle_generation": 1,
+        }, root=path.parents[3])
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(selected["reason_code"], "unsupported_legacy_task")
+        completed, created = self.public_call(packages, "guru-create-task", self.payload)
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        self.assertEqual(created["exit_id"], "created", created)
+        for skill, data, expected in (
+            ("guru-ensure-task-checkout", {"profile": "active_task", "mode": "workflow", "task_id": "example-task", "lifecycle_generation": 0}, "checkout_resolved"),
+            ("guru-bind-task-session", {"profile": "resume_current_task", "mode": "standalone", "task_id": "example-task", "lifecycle_generation": 0, "continuation_id": "installed-resume"}, "session_resumed"),
+            ("guru-establish-task-identity", {"profile": "active_task", "mode": "standalone", "task_id": "example-task", "task_ref": self.ref, "lifecycle_generation": 0}, "identity_established"),
+            ("guru-create-task", {**self.payload, "action": "recover_created_task_result"}, "created"),
+        ):
+            completed, result = self.public_call(packages, skill, data)
+            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+            self.assertEqual(result["exit_id"], expected, result)
+        self.assertEqual((path.read_bytes(), path.stat().st_mode), before)
 
     def test_public_reference_only_creation_recovery_and_source_identity(self) -> None:
         self.assert_public_creation_and_recovery({"kind": "issue", "repo_ref": "castbox/guru-trellis",

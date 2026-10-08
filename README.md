@@ -31,8 +31,8 @@ Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
 当前 source candidate 固定到包含上游任务人员身份退役 PR #24、reference-only 创建 PR #26、显式旧安装迁移 PR #27 与系列/current task 支持 PR #28 的
-`cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`，
-对应成功 main CI `37647767799`。Fork CLI/core 均为 `0.7.0-castbox.3`。
+`5c760463680ffc10a3f26957b330c57a4b0c3ff8`，
+对应成功 main CI `37735554354`。Fork CLI/core 均为 `0.7.0-castbox.3`。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -72,8 +72,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | Published Guru predecessor tag | `v0.7.0-guru.1` |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.3` |
 | 当前 Guru extension revision | `0.7.0-guru.3` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` |
-| Reviewed Fork CI identity | `37647767799` |
+| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `5c760463680ffc10a3f26957b330c57a4b0c3ff8` |
+| Reviewed Fork CI identity | `37735554354` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前 knowledge authority（非软件版本） | `current-main-0.6.17-guru.75` / `active` |
 

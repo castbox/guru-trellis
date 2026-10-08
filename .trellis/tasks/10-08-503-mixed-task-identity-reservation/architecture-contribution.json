@@ -1,0 +1,235 @@
+{
+  "schema_version": "2.0",
+  "task_locator": ".trellis/tasks/10-08-503-mixed-task-identity-reservation",
+  "requirement_authority": "https://github.com/castbox/guru-trellis/issues/503",
+  "behavior_authority": ".trellis/tasks/10-08-503-mixed-task-identity-reservation/design.md",
+  "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+  "baseline_locator": "docs/architecture/README.md",
+  "baseline_identity": "current-main-0.6.17-guru.75",
+  "baseline_status": "active",
+  "constitution_authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+  "constitution_authority_status": "current",
+  "constitution_identity_kind": "version",
+  "constitution_identity": "guru-trellis-design-constitution-v1",
+  "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
+  "change_contract_identity": "guru-trellis-architecture-change-contract-v1",
+  "required_concern_set_identity": "guru-trellis-architecture-change-concerns-v1",
+  "contribution_identity": "issue-503-mixed-task-identity-reservation:phase2:2",
+  "change_path": "target_native",
+  "domain_refs": [
+    "ARCH-DOM-034"
+  ],
+  "integration_refs": [
+    "ARCH-INT-037"
+  ],
+  "decision_refs": [
+    "ADR-017",
+    "ADR-018"
+  ],
+  "gap_refs": [
+    "ARCH-GAP-006",
+    "ARCH-GAP-008"
+  ],
+  "required_concerns": [
+    {
+      "id": "authority-binding",
+      "applicability": "applicable",
+      "rationale": "绑定 current .75 与 public 2.0/change contract v1；共享 authority 仍 current。"
+    },
+    {
+      "id": "constitution-binding",
+      "applicability": "applicable",
+      "rationale": "命中概念完整、职责内聚、最小复杂度与债务单向收敛；不复制原则正文或评分。"
+    },
+    {
+      "id": "boundary-and-decision",
+      "applicability": "applicable",
+      "rationale": "按consumer拆分合法身份占用与selected完整current校验；migration完整分类不变。"
+    },
+    {
+      "id": "owner-and-single-writer",
+      "applicability": "applicable",
+      "rationale": "Guru substrate读取职责分离，Fork official writer由独立#29交付；正式source-lock集成，不patch业务安装。"
+    },
+    {
+      "id": "compatibility-and-exit",
+      "applicability": "applicable",
+      "rationale": "target_native职责拆分，不扩旧header白名单；已有migration兼容owner与退出不变。"
+    },
+    {
+      "id": "gap-and-deviation",
+      "applicability": "applicable",
+      "rationale": "保留已接受历史只读 reservation，不新增 owner/双写/GAP，不将现缺陷定性为需复活旧 runtime。"
+    },
+    {
+      "id": "parallel-scope",
+      "applicability": "applicable",
+      "rationale": "本 task 隔离 canonical candidate/规划/贡献；禁止改业务安装、其他 task/worktree 和直接竞争 current authority。"
+    },
+    {
+      "id": "evidence-and-freshness",
+      "applicability": "applicable",
+      "rationale": "Phase2实际source/clean-installed 22 tests、runtime156、source-lock/build/projection/validator与drift/reapply通过；业务Backend与Release未验证。"
+    },
+    {
+      "id": "review-and-promotion",
+      "applicability": "applicable",
+      "rationale": "independent Branch Review 尚未执行；expected current .75 promotion 后 fresh Phase2/commit/Review。"
+    }
+  ],
+  "owner_transition": {
+    "current": "Guru current identity reader / Fork official task and migration writer",
+    "target": "Guru purpose-specific identity reservation and selected strict lifecycle readers; existing migration owner unchanged",
+    "single_writer": "task author owns contribution; Architecture owner alone promotes shared current"
+  },
+  "compatibility": {
+    "required": true,
+    "owner": "Guru identity reservation reader; Fork reviewed migration owner",
+    "exit_condition": "Reservation has no legacy lifecycle capability; retain existing migration compatibility only under its original owner and exit conditions."
+  },
+  "parallel_scope": {
+    "allowed": [
+      ".trellis/tasks/10-08-503-mixed-task-identity-reservation",
+      "trellis/skills/guru-team/runtime/task_lifecycle",
+      "trellis/skills/guru-team/packages/guru-create-task",
+      "本任务 RDT/Architecture contributions",
+      "trellis/presets/guru-team/source/trellis-source.json",
+      "适用source-lock文档、矩阵与官方dogfood投影"
+    ],
+    "forbidden": [
+      "Backend installed files",
+      "无关旧 task/worktree/control/session",
+      "未经独立评审的 shared-current promotion"
+    ]
+  },
+  "deviations": {
+    "closed": [],
+    "retained": [
+      "已接受旧记录身份保留的只读依赖"
+    ],
+    "new": []
+  },
+  "legacy_deletion_conditions": [
+    "No legacy lifecycle or personnel writer added.",
+    "Delete only classifier code with no remaining consumer; migration/inventory classifiers retain their original contracts."
+  ],
+  "design_responsibility": {
+    "overview": ".trellis/tasks/10-08-503-mixed-task-identity-reservation/design.md#架构与取舍",
+    "detailed": ".trellis/tasks/10-08-503-mixed-task-identity-reservation/design.md#根因与职责"
+  },
+  "before_plan": "Creation reservation consumer reads complete current/legacy schema before identity comparison; official Fork writer repeats the same coupling.",
+  "after_candidate": "Reservation reads only legal id/ref; selected lifecycle and migration keep their strict consumer contracts; integrate the independently merged official Fork fix through formal source lock and install.",
+  "project_check_descriptors": [
+    {
+      "schema_version": "2.0",
+      "descriptor_identity": "guru-trellis-architecture-convergence:repository:1",
+      "check_id": "guru-trellis-architecture-convergence",
+      "check_version": "1",
+      "entrypoint": "docs/architecture/06-governance/change-contract.md",
+      "applicable_scope": [
+        "stage invocation",
+        "authority binding",
+        "path exclusivity",
+        "required concern completeness",
+        "before/after regression",
+        "single-writer",
+        "parallel stale",
+        "contribution/ADR review",
+        "promotion freshness"
+      ],
+      "rule_refs": [
+        "ARCH-GOV-006",
+        "ARCH-GOV-007",
+        "ARCH-GOV-008",
+        "ARCH-GOV-009"
+      ],
+      "decision_refs": [
+        "ADR-005",
+        "ADR-009"
+      ],
+      "gap_refs": [
+        "ARCH-GAP-006",
+        "ARCH-GAP-008"
+      ],
+      "result_contract_identity": "guru-project-architecture-check-result-2.0",
+      "freshness_source": "当前 task candidate 或 exact committed range"
+    }
+  ],
+  "project_checks": [
+    {
+      "schema_version": "2.0",
+      "descriptor_identity": "guru-trellis-architecture-convergence:repository:1",
+      "check_id": "guru-trellis-architecture-convergence",
+      "check_version": "1",
+      "applicability": "applicable",
+      "blocking": true,
+      "applicable_scope": [
+        "stage invocation",
+        "authority binding",
+        "path exclusivity",
+        "required concern completeness",
+        "before/after regression",
+        "single-writer",
+        "parallel stale",
+        "contribution/ADR review",
+        "promotion freshness"
+      ],
+      "rule_refs": [
+        "ARCH-GOV-006",
+        "ARCH-GOV-007",
+        "ARCH-GOV-008",
+        "ARCH-GOV-009"
+      ],
+      "decision_refs": [
+        "ADR-005",
+        "ADR-009"
+      ],
+      "gap_refs": [
+        "ARCH-GAP-006",
+        "ARCH-GAP-008"
+      ],
+      "before": {
+        "state": "Creation reservation consumer reads complete current/legacy schema before identity comparison; official Fork writer repeats the same coupling."
+      },
+      "after": {
+        "state": "Reservation reads only legal id/ref; selected lifecycle and migration keep their strict consumer contracts; integrate the independently merged official Fork fix through formal source lock and install. No-consumer bool wrapper removed; canonical/installed tests pass without widening migration classification."
+      },
+      "status": "pass",
+      "evidence_locator": "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md",
+      "freshness_identity": "issue-503:phase2:30dfbb98"
+    }
+  ],
+  "evidence": {
+    "test_refs": [
+      "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_identity.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_composition.py",
+      "trellis/skills/guru-team/packages/guru-create-task/tests/test_contract.py",
+      "docs/requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md"
+    ],
+    "runtime_refs": [
+      "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
+      "trellis/skills/guru-team/runtime/task_lifecycle/composition.py"
+    ],
+    "external_refs": [
+      "https://github.com/castbox/guru-trellis/issues/503",
+      "https://github.com/castbox/guru-trellis/issues/503#issuecomment-6053071122",
+      "https://github.com/castbox/Trellis/pull/30"
+    ],
+    "external_status": "Fork merged/source CI verified; Backend installation and deployment unverified"
+  },
+  "expected_current_identity": "current-main-0.6.17-guru.75",
+  "adr": {
+    "required": false,
+    "locator": "",
+    "reason": "精确 reservation 分类和同一 stop 诊断的局部修订不改变 ADR-017/018 current-only、owner、迁移退出或原则例外；不创建第二 compatibility path。"
+  },
+  "review": {
+    "status": "pending",
+    "independent": false,
+    "committed_range": null
+  },
+  "promotion": {
+    "state": "required",
+    "promoted_identity": ""
+  }
+}

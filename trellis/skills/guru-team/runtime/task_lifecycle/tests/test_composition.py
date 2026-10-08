@@ -162,7 +162,7 @@ class CompositionTests(unittest.TestCase):
         (active / "task.json").write_text(json.dumps({
             "id": "old-task", "name": "old-task", "title": "Old task",
             "status": "in_progress", "creator": "team", "assignee": "team",
-            "branch": "legacy", "base_branch": "main", "scope": None,
+            "branch": "legacy", "base_branch": "main", "scope": None, "lifecycle_generation": 1,
         }), encoding="utf-8")
         (archived / "task.json").write_text(json.dumps({"id": "old-task"}), encoding="utf-8")
         (sibling / ".trellis/tasks/09-21-empty").mkdir()

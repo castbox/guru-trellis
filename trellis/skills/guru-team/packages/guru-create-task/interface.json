@@ -33,8 +33,8 @@
   "external_exits":[
     {"id":"created","evidence":"TaskId and initial control state exist in the selected checkout","consumer":{"kind":"workflow","id":"guru-task-created"}},
     {"id":"refresh_review","evidence":"reviewed base authority changed or creation TaskRef date became stale","consumer":{"kind":"workflow","id":"guru-sync-base"}},
-    {"id":"blocked","evidence":"checkout acquisition or session result cannot safely complete","consumer":{"kind":"stop","id":"task-creation-blocked"}},
-    {"id":"invalid_task_state","evidence":"task or result identity conflicts with the reviewed creation","consumer":{"kind":"stop","id":"invalid-task-state"}}
+    {"id":"blocked","evidence":"checkout acquisition or session result cannot safely complete; optional diagnostic field_path/remediation explains the exact record and disposition to this stop consumer","consumer":{"kind":"stop","id":"task-creation-blocked"}},
+    {"id":"invalid_task_state","evidence":"task or result identity conflicts with the reviewed creation; optional diagnostic field_path/remediation explains the exact record and disposition to this stop consumer","consumer":{"kind":"stop","id":"invalid-task-state"}}
   ],
   "reentry":{"identity":"TaskId, source, base and acquisition result","freshness":"reread task, Git branch and C4/C5 stores","stale_behavior":"fail_closed"},
   "tests":["tests/test_contract.py"],

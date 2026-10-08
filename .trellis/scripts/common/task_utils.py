@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .io import JSON_READ_MISSING, read_json_checked, read_task_inventory_record
+from .io import JSON_READ_MISSING, read_json_checked, read_task_id_reservation
 from .paths import FILE_TASK_JSON, get_repo_root, get_tasks_dir
 from .path_boundary import ProjectPathError, require_project_path
 
@@ -147,20 +147,16 @@ def task_id_collisions(
             continue
         task_json = directory / FILE_TASK_JSON
         require_project_path(task_json, repo_root)
-        data, reason = read_task_inventory_record(task_json)
-        if data is None:
+        task_id, reason = read_task_id_reservation(task_json)
+        if task_id is None:
             if "archive" not in directory.relative_to(tasks_dir).parts and reason != JSON_READ_MISSING:
                 raise TaskIdentityError(f"task_metadata_{reason}: {task_json}")
             if any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
                 conflicts.append(f"{directory}: unreadable task.json ({reason})")
             continue
-        task_id = data.get("id")
-        if isinstance(task_id, str) and task_id.strip():
-            if task_id.casefold() == folded:
-                kind = "exact" if task_id == requested else "case-fold"
-                conflicts.append(f"{directory}: {kind} TaskId {task_id!r}")
-        elif any(value.casefold() == folded for value in _visible_identity_candidates(directory.name)):
-            conflicts.append(f"{directory}: invalid or missing TaskId")
+        if task_id.casefold() == folded:
+            kind = "exact" if task_id == requested else "case-fold"
+            conflicts.append(f"{directory}: {kind} TaskId {task_id!r}")
     return conflicts
 
 

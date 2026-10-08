@@ -393,8 +393,6 @@ def cmd_create(args: argparse.Namespace) -> int:
         # Inferred: default_package → None (no task.json yet for create)
         package = resolve_package(repo_root=repo_root)
 
-    ensure_tasks_dir(repo_root)
-
     # Generate slug if not provided. A title-derived slug is sanitized by
     # _slugify; an explicit --slug is not, so reject the characters that would
     # let it escape the tasks directory once joined into the dir name.
@@ -526,6 +524,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         print(f"Existing task at: {_repo_relative_path(task_dir, repo_root)}", file=sys.stderr)
         print("Use a different --slug to create a new task.", file=sys.stderr)
         return 1
+    ensure_tasks_dir(repo_root)
     task_dir.mkdir(parents=True)
 
     today = datetime.now().strftime("%Y-%m-%d")

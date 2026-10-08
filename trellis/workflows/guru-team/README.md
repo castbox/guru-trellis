@@ -60,8 +60,8 @@ exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的
 迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](../../presets/guru-team/MIGRATION-495.md) 合同。
 当前 knowledge authority 为 `current-main-0.6.17-guru.75` / `active`，不是软件发布版本。
 
-Use the source-locked Trellis Fork checkout (`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`,
-successful main CI `37647767799`)
+Use the source-locked Trellis Fork checkout (`castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`,
+successful main CI `37735554354`)
 and a matching reviewed Guru
 source. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying

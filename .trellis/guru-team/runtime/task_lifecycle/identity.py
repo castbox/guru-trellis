@@ -187,7 +187,7 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
     current = _current_task_metadata(data, archived=archived)
     legacy = not current and (archived or _known_legacy_active_metadata(data))
     if not current and not legacy:
-        raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema.")
+        raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
         ref,
@@ -253,69 +253,70 @@ def task_inventory(repo_root: Path) -> tuple[TaskArtifactIdentity, ...]:
     return tuple(row for row in _task_identities(repo_root) if not row.legacy)
 
 
-def task_identity_exists(repo_root: Path, task_id: str, task_ref: str) -> bool:
-    """Check one proposed identity without requiring unrelated history to be unique."""
+def _read_reserved_task_id(repo_root: Path, task_ref: str) -> str:
+    """Read identity only; lifecycle/schema classification has another consumer."""
+    data = _read_task_metadata(repo_root, task_ref)
+    return normalize_task_id(data.get("id"), field_path=f"{task_ref}/task.json.id")
 
+
+def _identity_reservations(repo_root: Path) -> Iterator[tuple[str, str]]:
+    root = repo_root.resolve()
+    for ref in _task_refs(root):
+        try:
+            yield _read_reserved_task_id(root, ref), ref
+        except LifecycleContractError as exc:
+            if ref.startswith(".trellis/tasks/archive/") and exc.code in {
+                "task_not_found", "invalid_task_metadata", "invalid_task_id",
+            }:
+                continue
+            raise
+
+
+def task_identity_reservation(repo_root: Path, task_id: str, task_ref: str) -> str | None:
+    """Locate an occupied id/ref without interpreting unrelated lifecycle fields."""
     key = task_id_key(task_id)
     ref = normalize_task_ref(task_ref)
     root = repo_root.resolve()
-    # Creation must not reuse an occupied locator, even for evidence-only history.
+    # Evidence-only/empty directories still reserve their exact target locator.
     if (root / ref).exists():
-        return True
-    for item in _task_refs(root):
-        if item == ref:
-            return True
-        if not item.startswith(".trellis/tasks/archive/"):
-            if not (root / item / "task.json").exists():
-                continue
-            existing = _read_identity(root, item)
-            if existing.task_id.casefold() == key:
-                return True
-            continue
-        try:
-            data = _read_task_metadata(root, item)
-            existing_key = task_id_key(data.get("id"), field_path=f"{item}/task.json.id")
-        except LifecycleContractError as exc:
-            if exc.code in {"task_not_found", "invalid_task_metadata", "invalid_task_id"}:
-                continue
-            raise
-        if existing_key == key:
-            return True
-    return False
+        return ref
+    for existing_id, existing_ref in _identity_reservations(root):
+        if existing_id.casefold() == key:
+            return f"{existing_ref}/task.json"
+    return None
 
 
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:
-    selected = _read_identity(repo_root.resolve(), normalize_task_ref(task_ref))
-    if selected.legacy:
-        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old records reserve identity but are not lifecycle candidates.")
-    rows = _task_identities(repo_root)
-    current = next((row for row in rows if row.task_ref == selected.task_ref), None)
-    if current is None:
-        raise LifecycleContractError(
-            "invalid_task_ref", selected.task_ref, "Resolve one canonical task artifact from the repository inventory."
-        )
-    if len([row for row in rows if row.task_id.casefold() == current.task_id.casefold()]) > 1:
+    ref = normalize_task_ref(task_ref)
+    selected_id = _read_reserved_task_id(repo_root.resolve(), ref)
+    matches = [(task_id, locator) for task_id, locator in _identity_reservations(repo_root)
+               if task_id.casefold() == selected_id.casefold()]
+    if len(matches) != 1:
         raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve the duplicate TaskId before lifecycle use.")
-    if expected_task_id is not None and current.task_id != normalize_task_id(expected_task_id, field_path="expected_task_id"):
+    if expected_task_id is not None and selected_id != normalize_task_id(expected_task_id, field_path="expected_task_id"):
         raise LifecycleContractError(
             "invalid_task_identity", "expected_task_id", "Use the immutable TaskId declared by the selected task artifact."
         )
-    return current
+    selected = _read_identity(repo_root.resolve(), ref)
+    if selected.legacy:
+        raise LifecycleContractError("unsupported_legacy_task", ref, "Old records reserve identity but are not lifecycle candidates. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
+    return selected
 
 
 def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
     requested = normalize_task_id(task_id)
-    rows = _task_identities(repo_root)
-    matches = [row for row in rows if row.task_id.casefold() == requested.casefold()]
+    matches = [(candidate_id, ref) for candidate_id, ref in _identity_reservations(repo_root)
+               if candidate_id.casefold() == requested.casefold()]
     if not matches:
         raise LifecycleContractError("task_not_found", "task_id", "Select an existing active or archived TaskId.")
     if len(matches) != 1:
         raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve duplicate canonical task artifacts.")
-    if matches[0].legacy:
-        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old records reserve identity but are not lifecycle candidates.")
-    if matches[0].task_id != requested:
+    if matches[0][0] != requested:
         raise LifecycleContractError("invalid_task_identity", "task_id", "Use the exact TaskId spelling.")
-    return matches[0]
+    selected = _read_identity(repo_root.resolve(), matches[0][1])
+    if selected.legacy:
+        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old records reserve identity but are not lifecycle candidates. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
+    return selected
 
 
 def discover_archived_issue_candidate(

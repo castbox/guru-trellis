@@ -1,1 +1,37 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-create-task-blocked-1.0","type":"object","additionalProperties":false,"required":["exit_id","reason_code"],"properties":{"exit_id":{"const":"blocked"},"reason_code":{"type":"string","minLength":1}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-task-blocked-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "reason_code"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "blocked"
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_path",
+        "remediation"
+      ],
+      "properties": {
+        "field_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

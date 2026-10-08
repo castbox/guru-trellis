@@ -31,8 +31,8 @@ business Intake，普通 apply 保持严格。
 迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](./MIGRATION-495.md) 合同。
 当前 knowledge authority 为 `current-main-0.6.17-guru.75` / `active`，不是软件发布版本。
 
-Use the source-locked, built `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`
-CLI (successful main CI `37647767799`) and a matching reviewed Guru
+Use the source-locked, built `castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`
+CLI (successful main CI `37735554354`) and a matching reviewed Guru
 source. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:

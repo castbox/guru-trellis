@@ -1559,8 +1559,13 @@ Remote refs, parent traversal, nested `$id`, symlink escape, unknown DTO names,
 or additional DTO fields fail closed. It does not fetch schemas, import package
 private runtime, choose a semantic exit, or persist a validation result.
 
-Identity resolution reads current official task artifacts and rejects exact or
-case-fold collisions. It does not copy or patch the Fork's
+Identity reservation reads only legal id/ref occupancy. Selected identity
+resolution checks uniqueness before strict current metadata/source/generation
+validation of the selected target; unrelated lifecycle fields do not become a
+creation prerequisite. Full inventory/migration classification retains its
+own consumer contract and is not replaced by the reservation projection.
+Creation still strictly validates its newly created current target. These
+readers reject exact or case-fold collisions. They do not copy or patch the Fork's
 `.trellis/scripts/common/**` modules, mutate `task.json`, repair invalid
 generation, write session state, build a task index, or read retired workspace
 mappings. Source and installed consumers must carry byte-identical contract
