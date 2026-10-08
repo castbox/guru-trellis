@@ -34,13 +34,21 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The published
-Guru repo tag is `v0.7.0-guru.1`; its extension revision is
+Stable install and upgrade docs must keep four version axes explicit. The official
+release target is repository tag `v0.7.0-guru.3`, extension revision
+`0.7.0-guru.3`, Fork CLI/core `0.7.0-castbox.3`, source
+`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, package manager
+`pnpm@10.32.1`, and reviewed Fork CI `37647767799`. These axes are independent;
+do not increment the extension or publish an intermediate `.2` tag for this
+release. Preparing these docs does not publish the target or pass its candidate gate.
+The published Guru predecessor tag is `v0.7.0-guru.1`; its extension revision is
 `0.7.0-guru.1`; its historical framework lock is
 `castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
 manager `pnpm@10.32.1`. The published predecessor `v0.6.17-guru.2` does not prove
-successor framework-source adoption. Stable workflow marketplace and preset sources for
-one installation use the same immutable `v0.7.0-guru.1` tag after publication.
+successor framework-source adoption. After the target's publication and remote tag
+verification, stable workflow marketplace and preset sources for one installation
+use the same immutable `v0.7.0-guru.3` tag. Until then, the target remains an
+unreleased candidate and `v0.7.0-guru.1` remains its published predecessor.
 Before publication, marketplace and preset use the same addressable full
 candidate SHA; an unreleased reviewed checkout is identified as such and never
 described as tag-pinned release provenance. Unpinned or branch sources remain
@@ -51,7 +59,7 @@ accessing legacy project data and preserves that data unchanged. Public docs
 must retain that release boundary. The #495 successor candidate defines an
 independent explicit migration for all `v0.6.x-guru.*` and
 `v0.7.0-guru.*` normal installations, grouped by actual manifest, managed
-assets, and task/control differences. The local successor candidates are Guru
+assets, and task/control differences. The successor release targets are Guru
 `0.7.0-guru.3` and CLI/core `0.7.0-castbox.3`; the formal `.3` Fork lock is
 `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
 CI `37647767799`. Same-source Guru acceptance is verified at exact

@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.73`
+- version：`current-main-0.6.17-guru.75`
 - status：`active`
-- source binding：reviewed #495 fixed-source acceptance contribution + immutable `.72` inheritance；35 active Skills/159 exits/106 commands，零 planned，migration standalone-only，business33/153。固定 Fork `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1` / CLI `0.7.0-castbox.2`，Guru `0.7.0-guru.2` 未发布候选；Architecture ARCH-CUR-049/ARCH-DOM-034/ARCH-INT-037/ADR-017/ARCH-GAP-012/EVD-049。固定远端 `6a563f5f` 的 source_locked/provider/actual installed、真实PR/merge与accepted旧正式writer构造在途分别取证；唯一结果见 `docs/requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md`。首次失败与恢复保留，不声明单轮7/7或业务原始在途。晋升diff须freshPhase2/commit/独立完整BranchReview，后继文档HEAD不冒充fixed-source执行，merge/Completion/Release/真实业务安装/完整矩阵仍由各owner判断。
+- source binding：reviewed #495 version-family exact-source acceptance contribution + immutable `.74` inheritance；35 active Skills/159 exits/106 commands，零 planned，migration standalone-only，business33/153。正式 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CLI/core `0.7.0-castbox.3` / CI `37647767799`，Guru `0.7.0-guru.3` 为未发布目标；Architecture ARCH-CUR-049/ARCH-DOM-034/ARCH-INT-037/ADR-018/closed ARCH-GAP-012/EVD-051。全部正常 `v0.6.x-guru.*` 和 `v0.7.0-guru.*` 来源按实际差异分组；唯一结果见 `docs/requirements-design-test-contributions/495-upgrade-version-families/test.md`。EVD-051只绑定精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源验收；EVD-050/.74 与 EVD-049/.73 保留为历史，首次失败与恢复不改写，不声明业务原始在途。晋升diff须freshPhase2/commit/独立完整BranchReview，后继文档HEAD不冒充同源重跑，merge/Completion/Closure/Finish/Release/真实业务安装/完整矩阵仍由各owner判断。knowledge identity 不是软件发布状态，#500 的最终候选须在准备与终态归档合并后从 fresh origin/main 独立验证。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
