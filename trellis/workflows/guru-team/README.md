@@ -40,17 +40,25 @@ or upstream `task.py start` to perform that transition.
 
 ## Installation
 
-当前开发 extension candidate 为 `0.7.0-guru.3`，目标 Fork CLI/core 为 `0.7.0-castbox.3`，均尚未发布；predecessor 是已发布的 `v0.7.0-guru.1`。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。
+本次 repository 正式发布目标为 `v0.7.0-guru.3`，extension 为 `0.7.0-guru.3`，固定 Fork CLI/core 为 `0.7.0-castbox.3`，package manager 为 `pnpm@10.32.1`；predecessor 是已发布的 `v0.7.0-guru.1`。版本轴独立，保持现有 extension，不发布中间 `.2`。Guru 目标仍为未发布候选，本准备文档不表示 candidate gate 或 Release 已通过。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。
 候选验证的 workflow marketplace source 与 preset 使用同一可寻址的完整 Guru
-candidate SHA；正式发布后才使用同一 immutable Guru tag。Fork main CI 成功
+candidate SHA；只有目标发布且远端 tag 核验与最终 candidate 匹配后，才使用
+同一 immutable `v0.7.0-guru.3`（marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，
+preset 来自该 tag 的 checkout）。Fork main CI 成功
 不替代 Guru exact-candidate、installed/lifecycle 或发布门禁。
 
-旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
+本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
+exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代
+本次候选验证。tag、tag-pinned smoke、GitHub Release 与 Release Issue closure 仍为后续独立动作。
+
+历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；拒绝不代表升级成功。
-后继 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 开发候选通过独立 standalone
+本次 `.3` 目标（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）通过独立 standalone
 `guru-upgrade-installation` 承接全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装；
 显式升级请求从目标 source package 加载该 Skill，不先进入 business Intake。
-见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成，普通 runtime 无兼容双读或自动迁移。
+见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成，普通 update/reapply 不替代迁移，普通 runtime 无兼容双读或自动迁移。
+迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](../../presets/guru-team/MIGRATION-495.md) 合同。
+当前 knowledge authority 为 `current-main-0.6.17-guru.75` / `active`，不是软件发布版本。
 
 Use the source-locked Trellis Fork checkout (`castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`,
 successful main CI `37647767799`)

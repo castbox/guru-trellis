@@ -70,19 +70,27 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 组件 | 固定版本 |
 | --- | --- |
 | Published Guru predecessor tag | `v0.7.0-guru.1` |
-| Current Guru development candidate (unreleased) | `0.7.0-guru.3` |
+| 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.3` |
+| 当前 Guru extension revision | `0.7.0-guru.3` |
 | Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` |
 | Reviewed Fork CI identity | `37647767799` |
 | Fork package manager | `pnpm@10.32.1` |
+| 当前 knowledge authority（非软件版本） | `current-main-0.6.17-guru.75` / `active` |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
 已发布的 `v0.7.0-guru.1` 是本迁移候选的 predecessor，不含 #495 迁移能力。
-当前 Guru `0.7.0-guru.3` 仍为开发候选，Fork `0.7.0-castbox.3` 正式 lock/CI 已固定；Fork 合并及 main CI 成功不等于 Guru
+本次正式发布目标为 `v0.7.0-guru.3`，保持 extension `0.7.0-guru.3`，不发布中间 `.2`。目标在实际发布前仍为未发布候选；本准备文档不表示发布或 candidate gate 已通过。Fork `0.7.0-castbox.3` 正式 lock/CI 已固定；Fork 合并及 main CI 成功不等于 Guru
 exact-candidate、installed/lifecycle 或发布门禁通过。候选验证将 `GURU_WORKFLOW_SOURCE`
 与 `GURU_SOURCE` 绑定同一可寻址的完整 Guru candidate SHA，marketplace source 为
-`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`。正式发布后，二者才使用
-同一 immutable Guru tag；不把未发布候选当作业务仓默认安装版本。
+`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`。只有目标发布且远端 tag
+核验与最终 candidate 匹配后，二者才使用同一 immutable `v0.7.0-guru.3`：
+marketplace 为 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，preset 来自该 tag 的 checkout。
+不把未发布候选当作业务仓默认安装版本。
 不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
+
+本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
+exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代
+本次候选验证。tag、tag-pinned smoke、GitHub Release 与 Release Issue closure 仍为后续独立动作。
 
 新仓库的非交互安装入口：
 
@@ -96,10 +104,11 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
   --repo "$TARGET_REPO")
 ```
 
-旧 `0.6.17` 安装会被当前 Fork 的 update 在访问旧项目数据前拒绝，原数据保持不变。
+历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；下列普通 update/reapply
 步骤仅适用于与所选 Fork 版本兼容的安装，拒绝不能作为升级成功。
-后继系列迁移候选 `0.7.0-guru.3` / Fork `0.7.0-castbox.3` 通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，结果由 [唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接。Guru 软件版本尚未发布，后继文档 HEAD 不代表重新运行验收。历史 `.2` 依赖与 `.41` 证据只证明原固定范围；下列构建命令读取当前 `.3` lock，本身不证明 Guru 升级。真实业务安装、Release 和完整累计矩阵仍未验证。
+本次 `.3` 目标中的系列迁移能力（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，结果由 [唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接。Guru 软件版本尚未发布，后继文档 HEAD 不代表重新运行验收。历史 `.2` 依赖与 `.41` 证据只证明原固定范围；下列构建命令读取当前 `.3` lock，本身不证明 Guru 升级。真实业务安装、Release 和完整累计矩阵仍未验证。
+旧安装的显式升级请求从固定目标 source package 加载该 Skill，不先进入 business Intake；普通 update/reapply 不替代迁移。保留业务定制、无关 dirty/untracked 和合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界不变。
 入口和恢复边界见 [旧安装迁移说明](trellis/presets/guru-team/MIGRATION-495.md)。
 普通 runtime 不提供兼容双读或自动迁移。
 
