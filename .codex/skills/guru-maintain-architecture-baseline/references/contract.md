@@ -72,19 +72,140 @@ profile and `constitution_status=current`; the current authority locator must
 resolve component-by-component to an existing regular repository file without
 a symlink-backed component.
 
-The AI currently executing this Skill is the contract-selected semantic owner.
-It rereads the public contract and live repository authority, performs the
-semantic review, authors the complete 2.0 result, and then invokes the formal
-deterministic wrapper once. The runtime's refusal to generate an impact, route,
-or pass judgment never implies that another external owner must be found.
+The Architecture Skill owns the reviewer method; the contract-selected AI
+executor performs its semantic judgment. The caller owns delivery coordination,
+not the review conclusion. Baseline maintenance and promotion retain their
+existing owner. A wrapper's refusal to generate judgment is not a missing
+external approval and does not authorize caller self-assessment.
 
-The owner execution sequence is public input validation, complete contract and
-live-authority reads, applicable project-check execution/evidence review,
-semantic Architecture judgment, complete result authoring against
+The owner execution sequence is public input validation, the profile-specific
+read order below, applicable project-check execution/evidence review,
+semantic Architecture or current eligibility judgment, result authoring against
 `schemas/semantic-result.schema.json`, one `scripts/invoke.sh --invocation -`
 call, and consumption of its single typed exit. Routine confirmation is not an
 authoring prerequisite and no confirmation wording or state belongs in the
 result.
+
+## Independent assessment entry
+
+New `task_impact_sync` conclusions at `planning`, applicable
+`implementation_discovery`, `phase2`, and `branch_review` are executed by a
+fresh independent subagent, including a proposed no-impact change. The reviewer
+has not authored or implemented the current candidate and has not read its PRD,
+acceptance criteria, implementation summary, completion claims, prior pass, or
+scope defense. Use empty task history, not a full-history fork of the caller.
+Necessary AGENTS, engineering specs, this Skill, Architecture authorities and
+operating instructions may load; they must not embed a task pass narrative.
+
+The caller supplies exact repository/task locators, stage, current candidate
+design locator or full-diff base/head, necessary long-term authority locators
+and real constraint sources. These locate the object; they do not preselect
+impact, change path, finding, pass or exit. Do not leak task narratives through
+a dispatch summary. Planning reviews actual design facts and affected existing
+implementation; `design.md` is a design object, not compliance authority. A
+call-local design candidate is also valid. No real candidate means no candidate
+pass; reading baseline authority alone is not design assessment.
+
+Use the platform's supported fresh Task/Agent/subagent facility and inspect its
+actual prelude. For Codex, use a fresh generic worker rather than an official
+`trellis-check`, `trellis-implement` or `trellis-research` role whose task
+context injection would preload narratives. A changed role name or different
+worker id alone does not prove isolation. Do not patch upstream hooks or agent
+definitions. If compliant dispatch is unavailable, the worker did not execute
+or finish, or its result is missing/mismatched, stop through the existing
+blocked/re-entry route; never degrade to the caller authoring the assessment.
+Do not add a reviewer ledger, public reviewer fields or another state machine.
+
+The reviewer reads and judges in this order:
+
+1. current project constitution, Architecture Baseline and change contract;
+2. actual Planning design facts, or the complete implementation candidate:
+   Phase 2 includes tracked and untracked work; Branch Review binds the exact
+   committed base/head/full diff;
+3. changed decisions, defaults, state, rejection conditions, dependencies and
+   responsibilities;
+4. actual affected consumers, including unchanged callers, state reads/writes
+   and runtime assembly;
+5. comparable capabilities and their real constraints;
+6. form an independent Architecture judgment, then inspect necessary design
+   explanations/contribution for accurate attribution and responsibility.
+
+Prefer durable requirement/design/operations authority for business constraints.
+When a necessary new constraint exists only in the task, obtain only that fact
+and its source; do not import the whole task narrative. Missing constraints or
+evidence remain conditional or use the existing incomplete/blocked route.
+
+The reviewer personally executes applicable project checks, authors the
+semantic result and invokes the formal wrapper. It returns the actual declared
+exit/output and current identity to the caller. Structure/schema/green commands,
+prefilled owner results, worker labels, and caller self-filled Architecture
+results are not evidence of this execution. Normal caller self-authoring can
+pass objective validation while failing this Markdown method; re-enter with a
+compliant fresh reviewer, not a new authenticity mechanism or hostile fixture.
+
+A compliant fresh worker may finish Architecture first, then read task
+narratives and execute Check or Branch Review. Each Skill still performs its
+own complete review and produces its own actual result and freshness. A worker
+already exposed to narratives or implementation cannot retroactively supply
+the independent first round. Committed Branch Review always reassesses its
+candidate independently; Phase 2 pass cannot substitute. New facts that change
+Architecture judgment return to the corresponding fresh assessment stage.
+Review and validation commands are read-only evidence collection; they do not
+authorize product fixes, scope changes or promotion.
+
+## Responsibility and change causality
+
+Determine actual responsibility from the changed decisions, consumer graph,
+state ownership, assembly and dependency direction. Check whether a generic
+capability interprets business semantics or treats protocol/model/endpoint/
+default configuration as business authority. Compare similar capabilities with
+their real constraints; existing implementation is evidence, not an approved
+precedent. Evaluate a more direct alternative that preserves every affected
+current contract. Technical keywords and utility paths are not classifiers;
+do not audit unrelated exported symbols or invent future consumers. A controlled
+extension example may exercise an existing extension point.
+
+Design/code/tests/contribution consistency, green acceptance, declared owner
+agreement, approved plans or user continuation do not establish architectural
+correctness. An evidenced current responsibility violation is itself a defect
+without first requiring a functional failure. Distinguish an inherited error
+from its new expansion or solidification with concrete before/after causality.
+New/worsened deviations and necessary local boundary convergence belong to the
+current change. Unrelated historical debt may be reported truthfully but does
+not automatically become a current P0-P3 finding, release gate, required
+follow-up or Issue. Insufficient evidence stays uncertain.
+
+For an evidenced responsibility deviation, use the existing gate evidence to
+state the concrete before/after causal delta and a more direct alternative.
+Identify the actual owning boundary, necessary affected-caller adaptations and
+obsolete-path exit, or explain from the current graph why any of these is not
+needed. Preserve supported behavior and legal configuration, and stop at
+causally unrelated debt. A generic "revise the mechanism" conclusion alone does
+not explain the necessary local convergence. This is a causal correction
+explanation for the delivery owner, not severity, a repair authorization, or a
+new acceptance contract; no additional result fields or artifact are required.
+
+The reviewer reports Architecture facts and causal effects; delivery owners
+separately determine current work and qualification before edits/tests/severity.
+Neither scope defense nor discovery alone settles that responsibility or
+authorizes changes. If a necessary correction changes product goals or
+Architecture authority, stop the affected work through the existing owner route.
+
+## Downstream eligibility entry
+
+`publication` and `acceptance_finish` retain fresh matching-stage invocations
+by the Architecture owner. Consume the still-applicable independent conclusion,
+reviewed contribution and live authority, candidate, committed-review and
+promotion facts; judge this stage's eligibility and personally invoke the same
+2.0 wrapper. A caller change alone does not repeat the same assessment or create
+another reviewer. Do not relabel a Branch Review DTO as a downstream result,
+use Phase 2 in place of committed review, or transfer promotion ownership.
+Missing committed review or promotion follows its existing route. Changed
+candidate or applicable Architecture facts needing a new conclusion return to
+the corresponding fresh assessment stage; a shared authority update first uses
+the existing owner's applicability judgment. Bootstrap, repair and promotion
+are not automatically extra independent assessments; new assessment conclusions
+still obey the entry above. No new Skill, profile, exit or private state is added.
 
 ## Task-local change contract
 
@@ -144,7 +265,9 @@ cannot relabel a draft or superseded baseline as current.
 The existing `task_impact_sync` input binds three additional closed
 source/stage pairs: `review_refresh_required/branch_review`,
 `archived_review_passed/publication`, and `archived_ready/acceptance_finish`.
-Each is a fresh semantic invocation; an earlier stage result is not reused.
+Each is a fresh matching-stage semantic invocation. Downstream eligibility may
+consume a still-applicable independent conclusion as defined above; an earlier
+stage DTO never replaces this stage's actual output.
 The caller supplies the exact current range or A/B identity for that stage.
 
 For these sources the AI reviews only the existing current project authority

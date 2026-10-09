@@ -13,16 +13,46 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-inclusive.py"],
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
       "assertions": {
         "deterministic": [
-          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "passed"},
-          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
-          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
         ],
         "semantic": [
-          {"id": "current-ai-owner", "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result without waiting for workers. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.", "evidence_selector": "transcript"}
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          }
         ]
       }
     },
@@ -35,16 +65,46 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "files": ["evals/files/native-owner-input.json", "evals/files/native-range-boundary.py"],
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-boundary.py"
+      ],
       "assertions": {
         "deterministic": [
-          {"id": "actual-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "implementation_required"},
-          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
-          {"id": "no-eval-control", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
-          {"id": "no-private-runtime", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
         ],
         "semantic": [
-          {"id": "evidence-based-finding", "criterion": "The current AI reviews all nine dimensions and qualifies the upper-inclusive requirement violation from interval.py and actual failed tests. It authors a linked current-scope finding and implementation_required rather than forcing passed, without a staged Phase 2 result or external worker.", "evidence_selector": "transcript"}
+          {
+            "id": "evidence-based-finding",
+            "criterion": "The current AI reviews all nine dimensions and qualifies the upper-inclusive requirement violation from interval.py and actual failed tests. It authors a linked current-scope finding and implementation_required rather than forcing passed, without a staged Phase 2 result; its preceding fresh Architecture worker independently reads authority, full candidate and consumers before any task narratives.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          }
         ]
       }
     },
@@ -117,7 +177,10 @@
           }
         ]
       },
-      "files": ["evals/files/passed-initial-input.json", "evals/files/passed-initial-facts.json"]
+      "files": [
+        "evals/files/passed-initial-input.json",
+        "evals/files/passed-initial-facts.json"
+      ]
     },
     {
       "id": "implementation-required",
@@ -136,7 +199,10 @@
           }
         ]
       },
-      "files": ["evals/files/implementation-required-input.json", "evals/files/implementation-required-facts.json"]
+      "files": [
+        "evals/files/implementation-required-input.json",
+        "evals/files/implementation-required-facts.json"
+      ]
     },
     {
       "id": "planning-stale",
@@ -155,7 +221,10 @@
           }
         ]
       },
-      "files": ["evals/files/planning-stale-input.json", "evals/files/planning-stale-facts.json"]
+      "files": [
+        "evals/files/planning-stale-input.json",
+        "evals/files/planning-stale-facts.json"
+      ]
     },
     {
       "id": "blocked-initial",
@@ -174,7 +243,290 @@
           }
         ]
       },
-      "files": ["evals/files/blocked-initial-input.json", "evals/files/blocked-initial-facts.json"]
+      "files": [
+        "evals/files/blocked-initial-input.json",
+        "evals/files/blocked-initial-facts.json"
+      ]
+    },
+    {
+      "id": "native-owner-historical-red",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The current AI completes the nine dimensions from live fixture facts and the original wrapper returns passed.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "bounded-red-attribution",
+            "criterion": "The owner inspects the existing legacy report and real baseline/after failing test receipts, distinguishes that causally unrelated optional historical failure from the current interval regression, and stops its investigation after bounded attribution. It keeps the actual range checks and legitimate evidence, does not fix legacy report, mutate fixtures/timeouts, invent a required follow-up or claim all tests green. It separately recognizes the actual missing-service environment probe and preserves uncertainty for the external diagnostic with no before-result/cause. Neither unknown nor environment is falsely labelled historical. No unrelated probe expands current range work.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-required-dependency",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The owner establishes the unchanged dependency failure that prevents current singleton filtering and returns its actual required revision route.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-ordered.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "necessary-dependency-attribution",
+            "criterion": "The owner reads the durable singleton contract, unchanged bounds_policy source, actual failing dependency test before and after, current interval implementation and unchanged production range_filter. It establishes that ordered-bound validation already rejected equal endpoints and that this unchanged defect now prevents the accepted inclusive predicate and singleton filtering goal. It treats the dependency repair as an inseparable current prerequisite through the existing qualification and implementation_required route, rather than dismissing it as unrelated historical debt, fixing unrelated code, changing tests/timeouts, or asserting a green result. The actual red and before/after causality remain visible.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-test-boundary",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "test-regression-attribution",
+            "criterion": "The owner compares the actual before-green/after-red test receipts and exact changed assertion with the durable inclusive endpoint contract and unchanged correct predicate/filter. It identifies a current test regression, qualifies it through both existing Phase 2 qualifiers before severity/revision, and returns its actual implementation_required route. It does not change production semantics to satisfy the faulty assertion, force green, relabel the failure historical/environment, or invent unrelated debt. Fresh Architecture and overall Check outputs are separate actual results.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-test-support",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "test-prerequisite-attribution",
+            "criterion": "The owner compares the actual before/after receipts, unchanged test-only assertion helper, newly added helper use, accepted singleton verification goal and green direct production caller tests. It establishes that the existing strict lower-less-than-upper test assertion rejects legal equal bounds and now blocks the required singleton verification, qualifies the necessary local prerequisite through both existing Phase 2 qualifiers, and returns its actual implementation_required route. It preserves production predicate/filter semantics and bounded scope; it does not dismiss the necessary test defect as unrelated history, repair unrelated code, force green, or infer an environment failure. Fresh Architecture and overall Check outputs are separate actual results.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-selection-assertion",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "generic-assertion-prerequisite-attribution",
+            "criterion": "The owner reads the documented existing ordered-list assertion entry and unchanged helper source, compares actual before/after self-test and newly added selection-test failures with the green unchanged direct production selection tests, and identifies list.sort() returning None as the generic test assertion implementation defect. It establishes why that existing defect blocks the accepted shared-entry selection-verification goal, qualifies the necessary local prerequisite through both existing Phase 2 qualifiers before severity/revision, and returns its actual implementation_required route. It preserves production semantics and bounded scope, does not dismiss the defect as unrelated historical debt or alter production to satisfy the erroneous test, and does not force green or infer an environment failure. Fresh Architecture and overall Check results are separate actual executions, with every helper/candidate source read before independent Architecture judgment.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

@@ -10,20 +10,19 @@ owner for exactly four profiles: `bootstrap_foundation`, `task_impact_sync`,
 `promotion`, and `repair`.
 
 Load [references/contract.md](references/contract.md) completely before acting.
-The AI executing this Skill is the semantic owner selected by this contract; it
-must not wait for or invent a second external Architecture owner merely because
-the deterministic runtime cannot make semantic decisions.
+The contract selects the executor: new task Architecture assessments use a
+fresh independent subagent; downstream eligibility and baseline maintenance
+retain their existing owners. Follow the contract's Independent assessment
+entry before reading task narratives or authoring a result. The caller only
+coordinates and consumes the actual output; it never fills a reviewer pass.
 
 Execute one profile in this order:
 
 1. validate the caller/profile and read the exact public input;
-2. reread the complete contract, live task and planning scope, Architecture
-   Baseline, design constitution, project change contract, and current project-
-   check descriptors and evidence;
+2. apply the selected assessment or eligibility entry and its read order;
 3. run or inspect every applicable project check and judge its applicability,
    blocking effect, and before/after meaning;
-4. make the Architecture impact, change-path, contribution/ADR, finding, and
-   route judgments as the current AI owner;
+4. make the applicable judgments as the contract-selected AI owner;
 5. author one complete result matching `schemas/semantic-result.schema.json`;
 6. submit `public_input` plus that `owner_result` once through the formal
    `scripts/invoke.sh --invocation -` boundary; and

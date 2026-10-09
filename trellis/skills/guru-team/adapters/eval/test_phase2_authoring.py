@@ -118,6 +118,98 @@ class Phase2AuthoringTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, (skill, result.stderr))
             self.assertEqual(json.loads(result.stdout)["exit_id"], "classified")
 
+    def test_unchanged_bound_dependency_has_real_before_after_and_production_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            req = request(Path(temp), "native-owner-required-dependency")
+            _, target, _ = owner_staging.stage_owner_execution(req, Path(req["workdir"]).parent, Path(req["runtime_target"]))
+            repo = target.parents[4]
+            facts = json.loads((repo / phase2_authoring.FACTS).read_text())
+            receipts = json.loads((repo / 'docs/phase2-evidence/bounds-validation.json').read_text())
+            for side in ('before', 'after'):
+                self.assertNotEqual(receipts[side]['returncode'], 0)
+                self.assertIn('ValueError: unordered bounds', receipts[side]['stderr'])
+            validation = json.loads((repo / 'docs/phase2-evidence/validation.json').read_text())
+            self.assertNotEqual(validation['returncode'], 0)
+            self.assertIn('test_singleton_selection', validation['stderr'])
+            self.assertIn('test_singleton', validation['stderr'])
+            self.assertIn('bounds_policy.py', facts['architecture_reads'])
+            self.assertNotIn('bounds_policy.py', (repo / 'docs/phase2-evidence/diff.patch').read_text())
+            self.assertNotIn('typed_exit', json.dumps(facts))
+            self.assertNotIn('prerequisite', json.dumps(facts))
+
+    def test_test_layer_red_has_real_causality_and_unchanged_green_production(self):
+        for case_id, before_success in (("native-owner-test-boundary", True), ("native-owner-test-support", False)):
+            with self.subTest(case=case_id), tempfile.TemporaryDirectory() as temp:
+                req = request(Path(temp), case_id)
+                _, target, _ = owner_staging.stage_owner_execution(req, Path(req["workdir"]).parent, Path(req["runtime_target"]))
+                repo = target.parents[4]
+                facts = json.loads((repo / phase2_authoring.FACTS).read_text())
+                receipts = json.loads((repo / "docs/phase2-evidence/test-layer-validation.json").read_text())
+                self.assertEqual(receipts["before"]["returncode"] == 0, before_success)
+                self.assertNotEqual(receipts["after"]["returncode"], 0)
+                direct_tests = subprocess.run([sys.executable, "-B", "test_interval.py"], cwd=repo, capture_output=True, text=True, check=False)
+                self.assertNotEqual(direct_tests.returncode, 0, direct_tests.stderr)
+                for side in ("before", "after"):
+                    self.assertEqual(receipts["production_caller"][side]["returncode"], 0)
+                    self.assertIn("Ran 3 tests", receipts["production_caller"][side]["stderr"])
+                diff = (repo / "docs/phase2-evidence/diff.patch").read_text()
+                self.assertIn("diff --git a/test_interval.py", diff)
+                self.assertNotIn("diff --git a/interval.py", diff)
+                self.assertNotIn("diff --git a/range_filter.py", diff)
+                self.assertEqual((repo / "interval.py").read_text(), subprocess.check_output(["git", "show", "HEAD:interval.py"], cwd=repo, text=True))
+                for locator in facts["required_reads"]:
+                    self.assertTrue((repo / locator).is_file(), locator)
+                for locator in ("test_interval.py", "test_range_filter.py"):
+                    self.assertIn(locator, facts["architecture_reads"])
+                for term in ("expected_exit", "typed_exit", "regression", "prerequisite"):
+                    self.assertNotIn(term, json.dumps(facts))
+                if before_success:
+                    self.assertIn("AssertionError: True is not false", receipts["after"]["stderr"])
+                    self.assertIn("+        self.assertFalse(contains(4, 2, 4))", diff)
+                else:
+                    for side in ("before", "after"):
+                        self.assertIn("test_singleton_assertion", receipts[side]["stderr"])
+                        self.assertIn("AssertionError: 2 not less than 2", receipts[side]["stderr"])
+                    self.assertIn("test_singleton (test_interval.IntervalTests", receipts["after"]["stderr"])
+                    self.assertIn("+        assert_contains(self, 2, 2, 2)", diff)
+                    self.assertNotIn("diff --git a/range_test_support.py", diff)
+                    for locator in ("range_test_support.py", "test_range_test_support.py"):
+                        self.assertIn(locator, facts["architecture_reads"])
+
+    def test_existing_generic_assertion_has_real_before_after_and_required_test_caller(self):
+        with tempfile.TemporaryDirectory() as temp:
+            req = request(Path(temp), "native-owner-selection-assertion")
+            _, target, _ = owner_staging.stage_owner_execution(req, Path(req["workdir"]).parent, Path(req["runtime_target"]))
+            repo = target.parents[4]
+            facts = json.loads((repo / phase2_authoring.FACTS).read_text())
+            receipts = json.loads((repo / "docs/phase2-evidence/test-layer-validation.json").read_text())
+            for side in ("before", "after"):
+                self.assertNotEqual(receipts[side]["returncode"], 0)
+                self.assertIn("test_ordered_values", receipts[side]["stderr"])
+                self.assertIn("AssertionError: [2] != None", receipts[side]["stderr"])
+                self.assertEqual(receipts["production_caller"][side]["returncode"], 0)
+                self.assertIn("Ran 3 tests", receipts["production_caller"][side]["stderr"])
+            self.assertNotIn("test_singleton_selection", receipts["before"]["stderr"])
+            self.assertIn("test_singleton_selection", receipts["after"]["stderr"])
+            direct = subprocess.run([sys.executable, "-B", "test_selection.py"], cwd=repo, capture_output=True, text=True, check=False)
+            self.assertNotEqual(direct.returncode, 0)
+            diff = (repo / "docs/phase2-evidence/diff.patch").read_text()
+            self.assertIn("diff --git a/test_selection.py", diff)
+            self.assertIn("+        assert_selection(self, select([1, 2, 3], 2, 2), [2])", diff)
+            for locator in ("interval.py", "range_filter.py", "selection_test_support.py", "test_range_filter.py"):
+                self.assertNotIn(f"diff --git a/{locator}", diff)
+                self.assertEqual((repo / locator).read_text(), subprocess.check_output(["git", "show", f"HEAD:{locator}"], cwd=repo, text=True))
+            for locator in ("test_selection.py", "selection_test_support.py", "test_selection_test_support.py"):
+                self.assertIn(locator, facts["architecture_reads"])
+            helper = (repo / "selection_test_support.py").read_text()
+            self.assertNotIn("import", helper)
+            self.assertNotIn("lower", helper)
+            self.assertNotIn("upper", helper)
+            for locator in facts["required_reads"]:
+                self.assertTrue((repo / locator).is_file(), locator)
+            for term in ("expected_exit", "typed_exit", "regression", "prerequisite"):
+                self.assertNotIn(term, json.dumps(facts))
+
     def test_transport_preserves_ai_fields_and_runs_original_commands(self):
         with tempfile.TemporaryDirectory() as temp:
             repo = Path(temp)
@@ -158,7 +250,7 @@ class Phase2AuthoringTests(unittest.TestCase):
             context, _, _, _, protocol_path, native_path, _, _, thread, stop, _ = values
             try:
                 self.assertIn("schemas/phase2-check.schema.json", context)
-                self.assertIn("--upstream-architecture", context)
+                self.assertNotIn("--upstream-architecture", context)
                 self.assertIn("--qualifier normal-scenario", context)
                 self.assertIn("--qualifier solution-mechanism", context)
                 self.assertNotIn("adapter has already completed", context)
@@ -169,10 +261,25 @@ class Phase2AuthoringTests(unittest.TestCase):
                 self.assertTrue((projection / "schemas/phase2-check.schema.json").is_file())
                 self.assertFalse((projection / "evals").exists())
                 protocol = json.loads(protocol_path.read_text())
+                self.assertIn("--upstream-architecture", protocol["architecture_context"])
+                self.assertNotIn("prd.md", protocol["architecture_context"])
+                self.assertNotIn("implement.md", protocol["architecture_context"])
                 repository = Path(protocol["repository_projection_root"])
                 facts = json.loads((repository / phase2_authoring.FACTS).read_text())
+                self.assertEqual(facts['architecture_reads'][:3], [
+                    'docs/architecture/00-foundation/design-constitution.md',
+                    'docs/architecture/README.md', 'docs/architecture/06-governance/change-contract.md',
+                ])
                 trace = Path(protocol["trace_path"])
-                events = []
+                architecture_skill = repository / ".trellis/guru-team/skills/packages" / phase2_authoring.ARCHITECTURE / "SKILL.md"
+                events = [{"kind": "read", "target_kind": "owner_file", "path": str(architecture_skill),
+                           "sha256": hashlib.sha256(architecture_skill.read_bytes()).hexdigest(), "request_sha256": values[6]}] + [
+                    {"kind": "read", "target_kind": "owner_file", "path": str(repository / relative),
+                     "sha256": hashlib.sha256((repository / relative).read_bytes()).hexdigest(),
+                     "request_sha256": values[6]}
+                    for relative in facts["architecture_reads"]
+                ]
+                reviewer_count = len(events)
                 for kind, paths in (
                     ("skill_contract", [projection / path for path in phase2_authoring.PUBLIC_READS]),
                     ("case_file", sorted((Path(protocol["model_root"]) / "evidence/case").iterdir())),
@@ -197,6 +304,9 @@ class Phase2AuthoringTests(unittest.TestCase):
                         "stderr_sha256": hashlib.sha256(b"").hexdigest(),
                         "request_sha256": values[6],
                     })
+                # Upstream invocation occurred before the overall owner's task reads.
+                upstream = events.pop(-4)
+                events.insert(reviewer_count, upstream)
                 receipt = {
                     "schema_version": "1.0", "request_sha256": values[6],
                     "projection_root": str(projection),

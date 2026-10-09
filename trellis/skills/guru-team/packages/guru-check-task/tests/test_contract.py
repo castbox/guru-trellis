@@ -214,7 +214,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
 
     def test_native_cases_require_ai_authoring_without_host_owner_recipes(self) -> None:
         cases = {item["id"]: item for item in self.read("evals/evals.json")["evals"]}
-        for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-finding", "implementation_required")):
+        for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-finding", "implementation_required"), ("native-owner-test-boundary", "implementation_required"), ("native-owner-test-support", "implementation_required"), ("native-owner-selection-assertion", "implementation_required")):
             case = cases[case_id]
             self.assertEqual(case["native_execution_mode"], "semantic_authoring")
             self.assertEqual(case["native_execution_adapter"], "codex")

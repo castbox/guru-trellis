@@ -56,6 +56,15 @@ current judgment. A previous Delivery pass is not reusable, even when the
 Branch Review anchor remains applicable; fresh review does not mechanically
 replay unaffected Planning, Check, Task Commit or Branch Review.
 
+Before readiness, consume the actual matching
+`task_impact_sync(stage=publication)` current result. Its Architecture owner
+uses the contract's Downstream eligibility entry with the still-applicable
+independent conclusion and live committed-review/promotion facts. A caller
+change alone does not dispatch a duplicate assessment; a relabelled Branch
+Review DTO or Phase 2 pass does not satisfy this entry. Changed Architecture
+facts, missing/stale evidence or unpromoted contribution follow that owner's
+existing routes. Delivery does not judge impact/path/ADR or perform promotion.
+
 ## Semantic Result
 
 Author exactly the shape in `schemas/semantic-result.schema.json`:

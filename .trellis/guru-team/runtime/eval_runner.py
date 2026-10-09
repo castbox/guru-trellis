@@ -1750,11 +1750,19 @@ def eval_request(args: argparse.Namespace, package: Path, interface: dict[str, A
     return request
 
 
+def completed_semantic_case(skill_id: str, case: dict[str, Any]) -> bool:
+    """Only the existing supported native authoring transports have replay evidence."""
+    return case.get("native_authoring_flow") == "standard_intake" or (
+        skill_id in {"guru-maintain-architecture-baseline", "guru-check-task"}
+        and case.get("native_execution_mode") == "semantic_authoring"
+    )
+
+
 def completed_execution(skills: Path, case_root: Path, request: dict[str, Any],
                         result: dict[str, Any], descriptor: dict[str, Any]) -> None:
-    """Recheck only a completed standard Intake execution without rerunning it."""
-    if request.get("native_authoring_flow") != "standard_intake":
-        raise error("eval_completed_flow_required", "native_authoring_flow", "Select a standard Intake case.")
+    """Recheck a completed supported semantic execution without rerunning its model."""
+    if not completed_semantic_case(request.get("skill_id", ""), request):
+        raise error("eval_completed_flow_required", "native_authoring_flow", "Select a supported semantic authoring case.")
     try:
         if strict_json(case_root / "adapter-request.json", "adapter_request") != request:
             raise ValueError("saved adapter request differs from current selection")
@@ -1882,15 +1890,15 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
     validate_eval_case_identity(expected_case_ids, [side for side, _ in sides], output["cases"])
     validate_eval_case_identity(expected_case_ids, ["current"], [
         {"case_id": case["id"], "comparison_side": "current"} for case in cases])
-    intake_cases = [case for case in cases if case.get("native_authoring_flow") == "standard_intake"]
+    authoring_cases = [case for case in cases if completed_semantic_case(args.skill, case)]
     expected = {(side, case["id"], assertion["id"])
-                for side, _ in sides for case in intake_cases
+                for side, _ in sides for case in authoring_cases
                 for assertion in case.get("assertions", {}).get("semantic", [])}
     grades = {(item["comparison_side"], item["case_id"], item["assertion_id"]): item
               for item in semantic["results"]}
     if set(grades) != expected or len(grades) != len(semantic["results"]):
         raise error("semantic_grading_identity_mismatch", "semantic_grading",
-                    "Grade exactly the selected run's Intake case/side/assertion set once each.")
+                    "Grade exactly the selected run's semantic case/side/assertion set once each.")
     results = {(item["comparison_side"], item["case_id"]): item for item in output["cases"]}
     for side, package in sides:
         interface = strict_json(package / "interface.json", f"comparison.{side}.interface")
@@ -1898,7 +1906,7 @@ def grade_completed_run(skills: Path, args: argparse.Namespace, run_root: Path,
         _, corpus_bytes = corpus(skills, package, interface)
         if hashlib.sha256(corpus_bytes).hexdigest() != discovery["corpus_sha256"]:
             raise error("eval_comparison_corpus_mismatch", side, "Use the same corpus on both sides.")
-        for case in intake_cases:
+        for case in authoring_cases:
             case_root = run_root / side / case["id"]
             request = eval_request(args, package, interface, row, case,
                                    case_root / "execution/workdir", discovery["corpus_sha256"], target)
@@ -1945,8 +1953,8 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
         except ValueError:
             continue
         raise error("eval_run_root_inside_repo", "run_root", "Use an isolated directory outside repository and package roots.")
-    intake_selected = any(case.get("native_authoring_flow") == "standard_intake" for case in selected_cases)
-    if not intake_selected:
+    authoring_selected = any(completed_semantic_case(args.skill, case) for case in selected_cases)
+    if not authoring_selected:
         run_root.mkdir(parents=True, exist_ok=True)
     if run_root.is_symlink() or (run_root.exists() and not run_root.is_dir()):
         raise error("eval_run_root_invalid", "run_root", "Use a regular external directory.")
@@ -1955,13 +1963,13 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
     semantic_index = {(item["comparison_side"], item["case_id"], item["assertion_id"]): item for item in semantic.get("results", [])} if semantic else {}
     feedback_index = {(item["comparison_side"], item["case_id"]): [item["feedback"]] for item in feedback.get("items", [])} if feedback else {}
     target = runtime_target(root)
-    if intake_selected:
+    if authoring_selected:
         if semantic is not None:
             return grade_completed_run(skills, args, run_root, sides, selected_cases, expected_case_ids,
                                        row, discovery, target, descriptor, semantic)
         if any((run_root / side).exists() for side, _ in sides) or any(run_root.glob("*-run.json")):
             raise error("eval_run_root_not_fresh", "run_root",
-                        "Use a new empty run root for Intake execution, or grade the completed Intake case in place.")
+                        "Use a new empty run root for semantic execution, or grade the completed semantic case in place.")
     run_root.mkdir(parents=True, exist_ok=True)
     if args.skill == QUALIFICATION_SKILL:
         return qualification_run(

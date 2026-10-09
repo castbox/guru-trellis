@@ -1,6 +1,6 @@
 # Test Strategy / Test Plan SSOT
 
-唯一 current authority 是 `current-main-0.6.17-guru.77` / `active`；[本版入口](./versions/current-main-0.6.17-guru.77/test-strategy.md)薄继承 immutable `.76`，承接已审查的 [#466 最小必要复杂度贡献](../requirements-design-test-contributions/466-no-speculative-extension/traceability.md)。Architecture `.77/active`；五原则、软件四轴、35 Skills/159 exits/106 commands 与 business33/153 不变。实际结果由唯一 Test 拥有；promotion-created diff 须 fresh Phase2/commit/完整独立 Branch Review，官方 update、完整 Release 与业务安装/部署未验证。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/test-strategy.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 当前继承 `.78/active`，原 owner 已晋升已独立审查的 #404 contribution；晋升前 `.77` 来源保留为历史 provenance，晋升 diff 的 fresh gates 尚待完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
 
 历史 `.70` authority：[`versions/current-main-0.6.17-guru.70/test-strategy.md`](./versions/current-main-0.6.17-guru.70/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.70/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.70/active` 和 evidence；`.69` 及更早版本保持 immutable。
 
@@ -10,7 +10,8 @@
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.77` | [test-strategy.md](./versions/current-main-0.6.17-guru.77/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.78` | [test-strategy.md](./versions/current-main-0.6.17-guru.78/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.77` | [test-strategy.md](./versions/current-main-0.6.17-guru.77/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.76` | [test-strategy.md](./versions/current-main-0.6.17-guru.76/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.75` | [test-strategy.md](./versions/current-main-0.6.17-guru.75/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.74` | [test-strategy.md](./versions/current-main-0.6.17-guru.74/test-strategy.md) |

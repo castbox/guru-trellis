@@ -1,0 +1,29 @@
+{
+  "id": "404-independent-architecture-review",
+  "name": "404-independent-architecture-review",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 404,
+    "disposition": "exact_source"
+  },
+  "title": "#404 独立架构审查与任务必要性约束",
+  "description": "依据 live 2026-10-09-r4 落实 fresh independent reviewer、最小充分架构一致变更及真实行为验收。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅 #404 全文 accepted scope；保留既有原子 Guru 能力，独立审查与必要性方法、受影响阶段消费和声明平台调度及相关行为验证；不实施 #382/#383/#464，不修改业务仓或生产，不执行完整 Release matrix。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-10",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

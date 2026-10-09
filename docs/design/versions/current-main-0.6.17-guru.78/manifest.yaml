@@ -1,0 +1,18 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.78
+status: active
+predecessor: current-main-0.6.17-guru.77
+source_binding: "reviewed #404 RDT contract + immutable .77 inheritance + current Architecture .78/active; original expected .77 promotion; fresh promotion-diff gates pending"
+inheritance_locator: docs/design/versions/current-main-0.6.17-guru.77/design-main.md
+extension_manifest_version: 0.7.0-guru.3
+target_trellis_cli: 0.7.0-castbox.3
+framework_source: castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.78/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.78/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 35
+external_exit_count: 159
+command_count: 106
+provenance: "actual results owned only by #404 contribution Test; knowledge promotion and inheritance repair do not replace fresh promotion-diff gates; no update/release/business-install/deploy proof"

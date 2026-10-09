@@ -1355,6 +1355,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
             "parallel-stale", "unpromoted-contribution", "next-task-consumption",
             "missing-external-evidence", "repair-current-contract",
+            "implementation-discovery-independent-native", "phase2-independent-native",
+            "branch-review-independent-native", "planning-business-default-native",
+            "planning-missing-candidate-native", "planning-inherited-business-default-native",
+            "planning-constraint-sufficient-native", "planning-constraint-insufficient-native",
         ])
         interface = json.loads((self.package / "interface.json").read_text())
         declared_profiles = {
@@ -1407,7 +1411,6 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "Load [references/contract.md](references/contract.md) completely before acting.",
-            "The AI executing this Skill is the semantic owner selected by this contract",
             "schemas/semantic-result.schema.json",
             "scripts/invoke.sh --invocation -",
             "owner_not_yet_executed",
@@ -1419,8 +1422,6 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         ):
             self.assertIn(phrase, skill)
         for phrase in (
-            "The AI currently executing this Skill is the contract-selected semantic owner.",
-            "another external owner",
             "owner_not_yet_executed",
             "true execution-capability gap",
             "`project_check_descriptors`, `project_checks`, and `review`",

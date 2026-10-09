@@ -52,8 +52,26 @@ For every candidate, judge in this fixed order:
 1. Identify exact current requirement authority.
 2. Prove the real supported entry, caller, and consumer.
 3. Reproduce an honest normal action sequence without falsification, attack behavior, or deliberate workflow bypass.
-4. Observe that current required behavior actually fails.
-5. Establish scope provenance only after the first four steps pass.
+4. Observe that current required behavior actually fails. An evidenced actual
+   responsibility/Architecture contract violation qualifies without requiring
+   a functional failure or a task acceptance clause naming that violation;
+   tests and implementation agreeing does not disprove it.
+5. Establish scope provenance and current-task necessity only after the first
+   four steps pass: where would the current goal or an affected current
+   contract fail if this work were omitted? Separate an inherited problem from
+   its new expansion/solidification. Include necessary local refactoring,
+   consumer adaptation and old-path exit, but do not automatically turn an
+   unrelated historical defect into current work, a finding, gate or follow-up.
+
+Problem validity does not alone prove task necessity or mechanism suitability.
+Return qualified inputs to the original owner; it still invokes solution-
+mechanism qualification before accepting that mechanism. Never qualify only
+because a plan was approved, implementation exists, tests are green, a reviewer
+recommended it or the user said continue. Legal non-default inputs/configuration
+remain legal under current authority; defaults and missing diagnostic tags do
+not justify inventing a stronger rejection rule. For red tests use bounded
+causal evidence, stop on proven unrelatedness, and keep unresolved attribution
+explicit rather than assuming a historical failure.
 
 Quarantine severity, reviewer pressure, an existing patch or test, coverage arguments, best-practice claims, and theoretical bypass framing until those five questions are answered. These narratives never establish authority by themselves.
 

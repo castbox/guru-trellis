@@ -179,26 +179,40 @@ class SemanticGradingTests(unittest.TestCase):
         adapter.assert_called_once()
         regrade.assert_not_called()
 
-    def test_architecture_and_phase2_keep_original_fresh_and_saved_execution_path(self):
+    def test_architecture_and_phase2_regrade_actual_completed_execution_without_model_rerun(self):
         for skill in ("guru-maintain-architecture-baseline", "guru-check-task"):
-            package, interface, _ = runner.package_context(SKILLS, skill)
-            self.corpus, _ = runner.corpus(SKILLS, package, interface)
-            case = next(case for case in self.corpus["evals"] if case.get("native_execution_mode") == "semantic_authoring")
-            self.args.skill, self.args.case = skill, case["id"]
-            self.args.run_root = str(self.root / skill)
-            grade = self.root / f"{skill}-grade.json"
-            write(grade, {"schema_version": "1.0", "results": []})
-            self.args.semantic_grading = str(grade)
-            for selection in (case["id"], None):
-                self.args.case = selection
-                self.args.run_root = str(self.root / skill / (selection or "full"))
-                for grading in (str(grade), None, str(grade)):
-                    self.args.semantic_grading = grading
-                    with mock.patch.object(runner, "call_adapter", side_effect=self.adapter) as adapter, \
-                            mock.patch.object(runner, "grade_completed_run") as regrade:
-                        runner.run(REPO, SKILLS, self.args)
-                    self.assertEqual(adapter.call_count, 1 if selection else len(self.corpus["evals"]))
-                    regrade.assert_not_called()
+            with self.subTest(skill=skill):
+                package, interface, _ = runner.package_context(SKILLS, skill)
+                self.corpus, _ = runner.corpus(SKILLS, package, interface)
+                case = next(case for case in self.corpus["evals"] if case.get("native_execution_mode") == "semantic_authoring")
+                self.args.skill, self.args.case = skill, case["id"]
+                self.args.run_root = str(self.root / skill)
+                self.args.semantic_grading = None
+                with mock.patch.object(runner, "call_adapter", side_effect=self.adapter) as adapter:
+                    before = runner.run(REPO, SKILLS, self.args)
+                adapter.assert_called_once()
+                saved = snapshot(Path(self.args.run_root))
+                grade = self.root / f"{skill}-grade.json"
+                write(grade, {"schema_version": "1.0", "results": [
+                    {"case_id": case["id"], "comparison_side": "current", "assertion_id": item["id"],
+                     "passed": True, "summary": "AI judgment supplied after observed execution"}
+                    for item in case["assertions"]["semantic"]]})
+                self.args.semantic_grading = str(grade)
+                with mock.patch.object(runner, "call_adapter") as adapter, \
+                        mock.patch.object(runner, "completed_execution") as validation:
+                    after = runner.run(REPO, SKILLS, self.args)
+                adapter.assert_not_called()
+                validation.assert_called_once()
+                self.assertEqual(after["status"], "passed")
+                for field in before["cases"][0].keys() - {"semantic_results", "status"}:
+                    self.assertEqual(before["cases"][0][field], after["cases"][0][field])
+                report_name = Path(after["evidence_path"]).name
+                self.assertEqual({key: value for key, value in saved.items() if key != report_name},
+                                 {key: value for key, value in snapshot(Path(self.args.run_root)).items() if key != report_name})
+                self.args.semantic_grading = None
+                with mock.patch.object(runner, "call_adapter") as adapter, self.assertRaises(CommandError):
+                    runner.run(REPO, SKILLS, self.args)
+                adapter.assert_not_called()
 
     def test_missing_saved_request_and_stale_request_fail_closed(self):
         report = self.raw()

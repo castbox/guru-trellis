@@ -79,6 +79,12 @@ consumes only the checked current route and the live authorities; it does not
 read Architecture private state or repeat applicability, contribution, ADR,
 promotion, or typed-route judgment.
 
+The Architecture contract selects a fresh independent reviewer over the
+complete tracked/untracked candidate before task narratives. The same fresh
+worker may execute this Skill only after completing Architecture and then
+reading the whole task; its two actual results remain separate. A worker
+already exposed to narratives or implementation cannot backfill that review.
+
 Phase 2 uses that stage result to perform the first semantic before/after review
 of the complete worktree candidate. Applicable project checks must be current;
 mandatory `fail` or `unverified` evidence remains blocking. New or worsened
@@ -139,6 +145,27 @@ automatic requirements to add tests or repeat a full chain. Qualified
 current-scope defects use the existing finding/fix/full-rerun loop; genuine
 evidence gaps use existing blocked handling. Carry conclusions in the existing
 adequacy dimensions and validation summaries.
+
+Before proposing a fix, test, validation obligation, severity or route,
+separately establish problem validity, current-task necessity and mechanism
+suitability through the existing qualification profiles. Identify the concrete
+current goal or affected contract that would fail without the work. Preserve
+necessary refactoring, consumer adaptation and obsolete-path exit; do not leave
+duplicated logic or a second authority for minimum diff. Unrelated historical
+debt does not automatically enter current findings, gates or required follow-up.
+Architecture facts and work coordination remain separate; scope cannot dismiss
+a responsibility violation, and its discovery does not authorize a product-goal
+or authority change.
+
+For a red validation, collect only enough evidence to attribute it to a task
+regression, inseparable prerequisite, unrelated historical failure, environment,
+or unresolved cause. Handle the first two in scope; stop investigation and
+repair after unrelatedness is established. Unresolved does not mean historical.
+A real required release gate can block release without authorizing unrelated
+repairs. Do not pursue full green by weakening assertions, fixtures or samples,
+or adjusting timeouts. Review defaults, recommendations, legal explicit
+configuration and real protection invariants against their authority; missing
+diagnostic attribution alone must not add a business rejection.
 
 1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and

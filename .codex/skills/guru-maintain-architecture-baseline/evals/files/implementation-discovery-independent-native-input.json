@@ -1,0 +1,51 @@
+{
+  "schema_version": "2.0",
+  "profile": "task_impact_sync",
+  "source_exit": "implementation_discovery",
+  "mode": "workflow",
+  "continuation_id": "eval-impact",
+  "stage": "implementation_discovery",
+  "task_locator": ".trellis/tasks/eval-task",
+  "baseline": {
+    "locator": "docs/architecture/README.md",
+    "identity": "current-v2",
+    "status": "active"
+  },
+  "constitution": {
+    "authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "authority_status": "current",
+    "identity_kind": "content",
+    "identity": "constitution-v1",
+    "principles": [
+      {
+        "id": "mature-practice-applicability",
+        "short_name": "\u6210\u719f\u5b9e\u8df5\u4e0e\u9002\u7528\u6027"
+      },
+      {
+        "id": "concept-semantic-completeness",
+        "short_name": "\u6982\u5ff5\u4e0e\u8bed\u4e49\u5b8c\u6574\u6027"
+      },
+      {
+        "id": "cohesion-change-isolation",
+        "short_name": "\u804c\u8d23\u5185\u805a\u4e0e\u53d8\u5316\u9694\u79bb"
+      },
+      {
+        "id": "minimum-necessary-complexity",
+        "short_name": "\u6700\u5c0f\u5fc5\u8981\u590d\u6742\u5ea6"
+      },
+      {
+        "id": "debt-one-way-convergence",
+        "short_name": "\u6280\u672f\u503a\u52a1\u5355\u5411\u6536\u655b"
+      }
+    ]
+  },
+  "project_contract": {
+    "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
+    "change_contract_identity": "project-change-contract-v1",
+    "required_concern_set_identity": "project-concerns-v1"
+  },
+  "freshness_identity": "eval-fresh-v2",
+  "requirement_authority": "docs/requirements/README.md",
+  "behavior_authority": "docs/design/README.md"
+}

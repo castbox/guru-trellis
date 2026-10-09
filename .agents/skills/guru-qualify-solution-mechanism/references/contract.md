@@ -41,6 +41,19 @@ This review is based on the relationship to the repository normal-operation
 boundary. Observe that current required behavior actually fails before treating
 the mechanism as a qualified defect.
 
+Separate evidence of the problem from current-task necessity and mechanism
+suitability. Identify the concrete current goal or affected contract that
+would fail without the proposed work; green tests, approved plans, implementation
+status and reviewer suggestions cannot replace that analysis. An actual
+responsibility violation is a required-contract defect without first requiring
+functional failure. Preserve necessary local refactoring, consumer migration
+and obsolete-path removal; minimum diff is not a reason to leave a cross-layer
+branch, copied logic or a second authority. Unrelated historical improvement
+is not an automatic current obligation. Do not promote defaults/recommendations
+or diagnostic gaps into rejection of otherwise legal configuration; retain
+authority-defined ranges and protection invariants. Scope or authority changes
+return to their existing owner instead of being disguised as mechanism repair.
+
 The prohibition is semantic, not lexical. A helper, test, framework, shared
 library, deployment utility, monitor, validator, recovery path, or evidence
 producer is equally covered when it delegates business authority to a forbidden

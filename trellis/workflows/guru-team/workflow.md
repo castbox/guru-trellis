@@ -450,6 +450,11 @@ Every standard task invokes the one stable
 `guru-maintain-architecture-baseline` owner through `task_impact_sync` at each
 applicable stage. The single mandatory marker above identifies the Skill; these
 stage calls are fresh invocations, not duplicated markers or reusable results.
+Executor selection and assessment/eligibility behavior belong solely to that
+Skill's contract. New assessment stages mandatory invoke it through its fresh
+independent subagent entry; downstream stages invoke its current eligibility
+entry and consume actual matching-stage output. The caller never substitutes
+self-authoring, a prior-stage DTO or an overall gate for that invocation.
 
 | Stage | Required Architecture call | Only current resume target |
 | --- | --- | --- |
@@ -841,6 +846,10 @@ edit or test and mandatory invoke
 `guru-maintain-architecture-baseline:task_impact_sync(stage=implementation_discovery)`.
 Only its fresh current route resumes this coordinator; stale authority returns
 `sync_required` and every other non-current exit follows its unique router.
+Dispatch the assessment through the Architecture Skill's independent entry,
+not an implementation worker already exposed to task narratives. The two
+qualification owners retain problem/task-necessity/mechanism judgments before
+any planning-external edit or test; this coordinator consumes their routes.
 
 #### 2.2 Task check
 

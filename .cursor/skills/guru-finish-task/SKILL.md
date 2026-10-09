@@ -43,5 +43,11 @@ Reactivate requires its matching completed manual Cleanup receipt before using
 the archived generation. The Finish bookkeeping commit and target merge commit
 remain distinct identities. The active graph invokes this package only after
 Completion and Closure.
+Before terminal mutation, consume the matching current Architecture
+`task_impact_sync(stage=acceptance_finish)` output through that owner's
+Downstream eligibility entry. Completion or Branch Review output cannot be
+relabelled as Architecture; caller changes alone do not repeat assessment.
+Changed applicable Architecture facts and missing review/promotion follow the
+existing routes, while Finish retains its archive/bookkeeping responsibility.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.

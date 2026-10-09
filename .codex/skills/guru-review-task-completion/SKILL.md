@@ -23,6 +23,15 @@ not establish Completion. `completed` requires no remaining work and emits a
 `ResultRefDTO`. Other routes emit `TaskArtifactDTO` and `ReasonDTO`, or only
 `ReasonDTO` for `blocked`.
 
+Consume the actual current Architecture
+`task_impact_sync(stage=acceptance_finish)` result before completion. That
+owner applies its Downstream eligibility entry to still-applicable independent
+conclusions and live facts; this caller neither relabels a Branch Review DTO
+nor repeats the assessment merely because the caller changed. Changed facts
+needing a new conclusion return through the existing independent assessment
+route; missing committed review/promotion keeps its existing blocking route.
+The Completion owner still judges whole-task scope and evidence separately.
+
 ```bash
 scripts/invoke.sh --input <completion-input.json> \
   --semantic-result <semantic-result.json> --json

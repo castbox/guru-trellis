@@ -11,6 +11,15 @@ canonical package source is `trellis/skills/guru-team`; installed packages,
 Shared/Codex/Claude/Cursor skills and finish entries are managed projections.
 The installer never edits upstream Trellis source or a global npm package.
 
+Architecture review uses the existing
+[canonical Skill](../../skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md)
+and its [step-local contract](../../skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md).
+New conclusions use fresh independent subagents; platform entries load and
+schedule that same contract. Install/update must reapply the matching complete
+preset so canonical, installed and selected platform copies use the same method.
+Projection checks and actual native behavior are separate evidence; current
+#404 coverage and limitations live in its [unique Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
+
 ## Apply And Verify
 
 本次 repository 正式发布目标为 `v0.7.0-guru.3`，extension 为 `0.7.0-guru.3`，固定 Fork CLI/core 为 `0.7.0-castbox.3`，package manager 为 `pnpm@10.32.1`；predecessor 是已发布的 `v0.7.0-guru.1`。版本轴独立，保持现有 extension，不发布中间 `.2`。Guru 目标仍为未发布候选，本准备文档不表示 candidate gate 或 Release 已通过。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。

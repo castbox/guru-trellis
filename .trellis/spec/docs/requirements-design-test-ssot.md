@@ -2,6 +2,14 @@
 
 ## Current identity
 
+- version：`current-main-0.6.17-guru.78`
+- status：`active`
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.78`，继承 immutable `.77` 并承接 reviewed #404 RDT 合同。
+- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.78` / `active`；原 owner 已晋升 reviewed #404 contribution、ADR-019、ARCH-CUR-051/EVD-054；晋升后的 fresh gates 与后续交付分别消费实际结果。
+- 结果 authority：`docs/requirements-design-test-contributions/404-independent-architecture-review/test.md`；native acceptance、fresh gates 与软件发布均不得由知识晋升推定。
+
+## Predecessor identity and provenance
+
 - version：`current-main-0.6.17-guru.77`
 - status：`active`
 - Requirements：`docs/requirements/README.md`
@@ -19,4 +27,4 @@
 
 ## Freshness
 
-每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入 owner repair。软件四轴与 `.77` knowledge 独立；`.77` 薄继承 immutable `.76`，承接已审查 R466/D466/T466 增量；前驱 R503/D503/T503 继承；历史 R495/D495/T495 与双向 trace、全系列升级合同与精确ecd验收沿 `.75` 及其前驱继承，其余旧合同不变。EVD-052 的代表性 source/installed 证据不替代 #500 最终候选验证。ARCH-GAP-012 当前 closed，仅表示 accepted MIG-495-01..12 的代表性证据齐备；本版晋升diff仍须freshPhase2/TaskCommit/独立完整BranchReview。此投影不声明后续Publication/push/PR/merge/Completion/Closure/Finish/tag/Release已执行。
+每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入 owner repair。软件四轴与 current `.78` knowledge 独立；`.78` 薄继承 immutable `.77`，承接已审查 R404/D404/T404 增量与 current Architecture `.78/active`。前驱 `.77` 的 R466/D466/T466 增量与 immutable `.76`、R503/D503/T503 继承保留为历史 provenance；历史 R495/D495/T495 与双向 trace、全系列升级合同与精确ecd验收沿 `.75` 及其前驱继承，其余旧合同不变。EVD-052 的代表性 source/installed 证据不替代 #500 最终候选验证。ARCH-GAP-012 当前 closed，仅表示 accepted MIG-495-01..12 的代表性证据齐备；本版晋升diff及finding-fix仍须freshPhase2/TaskCommit/独立完整BranchReview。此投影不声明后续Publication/push/PR/merge/Completion/Closure/Finish/tag/Release已执行。
