@@ -142,7 +142,9 @@ adequacy dimensions and validation summaries.
 
 1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
-   applicable validation commands.
+   current toolchain and environment. Determine the complete applicable check
+   set and apply Dependency-Scoped Validation below; do not inherit the old set
+   without checking new or changed validation obligations.
 2. Perform early candidate hygiene over the committed task-base diff, staged,
    unstaged, untracked, and new files before expensive or external validation.
    Git-diff and untracked-text whitespace or blank-EOF findings are suppressed
@@ -176,12 +178,75 @@ adequacy dimensions and validation summaries.
    not a current omission, while any defect or false claim inside the current
    slice remains a finding.
 5. After a finding fix, perform one current complete semantic round. Do not
-   persist each worker round or require historical HEAD equality.
+   persist each worker round or require historical HEAD equality. This complete
+   round covers current scope and adequacy; it does not require executing every
+   unaffected deterministic command again.
 
 AI-owned delta classification decides which conclusions actually changed.
 Equivalent formatting, links, derived text, OS noise, and stale downstream
-workflow projections do not trigger an unrelated full replay. Real semantic
-changes, unknown dirty content, missing checks, or reproduced findings do.
+workflow projections refresh direct dependencies without an unrelated full
+replay. Real content changes, unknown dirty content, missing checks, or
+reproduced findings require the affected review and validation. A changed
+shared authority identity first returns to its authority owner for fresh
+applicability judgment: an unchanged applicable contract refreshes that direct
+dependency; a material contract or scope change returns to the earliest
+affected owner through the existing routes. A changed path or identity alone
+cannot prove semantic equivalence or require an unrelated full-chain replay.
+
+### Dependency-Scoped Validation
+
+For each check in the current applicable set, the AI owner performs these
+steps before recording the current result:
+
+1. Read the check's actual definition/version, checked object, real dependency
+   set, runtime/toolchain, and environment profile from their existing sources.
+   Compare those dependencies with any prior execution fact this same owner
+   still legally retains and can inspect. These are applicability questions,
+   not a new schema, stored checklist, or dependency registry.
+2. Reuse an execution fact only when the check definition/version, toolchain
+   and environment profile are unchanged, its real dependencies remain
+   semantically equivalent, and the actual result is still available.
+   Candidate revision alone does not invalidate an independent
+   check: changing A must not rerun B when B's real dependencies remain
+   unchanged. Unknown dependencies or an unavailable result require executing
+   that check; do not reconstruct facts from a remembered pass or require
+   already-retired checkpoints to be retained.
+3. Bind each reused fact to the current candidate in this owner's new
+   validation result. In the existing validation summary, identify what
+   actually ran and explain why its execution fact applies to the current
+   checked object. Do not rewrite the old candidate's record or directly
+   present its result as the current candidate's result. The original recorder
+   derives the current content identity; no old token or new receipt supplies
+   this binding. Reuse supplies validation evidence, never semantic pass.
+4. Run each new applicable check and each check whose definition/version,
+   dependency, toolchain, or environment changed or whose equivalence cannot
+   be established. Keep unaffected facts; do not rerun unrelated checks merely
+   because one result is missing. A legal configuration change is a reason to
+   rerun its affected check, not an error for differing from an old value.
+   Judge configuration usability from appropriate actual integration/E2E
+   execution under the current profile, without adding fixed-value allowlists.
+5. Account for every currently applicable check with a current bound result or
+   an explicit unverified boundary in the existing validation fields. Newly
+   applicable checks cannot disappear because a previous set lacked them.
+   Complete all current semantic dimensions and handle findings and blocking
+   evidence normally before the original recorder/checker/public invocation.
+
+Execution-result updates or added external evidence alone do not redefine the
+candidate or trigger identity recomputation loops. If they reveal a real
+behavior, applicable-contract, scope, or validation-obligation change, return
+to the earliest affected existing owner. Normal task-metadata, documentation,
+generated/projection, promotion, or finding-fix changes receive the same impact
+judgment and automatic re-entry. Record the current worktree candidate through
+the original recorder even when business conclusions remain applicable; do
+not exclude task metadata from exact-candidate checking. Once committed
+content changes, the current exact base-to-HEAD still receives a complete
+independent Branch Review.
+
+Only this owner interprets its available validation facts. No new cache,
+checkpoint field, public DTO, cross-Skill receipt chain, or long-lived result
+history is introduced. Existing Phase 2-to-Task Commit checkpoint consumption,
+capture ancestry, content identity and retirement remain unchanged; Branch
+Review does not consume Phase 2 private evidence as its own semantic result.
 
 ## Private Result
 

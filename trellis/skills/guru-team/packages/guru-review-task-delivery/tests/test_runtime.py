@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import subprocess
 import sys
@@ -18,7 +17,6 @@ sys.path.insert(0, str(PACKAGE / "runtime"))
 from invoke import run as invoke  # noqa: E402
 from runtime.io import CommandError  # noqa: E402
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository  # noqa: E402
-from runtime.task_lifecycle.closure_result import read_terminal_closure_result  # noqa: E402
 
 
 TASK_REF = ".trellis/tasks/09-18-435-active-task-delivery-loop"
@@ -45,9 +43,28 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
             json.dumps(
                 {
                     "id": "435-active-task-delivery-loop",
+                    "name": "435-active-task-delivery-loop",
+                    "lifecycle_generation": 0,
+                    "source": {"kind": "issue", "repo_ref": "castbox/guru-trellis",
+                               "number": 435, "disposition": "exact_source"},
+                    "title": "Delivery review fixture",
+                    "description": "One current independently deliverable slice.",
                     "status": "in_progress",
+                    "dev_type": None,
                     "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/435",
+                    "package": None,
+                    "priority": "P2",
+                    "createdAt": "2026-10-09",
+                    "completedAt": None,
                     "base_branch": "main",
+                    "worktree_path": None,
+                    "commit": None,
+                    "pr_url": None,
+                    "children": [],
+                    "parent": None,
+                    "relatedFiles": [],
+                    "notes": "",
+                    "meta": {},
                 }
             )
         )
@@ -132,6 +149,22 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.assertEqual(self.head, output["reviewed_head"])
         self.assertEqual("remaining", output["remaining_work_state"])
         self.assertRegex(output["delivery_cycle_ref"], r"^delivery-cycle:v1:[0-9a-f]{64}$")
+        self.assertFalse(self.checkpoint().exists())
+
+    def test_same_head_fresh_reentry_after_output_loss_and_retirement(self):
+        # Each invocation supplies a fresh completed owner result. This tests
+        # deterministic transport/retirement, not reuse of a semantic pass.
+        lost_output = self.invoke(self.semantic())
+        self.assertFalse(self.checkpoint().exists())
+        recovered = self.invoke(self.semantic())
+        self.assertEqual(lost_output, recovered)
+        self.assertFalse(self.checkpoint().exists())
+
+        (self.repo / "delivery.txt").write_text("finding fixed in current slice\n")
+        self.git("commit", "-qam", "fix delivery candidate")
+        with self.assertRaises(CommandError) as caught:
+            self.invoke(self.semantic())
+        self.assertEqual("stale_identity", caught.exception.code)
         self.assertFalse(self.checkpoint().exists())
 
     def test_missing_or_wrong_branch_binding_fails_before_checkpoint(self):
@@ -229,50 +262,33 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.head = self.git("rev-parse", "HEAD")
         self.assertEqual(self.invoke(self.semantic())["exit_id"], "ready")
 
-    def test_noncanonical_legacy_source_requires_fresh_non_exact_review(self):
+    def test_missing_structured_source_is_not_a_current_lifecycle_candidate(self):
         task_file = self.repo / TASK_REF / "task.json"
         metadata = json.loads(task_file.read_text())
+        metadata.pop("source")
         metadata["scope"] = "GitHub Issue #435"
         task_file.write_text(json.dumps(metadata))
         self.git("add", TASK_REF)
         self.git("commit", "-qm", "legacy task source")
         self.head = self.git("rev-parse", "HEAD")
+        before = task_file.read_bytes()
         with self.assertRaises(CommandError) as caught:
             self.invoke(self.semantic())
-        self.assertEqual(caught.exception.field_path, "task.source")
+        self.assertEqual(caught.exception.code, "stale_identity")
+        self.assertEqual(caught.exception.field_path, TASK_REF)
+        self.assertFalse(self.checkpoint().exists())
+        self.assertEqual(task_file.read_bytes(), before)
 
+        # A new semantic result cannot migrate or reactivate an unsupported
+        # header. Record migration belongs to its existing installation owner.
         semantic = self.semantic()
         semantic["reviewed_source"] = {"kind": "issue", "repo_ref": "castbox/guru-trellis",
                                        "number": 435, "disposition": "reference_only"}
-        before = task_file.read_bytes()
-        self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
-        self.assertEqual(task_file.read_bytes(), before)
-
-        closure_package = PACKAGE.parent / "guru-complete-task-closure"
-        spec = importlib.util.spec_from_file_location("delivery_legacy_closure", closure_package / "runtime/invoke.py")
-        assert spec and spec.loader
-        closure = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(closure)
-        closure_public = json.loads((closure_package / "examples/public-input.json").read_text())
-        closure_public["completion_result"]["task_id"] = self.key.task_id
-        closure_public["binding_ref"]["task_id"] = self.key.task_id
-        closure_public["source"] = semantic["reviewed_source"]
-        closure_public["action_set"] = [{"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 435},
-                                          "disposition": "no_close_authority"}]
-        closure_semantic = json.loads((closure_package / "examples/semantic-result.json").read_text())
-        closure_semantic["reviewed_action_set"] = closure_public["action_set"]
-        closure_output = closure.run(closure_package, {}, ["--root", str(self.repo),
-            "--input", str(self.write("closure-input.json", closure_public)),
-            "--semantic-result", str(self.write("closure-semantic.json", closure_semantic))])
-        self.assertEqual(closure_output["exit_id"], "no_mutation")
-        self.assertEqual(read_terminal_closure_result(inspect_repository(self.repo),
-                         closure_output["result_ref"])["source"], semantic["reviewed_source"])
-        self.assertEqual(task_file.read_bytes(), before)
-
-        semantic["reviewed_source"]["disposition"] = "exact_source"
         with self.assertRaises(CommandError) as caught:
             self.invoke(semantic)
-        self.assertEqual(caught.exception.field_path, "task.source")
+        self.assertEqual(caught.exception.code, "stale_identity")
+        self.assertEqual(caught.exception.field_path, TASK_REF)
+        self.assertEqual(task_file.read_bytes(), before)
 
     def test_publish_review_stale_reentry_uses_ordinary_fresh_review_input(self):
         public = self.public()

@@ -1,5 +1,9 @@
 # Guru Team Workflow
 
+Normal revision and recovery follow the single continuation block in
+`workflow.md`. Check execution-fact reuse and Delivery Review anchor recovery
+are owned by their respective canonical Skill contracts, not this README.
+
 The `guru-team` canonical workflow is the global AI routing contract. The
 canonical source is `workflow.md`; an installed `.trellis/workflow.md` is a
 managed projection, not a second owner. Read the active Skill's `SKILL.md` and

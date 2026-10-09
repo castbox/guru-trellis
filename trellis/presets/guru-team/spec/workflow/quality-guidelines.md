@@ -506,6 +506,21 @@ output-schema success. The Phase 2 wrapper retains only a valid `passed`
 checkpoint for Task Commit and deletes every other valid exit checkpoint; Task
 Commit tests must prove candidate construction and execution reread it, failures
 retain it, and successful publication or recovery deletes it.
+Semantic replay coverage must additionally prove the current candidate can
+reuse execution facts from the original Check owner only
+after check/version, actual dependencies, toolchain/runtime and environment are
+revalidated. Observe A-only changes leaving independent B execution counts
+unchanged, each B dependency change rerunning B, new applicable C executing,
+and unavailable facts rerunning only their check. Observe current result
+binding without altering old candidate records. Legitimate configuration
+changes are rerun inputs, not an old-value correctness whitelist.
+Delivery recovery coverage must distinguish loss of Delivery Review output
+with an applicable held Branch Review DTO from loss of that DTO itself; normal
+checkpoint retirement cannot force unaffected semantic owners to rerun. New
+committed content still receives complete exact-range Branch Review. Actual
+owner behavior and module effects are evidence; fixed-text assertions or
+host-staged semantic passes alone are not.
+
 Workflow/static and semantic eval coverage must additionally prove the checked
 approved exit remains semantic adequacy only and the consumer presents all
 three planning links plus the AI conclusion, key choices, alternatives,

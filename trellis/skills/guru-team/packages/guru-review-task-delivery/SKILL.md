@@ -5,11 +5,14 @@ description: Review one approved active-task Delivery slice through a fresh sema
 
 # Guru Review Task Delivery
 
-Use after a fresh complete Branch Review for the exact current committed HEAD.
+Use with a current checked Branch Review output for the exact committed HEAD.
 When Publish returns `review_stale`, its `task_ref` is only a seed: the caller
-authors the ordinary `delivery_review` profile with a fresh
-`branch_review_commit`, and this owner performs a new review rather than
-reusing the prior result or Publish's stale reason.
+authors the ordinary `delivery_review` profile using the contract's current
+anchor applicability rules. A still-available checked Branch Review output
+for unchanged candidate, base/range and applicable review obligations need not
+be rerun. This owner always performs fresh Delivery Review; lost Branch Review
+output or changed obligations return to their original owner. Publish's stale
+reason and retired checkpoints cannot supply a semantic pass.
 Read `references/contract.md`, the current requirement authority, approved
 Delivery policy, current slice and remaining work, validation evidence, RDT and
 Architecture authorities, full Branch Review, base, and live Git/GitHub facts.

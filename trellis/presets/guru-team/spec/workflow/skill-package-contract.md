@@ -1400,6 +1400,13 @@ has current evidence from planning, implementation, Docs SSOT, repository,
 tests, and issue scope. These are direct semantic inputs; AI still owns
 sufficiency, qualification, findings, and route.
 
+Each re-entry completes the current semantic round. Check owns the current
+applicable check set and dependency-scoped execution-fact reuse under its
+`references/contract.md` Dependency-Scoped Validation contract. Reuse binds a
+current result through existing validation summaries; it neither changes old
+candidate records nor creates a public receipt, cache, or cross-Skill authority.
+Task Commit's existing retained-checkpoint consumer remains unchanged.
+
 Candidate hygiene treats exact bytes at an exact repo-relative path as upstream
 Trellis template-managed only when that path has a valid matching SHA-256 entry
 in schema-v2 `.trellis/.template-hashes.json`. The `HEAD`, index, and worktree

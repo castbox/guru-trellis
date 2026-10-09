@@ -408,7 +408,12 @@ Task Commit output loss uses the existing `guru-create-task-commit` same-
 candidate `recovery_resume` contract and may not create a second candidate,
 empty commit, amend, or duplicate commit. Lost Branch Review or Delivery Review
 DTOs require fresh Architecture at the matching stage and a fresh semantic
-owner run. Delivery Publish/Merge recovery belongs to the original owner and
+owner run. Delivery Review's original owner determines whether its still-held
+checked Branch Review anchor remains applicable; normal checkpoint retirement
+alone does not invalidate that DTO. Loss of Delivery Review output does not
+mechanically rerun unaffected upstream owners. New committed content still
+requires a complete current exact-range Branch Review.
+Delivery Publish/Merge recovery belongs to the original owner and
 current PR/HEAD transaction. A current checked Delivery result enters
 Completion; evidence-only changes use Completion's evidence-refresh entry,
 not a fabricated Delivery. Closure, Finish and Cleanup retain their own

@@ -94,8 +94,13 @@ freshness checker; it is not semantic or workflow authority. Return exactly one
 of `passed`, `implementation_required`,
 `planning_stale`, or `blocked`.
 
-Equivalent formatting or workflow-metadata deltas refresh only direct
-dependencies. Real semantic changes, unknown dirty content, reproduced
-findings, missing verification, or authority changes still fail closed or route
-to the owning step. This package requires the complete compatible Guru Team
+On re-entry, complete the current semantic round and follow the contract's
+dependency-scoped validation steps. Recompute the applicable check set; reuse
+only execution facts this owner still lawfully holds and can prove applicable
+to the current candidate. Bind those facts in the current result through the
+existing validation summaries; otherwise rerun the affected check. A complete
+semantic round does not require rerunning unaffected commands. Fresh authority
+applicability belongs to its original owner; actual contract or content changes
+return to the earliest affected owner. Keep exact-candidate checks and checkpoint
+retirement unchanged. This package requires the complete compatible Guru Team
 preset runtime and is not self-contained or portable.
