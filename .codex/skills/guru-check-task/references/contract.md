@@ -97,6 +97,31 @@ The coordinator stops before the expanded edit or test and mandatory invokes
 out of scope; a qualified expansion resumes only from a fresh Architecture
 result.
 
+## Current constitution consumption
+
+Apply `minimum-necessary-complexity` from the unique current project authority
+to every added capability in the complete worktree, including public contracts
+and abstractions, using its applicable conclusion and current evidence. The
+task-local consumer check is part of this review, not its complete coverage.
+Judge necessity against all applicable current contracts and responsibilities;
+passing functional tests alone is insufficient. This package consumes the
+authority and does not restate its principle prose.
+
+Form concrete candidate observations and qualify them through the existing
+Phase 2 profiles before severity or findings. An unnecessary mechanism returns
+through `mechanism_revision_required` for remove/replace and fresh complete
+check while preserving accepted scope. A conflict in the requirement itself
+re-enters the Architecture owner: `architecture_conflict` returns to Planning
+and existing clarification for a revised current authority. A resulting scope
+or authority change uses this Skill's existing `planning_stale` consumer.
+Missing applicable evidence uses the existing Architecture
+`contract_incomplete` route or a concrete blocked dependency. No keyword,
+approval assertion, or automatic deletion of accepted scope supplies a pass.
+
+Only a qualified current-scope defect may enter existing finding fields.
+Existing evidence and adequacy dimensions carry the applicable conclusion;
+no new score, per-capability checkpoint, public DTO field or exit is required.
+
 ## Semantic Loop
 
 Before repository, Docs, test, fixture, consumer, or history retrieval, read

@@ -203,6 +203,31 @@ Mapped finding-fix, stale, re-entry and final-review routes continue within the
 AI workflow. They are not user choices. A user prompt remains only for real
 scope/authority decisions or a separately displayed Git/GitHub side effect.
 
+## Current constitution consumption
+
+Independently apply `minimum-necessary-complexity` from the unique current
+project authority to all added capabilities in the complete committed range,
+including public contracts and abstractions. Consume task-applicable
+conclusions and current evidence; do not copy principle prose or reuse Phase 2
+approval. Current responsibilities and all applicable contracts govern the
+necessity judgment, including when functional tests pass.
+
+Qualify concrete observations through existing Branch Review profiles before
+severity or findings. `mechanism_revision_required` returns through the
+existing mechanism router for remove/replace, preserving accepted scope and
+requiring a fresh complete review. A requirement-authority conflict re-enters
+the Architecture owner and its `architecture_conflict` Planning consumer,
+then existing clarification when source scope changes; review again against
+the revised current authority. Missing applicable evidence uses
+`contract_incomplete` or existing blocked handling. A real scope choice uses
+`scope_confirmation_required`; an open qualified current-scope finding uses
+`implementation_required`. These are existing distinct owners and routes.
+
+Neither an approved requirement, future-related word, nor functional-test pass
+alone settles the observation. Never silently delete accepted scope. Keep
+applicable evidence in existing finding/gate fields without per-capability
+records, scores, keyword classifiers, public DTO growth or new exits.
+
 ## Gate And Exits
 
 After the AI gate exists, `review-branch` writes one compact owner-private

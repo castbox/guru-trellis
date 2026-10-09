@@ -1,0 +1,20 @@
+schema_version: "1.0"
+task_ref: "466-no-speculative-extension"
+task_locator: ".trellis/tasks/10-09-466-no-speculative-extension"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/466"
+status: "draft"
+source_version: "current-main-0.6.17-guru.76"
+expected_current_version: "current-main-0.6.17-guru.76"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+shared_current_write: false
+contribution:
+  requirements: "docs/requirements-design-test-contributions/466-no-speculative-extension/requirements.md"
+  design: "docs/requirements-design-test-contributions/466-no-speculative-extension/design.md"
+  test: "docs/requirements-design-test-contributions/466-no-speculative-extension/test.md"
+  traceability: "docs/requirements-design-test-contributions/466-no-speculative-extension/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.76"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/466-no-speculative-extension.md"

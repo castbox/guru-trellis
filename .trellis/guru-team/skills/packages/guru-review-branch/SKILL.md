@@ -60,10 +60,11 @@ recompute `code_subtraction` and `docs_ssot_subtraction`, verify deprecated-asse
 exit and direct evolution, and treat unsupported compatibility or redundant
 growth as a finding. Do not use Phase 2 evidence or a generic continuation as
 compatibility approval.
-Independently review long-term maintainability as well: task-local fields,
-persistence, retries, locks, or extra paths need named direct consumers and
-must not be justified only by excluded threat, concurrency, crash, or formal
-idempotency concerns. Every touched non-generated code file at or above 3000
+Independently review long-term maintainability as well: consume the current
+constitution's `minimum-necessary-complexity` conclusion for all added
+capabilities through the contract's existing qualification and revision owners.
+Excluded threat, concurrency, crash, or formal idempotency concerns do not
+justify additions. Every touched non-generated code file at or above 3000
 lines requires a mechanical-split or small-decoupling conclusion; untouched
 historical large files are not imported into scope.
 Immediately before dispatch, tell the user in the current dialogue the
