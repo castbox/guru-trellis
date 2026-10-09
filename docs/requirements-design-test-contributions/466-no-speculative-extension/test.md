@@ -1,6 +1,6 @@
 # #466 Test 增量
 
-状态：draft / task-isolated / non-current；继承 `current-main-0.6.17-guru.76/active`。本文件是本任务实际验证结果的唯一 owner。2026-10-09 从 #466 已绑定任务 checkout 验证。脚本结果仅证明确定性合同，不证明正式 semantic gates、promotion 或 Release。
+状态：reviewed / promoted / current-consumed；继承 immutable `current-main-0.6.17-guru.76`，promoted current `current-main-0.6.17-guru.77/active`。本文件是本任务实际验证结果的唯一 owner。2026-10-09 从 #466 已绑定任务 checkout 验证。脚本结果仅证明确定性合同，不证明正式 semantic gates、promotion 或 Release。
 
 | Test | 实际结果与覆盖 |
 | --- | --- |
@@ -8,7 +8,7 @@
 | T466-PACKAGES | PASS：managed interpreter 下 Architecture 26、Check 29、Branch Review 36 项既有 contract/runtime tests，共 91 项。覆盖现有 closed routes、qualification边界、Architecture stage消费、独立range/promotion条件和 projection。没有将示例语义写成脚本分类器或镜像文本测试；这些机器测试不证明六案例的 AI 语义判断已由独立 reviewer 执行。 |
 | T466-DISTRIBUTION | PASS：source inventory（35 packages、106 commands），installed inventory（35 packages、159 public exits、33 mandatory invokes/153 business exits；0 conflicts/sidecars），preset apply/reapply 后 activation passed、dogfood drift passed。五变更文件在 installed/shared/Codex/Claude/Cursor 的25份投影与canonical逐字节一致，workflow也保持parity。 |
 | T466-HYGIENE | PASS：task validate（implement/check各7项；有两个大spec的32768-byte截断警告，相关完整章节已直接读取）；git diff --check；contribution相对链接、zero sidecars、shared current未写检查。 |
-| T466-PROMOTION | 未执行：独立 committed review、expected-current promotion、promotion 后 fresh Phase2/commit/完整 Branch Review。该项仍是当前 Delivery 前提，不能用上述结果代替。 |
+| T466-PROMOTION | 已完成：初始 `7d20a930...936512927f` 完整独立 committed review 与正式 Branch Review passed，expected `.76→.77` Architecture/RDT promotion 通过。promotion 后 native trellis-check 已独立读取全部29 dirty paths（17 tracked含amendment删除、12新版本文件），197相对链接、UTF-8/whitespace、task validate、六案例及解释逐行搬移、五identity、immutable .76历史、25投影/workflow parity全部通过，无finding。待执行：fresh Phase2/commit/完整 Branch Review。该项仍是当前 Delivery 前提，不能用上述结果代替。 |
 
 ## 可复现命令与结果
 
@@ -32,4 +32,4 @@ git diff --check
 
 ## 未验证边界
 
-正式 Architecture/RDT/Phase2 结论由各原 owner 在当前调用承接，本页不重复保存或重建 semantic pass；独立 committed review、promotion及其fresh gates仍未执行。完整多平台 clean/existing/update/release matrix、远端 marketplace、真实业务安装/部署与软件 Release 不在 #466 验证范围；未验证，不声明完成。
+正式 Architecture/RDT/Phase2 结论由各原 owner 在当前调用承接，本页不重复保存或重建 semantic pass；初始独立 committed review 与 promotion 已完成；晋升后的 native check 已完成；fresh Phase2/commit/完整 Branch Review 尚待正式执行。完整多平台 clean/existing/update/release matrix、远端 marketplace、真实业务安装/部署与软件 Release 不在 #466 验证范围；未验证，不声明完成。

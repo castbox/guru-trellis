@@ -1,6 +1,6 @@
 # #466 双向追踪
 
-Current inheritance：`.76/active`；draft / task-isolated / non-current。Architecture contribution：[九 concern 与晋升边界](../../architecture/contributions/466-no-speculative-extension.md)。
+Predecessor inheritance：`.76`；promoted current：`.77/active`；reviewed / promoted / current-consumed。Architecture contribution：[九 concern 与晋升边界](../../architecture/contributions/466-no-speculative-extension.md)。
 
 | Requirement | Design | Case / Test |
 | --- | --- | --- |
@@ -11,4 +11,4 @@ Current inheritance：`.76/active`；draft / task-isolated / non-current。Archi
 | R466-05 | D466-01, D466-04 | C466-01..06 / T466-SEMANTIC |
 | R466-06 | D466-02, D466-05, D466-06 | T466-DISTRIBUTION, T466-PROMOTION |
 
-反向 consumer：C466-01..06 的 facts/结论只由唯一 proposed authority 增量持有，case通过上述行回溯 R466/D466；Test 结果只由 [test.md](./test.md) 拥有。Promotion 后 contribution/RDT 引用新 current，由各原 owner 承接，不提前标记完成。
+反向 consumer：C466-01..06 的 facts/结论只由唯一 current constitution 持有，case通过上述行回溯 R466/D466；Test 结果只由 [test.md](./test.md) 拥有。原 Architecture/RDT owners 已完成 expected `.76→.77` promotion；晋升后 fresh gates 按唯一 Test 实际进度承接。

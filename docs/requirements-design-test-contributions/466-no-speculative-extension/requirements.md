@@ -1,6 +1,6 @@
 # #466 Requirements 增量
 
-状态：draft / task-isolated / non-current。Current inheritance：`current-main-0.6.17-guru.76` / active；source：[live Issue #466](https://github.com/castbox/guru-trellis/issues/466)。本贡献不替代 Issue 和 current Requirements authority；原则 identity：`minimum-necessary-complexity`，正文只由 constitution owner 承接。
+状态：reviewed / promoted / current-consumed。Predecessor inheritance：`current-main-0.6.17-guru.76`；promoted current：`current-main-0.6.17-guru.77` / active；source：[live Issue #466](https://github.com/castbox/guru-trellis/issues/466)。本贡献由 current Requirements 唯一引用，不替代 Issue 或 constitution authority；原则 identity：`minimum-necessary-complexity`，正文只由 constitution owner 承接。
 
 | Requirement | Source 与本任务可验证结果 |
 | --- | --- |

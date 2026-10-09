@@ -537,3 +537,9 @@ EVD-050/.74本地历史不改写，e6首次G1误阻止回退及bdf默认AGENTS�
 实现范围 `761e8514a955239a3b14c69932c3d370ddad13ea...62c60bb0646c067e60b8dcd43ecc324975131947` 的完整初始 Branch Review 已通过；九项 concerns 无新增或恶化 GAP，ADR-017/018 与 migration owners/退出保持。执行结果仅由[唯一 Test](../../requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md)拥有：runtime156、create22零 SKIP、source-lock73、projection9、平台2、source/installed validators及保全/恢复证据通过。实际 clean-installed fixture 证明候选安装行为，不证明 Backend 原仓升级或 #378 intake 恢复。
 
 expected `.75→.76` 的知识晋升 diff 仍须 fresh Phase2/TaskCommit/完整独立 Branch Review；不把旧候选执行重标为后继 HEAD 重跑。软件 Release、业务安装与部署未验证；EVD-051 历史对象及含义保持。
+
+## EVD-053：#466 已审查反投机增量
+
+独立 initial committed review 范围：`origin/main@7d20a930341dae3e7dd2d214660ce3b99e28d863...936512927f81845b9978efcda78fa31606220f0c`，完整44路径、六类语义案例和九项 concern 未发现缺陷，正式 Branch Review 已通过。[贡献](../contributions/466-no-speculative-extension.md)拥有 expected `.76→.77` 晋升绑定；[唯一 Test](../../requirements-design-test-contributions/466-no-speculative-extension/test.md)拥有实际执行结果与首次 sidecar conflict 处理。
+
+本条不重写 EVD-052/历史安装执行对象；当前知识晋升 diff 仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review。完整 upgrade/Release matrix、远端 marketplace、业务安装部署未验证。
