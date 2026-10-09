@@ -1,0 +1,7 @@
+{"file": ".trellis/tasks/10-09-466-no-speculative-extension/prd.md", "reason": "本任务 R466 范围与验收"}
+{"file": ".trellis/tasks/10-09-466-no-speculative-extension/design.md", "reason": "唯一 authority、既有 owner 回程与六类案例"}
+{"file": ".trellis/tasks/10-09-466-no-speculative-extension/implement.md", "reason": "顺序、定向验证与 fresh promotion gates"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "唯一 current 五原则 authority"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "当前 project-check 与 contribution/promotion 合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证范围 owner"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 Skill 与最小 I/O 合同"}

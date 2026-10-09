@@ -18,6 +18,12 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 每项必须显式判定 `applicable|not_applicable` 并给出理由；architecture impact 不得以空值代替判断。范围、风险、authority、持久化、SDK、外部、owner 或架构边界扩大时，旧结果 stale 并重新进入 Architecture owner。
 
+## Constitution applicability consumption
+
+对完整当前 change 的新增能力读取唯一 current constitution 的 `minimum-necessary-complexity` 适用结论及 evidence；覆盖公共合同与抽象，不局限 task-local 持久化。Applicable concern 绑定真实必要性、具体冲突或证据缺口；不创建空白逐原则 verdict、逐能力 DTO 或评分表。
+
+当前 Requirement 必要而 mechanism 多余时，由当前阶段 qualification owner 经既有 `mechanism_revision_required` consumer 返回设计/实现 remove/replace，保留 accepted scope。Requirement-authority 本身冲突由 Architecture `architecture_conflict` -> `guru-architecture-baseline-planning-router` 返回 Planning，需修订 source scope 时进入既有澄清并取得新 current 后重审。缺适用证据使用 `contract_incomplete`，真实选择/依赖使用已有澄清/blocked。Phase 2 的真实 scope/authority 变化由 `planning_stale` 承接；Branch Review 的当前 finding 和真实 scope choice 分别由 `implementation_required`、`scope_confirmation_required` 承接。Project-check 在现有九 concern 和 before/after 中判断这一消费，不新增 descriptor、exit 或脚本语义判定。
+
 ## Change paths and lifecycle
 
 - `target_native`：新能力直接进入 target boundary，不新增 legacy authority 或 compatibility layer。

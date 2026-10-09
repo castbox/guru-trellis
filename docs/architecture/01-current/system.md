@@ -259,3 +259,7 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 ## #503 身份职责后继（.76）
 
 `ARCH-CUR-049` 的 #503 successor：创建前 reservation 只消费合法 id/ref 与冲突事实，selected 唯一定位后严格校验完整 current schema/source/generation；新建目标 gen0/planning/source/base 严格不变。inventory/migration 保留完整分类，不把 reservation 当生命周期 authority。无 consumer bool wrapper 已删除，create 同 stop 只增加最小 diagnostic。
+
+## ARCH-CUR-050：最小必要复杂度反投机消费
+
+`ARCH-CUR-050`（reviewed #466 contribution；promotion 后 fresh gates pending）：唯一 [design constitution](../00-foundation/design-constitution.md) 承接 `minimum-necessary-complexity` 的当前必要性解释和 C466-01..06；[change contract](../06-governance/change-contract.md) 与原 Architecture/Check/Branch Review owners 消费适用结论及既有修订回程。五原则、公共 I/O/schema/runtime/exit 不变，无新 ADR/GAP/owner/compatibility layer。继承 `.76` / ARCH-CUR-049 其余事实与原验证对象，EVD-053 仅定位已审查贡献和实际 Test；不代表软件发布。

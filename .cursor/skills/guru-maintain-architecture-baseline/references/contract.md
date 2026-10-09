@@ -21,6 +21,32 @@ version or content identity, and exactly these five stable identity/name pairs:
 Principle prose, scores, per-principle verdicts, and mechanical checklists are
 not public Skill data.
 
+## Constitution applicability and existing revision owners
+
+Read the project's unique current constitution authority and apply
+`minimum-necessary-complexity` to the complete proposed change at Planning,
+implementation discovery, Phase 2, and independently at Branch Review. Consume
+its task-applicable conclusion and evidence for every added capability, including
+public contracts and abstractions; do not limit the review to task-local
+persistence. This package does not own or restate principle prose.
+
+Distinguish a current requirement whose mechanism needs revision from a
+requirement-authority conflict. For the former, the current stage's qualification
+owner consumes `mechanism_revision_required` through its existing mechanism
+router to remove/replace the mechanism while preserving accepted scope.
+For the latter, select `architecture_conflict` with the concrete authority
+conflict; `guru-architecture-baseline-planning-router` returns to the current
+Planning owner and, when source scope must change, existing requirements
+clarification. Review again against the revised current authority. Missing
+applicable necessity evidence uses `contract_incomplete` and the same Planning
+router; a real intent choice or unresolved dependency uses existing
+clarification or blocked handling. An approved requirement alone cannot replace
+this judgment, and this owner never silently deletes accepted scope.
+
+Use existing impact, evidence, finding and route fields only for applicable
+conclusions. Do not introduce per-capability records, scores, keyword
+classifiers, public fields, or a second constitution checklist.
+
 ## Public and owner boundary
 
 The 2.0 public input is a caller-owned route and authority DTO. Every profile
