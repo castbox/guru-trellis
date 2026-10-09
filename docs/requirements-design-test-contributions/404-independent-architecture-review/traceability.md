@@ -1,6 +1,6 @@
 # #404 双向追踪
 
-状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，不表示实现或 Architecture promotion 完成。继承 RDT/Architecture `current-main-0.6.17-guru.77` / `active`；source 为 Issue #404 `2026-10-09-r4`。本表连接本任务最小增量，实际结果唯一引用 [Test](./test.md)。
+状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，实际实现和晋升后 gates 只由唯一 Test 记录。历史来源为 RDT/Architecture `.77`，current 两者均为 `current-main-0.6.17-guru.78` / `active`；source 为 Issue #404 `2026-10-09-r4`。本表连接本任务最小增量，实际结果唯一引用 [Test](./test.md)。
 
 | Requirement | Design | Acceptance / Test |
 | --- | --- | --- |

@@ -21,6 +21,8 @@
 | `ADR-017` | accepted; source restriction superseded by ADR-018 | 历史固定来源；current-only、唯一writers、固定恢复/回退锚点与删除出口仍有效 |
 | `ADR-018` | accepted | 全部0.6.x/0.7.0系列实际合同分组升级；本地slice晋升后同源远端验收，整体仍open |
 
+| `ADR-019` | accepted | Architecture Skill 拥有独立新评估方法；fresh subagent 执行，原 owner 保留下游 eligibility 与 promotion |
+
 后续 supersede 时保留 predecessor/successor identity 与历史边界，不改写旧决策为 current evidence。
 
 `ADR-005` 正文见 [`005-architecture-lifecycle-convergence.md`](./005-architecture-lifecycle-convergence.md)。
@@ -39,3 +41,5 @@
 `ADR-017`正文见 [`017-legacy-installation-upgrade.md`](./017-legacy-installation-upgrade.md)。
 
 `ADR-018` 正文见 [`018-legacy-installation-version-families.md`](./018-legacy-installation-version-families.md)。
+
+`ADR-019` 正文见 [`019-independent-architecture-assessment.md`](./019-independent-architecture-assessment.md)。

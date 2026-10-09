@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.77`；状态：`active`；predecessor：`current-main-0.6.17-guru.76`；source baseline：[已审查反投机贡献](./contributions/466-no-speculative-extension.md) + immutable `.76` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
+版本：`current-main-0.6.17-guru.78`；状态：`active`；predecessor：`current-main-0.6.17-guru.77`；source baseline：[已审查独立架构贡献](./contributions/404-independent-architecture-review.md) + immutable `.77` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.77` 是唯一 active；`.76` 及更早为 immutable superseded history。沿 ADR-017 与 ADR-018 一次性迁移，current-only/唯一 owners 不变。Current：ARCH-CUR-050（继承 ARCH-CUR-049）、ARCH-DOM-034、ARCH-INT-037、closed ARCH-GAP-012、EVD-053（EVD-052 保留原对象）；EVD-049 是历史固定来源验收。registry35/159/106，business33/153 不变。
+版本历史：`current-main-0.6.17-guru.78` 是唯一 active；`.77` 及更早为 immutable superseded history。沿 ADR-017 与 ADR-018 一次性迁移，current-only/唯一 owners 不变。Current：ARCH-CUR-051（继承 ARCH-CUR-050/049）、ARCH-DOM-034、ARCH-INT-037、closed ARCH-GAP-012、ADR-019、EVD-054（EVD-053/052 保留原对象）；EVD-049 是历史固定来源验收。registry35/159/106，business33/153 不变。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
@@ -22,7 +22,9 @@
 
 历史 `.76` 固定 Fork `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / main CI `37735554354`；CLI/core `0.7.0-castbox.3` 与 Guru `0.7.0-guru.3` 版本轴不变。#503 按 consumer 拆分身份占用与 selected lifecycle，migration 完整分类及 ADR-017/018 owner/退出保持；无新 ADR/GAP/store/writer。RDT 同步 `.76`；EVD-052 仅证明 source/代表性 clean-installed 候选，晋升 diff 须 fresh Phase2/commit/完整 Branch Review。Backend 恢复与软件 Release/部署未验证。
 
-当前 `.77` 按 expected `.76` 晋升已独立审查的 #466 contribution；只强化唯一 constitution 的 `minimum-necessary-complexity` 与现有 semantic 消费。五原则 identity/short name、ADR/GAP、owner、公共 I/O 与软件四轴不变。RDT 同步 `.77`；ARCH-CUR-050 / EVD-053 承接已审查增量及唯一 Test locator。晋升 diff 尚须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review；知识晋升不表示 Delivery、Release、业务安装或部署完成。
+历史 `.77` 按 expected `.76` 晋升已独立审查的 #466 contribution；只强化唯一 constitution 的 `minimum-necessary-complexity` 与现有 semantic 消费。五原则 identity/short name、ADR/GAP、owner、公共 I/O 与软件四轴不变。RDT 同步 `.77`；ARCH-CUR-050 / EVD-053 承接已审查增量及唯一 Test locator。晋升 diff 尚须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review；知识晋升不表示 Delivery、Release、业务安装或部署完成。
+
+当前 `.78` 按 expected `.77` 晋升 #404 已独立审查的 `implementation-v2` contribution 与 ADR-019；Architecture Skill 继续拥有方法，fresh generic subagent 执行新评估，原 owner 承接下游 eligibility 和 promotion。Architecture 2.0 I/O、四 profiles、七 exits、constitution 与 GAP lifecycle 不变；RDT `.78` 同步当前 Architecture 继承。ARCH-CUR-051 / EVD-054 只承接已审查增量和唯一 Test locator。此次晋升 diff 仍须 fresh Phase2、TaskCommit、不同 reviewer 完整 Branch Review；不表示 Delivery、Completion、软件发布或业务部署完成。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 

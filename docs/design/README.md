@@ -1,6 +1,6 @@
 # Design SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/design-main.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 继承 `.77/active`，其候选 promotion 未完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/design-main.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 当前继承 `.78/active`，原 owner 已晋升已独立审查的 #404 contribution；晋升前 `.77` 来源保留为历史 provenance，晋升 diff 的 fresh gates 尚待完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
 
 历史 `.70` Design authority：[`versions/current-main-0.6.17-guru.70/design-main.md`](./versions/current-main-0.6.17-guru.70/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#481 后的 registry（34 packages / 155 exits / 104 commands，零 planned）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.70/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 为 33 mandatory invokes / 153 exits。Architecture 为 `.70` / `active`；`.69` 及更早版本保持 immutable。
 

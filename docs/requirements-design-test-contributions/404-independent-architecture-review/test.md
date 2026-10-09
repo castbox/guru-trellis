@@ -1,6 +1,6 @@
 # #404 Test 增量
 
-状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`；实际行为结果仍按下表记录。本文件是 #404 实际验证结果的唯一文档来源；Requirements、Design、traceability 与其它导航只引用本页。继承 current `current-main-0.6.17-guru.77` / `active`。下列 `T404-01..10` 对应 task acceptance `A404-01..10`，是验证合同，编号存在不代表已执行或通过。
+状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`；实际行为结果仍按下表记录。本文件是 #404 实际验证结果的唯一文档来源；Requirements、Design、traceability 与其它导航只引用本页。历史晋升来源为 `.77`；current RDT/Architecture 均为 `current-main-0.6.17-guru.78` / `active`。下列 `T404-01..10` 对应 task acceptance `A404-01..10`，是验证合同，编号存在不代表已执行或通过。
 
 | Test | 正常候选与观察目标 | 实际结果 |
 | --- | --- | --- |
@@ -93,8 +93,20 @@ r5 仅新增中性 `native-owner-selection-assertion`：已有 test-only helper 
 
 该案例 native 实际执行 172795 ms。fresh Architecture 先 authority/source/helper/callers 后独立判断，invoke 25 返回 baseline_current/no_architecture_impact/no_change；整体 Skill 26 与 task narratives 52..55 随后读取。整体 owner 比较 before helper 一项失败、after helper 与新 caller 两项失败，以及 production caller 前后 3/3，定位 list.sort() 返回 None；明确 R2 要求的既有 shared entry 及新 singleton 验证离不开此局部修正。两项资格 wrapper 72/73 在 P1 finding 与 Check 74 之前，原 recorder/checker/public invoke 均 exit 0，真实结果 implementation_required/P1-selection-assertion-sort-return。required suite 8/10 如实保留；六项确定性、三项语义评分与 completed replay 通过。不把它当作无关历史债务，不改变生产语义或强制全绿。
 
-本任务 passed Phase2、Task Commit、独立 committed review、Architecture promotion 与 promotion-created diff fresh gates 尚未完成；当前不声明 whole-task Completion、Delivery readiness 或发布已通过。
+上述 r5 native 执行时本任务 passed Phase2、Task Commit、独立 committed review、Architecture promotion 与 promotion-created diff fresh gates 尚未完成；这是历史冻结状态，后续实际结果见下，不能重标为先前已通过。
 
 静态 schema、wrapper unit tests、字符串、mock 或 package checker 只能证明其确定性范围，不能代替受支持正常路径中的 AI 派发、独立判断、停止及 consumer 行为。native 不可用或证据不足保留 pending/block，保留首次失败与有限归因；未归因不得写成历史失败。
 
 完整累计多平台 clean/existing/update/Release matrix、真实业务仓安装/部署及生产验证不属于本任务验证范围，均未验证。最多一个确有当前安装证明需要的代表性 throwaway；实际 native 执行的平台与仅投影验证的平台分别记录。官方 update 兼容性不能由 apply/reapply 推定。
+
+## 实现冻结后门禁与知识晋升
+
+本任务冻结实现完成独立 Architecture `task_impact_sync(stage=phase2)` 原 wrapper，结果为 `baseline_current / architecture_impact / reviewed_candidate`；随后完整 Phase2 原 recorder/checker/public wrapper 返回 `passed`，覆盖 157 路径，无 finding。当前 adapters/grading 33/33（113.823s）实际通过；原 runtime128、其它 package 与 native receipts 仅在实际依赖/环境适用性审查后复用，不称全部于本轮重跑。首次 Architecture 文件参数调用 `invalid_json` 保留，fresh round2 重新读取/author/invoke 后通过。
+
+正式 TaskCommit 于父提交 `07b89e48985761035777d15fdb82476174e277a6` 创建 `29db9d579e3e1638d48b8d8f04708b5dc5f244b3`。独立 committed Architecture 对完整 `origin/main...HEAD` 重算并实际返回 `baseline_current / reviewed_candidate`；随后完整 Branch Review 原 recorder/checker/public wrapper 返回 `passed`，157 路径无 P0–P3 finding，两项 qualification 实际 classified。现场 installed package、drift、upstream ownership 和 6077 manifest hash 核对通过；后置 pair guard 为 unchanged。这些结论绑定实现范围，不覆盖之后的晋升 diff。
+
+下游 Architecture matching-stage eligibility 真实返回 `sync_required / promotion_required`；首次调用因错误 consumer 被原 validator 拒绝，无写入，fresh re-entry 核对后通过。原 Architecture owner 对 expected `.77` 与已独立审查 `implementation-v2` 串行晋升 `.78`、ARCH-CUR-051、ADR-019、EVD-054。promotion 首次 owner result 漏 expected-current 绑定，以 stale_identity 停止；对 `.77` preimage、当前 `.78`、原 reviewed range 和 scoped diff fresh re-entry 后，原 wrapper 实际返回 `baseline_current / source_profile=promotion / reviewed_promoted`。
+
+本次 RDT 仅由原 owner 在 active `.78` 内校对 Architecture 继承和当前导航，不新增需求、设计或测试合同，不修改 immutable `.77` 版本。此次 promotion-created diff 仍待 fresh 独立 Architecture + 完整 Phase2、新 TaskCommit、不同 fresh reviewer 完整 Branch Review；不声明其已通过。Delivery readiness、whole-task Completion、push/PR/merge、软件发布、官方 update、完整 Release matrix 和业务安装部署均未由上述证明。
+
+RDT 原 `repair` wrapper 实际返回 `ssot_current / active_version=current-main-0.6.17-guru.78`。本次确定性文档核对覆盖 27 个 scoped 文件、226 个本地链接，UTF-8/末尾换行/trailing whitespace 与 `git diff --check` 通过；constitution 和历史 RDT `.77` 字节未变。该结果仅证明文档事实，不替代后续独立语义门禁。

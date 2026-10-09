@@ -1,6 +1,6 @@
 # #404 Design 增量
 
-状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，不表示实现或 Architecture promotion 完成。继承 current RDT/Architecture `current-main-0.6.17-guru.77` / `active`。设计对象来自已准备的 task design；实际实现与验证状态由唯一 [Test](./test.md) 记录。
+状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，实际实现和晋升后 gates 只由唯一 Test 记录。历史来源为 RDT/Architecture `.77`；current 两者均为 `current-main-0.6.17-guru.78` / `active`。设计对象来自已准备的 task design；实际实现与验证状态由唯一 [Test](./test.md) 记录。
 
 | Design | 责任与消费接点 |
 | --- | --- |

@@ -1,6 +1,6 @@
 # #404 Requirements 增量
 
-状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，不表示实现或 Architecture promotion 完成。Source：[Issue #404](https://github.com/castbox/guru-trellis/issues/404)，合同版本 `2026-10-09-r4`；继承 current RDT `current-main-0.6.17-guru.77` / `active`。本增量承接任务中的 `R404-01..08`，不替代 live Issue、项目 Constitution 或 Architecture authority。
+状态：RDT 合同已晋升至 `current-main-0.6.17-guru.78`，实际实现与后续 gates 只由唯一 [Test](./test.md)记录。Source：[Issue #404](https://github.com/castbox/guru-trellis/issues/404)，合同版本 `2026-10-09-r4`；晋升来源为 RDT `.77`；current RDT 与 Architecture 均为 `current-main-0.6.17-guru.78` / `active`。本增量承接任务中的 `R404-01..08`，不替代 live Issue、项目 Constitution 或 Architecture authority。
 
 | Requirement | Source 接点与要求 |
 | --- | --- |

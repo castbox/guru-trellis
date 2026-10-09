@@ -263,3 +263,9 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 ## ARCH-CUR-050：最小必要复杂度反投机消费
 
 `ARCH-CUR-050`（reviewed #466 contribution；promotion 后 fresh gates pending）：唯一 [design constitution](../00-foundation/design-constitution.md) 承接 `minimum-necessary-complexity` 的当前必要性解释和 C466-01..06；[change contract](../06-governance/change-contract.md) 与原 Architecture/Check/Branch Review owners 消费适用结论及既有修订回程。五原则、公共 I/O/schema/runtime/exit 不变，无新 ADR/GAP/owner/compatibility layer。继承 `.76` / ARCH-CUR-049 其余事实与原验证对象，EVD-053 仅定位已审查贡献和实际 Test；不代表软件发布。
+
+## ARCH-CUR-051：独立评估执行与下游 eligibility
+
+`ARCH-CUR-051`（reviewed #404 contribution；promotion 后 fresh gates pending）：既有 Architecture Skill 在 Planning、适用 implementation discovery、Phase2 和 committed Branch Review 的新判断由未参与候选编写/实现、未预载任务叙事的 fresh generic subagent 执行。先读 constitution/baseline/change contract、真实候选及受影响消费者，形成独立判断后核对必要解释；reviewer 自行完成 project checks、semantic result 和原 wrapper。任务叙事、一致绿色验收或主会话自填结果不能代替独立判断。
+
+publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结论、live authority 与 review/promotion facts，执行 matching-stage eligibility；新事实改变判断时返回 fresh assessment。整体 Check/Branch Review 与协调器继续分别拥有必要性、资格和交付；不吞并 promotion、Closure 或 Completion。新偏离与必要局部收敛按真实因果承接，无关历史债务和红测不自动扩张。唯一方法仍在 canonical Skill，当前决策见 [ADR-019](../adr/019-independent-architecture-assessment.md)。公共 2.0 I/O、四 profiles、七 exits 和 current-only writer/consumer 不变，未新增 GAP、reviewer ledger、授权存储或长期兼容路径。

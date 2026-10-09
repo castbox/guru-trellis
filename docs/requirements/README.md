@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/requirement-main.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 继承 `.77/active`，其候选 promotion 未完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/requirement-main.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 当前继承 `.78/active`，原 owner 已晋升已独立审查的 #404 contribution；晋升前 `.77` 来源保留为历史 provenance，晋升 diff 的 fresh gates 尚待完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 

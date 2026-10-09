@@ -543,3 +543,9 @@ expected `.75→.76` 的知识晋升 diff 仍须 fresh Phase2/TaskCommit/完整�
 独立 initial committed review 范围：`origin/main@7d20a930341dae3e7dd2d214660ce3b99e28d863...936512927f81845b9978efcda78fa31606220f0c`，完整44路径、六类语义案例和九项 concern 未发现缺陷，正式 Branch Review 已通过。[贡献](../contributions/466-no-speculative-extension.md)拥有 expected `.76→.77` 晋升绑定；[唯一 Test](../../requirements-design-test-contributions/466-no-speculative-extension/test.md)拥有实际执行结果与首次 sidecar conflict 处理。
 
 本条不重写 EVD-052/历史安装执行对象；当前知识晋升 diff 仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review。完整 upgrade/Release matrix、远端 marketplace、业务安装部署未验证。
+
+## EVD-054：#404 独立架构与任务必要性增量
+
+已独立审查实现范围 `origin/main@07b89e48985761035777d15fdb82476174e277a6...29db9d579e3e1638d48b8d8f04708b5dc5f244b3`，157 路径无 P0–P3 finding，Architecture 与完整 Branch Review 分别完成原 wrapper；[贡献](../contributions/404-independent-architecture-review.md)承接 expected `.77→.78` 晋升。[唯一 Test](../../requirements-design-test-contributions/404-independent-architecture-review/test.md)拥有实际行为结果、首次失败和未验证边界，不在此复制 suite/trace。
+
+EVD-053/052 仍绑定原对象。此次 knowledge promotion diff 必须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review；此前实现审查不替代这些新 gates。Codex native 与其它平台投影边界如 Test；官方 update、完整 Release matrix、业务安装与生产部署未验证。
