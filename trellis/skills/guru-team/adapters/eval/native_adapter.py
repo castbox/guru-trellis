@@ -57,7 +57,7 @@ from adapters.eval.eval_support import (
 from adapters.eval.owner_staging import (
     stage_owner_execution,
 )
-from adapters.eval import phase2_authoring
+from adapters.eval import phase2_authoring, architecture_authoring
 from adapters.eval.intake_authoring import (
     COMMANDS, FACTS_PATH, INTAKE_SKILLS, IntakeCommands, standard_intake, validate_intake_trace,
 )
@@ -583,13 +583,13 @@ def build_context(
             context_lines[-8:] = [
                 "This Skill has no staged owner result. Execute the installed Skill as its current semantic owner.",
                 f"Read {model_repository_root / phase2_authoring.FACTS} and every required_reads file before judgment. These are facts, not conclusions.",
-                "First load the installed Architecture Skill/contract and author its phase2 owner_result from the provided architecture-input.json and live fixture evidence. Invoke the trace helper with invoke --stdin --upstream-architecture and the existing Architecture envelope {public_input, owner_result}. Consume the actual returned public DTO before Phase 2 authoring.",
+                "A separate fresh Architecture worker executes first. Consume its actual wrapper DTO below; never author or invoke Architecture from this overall owner context. The earlier worker has not read task narratives. If new architecture facts invalidate that result, stop for existing fresh re-entry.",
                 "Then complete the full nine-dimension Phase 2 review and author exactly the recorder fields listed by the Phase 2 contract, without derived identity fields. Do not copy examples or search for expected exits.",
                 "Before Phase 2 findings/classifications, load both installed qualification contracts and invocation schemas from required_reads. Author and invoke their actual envelopes using invoke --stdin --qualifier normal-scenario and invoke --stdin --qualifier solution-mechanism. Use the fact sheet qualification_target and the task locator as target_locator, but author candidate refs, witnesses, decisions and gates yourself. Consume each returned route; do not replace these mandatory invocations with your own uninvoked assertion.",
                 "Qualification envelopes differ from Architecture: each is {schema_version: 1.0, semantic_result: <your authored result>}, with schema_version encoded as a JSON string. The qualifier public_input belongs inside semantic_result. Do not use the Architecture {public_input, owner_result} envelope for either qualifier.",
                 "Send {public_input, owner_result} through the trace helper invoke --stdin. For this eval transport only, owner_result is your recorder authoring form; the host writes it unchanged to a runtime-private file and executes the original recorder, checker, then wrapper in the real installed fixture.",
                 "Re-read every staged case file and required repository file through the trace helper. Never read eval corpus, examples, or private runtime.",
-                "Execute helper reads and all four invocations sequentially, one process at a time. Do not alter the trace or source files.",
+                "Execute helper reads and the remaining qualification/Phase 2 invocations sequentially, one process at a time. Do not alter the trace or source files.",
                 "Return only the final Phase 2 wrapper DTO. The upstream Architecture DTO is evidence to consume, not the final result.",
                 "If any invocation returns a deterministic error, end this eval with that exact diagnostic. The failed boundary is closed; do not retry against its FIFO or invent a successful DTO. Fresh semantic re-entry requires a new eval run.",
             ]
@@ -762,6 +762,30 @@ def build_context(
             "Parse this invocation's actual terminal stdout in memory with json.loads, then render the complete JSON object with json.dumps(..., ensure_ascii=False, indent=2) for your final reply.",
             "Verify that your final reply is that same complete JSON object with only JSON whitespace changes; do not manually assemble braces, reconstruct fields, add fences or explanations, or truncate it.",
         ])
+    architecture_context = None
+    if semantic_authoring and not intake_flow:
+        phase2 = request["skill_id"] == phase2_authoring.SKILL
+        facts_path = model_repository_root / (phase2_authoring.FACTS if phase2 else ARCHITECTURE_PUBLIC_AUTHORING_FACTS)
+        facts = json.loads(facts_path.read_text())
+        reads = list(facts["architecture_reads"] if phase2 else facts["required_reads"])
+        reads.append(str(facts_path.relative_to(model_repository_root)))
+        architecture_package = (model_repository_root / ".trellis/guru-team/skills/packages" / ARCHITECTURE_SKILL) if phase2 else projection_root
+        architecture_input = (model_repository_root / "docs/phase2-evidence/architecture-input.json") if phase2 else (model_repository_root / facts["public_input_locator"])
+        architecture_context = architecture_authoring.reviewer_context(
+            model_repository_root, architecture_package,
+            f"{helper_path} {qualification_helper_arguments}", reads, architecture_input,
+            upstream=phase2,
+        )
+        if not phase2:
+            # Case evidence contains locators only; no task framing or outcomes.
+            case_commands = "\n".join(
+                f"{helper_path} {qualification_helper_arguments} read --kind case_file --path {path}"
+                for path in evidence_paths
+            )
+            architecture_context = architecture_context.replace(
+                "Form your independent architecture judgment", case_commands + "\nForm your independent architecture judgment", 1,
+            )
+            context = architecture_context
     context_path = model_root / "native-context.txt"
     context_path.write_text(context, encoding="utf-8")
     private_root = execution_root / "private-control"
@@ -779,6 +803,7 @@ def build_context(
         "response_fifo": str(response_fifo),
         "private_root": str(private_root),
         "semantic_authoring": semantic_authoring,
+        "architecture_context": architecture_context,
         "native_authoring_flow": "standard_intake" if intake_flow else None,
         "intake_receipts_path": str(intake_receipts_path),
         "intake_read_paths": inventory if intake_flow else None,
@@ -903,9 +928,10 @@ def validate_native_trace(
             invocations.append(event)
         else:
             raise ValueError("native trace event kind is invalid")
-    if len(skill_reads) != 1 or events.index(skill_reads[0]) != 0:
-        raise ValueError("native trace must begin with one exact Skill read")
     phase2 = semantic_authoring and request["skill_id"] == phase2_authoring.SKILL
+    first_skill = (owner_repository / ".trellis/guru-team/skills/packages" / ARCHITECTURE_SKILL / "SKILL.md") if phase2 else skill_path
+    if len(skill_reads) != 1 or events[0].get("path") != str(first_skill):
+        raise ValueError("native trace must begin with one exact Skill read")
     if len(invocations) != (4 if phase2 else 1) or events.index(invocations[-1]) != len(events) - 1:
         raise ValueError("native trace must end with one public wrapper invocation")
     if phase2:
@@ -964,6 +990,11 @@ def validate_native_trace(
         }
         if not required_owner_reads.issubset(observed_owner_reads):
             raise ValueError("semantic authoring trace omitted required authority reads")
+        architecture_authoring.validate_reviewer_reads(
+            events, owner_repository,
+            facts["architecture_reads"] if phase2 else facts["required_reads"],
+            phase2=phase2,
+        )
     invocation = invocations[-1]
     argv = invocation.get("argv")
     if (
@@ -1253,16 +1284,37 @@ def main() -> int:
         "environment": recorded_native_environment(native_environment),
     }
     started = time.monotonic_ns()
-    process = subprocess.run(
-        argv,
-        cwd=model_root,
-        input=context if args.adapter == "claude" else None,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-        env=native_environment,
-    )
+    architecture_execution = None
+    if semantic_authoring_codex and request["skill_id"] == phase2_authoring.SKILL:
+        reviewer_output_path = model_root / "output/architecture-last-message.txt"
+        reviewer = architecture_authoring.execute_reviewer(
+            argv, reviewer_output_path, protocol["architecture_context"],
+            cwd=model_root, environment=native_environment,
+        )
+        architecture_execution = {
+            "context": protocol["architecture_context"], "fresh_ephemeral": True,
+            "returncode": reviewer.returncode, "stdout": reviewer.stdout, "stderr": reviewer.stderr,
+        }
+        try:
+            actual = unwrap_native_output(args.adapter, reviewer.stdout, reviewer_output_path)
+            receipt = json.loads(trace_path.read_text())
+            architecture_execution["public_stdout"] = actual
+            architecture_authoring.validate_phase2_predecessor(reviewer, actual, receipt["events"])
+        except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
+            process = subprocess.CompletedProcess(argv, 2, reviewer.stdout, f"fresh Architecture worker incomplete: {exc}; {reviewer.stderr}")
+        else:
+            context += "\nActual preceding fresh Architecture wrapper stdout (consume unchanged):\n" + actual
+            argv[-1] = context
+            context_path.write_text(context)
+            model_input_audit["context"] = context
+            process = subprocess.run(argv, cwd=model_root, text=True, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, check=False, env=native_environment)
+    else:
+        process = subprocess.run(
+            argv, cwd=model_root, input=context if args.adapter == "claude" else None,
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=False, env=native_environment,
+        )
     if boundary_stop is not None:
         boundary_stop.set()
     if boundary_thread is not None:
@@ -1294,6 +1346,7 @@ def main() -> int:
         "wrapper_path": str(wrapper_path),
         "environment": recorded_native_environment(native_environment),
         "model_input_audit": model_input_audit,
+        "architecture_execution": architecture_execution,
         "public_input_binding": public_input_binding,
         "permission_probe": permission_probe,
         "returncode": process.returncode,

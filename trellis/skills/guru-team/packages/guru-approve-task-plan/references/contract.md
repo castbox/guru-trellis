@@ -64,6 +64,9 @@ The global workflow mandatory invokes
 this owner can approve Planning. Its fresh `baseline_current` is the adjacent
 upstream result and proves that the contract-selected Architecture AI owner has
 already completed semantic authoring and the formal deterministic invocation.
+For a new Planning assessment, that owner is the fresh independent subagent
+selected by the Architecture contract's Independent assessment entry. An
+approval caller's self-authored result or a checker pass is insufficient.
 This Skill consumes only that checked route and rereads the live project-owned Architecture
 Baseline, design-constitution locator/identity, and Architecture change-contract
 locator/identity. It never reads Architecture private state or repeats that
@@ -93,6 +96,18 @@ dimensions:
 6. Docs SSOT;
 7. provenance;
 8. supported unusual scenarios.
+
+Before a proposed change, validation obligation or revision action enters the
+plan, distinguish the evidenced problem, its necessity for this task, and the
+suitability of its mechanism through the existing qualification owners. Ask
+where the current goal or an affected current contract fails without the work.
+Retain necessary refactoring, consumer adaptation and old-path retirement;
+neither minimum diff nor unrelated historical debt defines the task. Approved
+plans, green tests and reviewer suggestions do not establish necessity. A true
+responsibility violation need not await functional failure to be considered.
+Keep legal non-default configuration distinct from defaults/recommendations
+and authority-defined hard invariants; diagnostic gaps do not invent business
+rejection. Out-of-plan scope or authority changes use the existing routes.
 
 For implementation planning and acceptance verifiability, apply
 `.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value` to the

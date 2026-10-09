@@ -1740,13 +1740,17 @@ an empty semantic result list cannot establish this flow's success. After an
 independent AI reviews the actual completed transcript, source facts and
 receipts, the existing `run-skill-evals --semantic-grading` entry may grade that
 same completed run root without staging or dispatching the model again.
-This two-stage branch updates only cases declaring
-`native_authoring_flow=standard_intake`. A completed full/mixed run containing
-such cases must validate its complete applicable case/side identity before
-updating only those Intake rows and the derived aggregate. Every non-flow row
-and its execution evidence remain unchanged; non-flow assertions in grading
-are rejected. Non-flow-only post-owner, Architecture, Phase 2 and qualification
-runs keep their existing fresh/saved execution behavior.
+This two-stage branch applies to cases declaring
+`native_authoring_flow=standard_intake`, and to existing Architecture/Phase 2
+`native_execution_mode=semantic_authoring` cases. The latter require actual
+fresh independent Architecture execution before grading; overall Phase 2
+consumes its actual upstream result and performs its own complete review.
+A completed full/mixed run must validate its complete applicable case/side
+identity before updating only supported semantic-authoring rows and the derived
+aggregate. Other rows and their execution evidence remain unchanged; unrelated
+assertions in grading are rejected. Post-owner and qualification runs retain
+their existing execution behavior. Grading evaluates completed native evidence;
+it does not cache or reuse production workflow gates.
 Validate the existing execution and case/side/assertion identities before
 updating semantic results and the derived aggregate. Preserve actual exits,
 deterministic results, timing and raw transcript/trace/receipt bytes. Missing or

@@ -207,6 +207,15 @@ pre-task 不需要在仓库保存 owner 或 prerequisite 文件。Base sync 只�
 
 用户只需要在存在真实选择、范围变化或外部副作用时参与确认。
 
+### 独立架构评估
+
+需要新的架构结论时，Planning、适用的 implementation discovery、Phase2 和 committed
+Branch Review 由 fresh independent subagent 执行既有
+[`guru-maintain-architecture-baseline`](trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md)。
+主会话协调候选与修订，消费 reviewer 的真实结果；Delivery/Completion 按 current
+eligibility 接续。方法与输入边界只由 [Architecture step-local contract](trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)
+定义。真实 native 行为与平台投影的验证边界见 [#404 唯一 Test](docs/requirements-design-test-contributions/404-independent-architecture-review/test.md)。
+
 ### 正常场景资格
 
 公共 closed-loop Skill `guru-qualify-normal-scenario` 是新场景资格的唯一语义

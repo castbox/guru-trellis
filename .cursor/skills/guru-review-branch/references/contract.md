@@ -77,6 +77,12 @@ task-local Architecture change contract. It never opens Architecture private
 state; this consumer does not read Architecture private state and never treats
 the Phase 2 Architecture result as current Branch Review evidence.
 
+Apply the Architecture contract's Independent assessment entry to a new fresh
+reviewer for this committed candidate. A compliant worker may perform
+Architecture first and this complete review afterwards; do not dispatch a
+narrative-preloaded overall worker and ask it to retroactively author the
+Architecture pass. Actual results and exact committed identities stay separate.
+
 ### Whitespace Candidate Hygiene
 
 An extra blank line at end of file, including multiple blank lines after the
@@ -139,6 +145,24 @@ Perform one independent semantic review of the complete current
 severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
 eligible through `classified` may become a P0-P3 finding.
+
+Before a revision, test, severity or route, independently establish the problem,
+the current goal/affected contract that requires fixing it, and mechanism
+suitability through both existing qualification owners. Necessary local
+refactoring, consumer adaptation and old-path exit remain required; unrelated
+historical debt is not automatically a current finding, gate or follow-up.
+Task scope does not negate an evidenced Architecture violation, and finding
+one does not authorize changing goals or authority. Green tests, prior approval
+and reviewer advice are not necessity evidence.
+
+Attribute red tests with bounded evidence to regression, inseparable current
+prerequisite, unrelated history, environment or unresolved cause. Stop repair
+and investigation when unrelatedness is established; do not claim unresolved
+failures are historical or widen scope to achieve full green. A required
+release gate may block publication without authorizing unrelated repair. Bind
+legal non-default configuration and protection invariants to their authority;
+defaults/recommendations and missing diagnostic labels do not become business
+rejection conditions.
 
 For a full `branch_review`, independently bind the approved Delivery slice,
 explicit remaining work, observable independent-delivery conditions, and

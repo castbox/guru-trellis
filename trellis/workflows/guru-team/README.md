@@ -11,6 +11,15 @@ Interface before invoking its step. The workflow supplies mandatory invocation,
 unique typed-exit consumers and fail-closed routing; package owners supply
 judgment and deterministic command details.
 
+New Architecture conclusions at Planning, applicable implementation discovery,
+Phase 2 and committed Branch Review are produced by a fresh independent
+subagent executing the existing
+[Architecture Skill](../../skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md).
+The [step-local contract](../../skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)
+owns reviewer method and input boundaries; this workflow routes the real result.
+Delivery/Completion consume current conclusions and matching-stage eligibility.
+Actual native and projection evidence is owned by [#404 Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
+
 ## Current Lifecycle
 
 ```text

@@ -2,6 +2,14 @@
 
 ## Current identity
 
+- version：`current-main-0.6.17-guru.78`
+- status：`active`
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.78`，继承 immutable `.77` 并承接 reviewed #404 RDT 合同。
+- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.77` / `active`；候选 Architecture promotion 尚未完成。
+- 结果 authority：`docs/requirements-design-test-contributions/404-independent-architecture-review/test.md`；native acceptance、fresh gates 与软件发布均不得由知识晋升推定。
+
+## Predecessor identity and provenance
+
 - version：`current-main-0.6.17-guru.77`
 - status：`active`
 - Requirements：`docs/requirements/README.md`

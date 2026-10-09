@@ -937,7 +937,14 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 ).read_text(encoding="utf-8")
             )
             self.assertEqual(facts["schema_version"], "1.0")
-            self.assertIn(".trellis/tasks/eval-task/prd.md", facts["required_reads"])
+            self.assertFalse(any(
+                Path(path).name in {"prd.md", "implement.md", "task.json"}
+                for path in facts["required_reads"]
+            ))
+            self.assertIn(".trellis/tasks/eval-task/design.md", facts["required_reads"])
+            for caller in ("transport.py", "import_pipeline.py", "query_summary.py"):
+                self.assertIn(caller, facts["required_reads"])
+                self.assertTrue((owner_repository / caller).is_file())
             self.assertIn("docs/architecture/06-governance/change-contract.md", facts["required_reads"])
             self.assertNotIn("expected", json.dumps(facts).lower())
             self.assertNotIn("typed_exit", json.dumps(facts).lower())
@@ -963,12 +970,6 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 self.assertNotIn("owner_result", json.dumps(native_request).lower())
                 self.assertIn("references/contract.md", context)
                 self.assertIn("schemas/semantic-result.schema.json", context)
-                self.assertIn("Every listed read is mandatory", context)
-                self.assertIn("Trace validation fails closed", context)
-                self.assertIn("one process at a time", context)
-                self.assertIn("do not repair or rewrite the trace receipt", context)
-                self.assertIn("Author the smallest owner_result valid", context)
-                self.assertIn("no_architecture_impact must omit", context)
                 owner_repository = Path(protocol["owner_repository"])
                 self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
 
