@@ -22,15 +22,39 @@ The only input profile is `delivery_review`:
   complete Branch Review.
 
 Publish's `review_stale` exit projects only `task_ref`. The caller authors
-`profile=delivery_review`, `mode`, and a fresh `branch_review_commit` from the
-new complete Branch Review. `stale_reason` remains Publish-owned context and is
-not part of this Skill's public input. Re-entry is not a continuation of the
-old semantic result and creates no additional recovery DTO.
+`profile=delivery_review`, `mode`, and `branch_review_commit` from a currently
+applicable checked Branch Review output as follows:
+
+- If that output is still available in the current context, reread live
+  candidate, base, exact review range and applicable review obligations. When
+  all remain unchanged, use its existing anchor directly and execute fresh
+  Delivery Review. Loss of Delivery output or Publish-private state, and normal
+  checkpoint retirement, do not by themselves require another Branch Review.
+- If committed content or applicable review obligations changed, return to
+  the earliest affected existing owner. Required content revisions use the
+  existing implementation/Phase 2/Task Commit path, followed by complete
+  independent Branch Review for the new exact base-to-HEAD. Base evolution
+  uses the existing pair guard, Reconcile and bounded-continuity contracts;
+  it is not an automatic full-history replay or a base/range bypass.
+- If the Branch Review output itself is unavailable, rerun that semantic
+  owner against current authority. Do not manufacture it from Git shape,
+  task status, an old summary, mutation receipt, or Phase 2 checkpoint. A
+  new raw commit value alone does not establish that Branch Review occurred.
+
+`stale_reason` remains Publish-owned context and is not part of this Skill's
+public input. An authority identity update requires its original owner's fresh
+applicability judgment; an equivalent applicable contract does not alone
+invalidate unrelated review. Current facts and the checked output, rather than
+a changed-path whitelist, establish anchor applicability. This entry creates
+no additional recovery DTO, retained checkpoint, or continuation authority.
 
 The owner freshly reads current requirement authority, approved planning,
 Delivery policy, current slice, remaining work, independent delivery
 conditions, validation boundaries, RDT/Docs, Architecture, base, complete
-Branch Review, and live Git/GitHub facts. A previous pass is not reusable.
+Branch Review, and live Git/GitHub facts. All ten Delivery dimensions receive
+current judgment. A previous Delivery pass is not reusable, even when the
+Branch Review anchor remains applicable; fresh review does not mechanically
+replay unaffected Planning, Check, Task Commit or Branch Review.
 
 ## Semantic Result
 
@@ -105,7 +129,10 @@ scope, sufficiency, findings, truthfulness, or route.
 After the checker-passed DTO validates against its per-exit schema, the same
 invocation deletes the checkpoint and its empty owner directory. Output loss
 requires a fresh semantic Delivery Review; no public or downstream consumer may
-read, interpret, or delete this private gate.
+read, interpret, or delete this private gate. Apply the Public Entry anchor
+rules during that fresh review; absence of this normally retired gate does not
+invalidate an otherwise current checked Branch Review output. Same-mutation
+Publish recovery remains Publish-owned and never comes from this gate.
 
 ## Public Exits
 

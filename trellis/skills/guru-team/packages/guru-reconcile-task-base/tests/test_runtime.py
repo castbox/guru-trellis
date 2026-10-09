@@ -17,7 +17,16 @@ class RuntimeTest(unittest.TestCase):
     def git(self,*args): return subprocess.run(['git',*args],cwd=self.repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip()
     def write(self,name,value): path=self.inputs/name; path.write_text(json.dumps(value)); return path
     def write_identity(self,status='in_progress',branch='feature',task_ref=None,task_id=None):
-        task_ref=task_ref or self.task_ref; task_id=task_id or self.task_id; task_dir=self.repo/task_ref; task_dir.mkdir(parents=True,exist_ok=True); (task_dir/'task.json').write_text(json.dumps({'id':task_id,'status':status,'base_branch':'main','lifecycle_generation':0}))
+        task_ref=task_ref or self.task_ref; task_id=task_id or self.task_id; task_dir=self.repo/task_ref; task_dir.mkdir(parents=True,exist_ok=True)
+        (task_dir/'task.json').write_text(json.dumps({
+            'id':task_id,'name':task_id,'lifecycle_generation':0,
+            'source':{'kind':'no_issue'},'title':'Base reconciliation fixture',
+            'description':'Current task and unchanged/evolved base pair.',
+            'status':status,'dev_type':None,'scope':'local fixture','package':None,
+            'priority':'P2','createdAt':'2026-10-09','completedAt':None,
+            'base_branch':'main','worktree_path':None,'commit':None,'pr_url':None,
+            'children':[],'parent':None,'relatedFiles':[],'notes':'','meta':{},
+        }))
         store=BranchBindingStore(inspect_repository(self.repo)); key=TaskLifecycleKey(task_id,0)
         binding=store.read(key)
         if binding is None:

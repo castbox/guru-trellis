@@ -1,5 +1,10 @@
 # Guru Team Preset
 
+Normal revision/recovery contracts live in `guru-check-task` and
+`guru-review-task-delivery`; apply/reapply projects those canonical packages
+to installed and platform copies. Targeted validation proves those projections;
+it does not replace the cumulative Upgrade/Release matrix.
+
 This preset installs the companion assets and current Skill packages for the
 `guru-team` canonical workflow into an existing Trellis project. The
 canonical package source is `trellis/skills/guru-team`; installed packages,

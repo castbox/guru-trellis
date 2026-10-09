@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值、scope ownership 与 required checks"}
+{"file": ".trellis/spec/workflow/semantic-retrieval.md", "reason": "完整语义证据检索"}
+{"file": ".trellis/tasks/10-09-464-local-revision-recovery/prd.md", "reason": "accepted AC01-13 与交付边界"}
+{"file": "docs/requirements-design-test-contributions/464-local-revision-recovery/test.md", "reason": "实际结果及未验证层级"}
