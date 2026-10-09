@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-09T23:37:13Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-10-404-independent-architecture-review",
+    "title": "#404 独立架构审查与任务必要性约束",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-10-404-independent-architecture-review",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/404-independent-architecture-review",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#404 独立架构审查与任务必要性约束",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review",
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/design.md",
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/implement.md",
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/prd.md",
+          ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#404"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/404-independent-architecture-review"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review",
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/design.md",
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/implement.md",
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/prd.md",
+        ".trellis/tasks/archive/2026-10/10-10-404-independent-architecture-review/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#404 独立架构审查与任务必要性约束；#404；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
