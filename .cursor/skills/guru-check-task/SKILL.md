@@ -8,6 +8,9 @@ description: Check the complete current task through one AI-owned semantic round
 Use this Skill after implementation reaches a reviewable state and before task
 commit. Load [references/contract.md](references/contract.md) before acting.
 
+Before judging tests or validation recommendations, read and apply
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
+
 You, the AI currently executing this Skill, are its semantic owner. Follow the
 contract's six-step execution order yourself. A worker is an optional evidence
 source, never a prerequisite owner: no dispatch, unavailable workers, or a

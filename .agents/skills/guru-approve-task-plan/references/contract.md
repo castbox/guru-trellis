@@ -94,6 +94,14 @@ dimensions:
 7. provenance;
 8. supported unusual scenarios.
 
+For implementation planning and acceptance verifiability, apply
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value` to the
+proposed tests and gates. Judge whether the planned entry, observed behavior
+and defect detection prove the accepted scope at the stated layer. Revise
+ineffective validation through the existing task-local revision loop before
+approval; use existing clarification or blocked routes for actual authority
+choices or evidence gaps. Keep the judgment in the existing dimensions.
+
 The planning result also records one closed Delivery policy as semantic
 evidence: the complete task scope, current Delivery slice, explicit remaining
 work, observable conditions that make the slice independently deliverable,

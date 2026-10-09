@@ -8,6 +8,9 @@ description: Review committed task content, bounded base continuity, or a comple
 Use this Skill after `guru-create-task-commit:committed` and before publication.
 Read [references/contract.md](references/contract.md) completely before acting.
 
+Before judging committed validation or its claims, read and apply
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
+
 ## Archived Read-Only Review
 
 Aggregate input schema 5.0 adds the independent `archived_review` profile.

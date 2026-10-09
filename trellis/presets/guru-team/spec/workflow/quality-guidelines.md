@@ -87,6 +87,58 @@ rg "review-branch|finding|observation|followup-candidate|最终放行审查代�
 rg "wait-timeout|progress-observed|continue-waiting|supersedes_agent_id|default at least 5 minutes|stale_after_unanswered_status_request|agent-progress.jsonl|long-command wrapper|periodic heartbeat"
 ```
 
+## Test And Validation Value
+
+Every test and validation gate must serve an explicit requirement, observable
+behavior, or actual defect detection. This applies to unit, integration,
+contract, static, E2E, CI/CD, deployment and release checks, and validation
+requirements proposed by AI during planning, implementation or review. Test,
+assertion and coverage counts alone do not establish sufficiency.
+
+1. **Do not prove fixed declarations by comparing them to themselves.** Reject
+   constant, config or text assertions added only to lock current content.
+   When text or a fixed identifier is an explicit public contract with a real
+   consumer, exercise its effect on parsing, routing or delivery; a string
+   comparison alone does not prove that behavior.
+2. **Do not freeze mutable configuration.** Current ports, addresses, timeouts,
+   retry counts, resource limits, model names, versions and switches are not
+   hardcoded correct answers. Do not invent permitted ranges, allowlists or
+   deployment gates from experience. A legitimate config adjustment alone is
+   not a behavior regression and must not require changing fixed-value
+   assertions.
+3. **Exercise the declared test layer.** Reject tests that only inspect their
+   own fixture/mock, copy the implementation to compute an expected result, or
+   bypass the tested entry while claiming to verify it. Unit tests may call
+   the tested function/module directly and mock external dependencies; they
+   must execute the tested logic and observe its result. Module evidence is
+   not full-chain proof, and every test need not repeat the full chain.
+4. **Require independent value from additional cases.** A new case or parameter
+   combination must detect a distinct behavior, boundary or defect. Equivalent
+   inputs and repeated assertions of the same fact do not add validation value.
+5. **Ground assertions in requirements.** Ask what behavior is checked, through
+   which entry its result is observed, and what actual error would fail the
+   test. If deleting or breaking the tested functionality would leave the
+   test passing, inspect self-proof, excessive mocking or the wrong entry.
+   This is an AI review method, not a mandatory mutation-testing gate.
+6. **Prove configuration usability by running the appropriate chain.**
+   Integration/E2E in an appropriate environment proves that configuration
+   supports infrastructure and business operation. CI/CD may run those checks
+   and consume their results; config-value comparisons cannot replace that
+   proof. Do not add environment-config verification gates to business code.
+7. **Use the existing semantic owners.** Planning, Phase 2 Check and Branch
+   Review judge necessity and effectiveness from requirements and test content.
+   Scripts execute checks and report objective results; they do not judge
+   sufficiency from counts, keywords or fixed values. Do not add per-test
+   rationale files, scores, registries or proof artifacts for this policy.
+
+Fixed expected results remain valid when required by behavior, such as a
+calculation for given inputs or a protocol-defined status code. Distinguish
+those results from values merely chosen by the current implementation or
+configuration; calling a check a contract test does not make an implementation
+detail public. Apply this policy within the current accepted scope and the
+validation ownership below; it does not require historical test cleanup across
+business repositories or a new full-chain gate for every change.
+
 ## Validation Scope Ownership
 
 Every Issue and task must use the smallest reliable validation set that proves

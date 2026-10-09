@@ -9,6 +9,9 @@ Use this Skill after the current planning wording review has passed and before
 task activation. Load [references/contract.md](references/contract.md) before
 acting.
 
+Before judging planned validation, read and apply
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
+
 Read the live requirement authority, `prd.md`, `design.md`, `implement.md`, and
 the Docs SSOT plan directly. Review requirement
 authority, scope, design, implementation planning, acceptance verifiability,

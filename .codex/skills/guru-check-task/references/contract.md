@@ -130,6 +130,16 @@ negative-conclusion requirements while judging the existing nine dimensions.
 Do not persist raw searches, query lists, or search-process fields in the
 private result or public DTO.
 
+Apply `.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+to the actual tests, checks and reported outcomes in the current worktree.
+Trace their entry and observations to the tested logic and accepted behavior;
+a command pass does not settle necessity or effectiveness. Worker checklists
+and coverage recommendations are evidence to judge under this policy, not
+automatic requirements to add tests or repeat a full chain. Qualified
+current-scope defects use the existing finding/fix/full-rerun loop; genuine
+evidence gaps use existing blocked handling. Carry conclusions in the existing
+adequacy dimensions and validation summaries.
+
 1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
    applicable validation commands.

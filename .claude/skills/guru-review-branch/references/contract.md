@@ -124,6 +124,15 @@ family and evidence-coverage bar during candidate qualification, including
 before any negative existence or impact conclusion. Search transcripts and
 query metadata remain transient and never enter the gate or public handoff.
 
+Independently apply
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value` to the
+tests, validation gates and proof claims in the complete committed review
+range. Check the actual entry, observed behavior and defect detection against
+live requirements; neither Phase 2 approval nor passing commands settle test
+value. Keep bounded continuity review within its integration surface and
+archived review read-only. Qualified current-scope defects and evidence gaps
+use the profile's existing finding or blocked routes and existing gate fields.
+
 Perform one independent semantic review of the complete current
 `origin/<base>...HEAD` range. Form a candidate-only set, then invoke
 `guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
