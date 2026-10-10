@@ -1,0 +1,29 @@
+{
+  "id": "396-draft-intake-recovery",
+  "name": "396-draft-intake-recovery",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 396,
+    "disposition": "exact_source"
+  },
+  "title": "修正 draft Intake 调用构造与同范围恢复",
+  "description": "仅交付 live #396 r1：真实 proposed_draft production chain、最小 authoring、五误用/刷新/缺前序与 Agent 无副作用恢复定向证据。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/396",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-11",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -290,6 +290,148 @@ recorded-result example, not the minimal authoring input. Replace owner_result
 with record receipt `result` for check, then add only check receipt `result.validation_receipt` for
 invoke. No repository file is needed for this call-local exchange.
 
+### Producer-Bound Draft Recipe
+
+For `proposed_draft`, take `draft_id` from the actual producer public
+`transition.target_locator`. Bind the current source snapshot's `draft_id`,
+the authored `target.draft_id`, and `public_input.target_locator` to that exact
+value. Preserve the entire transition, including mode and continuation id.
+An example's locator is fictional shape data: never substitute it, an Issue
+label such as `#145`, or a newly invented id for the producer's locator.
+`examples/change-request.json` and `examples/public-proposed-draft-input.json`
+illustrate the same draft identity; they supply no real prerequisite output.
+
+`source_request_sha256` hashes the complete authority projection below using
+UTF-8 canonical JSON (`ensure_ascii=False`, sorted keys, separators `,` and
+`:`). `body_sha256` hashes only the current UTF-8 body bytes. These are distinct
+values; title bytes remain independently bound by the recorder. Use the
+reviewed normalized repository identity, not a draft name, as `repo`.
+
+```json
+{"kind":"draft","repo":"example/guru-extension","issue_number":null,"url":null,"state":"draft","updated_at":null,"body_sha256":"<current body SHA-256>"}
+```
+
+The following executable recipe uses standard-library JSON/hash/transport only.
+Call it in the target repository with the actual Wording `pass` stdout, current
+draft source, reviewed repository identity, and this AI's freshly completed
+owner review. `completed_review` supplies `generated_at`, `semantic_review`,
+`typed_exit`, `reason`, `affected_evidence`, and `consumer`, as described above;
+it supplies no target or recorder-derived fields. It must contain the real ten
+dimension judgments and evidence, explicit findings (`[]` only when none),
+scope conclusion and minimum Gate `status/reviewer/summary`. Nothing here
+creates a semantic review, defaults a pass, or calculates private linkage.
+
+```python
+import copy
+import hashlib
+import json
+import subprocess
+
+def draft_envelope(draft_source, wording_output, repo_ref, completed_review):
+    transition = copy.deepcopy(wording_output["transition"])
+    assert wording_output["exit_id"] == "pass"
+    assert transition["stage"] == "wording_current"
+    locator = transition["target_locator"]
+    source = copy.deepcopy(draft_source)
+    assert source["kind"] == "draft" and source["draft_id"] == locator
+    body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
+    authority = {
+        "kind": "draft", "repo": repo_ref, "issue_number": None,
+        "url": None, "state": "draft", "updated_at": None,
+        "body_sha256": body_sha256,
+    }
+    authority_sha256 = hashlib.sha256(json.dumps(
+        authority, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")).hexdigest()
+    owner = copy.deepcopy(completed_review)
+    owner["mode"] = transition["mode"]
+    owner["target"] = {
+        "kind": "proposed_draft", "repo": repo_ref, "draft_id": locator,
+        "source_request_sha256": authority_sha256,
+    }
+    return {
+        "schema_version": "1.0",
+        "public_input": {
+            "profile": "proposed_draft", "source_exit": wording_output["exit_id"],
+            "mode": transition["mode"], "target_locator": locator,
+            "continuation_id": transition["continuation_id"],
+        },
+        "transition": transition,
+        "owner_context": {"change_request": source}, "owner_result": owner,
+    }
+
+def record_check_invoke(envelope):
+    envelope = copy.deepcopy(envelope)
+    scripts = ".trellis/guru-team/skills/packages/guru-review-change-request/scripts/"
+    def command(name):
+        result = subprocess.run(
+            ["bash", scripts + name, "--root", ".", "--invocation", "-", "--json"],
+            input=json.dumps(envelope, ensure_ascii=False), text=True,
+            capture_output=True, check=True,
+        )
+        return json.loads(result.stdout)
+    recorded = command("record-change-request-review.sh")
+    assert recorded["formal_exit"] is False
+    envelope["owner_result"] = recorded["result"]  # replace the whole result
+    checked = command("check-change-request-review.sh")
+    assert checked["formal_exit"] is False
+    envelope["validation_receipt"] = checked["result"]["validation_receipt"]
+    return command("invoke.sh")  # actual formal exit; consume its declared route
+```
+
+The recorder receives minimal authoring, not the old complete
+`examples/issue-review.json` result. Omit `reviewed_linkage_sha256`,
+`scope_conclusion_sha256`, and `findings_count` from the authored Gate. Do not
+import eval/private runtime or hash `evidence_linkage` to supply them. Record
+derivation and target normalization are existing capabilities, not a new
+review or recovery mechanism. Keep source/public input/transition unchanged
+through this same-owner sequence. Record/check receipts have
+`formal_exit=false`; only `invoke.sh` supplies a formal exit, and only its
+actual `ready` may enter the ready consumer. Stop on a command error, inspect
+its actual diagnostic, and follow the recovery below instead of using a
+partial stdout as a pass or inventing a validation receipt.
+
+### Same-Scope Authoring Recovery
+
+An ordinary construction error in this side-effect-free review is handled by
+the current AI. Reread the current source and actual prerequisite public
+output, explain the mistake, and rebuild the entire minimal consumer envelope
+with the recipe above. Reassess the ten dimensions against those current facts;
+unchanged evidence can remain applicable, but a previously authored `passed`
+is not a substitute for that judgment. Do not ask for repeated confirmation
+when scope/authority and side effects are unchanged. Real scope choices and
+external or Git side effects retain their existing owner boundaries.
+
+| Ordinary mistake | Existing behavior and consumer reconstruction |
+| --- | --- |
+| Draft target copied from standalone authoring with `caller_locator`/`request_id` | Target normalization may ignore these variant extras; their presence alone does not establish rejection. The public input is still its closed draft profile. Rebuild the draft target using only `kind/repo/draft_id/source_request_sha256`; preserve legal normalization and diagnose actual identity/digest errors separately. |
+| Body SHA used as `source_request_sha256` | The wrong authority digest is rejected. Recompute only the complete public authority projection from the same reviewed body and repository. |
+| Invented or inconsistent `draft_id` | Source, target and public locator must bind to the actual producer locator. Rebuild this consumer from that same real draft source/output; never change the producer to accommodate the invented id. |
+| Gate linkage computed by hashing a linkage object containing `linkage_sha256` itself | An explicitly supplied wrong derived Gate value is rejected. Discard it and omit all three Gate-derived fields; let the existing recorder derive its fixed projection. |
+| Old complete owner result partly patched or recomputed | It may retain stale target/Gate bindings and fail; patching a field does not refresh the whole review. Discard this consumer result, reconstruct fresh minimal authoring, then replace it with the actual whole record `result` before check. Do not patch recorded prerequisites, private linkage, facts digest or receipt. |
+
+These are normal authoring mistakes, not a new rejection policy or hostile-input
+model. Preserve the original producer transition throughout same-source
+recovery. If the source snapshot is actually for another draft, do not relabel
+it to force a match; obtain the current matching source/upstream output first.
+
+A real body or authority revision requires the existing upstream refresh:
+Sync/Discovery, Clarification, and Wording run against the revised content
+before a new readiness review. Consume their new actual outputs; the locator
+may legitimately change. The old source-authority digest and old receipt do
+not stand in for revised content. Do not edit an old transition's hashes or
+locator to make it appear refreshed.
+
+Missing prerequisites are distinct from consumer construction errors.
+With an actual original `clarity_current`, author a real missing-wording
+finding and `review_wording` decision using that original transition. With
+an actual original `context_current`, the corresponding missing-clarity route
+is `clarify_requirements`. Perform the declared review and record/check/invoke
+for that route; never downgrade a later transition or synthesize an earlier
+one. If the required original public output or current authority is absent,
+stop and identify exactly what its owner must supply. Do not manufacture
+producer passes, hashes, receipts or `ready` to continue.
+
 # Invocation-Local Authority Snapshot And Receipt
 
 One readiness invocation captures the target issue authority once. Recorder,

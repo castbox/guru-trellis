@@ -767,7 +767,7 @@ def readiness_prerequisites(
 ) -> dict[str, dict[str, Any]]:
     context = readiness_context(fixture, source, mode, continuation)
     if through == "context_current":
-        return {"transition": context["transition"]}
+        return {"transition": context["transition"], "public_outputs": {"context": context}}
     if source.get("kind") == "issue":
         live = runtime.issue_view(
             str(source.get("repo") or ""), int(source.get("number") or 0), fixture
@@ -850,7 +850,8 @@ def readiness_prerequisites(
     if clarified.get("exit_id") != "clear":
         raise ValueError("Readiness fixture requires the production clear transition")
     if through == "clarity_current":
-        return {"transition": clarified["transition"], "clarity": clarity}
+        return {"transition": clarified["transition"], "clarity": clarity,
+                "public_outputs": {"context": context, "clarity": clarified}}
 
     scope, contents = runtime.contract_wording_build_scope(
         fixture, "change_request", mode,
@@ -887,11 +888,13 @@ def readiness_prerequisites(
     }, "--invocation", "-")
     if worded.get("exit_id") != "pass":
         raise ValueError("Readiness fixture requires the production pass transition")
-    return {"clarity": clarity, "wording": wording, "transition": worded["transition"]}
+    return {"clarity": clarity, "wording": wording, "transition": worded["transition"],
+            "public_outputs": {"context": context, "clarity": clarified, "wording": worded}}
 
 def readiness_semantic_review(
-    runtime: Any, target: dict[str, Any], typed_exit: str,
+    runtime: Any, target: dict[str, Any], typed_exit: str, *, evidence_ref: str = "target",
 ) -> dict[str, Any]:
+    """Semantic shape samples for objective tests, never a native Agent's review."""
     non_ready = typed_exit != "ready"
     finding_id = "stage0-readiness-finding"
     category = {
@@ -903,14 +906,14 @@ def readiness_semantic_review(
     finding = {
         "finding_id": finding_id, "category": category,
         "summary": "The reviewed evidence requires the declared prerequisite route.",
-        "blocking": True, "evidence_refs": ["target"],
+        "blocking": True, "evidence_refs": [evidence_ref],
         "affected_hashes": [target["content_sha256"]],
         "route_basis": "The semantic review selected the owner of the identified gap.",
     }
     dimensions = [{
         "id": dimension_id, "status": "failed" if non_ready and index == 0 else "passed",
         "summary": "This readiness dimension was reviewed against current linked evidence.",
-        "evidence_refs": ["target"], "affected_hashes": [target["content_sha256"]],
+        "evidence_refs": [evidence_ref], "affected_hashes": [target["content_sha256"]],
         "finding_ids": [finding_id] if non_ready and index == 0 else [],
     } for index, dimension_id in enumerate(runtime.CHANGE_REQUEST_REVIEW_DIMENSIONS)]
     scope_conclusion = {
@@ -932,7 +935,7 @@ def readiness_semantic_review(
         },
     }
 
-def build_readiness_owner(
+def prepare_readiness_invocation(
     runtime: Any,
     fixture: Path,
     package_root: Path,
@@ -940,7 +943,13 @@ def build_readiness_owner(
     mode: str,
     profile: str,
     continuation: str = "stage0-current",
+    *, source_override: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
+    """Run real producers and prepare minimal objective-test authoring.
+
+    Native callers may reuse source/public outputs; they must author their own
+    semantic review instead of presenting this fixture sample as an AI Gate.
+    """
     route_by_recipe = {
         "readiness-ready": "ready",
         "readiness-clarify": "clarify_requirements",
@@ -974,6 +983,8 @@ def build_readiness_owner(
         source["draft_id"] = "draft:" + hashlib.sha256(source["body"].encode()).hexdigest()
     else:
         raise ValueError(f"unsupported readiness input profile: {profile}")
+    if source_override is not None:
+        source = copy.deepcopy(source_override)
     source_path = fixture / ".trellis/.runtime/guru-team/evals/change-request.json"
     source_path.write_text(json.dumps(source) + "\n", encoding="utf-8")
     prerequisites = readiness_prerequisites(
@@ -982,11 +993,11 @@ def build_readiness_owner(
             typed_exit, "wording_current"
         ),
     )
-    scope, _ = runtime.contract_wording_build_scope(
-        fixture, "change_request", mode,
-        change_request_input=source_path.relative_to(fixture).as_posix(),
-    )
-    title_sha256, body_sha256, _ = runtime.change_request_review_scope_hashes(scope)
+    transition = prerequisites["transition"]
+    if profile == "proposed_draft" and source["draft_id"] != transition["target_locator"]:
+        raise ValueError("Readiness fixture requires the matching real draft source and producer locator")
+    title_sha256 = hashlib.sha256(source["title"].encode("utf-8")).hexdigest()
+    body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
     if profile == "current_issue":
         raw_target = {
             "kind": "existing_issue",
@@ -998,11 +1009,13 @@ def build_readiness_owner(
             "body_sha256": body_sha256,
         }
     else:
-        source_request_sha256 = runtime.context_digest(
-            runtime.change_request_review_request_authority_projection(
-                repo, source, body_sha256
-            )
-        )
+        authority = {
+            "kind": "draft", "repo": repo, "issue_number": None, "url": None,
+            "state": "draft", "updated_at": None, "body_sha256": body_sha256,
+        }
+        source_request_sha256 = hashlib.sha256(json.dumps(
+            authority, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        ).encode("utf-8")).hexdigest()
         raw_target = {
             "kind": profile,
             "repo": repo,
@@ -1011,7 +1024,7 @@ def build_readiness_owner(
             "body_sha256": body_sha256,
             "side_effect_free": True,
             **(
-                {"draft_id": source["draft_id"]}
+                {"draft_id": transition["target_locator"]}
                 if profile == "proposed_draft"
                 else {
                     "caller_locator": "stage0-eval",
@@ -1019,11 +1032,14 @@ def build_readiness_owner(
                 }
             ),
         }
-    target, scope, contents = runtime.change_request_review_normalize_target(
-        fixture, raw_target, source_path.relative_to(fixture).as_posix(), mode,
+        if profile == "proposed_draft":
+            for derived in ("title_sha256", "body_sha256", "side_effect_free"):
+                del raw_target[derived]
+    evidence_ref = "transition.context_result_sha256"
+    evidence_hash = transition["context_result_sha256"]
+    semantic_review = readiness_semantic_review(
+        runtime, {"content_sha256": evidence_hash}, typed_exit, evidence_ref=evidence_ref,
     )
-    transition = prerequisites["transition"]
-    semantic_review = readiness_semantic_review(runtime, target, typed_exit)
     authored = {
         "generated_at": "2026-01-01T00:00:00Z", "mode": mode,
         "target": raw_target,
@@ -1031,20 +1047,31 @@ def build_readiness_owner(
         "typed_exit": typed_exit,
         "reason": "The semantic readiness review selected exactly one declared route.",
         "affected_evidence": [{
-            "ref": "target", "sha256": target["content_sha256"],
-            "summary": "The current reviewed change-request title and body.",
+            "ref": evidence_ref, "sha256": evidence_hash,
+            "summary": "The actual public Discovery context used by this fixture review.",
         }],
         "consumer": runtime.CHANGE_REQUEST_REVIEW_CONSUMERS[typed_exit],
     }
     envelope = {
         "schema_version": "1.0", "public_input": {
-            "profile": profile, "source_exit": "start", "mode": mode,
+            "profile": profile, "source_exit": {
+                "context_current": "context_ready", "clarity_current": "clear",
+                "wording_current": "pass",
+            }[transition["stage"]], "mode": mode,
             "continuation_id": continuation,
             "target_locator": transition["target_locator"],
         },
         "transition": transition, "owner_context": {"change_request": source},
         "owner_result": authored,
     }
+    return envelope, prerequisites, source
+
+
+def record_readiness_invocation(
+    fixture: Path, authored: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Replace authoring with the actual record result, then consume check result."""
+    envelope = copy.deepcopy(authored)
     result = stage0_command(
         fixture, "guru-review-change-request", "record-change-request-review",
         envelope, "--invocation", "-",
@@ -1055,6 +1082,24 @@ def build_readiness_owner(
         envelope, "--invocation", "-",
     )
     envelope["validation_receipt"] = checked["validation_receipt"]
+    return result, envelope
+
+
+def build_readiness_owner(
+    runtime: Any,
+    fixture: Path,
+    package_root: Path,
+    recipe: str,
+    mode: str,
+    profile: str,
+    continuation: str = "stage0-current",
+    *, source_override: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]], dict[str, Any]]:
+    envelope, prerequisites, source = prepare_readiness_invocation(
+        runtime, fixture, package_root, recipe, mode, profile, continuation,
+        source_override=source_override,
+    )
+    result, envelope = record_readiness_invocation(fixture, envelope)
     return result, {"invocation": envelope, "producer_results": prerequisites}, source
 
 def workspace_prerequisites(
