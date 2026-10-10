@@ -77,3 +77,9 @@ Deviations.closed：无实现关闭声明；retained：descriptor 继承的 clos
 ADR：`required=false`，locator 为空。当前设计遵循已有 semantic/执行分层、单图 continuation、最小 public projection 与 current-only migration 决策，不新增 owner/single-writer、原则例外、GAP lifecycle 或 legacy compatibility exit。API successor 不等同于新的 architecture decision；实际实现改变这些边界时必须重新判定。
 Review：`pending` / `independent=false` / `committed_range=null`；这只描述尚未发生的 committed review，不替代各阶段实际评估。
 Promotion：`required` / `promoted_identity=""` / `expected_current_identity=current-main-0.6.17-guru.82`。live current 已推进时走 `sync_required`，不覆盖。无 future reviewed/promoted 状态或完成声明。
+
+## 已执行的 committed review 与知识晋升
+
+Identity：`architecture-contribution-250-phase0-intake-owner-v2`；当前状态：`reviewed_promoted`；expected_current_identity=`current-main-0.6.17-guru.82`；promoted_identity=`current-main-0.6.17-guru.83`。独立审查范围为 `origin/main@6362e080a97fb3851ad3565c65a0e21abd5c49b4...fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`。实际 committed Architecture public output 为 `baseline_current / architecture_impact / reviewed_candidate`，完整 Branch Review public output 为 `passed`，task 与 review commit 精确匹配；各自正式 wrapper 已执行。
+
+原 Architecture owner fresh 复核 expected `.82` 后串行晋升 `.83`，保留 constitution、owners、ADR/GAP 生命周期、软件四轴及唯一 Test 的原执行对象；同步项目本地 baseline-usage 的 current locator/identity/source binding，不改公共模板或历史 contribution。上文 candidate/pending 字段保留为实现与晋升 preimage，不冒充当前 gate。晋升产生的新 diff 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review，之后才进入 Delivery；本次不声明这些门禁、Completion、Release 或生产部署完成。

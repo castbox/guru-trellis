@@ -285,3 +285,7 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 ## ARCH-CUR-055：中间 receipt 与正式 Skill exit（.82）
 
 `ARCH-CUR-055`（reviewed #453 contribution；promotion 新 diff gates pending）：commands 1.1 显式声明 intermediate_receipt/single_typed_exit；dispatcher 仅包装中间成功 CLI stdout，固定 projection 服务真实当前 callers。正式 wrapper、public DTO、semantic/deterministic owner、内部 checkpoint/digest 与 atomic/recovery 保持。共享 [companion spec](../../../trellis/presets/guru-team/spec/workflow/companion-scripts.md#intermediate-command-stdout-10) 单写 transport 规则；[唯一 Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md) 分开承接 schema/consumer 与真实 native 声明/动作。无新 ADR/GAP/长期双读。
+
+## ARCH-CUR-056：唯一 Phase 0 Intake 与来源回程（.83）
+
+`ARCH-CUR-056`（reviewed #250 contribution；promotion 新 diff gates pending）：Clarify 以六个独立 profiles 拥有 Intake 语义；standard/reviewed 保留 Sync→Discovery→Clarify 顺序，四类 context request 精确保留原 profile/target/continuation 与必要 caller identity。两 qualifier confirmation 各回原 owner。Clarify 只产出最小 selected locator/section/role，经当前 Wording/readiness 交给 Planning fresh reread；最终设计处置仍只在 design.md。Interface 1.8 的具名 profile selector 是薄 schema projection，不新增语义 router、表达式引擎、来源缓存或未来 Author 前置。current-only successor/migration 显式退役旧固定回程；实际证据和恢复边界只由[唯一 Test](../../requirements-design-test-contributions/250-phase0-intake-owner/test.md)拥有。原 task/source/Closure/恢复 owners、软件轴与 GAP lifecycle 保持。

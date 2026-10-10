@@ -1,6 +1,6 @@
 # #250 唯一验证结果
 
-状态：已冻结实现的 task-owned candidate；不宣称完整 Phase 2、Branch Review、Delivery、shared promotion 或生命周期通过。此处独占实际结果，[traceability](traceability.md)只承接 identity。
+状态：已独立审查的贡献从 RDT `.83` 晋升至 `.84`，继承 Architecture `.83/active`；晋升前完整 Check/task commit/Branch Review 的对象为 `fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`。本 promotion 新 diff 的 Check/commit/完整 Branch Review 尚未执行，Delivery 和生命周期未完成。此处独占实际结果，[traceability](traceability.md)只承接 identity。
 
 | Test identity | 实际入口、结果与层级 |
 | --- | --- |
@@ -30,8 +30,8 @@ Updated 同一普通 prompt 的首次真实 session `01a127e2-00e3-7070-8e3f-461
 - 原 session `01a127dc-d55f-76d3-b9a3-abaf0a940fe3` 的实际 session log 在 `2026-10-10T22:33:01.962Z` 有一条 `type=compacted`，证明真实 TUI `/compact`。`updated-compact-resume-transcript.jsonl` 首次 read-only get_context 受 xcrun/Git 缓存阻塞，session binding 未验证，保留失败；临时 Git wrapper 使用实际 Xcode Git 后，`updated-compact-resume2-transcript.jsonl` 的实际 get_context 与 `checkout_resolved` 验证同 session/task/generation 0/planning 恢复，没有重新 Intake/访谈、批准或激活。七个指定文件 SHA 前后无变化由该次实际验证的客观比对承接。
 - 主仓实际 session `01a127f5-c4b1-7183-a3dc-02d57b17ca8a` 的 `guru250-active-nochange2-transcript.jsonl`：显式选择 `250-phase0-intake-owner`/generation 0，正式 `checkout_resolved` 和当前 in_progress 已验证；session binding 为 none，合法使用 explicit-task mode。没有重启 Intake、访谈、改文件、调用 Check 或读取 execution private result。首次 get_context 超时仍是环境失败，后续成功不抹除该失败。该 native 执行前后主仓 11894 个 tracked/untracked 文件内容比较均未变化，此比较发生在本 Test 更新之前。
 
-Fresh 独立 Architecture `phase2_final` 已实际返回 `.82` 的 `baseline_current`；该结果只属于 Architecture owner，不能当完整 Phase 2 Check。旧 task-only commit-message 命令失败保留，prepared candidate parser 的验证尚待原 commit owner 执行，本候选不声称该检查通过。
+Fresh 独立 Architecture `phase2_final` 已实际返回 `.82` 的 `baseline_current`；该结果只属于 Architecture owner，不能当完整 Phase 2 Check。旧 task-only commit-message 命令失败保留。原 task commit public invoke 已成功创建 `fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`；只承接该正式执行的客观验证，不声称独立 shared parser 已运行（current builder 无该独立 parser，旧 alias 是 private checker）。晋升前真实完整 Check 已通过；独立完整 `6362e080a97fb3851ad3565c65a0e21abd5c49b4...fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34` Branch Review 无 findings，check/public 均 exit 0，public `passed`。Architecture 原 owner 随后实际 `.82 → .83` promotion 返回 `baseline_current/reviewed_promoted`。本 RDT `.83 → .84` 只 thin-inherit 已审查增量；晋升后的全部 candidate 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review，不复用晋升前结果。
 
 受管同步初轮 252 个 .bak 均核实为原 HEAD 内容；后续各轮备份是本任务已识别的上一轮管理内容，仅逐个保留到临时目录后 reapply。最终无 .new/.bak 未决项，没有覆盖未识别本地内容；官方 upstream 文件未 patch。
 
-临时 mock GitHub、测试 task/source 或 authored qualification 只证明客观传输与正常输入，不证明真实外部 Issue 创建/复用/关闭。完整多平台 upgrade/Release matrix、其它 host/model、真实 external GitHub mutation、真实业务仓安装/部署及后续完整 Check/Branch Review/Delivery/生命周期保持未验证边界。
+临时 mock GitHub、测试 task/source 或 authored qualification 只证明客观传输与正常输入，不证明真实外部 Issue 创建/复用/关闭。完整多平台 upgrade/Release matrix、其它 host/model、真实 external GitHub mutation、真实业务仓安装/部署及 promotion-created diff 的完整 Check/Branch Review/Delivery/生命周期保持未验证边界。

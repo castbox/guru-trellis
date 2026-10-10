@@ -1,6 +1,6 @@
 # #250 需求增量
 
-来源：[live #250](https://github.com/castbox/guru-trellis/issues/250) 的 `2026-10-10-r19` 正文。此贡献继承 current RDT `.83`，保持 task-owned candidate；不构成 shared promotion 或生命周期完成。
+来源：[live #250](https://github.com/castbox/guru-trellis/issues/250) 的 `2026-10-10-r19` 正文。此贡献经独立完整 Branch Review 后从 RDT `.83` 晋升至 `.84`，继承 Architecture `.83/active`；knowledge promotion 不构成软件发布或生命周期完成，晋升新 diff 仍须 fresh gates。
 
 | Requirement / behavior | 增量 |
 | --- | --- |

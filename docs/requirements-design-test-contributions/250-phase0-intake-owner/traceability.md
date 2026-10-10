@@ -12,4 +12,4 @@
 | R250-08 / BEH250-ENTRY | D250-04/05 | T250-NATIVE |
 | R250-09 / BEH250-DISTRIBUTE | D250-01/05 | T250-DISTRIBUTION |
 
-[requirements](requirements.md)、[design](design.md)、[test](test.md)各拥有本层内容。manifest 绑定 current `.83` 和 Architecture `.82`；未晋升 shared current，后续 promotion diff 重新进入原 gates。
+[requirements](requirements.md)、[design](design.md)、[test](test.md)各拥有本层内容。manifest 保留晋升 preimage `.83`，current RDT 为 `.84`，继承 Architecture `.83/active`；本 promotion diff 重新进入原 gates，旧版本 immutable。

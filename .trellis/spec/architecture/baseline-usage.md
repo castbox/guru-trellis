@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.79`
+- version：`current-main-0.6.17-guru.83`
 - status：`active`
-- source binding：reviewed #382 committed contribution + immutable .78 inheritance + ARCH-CUR-052 / ARCH-DOM-035 / ARCH-INT-038 / ADR-020 / EVD-055；registry36/163/109、business34/157；actual results owned only by docs/requirements-design-test-contributions/382-root-cause-qualification/test.md。software axes/GAP lifecycle unchanged；promotion-created diff requires fresh gates；business continuation/production/remote candidate/full Release matrix unverified。
+- source binding：reviewed #250 committed contribution + immutable .82 inheritance + ARCH-CUR-056 / ARCH-DOM-039 / ARCH-INT-042 / EVD-059；registry36/164/109、business34/158；actual results owned only by docs/requirements-design-test-contributions/250-phase0-intake-owner/test.md。software axes/GAP lifecycle unchanged；promotion-created diff requires fresh gates；other hosts/real external mutation/business production/remote candidate/full Release matrix unverified。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

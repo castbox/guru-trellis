@@ -573,3 +573,9 @@ EVD-056 及更早保持原执行对象；promotion 新 diff 须 fresh Phase2/Tas
 已独立审查完整 committed range `origin/main@a080da319147fc9ccd6f85b10df60f3ce2e07e36...49c3e11ae9ce26fa391c038b6ba351adac25ff04`，541 paths。独立评估先读取 Architecture authority、实际完整 diff 与 consumers，再执行完整 Branch Review；两者分别调用原公共 wrapper，Architecture 为 reviewed_candidate，Branch Review 实际 passed，无开放 P0–P3 finding。[贡献](../contributions/453-formal-skill-exit-boundary.md)承接 expected `.81→.82`；[唯一 Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有实际验证与未覆盖边界，本文不复制 suite/trace。
 
 历史 EVD-057 及更早保持原执行对象；新晋升 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review。知识晋升不代表软件 Release、所有模型行为或业务生产升级。
+
+## EVD-059：#250 唯一 Intake 独立审查
+
+已独立审查完整 committed range `origin/main@6362e080a97fb3851ad3565c65a0e21abd5c49b4...fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`，508 paths（`--no-renames`；rename 识别后 502）。fresh generic reviewer 先执行 committed Architecture，再执行完整 Branch Review；实际 public outputs 分别为 `.82` 的 architecture_impact/reviewed_candidate 与 task/commit 匹配的 passed，原 checker receipt 为 owner_checkpoint_validated，不能替代正式出口。[贡献](../contributions/250-phase0-intake-owner.md)承接 expected `.82→.83`；[唯一 Test](../../requirements-design-test-contributions/250-phase0-intake-owner/test.md)拥有实际测试/native、首次失败/恢复和未验证边界，本文不复制 suite/trace。
+
+EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh Phase2/TaskCommit/独立完整 Branch Review。完整多平台 Upgrade/Release matrix、其它 host/model、真实 external GitHub mutation、业务安装/部署和软件发布未验证，knowledge promotion 不替代 Delivery/Completion。
