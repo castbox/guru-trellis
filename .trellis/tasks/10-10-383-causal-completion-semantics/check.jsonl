@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "唯一共同因果语义，stage owners 读取后判断"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围与 test value，fixture 不证明业务生产"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 I/O、private evidence 与唯一 consumer 边界"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "当前 constitution 与最小必要复杂度"}
+{"file": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md", "reason": "whole-task completion 与两种 anchor 的现有 owner"}

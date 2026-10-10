@@ -1,0 +1,354 @@
+[
+  {
+    "id": "C01-check",
+    "case_id": "C01",
+    "stage": "check",
+    "facts": "Current accepted scope repairs import of all legitimate records. Before: valid record A is admitted and fails at relation-write with missing account relation. Candidate adds if missing_account: return skipped-success before relation-write; unchanged cause remains. Test filters A out and is green. Root hypothesis had pointed to relation construction.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C02-check",
+    "case_id": "C02",
+    "stage": "check",
+    "facts": "Accepted scope removes relation-write failure for legitimate A. Candidate changes error classification to successful while relation-write still fails and final business record is absent. Counterfactual cause and original failed sample remain unchanged; tests check the new status only.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C03-branch",
+    "case_id": "C03",
+    "stage": "branch",
+    "facts": "Accepted repair must remove the first failure and retain evidence. Candidate retries relation-write, discards the initial missing-account error, reports only last timeout. The missing-account cause remains, legitimate A still has no business result; retry test only inspects last error.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C04-delivery",
+    "case_id": "C04",
+    "stage": "delivery",
+    "facts": "Current independent slice claims complete import repair. Candidate fallback returns success with only 7 of 10 required fields, and original relation failure persists. Its test asserts merely nonempty output. Original accepted slice still requires all 10 fields; accepted completeness was not changed.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C05-branch",
+    "case_id": "C05",
+    "stage": "branch",
+    "facts": "Full committed diff adds a fixture filter excluding legitimate failed A, changes default account to a placeholder without authority, and weakens the error assertion. Actual consumer still fails for A. Earlier Phase2 passed before these committed additions; accepted scope still requires A.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C06-branch",
+    "case_id": "C06",
+    "stage": "branch",
+    "facts": "Full committed diff suppresses synchronous relation-write error and enqueues unchanged invalid state. The same A fails in background consumer B, operation link-repair, after 15 minutes, classified as dropped. End-to-end outcome remains missing record. Prior review/test sees only the first stage, failure shifted component, stage, operation, time and classification.",
+    "expected": {
+      "exit": "implementation_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C07-check",
+    "case_id": "C07",
+    "stage": "check",
+    "facts": "Accepted scope requires credential permission/tenant isolation. Current RDT/Architecture says importer owner must reject tenant mismatch before write; protected object is another tenant's private record, concrete harm is cross-tenant mutation. Candidate retains exactly this protection and stable terminal error, admits all authorized records, tests exercise allowed and denied consumer paths. Applicable qualified mechanism is unchanged; no incident-repair claim.",
+    "expected": {
+      "exit": "passed",
+      "goal": "protection",
+      "disposition": "implementation_validated"
+    }
+  },
+  {
+    "id": "C08-check",
+    "case_id": "C08",
+    "stage": "check",
+    "facts": "Accepted scope only delivers bounded diagnostic tooling that observes the original error and collects the prescribed relation identifiers, first/last error and outcome. Tool and required tests work; observations and unknown causal chain are reported honestly. Root cause remains unknown. A separate parent still requires root repair; task source is reference-only for that parent, and diagnostic slice is independently usable.",
+    "expected": {
+      "exit": "passed",
+      "goal": "diagnosis",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C08-branch",
+    "case_id": "C08",
+    "stage": "branch",
+    "facts": "Accepted scope only delivers bounded diagnostic tooling that observes the original error and collects the prescribed relation identifiers, first/last error and outcome. Tool and required tests work; observations and unknown causal chain are reported honestly. Root cause remains unknown. A separate parent still requires root repair; task source is reference-only for that parent, and diagnostic slice is independently usable.",
+    "expected": {
+      "exit": "passed",
+      "goal": "diagnosis",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C08-delivery",
+    "case_id": "C08",
+    "stage": "delivery",
+    "facts": "Accepted scope only delivers bounded diagnostic tooling that observes the original error and collects the prescribed relation identifiers, first/last error and outcome. Tool and required tests work; observations and unknown causal chain are reported honestly. Root cause remains unknown. A separate parent still requires root repair; task source is reference-only for that parent, and diagnostic slice is independently usable.",
+    "expected": {
+      "exit": "ready",
+      "goal": "diagnosis",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C08-completion",
+    "case_id": "C08",
+    "stage": "completion",
+    "facts": "Accepted scope only delivers bounded diagnostic tooling that observes the original error and collects the prescribed relation identifiers, first/last error and outcome. Tool and required tests work; observations and unknown causal chain are reported honestly. Root cause remains unknown. A separate parent still requires root repair; task source is reference-only for that parent, and diagnostic slice is independently usable.",
+    "expected": {
+      "exit": "completed",
+      "goal": "diagnosis",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C09-check",
+    "case_id": "C09",
+    "stage": "check",
+    "facts": "Accepted scope only applies a bounded queue pause to prevent repeat failed writes, with observed reduction of affected load, valid input impact disclosed, direct owner operations, expiry tomorrow, tested resume/exit condition and risk evidence complete. Cause remains unknown; separate root-repair parent remains Open and source relation is reference-only. Tooling/tests/integration required for this slice passed; public draft identifies mitigation only.",
+    "expected": {
+      "exit": "passed",
+      "goal": "mitigation",
+      "disposition": "mitigation_applied"
+    }
+  },
+  {
+    "id": "C09-branch",
+    "case_id": "C09",
+    "stage": "branch",
+    "facts": "Accepted scope only applies a bounded queue pause to prevent repeat failed writes, with observed reduction of affected load, valid input impact disclosed, direct owner operations, expiry tomorrow, tested resume/exit condition and risk evidence complete. Cause remains unknown; separate root-repair parent remains Open and source relation is reference-only. Tooling/tests/integration required for this slice passed; public draft identifies mitigation only.",
+    "expected": {
+      "exit": "passed",
+      "goal": "mitigation",
+      "disposition": "mitigation_applied"
+    }
+  },
+  {
+    "id": "C09-delivery",
+    "case_id": "C09",
+    "stage": "delivery",
+    "facts": "Accepted scope only applies a bounded queue pause to prevent repeat failed writes, with observed reduction of affected load, valid input impact disclosed, direct owner operations, expiry tomorrow, tested resume/exit condition and risk evidence complete. Cause remains unknown; separate root-repair parent remains Open and source relation is reference-only. Tooling/tests/integration required for this slice passed; public draft identifies mitigation only.",
+    "expected": {
+      "exit": "ready",
+      "goal": "mitigation",
+      "disposition": "mitigation_applied"
+    }
+  },
+  {
+    "id": "C09-completion",
+    "case_id": "C09",
+    "stage": "completion",
+    "facts": "Accepted scope only applies a bounded queue pause to prevent repeat failed writes, with observed reduction of affected load, valid input impact disclosed, direct owner operations, expiry tomorrow, tested resume/exit condition and risk evidence complete. Cause remains unknown; separate root-repair parent remains Open and source relation is reference-only. Tooling/tests/integration required for this slice passed; public draft identifies mitigation only.",
+    "expected": {
+      "exit": "completed",
+      "goal": "mitigation",
+      "disposition": "mitigation_applied"
+    }
+  },
+  {
+    "id": "C10-completion",
+    "case_id": "C10",
+    "stage": "completion",
+    "facts": "Accepted investigation explicitly requires locating the first deviation and identifying causal chain. Tool successfully collected logs but cause and first deviation are still unknown; investigation work remains. No missing permission or external dependency prevents bounded further investigation.",
+    "expected": {
+      "exit": "remaining_work",
+      "goal": "diagnosis",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C11-check",
+    "case_id": "C11",
+    "stage": "check",
+    "facts": "Accepted scope is root repair. Current plan asserts new retry fixes original issue, but has no first-failure or causal-chain/counterfactual basis. This stage cannot establish how planned mechanism changes the cause. No demonstrated suppression yet. Current accepted diagnostic tooling remains independently usable; no change to its bounded scope is proposed.",
+    "expected": {
+      "exit": "planning_stale",
+      "goal": "repair",
+      "disposition": "diagnosis_incomplete"
+    }
+  },
+  {
+    "id": "C12-completion",
+    "case_id": "C12",
+    "stage": "completion",
+    "facts": "Accepted whole scope requires production causal closure. Original one-time input cannot safely replay. Qualified cause was stale relation derivation at a fixed state transition. Candidate changes that derivation. Lawful existing production observation covers the same critical payload conditions, relation state, exact processing path, dependency/version/load conditions and final complete business result; independent counterfactual shows old derivation fails under those conditions. All accepted work/evidence is complete; no residual failure or transferred harm.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "root_cause_fixed"
+    }
+  },
+  {
+    "id": "C13-completion",
+    "case_id": "C13",
+    "stage": "completion",
+    "facts": "Accepted whole scope requires production root repair. Candidate implementation validated, but only 100 sample successes and aggregate failure-rate reduction are available. Their critical inputs, state, processing path and operating conditions relative to original A are unknown. No valid equivalence argument exists. Evidence owner operations is collecting matching observations.",
+    "expected": {
+      "exit": "evidence_pending",
+      "goal": "repair",
+      "disposition": "production_effect_unverified"
+    }
+  },
+  {
+    "id": "C14-completion",
+    "case_id": "C14",
+    "stage": "completion",
+    "facts": "Accepted whole scope requires production root repair. Exact current Delivery merge and deploy succeeded and static/integration tests passed. The original failure observation window has not elapsed; no matching production outcome evidence has arrived. Current acquisition owner operations will supply that observation. All code work is done; no new evidence exists now.",
+    "expected": {
+      "exit": "evidence_pending",
+      "goal": "repair",
+      "disposition": "production_effect_unverified"
+    }
+  },
+  {
+    "id": "C15-refresh",
+    "case_id": "C15",
+    "stage": "refresh",
+    "facts": "Same active generation previously waited for production evidence after this exact merge_result. New lawful same-input observation now covers original failure state/path/operating conditions and complete outcome; counterfactual and qualified causal chain connect changed cause to failure removal. No other scope work remains. This is evidence_refresh with its unchanged same-generation merge result.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "root_cause_fixed"
+    }
+  },
+  {
+    "id": "C16-reactivation",
+    "case_id": "C16",
+    "stage": "reactivation",
+    "facts": "Reactivated generation only needs fresh production validation. Previously no matching observation existed; current anchor identifies preceding committed terminal archive. New lawful same-input observation covers original causal mechanism and complete outcome at current generation. Fresh validation with the current reactivation anchor is complete; historical merge/Finish is only context. This is reactivation-based evidence_refresh.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "root_cause_fixed"
+    }
+  },
+  {
+    "id": "C17-completion",
+    "case_id": "C17",
+    "stage": "completion",
+    "facts": "Accepted scope is an ordinary documentation navigation feature. Current navigation links resolve and required package tests pass. No incident/protection mechanism or production condition is part of accepted scope, and all accepted work is finished.",
+    "expected": {
+      "exit": "completed",
+      "goal": "feature",
+      "disposition": "implementation_validated"
+    }
+  },
+  {
+    "id": "C18-completion",
+    "case_id": "C18",
+    "stage": "completion",
+    "facts": "Accepted task scope explicitly requires implementation-only repair and code/integration validation, all complete. Qualified mechanism matches changed cause and tests; no production effect was observed. Separate source/parent requires production closure and remains Open; current relation is reference-only. This task's entire approved implementation-only scope is finished.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "production_effect_unverified"
+    }
+  },
+  {
+    "id": "C19-check",
+    "case_id": "C19",
+    "stage": "check",
+    "facts": "Normal requirement owner has revised current accepted scope to require complete output for the original failure path; prior approved plan required only partial output. The live authority version/bytes changed normally and are freshly read. Candidate and tests still implement the old partial plan. Authority/plan is now materially inconsistent; no artifact was edited or forged to create drift.",
+    "expected": {
+      "exit": "planning_stale",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C20-completion",
+    "case_id": "C20",
+    "stage": "completion",
+    "facts": "Current ordinary feature fully meets its accepted whole scope. All business Deliveries were reviewed; latest exact merge is current. Evidence and source relation are current. Source is reference-only, Closure must preserve no close authority for the reference-only source and perform no Issue mutation, and all scope work is complete. completed must reach the existing Closure consumer before Finish.",
+    "expected": {
+      "exit": "completed",
+      "goal": "feature",
+      "disposition": "implementation_validated"
+    }
+  },
+  {
+    "id": "C21-completion",
+    "case_id": "C21",
+    "stage": "completion",
+    "facts": "The first Delivery merged in this active task and generation, but whole accepted scope also requires repair of the same task's background consumer. Current implementation is incomplete there. That required implementation work remains and will require a second independent business Delivery under the same task after it is fixed; no scope change or new task is needed.",
+    "expected": {
+      "exit": "implementation_revision_required",
+      "goal": "repair",
+      "disposition": "external_effect_unverified"
+    }
+  },
+  {
+    "id": "C21-after-completion",
+    "case_id": "C21-after",
+    "stage": "completion",
+    "facts": "The same task and generation now has two business Deliveries: the first foreground slice and the second background-consumer repair. Both exact Delivery results are observed; all accepted scope, causal/counterfactual and required matching production evidence is complete. No residual redistribution exists. Task identity and generation are unchanged.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "root_cause_fixed"
+    }
+  },
+  {
+    "id": "C20-closure",
+    "case_id": "C20",
+    "stage": "closure",
+    "facts": "The actual current completed ResultRef is supplied. Current task source is reference_only, accepted whole feature scope and all evidence are complete. Review the source action as no_close_authority; this consumer precedes Finish and must perform no Issue mutation.",
+    "expected": {
+      "exit": "no_mutation",
+      "goal": "feature",
+      "disposition": "implementation_validated"
+    }
+  },
+  {
+    "id": "C16-pending",
+    "case_id": "C16",
+    "stage": "reactivation_pending",
+    "facts": "Current reactivated generation is 1. The current anchor identifies preceding terminal archive generation 0. Whole repair scope requires new matching production evidence in this generation; implementation is complete but no current-generation observation has arrived. Operations owns acquisition and no new evidence exists now. Historical merge/Finish only supplies context.",
+    "expected": {
+      "exit": "evidence_pending",
+      "goal": "repair",
+      "disposition": "production_effect_unverified"
+    }
+  },
+  {
+    "id": "C21-delivery",
+    "case_id": "C21",
+    "stage": "second_delivery",
+    "facts": "After the first Completion implementation_revision_required output, the same task generation 0 implements its required background-consumer repair. This second independent business slice fixes the observed background cause, preserves first failure evidence and complete consumer outcome, has qualified causal/counterfactual support and current required code/integration tests. Publish only this slice with Refs, truthfully keeping whole-task matching production observation for Completion. No accepted scope change.",
+    "expected": {
+      "exit": "ready",
+      "goal": "repair",
+      "disposition": "implementation_validated"
+    }
+  },
+  {
+    "id": "C21-transport-completion",
+    "case_id": "C21",
+    "stage": "second_completion",
+    "facts": "The first Delivery belongs to this same task generation 0. The current second Delivery review output and local fixture merge are supplied as transport facts. Current lawful matching production observations cover both foreground and repaired background path, original input/state/operating conditions, full failure window and complete outcome. Qualified causal/counterfactual evidence connects the changed background cause to original failure removal; no redistribution remains. Both business slices and whole scope are complete. The local fixture event tests workflow transport only.",
+    "expected": {
+      "exit": "completed",
+      "goal": "repair",
+      "disposition": "root_cause_fixed"
+    }
+  }
+]

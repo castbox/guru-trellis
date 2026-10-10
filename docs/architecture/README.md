@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.79`；状态：`active`；predecessor：`current-main-0.6.17-guru.78`；source baseline：[已独立审查的根因资格贡献](./contributions/382-root-cause-qualification.md) + immutable `.78` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
+版本：`current-main-0.6.17-guru.80`；状态：`active`；predecessor：`current-main-0.6.17-guru.79`；source baseline：[已独立审查的因果完成语义贡献](./contributions/383-causal-completion-semantics.md) + immutable `.79` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.79` 是唯一 active；`.78` 及更早为 immutable superseded history。当前增量为 ARCH-CUR-052 / ARCH-DOM-035 / ARCH-INT-038 / ADR-020 / EVD-055；完整继承 `.78` 的有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。候选 registry36/163/109、business34/157。新知识晋升差异必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
+版本历史：`current-main-0.6.17-guru.80` 是唯一 active；`.79` 及更早为 immutable superseded history。当前增量为 ARCH-CUR-053 / ARCH-DOM-036 / ARCH-INT-039 / EVD-056，无新 ADR；完整继承 `.79` 的有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。候选 registry36/163/109、business34/157。新知识晋升差异必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
@@ -24,9 +24,11 @@
 
 历史 `.77` 按 expected `.76` 晋升已独立审查的 #466 contribution；只强化唯一 constitution 的 `minimum-necessary-complexity` 与现有 semantic 消费。五原则 identity/short name、ADR/GAP、owner、公共 I/O 与软件四轴不变。RDT 同步 `.77`；ARCH-CUR-050 / EVD-053 承接已审查增量及唯一 Test locator。晋升 diff 尚须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review；知识晋升不表示 Delivery、Release、业务安装或部署完成。
 
-当前 `.78` 按 expected `.77` 晋升 #404 已独立审查的 `implementation-v2` contribution 与 ADR-019；Architecture Skill 继续拥有方法，fresh generic subagent 执行新评估，原 owner 承接下游 eligibility 和 promotion。Architecture 2.0 I/O、四 profiles、七 exits、constitution 与 GAP lifecycle 不变；RDT `.78` 同步当前 Architecture 继承。ARCH-CUR-051 / EVD-054 只承接已审查增量和唯一 Test locator。此次晋升 diff 仍须 fresh Phase2、TaskCommit、不同 reviewer 完整 Branch Review；不表示 Delivery、Completion、软件发布或业务部署完成。
+历史 `.78` 按 expected `.77` 晋升 #404 已独立审查的 `implementation-v2` contribution 与 ADR-019；Architecture Skill 继续拥有方法，fresh generic subagent 执行新评估，原 owner 承接下游 eligibility 和 promotion。Architecture 2.0 I/O、四 profiles、七 exits、constitution 与 GAP lifecycle 不变；RDT `.78` 同步当前 Architecture 继承。ARCH-CUR-051 / EVD-054 只承接已审查增量和唯一 Test locator。此次晋升 diff 仍须 fresh Phase2、TaskCommit、不同 reviewer 完整 Branch Review；不表示 Delivery、Completion、软件发布或业务部署完成。
 
-当前 `.79` 按 expected `.78` 晋升 #382 已独立审查的根因候选资格 contribution 与 ADR-020；[唯一 Test](../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有实际结果与未验证边界。新增 owner 只拥有候选准入，不接管阶段完成或 #383 共同语义。晋升差异的后续 gates 尚待执行。
+历史 `.79` 按 expected `.78` 晋升 #382 已独立审查的根因候选资格 contribution 与 ADR-020；[唯一 Test](../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有实际结果与未验证边界。新增 owner 只拥有候选准入，不接管阶段完成或 #383 共同语义。晋升差异的后续 gates 尚待执行。
+
+当前 `.80` 按 expected `.79` 晋升 #383 已独立审查的共同因果语义 contribution；七个现有 owner 读取单一受管 spec，本阶段 evidence/route 和 whole-task Completion 职责保持。实际结果与边界由[唯一 Test](../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有；此次晋升 diff 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review，不表示 Delivery、Completion 或软件发布。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 

@@ -20,7 +20,9 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if exit_id in {"passed","implementation_required","planning_stale"}:out["task_ref"]=owner["task_ref"]
  if exit_id=="passed":out["phase2_commit_anchor"]=owner["phase2_capture_commit"]
  elif exit_id=="implementation_required":out["finding_refs"]=[x["id"] for x in owner["semantic_review"]["findings"] if x.get("status")=="open"]
- elif exit_id=="planning_stale":out.update({"planning_route":owner["route"],"proposal_refs":[x["id"] for x in owner["semantic_review"]["scope_decisions"] if x.get("disposition")=="scope_change_required"]})
+ elif exit_id=="planning_stale":
+  dispositions={"scope_change_required","current_scope"} if owner["route"]=="reapprove_plan" else {"scope_change_required"}
+  out.update({"planning_route":owner["route"],"proposal_refs":[x["id"] for x in owner["semantic_review"]["scope_decisions"] if x.get("disposition") in dispositions]})
  names={"passed":"public-passed-output.schema.json","implementation_required":"public-implementation-required-output.schema.json","planning_stale":"public-planning-stale-output.schema.json","blocked":"public-blocked-output.schema.json"}
  if exit_id not in names:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
  validate_json(out,package_root/"schemas"/names[exit_id],"stdout")

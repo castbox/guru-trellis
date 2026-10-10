@@ -5,6 +5,9 @@ description: Check the complete current task through one AI-owned semantic round
 
 # Guru Check Task
 
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
 Use this Skill after implementation reaches a reviewable state and before task
 commit. Load [references/contract.md](references/contract.md) before acting.
 

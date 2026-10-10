@@ -275,6 +275,23 @@ history is introduced. Existing Phase 2-to-Task Commit checkpoint consumption,
 capture ancestry, content identity and retirement remain unchanged; Branch
 Review does not consume Phase 2 private evidence as its own semantic result.
 
+## Causal stage review
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` before judging
+current work. Apply its goal-specific evidence to the actual implementation,
+real consumers, failed samples and tests, independently of qualification pass.
+Inspect newly introduced admission/config/limit/retry/fallback/normalization/
+error mapping and the observed business outcome. Keep known first failure,
+mitigation owner/expiry/exit and external/production gaps visible.
+
+A repair lacking this stage's necessary causal or counterfactual plan returns
+`planning_stale`; demonstrated symptom suppression, mechanism deviation or
+missing required tests returns `implementation_required`. A diagnosis or
+mitigation goes back only for its own actual plan/implementation deficiency,
+not merely an unknown cause. An honest later production evidence obligation
+is not automatically a Check implementation defect. A pass covers this stage's
+accepted requirements, without claiming whole-task causal completion.
+
 ## Private Result
 
 New evidence uses schema `guru-phase2-check-5.0` in ignored runtime. It retains

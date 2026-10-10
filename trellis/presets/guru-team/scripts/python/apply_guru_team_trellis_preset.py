@@ -141,6 +141,10 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_SPEC_PATHS = (
     (
+        Path("trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md"),
+        Path(".trellis/spec/workflow/causal-completion-semantics.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/spec/workflow/requirements-design-test-ssot.md"),
         Path(".trellis/spec/workflow/requirements-design-test-ssot.md"),
     ),

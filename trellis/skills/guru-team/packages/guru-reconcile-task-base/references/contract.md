@@ -26,6 +26,17 @@ typed output and delete the checkpoint as the deterministic one-use consumer.
 It never replaces that output with an unconditional `resume_target`; only
 `unchanged` resumes the caller target directly.
 
+## Common causal authority impact
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` when judging the
+exact base delta's dependency impact. If that authority or mechanism/evidence
+assumptions changed semantically, identify the earliest affected original owner
+and use this profile's existing planning, implementation or review-continuity
+route. An unchanged applicable mechanism reuses its qualification while the
+current stage still reviews its own evidence. Unrelated bytes or a version
+identity alone do not require all-stage requalification; runtime/digests do not
+make that semantic choice. The common spec owns no integration route.
+
 ## Bounded Reconciliation Owner
 
 This Skill owns only the semantic impact judgment for one exact caller-supplied

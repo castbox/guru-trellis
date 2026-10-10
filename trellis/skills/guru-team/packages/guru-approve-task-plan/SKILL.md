@@ -5,6 +5,9 @@ description: Approve current task planning through one AI-owned semantic review,
 
 # Guru Approve Task Plan
 
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
 Use this Skill after the current planning wording review has passed and before
 task activation. Load [references/contract.md](references/contract.md) before
 acting.

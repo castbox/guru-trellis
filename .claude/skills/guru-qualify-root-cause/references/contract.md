@@ -117,8 +117,9 @@ through the existing stage owner and then resubmits. Branch Review changes use
 its existing implementation route. Delivery owns its planning/implementation/
 scope/blocked routing; no new task-work exit is invented.
 
-Qualification is not completion. #383 owns common causal-completion semantics
-and Check/Branch/Delivery/Completion completion judgments. Until its common
-file exists, supply candidate dispositions through existing stage routes; do
-not create a stub, adapter, duplicate completion standard or blanket #383
-prerequisite. Each stage retains its current judgment duties.
+Read `.trellis/spec/workflow/causal-completion-semantics.md` for the common
+evidence/disposition authority. This owner continues to judge candidate
+admission under the goal-specific contract above; it does not judge completion
+or duplicate the common semantics. Each subsequent stage applies that same
+authority to its own actual work/evidence and retains its existing routes.
+Qualification alone establishes neither a stage pass nor whole-task completion.

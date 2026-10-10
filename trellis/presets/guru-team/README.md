@@ -1,5 +1,10 @@
 # Guru Team Preset
 
+The [common causal authority](./spec/workflow/causal-completion-semantics.md)
+is installed at `.trellis/spec/workflow/causal-completion-semantics.md` through
+the existing managed-spec installer. Qualification and stage packages read
+that one source; apply/reapply distributes their stage-local contracts.
+
 Normal revision/recovery contracts live in `guru-check-task` and
 `guru-review-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
