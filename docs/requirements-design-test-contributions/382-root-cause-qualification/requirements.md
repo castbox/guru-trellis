@@ -1,7 +1,7 @@
 # #382 Requirement contribution
 
 Source authority: castbox/guru-trellis#382, 2026-10-10-r1. Current inherited
-RDT: current-main-0.6.17-guru.78. This draft is task-isolated, not shared authority.
+RDT: current-main-0.6.17-guru.78. This contribution was independently reviewed and promoted through the existing RDT owner to current-main-0.6.17-guru.79; .78 remains its source/preimage identity.
 
 REQ-382-01: New/materially changed real incident mechanisms receive goal-aware
 root-cause admission after normal/solution outcomes at all existing boundaries.

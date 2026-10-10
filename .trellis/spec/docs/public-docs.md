@@ -78,18 +78,21 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.76` / `active`; it is not a
-product release axis. Read Requirements/Design/Test through the three layer
-READMEs: reviewed #503 identity-responsibility contribution thinly inherits
-immutable `.75`, including its historical #495 version-family acceptance.
+Current knowledge authority is `current-main-0.6.17-guru.79` / `active`, separate from product
+release axes. Read the three layer READMEs and the unique #382 contribution
+Test. Reviewed root-cause admission thinly inherits immutable `.78`; root owns
+candidate eligibility/applicability/reentry, while existing stage owners and
+#383 retain completion semantics. Candidate registry is 36 Skills / 163 exits /
+109 commands, zero planned; business workflow is 34 invokes / 157 exits.
+Architecture projects ARCH-CUR-052 / ARCH-DOM-035 / ARCH-INT-038 / ADR-020 /
+EVD-055, retaining predecessor decisions and GAP lifecycle. Knowledge promotion
+requires fresh gates and does not prove business native continuation, production
+repair, unpublished remote installation or full Release matrix. Historical
+#495/#503 evidence remains bound to its original source; EVD-052 is not the
+final #500 Release gate.
 All normal `v0.6.x-guru.*` / `v0.7.0-guru.*` sources are supported; actual
 manifest/ownership/task differences group representative acceptance, not a
-version whitelist. Registry remains 35 active Skills / 159 exits / 106 commands,
-zero planned ids; business workflow remains 33 invokes / 153 exits.
-Architecture `.76` projects ARCH-CUR-049 / ARCH-DOM-034 / ARCH-INT-037 /
-ADR-018 / closed ARCH-GAP-012 / EVD-052. EVD-052 proves only #503 source and
-representative clean-installed candidate checks; it is not the final #500 Release
-gate. ADR-017 owners/current-only/deletion exits
+version whitelist. ADR-017 owners/current-only/deletion exits
 remain effective; its fixed-source restriction is superseded. EVD-049 retains
 historical `.73` fixed `6a563f5f` source_locked/provider/inflight evidence and
 cannot prove the new Guru source. The unique family Test contribution owns local

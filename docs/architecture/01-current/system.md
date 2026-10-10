@@ -269,3 +269,7 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 `ARCH-CUR-051`（reviewed #404 contribution；promotion 后 fresh gates pending）：既有 Architecture Skill 在 Planning、适用 implementation discovery、Phase2 和 committed Branch Review 的新判断由未参与候选编写/实现、未预载任务叙事的 fresh generic subagent 执行。先读 constitution/baseline/change contract、真实候选及受影响消费者，形成独立判断后核对必要解释；reviewer 自行完成 project checks、semantic result 和原 wrapper。任务叙事、一致绿色验收或主会话自填结果不能代替独立判断。
 
 publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结论、live authority 与 review/promotion facts，执行 matching-stage eligibility；新事实改变判断时返回 fresh assessment。整体 Check/Branch Review 与协调器继续分别拥有必要性、资格和交付；不吞并 promotion、Closure 或 Completion。新偏离与必要局部收敛按真实因果承接，无关历史债务和红测不自动扩张。唯一方法仍在 canonical Skill，当前决策见 [ADR-019](../adr/019-independent-architecture-assessment.md)。公共 2.0 I/O、四 profiles、七 exits 和 current-only writer/consumer 不变，未新增 GAP、reviewer ledger、授权存储或长期兼容路径。
+
+## #382 根因候选资格增量（.79）
+
+`ARCH-CUR-052`（reviewed #382 contribution；promotion 后 fresh gates pending）：canonical `guru-qualify-root-cause` 独占目标感知因果候选准入，十个 caller profiles、七 classifications 与四 exits 经现有 normal→solution→root 边界返回原 owner。诊断与合格缓解诚实保留未知根因；实质机制变化重审，caller/stage 变化不重复同资格且不替代当前阶段判断。共同完成语义仍归 #383，未在本任务实现。共享 `qualification_facts.py` 只提取确定性 Git/planning/path 事实，既有两 qualification API 保持；installer kernel inventory 机械拆分。结果和边界仅由[唯一 Test](../../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有，不在 CURRENT 复制认知正文。

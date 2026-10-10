@@ -117,3 +117,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 ## #503 身份职责后继（.76）
 
 `ARCH-DOM-034` 的 #503 successor：Guru substrate reader 拥有身份占用/selected 严格读取，Fork 官方 task writer 已由独立 #29 交付。migration owner 与单写边界不变；无第二索引/store/writer。task contribution 与 expected-current `.75→.76` RDT/Architecture 晋升分别由对应 owner 串行执行。
+
+`ARCH-DOM-035`（#382 reviewed）：normal-scenario、solution-mechanism、root-cause 分别拥有场景、authority 承载与因果候选准入。原 stage owner 继续拥有其实现/证据/完成判断；#383 拥有共同完成语义，root qualification 不创建第二 SSOT。runtime 只校结构与事实，不判断根因。RDT/Architecture promotion 保持既有 expected-current 单写 owners；无资格缓存、数据库或审批链。

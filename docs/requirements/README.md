@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.78` / `active`；[本版入口](./versions/current-main-0.6.17-guru.78/requirement-main.md)薄继承 immutable `.77`，承接已审查的 [#404 独立审查合同](../requirements-design-test-contributions/404-independent-architecture-review/traceability.md)。Architecture 当前继承 `.78/active`，原 owner 已晋升已独立审查的 #404 contribution；晋升前 `.77` 来源保留为历史 provenance，晋升 diff 的 fresh gates 尚待完成；软件四轴与现有公共 graph 不变。实际结果由唯一 Test 拥有，native acceptance 与后续 fresh gates 按实际状态消费，文档晋升不证明实现完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.79` / `active`；[本版入口](./versions/current-main-0.6.17-guru.79/requirement-main.md)薄继承 immutable `.78`，承接已独立审查的 [#382 增量 trace](../requirements-design-test-contributions/382-root-cause-qualification/traceability.md)。Architecture 继承 `.79/active`，晋升 preimage 为 `.78`。实际结果由唯一 Test 拥有；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review，业务 native 接续、生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +8,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.78` | [requirement-main.md](./versions/current-main-0.6.17-guru.78/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.79` | [requirement-main.md](./versions/current-main-0.6.17-guru.79/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.78` | [requirement-main.md](./versions/current-main-0.6.17-guru.78/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.77` | [requirement-main.md](./versions/current-main-0.6.17-guru.77/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.76` | [requirement-main.md](./versions/current-main-0.6.17-guru.76/requirement-main.md) | reviewed #503 identity responsibility; immutable .75 inheritance; post-promotion gates required |
 | `superseded` | `current-main-0.6.17-guru.75` | [requirement-main.md](./versions/current-main-0.6.17-guru.75/requirement-main.md) | reviewed #495 exact ecd remote acceptance; immutable .74 inheritance; fresh post-promotion gates required |

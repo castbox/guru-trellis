@@ -43,3 +43,5 @@
 `ADR-018` 正文见 [`018-legacy-installation-version-families.md`](./018-legacy-installation-version-families.md)。
 
 `ADR-019` 正文见 [`019-independent-architecture-assessment.md`](./019-independent-architecture-assessment.md)。
+
+`ADR-020`（accepted）：独立目标感知根因候选准入，normal/solution/root 与现有阶段完成 owners 分离。正文见 [`020-root-cause-qualification.md`](./020-root-cause-qualification.md)；ADR-008/019/005 的有效职责继续继承。

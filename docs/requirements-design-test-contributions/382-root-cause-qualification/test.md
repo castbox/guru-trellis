@@ -42,3 +42,11 @@ lacks that dependency and is not successful suite evidence.
 
 Full multi-platform Release validation belongs to its dedicated owner; #383
 completion semantics and #468 are not implemented or started here.
+
+## Committed implementation review and knowledge successor
+
+The implementation commit is `3eb3976856cf660a491a86fd618d6248e19baca6` (parent/base `f4bbc68cd651237b4c16f67ead1454826aea52cf`), with the exact 373 reviewed paths. A fresh generic independent worker first assessed the complete committed candidate, then read task narratives and performed the full Branch Review. Its Architecture invocation returned `baseline_current / architecture_impact / reviewed_candidate` against .78 and current constitution; its separate recorder→checker→public Branch Review invocation returned `passed` for this exact full range, with no open P0–P3 finding. These actual results are repo-external at `/tmp/guru-382-committed-review/`; no review transcript or authorization is promoted.
+
+This committed review independently reran root 8/8, normal runtime 8/8 and solution runtime 9/9 through the managed interpreter, plus source/installed, drift, selected-platform byte parity, syntax and task JSONL checks. An initial system-Python run lacked jsonschema and was an environment failure; only the managed rerun passed. Fresh native provider-causal-fix, unknown-diagnosis and emergency-mitigation each passed the native runner and actual wrapper, preserving repair, bounded diagnosis and mitigation dispositions respectively. Their actual results are `/tmp/guru-382-committed-review/native/results.json`; these supplementary cases do not broaden the original matrix's proof claim.
+
+The existing owners promoted this reviewed contribution using expected `.78` to knowledge successor `.79`. The new shared-current difference still requires fresh Phase2/TaskCommit/independent full Branch Review. Original package/native/install/business-history results above remain bound to their actual execution objects; this paragraph does not claim a rerun on the successor or completion of business native continuation, production repair, remote candidate installation or the full Release matrix.
