@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-10T08:46:41Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-10-383-causal-completion-semantics",
+    "title": "#383 因果完成语义与阶段承接",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-10-383-causal-completion-semantics",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/383-causal-completion-semantics",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#383 因果完成语义与阶段承接",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics",
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/design.md",
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/implement.md",
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/prd.md",
+          ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#383"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/383-causal-completion-semantics"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics",
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/design.md",
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/implement.md",
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/prd.md",
+        ".trellis/tasks/archive/2026-10/10-10-383-causal-completion-semantics/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#383 因果完成语义与阶段承接；#383；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
