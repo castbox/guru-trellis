@@ -102,7 +102,7 @@ class DiscoveryStdinInstallationTests(unittest.TestCase):
         clarity, _ = transcript.invoke_public(
             root, env, "guru-clarify-requirements",
             {"schema_version": "1.0", "public_input": {
-                "profile": "initial_change_request", "source_exit": "context_ready", "mode": "workflow",
+                "profile": "standard_intake", "source_exit": "context_ready", "mode": "workflow",
                 "target_locator": discovered["transition"]["target_locator"],
                 "continuation_id": discovered["transition"]["continuation_id"],
                 "duplicate_snapshot": discovered["duplicate_snapshot"],

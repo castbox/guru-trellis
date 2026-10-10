@@ -5,5 +5,7 @@
   "target_locator": "#145",
   "task_locator": ".trellis/tasks/current",
   "resume_target": "initial-wording",
-  "continuation_id": "stage0-current"
+  "continuation_id": "stage0-current",
+  "task_id": "sample-task",
+  "lifecycle_generation": 0
 }

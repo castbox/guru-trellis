@@ -45,7 +45,7 @@ class WordingStdinIntegrationTests(unittest.TestCase):
         }, "context_ready")
         owner, _ = transcript.clarification_owner_for_issue(root, env, discovery["transition"], discovery["duplicate_snapshot"])
         clarity, _ = transcript.invoke_public(root, env, "guru-clarify-requirements", {
-            "schema_version": "1.0", "public_input": {"profile": "initial_change_request", "source_exit": "context_ready", "mode": "workflow", "target_locator": discovery["transition"]["target_locator"], "continuation_id": discovery["transition"]["continuation_id"], "duplicate_snapshot": discovery["duplicate_snapshot"]},
+            "schema_version": "1.0", "public_input": {"profile": "standard_intake", "source_exit": "context_ready", "mode": "workflow", "target_locator": discovery["transition"]["target_locator"], "continuation_id": discovery["transition"]["continuation_id"], "duplicate_snapshot": discovery["duplicate_snapshot"]},
             "transition": discovery["transition"], "owner_context": {}, "owner_result": owner,
         }, "clear")
         issue = transcript.live_issue(root, env)

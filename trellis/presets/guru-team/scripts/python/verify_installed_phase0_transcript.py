@@ -599,6 +599,8 @@ def project_installed_output(
             f"installed {skill_id}:{exit_id} does not declare one projection"
         )
     projection = matches[0]
+    if projection.get("operation") == "direct":
+        return copy.deepcopy(actual), str(projection.get("id") or "")
     if projection.get("operation") != "rename":
         raise RuntimeError("installed transcript only supports declared rename projection")
     projected: dict[str, Any] = {}
@@ -649,7 +651,7 @@ def assert_owner_binding(
     profile = public_input.get("profile")
     if skill_id == "guru-clarify-requirements":
         expected_kind = {
-            "initial_change_request": "initial_issue",
+            "standard_intake": "initial_issue",
             "standalone_review": "standalone_review",
         }.get(profile)
         invocation = owner_result.get("invocation_context")
@@ -905,6 +907,8 @@ def checked_context_owner_for_issue(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     authored = context_owner_for_issue(root, env)
     public_input = copy.deepcopy(public_input)
+    if public_input["profile"] == "pre_task":
+        public_input.setdefault("clarify_profile", "standard_intake")
     public_input["change_input"] = copy.deepcopy(authored["change_input"])
     envelope = {
         "schema_version": "1.0",
@@ -944,6 +948,7 @@ def clarification_owner_for_issue(
     transition: dict[str, Any],
     duplicate_snapshot: dict[str, Any],
     typed_exit: str = "clear",
+    source_selection: list[dict[str, str]] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     identity = transcript_identity(env)
     issue = live_issue(root, env)
@@ -960,7 +965,8 @@ def clarification_owner_for_issue(
         "body_sha256": body_sha256,
     }
     owner = {
-        "schema_version": "2.0",
+        "schema_version": "3.0",
+        "source_selection": source_selection or [],
         "skill_id": "guru-clarify-requirements",
         "generated_at": "2026-01-01T00:00:00Z",
         "mode": "workflow",
@@ -1458,7 +1464,7 @@ def reentry_transcripts(
     needs_envelope = {
         "schema_version": "1.0",
         "public_input": {
-            "profile": "initial_change_request",
+            "profile": "standard_intake",
             "source_exit": "context_ready",
             "mode": "workflow",
             "target_locator": context_transition["target_locator"],
@@ -1816,7 +1822,7 @@ def six_step_transcript(
     clarity_envelope = {
         "schema_version": "1.0",
         "public_input": {
-            "profile": "initial_change_request",
+            "profile": "standard_intake",
             "source_exit": "context_ready",
             "mode": "workflow",
             "target_locator": context["transition"]["target_locator"],

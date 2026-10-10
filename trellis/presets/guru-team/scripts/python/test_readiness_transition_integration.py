@@ -28,7 +28,7 @@ def snapshot(root: Path) -> dict[str, str]:
     }
 
 
-def producers(installed: Path, chain: Path):
+def producers(installed: Path, chain: Path, source_selection=None):
     root, env = transcript.stage_transcript_owner_repo(installed, chain)
     sync, _ = transcript.invoke_public(root, env, "guru-sync-base", {
         "schema_version": "1.0", "public_input": {
@@ -42,10 +42,10 @@ def producers(installed: Path, chain: Path):
         "schema_version": "1.0", "public_input": public, "transition": sync["transition"],
         "owner_context": {}, "owner_result": discovery_owner,
     }, "context_ready")
-    clarity_owner, _ = transcript.clarification_owner_for_issue(root, env, discovery["transition"], discovery["duplicate_snapshot"])
+    clarity_owner, _ = transcript.clarification_owner_for_issue(root, env, discovery["transition"], discovery["duplicate_snapshot"], source_selection=source_selection)
     clarity, _ = transcript.invoke_public(root, env, "guru-clarify-requirements", {
         "schema_version": "1.0", "public_input": {
-            "profile": "initial_change_request", "source_exit": "context_ready", "mode": "workflow",
+            "profile": "standard_intake", "source_exit": "context_ready", "mode": "workflow",
             "target_locator": discovery["transition"]["target_locator"],
             "continuation_id": discovery["transition"]["continuation_id"],
             "duplicate_snapshot": discovery["duplicate_snapshot"],

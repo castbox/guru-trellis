@@ -154,3 +154,13 @@ normal-scenario、solution-mechanism 的实际合格结果。根因未知的有�
 三个 record/check/invoke 命令仅 stdin/stdout，无 qualification 文件、cache 或
 授权持久化。安装与升级通过 canonical marketplace/preset，并重新应用 preset；
 定向验证和代表性 clean/update/reapply 不代表完整多平台 Release 矩阵。
+
+## Current Intake migration (#250)
+
+The initial route remains Sync → Discovery → Clarify. Clarify owns six profiles
+and selected requirement/design source authority; context requests preserve
+the original caller. Install/reapply the complete current preset and controlled
+callers together; see the canonical Clarify
+[API migration](../../skills/guru-team/packages/guru-clarify-requirements/references/MIGRATION-250.md).
+Upstream start/continue/brainstorm remain upstream-owned and discoverable; the
+current workflow and Clarify contract constrain method reuse and resume.

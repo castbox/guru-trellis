@@ -1485,3 +1485,16 @@ later owners; absence of those runs is not a C2 defect.
 ## Root-Cause Validation Scope
 
 Root qualification validates diagnosis/mitigation/fix/protection separately, using paired factual cases, counterfactual/sample observations, actual native semantic execution, wrapper routes, normal stale/reentry, zero qualification residue and installed/platform/update/reapply checks. Native context receives facts and contracts without expected classifications. Stage reuse and material-change reentry are AI behavior checks, not digest caches. Full release installer matrices remain with their dedicated owner.
+
+## #250 targeted Intake validation
+
+Prove all six Clarify profiles and four context returns through actual public
+wrappers, including repeated returns and ordinary stale/source changes. Execute
+both original qualifier record/check/invoke chains and project their actual
+scope_confirmation_required stdout to distinct confirmation profiles and exact
+original consumers. Source-selection relay must reach current Planning while
+final design disposition remains there. Native prompts, brainstorm method
+selection/reuse, zero/one/partial convergence and real resume remain Agent
+evidence; fixture/schema/string checks do not prove them. One representative
+clean and existing update/reapply target supplies focused distribution proof.
+Full multi-platform Release compatibility remains with its dedicated owner.

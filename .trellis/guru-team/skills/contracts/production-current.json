@@ -619,7 +619,8 @@
   "interface_schema_ids": [
     "guru-team-skill-interface-1.4",
     "guru-team-skill-interface-1.6",
-    "guru-team-skill-interface-1.7"
+    "guru-team-skill-interface-1.7",
+    "guru-team-skill-interface-1.8"
   ],
   "eval_schema_ids": [
     "guru-team-skill-evals-1.0",

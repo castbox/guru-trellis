@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -68,7 +70,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
 
     def test_identity_modes_semantic_stages_runtime_and_exits(self) -> None:
         self.assertEqual(self.interface["id"], "guru-clarify-requirements")
-        self.assertEqual(self.interface["schema_version"], "1.4")
+        self.assertEqual(self.interface["schema_version"], "1.8")
         self.assertEqual(self.interface["judgment_mode"], "semantic")
         workflow = self.interface["modes"]["workflow"]
         standalone = self.interface["modes"]["standalone"]
@@ -386,7 +388,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertIn("`target_disposition=null` is not a blocked shortcut", contract)
         self.assertIn("Only successful public invoke stdout is the final DTO", contract)
         self.assertIn("Never hand-write a blocked DTO", contract)
-        public = json.loads((self.package / "examples/public-initial-change-request-input-2.0.json").read_text())
+        public = json.loads((self.package / "examples/public-standard-intake-input.json").read_text())
         public["source_exit"] = "context_ready"
         snapshot = copy.deepcopy(public["duplicate_snapshot"])
         owner = copy.deepcopy(self.example)
@@ -434,7 +436,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertEqual(project_intermediate_receipt(json.loads(checked.stdout), self.package.parents[1] / "schemas")["typed_exit"], "blocked")
         self.assertEqual(recorded["target_disposition"]["disposition"], "keep_current_open_issue")
         self.assertEqual(recorded["target_disposition"]["duplicate_facts_sha256"], snapshot["facts_sha256"])
-        transition = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())["transition"]
+        transition = json.loads((self.package / "examples/public-clear-output-3.0.json").read_text())["transition"]
         for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
             transition.pop(field)
         transition.update(stage="context_current", target_locator=public["target_locator"],
@@ -449,8 +451,10 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
     def test_public_invoke_validates_checked_semantic_owner_output(self) -> None:
         from jsonschema import Draft202012Validator
 
-        owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
-        typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
+        owner = self.authoring(json.loads((self.package / "examples/requirements-clarification.json").read_text()))
+        owner["invocation_context"].update(kind="standalone_review", resume_target="guru-standalone-caller")
+        owner = self.record_owner(owner)
+        typed = json.loads((self.package / "examples/public-clear-output-3.0.json").read_text())
         transition = copy.deepcopy(typed["transition"])
         transition["stage"] = "context_current"
         transition["transition_id"] = "context_current:222222222222222222222222"
@@ -458,7 +462,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         transition["target_locator"] = "#145"
         for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
             transition.pop(field, None)
-        public_input = {
+        public_input = {"resume_target": "guru-standalone-caller",
             "profile": "standalone_review",
             "source_exit": "start",
             "mode": "standalone",
@@ -526,7 +530,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "kind": "active_task_scope_change",
             "caller": "active task scope clarification",
             "task_locator": ".trellis/tasks/current",
-            "resume_target": "guru-resume-branch-review",
+            "resume_target": "guru-review-branch",
         }
         owner["target_disposition"] = None
         owner["scope_proposals"] = [{
@@ -554,7 +558,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
         }
         owner = self.record_owner(owner)
-        typed = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())
+        typed = json.loads((self.package / "examples/public-clear-output-3.0.json").read_text())
         transition = copy.deepcopy(typed["transition"])
         transition["stage"] = "context_current"
         transition["transition_id"] = "context_current:222222222222222222222222"
@@ -574,11 +578,26 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             (self.package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json").read_text()
         )
         self.assertEqual(list(Draft202012Validator(schema).iter_errors(invocation)), [])
-        result = subprocess.run(
-            [str(self.package / "scripts/invoke.sh"), "--json", "--invocation", "-"],
-            input=json.dumps(invocation), text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-        )
+        from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+        with tempfile.TemporaryDirectory() as name:
+            repo = Path(name)
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--allow-empty", "-qm", "fixture"], cwd=repo, check=True)
+            task_dir = repo / public_input["task_locator"]
+            task_dir.mkdir(parents=True)
+            task = {"id": public_input["task_id"], "name": "current", "title": "Current", "description": "Active input",
+                    "status": "in_progress", "priority": "P2", "createdAt": "2026-01-01", "notes": "",
+                    "lifecycle_generation": public_input["lifecycle_generation"], "source": {"kind": "no_issue"},
+                    "children": [], "relatedFiles": [], "meta": {},
+                    **{k: None for k in ("dev_type", "scope", "package", "completedAt", "base_branch", "worktree_path", "commit", "pr_url", "parent")}}
+            (task_dir / "task.json").write_text(json.dumps(task))
+            BranchBindingStore(inspect_repository(repo)).establish(TaskLifecycleKey(task["id"], task["lifecycle_generation"]), "main")
+            result = subprocess.run(
+                [sys.executable, "-m", "runtime.command", str(self.package), "invoke-guru-clarify-requirements", "--invocation", "-"],
+                input=json.dumps(invocation), text=True, cwd=repo,
+                env={**os.environ, "PYTHONPATH": str(self.package.parents[1])},
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
         self.assertEqual(result.returncode, 0, result)
         output = json.loads(result.stdout)
         self.assertEqual(output["exit_id"], "clear")
@@ -593,7 +612,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stdout + result.stderr)
 
         standalone = copy.deepcopy(invocation)
-        standalone["public_input"] = {
+        standalone["public_input"] = {"resume_target": "guru-standalone-caller",
             "profile": "standalone_review",
             "source_exit": "start",
             "mode": "standalone",
@@ -621,12 +640,13 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
 
     def test_needs_context_rejects_missing_or_malformed_base_as_json_command_error(self) -> None:
         owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
+        owner["invocation_context"].update(kind="standalone_review", resume_target="guru-standalone-caller")
         owner["typed_exit"] = "needs_context"
         owner["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
         owner["context_evidence"] = {"status": "missing", "evidence_refs": ["current-session:missing"], "missing_reason": "Base context is unavailable."}
         owner["target_disposition"] = None
         owner = self.record_owner(owner)
-        public_input = {
+        public_input = {"resume_target": "guru-standalone-caller",
             "profile": "standalone_review",
             "source_exit": "start",
             "mode": "standalone",
@@ -778,7 +798,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                     self.assertNotIn("Traceback", result.stdout + result.stderr)
 
     def test_invoke_checks_bindings_and_preserves_upstream_duplicate_token(self):
-        public = json.loads((self.package / "examples/public-initial-change-request-input-2.0.json").read_text())
+        public = json.loads((self.package / "examples/public-standard-intake-input.json").read_text())
         public["source_exit"] = "context_ready"
         snapshot = public["duplicate_snapshot"]
         snapshot["candidates"] = [{
@@ -798,7 +818,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         owner = self.record_owner(owner)
         self.assertEqual(owner["target_disposition"]["duplicate_facts_sha256"], snapshot["facts_sha256"])
         self.assertEqual(owner["target_disposition"]["duplicate_candidates"][0]["facts_sha256"], "8" * 64)
-        transition = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())["transition"]
+        transition = json.loads((self.package / "examples/public-clear-output-3.0.json").read_text())["transition"]
         for field in ("clarity_result_sha256", "target_content_sha256", "clarity", "target_disposition"):
             transition.pop(field)
         transition.update(stage="context_current", target_locator=public["target_locator"],

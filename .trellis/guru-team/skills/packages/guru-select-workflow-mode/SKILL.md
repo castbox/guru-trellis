@@ -5,8 +5,12 @@ description: Select standard Guru Team intake or a bounded task-free current-che
 
 # Guru Select Workflow Mode
 
-Run this Skill for every file-changing request that has not already entered an
-active-task route. Issue presence, current branch, and task-free wording do not
+Run this Skill for every change-intent request that has not already entered an
+active-task route. Requirements clarification, proposed-feature design, and
+change planning remain change intent when the user defers file writes or
+resource creation. Complete this selection before the selected Guru owner
+conducts the discussion; loading brainstorm does not replace this entry.
+Issue presence, current branch, and task-free wording do not
 control entry. The AI owns the semantic decision; scripts only validate a
 completed selection and serialize the one typed exit.
 
@@ -24,7 +28,8 @@ needed for the decision:
   evidence is insufficient; an affirmative answer selects `task_free` and a
   refusal selects `standard_intake`, with no repeated question for the same
   scope;
-- automatically select `standard_intake` when isolation, planning, complete
+- automatically select `standard_intake` when requirements clarification,
+  full change planning, isolation, complete
   review, or high-risk validation is clearly needed, including material runtime,
   cross-layer contract, public API, schema, CI, install/update, deploy,
   permission, security, or data impact.
@@ -49,6 +54,14 @@ Commit, push, PR, merge, release, installation, cleanup, and Issue closure
 remain independent later authorizations.
 
 Return exactly one of `standard_intake`, `task_free`, or `blocked`.
+
+For a selected standard route, consume the public selection through the
+workflow's mandatory initial graph before Clarify asks its product question.
+Deferred writes and resource creation remain deferred throughout that graph;
+they do not waive the selector or the current Guru semantic owner.
+
+Read [references/contract.md](references/contract.md) for the current entry and
+public handoff contract.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

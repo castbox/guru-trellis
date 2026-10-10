@@ -19,7 +19,7 @@ are below `GURU_SKILL_PACKAGE`. Cross-package `consumers/` paths are below
 require a new helper, direct module import, or system-Python dependency install.
 
 The public input example is
-`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-2.0.json`.
+`.trellis/guru-team/skills/packages/guru-discover-change-context/examples/public-pre-task-input-3.0.json`.
 The complete result example is
 `.trellis/guru-team/skills/packages/guru-discover-change-context/examples/change-context-owner-result-3.0.json`;
 It is a complete result example. Only the recorder-owned fields explicitly
@@ -104,10 +104,12 @@ Each duplicate candidate fact projection is exactly `repo`, `number`,
 AI-authored reason/observation. Recorder/checker validate that same projection;
 they do not issue a second duplicate search or re-read candidates after review.
 
-`context_ready` schema 3.0 additionally projects one minimal immutable
-`duplicate_snapshot` to the sole Clarification consumer. It binds the query,
+`context_ready` schema 4.0 projects one minimal immutable
+`duplicate_snapshot` for `standard_intake` and `reviewed_plan_intake` to the sole
+Clarification consumer. Active-task and standalone returns omit this snapshot
+and retain their original caller identity and resume consumer. The snapshot binds the query,
 checked time, target locator, authority body digest, canonical open-candidate
-facts and their aggregate digest. This replaces the former 2.0 handoff for the
+facts and their aggregate digest. This replaces the former 3.0 handoff for the
 current graph; missing or mismatched projections require context refresh.
 
 ## History Preview And Deep Read
@@ -170,8 +172,10 @@ namespace. It retains only task identity, requested exit, Gate status,
 reviewed scope, load-bearing conclusions, and reason. The checker binds those
 bytes to a complete fresh owner rerun. Stale/invalid recovery is deleted, and
 the public wrapper deletes a current checkpoint only after its typed DTO passes
-the output schema. Pre-task and standalone calls cannot select active-task or
-recovery invocation identity.
+the output schema. The public `return_identity` of an active-task context
+request binds the same live TaskId and lifecycle generation independently of
+the optional `--active-task` owner-recovery argument. Other profiles cannot
+select active-task or recovery invocation identity.
 
 The recorder and checker execute the published closed Draft 2020-12 schema and
 validate query/manifest/preview/payload/result digests. Matching live stale
@@ -212,19 +216,21 @@ Unknown, multiple, or unmapped exits fail closed. The package requires the
 complete compatible Guru Team preset and `run-skill-command`; it is not
 self-contained or portable.
 
-## Interface 1.4 Public Handoff
+## Interface 1.8 Public Handoff
 
-`pre_task` is the only public profile. After the owner loop,
+The public profiles are `pre_task` (schema 3.0) and `context_request` (schema
+1.0). After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `base_current` transition, current live base observation, and checker-passed
 owner result, then derives the matching per-exit DTO without another duplicate
 search. Recorder and checker receive that same envelope via `--invocation -`;
 they do not accept a private Sync artifact.
-`context_ready` contains route/profile/mode/target/continuation identity plus the
-minimal checker-bound `duplicate_snapshot`. Clarification validates and consumes
-that snapshot on the normal current path without repeating duplicate search or
-candidate reads. It still receives no owner-result locator. Active-task identity remains an
-ephemeral `--active-task` invocation argument rather than a public DTO field. A
+`context_ready` schema 4.0 contains route/profile/mode/target/continuation
+identity and the original `return_identity`. Standard and reviewed Intake also
+receive the minimal checker-bound `duplicate_snapshot`; Clarification consumes
+it without repeating duplicate search or candidate reads. Active and standalone
+returns preserve their original task or caller identity and resume consumer.
+No return receives an owner-result locator. A
 genuinely interrupted owner additionally supplies one recovery continuation and
 may lazily use one minimal ignored checkpoint, which the same owner deletes on
 stale restart or successful consumption.
@@ -234,9 +240,10 @@ stale restart or successful consumption.
 This is a direct command-input replacement. The recorder/checker flags
 `--input`, `--public-input`, and `--transition`, and recorder `--mode`, are
 removed. Existing scripts must migrate together with this package; old argv
-returns `invalid_arguments`, not an implicit compatibility path. Public input
-2.0, owner result 3.0, typed exits, handoff projections, and recovery remain
-unchanged. Previously incomplete invoke envelopes must also add the declared
+returns `invalid_arguments`, not an implicit compatibility path. At that
+migration, public input 2.0 and owner result 3.0 were retained. Public input and
+handoffs now follow the current Interface 1.8 contract above; owner result 3.0
+and the command envelope remain current. Previously incomplete invoke envelopes must also add the declared
 `schema_version` and `owner_context` fields.
 
 All three commands use the existing shared closed schema
@@ -253,8 +260,9 @@ All three commands use the existing shared closed schema
 ```
 
 The empty public/transition/owner objects above illustrate only the envelope
-shape, not a runnable valid call. Populate them with the current Discovery 2.0
-public input, the independent Sync `base_current` transition, and the
+shape, not a runnable valid call. Populate them with the current Discovery
+`pre_task` 3.0 or `context_request` 1.0 public input, the independent Sync
+`base_current` transition, and the
 AI authoring fields described below. Record completes owner result 3.0;
 check and invoke consume that complete result. Discovery has no additional owner-context fields,
 so supply `{}` for `owner_context`. `public_input.mode` is the sole mode input.
@@ -311,3 +319,25 @@ commands; this migration does not enable recovery for normal pre-task calls.
 Malformed JSON returns `invalid_json`; missing or malformed envelope fields
 return `schema_mismatch`. Existing nested validation, dirty/wrong authority,
 stale-base classification, and interrupted-owner recovery behavior are retained.
+
+## Caller-aware context requests (#250)
+
+Discovery owns evidence inventory and coverage, never intent, requirement
+authority, source classification or user choices. The current initial order
+remains Sync → Discovery → Clarify. `pre_task` explicitly names
+`clarify_profile=standard_intake|reviewed_plan_intake`; reviewed Intake also
+supplies selected source locators. `context_request` consumes actual Clarify
+`needs_context` plus fresh caller-owned retrieval clues. Its four closed
+`return_identity` branches preserve the original profile, target, continuation,
+active TaskId/generation/interrupted consumer or standalone consumer. They
+contain no Clarify owner result or private checkpoint.
+
+`context_ready` returns those exact values and current evidence to Clarify.
+Rebuild a legal current profile input from every actual return, including
+repeated and stale/repaired loops. Initial/reviewed inputs reuse the new checked
+duplicate snapshot; active and standalone inputs preserve their original
+identity/consumer. A changed target is stale, never a silent retarget. The two
+qualification confirmation profiles repair missing authority through their
+original qualifier rather than this context loop.
+
+See the Clarify package's MIGRATION-250.md for the synchronized schema migration.

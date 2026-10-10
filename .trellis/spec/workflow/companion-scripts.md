@@ -694,7 +694,7 @@ There is no mutation executor command.
 Record accepts one AI-authored closed payload from stdin or an explicit input
 file. It normalizes timestamps and canonical lists, derives proposal/action/
 payload/content/result SHA-256 identities, validates the semantic state shape,
-and emits the canonical `guru-requirements-clarification-2.0` result on stdout.
+and emits the canonical `guru-requirements-clarification-3.0` result on stdout.
 Only the closed current schema is accepted before normalization.
 It never chooses a question, action, scope decision, confirmation requirement,
 AI Gate status, or typed exit. Pre-task and standalone modes reject an output

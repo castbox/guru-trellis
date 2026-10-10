@@ -184,7 +184,7 @@
       "name": "guru-clarify-requirements",
       "package": "packages/guru-clarify-requirements",
       "interface": "packages/guru-clarify-requirements/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",
@@ -394,7 +394,7 @@
       "name": "guru-discover-change-context",
       "package": "packages/guru-discover-change-context",
       "interface": "packages/guru-discover-change-context/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",
@@ -996,7 +996,7 @@
       "name": "guru-review-change-request",
       "package": "packages/guru-review-change-request",
       "interface": "packages/guru-review-change-request/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",
@@ -1031,7 +1031,7 @@
       "name": "guru-review-contract-wording",
       "package": "packages/guru-review-contract-wording",
       "interface": "packages/guru-review-contract-wording/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",
@@ -1171,7 +1171,7 @@
       "name": "guru-sync-base",
       "package": "packages/guru-sync-base",
       "interface": "packages/guru-sync-base/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",

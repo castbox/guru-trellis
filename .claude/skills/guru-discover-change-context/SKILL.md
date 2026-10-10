@@ -35,7 +35,7 @@ that a mechanism, duplicate, or historical decision is absent.
 
 Use the dispatcher-only wrappers for history preview, owner-result recording,
 and owner-result checking. Normal recording/checking is stdin/stdout-only and
-does not create a repository artifact. Pass the active Discovery 2.0 input and
+does not create a repository artifact. Pass the current Discovery `pre_task` 3.0 or `context_request` 1.0 input and
 independent `base_current` transition to record, check, and invoke in one closed
 semantic-owner 1.0 envelope via `--invocation -`. Include `schema_version`,
 `public_input`, `transition`, `owner_context={}`, and `owner_result`; mode comes
@@ -70,3 +70,7 @@ owner-result body.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+Use current pre_task or context_request input. The latter preserves the exact
+Clarify profile, target, continuation and its required caller identity; fresh
+context_ready returns there, never to a fixed initial profile.

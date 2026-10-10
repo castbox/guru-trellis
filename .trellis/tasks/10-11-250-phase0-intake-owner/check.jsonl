@@ -1,0 +1,5 @@
+{"file":".trellis/spec/workflow/quality-guidelines.md","reason":"完整 task Check、验证价值与普通 Issue 验证范围"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"profile/exit/consumer/public projection 检查"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"代码与 docs SSOT 两维 subtraction"}
+{"file":"docs/architecture/06-governance/change-contract.md","reason":"独立 Architecture review 与 project-check protocol"}
+{"file":".trellis/spec/workflow/requirements-design-test-ssot.md","reason":"isolated contribution/promotion 和 provenance"}

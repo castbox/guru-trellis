@@ -104,6 +104,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-interface-1.5.schema.json",
     "skill-interface-1.6.schema.json",
     "skill-interface-1.7.schema.json",
+    "skill-interface-1.8.schema.json",
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",

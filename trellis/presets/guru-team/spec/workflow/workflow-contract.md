@@ -207,11 +207,13 @@ judgments.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 
-Classify the user request before repository/network semantic reads. Only a
-file-changing request that has not already entered an active-task route invokes
-`guru-select-workflow-mode`. An Issue-backed or task-like request that only asks
+Classify the user request before repository/network semantic reads. A
+change-intent request that has not already entered an active-task route invokes
+`guru-select-workflow-mode`, including proposed-change requirements discussion,
+feature design and planning with deferred writes/resources. Method loading
+does not replace the actual selection or Clarify entry from current Discovery. An Issue-backed or task-like request that only asks
 for information, such as checking an Issue's current status, remains a
-non-file-changing direct answer. The selector's `standard_intake` exit enters
+information-only direct answer. The selector's `standard_intake` exit enters
 `guru-sync-base`, then automatically follows the public graph through current
 context discovery, requirements clarification, wording review, change-request
 review, and the `guru-task-intake-router`. Its `task_free` exit enters only the
@@ -266,7 +268,7 @@ only when live task, branch, PR and lifecycle facts bind it to the current
 identity. Old in-flight Finalizer residue is a legacy stop, not a current task
 route. None of these relevance checks permits mutation or cleanup.
 
-Every file-changing request not already routed through an active task invokes
+Every change-intent request not already routed through an active task invokes
 the selector, including requests without an Issue or task-free wording.
 Explicit task-free intent selects that route without another confirmation.
 Without explicit intent, high-confidence bounded, reversible, low-risk work
@@ -650,3 +652,18 @@ into new Delivery or Completion results. `archived_review_passed` stops at
 ## Root-Cause Global Routing
 
 Global workflow explicitly invokes guru-qualify-root-cause after normal/solution outcomes for the ten current candidate profiles. Three root routers return to original owners; root stop consumes a concrete reason. Step-local semantic admission and reuse remain package-owned. #383 retains common completion ownership.
+
+## #250 Intake profile routing
+
+The current global route retains Sync → Discovery → Clarify. Clarify owns six
+profiles and source authority; Discovery's context_ready returns the original
+four context-capable profiles using Interface 1.8 handoff_profile projection.
+Current Planning consumes adjacent minimal source_selection after task identity
+resolution, rereads selected sources, and owns final design dispositions. Lost
+selection returns to original Clarify/context. Upstream brainstorm remains a
+discoverable method constrained by the Guru owner, never a second workflow.
+
+The global initial classifier distinguishes information-only questions about
+existing facts from proposed-change requirements/design/planning intent. Deferred
+file writes or resource creation preserve that intent and its current Guru route.
+See the marketplace workflow Guru Team Gate for the single routing definition.

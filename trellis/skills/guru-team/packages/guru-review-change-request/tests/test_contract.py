@@ -120,6 +120,7 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         value = {key: copy.deepcopy(self.transition[key]) for key in keys if key in self.transition}
         value.update(stage=stage, transition_id=stage + ":example")
         if stage == "context_current":
+            value["clarify_profile"] = "standard_intake"
             value["authority_content_sha256"] = self.target["body_sha256"]
         else:
             value["target_content_sha256"] = value["clarity"]["content_sha256"]

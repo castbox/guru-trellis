@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.8.schema.json",
+  "schema_version": "1.8",
   "id": "guru-review-change-request",
   "name": "guru-review-change-request",
   "description": "Review whether a current change request is one independently deliverable unit through linked prerequisite evidence, an AI readiness gate, and five typed exits.",
@@ -358,7 +358,7 @@
       {
         "exit_id": "ready",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-ready-4.0",
+          "schema_id": "guru-stage0-review-change-request-output-ready-5.0",
           "path": "schemas/public-ready-output-4.0.schema.json"
         },
         "example": {
@@ -372,7 +372,7 @@
       {
         "exit_id": "clarify_requirements",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-clarify-requirements-1.0",
+          "schema_id": "guru-stage0-review-change-request-output-clarify-requirements-2.0",
           "path": "schemas/public-clarify-requirements-output.schema.json"
         },
         "example": {
@@ -386,7 +386,7 @@
       {
         "exit_id": "review_wording",
         "schema": {
-          "schema_id": "guru-stage0-review-change-request-output-review-wording-1.0",
+          "schema_id": "guru-stage0-review-change-request-output-review-wording-2.0",
           "path": "schemas/public-review-wording-output.schema.json"
         },
         "example": {
@@ -436,33 +436,28 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-task-intake-router-input-1.0",
+          "schema_id": "guru-stage0-task-intake-router-input-2.0",
           "path": "consumers/workflow/stage0/task-intake-ready.schema.json"
         },
         "transition": {
           "source_field": "transition",
           "stage": "readiness_current",
-          "schema_id": "guru-stage0-transition-readiness-current-1.0",
+          "schema_id": "guru-stage0-transition-readiness-current-2.0",
           "path": "consumers/workflow/stage0/transitions/readiness-current.schema.json"
         }
       },
       {
-        "id": "clarify_requirements_initial_change_request_input",
+        "id": "clarify_requirements_current_profile_input",
         "consumer": {
           "kind": "skill",
           "id": "guru-clarify-requirements"
         },
         "payload_kind": "structured_json",
-        "contract": {
-          "kind": "skill_input",
-          "interface_path": "packages/guru-clarify-requirements/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "initial_change_request"
-        },
+        "contract": {"kind": "skill_input", "interface_path": "packages/guru-clarify-requirements/interface.json", "input_kind": "structured_json", "profile_selector": {"source": "producer_output", "field": "handoff_profile"}},
         "transition": {
           "source_field": "transition",
           "stage": "context_current",
-          "schema_id": "guru-stage0-transition-context-current-1.0",
+          "schema_id": "guru-stage0-transition-context-current-2.0",
           "path": "consumers/workflow/stage0/transitions/context-current.schema.json"
         }
       },
@@ -482,7 +477,7 @@
         "transition": {
           "source_field": "transition",
           "stage": "clarity_current",
-          "schema_id": "guru-stage0-transition-clarity-current-1.0",
+          "schema_id": "guru-stage0-transition-clarity-current-2.0",
           "path": "consumers/workflow/stage0/transitions/clarity-current.schema.json"
         }
       },
@@ -518,30 +513,9 @@
       {
         "id": "project_clarify_requirements",
         "exit_id": "clarify_requirements",
-        "consumer_input_id": "clarify_requirements_initial_change_request_input",
+        "consumer_input_id": "clarify_requirements_current_profile_input",
         "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
-            "target": "profile"
-          },
-          {
-            "source": "handoff_mode",
-            "target": "mode"
-          },
-          {
-            "source": "handoff_target_locator",
-            "target": "target_locator"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "mappings": [{"source": "exit_id", "target": "source_exit"}, {"source": "handoff_profile", "target": "profile"}, {"source": "handoff_mode", "target": "mode"}, {"source": "handoff_target_locator", "target": "target_locator"}, {"source": "handoff_continuation_id", "target": "continuation_id"}, {"source": "source_locators", "target": "source_locators"}]
       },
       {
         "id": "project_review_wording",

@@ -1,11 +1,13 @@
 from __future__ import annotations
 import argparse,re
+from pathlib import Path
+from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 from runtime.io import CommandError,read_json
 from runtime.schema import validate_json
 from common import validate_owner
 
 OUTPUT_SCHEMAS = {
-    "clear": "public-clear-output-2.0.schema.json",
+    "clear": "public-clear-output-3.0.schema.json",
     "needs_context": "public-needs-context-output.schema.json",
     "refresh_context": "public-refresh-context-output.schema.json",
     "retarget_context": "public-retarget-context-output.schema.json",
@@ -52,6 +54,8 @@ def typed_output(package_root, public, transition, owner):
         current = dict(transition)
         current.pop("authority_content_sha256", None)
         current.update({
+            "clarify_profile": public["profile"],
+            "source_selection": owner["source_selection"],
             "stage": "clarity_current",
             "transition_id": f"clarity_current:{identity['result_sha256'][:24]}",
             "clarity_result_sha256": identity["result_sha256"],
@@ -67,6 +71,8 @@ def typed_output(package_root, public, transition, owner):
         })
         output = {
             "exit_id": "clear",
+            "profile": public["profile"],
+            "source_selection": owner["source_selection"],
             "resume_target": owner["invocation_context"]["resume_target"],
             "target_disposition": public_disposition,
             "continuation_id": public["continuation_id"],
@@ -115,12 +121,19 @@ def typed_output(package_root, public, transition, owner):
         }
         output = {
             "exit_id": "needs_context",
-            "handoff_profile": "pre_task",
+            "handoff_profile": "context_request",
             "handoff_mode": public["mode"],
             "handoff_repo_locator": transition.get("repo_locator") or ".",
             "handoff_base_branch": base["selected_base"],
             "handoff_continuation_id": public["continuation_id"],
             "transition": base_transition,
+            "return_identity": {
+                key: public[key] for key in (
+                    "profile", "target_locator", "continuation_id",
+                    "source_locators", "task_locator", "task_id",
+                    "lifecycle_generation", "resume_target",
+                ) if key in public
+            },
         }
     elif exit_id in {"refresh_context", "retarget_context"}:
         output = {
@@ -155,11 +168,42 @@ def run(package_root,command,argv):
     envelope=read_json(a.invocation,"invocation")
     validate_json(envelope, package_root.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json", "invocation")
     public=envelope["public_input"]
+    profiles = {
+        "standard_intake": "public-standard-intake-input.schema.json",
+        "reviewed_plan_intake": "public-reviewed-plan-intake-input.schema.json",
+        "active_task_scope_change": "public-active-task-scope-change-input.schema.json",
+        "standalone_review": "public-standalone-review-input.schema.json",
+        "normal_scenario_scope_confirmation": "public-normal-scenario-scope-confirmation-input.schema.json",
+        "solution_mechanism_scope_confirmation": "public-solution-mechanism-scope-confirmation-input.schema.json",
+    }
+    profile = public.get("profile")
+    if profile not in profiles:
+        raise CommandError("schema_mismatch", "public_input.profile", "Use a current Clarify profile; migrate initial_change_request through fresh Intake.", 3)
+    validate_json(public, package_root / "schemas" / profiles[profile], "public_input")
     owner=validate_owner(package_root,envelope["owner_result"])
     transition=envelope.get("transition")
     exit_id=owner["typed_exit"]
     if public.get("mode") != owner.get("mode"):
         raise CommandError("stale_identity", "mode", "Match the public input to the checked owner result.", 3)
+    context = owner["invocation_context"]
+    if profile in {"normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"}:
+        if context["kind"] != profile or context["resume_target"] != public["resume_target"]:
+            raise CommandError("stale_identity", "resume_target", "Return to the original qualification owner.", 3)
+        if exit_id == "needs_context":
+            raise CommandError("schema_mismatch", "typed_exit", "Repair authority through the original qualification owner.", 3)
+    elif profile == "active_task_scope_change":
+        try:
+            task = resolve_active_task_checkout(Path.cwd(), public["task_locator"]).artifact
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+        if (task.task_id, task.lifecycle_generation) != (public["task_id"], public["lifecycle_generation"]):
+            raise CommandError("stale_identity", "task_id", "Rebuild the current active-task input from live task identity.", 3)
+        if context["kind"] != profile or context["task_locator"] != public["task_locator"] or context["resume_target"] != public["resume_target"]:
+            raise CommandError("stale_identity", "task_locator", "Preserve the interrupted task and original caller.", 3)
+    elif profile == "standalone_review" and (context["kind"] != profile or context["resume_target"] != public["resume_target"]):
+        raise CommandError("stale_identity", "resume_target", "Preserve the declared standalone consumer.", 3)
+    if profile == "reviewed_plan_intake" and (not isinstance(transition, dict) or transition.get("source_locators") != public["source_locators"]):
+        raise CommandError("stale_identity", "source_locators", "Refresh the selected source projection before clarification.", 3)
     if isinstance(transition, dict):
         if transition.get("mode") != public.get("mode"):
             raise CommandError("stale_identity", "transition.mode", "Match the transition to the public input.", 3)
@@ -167,7 +211,7 @@ def run(package_root,command,argv):
             raise CommandError("stale_identity", "continuation_id", "Refresh the current transition before invoking the Skill.", 3)
         if transition.get("target_locator") and public.get("target_locator") and transition["target_locator"] != public["target_locator"]:
             raise CommandError("stale_identity", "target_locator", "Refresh the current target transition before invoking the Skill.", 3)
-    if public.get("profile")=="initial_change_request" and public.get("source_exit")=="context_ready":
+    if public.get("profile") in {"standard_intake", "reviewed_plan_intake"} and public.get("source_exit")=="context_ready":
         snapshot=public.get("duplicate_snapshot"); disposition=owner.get("target_disposition")
         if not isinstance(snapshot,dict) or not isinstance(disposition,dict): raise CommandError("stale_identity","public_input.duplicate_snapshot","Refresh context and reuse its checked duplicate snapshot.",3)
         expected=[{**item,"identity":f"#{item['number']}","state":"open","decision":next((row.get("decision") for row in disposition.get("duplicate_candidates",[]) if row.get("repo")==item["repo"] and row.get("number")==item["number"]),None),"reason":next((row.get("reason") for row in disposition.get("duplicate_candidates",[]) if row.get("repo")==item["repo"] and row.get("number")==item["number"]),None)} for item in snapshot["candidates"]]

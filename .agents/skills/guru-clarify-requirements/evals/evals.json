@@ -105,7 +105,7 @@
         ]
       },
       "files": ["evals/files/eval-retarget-context-input.json", "evals/files/eval-retarget-context-facts.json"],
-      "input_profile_id": "initial_change_request"
+      "input_profile_id": "standard_intake"
     },
     {
       "id": "new-task-route",
@@ -124,7 +124,7 @@
         ]
       },
       "files": ["evals/files/eval-new-task-input.json", "evals/files/eval-new-task-facts.json"],
-      "input_profile_id": "initial_change_request"
+      "input_profile_id": "standard_intake"
     },
     {
       "id": "blocked-route",
@@ -143,7 +143,7 @@
         ]
       },
       "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
-      "input_profile_id": "initial_change_request"
+      "input_profile_id": "standard_intake"
     }
   ]
 }

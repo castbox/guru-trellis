@@ -146,7 +146,7 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/public-clear-output-2.0.schema.json",
+        "schemas/public-clear-output-3.0.schema.json",
         "schemas/public-needs-context-output.schema.json",
         "schemas/public-refresh-context-output.schema.json",
         "schemas/public-retarget-context-output.schema.json",

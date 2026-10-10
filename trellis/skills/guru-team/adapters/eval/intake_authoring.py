@@ -239,8 +239,15 @@ class IntakeCommands:
         if index >= 2:
             if public.get("target_locator") != previous["transition"]["target_locator"]:
                 raise ValueError("Intake target projection differs from real producer stdout")
-        if index == 2 and public.get("duplicate_snapshot") != previous.get("duplicate_snapshot"):
-            raise ValueError("Intake duplicate snapshot differs from real producer stdout")
+        if index == 1 and public.get("clarify_profile") not in {"standard_intake", "reviewed_plan_intake"}:
+            raise ValueError("Intake Discovery input needs the current Clarify profile")
+        if index == 2:
+            if public.get("profile") != previous.get("handoff_profile"):
+                raise ValueError("Intake Clarify profile differs from real producer stdout")
+            if public.get("duplicate_snapshot") != previous.get("duplicate_snapshot"):
+                raise ValueError("Intake duplicate snapshot differs from real producer stdout")
+            if public.get("source_locators") != previous.get("source_locators"):
+                raise ValueError("Intake selected sources differ from real producer stdout")
 
 
 def validate_intake_trace(payload: dict[str, Any], protocol: dict[str, Any], public_stdout: str) -> list[str]:

@@ -1,6 +1,6 @@
 {
   "exit_id": "clarify_requirements",
-  "handoff_profile": "initial_change_request",
+  "handoff_profile": "standard_intake",
   "handoff_mode": "workflow",
   "handoff_target_locator": "stage0-handoff-target-locator",
   "handoff_continuation_id": "stage0-handoff-continuation-id",
@@ -23,6 +23,7 @@
     "target_locator": "stage0-handoff-target-locator",
     "continuation_id": "stage0-handoff-continuation-id",
     "context_result_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-    "authority_content_sha256": "2323232323232323232323232323232323232323232323232323232323232323"
+    "authority_content_sha256": "2323232323232323232323232323232323232323232323232323232323232323",
+    "clarify_profile": "standard_intake"
   }
 }

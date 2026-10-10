@@ -1106,14 +1106,14 @@ owner from live authority without a prior result chain.
 `guru-clarify-requirements` is an active semantic package with identical
 workflow/standalone preconditions: current runtime, current review target,
 current context evidence, source authority, and invocation-context freshness.
-Its Interface 1.4 semantic stages are `forward_behavior -> ai_review_gate ->
+Its Interface 1.8 semantic stages are `forward_behavior -> ai_review_gate ->
 conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
 loads `trellis-brainstorm` as its one-question method, but owns question
 selection, convergence, scope classification, action selection, confirmation
 necessity, semantic pass/block, and typed route.
 
 The result uses closed top-level fields and active artifact schema
-`guru-requirements-clarification-2.0`. Repository-answerable questions must be
+`guru-requirements-clarification-3.0`. Repository-answerable questions must be
 `answered` or `not_answerable` with at least one checked evidence reference
 before the first user
 question. Each clarification round contains one `question_id`; an
@@ -2176,3 +2176,18 @@ private recovery state 与 focused tests。#434 candidate 已选择 current regi
 ## Root-Cause Candidate Package
 
 `guru-qualify-root-cause` is an Interface 1.6 semantic package with ten closed caller inputs and four exit-specific outputs. Its package contract owns goal-sensitive admission, applicability and reentry. Consumer-owned root routers use direct projections; only dispositions, revision reasons or diagnosis gaps cross the boundary. No qualification state or approval is persisted.
+
+## #250 direct Intake I/O successor
+
+The Clarify package MIGRATION-250.md owns the explicit current replacement
+contract. Aggregate input 3.0 selects six profiles; standard/reviewed inputs
+are independent. Discovery context_request has four discriminated return
+identities and context_ready 4.0. Interface 1.8 adds only a structured skill_input
+profile_selector reading producer handoff_profile; it selects an independently
+owned input schema, without route judgment or an expression language. Current
+context/clarity/wording/readiness transitions use successor 2.0 identities.
+Minimal selected source locators/sections and normative/advisory role pass only
+to the clear router and current Planning via thin Wording/readiness relay.
+Create Task created remains identity-only. No source matrix, final disposition,
+full text, history, authorization, task.json source model or future Author
+registration enters that handoff.

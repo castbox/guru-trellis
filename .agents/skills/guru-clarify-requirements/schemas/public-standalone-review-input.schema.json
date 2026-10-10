@@ -1,15 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-clarify-requirements-input-standalone-review-1.0",
+  "$id": "guru-stage0-clarify-requirements-input-standalone-review-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "profile",
-    "source_exit",
-    "mode",
-    "target_locator",
-    "continuation_id"
-  ],
+  "required": ["profile", "source_exit", "mode", "target_locator", "continuation_id", "resume_target"],
   "properties": {
     "profile": {
       "const": "standalone_review"
@@ -28,6 +22,7 @@
     "continuation_id": {
       "type": "string",
       "minLength": 1
-    }
+    },
+    "resume_target": {"type": "string", "minLength": 1}
   }
 }

@@ -39,13 +39,18 @@ selection or an inferred lifecycle continuation.
 
 Classify the initial request before repository or network semantic reads:
 
-- simple conversation or a non-file-changing request: answer directly without
-  creating a GitHub Issue or Trellis task and without asking whether one should
-  be created;
-- a file-changing request that is not already inside an active-task route first
-  invokes `guru-select-workflow-mode`, whether or not an Issue exists or the
-  user mentioned task-free. Issue-backed or task-like requests that only ask
-  for information remain non-file-changing and are answered directly;
+- simple conversation or information-only requests about existing facts:
+  answer directly without creating a GitHub Issue or Trellis task and without
+  asking whether one should be created;
+- requests to clarify requirements, design a proposed feature, or plan a change
+  express change intent even when the user defers file writes or resource
+  creation. “讨论需求”, “设计新功能”, and “先做规划” enter the current Guru owner
+  route; deferring mutation does not turn them into information-only requests;
+- change-intent requests that are not already inside an active-task route first
+  invoke `guru-select-workflow-mode`, whether or not an Issue exists or the
+  user mentioned task-free. The selector retains its standard/task-free choice;
+  active-task change intent enters its existing phase/scope-change owner.
+  Respect deferred side effects throughout the selected route;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` invokes `guru-execute-task-free-change`;
 - only guru-create-task:created enters task planning; Issue creation returns to fresh Intake;
@@ -397,7 +402,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-contract-wording-change-router | Re-enter the affected wording route and any required upstream refresh. |
 | guru-task-intake-router | Project `ready.transition.target.kind` exactly once: `proposed_draft` invokes `guru-create-issue`, while `existing_issue` and `standalone_request` invoke `guru-create-task`; never turn an Issue creation result into task creation without fresh Sync and Intake. |
 | guru-sync-base | Re-enter `guru-sync-base` and then fresh Intake. `guru-create-issue:created` supplies the newly created exact source Issue and continues as a live Issue, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target. |
-| guru-task-created | Resolve the new TaskId, generation, binding and checkout from live facts, then enter Phase 1; never reuse the creation checkout path as durable identity. |
+| guru-task-created | Resolve live TaskId/generation, binding and checkout, retain adjacent current source_selection, then enter current Planning. Missing selection re-enters original Clarify/context; creation paths and task metadata do not reconstruct it. |
 | guru-current-task-identity-router | Resume the current task owner only after exact TaskId, generation and source authority validation. |
 | guru-task-source-review-router | Return ambiguous legacy source to fresh semantic review; do not guess Issue disposition from branch or PR text. |
 | guru-task-branch-established-router | Re-resolve the active checkout with the established branch binding. |
@@ -673,7 +678,7 @@ When a unique, complete, current side-effect plan is already displayed, `确认�
 [workflow-state:no_task]
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
-Every file-changing request first resolves task identity for the current
+Every change-intent request first resolves task identity for the current
 workspace and requested Issue. Unrelated `in_progress` tasks in the repository
 inventory are not current-task conflicts, even for the same user; do not ask
 the user to select one or switch to task-free because they exist. A checkout
@@ -739,6 +744,35 @@ enter its canonical Guru completion owner.
 #### 0.0 Base synchronization
 
 Invoke guru-sync-base and consume only its declared exit.
+
+### Intake profile and method routing
+
+For normal prompts, start/continue, resumed and compressed conversations,
+load this current workflow and the exact current phase owner. Upstream
+`trellis-brainstorm` is a discoverable method; if automatically selected or
+reused, its current semantic owner is Guru Clarify. Invoke
+`guru-clarify-requirements` with `standard_intake` for ordinary initial Intake
+or `reviewed_plan_intake` for explicitly selected existing requirements/design.
+Initial requests first complete the mandatory selector → Sync → Discovery
+graph and use actual `context_ready` as Clarify entry; loading a method alone
+does not permit a product question before that entry. Deferred writes or
+resource creation remain deferred throughout the graph.
+Its six profiles and context loop are package-owned; method loading does not
+create another Intake/Planning route. No-change active resume remains with its
+current phase rather than restarting Intake.
+
+Discovery `context_ready` dynamically projects `handoff_profile` into Clarify's
+current profile input. Clarify `needs_context` enters Discovery `context_request`;
+the actual return preserves the original profile/target/continuation and
+required task or standalone identity. Every return freshly rebuilds input.
+Unknown profiles or mismatched consumers fail closed.
+
+The clear router hands source_selection to current Wording/readiness and task
+intake. `guru-task-created` resolves live identity and then current Planning
+consumes the adjacent selection, rereads Direct Source and introduced sections,
+writes authority locators in prd.md, and records final design dispositions only
+in design.md. Loss of selection re-enters original Clarify/context; #292 is not
+a prerequisite or new mandatory consumer.
 
 #### 0.1 Change-context discovery
 

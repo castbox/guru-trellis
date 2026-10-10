@@ -1,17 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
+  "$id": "guru-stage0-clarify-requirements-input-active-task-scope-change-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "profile",
-    "source_exit",
-    "mode",
-    "target_locator",
-    "task_locator",
-    "resume_target",
-    "continuation_id"
-  ],
+  "required": ["profile", "source_exit", "mode", "target_locator", "task_locator", "resume_target", "continuation_id", "task_id", "lifecycle_generation"],
   "properties": {
     "profile": {
       "const": "active_task_scope_change"
@@ -41,6 +33,8 @@
     "continuation_id": {
       "type": "string",
       "minLength": 1
-    }
+    },
+    "task_id": {"type": "string", "minLength": 1},
+    "lifecycle_generation": {"type": "integer", "minimum": 0}
   }
 }

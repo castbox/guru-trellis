@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.8.schema.json",
+  "schema_version": "1.8",
   "id": "guru-clarify-requirements",
   "name": "guru-clarify-requirements",
   "description": "Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with dialogue-local choices and typed exits.",
@@ -81,8 +81,8 @@
       "path": "examples/requirements-clarification.json"
     },
     {
-      "id": "public_input_initial_change_request_example",
-      "path": "examples/public-initial-change-request-input-2.0.json"
+      "id": "public_input_standard_intake_example",
+      "path": "examples/public-standard-intake-input.json"
     },
     {
       "id": "public_input_active_task_scope_change_example",
@@ -105,12 +105,8 @@
       "path": "examples/public-invocation-error.json"
     },
     {
-      "id": "legacy_public_output_clear_example_1_0",
-      "path": "examples/public-clear-output.json"
-    },
-    {
       "id": "public_output_clear_example_2_0",
-      "path": "examples/public-clear-output-2.0.json"
+      "path": "examples/public-clear-output-3.0.json"
     },
     {
       "id": "public_output_needs_context_example",
@@ -131,6 +127,10 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "reviewed_plan_intake_artifacts",
+      "path": "examples/public-reviewed-plan-intake-input.json"
     }
   ],
   "schemas": [
@@ -139,8 +139,8 @@
       "path": "schemas/requirements-clarification.schema.json"
     },
     {
-      "id": "public_input_initial_change_request_2_0",
-      "path": "schemas/public-initial-change-request-input-2.0.schema.json"
+      "id": "public_input_standard_intake_2_0",
+      "path": "schemas/public-standard-intake-input.schema.json"
     },
     {
       "id": "public_input_active_task_scope_change",
@@ -167,12 +167,8 @@
       "path": "schemas/public-invocation-error.schema.json"
     },
     {
-      "id": "legacy_public_output_clear_1_0",
-      "path": "schemas/public-clear-output.schema.json"
-    },
-    {
       "id": "public_output_clear_2_0",
-      "path": "schemas/public-clear-output-2.0.schema.json"
+      "path": "schemas/public-clear-output-3.0.schema.json"
     },
     {
       "id": "public_output_needs_context",
@@ -193,6 +189,10 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "reviewed_plan_intake_schemas",
+      "path": "schemas/public-reviewed-plan-intake-input.schema.json"
     }
   ],
   "validators": [
@@ -302,94 +302,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-clarify-requirements-input-aggregate-2.0",
+        "schema_id": "guru-stage0-clarify-requirements-input-aggregate-3.0",
         "path": "schemas/public-input.schema.json"
       },
-      "profiles": [
-        {
-          "id": "initial_change_request",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
-            "path": "schemas/public-initial-change-request-input-2.0.schema.json"
-          },
-          "example": {
-            "id": "initial_change_request_input",
-            "path": "examples/public-initial-change-request-input-2.0.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "initial_change_request"
-          }
-        },
-        {
-          "id": "active_task_scope_change",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-active-task-scope-change-1.0",
-            "path": "schemas/public-active-task-scope-change-input.schema.json"
-          },
-          "example": {
-            "id": "active_task_scope_change_input",
-            "path": "examples/public-active-task-scope-change-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "active_task_scope_change"
-          }
-        },
-        {
-          "id": "standalone_review",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-standalone-review-1.0",
-            "path": "schemas/public-standalone-review-input.schema.json"
-          },
-          "example": {
-            "id": "standalone_review_input",
-            "path": "examples/public-standalone-review-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "standalone_review"
-          }
-        },
-        {
-          "id": "normal_scenario_scope_confirmation",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-1.0",
-            "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"
-          },
-          "example": {
-            "id": "normal_scenario_scope_confirmation_input",
-            "path": "examples/public-normal-scenario-scope-confirmation-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "normal_scenario_scope_confirmation"
-          }
-        },
-        {
-          "id": "solution_mechanism_scope_confirmation",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-solution-mechanism-scope-confirmation-1.0",
-            "path": "schemas/public-solution-mechanism-scope-confirmation-input.schema.json"
-          },
-          "example": {
-            "id": "solution_mechanism_scope_confirmation_input",
-            "path": "examples/public-solution-mechanism-scope-confirmation-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "solution_mechanism_scope_confirmation"
-          }
-        }
-      ]
+      "profiles": [{"id": "standard_intake", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-standard-intake-1.0", "path": "schemas/public-standard-intake-input.schema.json"}, "example": {"id": "standard_intake_input", "path": "examples/public-standard-intake-input.json"}, "discriminator": {"field": "profile", "value": "standard_intake"}}, {"id": "reviewed_plan_intake", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-reviewed-plan-intake-1.0", "path": "schemas/public-reviewed-plan-intake-input.schema.json"}, "example": {"id": "reviewed_plan_intake_input", "path": "examples/public-reviewed-plan-intake-input.json"}, "discriminator": {"field": "profile", "value": "reviewed_plan_intake"}}, {"id": "active_task_scope_change", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-active-task-scope-change-2.0", "path": "schemas/public-active-task-scope-change-input.schema.json"}, "example": {"id": "active_task_scope_change_input", "path": "examples/public-active-task-scope-change-input.json"}, "discriminator": {"field": "profile", "value": "active_task_scope_change"}}, {"id": "standalone_review", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-standalone-review-2.0", "path": "schemas/public-standalone-review-input.schema.json"}, "example": {"id": "standalone_review_input", "path": "examples/public-standalone-review-input.json"}, "discriminator": {"field": "profile", "value": "standalone_review"}}, {"id": "normal_scenario_scope_confirmation", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-1.0", "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"}, "example": {"id": "normal_scenario_scope_confirmation_input", "path": "examples/public-normal-scenario-scope-confirmation-input.json"}, "discriminator": {"field": "profile", "value": "normal_scenario_scope_confirmation"}}, {"id": "solution_mechanism_scope_confirmation", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-solution-mechanism-scope-confirmation-1.0", "path": "schemas/public-solution-mechanism-scope-confirmation-input.schema.json"}, "example": {"id": "solution_mechanism_scope_confirmation_input", "path": "examples/public-solution-mechanism-scope-confirmation-input.json"}, "discriminator": {"field": "profile", "value": "solution_mechanism_scope_confirmation"}}]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {
-        "kind": "structured_json",
-        "profile_id": "standalone_review"
-      },
+      "input_binding": {"kind": "structured_json", "profile_selector": {"source": "aggregate_public_input", "field": "profile"}},
       "stdout_contract": "single_typed_exit",
       "error_schema": {
         "schema_id": "guru-stage0-clarify-requirements-invocation-error-1.0",
@@ -416,12 +337,12 @@
       {
         "exit_id": "clear",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-clear-2.0",
-          "path": "schemas/public-clear-output-2.0.schema.json"
+          "schema_id": "guru-stage0-clarify-requirements-output-clear-3.0",
+          "path": "schemas/public-clear-output-3.0.schema.json"
         },
         "example": {
           "id": "clear_output",
-          "path": "examples/public-clear-output-2.0.json"
+          "path": "examples/public-clear-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_clear"
@@ -430,7 +351,7 @@
       {
         "exit_id": "needs_context",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-needs-context-1.0",
+          "schema_id": "guru-stage0-clarify-requirements-output-needs-context-2.0",
           "path": "schemas/public-needs-context-output.schema.json"
         },
         "example": {
@@ -508,18 +429,18 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-clarify-requirements-workflow-clear-input-1.0",
+          "schema_id": "guru-stage0-clarify-requirements-workflow-clear-input-2.0",
           "path": "consumers/workflow/stage0/clarify-requirements-clear.schema.json"
         },
         "transition": {
           "source_field": "transition",
           "stage": "clarity_current",
-          "schema_id": "guru-stage0-transition-clarity-current-1.0",
+          "schema_id": "guru-stage0-transition-clarity-current-2.0",
           "path": "consumers/workflow/stage0/transitions/clarity-current.schema.json"
         }
       },
       {
-        "id": "needs_context_pre_task_input",
+        "id": "needs_context_context_request_input",
         "consumer": {
           "kind": "skill",
           "id": "guru-discover-change-context"
@@ -529,19 +450,14 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "pre_task",
-          "seed_fields": [
-            "source_exit",
-            "profile",
-            "mode",
-            "continuation_id"
-          ],
+          "profile_id": "context_request",
+          "seed_fields": ["source_exit", "profile", "mode", "continuation_id", "return_identity"],
           "authoring_fields": [
             "change_input"
           ],
           "authoring_example": {
-            "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-2.0.json"
+            "id": "context_request_input",
+            "path": "examples/public-context-request-input.json"
           }
         },
         "transition": {
@@ -605,48 +521,14 @@
         "exit_id": "clear",
         "consumer_input_id": "clear_workflow_input",
         "operation": "select",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "exit_id"
-          },
-          {
-            "source": "resume_target",
-            "target": "resume_target"
-          },
-          {
-            "source": "target_disposition",
-            "target": "target_disposition"
-          },
-          {
-            "source": "continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "mappings": [{"source": "exit_id", "target": "exit_id"}, {"source": "resume_target", "target": "resume_target"}, {"source": "target_disposition", "target": "target_disposition"}, {"source": "continuation_id", "target": "continuation_id"}, {"source": "profile", "target": "profile"}, {"source": "source_selection", "target": "source_selection"}]
       },
       {
         "id": "project_needs_context",
         "exit_id": "needs_context",
-        "consumer_input_id": "needs_context_pre_task_input",
+        "consumer_input_id": "needs_context_context_request_input",
         "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "handoff_profile",
-            "target": "profile"
-          },
-          {
-            "source": "handoff_mode",
-            "target": "mode"
-          },
-          {
-            "source": "handoff_continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "mappings": [{"source": "exit_id", "target": "source_exit"}, {"source": "handoff_profile", "target": "profile"}, {"source": "handoff_mode", "target": "mode"}, {"source": "handoff_continuation_id", "target": "continuation_id"}, {"source": "return_identity", "target": "return_identity"}]
       },
       {
         "id": "project_refresh_context",
@@ -723,7 +605,7 @@
         "id": "clarification_result",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-3.0.json",
           "path": "schemas/requirements-clarification.schema.json"
         },
         "persistence": "stdout_only_pre_task"

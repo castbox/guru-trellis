@@ -17,6 +17,13 @@ Use this Skill after `guru-discover-change-context:context_ready`, when an
 active task receives scope-changing input, or for an explicit standalone
 requirements review.
 
+For an initial proposed-change discussion, the actual current Discovery
+`context_ready` remains this Skill's entry prerequisite. If this Skill or
+brainstorm is loaded before that result exists, follow the current workflow's
+mandatory initial mode/base/context graph first. Deferring file writes or
+resource creation does not waive that entry. Method loading alone cannot end
+the turn with a product question outside this owner's formal closed loop.
+
 For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
 classification or planning-update semantics.
@@ -53,8 +60,8 @@ apply it in this Skill's semantic gate. Do not infer absence from a
 single-language zero result or expose the query process through the public DTO.
 
 From the repository root, load
-`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md` and
-`trellis-brainstorm`. Execute the semantic closed loop in its declared order,
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md`;
+when brainstorm is loaded, apply the current owner/stage/return constraint in that contract. Execute the semantic closed loop in its declared order,
 ask at most one highest-value question per round, complete the AI Review Gate
 and any real action/proposal choice before calling recorder/checker,
 keep that authorization in the current dialogue, then return exactly one
@@ -144,3 +151,7 @@ or use qualification as completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+Use the six profiles and four caller-aware context returns in the contract.
+Preserve selected source locators and their normative/advisory roles for current
+Planning; do not decide final design dispositions or create an alternate owner.
