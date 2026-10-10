@@ -1,6 +1,6 @@
 # #383 因果完成语义 Architecture contribution
 
-Identity：`383-causal-completion-semantics:phase2-final-v2`；状态：`reviewed_candidate`；Task locator：`.trellis/tasks/10-10-383-causal-completion-semantics`。当前判断为文末 fresh independent Phase 2 assessment；未 committed review、未 promotion。以下 Planning 部分保留 predecessor 事实，不能替代本次实际候选审查。
+Identity：`383-causal-completion-semantics:phase2-final-v2`；状态：`reviewed_promoted`；Task locator：`.trellis/tasks/10-10-383-causal-completion-semantics`。当前状态为文末 committed review 与 expected-current promotion；promoted identity 为 `current-main-0.6.17-guru.80`，preimage 为 `.79`。下列 Planning/Phase2 段保留当时事实，不替代晋升后 fresh gates。
 
 ## Authority 与候选绑定
 
@@ -71,3 +71,11 @@ Root 保持候选准入；Check/Branch Review 判断当前阶段；Delivery Revi
 Eval host 只准备事实并持有期望结果，native owner 原样提交实际 authoring 到原 installed wrappers；最新 source/Git facts、非空 commit、实际两次 fixture merge、reactivation anchor 与实时 trace 均为 private test infrastructure，不扩大产品状态。上述证据支持本次语义与 transport 判断；fixture Git/生产观察不是远端 Delivery 或业务生产效果。
 
 下一直接 consumer 是 Phase 2 Check；长期 consumer 为独立 committed Architecture review 与 expected-current promotion。尚未验证 committed review/promotion、真实下游 Delivery/Closure/Finish、官方 init/update 完整链、完整多平台 Release matrix、candidate 远端安装、业务生产安装或实际生产效果。机制或相关证据变化时须 fresh assessment，当前结果不跨候选字节复用。
+
+## Independent committed review 与 serialized promotion
+
+独立审查范围：`origin/main@ef83e6d61e3c35d966b1baf95ab4bcab8409e993...f7944544122309035bb30da4ab88b6fa442c986c`。先从 constitution/baseline/change contract、完整 95 paths 与 unchanged consumers 形成 Architecture 判断，再读 task narrative，亲自执行九 concern 协议与原 wrapper；实际结果为 architecture_impact/target_native/reviewed_candidate。随后 fresh normal/solution qualification 和完整 Branch Review 经原 recorder/checker/invoke 正式返回 passed，无 P0–P3 finding；不是 Phase2 结果复用。
+
+原 Architecture owner 核对 current `.79` 与该 contribution identity 未变化，按 expected `.79` 串行晋升为 `.80/active`。新增 ARCH-CUR-053 / ARCH-DOM-036 / ARCH-INT-039 / EVD-056 只导航现有共同 spec、owner 分工、分发与唯一 Test，不复制认知正文。无新的 decision、原则例外、GAP/owner/compatibility exit，ADR 不需要；所有 `.79` snapshot、#382 contribution 和历史证据保持原对象。RDT 同步 successor `.80`，software axes、public API 和全局图不变。
+
+本 owner 在 promotion 再次检查全部九 concern：authority/constitution 与 preimage 绑定；唯一 target_native；各原 semantic owner/单写与 parallel task isolation 保持；无 adapter/dual-read、GAP 关闭或恶化；current evidence 指向原执行对象；review/promotion 精确承接上述 committed range。Project-check 为 applicable/blocking/pass，无发现的架构 regression。本文状态只说明知识晋升；新产生的完整 diff 必须 fresh Phase2、TaskCommit、独立完整 Branch Review 后才进入 Delivery。正式 Delivery/Completion/Closure/Finish、软件发布、官方 init/update 完整链和业务生产效果仍待相应 owner 判断，不以本段冒充完成。

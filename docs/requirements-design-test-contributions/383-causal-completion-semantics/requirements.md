@@ -1,6 +1,6 @@
 # #383 需求增量
 
-状态：isolated candidate；predecessor：current-main-0.6.17-guru.79。
+状态：reviewed_promoted；current successor：current-main-0.6.17-guru.80；predecessor：current-main-0.6.17-guru.79。
 唯一 current requirement authority：[live Issue #383 r9](https://github.com/castbox/guru-trellis/issues/383)。
 本文件建立可追踪增量，共同语义正文只由 canonical spec 拥有。
 #382 的候选准入、#434/#435 Delivery 和 #436 Completion/Closure 生命周期保持。

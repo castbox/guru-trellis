@@ -1,6 +1,6 @@
 # #383 设计责任增量
 
-状态：isolated candidate；继承 current-main-0.6.17-guru.79 与 Architecture .79/active。
+状态：reviewed_promoted；继承 immutable current-main-0.6.17-guru.79，current successor 与 Architecture 为 .80/active，晋升 preimage 为 .79。
 [共同语义](../../../trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md)拥有正文；
 以下责任是 implementation locator 与 owner 的引用。
 

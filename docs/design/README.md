@@ -1,6 +1,6 @@
 # Design SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.79` / `active`；[本版入口](./versions/current-main-0.6.17-guru.79/design-main.md)薄继承 immutable `.78`，承接已独立审查的 [#382 增量 trace](../requirements-design-test-contributions/382-root-cause-qualification/traceability.md)。Architecture 继承 `.79/active`，晋升 preimage 为 `.78`。实际结果由唯一 Test 拥有；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review，业务 native 接续、生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.80` / `active`；[本版入口](./versions/current-main-0.6.17-guru.80/design-main.md)薄继承 immutable `.79`，承接已独立审查的 [#383 增量 trace](../requirements-design-test-contributions/383-causal-completion-semantics/traceability.md)。Architecture 继承 `.80/active`，晋升 preimage 为 `.79`。[唯一 Test](../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有实际结果与边界；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review。官方 init/update 完整链、candidate 远端安装、业务生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
 
 历史 `.70` Design authority：[`versions/current-main-0.6.17-guru.70/design-main.md`](./versions/current-main-0.6.17-guru.70/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#481 后的 registry（34 packages / 155 exits / 104 commands，零 planned）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.70/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 为 33 mandatory invokes / 153 exits。Architecture 为 `.70` / `active`；`.69` 及更早版本保持 immutable。
 
@@ -12,7 +12,8 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.79` | [design-main.md](./versions/current-main-0.6.17-guru.79/design-main.md) |
+| `active` | `current-main-0.6.17-guru.80` | [design-main.md](./versions/current-main-0.6.17-guru.80/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.79` | [design-main.md](./versions/current-main-0.6.17-guru.79/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.78` | [design-main.md](./versions/current-main-0.6.17-guru.78/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.77` | [design-main.md](./versions/current-main-0.6.17-guru.77/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.76` | [design-main.md](./versions/current-main-0.6.17-guru.76/design-main.md) | reviewed #503 identity responsibility; immutable .75 inheritance; post-promotion gates required |
