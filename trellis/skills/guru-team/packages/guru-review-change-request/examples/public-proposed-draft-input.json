@@ -1,7 +1,7 @@
 {
   "profile": "proposed_draft",
-  "source_exit": "start",
+  "source_exit": "pass",
   "mode": "workflow",
-  "target_locator": "#145",
+  "target_locator": "stage0-review-change-request-example",
   "continuation_id": "stage0-current"
 }

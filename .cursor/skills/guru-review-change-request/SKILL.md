@@ -59,7 +59,13 @@ Run from the target repository root. The installed scripts are under
 `.trellis/guru-team/skills/packages/guru-review-change-request/scripts/`,
 not beside the platform discovery copy. Call `record-change-request-review.sh`,
 `check-change-request-review.sh`, then `invoke.sh`, each with
-`--root . --invocation - --json`. See the contract's Installed Authoring section.
+`--root . --invocation - --json`. Follow the contract's
+[Producer-Bound Draft Recipe](references/contract.md#producer-bound-draft-recipe)
+for draft identity, authority digest and receipt consumption, and
+[Same-Scope Authoring Recovery](references/contract.md#same-scope-authoring-recovery)
+for ordinary construction errors. Rebuild this consumer's minimal authoring
+from the unchanged actual producer output; do not patch private linkage or
+request another confirmation for a same-scope, side-effect-free correction.
 The minimum authored `ai_review_gate` is `status`, `reviewer`, and `summary`.
 Explicit dimensions, findings (including `[]`), scope conclusion and selected
 exit remain AI-owned and required. Record derives both gate digests and the

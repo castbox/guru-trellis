@@ -1,5 +1,6 @@
 {
   "kind": "draft",
+  "repo": "example/guru-extension",
   "draft_id": "stage0-review-change-request-example",
   "title": "Review the Stage 0 public handoff",
   "body": "Validate the semantic owner result before serializing a minimal typed handoff.",

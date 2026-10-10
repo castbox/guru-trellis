@@ -1,6 +1,6 @@
 # Test Strategy / Test Plan SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.82` / `active`；[本版入口](./versions/current-main-0.6.17-guru.82/test-strategy.md)薄继承 immutable `.81`，承接已独立审查的 [#453 增量 trace](../requirements-design-test-contributions/453-formal-skill-exit-boundary/traceability.md)。Architecture 继承 `.82/active`，晋升 preimage `.81`。[唯一 Test](../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有实际结果与限制；知识晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review，不表示软件发布或任务完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.83` / `active`；[本版入口](./versions/current-main-0.6.17-guru.83/test-strategy.md)薄继承 immutable `.82`，承接已独立审查的 [#396 增量 trace](../requirements-design-test-contributions/396-draft-intake-recovery/traceability.md)。Architecture 继承 `.82/active`，RDT 晋升 preimage `.82`。[唯一 Test](../requirements-design-test-contributions/396-draft-intake-recovery/test.md)拥有实际 objective/native/分发结果与限制；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review，不表示软件发布或生命周期完成。
 
 历史 `.70` authority：[`versions/current-main-0.6.17-guru.70/test-strategy.md`](./versions/current-main-0.6.17-guru.70/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.70/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.70/active` 和 evidence；`.69` 及更早版本保持 immutable。
 
@@ -10,7 +10,8 @@
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.82` | [新 current](./versions/current-main-0.6.17-guru.82/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.83` | [新 current](./versions/current-main-0.6.17-guru.83/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.82` | [新 current](./versions/current-main-0.6.17-guru.82/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.81` | [test-strategy.md](./versions/current-main-0.6.17-guru.81/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.80` | [test-strategy.md](./versions/current-main-0.6.17-guru.80/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.79` | [test-strategy.md](./versions/current-main-0.6.17-guru.79/test-strategy.md) |
