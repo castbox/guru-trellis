@@ -32,7 +32,15 @@ findings, tests, implementation routing, or planning-stale judgment, invoke
 and returns here for fresh qualification; it never enters scope confirmation.
 
 Read the approved planning, live diff and dirty paths, implementation, tests,
-Docs SSOT, source Issue authority, and applicable repository validation directly. Classify
+Docs SSOT, source Issue authority, and applicable repository validation directly.
+Read the unique Direct Source from the current task's `source.repo_ref` and
+`source.number`, or honor its valid `no_issue` source. Judge Related Work,
+Coordination and Follow-up facts only for an explicit accepted-scope purpose.
+Informational changes do not automatically invalidate this round; material
+requirement or necessary-evidence changes return to the earliest affected
+owner under dependency-scoped validation. These facts do not change task
+source, Closure authority or repository topology.
+Classify
 every candidate through `guru-qualify-normal-scenario:phase2_candidate_set`
 before assigning P0-P3 severity, then
 review the nine Phase 2 adequacy dimensions. Worker output is ephemeral input to
@@ -93,7 +101,14 @@ The public input only routes initial, finding-fix, or planning re-entry. It does
 not author evidence conclusions, findings, the AI gate, or an exit. After the AI
 semantic result exists, record and validate only the compact 5.0 owner-private
 projection. Its one composite worktree-content token serves only the adjacent
-freshness checker; it is not semantic or workflow authority. Return exactly one
+freshness checker; it is not semantic or workflow authority. Once the original
+checker validates the current `passed` producer result and the public output
+passes its schema, call the execution-result owner's retirement helper for this
+task. That owner validates and retires only its matching completed result;
+missing or stale execution results do not add a Check gate, and nonpassed or
+stale Check results retain execution recovery state. Do not read the execution
+owner's private checkpoint or infer semantic pass from its existence.
+Return exactly one
 of `passed`, `implementation_required`,
 `planning_stale`, or `blocked`.
 

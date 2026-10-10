@@ -9,6 +9,13 @@ causal completion or infer it from a Delivery merge.
 Normal revision and recovery follow the single continuation block in
 `workflow.md`. Check execution-fact reuse and Delivery Review anchor recovery
 are owned by their respective canonical Skill contracts, not this README.
+First activation and active replanning both consume the current Planning
+`approved` result through the same presentation/acceptance boundary. The
+existing [execution owner](../../skills/guru-team/packages/guru-activate-task/SKILL.md)
+distinguishes status activation, execution resumption and each completed
+operation's read-only output recovery. Its aggregate public schemas are 2.0;
+reapply the complete matching preset and workflow together. First-activation
+payloads retain their published meaning; no second parser is installed.
 
 The `guru-team` canonical workflow is the global AI routing contract. The
 canonical source is `workflow.md`; an installed `.trellis/workflow.md` is a
@@ -54,7 +61,7 @@ checkout-path authority. Missing binding enters
 `guru-establish-task-branch-binding`. The public
 `check-task-checkout-boundary.sh` validates the current task and checkout
 before writes; it does not rebuild old task/workspace mappings. `guru-activate-task`
-owns the status-only Planning activation; do not call the former `start-task.sh`
+owns first Planning activation and active replan execution resumption; do not call the former `start-task.sh`
 or upstream `task.py start` to perform that transition.
 
 ## Installation

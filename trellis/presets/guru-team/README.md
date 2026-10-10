@@ -9,6 +9,13 @@ Normal revision/recovery contracts live in `guru-check-task` and
 `guru-review-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
+The existing `guru-activate-task` package also owns active replanning execution
+resumption and completed-result recovery. Its 2.0 aggregate public contracts,
+current Check consumer and marketplace workflow must be projected together;
+first-activation payloads preserve their meaning without a legacy parser.
+Pending plan acceptance stays in the current dialogue. The single short-lived
+execution result is private to that owner and retired after current Check
+consumption. Preset reapply does not select or rewrite the active workflow.
 
 This preset installs the companion assets and current Skill packages for the
 `guru-team` canonical workflow into an existing Trellis project. The

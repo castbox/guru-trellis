@@ -1,0 +1,11 @@
+{
+  "profile": "task_activation",
+  "action": "recover_execution",
+  "mode": "workflow",
+  "activation": {
+    "task_id": "demo",
+    "task_ref": ".trellis/tasks/demo",
+    "lifecycle_generation": 0,
+    "session_mode": "explicit_task_mode"
+  }
+}

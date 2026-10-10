@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-activate-task",
   "name": "guru-activate-task",
-  "description": "Activate an approved planning task through current lifecycle and base facts, with read-only output-loss recovery.",
+  "description": "Activate initial planning or resume approved active replanning, with same-operation read-only result recovery.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -11,8 +11,8 @@
     "standalone": {"routing": "direct_discovery", "entry_precondition_ids": ["planning_approval", "current_task", "base_and_session"]}
   },
   "entry_preconditions": [
-    {"id": "planning_approval", "evidence": "current guru-approve-task-plan approved result and planning documents", "binding": "one reviewed planning decision", "freshness": "AI rereads approval and current planning before activation"},
-    {"id": "current_task", "evidence": "active TaskId, generation and planning task artifact", "binding": "one planning incarnation", "freshness": "reread immediately before mutation or recovery"},
+    {"id": "planning_approval", "evidence": "actual current approved DTO for pending activation/resume, or same-owner completed operation for read-only recovery; current planning documents", "binding": "one current planning decision or completed execution operation", "freshness": "AI rereads actual approval before pending execution; completed-result recovery rereads its current plan and operation"},
+    {"id": "current_task", "evidence": "active TaskId, generation and planning or in_progress task artifact", "binding": "one current lifecycle incarnation", "freshness": "reread before activation, resume or recovery"},
     {"id": "base_and_session", "evidence": "current C4/C5 branch ownership, base continuity and session result", "binding": "same repository, branch and lifecycle generation", "freshness": "live Git and control-store reread on every invocation"}
   ],
   "runtime_dependency": {"extension_id": "guru-team", "api_version": "1.0", "manifest_path": ".trellis/guru-team/extension.json", "dispatcher": "run-skill-command", "distribution": "guru-team-preset", "package_portability": "not-self-contained"},
@@ -24,7 +24,10 @@
     {"id": "refresh_output", "path": "examples/public-refresh-review-output.json"},
     {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"},
     {"id": "blocked_output", "path": "examples/public-blocked-output.json"},
-    {"id": "invocation_error", "path": "examples/public-invocation-error.json"}
+    {"id": "invocation_error", "path": "examples/public-invocation-error.json"},
+    {"id": "resume_input", "path": "examples/public-resume-input.json"},
+    {"id": "recover_execution_input", "path": "examples/public-recover-execution-input.json"},
+    {"id": "execution_resumed_output", "path": "examples/public-execution-resumed-output.json"}
   ],
   "schemas": [
     {"id": "public_input", "path": "schemas/public-input.schema.json"},
@@ -33,11 +36,14 @@
     {"id": "refresh_output", "path": "schemas/public-refresh-review-output.schema.json"},
     {"id": "invalid_output", "path": "schemas/public-invalid-task-state-output.schema.json"},
     {"id": "blocked_output", "path": "schemas/public-blocked-output.schema.json"},
-    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"}
+    {"id": "invocation_error", "path": "schemas/public-invocation-error.schema.json"},
+    {"id": "execution_resumed_output", "path": "schemas/public-execution-resumed-output.schema.json"},
+    {"id": "execution_result", "path": "schemas/execution-result.schema.json"}
   ],
-  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-activate-task", "objective_scope": "Check exact C6 identity and continuity, transition only planning status, or recover output read-only."}],
+  "validators": [{"id": "public_invocation", "command": "scripts/invoke.sh", "runtime_command": "invoke-guru-activate-task", "objective_scope": "Validate current lifecycle, planning identity, C4/C5 and continuity; change only initial planning status, record completed execution or recover the same operation read-only."}],
   "external_exits": [
     {"id": "activated", "evidence": "approved planning task is in progress for the current lifecycle", "consumer": {"kind": "workflow", "id": "guru-task-activated-router"}},
+    {"id": "execution_resumed", "evidence": "same active lifecycle resumed execution of the current planning result", "consumer": {"kind": "workflow", "id": "guru-task-execution-resumed-router"}},
     {"id": "refresh_review", "evidence": "reviewed head or base continuity changed", "consumer": {"kind": "workflow", "id": "guru-task-activation-refresh-router"}},
     {"id": "invalid_task_state", "evidence": "task identity or status does not match the reviewed activation", "consumer": {"kind": "stop", "id": "invalid-task-state"}},
     {"id": "blocked", "evidence": "required branch, session or lifecycle authority is unresolved", "consumer": {"kind": "stop", "id": "task-activation-blocked"}}
@@ -46,28 +52,33 @@
   "tests": ["tests/test_contract.py"],
   "platform_destinations": ["shared", "claude", "cursor", "opencode", "codex", "kilo", "kiro", "gemini", "antigravity", "devin", "qoder", "codebuddy", "copilot", "droid", "dsh", "pi", "reasonix", "zcode", "trae", "omp", "grok", "kimi", "snow"],
   "public_contracts": {
-    "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-activate-task-input-1.0", "path": "schemas/public-input.schema.json"}, "profiles": [
-      {"id": "task_activation", "schema": {"schema_id": "guru-activate-task-input-1.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "activate_input", "path": "examples/public-activate-input.json"}, "discriminator": {"field": "profile", "value": "task_activation"}}
+    "input": {"kind": "structured_json", "aggregate_schema": {"schema_id": "guru-activate-task-input-2.0", "path": "schemas/public-input.schema.json"}, "profiles": [
+      {"id": "task_activation", "schema": {"schema_id": "guru-activate-task-input-2.0", "path": "schemas/public-input.schema.json"}, "example": {"id": "activate_input", "path": "examples/public-activate-input.json"}, "discriminator": {"field": "profile", "value": "task_activation"}}
     ]},
     "invocation": {"command_id": "run-skill-command", "wrapper": "scripts/invoke.sh", "input_binding": {"kind": "structured_json", "profile_id": "task_activation"}, "stdout_contract": "single_typed_exit", "error_schema": {"schema_id": "guru-activate-task-error-1.0", "path": "schemas/public-invocation-error.schema.json"}, "error_example": {"id": "invocation_error", "path": "examples/public-invocation-error.json"}, "example_argv": ["--input", "examples/public-activate-input.json"]},
     "outputs": [
       {"exit_id": "activated", "schema": {"schema_id": "guru-activate-task-activated-1.0", "path": "schemas/public-activated-output.schema.json"}, "example": {"id": "activated_output", "path": "examples/public-activated-output.json"}, "consumer_use_ids": ["activated_projection"]},
+      {"exit_id": "execution_resumed", "schema": {"schema_id": "guru-activate-task-execution-resumed-1.0", "path": "schemas/public-execution-resumed-output.schema.json"}, "example": {"id": "execution_resumed_output", "path": "examples/public-execution-resumed-output.json"}, "consumer_use_ids": ["execution_resumed_projection"]},
       {"exit_id": "refresh_review", "schema": {"schema_id": "guru-activate-task-refresh-review-1.0", "path": "schemas/public-refresh-review-output.schema.json"}, "example": {"id": "refresh_output", "path": "examples/public-refresh-review-output.json"}, "consumer_use_ids": ["refresh_projection"]},
       {"exit_id": "invalid_task_state", "schema": {"schema_id": "guru-activate-task-invalid-1.0", "path": "schemas/public-invalid-task-state-output.schema.json"}, "example": {"id": "invalid_output", "path": "examples/public-invalid-task-state-output.json"}, "consumer_use_ids": ["invalid_projection"]},
       {"exit_id": "blocked", "schema": {"schema_id": "guru-activate-task-blocked-1.0", "path": "schemas/public-blocked-output.schema.json"}, "example": {"id": "blocked_output", "path": "examples/public-blocked-output.json"}, "consumer_use_ids": ["blocked_projection"]}
     ],
     "consumer_inputs": [
       {"id": "activated_input", "consumer": {"kind": "workflow", "id": "guru-task-activated-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-activated-input-1.0", "path": "consumers/workflow/production/activated.schema.json"}},
+      {"id": "execution_resumed_input", "consumer": {"kind": "workflow", "id": "guru-task-execution-resumed-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-task-execution-resumed-input-1.0", "path": "consumers/workflow/production/execution-resumed.schema.json"}},
       {"id": "refresh_input", "consumer": {"kind": "workflow", "id": "guru-task-activation-refresh-router"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-activation-refresh-input-1.0", "path": "consumers/workflow/production/refresh-review.schema.json"}},
       {"id": "invalid_input", "consumer": {"kind": "stop", "id": "invalid-task-state"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-activation-invalid-input-1.0", "path": "consumers/stop/production/invalid-task-state.schema.json"}},
       {"id": "blocked_input", "consumer": {"kind": "stop", "id": "task-activation-blocked"}, "payload_kind": "structured_json", "contract": {"kind": "json_schema", "schema_id": "guru-activation-blocked-input-1.0", "path": "consumers/stop/production/blocked.schema.json"}}
     ],
     "projections": [
       {"id": "activated_projection", "exit_id": "activated", "consumer_input_id": "activated_input", "operation": "direct"},
+      {"id": "execution_resumed_projection", "exit_id": "execution_resumed", "consumer_input_id": "execution_resumed_input", "operation": "direct"},
       {"id": "refresh_projection", "exit_id": "refresh_review", "consumer_input_id": "refresh_input", "operation": "direct"},
       {"id": "invalid_projection", "exit_id": "invalid_task_state", "consumer_input_id": "invalid_input", "operation": "direct"},
       {"id": "blocked_projection", "exit_id": "blocked", "consumer_input_id": "blocked_input", "operation": "direct"}
     ],
-    "private_artifacts": []
+    "private_artifacts": [
+      {"id": "execution_result", "kind": "runtime_checkpoint", "schema": {"schema_id": "guru-task-execution-result-1.0", "path": "schemas/execution-result.schema.json"}, "persistence": "ignored_runtime"}
+    ]
   }
 }

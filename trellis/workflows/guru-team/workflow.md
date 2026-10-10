@@ -189,6 +189,7 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"blocked","consumer":{"kind":"stop","id":"task-plan-approval-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-activate-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"activated","consumer":{"kind":"workflow","id":"guru-task-activated-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"execution_resumed","consumer":{"kind":"workflow","id":"guru-task-execution-resumed-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"refresh_review","consumer":{"kind":"workflow","id":"guru-task-activation-refresh-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"invalid_task_state","consumer":{"kind":"stop","id":"invalid-task-state"}} -->
 <!-- guru-skill-exit: {"skill":"guru-activate-task","exit":"blocked","consumer":{"kind":"stop","id":"task-activation-blocked"}} -->
@@ -319,6 +320,7 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-workflow-target: {"id":"guru-task-plan-clarify-scope-router"} -->
 <!-- guru-workflow-target: {"id":"phase-1-task-activation"} -->
 <!-- guru-workflow-target: {"id":"guru-task-activated-router"} -->
+<!-- guru-workflow-target: {"id":"guru-task-execution-resumed-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-activation-refresh-router"} -->
 <!-- guru-workflow-target: {"id":"guru-base-reconciliation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-base-continuity-passed-router"} -->
@@ -412,8 +414,9 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-bind-task-session-manual-recovery-router | Recheck the restored binding and current task boundary before phase routing. |
 | guru-current-phase-router | Use explicit task mode without inventing a session context or binding record. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
-| phase-1-task-activation | Present the current approved plan, apply its current pair guard, then invoke `guru-activate-task` for the status-only transition. |
+| phase-1-task-activation | Present the current approved plan, apply its current pair guard, then invoke `guru-activate-task` with `activate` for a planning task or `resume_execution` for an in-progress replan. |
 | guru-task-activated-router | Re-resolve the active task and enter fresh Phase 2. |
+| guru-task-execution-resumed-router | Re-resolve the same active TaskId/generation and enter fresh Phase 2 for the current replanned scope. |
 | guru-task-activation-refresh-router | Refresh Planning approval or binding evidence before another activation attempt. |
 | guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
 | guru-base-continuity-passed-router | Consume bounded continuity for the exact pair, project the current continuity-reviewed reconciliation commit as the downstream review anchor, and resume its closed `resume_target`. |
@@ -602,7 +605,7 @@ The active workflow must contain exactly this one non-empty continuation block. 
 | Bound status | Continuation owner family |
 | --- | --- |
 | `planning` or `planning-inline` | Apply the Phase 1 recovery matrix below. |
-| `in_progress` or `in_progress-inline` | Apply the Phase 2-to-Completion recovery matrix below. |
+| `in_progress` or `in_progress-inline` | Resolve any current active replan through the execution recovery matrix first, then apply the Phase 2-to-Completion recovery matrix. |
 | `completed` | Validate current Closure/Finish generation and enter its declared Finish or Cleanup consumer; upstream `trellis-finish-work` is not a Guru consumer. |
 | anything else | Stop at `invalid-task-state`. |
 
@@ -620,7 +623,29 @@ Apply the first matching row from current live evidence. Artifact presence is ev
 | Plan approval output is absent, stale, or lost | Freshly invoke `guru-approve-task-plan`; never reconstruct `approved` from task status, files, prior prose, or an old presentation. |
 | The current approved plan has not been accepted in this dialogue, including lost confirmation after presentation | Present the current approved plan and activation side effect again and obtain a fresh dialogue-local confirmation. Never persist or reuse confirmation. |
 | The exact task is still `planning` after current approval and confirmation | Invoke `guru-activate-task` once with current C6 planning input. Its checked `activated` result enters Phase 2 without writing legacy branch metadata. |
-| Activation mutation succeeded but its result was lost and the exact task is already `in_progress` | Invoke `guru-activate-task` read-only recovery for the same TaskId/generation; never repeat the status mutation. |
+| Activation mutation succeeded but its result was lost and the exact task is already `in_progress` | Invoke `guru-activate-task:recover_activation` for the same completed first activation; never use it to accept a new active replan. |
+
+#### Active replan execution recovery matrix
+
+Apply this matrix to a current replan returned by Clarification/Planning or a
+completed execution transition whose output was lost. It is not a reason to
+replan an established Check, Commit, Delivery or closeout. Inspect current
+producer/live facts; `in_progress` and file presence never establish approval
+or dialogue acceptance. Each recovery action belongs to `guru-activate-task`.
+
+| Current fact | Required owner/action |
+| --- | --- |
+| An adjacent current `guru-approve-task-plan:approved` belongs to an in-progress replan | Consume it through `phase-1-task-activation`, including current plan presentation, dialogue acceptance and the pair guard; select `resume_execution`. |
+| Replanning is pending but approval is absent, stale or lost, including before presentation or while waiting for acceptance | Re-enter the affected Phase 1 producer; fresh Planning approval returns to presentation. When current dialogue acceptance cannot be established, present and obtain it again. |
+| The original execution owner validates a completed `resume_execution` whose output was lost | Invoke `recover_execution`; consume only its checked `execution_resumed`, without repeating execution or status mutation. |
+| The original execution owner validates a completed first activation whose output was lost | Invoke `recover_activation`; it returns `activated` and never consumes a newer replan as first-activation recovery. |
+| Requirement authority, planning, task identity, binding or continuity changed | Return to the original affected owner. The AI applies dependency-scoped semantic/equivalent delta classification; a content token alone does not require full-chain replay. |
+| Pending replan has no recoverable completed operation | Obtain fresh output from the original Planning producer and repeat presentation when acceptance is unavailable; never manufacture Phase 2 eligibility from status. |
+
+Existing current Check/Commit/Delivery/closeout results retain their own
+continuation paths below. The execution owner retires its short-lived result
+after a current Phase 2 passed projection; absence of that consumed result is
+not a reason to repeat activation or replan completed downstream work.
 
 #### Phase 2-to-Completion recovery matrix
 
@@ -816,12 +841,17 @@ the active-task pair guard with
 `resume_target=task_activation`. An unchanged pair resumes activation; a
 current pair consumes and routes its recorded exact typed output; a new pair
 invokes guru-reconcile-task-base and follows only its declared exit.
-After the checked pair route resolves, validate the approved DTO and invoke
-`guru-activate-task` with its current public input. This owner performs the
-status-only `planning -> in_progress` transition after fresh task, binding,
-checkout and approval checks. If output is lost, use its read-only result
-recovery on the same TaskId/generation; do not rerun the mutation or call
-upstream `task.py start`.
+After the checked pair route resolves, validate the approved DTO and select
+the current `guru-activate-task` action from live lifecycle: `activate` for
+`planning`, or `resume_execution` for an already `in_progress` replan. Both
+consume the same current approval and dialogue boundary. The owner validates
+task, binding, checkout and approval; only first activation writes
+`planning -> in_progress`. Active execution resumption keeps TaskId,
+generation, branch, checkout and status unchanged. Consume `activated` or
+`execution_resumed` through its declared router. Lost completed output uses
+the corresponding `recover_activation` or `recover_execution` owner entry;
+do not use first-activation recovery for a new replan or call upstream
+`task.py start`.
 The status write is not a second planning judgment. Revision and scope exits
 return only to their declared consumers.
 

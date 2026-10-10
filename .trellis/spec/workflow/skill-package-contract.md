@@ -1454,9 +1454,27 @@ and generation; continuation must not create a second Issue, branch, worktree,
 or task. The workflow consumes only its checked `created` exit before planning.
 
 Current Phase 1 activation belongs to `guru-activate-task` after checked
-Planning approval. Its `initial` path performs the status-only
+Planning approval and workflow-owned current plan presentation/acceptance.
+Its `activate` action performs the status-only
 `planning -> in_progress` transition; read-only result recovery for the same
-TaskId/generation never repeats that mutation. The pinned-old workflow-owned
+TaskId/generation through `recover_activation` never repeats that mutation.
+For an `in_progress` task's newly approved replan, the same owner instead uses
+`resume_execution` and returns the minimal `execution_resumed` DTO to its unique
+Phase 2 router without changing task metadata or identity. `recover_execution`
+only restores that completed resumption's lost result. Single aggregate input
+and output schemas advance to 2.0; existing first-activation payloads retain
+their meaning, controlled consumers update together, and no parallel parser
+or adapter is retained. The unchanged Planning `approved` handoff carries its
+original `planning_result_id` into either execution action.
+One ignored owner-private execution result binds the actual completed operation,
+planning identity, lifecycle/ref, branch-binding revision and continuity solely
+for same-owner recovery and current Phase 2 consumption. It contains no semantic
+approval or dialogue acceptance. A current Check passed projection calls the
+original execution owner's retirement helper; other owners never interpret
+that checkpoint. Established downstream tasks with no checkpoint keep their
+existing routes. Lost semantic approval returns to its original fresh owner;
+pending acceptance unavailable in the dialogue requires a new presentation.
+The pinned-old workflow-owned
 `initial|recovery` invocation was not a separate current public Skill.
 
 `guru-create-task-commit` keeps its existing `recovery_resume` public input and

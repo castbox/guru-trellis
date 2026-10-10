@@ -324,6 +324,18 @@ deletes the checkpoint after successful publication or successful same-plan
 recovery. Failed attempts retain it. Only schema 5.0 is valid; any older artifact
 shape is rejected and the owner must run again from the current public profile.
 
+After its original checker validates the current `passed` result and the
+selected public output passes its schema, this wrapper calls
+`guru-activate-task`'s `retire_execution_result` helper with only the current
+`task_ref`. The execution owner alone reads its private completed-result
+checkpoint and validates current planning, task identity, branch binding and
+continuity before deleting a matching result. An absent pre-existing result
+needs no replacement gate; an ordinary stale result remains for its original
+owner. A nonpassed or stale Check never consumes execution recovery state.
+Check does not parse the other owner's checkpoint or treat that result as
+semantic approval, and its own passed checkpoint stays available for Task
+Commit and normal output-loss recovery.
+
 ## Recorder And Validator
 
 ### Recorder Authoring

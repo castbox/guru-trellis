@@ -1,0 +1,29 @@
+{
+  "id": "468-direct-source-replanning-compatibility",
+  "name": "468-direct-source-replanning-compatibility",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 468,
+    "disposition": "exact_source"
+  },
+  "title": "完善 Direct Source 与活动重规划兼容性",
+  "description": "实施 #468：先将 Direct Source 修订、Related Work 用途、实际仓库 SSOT 和 active replanning/recovery 场景映射到 current owner；只修订已证明必要的缺口并完成定向兼容性验证。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "castbox/guru-trellis#468",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-10",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

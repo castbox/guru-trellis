@@ -1,9 +1,18 @@
 from __future__ import annotations
-import argparse
+import argparse, importlib.util
 from pathlib import Path
+from check import run as check_phase2
 from common import checkpoint,load,parse,root,task
 from runtime.io import CommandError
 from runtime.schema import validate_json
+
+def retire_execution_result(package_root:Path,repo:Path,task_ref:str)->None:
+ path=package_root.parent/"guru-activate-task/runtime/execution_result.py"
+ spec=importlib.util.spec_from_file_location("guru_check_execution_result_owner",path)
+ if spec is None or spec.loader is None:raise CommandError("schema_mismatch","execution_result_owner","Restore the complete compatible Guru Team preset.")
+ owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
+ owner.retire_execution_result(repo,task_ref=task_ref)
+
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  if command.get("id")=="project-resolved-reconciliation":
   from project import run as project_resolved_reconciliation
@@ -17,6 +26,10 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  validate_json(owner,package_root/"schemas/phase2-check.schema.json","owner_result")
  if owner["task_ref"]!=public.get("task_ref") or owner["mode"]!=public.get("mode"):raise CommandError("stale_identity","owner_result","Rerun Phase 2 for the exact public input.",3)
  exit_id=owner["typed_exit"];out={"exit_id":exit_id}
+ if exit_id=="passed":
+  check_phase2(package_root,command,["--root",str(repo),"--task",owner["task_ref"]])
+  current=load(repo,package_root,str(checkpoint(repo,task(repo,owner["task_ref"]),"phase2-check.json")),"checkpoint")
+  if owner!=current:raise CommandError("stale_identity","owner_result","Use the exact current checked Phase 2 producer result.",3)
  if exit_id in {"passed","implementation_required","planning_stale"}:out["task_ref"]=owner["task_ref"]
  if exit_id=="passed":out["phase2_commit_anchor"]=owner["phase2_capture_commit"]
  elif exit_id=="implementation_required":out["finding_refs"]=[x["id"] for x in owner["semantic_review"]["findings"] if x.get("status")=="open"]
@@ -26,5 +39,6 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  names={"passed":"public-passed-output.schema.json","implementation_required":"public-implementation-required-output.schema.json","planning_stale":"public-planning-stale-output.schema.json","blocked":"public-blocked-output.schema.json"}
  if exit_id not in names:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
  validate_json(out,package_root/"schemas"/names[exit_id],"stdout")
+ if exit_id=="passed":retire_execution_result(package_root,repo,owner["task_ref"])
  if exit_id!="passed":checkpoint(repo,task(repo,owner["task_ref"]),"phase2-check.json").unlink(missing_ok=True)
  return out

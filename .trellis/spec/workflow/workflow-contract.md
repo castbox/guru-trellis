@@ -69,8 +69,8 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current source registry has 35 active packages, 159 package exits, and 106
-commands. The business-task workflow declares 33 mandatory invocations and 153
+The current source registry has 36 active packages, 164 package exits, and 109
+commands. The business-task workflow declares 34 mandatory invocations and 158
 external exits; `guru-verify-extension-installation` and
 `guru-upgrade-installation` are standalone-only. These
 counts are checks against the live registry and workflow markers, not an
@@ -295,7 +295,11 @@ one explicit Docs SSOT Plan. Before presenting those files, mandatory invoke
 `approved` reaches `phase-1-task-activation`. That target first presents the
 three planning links, semantic conclusion, key choices, alternatives,
 trade-offs, and unverified boundaries, then owns the dialogue-local review
-pause before `guru-activate-task` performs its status-only transition. Questions, revision
+pause before `guru-activate-task` activates a planning task or resumes an
+in-progress replan. The same approved consumer selects `activate` or
+`resume_execution` from live lifecycle after the current pair guard. Only first
+activation changes status; active resumption preserves identity, branch,
+checkout and `in_progress`. Questions, revision
 requests, partial choices, and ambiguous replies remain paused. Material plan
 changes rerun wording and semantic review before a new presentation; an older
 reply and any Phase 0 confirmation are not reusable. Explicit autonomous
@@ -390,8 +394,15 @@ The Phase 1 matrix preserves the current owner for task-created attachment,
 partial planning, planning wording, Planning Architecture, plan approval,
 dialogue-local plan acceptance, and activation. `guru-activate-task` performs
 the status-only transition once after current approval and confirmation; lost
-output is recovered read-only for the same TaskId/generation when already
-`in_progress`. Neither path persists confirmation or writes legacy branch metadata.
+output is recovered through `recover_activation` for that same first operation.
+An active replan uses `resume_execution`, and only its completed lost result
+uses `recover_execution`. The single continuation block handles pending replan
+approval/presentation before ordinary Phase 2 continuation. Semantic output
+loss returns to the original producer; unavailable dialogue acceptance is
+obtained again, never stored. The execution owner's short-lived completed
+result is retired after a current Check passed projection. Existing later-stage
+continuation never restarts activation merely because that result is absent.
+None of these paths persists confirmation or writes legacy branch metadata.
 
 When task creation succeeded but its `created` output was lost, return to
 `guru-create-task` read-only result recovery for the exact TaskId/generation.

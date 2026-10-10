@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from runtime.io import CommandError, fail, read_json, write_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import TaskLifecycleKey
-from runtime.task_lifecycle.composition import activate_task_status, prepare_activation_inputs, recover_activation_inputs
+from runtime.task_lifecycle.composition import activate_task_status, prepare_activation_inputs, prepare_resume_execution_inputs, recover_activation_inputs
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.session_adapter import SessionAdapterResult, resolve_session
+from execution_result import execution_recovery_payload, record_execution_result, validate_execution_result
 
 
 def _binding_module() -> Any:
@@ -56,21 +58,36 @@ def invoke(root: Path, data: dict) -> dict:
             if session.status != "explicit_task_mode" or session.reason_code != "context_key_unavailable":
                 raise LifecycleContractError("activation_session_mismatch", "session", "Resolve the current session route before activation.")
             session = SessionAdapterResult("explicit_task_mode", key, reason_code="context_key_unavailable")
-        if data["action"] == "recover_activation":
+        action = data["action"]
+        if action == "recover_activation":
             result = recover_activation_inputs(root, activation, session)
+            # Pre-468 activations have no execution checkpoint. Keep their
+            # published recovery contract, but never relabel a completed resume.
+            validate_execution_result(root, result, operation="activate", required=False)
+        elif action in {"resume_execution", "recover_execution"}:
+            if action == "recover_execution":
+                activation = execution_recovery_payload(root, activation)
+            result = prepare_resume_execution_inputs(root, activation, session)
+            if action == "recover_execution":
+                validate_execution_result(root, result, operation="resume_execution")
         else:
             result = prepare_activation_inputs(root, activation, session)
             activate_task_status(root, result)
+        output = {
+            "exit_id": "execution_resumed" if action in {"resume_execution", "recover_execution"} else "activated",
+            "task_id": result.task_id, "task_ref": result.task_ref,
+            "lifecycle_generation": result.lifecycle_generation,
+        }
+        validate_json(output, package / "schemas/public-output.schema.json", "stdout")
+        if action in {"activate", "resume_execution"}:
+            record_execution_result(root, result, operation=action)
     except LifecycleContractError as exc:
-        if exc.code in {"activation_approval_stale", "activation_base_stale", "activation_head_stale"}:
+        if exc.code in {"activation_approval_stale", "activation_base_stale", "activation_head_stale", "execution_result_stale"}:
             return {"exit_id": "refresh_review", "task_id": key.task_id, "lifecycle_generation": key.lifecycle_generation}
         if exc.code in {"activation_identity_stale", "activation_status_mismatch", "invalid_task_identity", "invalid_task_ref", "task_not_found"}:
             return {"exit_id": "invalid_task_state", "reason_code": exc.code}
         return {"exit_id": "blocked", "reason_code": exc.code}
-    return {
-        "exit_id": "activated", "task_id": result.task_id,
-        "task_ref": result.task_ref, "lifecycle_generation": result.lifecycle_generation,
-    }
+    return output
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:

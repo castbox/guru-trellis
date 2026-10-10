@@ -8,6 +8,12 @@ description: Reactivate one normally finished archived task while preserving its
 Reactivate owns one normally finished archived TaskLifecycleKey, never Finish
 recovery or implementation activation. The AI reviews the fresh archive,
 source relation, target base and shared checkout acquisition disposition. Entry
+selection starts from the original TaskId and live lifecycle when Direct Source
+is reopened. An active task continues through its earliest affected owner;
+an unfinished Closure/Finish returns to that original closeout transaction.
+Issue reopening alone neither increments generation nor creates a replacement
+task. Only a normally finished archive may enter this Reactivate owner.
+Entry
 requires the archived generation's sealed Finish result, or the exact completed
 manual Cleanup receipt after Finish returned `manual_cleanup_required`, and no
 unfinished visible Finish transaction, not merely `status=completed`. A reviewed
