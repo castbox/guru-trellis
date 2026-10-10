@@ -1,6 +1,6 @@
 # #468 需求增量
 
-状态：`candidate`；strategy：`delta_first`。继承 `current-main-0.6.17-guru.80 / active`，不替代三个 `docs/**/README.md` 指向的 current authority。
+状态：`reviewed_promoted`；promotion target：`current-main-0.6.17-guru.81 / active`；preimage：`current-main-0.6.17-guru.80 / active`；strategy：`delta_first`。继承 `current-main-0.6.17-guru.80 / active`，由三个 `docs/**/README.md` 的 `.81` 薄继承入口纳入 current；`.80` 及更早保持 immutable。
 唯一来源：[live Issue #468](https://github.com/castbox/guru-trellis/issues/468)，本轮读取 `updated_at=2026-10-09T18:55:52Z`。
 本增量按任务已审规划承接 #454、#434/#435、#436、#464；不重建其 source、lifecycle、Completion、Closure 或恢复机制。
 

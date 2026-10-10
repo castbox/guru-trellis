@@ -1,6 +1,6 @@
 # #468 Traceability
 
-状态：`candidate`；current inheritance：`current-main-0.6.17-guru.80 / active`。不改变 shared current。
+状态：`reviewed_promoted`；promotion target：`current-main-0.6.17-guru.81 / active`；preimage：`current-main-0.6.17-guru.80 / active`；current inheritance：`current-main-0.6.17-guru.81 / active`。shared current 通过原 owners 的 expected `.80→.81` 串行晋升承接本关系。
 
 | Requirement / behavior | Design responsibility | Validation / source scenarios |
 | --- | --- | --- |

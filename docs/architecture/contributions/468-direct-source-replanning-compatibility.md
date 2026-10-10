@@ -1,6 +1,6 @@
 # #468 task-owned Architecture contribution
 
-Identity：architecture-contribution-468-direct-source-replanning-compatibility-v1；状态：implementation_candidate；canonical 实现与定向验证正在完成，尚无 Phase 2 / committed review 或 promotion。
+Identity：architecture-contribution-468-direct-source-replanning-compatibility-v1；状态：reviewed_promoted；本贡献实现范围已通过独立 committed Architecture 与完整 Branch Review，按 expected `current-main-0.6.17-guru.80` 晋升至 `current-main-0.6.17-guru.81`；晋升产生的新 diff 仍待 fresh gates，不表示 Delivery 或任务完成。
 
 ## Authority / boundary
 
@@ -57,5 +57,7 @@ External refs：#468记录Backend现场仅支持问题诊断；Backend安装、�
 ## ADR、review与promotion
 
 ADR candidate：required=false、locator为空。当前候选不改变Task Identity/source/lifecycle状态、owner/single-writer或existing architecture决策；公共action/schema增量由existing ADR-015/011承接。是否存在真实决策变化仍由独立Architecture owner复核；发现变化则先补必要ADR，不推定豁免。
-Review：pending / independent=false / committed_range=null，仅表示贡献尚无committed review；Planning独立评估不是committed review。
-Promotion：required / promoted_identity为空 / expected_current_identity=current-main-0.6.17-guru.80。未来review后由原owner执行serialized promotion；current推进回sync_required。新增promotiondiff重过fresh下游gates。
+Review：reviewed / independent=true；exact committed_range：origin/main@8dfa2a35bd2ccae236f7b8bc679f107f3ec1ffde...00102ccc5cb6a2102c6146421224962782ecd49f，144 paths。独立 reviewer 先完成 Architecture 再读取必要任务叙事并完成 Branch Review；两者分别实际调用正式边界，无 current-scope P0–P3 findings。
+Promotion：reviewed_promoted / promoted_identity=current-main-0.6.17-guru.81 / expected_current_identity=current-main-0.6.17-guru.80。原 owner 串行晋升；live current 推进时回 sync_required，不覆盖新 authority。此次新 diff 必须重过 fresh Phase2、TaskCommit、独立完整 Branch Review；上述旧范围 pass 不替代晋升后 gates。
+
+历史候选段落保留 before/after 和原阶段 pending 含义；当前 review/promotion 状态只以上述结尾和 identity 为准。实际 suite 与失败/未验证边界仍由唯一 Test 拥有；无新 ADR、constitution/决策/GAP lifecycle 或软件版本变化。

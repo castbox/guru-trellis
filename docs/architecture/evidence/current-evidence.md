@@ -561,3 +561,9 @@ EVD-054 及更早仍绑定原对象。知识 successor 的新 diff 必须 fresh 
 已独立审查实现范围 `origin/main@ef83e6d61e3c35d966b1baf95ab4bcab8409e993...f7944544122309035bb30da4ab88b6fa442c986c`，95 paths；fresh generic reviewer 先完成 committed Architecture，再执行完整 Branch Review，各自真实调用原 wrapper，最终无 P0–P3 findings。[贡献](../contributions/383-causal-completion-semantics.md)承接 expected `.79→.80` promotion；[唯一 Test](../../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有实际结果、首次失败和未验证边界，本文不复制 suite/trace。
 
 EVD-055 及更早仍绑定原对象；knowledge successor 的新 diff 须 fresh Phase2/TaskCommit/独立完整 Branch Review。此前实现审查不替代晋升后 gates，fixture 不证明远端 Delivery 或任一业务生产效果；官方 init/update 完整链、candidate 远端安装和完整 Release matrix 未验证。
+
+## EVD-057：#468 独立 Direct Source/活动重规划增量
+
+已独立审查实现范围 `origin/main@8dfa2a35bd2ccae236f7b8bc679f107f3ec1ffde...00102ccc5cb6a2102c6146421224962782ecd49f`，144 paths。独立 reviewer 先亲自完成 committed Architecture，再执行完整 Branch Review，各自调用原正式边界，最终无 current-scope P0–P3 findings。[贡献](../contributions/468-direct-source-replanning-compatibility.md)承接 expected `.80→.81` promotion；[唯一 Test](../../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有实际结果、首次失败与未验证边界，本文不复制 suite/trace。
+
+EVD-056 及更早保持原执行对象；promotion 新 diff 须 fresh Phase2/TaskCommit/独立完整 Branch Review。Fixture 只证明 transport，旧 Closure missing_workspace 失败仍保留；native external eval、官方 init/update 完整链、candidate 远端安装、Backend 安装/重试/生产及完整 Upgrade/Release matrix 未验证。

@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.80` / `active`；[本版入口](./versions/current-main-0.6.17-guru.80/requirement-main.md)薄继承 immutable `.79`，承接已独立审查的 [#383 增量 trace](../requirements-design-test-contributions/383-causal-completion-semantics/traceability.md)。Architecture 继承 `.80/active`，晋升 preimage 为 `.79`。[唯一 Test](../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有实际结果与边界；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review。官方 init/update 完整链、candidate 远端安装、业务生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.81` / `active`；[本版入口](./versions/current-main-0.6.17-guru.81/requirement-main.md)薄继承 immutable `.80`，承接已独立审查的 [#468 增量 trace](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/traceability.md)。Architecture 继承 `.81/active`，晋升 preimage 为 `.80`。[唯一 Test](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有实际结果与边界；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review。官方 init/update 完整链、candidate 远端安装、native external eval、Backend 安装/重试/生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +8,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.80` | [requirement-main.md](./versions/current-main-0.6.17-guru.80/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.81` | [requirement-main.md](./versions/current-main-0.6.17-guru.81/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.80` | [requirement-main.md](./versions/current-main-0.6.17-guru.80/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.79` | [requirement-main.md](./versions/current-main-0.6.17-guru.79/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.78` | [requirement-main.md](./versions/current-main-0.6.17-guru.78/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.77` | [requirement-main.md](./versions/current-main-0.6.17-guru.77/requirement-main.md) |

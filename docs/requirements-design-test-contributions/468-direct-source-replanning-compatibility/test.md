@@ -1,6 +1,6 @@
 # #468 唯一 Test 结果
 
-状态：`candidate`，当前结果只属于本贡献及实际观察层；不是 Task Completion、Release 或业务安装证明。
+状态：`reviewed_promoted`；knowledge target：`current-main-0.6.17-guru.81 / active`，当前结果只属于本贡献及实际观察层；不是 Task Completion、Release 或业务安装证明。
 
 | Strategy / cases | 本轮已执行结果 | 证据层与限制 |
 | --- | --- | --- |
@@ -18,4 +18,6 @@
 
 语义 review 与外部边界：本轮读取 live #468 与 current canonical owners 后，确认 accepted scope 的唯一 Direct Source、必要用途、source disposition 和重开分流分别由原阶段 owner 负责；纯信息变化不构成依赖，外部协调变化只有进入 Direct Source/accepted scope 才改变当前 authority。该结论为当前 AI 静态审查，未声称 native evaluator 实测或真实 GitHub 闭环。Publication、Completion、Closure、Finish、Cleanup、正式 SSOT promotion 与 promotion 后 fresh gates 未由本 worker执行。
 
-Phase 2 前状态：current RDT maintenance 已正式返回 ssot_current，仅承接 task-isolated contribution strategy；shared current 仍为 current-main-0.6.17-guru.80 / active。fresh independent Architecture 与guru-check-task正式结果待本阶段owner执行；后续committed Branch Review、RDT/Architecture promotion及其新增diff fresh gates仍是Publication前必要工作。测试绿色不代表这些门禁已完成。
+当前 gate 事实：实现范围 `origin/main@8dfa2a35bd2ccae236f7b8bc679f107f3ec1ffde...00102ccc5cb6a2102c6146421224962782ecd49f`（144 paths）已有正式 Phase2 passed；不同 fresh reviewer 先独立执行 committed Architecture，再完成完整 Branch Review，两者各自调用正式边界，无 current-scope P0–P3 findings。此前各 suite 仍绑定实际候选执行对象，不重标为 successor HEAD 重跑。
+
+Architecture/RDT 原 owner 按 expected `.80→.81` 晋升本贡献；promotion 自身不证明其新增 diff 已审查。新 diff 必须 fresh Phase2 Architecture/Check、单独 task commit 和不同 reviewer 的完整 committed Architecture/Branch Review；这些 gates、Publication、Completion、Closure、Finish 和 Cleanup 尚未执行。完整外部边界与首次失败以上述表格为准。

@@ -1,6 +1,6 @@
 # #468 设计责任增量
 
-状态：`candidate`；继承 `current-main-0.6.17-guru.80 / active`。本文件导航职责与实现合同，不复制各 Skill 的步骤。
+状态：`reviewed_promoted`；promotion target：`current-main-0.6.17-guru.81 / active`；preimage：`current-main-0.6.17-guru.80 / active`；继承 `current-main-0.6.17-guru.80 / active`。本文件导航职责与实现合同，不复制各 Skill 的步骤。
 Architecture candidate：[task-owned contribution](../../architecture/contributions/468-direct-source-replanning-compatibility.md)；独立原 owner 的 assessment、review 与后续 promotion 决定其状态。
 
 | Responsibility | 唯一 owner、实现 locator 与 consumer |
