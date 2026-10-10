@@ -30,7 +30,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())
   catalog=json.loads((PACKAGE/"errors/catalog.json").read_text())
-  command_schema=json.loads((SKILLS/"schemas/skill-commands.schema.json").read_text())
+  command_schema=json.loads((SKILLS/"schemas/skill-commands-1.1.schema.json").read_text())
   error_schema=json.loads((SKILLS/"schemas/skill-error-catalog.schema.json").read_text())
   self.assertEqual([],list(Draft202012Validator(command_schema).iter_errors(commands)))
   self.assertEqual([],list(Draft202012Validator(error_schema).iter_errors(catalog)))
@@ -170,9 +170,9 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
    recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task","test-task","--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   value=json.loads(recorded.stdout);self.assertEqual(content_identity(repo),value["reviewed_content_sha256"])
+   value=json.loads(recorded.stdout)["result"];self.assertEqual(content_identity(repo),value["reviewed_content_sha256"])
    checked=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task","test-task","--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(checked.stdout)["status"])
+   self.assertEqual("ok",json.loads(checked.stdout)["result"]["status"])
 
  def test_phase2_gitlink_fallback_does_not_relax_task_commit_staging(self):
   with tempfile.TemporaryDirectory() as temporary:
@@ -291,17 +291,17 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
    recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   artifact_path=Path(json.loads(recorded.stdout)["artifact_path"])
+   artifact_path=Path(json.loads(recorded.stdout)["result"]["artifact_path"])
    public={"profile":"initial_check","mode":"workflow","task_ref":task_ref,"source_exit":"implementation_complete"}
 
    first_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(first_check.stdout)["status"])
+   self.assertEqual("ok",json.loads(first_check.stdout)["result"]["status"])
    envelope=json.dumps({"public_input":public,"owner_result":json.loads(artifact_path.read_text())},separators=(",",":"))
    first=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
    discarded_output=json.loads(first.stdout)
 
    second_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual("ok",json.loads(second_check.stdout)["status"])
+   self.assertEqual("ok",json.loads(second_check.stdout)["result"]["status"])
    rematerialized=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
    self.assertEqual(discarded_output,json.loads(rematerialized.stdout))
    self.assertEqual("passed",discarded_output["exit_id"])

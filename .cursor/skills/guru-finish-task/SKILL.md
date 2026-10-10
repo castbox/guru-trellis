@@ -51,3 +51,6 @@ Changed applicable Architecture facts and missing review/promotion follow the
 existing routes, while Finish retains its archive/bookkeeping responsibility.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

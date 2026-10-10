@@ -67,3 +67,6 @@ or use qualification as completion. Actual scope changes use existing routes.
 New/materially changed Delivery candidates first load normal and solution
 owners with `publication_candidate_set`; stage disposition uses this owner's
 existing planning/implementation/scope/blocked exits, never an invented exit.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

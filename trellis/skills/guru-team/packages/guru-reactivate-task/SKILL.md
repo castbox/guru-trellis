@@ -45,3 +45,6 @@ live Git, task and ledger facts without repeating mutations. Partial or stale
 states block; no direct requirements, implementation or evidence-refresh route
 is part of this package. The active #434 workflow router consumes its typed
 result without transferring Reactivate's package-local recovery ownership.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

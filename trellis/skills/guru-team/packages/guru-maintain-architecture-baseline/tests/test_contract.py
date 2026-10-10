@@ -55,6 +55,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             / "skills/packages/guru-maintain-architecture-baseline"
         )
         shutil.copytree(self.package, self.fixture_package)
+        shutil.copytree(self.package.parents[1] / "schemas", fixture_skills_root / "skills/schemas")
         self.constitution_path = (
             self.repository
             / "docs/architecture/00-foundation/design-constitution.md"

@@ -70,3 +70,6 @@ not imply a route.
 
 Read [references/contract.md](references/contract.md) for the reusable authority
 and public I/O contract.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

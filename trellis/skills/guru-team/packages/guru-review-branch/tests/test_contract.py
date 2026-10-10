@@ -6,12 +6,15 @@ import os
 import subprocess
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
 REPO = PACKAGE.parents[4]
 TASK_REF = ".trellis/tasks/08-12-test"
+sys.path.insert(0, str(PACKAGE.parents[1]))
+from runtime.io import project_intermediate_receipt
 
 
 class BranchReviewWrapperLifecycleTest(unittest.TestCase):
@@ -193,7 +196,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             self.assertEqual(0, process.returncode, payload)
         else:
             self.assertNotEqual(0, process.returncode, payload)
-        return payload
+        return project_intermediate_receipt(payload, PACKAGE.parents[1] / "schemas") if ok and name != "invoke.sh" else payload
 
     def checkpoint(self):
         return (

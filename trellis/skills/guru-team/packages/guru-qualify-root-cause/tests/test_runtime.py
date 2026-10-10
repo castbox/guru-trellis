@@ -140,7 +140,7 @@ class RootCauseRuntimeTest(unittest.TestCase):
                 process = subprocess.run([str(PACKAGE / "scripts" / command), flag, "-"], cwd=actual_repo,
                     input=transport, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 self.assertEqual(0, process.returncode, process.stderr + process.stdout)
-                transport = process.stdout
+                transport = process.stdout if command == "invoke.sh" else json.dumps(json.loads(process.stdout)["result"])
             self.assertEqual(exit_id, json.loads(transport)["exit_id"])
             self.assertEqual(before, snapshot())
 

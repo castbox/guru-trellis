@@ -12,3 +12,6 @@ Use the exact profile supplied by the caller, reread the live locators, complete
 Keep every decision and typed result inside the current invocation. Do not write a tracked file, ignored runtime artifact, result locator, checkpoint, report, persistent decision state, transcript, assignment, handoff, approval, or signoff.
 
 Fail closed on missing live evidence, stale identity, an unknown or mismatched caller/profile/consumer, an empty candidate set, or any candidate without exactly one current decision.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

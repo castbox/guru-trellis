@@ -11,3 +11,6 @@ current scope, authority, mechanism and evidence yourself; author a goal-specifi
 call-local semantic result and review the complete set. Invoke
 `scripts/invoke.sh --invocation -` on stdin. The runtime validates facts and
 structure only, and writes no qualification state. Return one declared exit.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

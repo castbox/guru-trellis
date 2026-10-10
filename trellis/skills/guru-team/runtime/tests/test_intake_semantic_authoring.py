@@ -16,10 +16,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from adapters.eval import native_adapter
 from adapters.eval.intake_authoring import COMMANDS, FACTS_PATH, INTAKE_SKILLS, IntakeCommands, command_arguments, next_intake_owner, standard_intake
 from jsonschema import Draft202012Validator
+from runtime.io import project_intermediate_receipt
 
 SKILLS = Path(__file__).resolve().parents[2]
 REPO = SKILLS.parents[2]
 PACKAGE = SKILLS / "packages" / INTAKE_SKILLS[-1]
+
+
+def stage_receipt_schema(repository: Path) -> None:
+    schemas = repository / ".trellis/guru-team/skills/schemas"
+    schemas.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(SKILLS / "schemas/intermediate-command-receipt-1.0.schema.json", schemas)
 
 
 def request_for(root: Path) -> dict:
@@ -129,10 +136,11 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
                     command_arguments(skill, command, flags)
                     self.assertEqual(flags, original)
         with tempfile.TemporaryDirectory() as temporary:
+            stage_receipt_schema(Path(temporary))
             dispatcher = IntakeCommands(Path(temporary), {}, Path(temporary) / "receipts.json")
             dispatcher.owner_index = 2
             arguments = ["--mode", "workflow", "--input", "-", "--json", "--root", "."]
-            with mock.patch("adapters.eval.intake_authoring.subprocess.run", return_value=subprocess.CompletedProcess([], 0, '{}', '')) as run:
+            with mock.patch("adapters.eval.intake_authoring.subprocess.run", return_value=subprocess.CompletedProcess([], 0, '{"schema_version":"1.0","formal_exit":false,"result":{}}', '')) as run:
                 dispatcher.forward({"skill_id": INTAKE_SKILLS[2], "command": "record-requirements-clarification",
                                     "arguments": arguments, "stdin": "{}"})
             self.assertEqual(run.call_args.args[0][1:], arguments)
@@ -404,12 +412,13 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
 
     def test_failed_record_can_be_corrected_without_skipping_checker(self):
         with tempfile.TemporaryDirectory() as temporary:
+            stage_receipt_schema(Path(temporary))
             dispatcher = IntakeCommands(Path(temporary), {}, Path(temporary) / "receipts.json")
             dispatcher.owner_index = 2
             call = {"skill_id": INTAKE_SKILLS[2], "command": COMMANDS[INTAKE_SKILLS[2]][0],
                     "arguments": ["--mode", "workflow", "--input", "-"], "stdin": "{}"}
             responses = [subprocess.CompletedProcess([], 2, '{"code":"schema_mismatch"}', ''),
-                         subprocess.CompletedProcess([], 0, '{"recorded":"complete"}', '')]
+                         subprocess.CompletedProcess([], 0, '{"schema_version":"1.0","formal_exit":false,"result":{"recorded":"complete"}}', '')]
             with mock.patch("adapters.eval.intake_authoring.subprocess.run", side_effect=responses):
                 self.assertEqual(dispatcher.forward(call)["returncode"], 2)
                 self.assertEqual(dispatcher.completed, [])
@@ -474,6 +483,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
         with tempfile.TemporaryDirectory() as temporary:
             repository = Path(temporary)
             projected = repository / ".trellis/guru-team/skills/packages" / skill
+            stage_receipt_schema(repository)
             projected.mkdir(parents=True)
             shutil.copy2(package / "interface.json", projected / "interface.json")
             dispatcher = IntakeCommands(repository, {"PYTHONDONTWRITEBYTECODE": "1"}, repository / "receipts.json")
@@ -497,7 +507,8 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             def success(command, value):
                 result = call(command, value)
                 self.assertEqual(result["returncode"], 0, result)
-                return json.loads(result["stdout"])
+                value = json.loads(result["stdout"])
+                return value if command == "invoke" else project_intermediate_receipt(value, SKILLS / "schemas")
 
             with mock.patch("adapters.eval.intake_authoring.subprocess.run", side_effect=canonical_command):
                 old = success(COMMANDS[skill][0], authoring)
@@ -533,6 +544,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
 
     def test_failed_check_reentry_keeps_scan_and_requires_fresh_receipt(self):
         with tempfile.TemporaryDirectory() as temporary:
+            stage_receipt_schema(Path(temporary))
             dispatcher = IntakeCommands(Path(temporary), {}, Path(temporary) / "receipts.json")
             skill = INTAKE_SKILLS[3]
             dispatcher.owner_index = 3
@@ -545,8 +557,8 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             with self.assertRaisesRegex(ValueError, "order"):
                 dispatcher.forward(record)
             replies = [subprocess.CompletedProcess([], 3, '{"code":"stale_identity"}', ''),
-                       subprocess.CompletedProcess([], 0, '{"owner":"fresh"}', ''),
-                       subprocess.CompletedProcess([], 0, '{"validation_receipt":{"version":"fresh"}}', '')]
+                       subprocess.CompletedProcess([], 0, '{"schema_version":"1.0","formal_exit":false,"result":{"owner":"fresh"}}', ''),
+                       subprocess.CompletedProcess([], 0, '{"schema_version":"1.0","formal_exit":false,"result":{"validation_receipt":{"version":"fresh"}}}', '')]
             with mock.patch("adapters.eval.intake_authoring.subprocess.run", side_effect=replies) as run:
                 self.assertEqual(dispatcher.forward(check)["returncode"], 3)
                 self.assertEqual(dispatcher.forward(record)["returncode"], 0)

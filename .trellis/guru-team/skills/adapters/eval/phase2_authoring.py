@@ -307,7 +307,10 @@ def execute(package: Path, repo: Path, envelope: dict, environment: dict) -> sub
             receipts.append({"argv": command, "returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr})
             if result.returncode:
                 return result
-        artifact = json.loads(receipts[0]["stdout"])["artifact_path"]
+        from runtime.io import project_intermediate_receipt
+        artifact = project_intermediate_receipt(
+            json.loads(receipts[0]["stdout"]), package.parents[1] / "schemas",
+        )["artifact_path"]
         command = [str(package / "scripts/invoke.sh"),
                    "--input", str(public_path), "--owner-result", artifact]
         result = subprocess.run(command, cwd=repo, env=environment, capture_output=True, text=True)

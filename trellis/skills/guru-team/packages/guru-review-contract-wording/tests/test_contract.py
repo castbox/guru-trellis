@@ -20,7 +20,7 @@ for path in (SKILLS_ROOT, PACKAGE_RUNTIME):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from runtime.io import CommandError  # noqa: E402
+from runtime.io import CommandError, project_intermediate_receipt  # noqa: E402
 import check as wording_check  # noqa: E402
 import common as wording_common  # noqa: E402
 import invoke as wording_invoke  # noqa: E402
@@ -235,7 +235,8 @@ class ContractWordingPackageTest(unittest.TestCase):
                 input=json.dumps(value, ensure_ascii=False), text=True, capture_output=True,
             )
             self.assertEqual(expected, proc.returncode, proc.stdout + proc.stderr)
-            return json.loads(proc.stdout)
+            payload = json.loads(proc.stdout)
+            return project_intermediate_receipt(payload, SKILLS_ROOT / "schemas") if expected == 0 and name != "invoke.sh" else payload
 
         before = sorted(self.root.rglob("*"))
         for exit_id in ("pass", "blocked"):

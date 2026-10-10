@@ -95,7 +95,7 @@ Both must equal the canonical source issue URL (`target.url`), carried from
 Discovery's `live_change.identity` through Clarification and Wording. `#N` is
 only a search clue or display label here; it is not an equivalent chain binding
 and returns `stale_identity` at `public_input.target_locator`. Use the captured
-live source snapshot and actual recorder/checker stdout; never manually rebuild
+live source snapshot and actual recorder/checker receipt `result`; never manually rebuild
 producer transitions, duplicate snapshots or validation receipts from examples.
 
 The only prerequisite input is the independent, schema-validated public
@@ -231,7 +231,7 @@ The public target profiles remain `current_issue`, `proposed_draft`, and
 prerequisite pass. All commands receive one `--invocation -` envelope with
 `schema_version=1.0`, `public_input`, independent `transition`,
 `owner_context={change_request: source}`, and `owner_result`. Record consumes
-the completed AI review, check consumes record stdout, and invoke consumes the
+the completed AI review, check consumes record receipt `result`, and invoke consumes the
 same checked result plus `validation_receipt`. Receipt is forbidden in
 record/check and required in invoke. The package-local closed pre-receipt
 schema is `review-invocation.schema.json`; invoke reuses the existing shared
@@ -287,7 +287,7 @@ linkage or import eval runtime. Target hashes and prerequisites are derived by
 the recorder; draft `source_request_sha256` remains the existing source
 authority input described above. `examples/issue-review.json` is a complete
 recorded-result example, not the minimal authoring input. Replace owner_result
-with record stdout for check, then add only check's `validation_receipt` for
+with record receipt `result` for check, then add only check receipt `result.validation_receipt` for
 invoke. No repository file is needed for this call-local exchange.
 
 # Invocation-Local Authority Snapshot And Receipt

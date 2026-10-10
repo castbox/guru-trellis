@@ -50,7 +50,7 @@ All three commands use `--invocation -` and one JSON envelope containing
 `schema_version=1.0`, `public_input`, the independent public `transition`,
 `owner_context.change_request` (current source snapshot), and `owner_result`.
 For record, `owner_result` is this Skill's completed AI review. Replace it with
-record stdout for check; add the checker's `validation_receipt` only for invoke.
+record receipt `result` for check; add the checker's `validation_receipt` only for invoke.
 Record/check use `schemas/review-invocation.schema.json`; invoke uses the shared
 semantic-owner invocation schema. No separate input locators or authored
 `prerequisite_payloads` remain supported.
@@ -89,3 +89,6 @@ the unsupported repair and continues bounded investigation of the returned
 gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
 symptom suppression into unrelated scope confirmation, cache qualifications,
 or use qualification as completion. Actual scope changes use existing routes.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

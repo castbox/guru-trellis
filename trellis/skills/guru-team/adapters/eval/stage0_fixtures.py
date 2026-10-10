@@ -12,6 +12,8 @@ import subprocess
 import sys
 import time
 
+from runtime.io import project_intermediate_receipt
+
 from adapters.eval.eval_constants import (
     OWNER_INVOCATION,
     WORKSPACE_CALL_LOCAL_STATE,
@@ -46,6 +48,8 @@ def stage0_command(
     result = json.loads(process.stdout)
     if not isinstance(result, dict):
         raise ValueError(f"Stage 0 producer {skill_id}/{command} returned no object")
+    if command != "invoke":
+        return project_intermediate_receipt(result, package.parents[1] / "schemas")
     return result
 
 

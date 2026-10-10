@@ -213,7 +213,8 @@ class Phase2AuthoringTests(unittest.TestCase):
     def test_transport_preserves_ai_fields_and_runs_original_commands(self):
         with tempfile.TemporaryDirectory() as temp:
             repo = Path(temp)
-            package = repo / "package"
+            package = repo / "skills/packages/guru-check-task"
+            shutil.copytree(SKILLS / "schemas", package.parents[1] / "schemas")
             envelope = {"public_input": {"task_ref": ".trellis/tasks/current"}, "owner_result": {"reason": "AI-authored sentinel"}}
             calls = []
 
@@ -222,7 +223,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                 if len(calls) == 1:
                     authored = json.loads(Path(argv[argv.index("--input") + 1]).read_text())
                     self.assertEqual(authored, envelope["owner_result"])
-                    return subprocess.CompletedProcess(argv, 0, json.dumps({"artifact_path": "/checked/phase2-check.json"}), "")
+                    return subprocess.CompletedProcess(argv, 0, json.dumps({"schema_version": "1.0", "formal_exit": False, "result": {"artifact_path": "/checked/phase2-check.json"}}), "")
                 return subprocess.CompletedProcess(argv, 0, '{"exit_id":"blocked"}', "")
 
             with patch.object(phase2_authoring.subprocess, "run", side_effect=execute):

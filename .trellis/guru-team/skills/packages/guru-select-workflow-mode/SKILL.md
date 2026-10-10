@@ -49,3 +49,6 @@ Commit, push, PR, merge, release, installation, cleanup, and Issue closure
 remain independent later authorizations.
 
 Return exactly one of `standard_intake`, `task_free`, or `blocked`.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

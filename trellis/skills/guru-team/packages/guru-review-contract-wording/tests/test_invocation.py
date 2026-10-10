@@ -6,11 +6,14 @@ import json
 import os
 import subprocess
 import tempfile
+import sys
 import unittest
 from pathlib import Path
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PACKAGE.parents[1]))
+from runtime.io import project_intermediate_receipt
 DIMENSIONS = (
     "complete_profile_scope", "all_hits_classified", "zero_unchecked_hits",
     "product_semantics_preserved", "retained_reasons_sufficient",
@@ -41,7 +44,10 @@ class SingleReadDispatcherTest(unittest.TestCase):
             text=True, capture_output=True,
         )
         self.assertEqual(expected, proc.returncode, proc.stdout + proc.stderr)
-        return json.loads(proc.stdout)
+        payload = json.loads(proc.stdout)
+        if expected == 0 and name != "invoke.sh":
+            return project_intermediate_receipt(payload, PACKAGE.parents[1] / "schemas")
+        return payload
 
     def envelope_command(self, name, value, *args, expected=0):
         return self.command(name, value, ("--invocation", "-", *args), expected)

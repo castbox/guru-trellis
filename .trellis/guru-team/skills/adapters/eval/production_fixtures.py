@@ -1622,7 +1622,8 @@ def stage_base_reconciliation_owner_execution(
     )
     if recorded.returncode != 0:
         raise ValueError(f"base reconciliation recorder staging failed: {recorded.stderr.strip()}")
-    owner_result = json.loads(recorded.stdout)
+    from runtime.io import project_intermediate_receipt
+    owner_result = project_intermediate_receipt(json.loads(recorded.stdout), package.parents[1] / "schemas")
     checkpoint_namespace = (
         f"{task_id}-{hashlib.sha256(task_ref.encode()).hexdigest()[:12]}"
     )

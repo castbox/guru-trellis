@@ -244,7 +244,8 @@ class BaseSyncPackageContractTests(unittest.TestCase):
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertEqual(result.returncode, 0, result)
-            payload = json.loads(result.stdout)
+            from runtime.io import project_intermediate_receipt
+            payload = project_intermediate_receipt(json.loads(result.stdout), self.package.parents[1] / "schemas")
             self.assertEqual(payload["skill_id"], "guru-sync-base")
             self.assertEqual(payload["selected_base"], "main")
             self.assertNotIn("guru_team_trellis", result.stdout + result.stderr)
@@ -285,7 +286,8 @@ class BaseSyncPackageContractTests(unittest.TestCase):
                     text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
                 )
                 self.assertEqual(result.returncode, 0, result)
-                return json.loads(result.stdout)
+                from runtime.io import project_intermediate_receipt
+                return project_intermediate_receipt(json.loads(result.stdout), self.package.parents[1] / "schemas")
 
             config.write_text("base_branch: 42\nbase_branch_candidates: invalid\n")
             explicit = resolve("--base", "main")

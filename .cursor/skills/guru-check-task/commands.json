@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-check-task",
   "commands": [
     {
@@ -41,7 +41,7 @@
         }
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -79,7 +79,7 @@
         }
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -132,7 +132,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -158,7 +158,7 @@
         {"flag": "--authoring", "required": true, "kind": "json", "description": "Caller-authored resolved reconciliation facts.", "repeatable": false, "conflicts": []}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments", "conflicting_arguments", "invalid_json", "schema_mismatch", "unsafe_path", "stale_identity", "internal_error"],
       "side_effect": "git_read",
       "schema_bindings": ["schemas/public-resolved-reconciliation-input.schema.json", "schemas/phase2-check.schema.json", "schemas/resolved-reconciliation-authoring.schema.json"],

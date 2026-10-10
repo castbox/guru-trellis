@@ -44,7 +44,8 @@ class WorkflowModeContractTest(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(result.returncode, 0, result)
-            payload = json.loads(result.stdout)
+            from runtime.io import project_intermediate_receipt
+            payload = project_intermediate_receipt(json.loads(result.stdout), PACKAGE.parents[1] / "schemas")
             self.assertEqual(payload["base_branch"], "main")
             self.assertFalse(payload["gh_installed"])
             self.assertIn("GitHub CLI is not installed.", payload["warnings"])

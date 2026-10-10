@@ -64,3 +64,6 @@ so the same locator can recover lost stdout without repeating the commit; a
 fresh prepare for the same task retires that receipt. An unfinished 4.0 candidate is rejected or replaced only by a complete
 reprepare from current Phase 2 and live Git evidence. Git supplies committed
 tree/message/path facts.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

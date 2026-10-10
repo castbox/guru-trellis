@@ -8,6 +8,8 @@ import json
 import subprocess
 import sys
 
+from runtime.io import project_intermediate_receipt
+
 from adapters.eval.fixture_io import (
     run_git,
 )
@@ -198,7 +200,7 @@ def compose_production_owner_command_runtime(
         value = json.loads(process.stdout)
         if not isinstance(value, dict):
             raise ValueError("package wrapper did not return one JSON object")
-        return value
+        return project_intermediate_receipt(value, package_root.parent / "schemas")
 
     bindings = {
         "cmd_record_planning_approval": lambda args: run_component(

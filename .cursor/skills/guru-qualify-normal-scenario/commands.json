@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-qualify-normal-scenario",
   "commands": [
     {
@@ -8,7 +8,7 @@
       "entrypoint": "runtime/record.py",
       "arguments": [{"flag":"--input","required":true,"kind":"json","description":"Dash; read the current AI semantic result from stdin.","repeatable":false,"conflicts":[]}],
       "stdin": "required_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
       "side_effect": "none",
       "schema_bindings": [],
@@ -21,7 +21,7 @@
       "entrypoint": "runtime/check.py",
       "arguments": [{"flag":"--input","required":true,"kind":"json","description":"Dash; read the recorded process-local result from stdin.","repeatable":false,"conflicts":[]}],
       "stdin": "required_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
       "side_effect": "git_read",
       "schema_bindings": [],
@@ -34,7 +34,7 @@
       "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag":"--invocation","required":true,"kind":"json","description":"Dash; read one complete call-local semantic invocation from stdin.","repeatable":false,"conflicts":[]}],
       "stdin": "required_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": ["invalid_arguments","conflicting_arguments","invalid_json","schema_mismatch","stale_identity","unsafe_path","missing_contract","internal_error"],
       "side_effect": "git_read",
       "schema_bindings": [],

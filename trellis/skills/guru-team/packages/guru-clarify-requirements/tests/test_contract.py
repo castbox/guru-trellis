@@ -9,6 +9,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from runtime.io import project_intermediate_receipt
+
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
@@ -55,7 +57,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         result = self.command("record-requirements-clarification.sh", self.authoring(owner),
                               "--mode", owner["mode"], "--input", "-")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        return json.loads(result.stdout)
+        return project_intermediate_receipt(json.loads(result.stdout), self.package.parents[1] / "schemas")
 
     def setUp(self) -> None:
         self.package = Path(__file__).resolve().parents[1]
@@ -355,13 +357,13 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(record.returncode, 0, record)
-        owner = json.loads(record.stdout)
+        owner = project_intermediate_receipt(json.loads(record.stdout), self.package.parents[1] / "schemas")
         check = subprocess.run(
             [str(self.package / "scripts/check-requirements-clarification.sh"), "--json", "--input", "-", "--expected-result-sha256", owner["content_identity"]["result_sha256"]],
-            input=record.stdout, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            input=json.dumps(owner), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(check.returncode, 0, check)
-        self.assertEqual(json.loads(check.stdout)["typed_exit"], owner["typed_exit"])
+        self.assertEqual(project_intermediate_receipt(json.loads(check.stdout), self.package.parents[1] / "schemas")["typed_exit"], owner["typed_exit"])
         self.assertNotIn("guru_team_trellis", record.stdout + record.stderr + check.stdout + check.stderr)
 
         invalid = subprocess.run(
@@ -429,7 +431,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertEqual(recorded["ai_review_gate"], owner["ai_review_gate"])
         checked = self.command("check-requirements-clarification.sh", recorded, "--input", "-")
         self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
-        self.assertEqual(json.loads(checked.stdout)["typed_exit"], "blocked")
+        self.assertEqual(project_intermediate_receipt(json.loads(checked.stdout), self.package.parents[1] / "schemas")["typed_exit"], "blocked")
         self.assertEqual(recorded["target_disposition"]["disposition"], "keep_current_open_issue")
         self.assertEqual(recorded["target_disposition"]["duplicate_facts_sha256"], snapshot["facts_sha256"])
         transition = json.loads((self.package / "examples/public-clear-output-2.0.json").read_text())["transition"]
@@ -682,7 +684,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         full = self.command("record-requirements-clarification.sh", owner,
                             "--mode", "standalone", "--input", "-")
         self.assertEqual(full.returncode, 0, full.stdout)
-        self.assertEqual(json.loads(full.stdout), owner)
+        self.assertEqual(project_intermediate_receipt(json.loads(full.stdout), self.package.parents[1] / "schemas"), owner)
 
     def test_authoring_requires_semantic_shape_and_binds_proposals(self):
         proposal = {

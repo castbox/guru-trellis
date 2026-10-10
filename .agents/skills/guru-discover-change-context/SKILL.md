@@ -39,7 +39,7 @@ does not create a repository artifact. Pass the active Discovery 2.0 input and
 independent `base_current` transition to record, check, and invoke in one closed
 semantic-owner 1.0 envelope via `--invocation -`. Include `schema_version`,
 `public_input`, `transition`, `owner_context={}`, and `owner_result`; mode comes
-from `public_input.mode`. Replace only `owner_result` with recorder stdout in
+from `public_input.mode`. Replace only `owner_result` with recorder receipt `result` in
 memory before check and invoke. No caller supplies or reconstructs a Sync
 private result. See the exact Issue #384 migration in the contract: the former
 three input locators and recorder `--mode` are removed, not alternate paths.
@@ -67,3 +67,6 @@ minimal handoff. The runtime reruns the existing checker and
 derives the route from its checked `typed_exit`; callers never name the expected
 exit. Consumers receive caller-owned continuation only, never the private
 owner-result body.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

@@ -349,7 +349,11 @@ class CreateTaskTests(unittest.TestCase):
         completed = subprocess.run([*command, "--root", str(root or self.root), "--input", "-"],
                                    input=json.dumps(payload), text=True, capture_output=True, env=env)
         self.assertTrue(completed.stdout.strip(), completed.stderr)
-        return completed, json.loads(completed.stdout)
+        output = json.loads(completed.stdout)
+        if completed.returncode == 0 and validator and validator != "public_invocation":
+            from runtime.io import project_intermediate_receipt
+            output = project_intermediate_receipt(output, packages.parent / "schemas")
+        return completed, output
 
     def mixed_sibling(self) -> Path:
         sibling = Path(self.temporary.name) / "historical"

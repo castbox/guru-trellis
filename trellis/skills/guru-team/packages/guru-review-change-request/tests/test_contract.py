@@ -193,6 +193,9 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
                                   cwd=repo, input=json.dumps(envelope), text=True, capture_output=True)
             self.assertEqual(0, proc.returncode, proc.stderr)
             output = json.loads(proc.stdout)
+            if script != "invoke.sh":
+                from runtime.io import project_intermediate_receipt
+                output = project_intermediate_receipt(output, PACKAGE_ROOT.parents[1] / "schemas")
             if script.startswith("record"):
                 envelope["owner_result"] = output
             elif script.startswith("check"):

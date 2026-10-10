@@ -1,0 +1,29 @@
+{
+  "id": "453-formal-skill-exit-boundary",
+  "name": "453-formal-skill-exit-boundary",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 453,
+    "disposition": "exact_source"
+  },
+  "title": "#453 统一中间 receipt 与正式 Skill exit 边界",
+  "description": "仅实施 live #453 r1：按 judgment_mode 清点 semantic recorder/checker/executor receipt，统一非正式边界，保持 public typed exit、deterministic 类型和 atomic 能力，完成兼容迁移、真实 Agent 接续证据与定向安装验证。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅 #453；保留 #396/#250/#292 为后续；不软件 Release/完整多平台 Release matrix/hostile-input/授权artifact。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-10",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

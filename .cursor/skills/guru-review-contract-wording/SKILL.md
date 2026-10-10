@@ -61,3 +61,6 @@ or an example. For an invoke-envelope-only error after a successful check with
 unchanged facts and owner result, correct the envelope and invoke again as
 defined in the contract; do not re-record, re-check, or wait for another owner.
 The migration and remaining unmixed legacy callers are defined in the contract.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

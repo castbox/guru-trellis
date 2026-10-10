@@ -15,3 +15,6 @@ caller-owned. Do not derive binding authority from legacy task metadata.
 Use `scripts/invoke.sh --root <repository> --input -`. The `recover` action
 only rereads the exact binding, ownership and candidate facts after lost output.
 Return exactly one declared exit; do not retry a mutation from a lost result.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

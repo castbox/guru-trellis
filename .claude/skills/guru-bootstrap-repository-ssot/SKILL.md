@@ -31,3 +31,6 @@ confirmation. Installation, upgrade, update, workflow switching, and preset
 reapply may report Bootstrap state but never invoke it or archive the upstream
 bootstrap task. This Skill does not own task creation, delivery, PR publication,
 merge, or cleanup.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

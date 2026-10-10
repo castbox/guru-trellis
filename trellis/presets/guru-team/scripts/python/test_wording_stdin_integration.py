@@ -92,7 +92,7 @@ class WordingStdinIntegrationTests(unittest.TestCase):
         value = json.loads(result.stdout)
         if expected == 3:
             self.assertEqual(value["code"], "stale_identity")
-        return value
+        return transcript.project_intermediate(root, value) if expected == 0 else value
 
 
 if __name__ == "__main__":

@@ -17,3 +17,6 @@ performed here.
 Invoke `scripts/invoke.sh --root . --input -` with the structured input on
 stdin. Return exactly one declared typed exit. Reinvoke after an acquisition
 or establishment route; never infer a branch from a task name or checkout path.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

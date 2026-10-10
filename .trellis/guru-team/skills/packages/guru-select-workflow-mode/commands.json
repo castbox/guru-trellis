@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-select-workflow-mode",
   "commands": [
     {
@@ -10,7 +10,7 @@
         {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments", "conflicting_arguments", "environment_unavailable", "internal_error"],
       "side_effect": "github_read",
       "schema_bindings": [],
@@ -55,7 +55,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",

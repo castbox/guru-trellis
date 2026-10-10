@@ -306,6 +306,44 @@ Guru Team preset, resolve `.new` / `.bak`, rerun source and installed package
 validation, and retry. There is no alternate-command fallback. Runtime dependency
 validation is an objective precondition only and never becomes an AI Review Gate pass.
 
+### Intermediate Command Stdout 1.0
+
+Current `commands.json` uses `guru-team-skill-commands-1.1`. Each command
+declares `intermediate_receipt` or `single_typed_exit`. Source and installed
+validation bind that declaration to the Interface's actual public invocation
+wrapper, including atomic helpers that share `runtime/invoke.py`.
+
+The dispatcher wraps a successful intermediate command in the closed
+`guru-intermediate-command-receipt-1.0` schema:
+
+```json
+{"schema_version":"1.0","formal_exit":false,"result":{"original":"payload"}}
+```
+
+`result` retains the original owner/checker/executor payload. Same-owner CLI
+callers validate the receipt and explicitly project `result` before passing it
+to the original record/check/invoke input. Nested `validation_receipt` and
+`artifact_path` are read from that projection. Keep the real outer stdout in
+execution traces. Python helper returns, checkpoint bytes and digest inputs
+retain their existing contracts; transport adds no persisted receipt.
+
+Only the declared public `scripts/invoke.sh` produces a formal typed exit.
+Semantic owners must complete their current review first; deterministic
+owners retain their deterministic profile. A formal invocation's positive,
+revision, refresh or blocked result goes to its declared unique consumer/stop;
+invocation success alone is not stage success. Intermediate command success
+requires same-owner continuation and cannot establish a downstream handoff.
+Mapped same-scope continuation follows the existing interaction boundaries.
+
+This is an explicit intermediate CLI migration. Apply the complete matching
+preset to update runtime, schemas, command metadata, callers and platform
+projections together; use the existing upgrade owner for legacy installations
+that require it. The 1.0 command schema remains historical, with no current
+legacy parser or dual-read. Errors retain their existing nonzero error contract.
+Objective schema/consumer tests and real Agent declaration/action evidence are
+separate; missing native behavior evidence cannot establish that misreading was
+fixed. See `trellis/presets/guru-team/MIGRATION-453.md` for installation steps.
+
 ## Skill Contract Discovery
 
 `scripts/bash/discover-skill-contract.sh` is the thin installed wrapper for

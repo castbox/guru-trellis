@@ -108,6 +108,8 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
     "skill-commands.schema.json",
+    "skill-commands-1.1.schema.json",
+    "intermediate-command-receipt-1.0.schema.json",
     "skill-error-catalog.schema.json",
 })
 from skill_runtime_inventory import SKILL_RUNTIME_KERNEL_PATHS

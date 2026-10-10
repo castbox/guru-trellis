@@ -43,3 +43,6 @@ not retry mutation. `check-issue-creation-result` is read-only.
 guru-sync-base`, `blocked -> issue-creation-blocked`. A created Issue is only
 an Intake candidate; it never goes directly to task creation. The output
 contains only repository, number and URL.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

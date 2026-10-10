@@ -1,5 +1,10 @@
 # Guru Team Preset
 
+Intermediate command stdout follows the shared
+[receipt contract](./spec/workflow/companion-scripts.md#intermediate-command-stdout-10).
+Reapply the complete matching preset and migrate controlled callers as described
+in [MIGRATION-453.md](./MIGRATION-453.md); public Skill exits retain their contracts.
+
 The [common causal authority](./spec/workflow/causal-completion-semantics.md)
 is installed at `.trellis/spec/workflow/causal-completion-semantics.md` through
 the existing managed-spec installer. Qualification and stage packages read

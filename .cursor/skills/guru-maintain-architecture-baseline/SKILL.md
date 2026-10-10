@@ -110,3 +110,6 @@ already-promoted authority, or `blocked` with the actual missing prerequisite.
 Do not write a contribution, promote, repair, or start implementation to make
 this invocation pass. Runtime rejects an incompatible stage or writing route;
 it never changes an AI-selected route. Ordinary sources retain all seven exits.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

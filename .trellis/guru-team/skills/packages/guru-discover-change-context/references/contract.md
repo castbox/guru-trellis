@@ -289,17 +289,17 @@ Use ordinary JSON/SHA-256 APIs on the facts already read, not a private runtime
 helper or another live request. An issue has `issue_binding=null`; a draft
 retains the complete source shape required by the referenced schema.
 
-Capture complete preview stdout in caller memory and inspect its candidate
+Capture complete preview stdout in caller memory and inspect its `result` candidate
 projection before choosing history. A shortened tool display is not a new
 preview or proof of absence; it does not require rebuilding private preview
 bytes. Record rebuilds the deterministic preview itself from the current clues.
 Check and invoke consume the complete recorder result unchanged, not the
 pre-record authoring subset.
 
-The caller retains the envelope in memory, captures record stdout and replaces
+The caller retains the envelope in memory, captures record receipt `result` and replaces
 only its `owner_result`, then sends that envelope independently to check and
-invoke. Check stdout is a validation result, not a replacement owner result.
-Do not concatenate JSON documents or pipe record stdout directly into check.
+invoke. Check receipt `result` is a validation result, not a replacement owner result.
+Do not concatenate JSON documents or pipe record receipt `result` directly into check.
 No public/transition/owner input files, shell descriptor tricks, input caches,
 or repository checkpoints are needed. `--invocation <file>` remains an
 explicit file transport for that same envelope and loader, not the former

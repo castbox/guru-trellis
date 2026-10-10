@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-verify-extension-installation",
   "commands": [
     {
@@ -10,7 +10,7 @@
         {"flag": "--root", "required": false, "kind": "string", "description": "Repository root or a path below it.", "repeatable": false, "conflicts": []}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments", "conflicting_arguments", "internal_error"],
       "side_effect": "repo_read",
       "schema_bindings": [],
@@ -62,7 +62,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -115,7 +115,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -160,7 +160,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -205,7 +205,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -229,7 +229,7 @@
         {"flag": "--include-worktree", "required": false, "kind": "boolean", "description": "Overlay current worktree state.", "repeatable": false, "conflicts": []}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments", "conflicting_arguments", "source_verification_failed", "internal_error"],
       "side_effect": "none",
       "schema_bindings": ["schemas/reviewed-content-identity-output.schema.json"],

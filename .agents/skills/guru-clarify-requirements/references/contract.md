@@ -377,7 +377,7 @@ bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke
 ```
 
 Standalone recording uses `--mode standalone`; checker optionally accepts
-`--expected-result-sha256` from record stdout. Full result examples live at
+`--expected-result-sha256` from record receipt `result`. Full result examples live at
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`,
 not under an Agent discovery projection. Scripts use the managed interpreter;
 do not import an eval helper or run a package module with system Python.
@@ -411,8 +411,8 @@ imported by the next Skill. The envelope has no top-level `typed_output` input:
 callers cannot provide or select the route. Locator arguments remain only for
 explicitly documented compatibility consumers and are not the normal route.
 
-Only successful public invoke stdout is the final DTO. A record/check
-`typed_exit` is owner-private evidence, not a public exit. If invoke returns
+Only successful public invoke stdout is the final DTO. A record/check receipt
+`result.typed_exit` is owner-private evidence, not a public exit. If invoke returns
 an error, preserve and report that actual failure, correct ordinary authoring
 omissions from already reviewed facts or follow the declared context re-entry,
 then rerun the affected record/check/invoke sequence. Never hand-write a blocked

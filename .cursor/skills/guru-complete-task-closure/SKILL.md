@@ -25,3 +25,6 @@ recovery. A changed frozen authority or reopened required-closed Issue returns
 not repair or replay that disposition. `closed|no_mutation` carry only the
 Closure `ResultRefDTO`. The current graph sends these results to Finish; this
 package does not decide Completion or own the workflow projection.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
