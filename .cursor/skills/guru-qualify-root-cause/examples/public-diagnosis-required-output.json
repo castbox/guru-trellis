@@ -1,0 +1,13 @@
+{
+  "exit_id": "diagnosis_required",
+  "profile": "implementation_discovery",
+  "continuation_id": "root-cause:aaaaaaaaaaaaaaaaaaaaaaaa",
+  "diagnosis_candidates": [
+    {
+      "candidate_ref": "candidate-root-cause",
+      "evidence_gaps": [
+        "Locate the first failure on the same input."
+      ]
+    }
+  ]
+}

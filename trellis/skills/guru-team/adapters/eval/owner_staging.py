@@ -90,6 +90,9 @@ def stage_owner_execution(
         from adapters.eval.architecture_authoring import stage_architecture_facts
         stage_architecture_facts(request, fixture)
         return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {}
+    if skill_id == "guru-qualify-root-cause":
+        from adapters.eval.root_cause_fixtures import stage
+        return stage(request, fixture)
     if skill_id == QUALIFICATION_SKILL:
         package = fixture / ".trellis/guru-team/skills/packages" / skill_id
         if (

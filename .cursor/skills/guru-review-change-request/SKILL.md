@@ -74,3 +74,18 @@ The runtime derives minimal prerequisites, validates the AI-selected route,
 and emits the public handoff. Checker alone rereads the issue; invoke checks
 the exact receipt and current envelope without live calls. It does not decide
 readiness or expose the private review artifact.
+
+
+At this candidate boundary, consume actual normal-scenario and solution-mechanism
+outcomes before loading `guru-qualify-root-cause` with `change_request_candidate_set`. Supply only eligible
+refs. New or materially changed incident/protection mechanisms enter that owner;
+ordinary features receive its stable applicability disposition. Consume a
+still-applicable same-mechanism conclusion on later stages and independently
+review this stage's current work/evidence; caller change alone does not repeat
+qualification. Root `classified` continues this stage, retaining diagnosis or
+mitigation disposition without claiming repair. `mechanism_revision_required`
+removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
+the unsupported repair and continues bounded investigation of the returned
+gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
+symptom suppression into unrelated scope confirmation, cache qualifications,
+or use qualification as completion. Actual scope changes use existing routes.

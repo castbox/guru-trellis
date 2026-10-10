@@ -400,3 +400,25 @@ AI 会读取当前仓库中的 Guru Team workflow 和相关 Skills，并根据�
 面向业务仓库的安装和升级应使用本仓库的正式发布版本。
 
 如果发现安装、升级或日常使用问题，请在本仓库提交 Issue，并附上目标仓库的可公开环境信息、使用的 AI 工具、当前表现和预期结果。不要提交密钥、客户数据或其它敏感信息。
+
+## 根因候选资格
+
+新增 semantic `guru-qualify-root-cause` 在现有十个 candidate profiles 中承接
+normal-scenario、solution-mechanism 的实际合格结果。根因未知的有界诊断可以
+继续；有独立效果、风险、owner 和退出依据的缓解保留 `mitigation_only`。
+修复证据不足返回诊断，症状抑制只返回机制移除/替换。四出口为
+`classified`、`mechanism_revision_required`、`diagnosis_required`、`blocked`。
+同机制结论仍适用时由后续阶段消费；新/实质变化机制重新资格。阶段仍审当前
+实现和证据，qualification 不等于完成，#383 拥有共同完成语义。
+
+完整 preset 安装后使用 public discovery 和 stdin wrapper：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-qualify-root-cause --json
+# 先由 AI 读取 public contract/live facts 并完成 gate，再将 call-local envelope 送入：
+.trellis/guru-team/skills/packages/guru-qualify-root-cause/scripts/invoke.sh --invocation -
+```
+
+三个 record/check/invoke 命令仅 stdin/stdout，无 qualification 文件、cache 或
+授权持久化。安装与升级通过 canonical marketplace/preset，并重新应用 preset；
+定向验证和代表性 clean/update/reapply 不代表完整多平台 Release 矩阵。

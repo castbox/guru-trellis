@@ -27,6 +27,7 @@ APPROVED_KERNEL_FILES = {
     "probe.py",
     "python-runtime.json",
     "reviewed_content.py",
+    "qualification_facts.py",
     "requirements.lock",
     "resolve-python.sh",
     "schema.py",

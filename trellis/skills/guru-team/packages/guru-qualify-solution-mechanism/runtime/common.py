@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
 import json
-import subprocess
 from pathlib import Path
 
 from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
+from runtime.qualification_facts import (
+    digest, file_set_identity, _validate_locator, _validate_repo_path, _git,
+    verify_current_facts as _verify_current_facts,
+)
 
 
 SKILL_ID = "guru-qualify-solution-mechanism"
@@ -50,19 +52,6 @@ OUTPUT_SCHEMAS = {
 }
 
 
-def digest(value: object) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def file_set_identity(repo: Path, paths: list[str]) -> str:
-    rows = []
-    for path in sorted(paths):
-        _validate_repo_path(repo, path, "public_input.target.planning_paths", must_exist=True)
-        rows.append({"path": path, "content_sha256": hashlib.sha256((repo / path).read_bytes()).hexdigest()})
-    return digest(rows)
-
-
 def parse(parser: argparse.ArgumentParser, argv: list[str]) -> argparse.Namespace:
     try:
         return parser.parse_args(argv)
@@ -96,14 +85,6 @@ def validate_public_input(package_root: Path, value: object) -> dict:
     return value
 
 
-def _validate_locator(value: str, field: str) -> None:
-    if not isinstance(value, str) or not value.strip() or "\x00" in value:
-        raise CommandError("unsafe_path", field, "Use a non-empty call-local locator.")
-    path_value = value[5:] if value.startswith("path:") else value
-    if path_value.startswith("/") or ".." in Path(path_value).parts:
-        raise CommandError("unsafe_path", field, "Use a repository-relative locator without parent traversal.")
-
-
 def _repo_root(public_input: dict) -> Path:
     locator = public_input["target"]["repo_locator"]
     candidate = Path(locator)
@@ -113,57 +94,6 @@ def _repo_root(public_input: dict) -> Path:
     if not candidate.is_dir():
         raise CommandError("unsafe_path", "public_input.target.repo_locator", "Use the current regular repository root.")
     return candidate
-
-
-def _git(repo: Path, *args: str) -> str:
-    proc = subprocess.run(["git", *args], cwd=repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if proc.returncode:
-        raise CommandError("stale_identity", "public_input.target", "Reread the current Git identity and rerun qualification.", 3)
-    return proc.stdout.strip()
-
-
-def verify_current_facts(public_input: dict) -> None:
-    repo = _repo_root(public_input)
-    target = public_input["target"]
-    current_head = _git(repo, "rev-parse", "HEAD")
-    current_fields = {"checkout_head", "task_head", "review_head", "review_commit"}
-    for key, value in target.items():
-        if key.endswith("_head") or key == "review_commit":
-            _git(repo, "cat-file", "-e", f"{value}^{{commit}}")
-            if key in current_fields and value != current_head:
-                raise CommandError("stale_identity", f"public_input.target.{key}", "Reread the current checkout HEAD and rerun qualification.", 3)
-        if key.endswith("_path"):
-            _validate_repo_path(repo, value, f"public_input.target.{key}", must_exist=True)
-        elif key.endswith("_paths"):
-            for index, item in enumerate(value):
-                _validate_repo_path(repo, item, f"public_input.target.{key}.{index}", must_exist=False)
-    if "planning_identity" in target:
-        if public_input["profile"] == "planning_scenario_set":
-            planning_paths = target["planning_paths"]
-        else:
-            task_ref = target["task_ref"]
-            task_path = Path(task_ref)
-            if task_path.parts[:2] != (".trellis", "tasks"):
-                task_path = Path(".trellis/tasks") / task_path
-            planning_paths = [(task_path / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
-        if target["planning_identity"] != file_set_identity(repo, planning_paths):
-            raise CommandError("stale_identity", "public_input.target.planning_identity", "Reread the current planning files and rerun qualification.", 3)
-    for row in public_input["candidate_locators"]:
-        for locator in row["locators"]:
-            if locator.startswith("path:"):
-                _validate_repo_path(repo, locator[5:].split(":", 1)[0], f"candidate.{row['candidate_ref']}", must_exist=True)
-
-
-def _validate_repo_path(repo: Path, value: str, field: str, *, must_exist: bool) -> None:
-    _validate_locator(value, field)
-    candidate = repo / value
-    current = repo
-    for part in Path(value).parts:
-        current = current / part
-        if current.exists() and current.is_symlink():
-            raise CommandError("unsafe_path", field, "Do not read qualification evidence through a symlink.")
-    if must_exist and not candidate.is_file():
-        raise CommandError("stale_identity", field, "Reread the current repository locator and rerun qualification.", 3)
 
 
 def _authoring(recorded: dict) -> dict:
@@ -253,3 +183,7 @@ def typed_output(package_root: Path, recorded: dict) -> dict:
         output = {"exit_id": "blocked"}
     validate_json(output, package_root / "schemas" / OUTPUT_SCHEMAS[exit_id], "stdout")
     return output
+
+
+def verify_current_facts(public_input: dict) -> None:
+    _verify_current_facts(public_input, _repo_root(public_input))

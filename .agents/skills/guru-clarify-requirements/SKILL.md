@@ -117,3 +117,18 @@ transition bindings, reruns the existing checker, and derives the route and
 output from the checked `typed_exit` and declared transition. Callers cannot
 select the route or provide a separate `typed_output` field. Private
 clarification evidence is not a public input or output template.
+
+
+At this candidate boundary, consume actual normal-scenario and solution-mechanism
+outcomes before loading `guru-qualify-root-cause` with `requirements_scope_set`. Supply only eligible
+refs. New or materially changed incident/protection mechanisms enter that owner;
+ordinary features receive its stable applicability disposition. Consume a
+still-applicable same-mechanism conclusion on later stages and independently
+review this stage's current work/evidence; caller change alone does not repeat
+qualification. Root `classified` continues this stage, retaining diagnosis or
+mitigation disposition without claiming repair. `mechanism_revision_required`
+removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
+the unsupported repair and continues bounded investigation of the returned
+gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
+symptom suppression into unrelated scope confirmation, cache qualifications,
+or use qualification as completion. Actual scope changes use existing routes.

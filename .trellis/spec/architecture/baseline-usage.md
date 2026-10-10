@@ -23,3 +23,7 @@ FOUNDATION 是横向约束；CURRENT 必须有 code/config/test/release evidence
 ## Freshness
 
 每次 gate 重读 live baseline locator/version/status、design constitution、project change contract/check descriptor、RDT public identity、task delta 和 source binding。任一 locator 缺失、CURRENT/TARGET 串位、版本冲突或 projection stale 时 fail closed，并进入 `repair`；不得靠本页摘要继续。
+
+## Root-Cause Candidate Usage
+
+Architecture retains independent responsibility and necessity judgment. New or materially changed incident mechanisms consume guru-qualify-root-cause after actual normal/solution outcomes; qualification does not promote Architecture or prove completion.

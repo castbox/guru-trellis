@@ -635,3 +635,7 @@ base facts, then use a pinned compatible old version or explicit per-case
 manual disposition. Never adapt old Publication/Finalizer/Merge/Restore DTOs
 into new Delivery or Completion results. `archived_review_passed` stops at
 `legacy-archived-review-disposition-required` in the current graph.
+
+## Root-Cause Global Routing
+
+Global workflow explicitly invokes guru-qualify-root-cause after normal/solution outcomes for the ten current candidate profiles. Three root routers return to original owners; root stop consumes a concrete reason. Step-local semantic admission and reuse remain package-owned. #383 retains common completion ownership.

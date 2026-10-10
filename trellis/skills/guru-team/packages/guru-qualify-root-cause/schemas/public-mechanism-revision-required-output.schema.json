@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-root-cause-output-mechanism-revision-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "profile",
+    "continuation_id",
+    "revision_candidates"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "mechanism_revision_required"
+    },
+    "profile": {
+      "enum": [
+        "task_free_pre_write",
+        "task_free_evolution",
+        "requirements_scope_set",
+        "change_request_candidate_set",
+        "planning_scenario_set",
+        "implementation_discovery",
+        "base_impact_candidate_set",
+        "phase2_candidate_set",
+        "branch_review_candidate_set",
+        "publication_candidate_set"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "pattern": "^root-cause:[0-9a-f]{24}$"
+    },
+    "revision_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "candidate_ref",
+          "reason"
+        ],
+        "properties": {
+          "candidate_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

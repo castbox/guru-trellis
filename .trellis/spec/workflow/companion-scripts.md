@@ -1571,3 +1571,7 @@ generation, write session state, build a task index, or read retired workspace
 mappings. Source and installed consumers must carry byte-identical contract
 catalogs through their later declared distribution owner; C2 itself does not
 write an installed projection or register a command.
+
+## Root-Cause Deterministic Boundary
+
+The root package record/check/invoke commands validate AI-authored goal/classification combinations, exact ref coverage, fixed exit aggregation, live target identities and unique consumers. They never infer root cause from code, keywords, tests or gates. Shared qualification_facts contains only Git, planning and locator facts and preserves normal/solution transport semantics.

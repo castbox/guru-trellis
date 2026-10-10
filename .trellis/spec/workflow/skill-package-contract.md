@@ -2154,3 +2154,7 @@ resource ownership 均不属于 C2 runtime。
 Catalog 与 runtime 自身不替代各 package 的 entry contract、judgment mode、closed exits、consumer projection、
 private recovery state 与 focused tests。#434 candidate 已选择 current registry、active manifest、workflow graph
 和 installed/platform projection；其组合验证不等于远端发布或完整 Release matrix。
+
+## Root-Cause Candidate Package
+
+`guru-qualify-root-cause` is an Interface 1.6 semantic package with ten closed caller inputs and four exit-specific outputs. Its package contract owns goal-sensitive admission, applicability and reentry. Consumer-owned root routers use direct projections; only dispositions, revision reasons or diagnosis gaps cross the boundary. No qualification state or approval is persisted.

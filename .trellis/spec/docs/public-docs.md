@@ -641,3 +641,7 @@ close-keyword verification. `merged` alone reaches the finish response;
 `review_refresh_required` targets Branch Review's read-only `archived_review`
 without selecting a merge. The archived read-only route does not call
 Issue-close APIs, update the PR branch, synchronize local `main`, or clean resources.
+
+## Root-Cause Public Entry
+
+Public READMEs expose discovery and stdin invocation of guru-qualify-root-cause, four exits, goal-sensitive diagnosis/mitigation and completion boundary. Installed/platform parity follows canonical marketplace/preset.
