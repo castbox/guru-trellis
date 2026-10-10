@@ -188,6 +188,9 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as temporary:
    repo=Path(temporary)
    subprocess.run(["git","init","-q"],cwd=repo,check=True)
+   self.git(repo,"config","user.name","Test");self.git(repo,"config","user.email","test@example.com")
+   (repo/".gitignore").write_text(".trellis/.runtime/\n")
+   self.git(repo,"add",".gitignore");self.git(repo,"commit","-qm","fixture")
    task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
    checkpoint_path=repo/".trellis/.runtime/guru-team/owner-checkpoints/test-task/phase2-check.json"
    checkpoint_path.parent.mkdir(parents=True)
@@ -217,8 +220,16 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    for exit_id in expected:
     with self.subTest(exit_id=exit_id):
      checkpoint_path.write_text("checkpoint\n")
-     envelope=json.dumps({"public_input":public,"owner_result":owner(exit_id)},separators=(",",":"))
      environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
+     value=owner(exit_id)
+     if exit_id=="passed":
+      fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
+      authoring={key:copy.deepcopy(value[key]) for key in fields}
+      input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.write_text(json.dumps(authoring))
+      recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",public["task_ref"],"--input",str(input_path)],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
+      value=json.loads(checkpoint_path.read_text())
+      expected[exit_id]["phase2_commit_anchor"]=value["phase2_capture_commit"]
+     envelope=json.dumps({"public_input":public,"owner_result":value},separators=(",",":"))
      result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False,env=environment)
      self.assertEqual(0,result.returncode,result.stderr)
      self.assertEqual(expected[exit_id],json.loads(result.stdout))

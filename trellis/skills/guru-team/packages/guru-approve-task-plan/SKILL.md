@@ -20,6 +20,14 @@ the Docs SSOT plan directly. Review requirement
 authority, scope, design, implementation planning, acceptance verifiability,
 Docs SSOT, provenance, and supported unusual scenarios. The AI owns findings,
 revision actions, scope proposals, the final route, and delta classification.
+For an Issue-backed task, its single `source.repo_ref + number` is the Direct
+Source even when that repository differs from the execution repository. A legal
+`no_issue` source needs no invented Issue. Coordination, Related Work and
+Follow-up links supply only the uses explicitly required by accepted scope;
+they do not add source identity, project topology or Closure authority. Reread
+revised Direct Source content and necessary external facts. Material changes
+return to the earliest affected existing owner; informational changes alone
+do not invalidate planning. Keep the existing dependency-scoped delta judgment.
 For delete, replace, merge, or compatibility-impacting work, also apply
 `.trellis/spec/workflow/subtraction-first-compatibility.md`: review direct
 deletion/modification/reuse first, identify affected deprecated assets and

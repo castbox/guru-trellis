@@ -1,0 +1,18 @@
+{
+  "profile": "task_activation",
+  "action": "resume_execution",
+  "mode": "workflow",
+  "activation": {
+    "task_id": "demo",
+    "task_ref": ".trellis/tasks/demo",
+    "lifecycle_generation": 0,
+    "planning_result_id": "planning:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "selected_base_ref": "main",
+    "continuity": {
+      "kind": "base_current",
+      "task_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "base_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "session_mode": "explicit_task_mode"
+  }
+}

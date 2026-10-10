@@ -20,6 +20,15 @@ requirements review.
 For active-task scope change, the canonical workflow mandatory invokes this
 same Skill with an exact caller-aware `resume_target`; no caller may duplicate
 classification or planning-update semantics.
+Reread the task's one Direct Source (`source.repo_ref + number`), or its legal
+`no_issue` relation, and current accepted scope. A Coordination Issue changing
+without a Direct Source/scope change does not automatically change this task.
+Once an external process has revised Direct Source, judge that live revision
+through the existing scope-change routes. Related Work affects this round only
+through its explicit necessary dependency/evidence/completion use; information
+and out-of-scope Follow-up do not add obligations. Repository location and link
+direction never select a source or topology. Preserve TaskId/generation when
+the existing active-task route returns to Planning.
 
 Before this owner creates a scope proposal, asks a scope question, or assigns a
 terminal scope disposition to a newly observed scenario, form only candidate

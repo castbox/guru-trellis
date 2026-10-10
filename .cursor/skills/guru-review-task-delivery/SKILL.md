@@ -19,6 +19,13 @@ reason and retired checkpoints cannot supply a semantic pass.
 Read `references/contract.md`, the current requirement authority, approved
 Delivery policy, current slice and remaining work, validation evidence, RDT and
 Architecture authorities, full Branch Review, base, and live Git/GitHub facts.
+The structured single Direct Source remains portable across repositories;
+legal no-Issue slices have no invented source reference. Judge live source
+revisions and required external facts against this slice's accepted scope.
+Coordination and informational Related Work changes do not automatically
+invalidate review or become PR source/Closure targets. Material dependency
+changes return to the earliest affected existing owner under the current
+dependency-scoped contract; out-of-scope Follow-up stays outside this slice.
 For a legacy active task with no structured source and noncanonical scope,
 freshly review a non-exact relation in `reviewed_source`. It stays in this
 round's private semantic result; task metadata is not written for review alone.

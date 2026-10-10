@@ -274,8 +274,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at 35 active Skills, 159 external exits, and 106 commands, while the integrated business
-workflow projection is 33 invokes and 153 exits. Derive workflow and stop target
+at 36 active Skills, 164 external exits, and 109 commands, while the integrated business
+workflow projection is 34 invokes and 158 exits. Derive workflow and stop target
 cardinalities from the current registry and Interface declarations. The older
 32/142/102 and 22/98 counts are pinned-old, not alternate current selectors.
 Negative tests cover missing, extra,
@@ -872,8 +872,8 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and representative local throwaway
-  validation prove the 35-Skill/159-exit/106-command current package closure
-  and the integrated business graph at 33 invokes and 153 exits. Derive target
+  validation prove the 36-Skill/164-exit/109-command current package closure
+  and the integrated business graph at 34 invokes and 158 exits. Derive target
   cardinalities from the current registry and Interface declarations. The older
   32/142/102 and 22/98 counts are pinned-old, not current acceptance. Update
   and preset reapply must reproduce the current closure with zero unresolved
@@ -1123,10 +1123,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/representative local clean checks assert 35 active Skills,
-159 package exits, and 106 commands, exactly one selected `production-current-v4`
-four-Skill/15-exit current manifest, and business workflow markers of 33 invokes
-and 153 exits. Workflow/stop targets are derived from the current registry and
+Source/installed/platform/representative local clean checks assert 36 active Skills,
+164 package exits, and 109 commands, exactly one selected `production-current-v4`
+four-Skill/15-exit current manifest, and business workflow markers of 34 invokes
+and 158 exits. Workflow/stop targets are derived from the current registry and
 Interface graph, not predecessor fixed counts. Full multi-platform Release matrix
 belongs to the dedicated gate; remote marketplace installation is unused.
 

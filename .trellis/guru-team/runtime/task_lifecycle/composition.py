@@ -307,6 +307,16 @@ def recover_activation_inputs(
     return _activation_inputs(repo_root, payload, session, expected_status="in_progress")
 
 
+def prepare_resume_execution_inputs(
+    repo_root: Path | str,
+    payload: dict[str, Any],
+    session: SessionAdapterResult,
+) -> ActivationInputs:
+    """Validate a newly reviewed active plan without applying a status transition."""
+
+    return _activation_inputs(repo_root, payload, session, expected_status="in_progress")
+
+
 def _activation_inputs(
     repo_root: Path | str,
     payload: dict[str, Any],
@@ -394,5 +404,5 @@ def activate_task_status(repo_root: Path | str, inputs: ActivationInputs) -> Non
 
 __all__ = [
     "ActivationInputs", "CreationInputs", "activate_task_status", "establish_created_control_state",
-    "prepare_activation_inputs", "prepare_creation_inputs", "recover_activation_inputs", "recover_created_control_state",
+    "prepare_activation_inputs", "prepare_creation_inputs", "prepare_resume_execution_inputs", "recover_activation_inputs", "recover_created_control_state",
 ]

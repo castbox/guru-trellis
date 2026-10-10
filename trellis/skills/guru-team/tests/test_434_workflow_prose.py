@@ -1,6 +1,7 @@
 """Static regression for the canonical #434 lifecycle wording."""
 
 from pathlib import Path
+import json
 import unittest
 
 
@@ -22,6 +23,13 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
+        registry = json.loads((PACKAGES.parent / "registry.json").read_text())
+        active = [row for row in registry["skills"] if row["state"] == "active"]
+        cls.active_count = len(active)
+        cls.exit_count = sum(len(json.loads((PACKAGES.parent / row["interface"]).read_text())["external_exits"]) for row in active)
+        cls.command_count = sum(len(json.loads((PACKAGES.parent / row["package"] / "commands.json").read_text())["commands"]) for row in active)
+        cls.invoke_count = cls.workflow.count("<!-- guru-skill-invoke:")
+        cls.workflow_exit_count = cls.workflow.count("<!-- guru-skill-exit:")
 
     def test_external_work_item_owner_is_post_completion_closure(self) -> None:
         prose = section(self.workflow, "### External work item and closure")
@@ -120,7 +128,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_installed_workflow_contract_selects_current_graph(self) -> None:
         contract = (SPEC / "workflow-contract.md").read_text(encoding="utf-8")
         current = contract.split("## Integrated Public Graph\n", 1)[1].split("\n## ", 1)[0]
-        self.assertIn("35 active packages", current)
+        self.assertIn(f"{self.active_count} active packages", current)
         self.assertIn("Delivery Review\n-> Delivery Publish -> Delivery Merge -> whole-task Completion", current)
         self.assertIn("no current production edge", current)
         self.assertNotIn("`guru-review-branch:passed -> guru-review-task-publication`", current)
@@ -156,14 +164,14 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         current = guide.split("## Required Checks\n", 1)[1].split(
             "### Retired #389 Task Workspace Fixture (historical only)", 1
         )[0]
-        self.assertIn("35 active Skills, 159 external exits, and 106 commands", current)
-        self.assertIn("33 invokes and 153 exits", current)
+        self.assertIn(f"{self.active_count} active Skills, {self.exit_count} external exits, and {self.command_count} commands", current)
+        self.assertIn(f"{self.invoke_count} invokes and {self.workflow_exit_count} exits", current)
         self.assertIn("six-package/23-exit Workspace graph is pinned-old", current)
         self.assertIn("32/142/102 and 22/98 counts are pinned-old", current)
         self.assertNotIn("workspace `created` cannot be serialized", current)
         entire_guide = guide.split("## Normal Scenario Qualification Quality\n", 1)[0]
         self.assertNotIn("32-Skill/142-exit/102-command current", entire_guide)
-        self.assertIn("35-Skill/159-exit/106-command current package closure", entire_guide)
+        self.assertIn(f"{self.active_count}-Skill/{self.exit_count}-exit/{self.command_count}-command current package closure", entire_guide)
 
     def test_current_installer_and_quality_guidance_exclude_retired_entries(self) -> None:
         guide = (SPEC / "quality-guidelines.md").read_text(encoding="utf-8")

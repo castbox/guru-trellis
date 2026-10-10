@@ -277,3 +277,7 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 ## #383 因果完成语义增量（.80）
 
 `ARCH-CUR-053`（reviewed #383 contribution；promotion 后 fresh gates pending）：单一 canonical causal-completion-semantics.md 拥有共用 evidence/disposition 语义，七个现有 qualification/Planning/Check/Branch/Delivery/Completion/Reconcile owner 读取 installed projection，各自保留本阶段判断。诊断、缓解、修复按 accepted goal 承接；Delivery merge 不推出 whole-task Completion。Check 对已由 AI 选择的 same-scope reapprove_plan 作确定性 projection 修订，公开 I/O/schema/exit 和全局图保持；无规则引擎或长期 causal store。正文仅由 spec 拥有，实际证据仅由[唯一 Test](../../requirements-design-test-contributions/383-causal-completion-semantics/test.md)承接。
+
+## ARCH-CUR-054：Direct Source 与活动重规划执行承接（.81）
+
+`ARCH-CUR-054`（reviewed #468 contribution；promotion 后 fresh gates pending）：原 Planning approved 唯一 consumer 按 live lifecycle 承接首次 activate 或活动 resume_execution。原 guru-activate-task 独占 execution-result 与 identity-only recover_execution；TaskId/generation/branch/checkout/in_progress 不变，原 Check 在正式 current passed 后调用原 owner retirement。Direct Source/必要用途/重开语义归原 stage owners；无第二 source、authority、writer 或长期结果 store。正文由 canonical owners 拥有，证据仅由[唯一 Test](../../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)承接。

@@ -31,6 +31,15 @@ nor repeats the assessment merely because the caller changed. Changed facts
 needing a new conclusion return through the existing independent assessment
 route; missing committed review/promotion keeps its existing blocking route.
 The Completion owner still judges whole-task scope and evidence separately.
+Read the one Direct Source from `source.repo_ref + number`, or the legal
+`no_issue` relation. Coordination/Related/Follow-up links neither add Closure
+targets nor change the published `exact_source`, `reference_only`, `follow_up`
+or `parent` meanings. Necessary external dependencies/evidence count only when
+accepted scope uses them: missing evidence uses `evidence_pending`, unfinished
+work uses the applicable remaining/revision route. Informational or out-of-scope
+Follow-up changes do not block completion. Verify necessary updates to the
+repository's actual long-term authority, or a reasoned non-applicability;
+do not impose one Baseline type on every repository.
 
 ## Causal whole-task judgment
 

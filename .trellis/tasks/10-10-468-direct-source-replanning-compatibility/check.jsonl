@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "全局路由与mandatory skill边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共I/O、private state与唯一consumer"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性runtime与managed Python约束"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "风险匹配验证与Release ownership"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "canonical与安装投影ownership"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "current必要性与职责判断authority"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "contribution、项目checks和promotion合同"}
