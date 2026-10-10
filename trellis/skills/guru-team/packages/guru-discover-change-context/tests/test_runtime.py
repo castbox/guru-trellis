@@ -15,7 +15,7 @@ FINISH_SCHEMA=next(path for path in (
 for path in (RUNTIME.parent,LOCAL):
  if str(path) not in sys.path:sys.path.insert(0,str(path))
 from runtime.command import main
-from runtime.io import CommandError
+from runtime.io import CommandError, project_intermediate_receipt
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 from common import active_task,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
@@ -87,7 +87,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     self.assertEqual(result.returncode,code,(result.stdout,result.stderr))
     self.assertEqual(snapshot(),before)
     self.assertEqual(list(repo.rglob("__pycache__")),[])
-    return json.loads(result.stdout)
+    output=json.loads(result.stdout)
+    return project_intermediate_receipt(output,SKILLS/"schemas") if code==0 and wrapper!=public_wrapper else output
    initial=snapshot()
    envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text())}
    for mode in ("workflow","standalone"):
