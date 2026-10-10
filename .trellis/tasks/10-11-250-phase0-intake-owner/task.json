@@ -1,0 +1,29 @@
+{
+  "id": "250-phase0-intake-owner",
+  "name": "250-phase0-intake-owner",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 250,
+    "disposition": "exact_source"
+  },
+  "title": "#250 收敛 Phase 0 唯一 Intake semantic owner",
+  "description": "仅实施 live #250 r19：Clarify 独占 Phase0 需求与来源语义；显式迁移支持的 profiles/ingress/context return，承接规范性来源设计并保持现有 Wording/readiness/Create Issue/Create Task、当前 Phase1 与 #468 resume owner；补齐定向真实 Agent 与 new/existing/reapply 分发验证。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅 #250 r19；#292 Phase1 Author 为独立后续，不恢复 #249 依赖；不 patch/delete upstream trellis-*，不新增 ledger/cache/授权记录，不执行完整 Release matrix/额外业务仓安装/部署。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-11",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

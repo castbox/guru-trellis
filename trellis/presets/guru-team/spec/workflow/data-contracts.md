@@ -296,15 +296,18 @@ empty owner directory.
 
 ## Requirements Clarification Result
 
-Schema id `guru-requirements-clarification-2.0` is the active closed Draft 2020-12
+Schema id `guru-requirements-clarification-3.0` is the active closed Draft 2020-12
 result. Top-level fields are exactly `schema_version`, `skill_id`,
 `generated_at`, `mode`, `typed_exit`, `invocation_context`, `review_target`,
 `target_disposition`, `context_evidence`, `confirmed_facts`, `repository_answerable_questions`,
 `clarification_rounds`, `open_questions`, `scope_proposals`, `source_actions`,
 `mutation_results`, `active_task_evidence`, `ai_review_gate`,
-`affected_contracts`, `content_identity`, `reason`, `consumer`, and `error`.
+`affected_contracts`, `content_identity`, `reason`, `consumer`, `error`, and
+`source_selection`. `source_selection` preserves each selected source role and
+locator for downstream authority consumption.
 `invocation_context.kind` is `initial_issue`, `proposed_draft`,
-`active_task_scope_change`, or `standalone_review` and includes a closed
+`active_task_scope_change`, `standalone_review`, `normal_scenario_scope_confirmation`, or
+`solution_mechanism_scope_confirmation` and includes a closed
 caller-aware `resume_target`. `review_target` carries a portable current issue
 or side-effect-free draft identity. `context_evidence` records only whether
 current-session/live-authority context is current, stale, or unavailable plus

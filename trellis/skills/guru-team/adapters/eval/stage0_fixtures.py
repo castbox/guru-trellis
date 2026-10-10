@@ -87,7 +87,7 @@ def readiness_context(
     owner["result_identity"] = runtime.identity(owner)
     envelope = {
         "schema_version": "1.0", "transition": sync["transition"],
-        "public_input": {
+        "public_input": {"clarify_profile": "standard_intake",
             "profile": "pre_task", "mode": mode,
             "change_input": owner["change_input"],
             "continuation_id": continuation, "source_exit": "synced",
@@ -840,7 +840,7 @@ def readiness_prerequisites(
     )
     clarified = stage0_command(fixture, "guru-clarify-requirements", "invoke", {
         "schema_version": "1.0", "public_input": {
-            "profile": "initial_change_request", "mode": mode,
+            "profile": "standard_intake", "mode": mode,
             "source_exit": "context_ready", "continuation_id": continuation,
             "target_locator": context["transition"]["target_locator"],
             "duplicate_snapshot": snapshot,

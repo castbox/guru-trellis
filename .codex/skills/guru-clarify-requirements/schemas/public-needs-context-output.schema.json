@@ -1,23 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-clarify-requirements-output-needs-context-1.0",
+  "$id": "guru-stage0-clarify-requirements-output-needs-context-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "exit_id",
-    "handoff_profile",
-    "handoff_mode",
-    "handoff_repo_locator",
-    "handoff_base_branch",
-    "handoff_continuation_id",
-    "transition"
-  ],
+  "required": ["exit_id", "handoff_profile", "handoff_mode", "handoff_repo_locator", "handoff_base_branch", "handoff_continuation_id", "transition", "return_identity"],
   "properties": {
     "exit_id": {
       "const": "needs_context"
     },
     "handoff_profile": {
-      "const": "pre_task"
+      "const": "context_request"
     },
     "handoff_mode": {
       "enum": [
@@ -49,7 +41,8 @@
         "repo_locator": {"type": "string", "minLength": 1},
         "base": {"$ref": "#/$defs/base"}
       }
-    }
+    },
+    "return_identity": {"oneOf": [{"type": "object", "additionalProperties": false, "required": ["profile", "target_locator", "continuation_id"], "properties": {"profile": {"const": "standard_intake"}, "target_locator": {"type": "string", "minLength": 1}, "continuation_id": {"type": "string", "minLength": 1}}}, {"type": "object", "additionalProperties": false, "required": ["profile", "target_locator", "continuation_id", "source_locators"], "properties": {"profile": {"const": "reviewed_plan_intake"}, "target_locator": {"type": "string", "minLength": 1}, "continuation_id": {"type": "string", "minLength": 1}, "source_locators": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["locator", "section"], "properties": {"locator": {"type": "string", "minLength": 1}, "section": {"type": "string", "minLength": 1}}}}}}, {"type": "object", "additionalProperties": false, "required": ["profile", "target_locator", "continuation_id", "task_locator", "task_id", "lifecycle_generation", "resume_target"], "properties": {"profile": {"const": "active_task_scope_change"}, "target_locator": {"type": "string", "minLength": 1}, "continuation_id": {"type": "string", "minLength": 1}, "task_locator": {"type": "string", "minLength": 1}, "task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "resume_target": {"type": "string", "minLength": 1}}}, {"type": "object", "additionalProperties": false, "required": ["profile", "target_locator", "continuation_id", "resume_target"], "properties": {"profile": {"const": "standalone_review"}, "target_locator": {"type": "string", "minLength": 1}, "continuation_id": {"type": "string", "minLength": 1}, "resume_target": {"type": "string", "minLength": 1}}}]}
   },
   "$defs": {
     "sha40": {"type": "string", "pattern": "^[0-9a-f]{40}$"},

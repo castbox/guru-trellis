@@ -624,7 +624,7 @@ def intake_repository_assets(source: Path) -> set[Path]:
 def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     from adapters.eval.intake_authoring import COMMANDS, INTAKE_SKILLS
 
-    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "initial_change_request", "change_request", "current_issue")))
+    profiles = dict(zip(INTAKE_SKILLS, (None, "pre_task", "standard_intake", "change_request", "current_issue")))
     owners = dict(zip(INTAKE_SKILLS, (None, "change_context_owner_result", "clarification_result", "wording_review", "change_request_review")))
     skill = interface["id"]
     contracts = interface["public_contracts"]

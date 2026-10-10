@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "skill_id": "guru-clarify-requirements",
   "generated_at": "2026-01-01T00:00:00Z",
   "mode": "standalone",
@@ -89,12 +89,13 @@
     "scope_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     "action_sha256": "866c424eef771c72e1c5166e76b9de3baff718018dd3a2ee8d3c80f9a6e6deda",
     "payload_sha256": "1d8fc6ceb1f94c6326d6d5483d258fcb2e179e9869325b245d105c2219bf69fd",
-    "result_sha256": "93a7a4f1166439c2628c5d45ac6c5ab824a0603d256e02f0225150fcb3be8464"
+    "result_sha256": "bd0b921b87abd8117563b2d050ea54e2c4caeb9f7b50680201439e9a7eabd771"
   },
   "reason": "All load-bearing requirements are confirmed by current evidence.",
   "consumer": {
     "kind": "workflow",
     "id": "guru-requirements-clear-router"
   },
-  "error": null
+  "error": null,
+  "source_selection": []
 }

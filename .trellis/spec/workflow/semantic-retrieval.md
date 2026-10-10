@@ -72,3 +72,11 @@ list, query approval, query digest, reviewer metadata, or authorization state.
 Do not add search-process fields to public inputs or typed outputs. Promote a
 term mapping into durable Docs only when it is itself a lasting domain or
 workflow contract with a direct future consumer.
+
+## Intake evidence and intent owners
+
+Discovery owns current/history evidence inventory and coverage. Clarify alone
+judges intent, requirement authority, selected source roles and real unresolved
+choices; repository-answerable questions are resolved from evidence before
+asking the user. Its package contract owns zero/one/partial convergence and
+caller-aware missing-context requests.

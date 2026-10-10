@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.8.schema.json",
+  "schema_version": "1.8",
   "id": "guru-review-contract-wording",
   "name": "guru-review-contract-wording",
   "description": "Review controlled contract wording through fixed change-request, planning-artifact, or explicit-path scope, semantic revision and classification, deterministic evidence, and typed exits.",
@@ -332,7 +332,7 @@
       {
         "exit_id": "pass",
         "schema": {
-          "schema_id": "guru-stage0-review-contract-wording-output-pass-2.0",
+          "schema_id": "guru-stage0-review-contract-wording-output-pass-3.0",
           "path": "schemas/public-pass-output-2.0.schema.json"
         },
         "example": {
@@ -388,7 +388,7 @@
         "transition": {
           "source_field": "transition",
           "stage": "wording_current",
-          "schema_id": "guru-stage0-transition-wording-current-1.0",
+          "schema_id": "guru-stage0-transition-wording-current-2.0",
           "path": "consumers/workflow/stage0/transitions/wording-current.schema.json",
           "producer_profiles": [
             "change_request"

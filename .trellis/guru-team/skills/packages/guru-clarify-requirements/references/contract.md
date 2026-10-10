@@ -150,8 +150,10 @@ Every initial issue/draft review records exactly one disposition:
 - `keep_current_draft`: retain the side-effect-free proposed draft;
 - `retarget_existing_issue`: select one different open duplicate candidate;
 
-Initial-change-request input schema 2.0 replaces 1.0 in the current graph. Its
-required snapshot is accepted only when target locator, authority body digest,
+The independent `standard_intake` and `reviewed_plan_intake` input schemas
+replace the retired `initial_change_request` profile. Both require a checked
+duplicate snapshot; reviewed-plan input additionally carries explicitly selected
+source locators. The snapshot is accepted only when target locator, authority body digest,
 query, checked time, candidates and aggregate digest match the current context
 transition and the owner disposition. Policy staleness, authority mutation,
 retarget or explicit refresh invalidates the projection and routes through the
@@ -308,21 +310,21 @@ never write a repo cache, workspace journal or fixed handoff. The package
 requires the complete current Guru Team preset and is not self-contained or
 portable.
 
-The recorder accepts the closed Schema 2.0 semantic shape with only the derived
+The recorder accepts the closed Schema 3.0 semantic shape with only the derived
 fields listed below omitted. It validates that shape before calculating values
-and validates the complete Schema 2.0 result before returning it. Checker and
+and validates the complete Schema 3.0 result before returning it. Checker and
 invoke require the complete result and independently recompute the same fields.
 Supplied derived values are consistency assertions, never silently replaced.
 No schema version, Skill id, decision, target, consumer or gate is defaulted.
 
 ### Minimal Recorder Authoring
 
-Public input profiles and output schemas are unchanged. This table describes
+The current public profiles and successor outputs are declared in the Interface. This table describes
 only the transient private owner JSON consumed by record, not public input.
 
 | Required semantic fields | Source |
 | --- | --- |
-| `schema_version`, `skill_id`, `generated_at`, `mode` | Explicit current result metadata; `2.0` and `guru-clarify-requirements` |
+| `schema_version`, `skill_id`, `generated_at`, `mode` | Explicit current result metadata; `3.0` and `guru-clarify-requirements` |
 | `typed_exit`, `consumer`, `invocation_context`, `reason`, `error` | Completed AI route and caller decision, with explicit nullable fields |
 | `review_target`, `target_disposition`, `context_evidence` | Current reviewed facts and final target decision; null disposition only where already allowed |
 | `confirmed_facts`, `repository_answerable_questions`, `clarification_rounds`, `open_questions`, `scope_proposals`, `affected_contracts` | AI-reviewed content and final proposal decisions; explicit arrays even when empty |
@@ -399,8 +401,9 @@ replace it with `#N`. Copy the complete snapshot, including its opaque digest,
 rather than manually rebuilding it from an example. This also preserves the
 target identity for the next Wording consumer.
 
-The public profiles are `initial_change_request`, `active_task_scope_change`,
-`standalone_review`, and `normal_scenario_scope_confirmation`. After the owner loop,
+The six current public profiles are `standard_intake`, `reviewed_plan_intake`,
+`active_task_scope_change`, `standalone_review`,
+`normal_scenario_scope_confirmation`, and `solution_mechanism_scope_confirmation`. After the owner loop,
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke.sh --invocation -`
 validates the closed call-local public input,
 `context_current` transition, and current owner result, reruns the existing
@@ -419,3 +422,56 @@ then rerun the affected record/check/invoke sequence. Never hand-write a blocked
 DTO, copy an example output, or present a planned semantic exit as successfully
 emitted. An unresolved invocation error remains an execution failure, even when
 the AI correctly judged that the product conflict should block.
+
+## Intake semantic ownership and source selection (#250)
+
+Clarify alone owns user intent, requirement authority, source classification,
+Issue intent and real unresolved choices. Discovery supplies repository/history
+evidence and coverage; Wording and readiness retain their independent judgments.
+Read Direct Source, explicitly selected comments and introduced requirements or
+design sections fresh. Distinguish normative interfaces, mechanisms, order and
+compatibility constraints from advisory candidates; the presence of a design
+does not make its normative clauses optional. Clear technical sources need zero
+questions. Answer repository-searchable questions from evidence first. Ask at
+most one highest-value unresolved question per round, with evidence, options,
+a recommendation and trade-offs. An actual partial answer stays unresolved.
+
+`standard_intake` is the ordinary initial owner. `reviewed_plan_intake` requires
+`source_locators` for the selected existing requirements/design; its name never
+substitutes for fresh review. Both retain Discovery's checked duplicate snapshot.
+`active_task_scope_change` preserves TaskId/generation and the interrupted
+consumer; `standalone_review` preserves its declared `resume_target`.
+The two qualification confirmation profiles are distinct: consume actual
+qualifier stdout, ask only its unresolved authority choice, and return to its
+original owner. Context repair returns to that qualification owner, rather than
+entering the four-profile Discovery loop.
+
+When load-bearing context is missing in any of the four context-capable
+profiles, emit `needs_context` with `handoff_profile=context_request`. The
+discriminated `return_identity` contains only profile, target and continuation,
+plus selected source locators, active task identity/interrupted consumer, or
+standalone consumer as required by that profile. Discovery returns that exact
+profile and identity with new context. Freshly project its actual stdout into
+the independently owned input; never reuse an old invocation object, owner
+result or stale duplicate snapshot on a repeated return.
+
+The AI authors `source_selection` in the schema 3.0 owner result. Each selected
+entry is only `locator`, `section`, and `authority_kind` (`requirement`,
+`design_constraint`, or `advisory`). The selection itself carries the
+irreducible choice of which comment/section and its authority role. Empty is
+legal when there is no introduced source. No full text, final design disposition,
+history, source matrix or authorization belongs here. `clear` hands it to the
+clear router; the transition relays it through current Wording/readiness to
+current Planning. Planning rereads sources and owns final retain/change/reject
+only in `design.md`. A lost selection re-enters this owner instead of guessing
+from task metadata or introducing a persistent cache.
+
+Upstream `trellis-brainstorm` remains discoverable. It may be unselected,
+automatically selected, or deliberately reused for a method. In every case
+this Skill remains the semantic owner: constrain any loaded method to the
+current stage, input, exact return consumer and question policy above. Method
+reuse never creates a second interview, separate planning owner, Issue/task
+mutation path or exemption from current Guru gates.
+
+See [MIGRATION-250.md](./MIGRATION-250.md) for the synchronized public API
+replacement and current caller re-entry.

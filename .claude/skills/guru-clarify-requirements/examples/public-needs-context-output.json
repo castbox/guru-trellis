@@ -1,6 +1,6 @@
 {
   "exit_id": "needs_context",
-  "handoff_profile": "pre_task",
+  "handoff_profile": "context_request",
   "handoff_mode": "workflow",
   "handoff_repo_locator": "stage0-handoff-repo-locator",
   "handoff_base_branch": "main",
@@ -21,5 +21,6 @@
       "remote_base_head": "1111111111111111111111111111111111111111",
       "post_sync_resolution_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
     }
-  }
+  },
+  "return_identity": {"profile": "standard_intake", "target_locator": "https://github.com/example/guru-extension/issues/145", "continuation_id": "stage0-handoff-continuation-id"}
 }

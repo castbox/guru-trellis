@@ -24,7 +24,19 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
     duplicate=owner["duplicate_search"]
     duplicate_snapshot={"query":duplicate["query"],"checked_at":duplicate["checked_at"],"target_locator":transition["target_locator"],"authority_content_sha256":live["body_sha256"],"candidates":[{key:item[key] for key in ("repo","number","url","updated_at","facts_sha256")} for item in duplicate["candidates"]]}
     duplicate_snapshot["facts_sha256"]=__import__("common").digest(duplicate_snapshot)
-    out={"exit_id":"context_ready","handoff_profile":"initial_change_request","handoff_mode":owner["mode"],"handoff_target_locator":transition["target_locator"],"handoff_continuation_id":public["continuation_id"],"duplicate_snapshot":duplicate_snapshot,"transition":transition};schema="public-context-ready-output-3.0.schema.json"
+    returning=public.get("return_identity")
+    profile=returning["profile"] if returning else public["clarify_profile"]
+    if returning and returning["target_locator"]!=transition["target_locator"]:
+     raise CommandError("stale_identity","return_identity.target_locator","Return to the original context owner for a changed target.",3)
+    transition["clarify_profile"]=profile
+    out={"exit_id":"context_ready","handoff_profile":profile,"handoff_mode":owner["mode"],"handoff_target_locator":transition["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":transition};schema="public-context-ready-output-4.0.schema.json"
+    if profile in {"standard_intake","reviewed_plan_intake"}:out["duplicate_snapshot"]=duplicate_snapshot
+    source=returning or public
+    if profile=="reviewed_plan_intake":
+     out["source_locators"]=source["source_locators"];transition["source_locators"]=source["source_locators"]
+    if profile=="active_task_scope_change":
+     for key in ("task_locator","task_id","lifecycle_generation","resume_target"):out["handoff_"+key]=returning[key]
+    if profile=="standalone_review":out["handoff_resume_target"]=returning["resume_target"]
  if a.recovery_continuation_id and not a.active_task:raise CommandError("invalid_arguments","recovery_continuation_id","Provide active-task identity for recovery.")
  checkpoint=None
  if a.active_task and owner_bound:

@@ -1,5 +1,5 @@
 {
-  "profile": "initial_change_request",
+  "profile": "standard_intake",
   "source_exit": "start",
   "mode": "workflow",
   "target_locator": "#145",

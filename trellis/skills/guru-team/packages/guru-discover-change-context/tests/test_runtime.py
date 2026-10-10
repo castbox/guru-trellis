@@ -75,7 +75,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    subprocess.run(["git","init","-q","-b","main",str(repo)],check=True);subprocess.run(["git","config","user.name","Installed Wrapper Test"],cwd=repo,check=True);subprocess.run(["git","config","user.email","wrapper@example.invalid"],cwd=repo,check=True)
    subprocess.run(["git","add","."],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","installed fixture"],cwd=repo,check=True);subprocess.run(["git","remote","add","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
    head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",head],cwd=repo,check=True)
-   public={"profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#300"],"pr_refs":[],"branches":[],"paths":["trellis/skills/guru-team/packages/guru-discover-change-context"],"commands":["invoke-guru-discover-change-context"],"config_keys":[],"schema_fields":["base_current"],"symbols":["check_owner_binding"],"terms":["public wrapper"],"queries":["Discovery public wrapper context ready"]},"continuation_id":"issue-300-installed-wrapper"}
+   public={"clarify_profile": "standard_intake", "profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#300"],"pr_refs":[],"branches":[],"paths":["trellis/skills/guru-team/packages/guru-discover-change-context"],"commands":["invoke-guru-discover-change-context"],"config_keys":[],"schema_fields":["base_current"],"symbols":["check_owner_binding"],"terms":["public wrapper"],"queries":["Discovery public wrapper context ready"]},"continuation_id":"issue-300-installed-wrapper"}
    transition={"schema_version":"1.0","transition_id":"base_current:issue300","stage":"base_current","mode":"workflow","repo_locator":str(repo.resolve()),"base":{"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":"a"*64}}
    recorder=installed_package/"scripts/record-context-discovery.sh"
    checker=installed_package/"scripts/check-context-discovery.sh"
@@ -100,8 +100,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     self.assertEqual(output["exit_id"],"context_ready")
     interface=json.loads((PACKAGE/"interface.json").read_text())
     projection=next(p for p in interface["public_contracts"]["projections"] if p["exit_id"]=="context_ready")
-    handoff={p["target"]:output[p["source"]] for p in projection["mappings"]}
-    consumer_schema=json.loads((guru/"skills/packages/guru-clarify-requirements/schemas/public-initial-change-request-input-2.0.schema.json").read_text())
+    handoff={p["target"]:output[p["source"]] for p in projection["mappings"] if p["source"] in output}
+    consumer_schema=json.loads((guru/"skills/packages/guru-clarify-requirements/schemas/public-standard-intake-input.schema.json").read_text())
     self.assertEqual([],list(Draft202012Validator(consumer_schema).iter_errors(handoff)))
     transition_schema=json.loads((guru/"skills/consumers/workflow/stage0/transitions/context-current.schema.json").read_text())
     self.assertEqual([],list(Draft202012Validator(transition_schema).iter_errors(output["transition"])))
@@ -156,7 +156,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    repo=Path(name);subprocess.run(["git","init","-q","-b","feat/context",str(repo)],check=True)
    subprocess.run(["git","-C",str(repo),"-c","user.name=Test","-c","user.email=test@example.invalid","commit","--allow-empty","-q","-m","seed"],check=True)
    td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True)
-   task={"id":"08-12-context","status":"in_progress"};(td/"task.json").write_text(json.dumps(task))
+   task={"id":"08-12-context","name":"context","title":"Context","description":"Context fixture","status":"in_progress","priority":"P2","createdAt":"2026-01-01","notes":"","lifecycle_generation":0,"source":{"kind":"no_issue"},"children":[],"relatedFiles":[],"meta":{},**{k:None for k in ("dev_type","scope","package","completedAt","base_branch","worktree_path","commit","pr_url","parent")}};(td/"task.json").write_text(json.dumps(task))
    store=BranchBindingStore(inspect_repository(repo));key=TaskLifecycleKey(task["id"],0)
    ref=".trellis/tasks/08-12-context"
    with self.assertRaises(CommandError) as missing:active_task(repo,ref)
@@ -177,7 +177,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    (repo/"tracked.txt").write_text("one\n");subprocess.run(["git","add","tracked.txt"],cwd=repo,check=True);subprocess.run(["git","commit","-q","-m","initial"],cwd=repo,check=True)
    subprocess.run(["git","remote","add","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
    head=subprocess.run(["git","rev-parse","HEAD"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout.strip();subprocess.run(["git","update-ref","refs/remotes/origin/main",head],cwd=repo,check=True)
-   public={"profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#295"],"pr_refs":[],"branches":[],"paths":[],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":[],"queries":[]},"continuation_id":"observer"}
+   public={"clarify_profile": "standard_intake", "profile":"pre_task","source_exit":"synced","mode":"workflow","change_input":{"issue_refs":["#295"],"pr_refs":[],"branches":[],"paths":[],"commands":[],"config_keys":[],"schema_fields":[],"symbols":[],"terms":[],"queries":[]},"continuation_id":"observer"}
    transition={"schema_version":"1.0","transition_id":"base_current:test","stage":"base_current","mode":"workflow","repo_locator":str(repo),"base":{"source":"explicit","selected_base":"main","remote":"origin","ordered_candidates":["main"],"decision_head":head,"local_base_head":head,"remote_base_head":head,"post_sync_resolution_sha256":"a"*64}}
    before=subprocess.run(["git","status","--porcelain=v1"],cwd=repo,text=True,stdout=subprocess.PIPE,check=True).stdout
    current=observe_base_current(PACKAGE,public,transition);self.assertEqual(current["classification"],"current");self.assertEqual(current["observation"]["repo"],"example/guru-extension")

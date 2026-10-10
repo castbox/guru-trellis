@@ -456,7 +456,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
     def test_real_clarification_invoke_omission_can_be_rerecorded(self):
         skill = INTAKE_SKILLS[2]
         package = SKILLS / "packages" / skill
-        public = json.loads((package / "examples/public-initial-change-request-input-2.0.json").read_text())
+        public = json.loads((package / "examples/public-standard-intake-input.json").read_text())
         public["source_exit"] = "context_ready"
         snapshot = public["duplicate_snapshot"]
         authoring = json.loads((package / "examples/requirements-clarification.json").read_text())
@@ -488,7 +488,7 @@ print(json.dumps({"status": case["status"], "terminal_schema": observed[0]}))
             shutil.copy2(package / "interface.json", projected / "interface.json")
             dispatcher = IntakeCommands(repository, {"PYTHONDONTWRITEBYTECODE": "1"}, repository / "receipts.json")
             dispatcher.owner_index = 2
-            dispatcher.outputs[INTAKE_SKILLS[1]] = {"exit_id": "context_ready", "transition": transition,
+            dispatcher.outputs[INTAKE_SKILLS[1]] = {"exit_id": "context_ready", "handoff_profile": "standard_intake", "transition": transition,
                 "handoff_continuation_id": public["continuation_id"], "duplicate_snapshot": snapshot}
             actual_run = subprocess.run
 

@@ -125,3 +125,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-037`（#468 reviewed）：Planning 审规划，workflow 展示/对话承接和全局 route，原 execution owner 审/执行 resume、单写 completed result 并拥有 recovery/retirement；Check 只消费正式 current producer 并调用原 owner retirement。Clarification/Delivery/Completion/Closure/Finish/Reactivate 原职责和 #464 dependency-scoped invalidation 保持。Architecture/RDT 各自原 owner 串行 expected `.80→.81` promotion；不增加授权存储或审批链。
 
 `ARCH-DOM-038`（#453 reviewed）：原 Skill 单写 semantic 判断、内部 owner/checkpoint 与 public exit，共享 dispatcher 单写声明驱动的 CLI transport；具名 caller 校验后投影 result，workflow 只消费真实 public invoke DTO。Architecture/RDT 原 promotion owner 按 expected `.81→.82` 串行更新共享 authority；无新增授权状态、reviewer ledger 或业务 writer。
+
+`ARCH-DOM-039`（#250 reviewed）：Clarify 唯一拥有 Intake 意图、requirement authority、selected source roles、Issue intent 与真实选择；Discovery 只拥有 context evidence/coverage，Wording/readiness 保留独立判断并薄 relay，Planning 单写最终设计处置。Create Issue/Create Task、scope-change、两 qualifiers、#468 execution recovery 与终态 owners 保持；Intake intent 不授予 Closure authority。Architecture/RDT 各由原 owner 串行 expected-current promotion，无第二来源模型、shared cache 或授权存储。

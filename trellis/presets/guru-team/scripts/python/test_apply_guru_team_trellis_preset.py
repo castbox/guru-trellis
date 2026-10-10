@@ -502,7 +502,7 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "owner mode"):
             self.verifier.assert_owner_binding(
                 "guru-clarify-requirements",
-                {"profile": "initial_change_request", "mode": "workflow"},
+                {"profile": "standard_intake", "mode": "workflow"},
                 {**self.clarity_owner(), "mode": "standalone"},
             )
 
@@ -513,7 +513,7 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
             self.verifier.assert_owner_binding(
                 "guru-clarify-requirements",
                 {
-                    "profile": "initial_change_request",
+                    "profile": "standard_intake",
                     "mode": "workflow",
                     "target_locator": "https://github.com/example/guru-extension/issues/145",
                 },
@@ -525,7 +525,7 @@ class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
             self.verifier.assert_owner_binding(
                 "guru-clarify-requirements",
                 {
-                    "profile": "initial_change_request",
+                    "profile": "standard_intake",
                     "mode": "workflow",
                     "target_locator": "https://github.com/example/guru-extension/issues/146",
                 },
@@ -2312,7 +2312,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             solution_mechanism_input_ids,
         )
         self.assertIn(
-            "guru-stage0-clarify-requirements-input-initial-change-request-2.0",
+            "guru-stage0-clarify-requirements-input-standard-intake-1.0",
             public_input_schema_ids,
         )
         self.assertNotIn(
@@ -2365,7 +2365,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             solution_mechanism_output_ids,
         )
         self.assertIn(
-            "guru-stage0-discover-change-context-output-context-ready-3.0",
+            "guru-stage0-discover-change-context-output-context-ready-4.0",
             typed_output_schema_ids,
         )
         self.assertNotIn(
@@ -2382,7 +2382,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             artifact["path"]: artifact["id"] for artifact in discovery_interface["artifacts"]
         }
         self.assertEqual(
-            artifact_by_path["examples/public-context-ready-output-3.0.json"],
+            artifact_by_path["examples/public-context-ready-output-4.0.json"],
             "public_output_context_ready_example_3_0",
         )
         self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
@@ -2535,7 +2535,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
-            "guru-requirements-clarification-2.0",
+            "guru-requirements-clarification-3.0",
             public_api["skill_contracts"]["artifact_schema_ids"],
         )
         self.assertIn(
@@ -2609,6 +2609,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-team-skill-interface-1.5",
                 "guru-team-skill-interface-1.6",
                 "guru-team-skill-interface-1.7",
+                "guru-team-skill-interface-1.8",
             ],
         )
         self.assertIn("check-skill-packages", public_api["companion_scripts"])

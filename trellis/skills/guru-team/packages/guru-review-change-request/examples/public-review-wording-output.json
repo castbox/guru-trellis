@@ -35,6 +35,8 @@
     "target_disposition": {
       "disposition_sha256": "3636363636363636363636363636363636363636363636363636363636363636",
       "duplicate_facts_sha256": "3838383838383838383838383838383838383838383838383838383838383838"
-    }
+    },
+    "clarify_profile": "standard_intake",
+    "source_selection": []
   }
 }

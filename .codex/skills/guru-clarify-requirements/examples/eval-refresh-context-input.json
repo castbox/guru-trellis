@@ -3,5 +3,6 @@
   "source_exit": "start",
   "mode": "standalone",
   "target_locator": "#145",
-  "continuation_id": "stage0-current"
+  "continuation_id": "stage0-current",
+  "resume_target": "guru-standalone-caller"
 }

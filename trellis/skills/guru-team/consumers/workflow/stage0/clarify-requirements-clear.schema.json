@@ -1,14 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-clarify-requirements-workflow-clear-input-1.0",
+  "$id": "guru-stage0-clarify-requirements-workflow-clear-input-2.0",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "exit_id",
-    "resume_target",
-    "target_disposition",
-    "continuation_id"
-  ],
+  "required": ["exit_id", "resume_target", "target_disposition", "continuation_id", "profile", "source_selection"],
   "properties": {
     "exit_id": {
       "const": "clear"
@@ -28,6 +23,8 @@
     "continuation_id": {
       "type": "string",
       "minLength": 1
-    }
+    },
+    "profile": {"enum": ["standard_intake", "reviewed_plan_intake", "active_task_scope_change", "standalone_review", "normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"]},
+    "source_selection": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["locator", "section", "authority_kind"], "properties": {"locator": {"type": "string", "minLength": 1}, "section": {"type": "string", "minLength": 1}, "authority_kind": {"enum": ["requirement", "design_constraint", "advisory"]}}}}
   }
 }

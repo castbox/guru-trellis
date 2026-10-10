@@ -747,10 +747,10 @@ class SharedRuntimeTests(unittest.TestCase):
                 installed_root
                 / "skills/packages"
                 / skill_id
-                / "examples/public-context-ready-output-3.0.json"
+                / "examples/public-context-ready-output-4.0.json"
             ).read_text())
             owner["mode"] = "workflow"
-            public_input = {
+            public_input = {"clarify_profile": "standard_intake",
                 "profile": "pre_task",
                 "source_exit": "synced",
                 "mode": "workflow",

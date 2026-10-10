@@ -1,0 +1,6 @@
+{"file":".trellis/spec/workflow/workflow-contract.md","reason":"全局 owner/phase/transition 编排边界"}
+{"file":".trellis/spec/workflow/skill-package-contract.md","reason":"公共 I/O、schema migration 与 private state 边界"}
+{"file":".trellis/spec/workflow/subtraction-first-compatibility.md","reason":"直接演进、consumer migration 与旧路径退出"}
+{"file":".trellis/spec/preset/installer.md","reason":"canonical/installed/平台投影与 reapply ownership"}
+{"file":".trellis/spec/workflow/semantic-retrieval.md","reason":"repo-answerable 与 authority/duplicate evidence 检索"}
+{"file":"docs/architecture/README.md","reason":"fresh Architecture authority 入口"}

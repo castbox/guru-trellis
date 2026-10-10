@@ -46,7 +46,12 @@ def _worktree_branches(repo):
    key,value=line.split(" ",1);current[key]=value
  return rows
 def validate_public_input(package_root,value):
- validate_json(value,package_root/"schemas/public-pre-task-input-2.0.schema.json","public_input")
+ profile=value.get("profile")
+ schemas={"pre_task":"public-pre-task-input-3.0.schema.json","context_request":"public-context-request-input.schema.json"}
+ if profile not in schemas:raise CommandError("schema_mismatch","public_input.profile","Use current pre_task or context_request input.")
+ validate_json(value,package_root/"schemas"/schemas[profile],"public_input")
+ if profile=="context_request" and value["return_identity"]["continuation_id"]!=value["continuation_id"]:
+  raise CommandError("stale_identity","public_input.continuation_id","Preserve the original clarification continuation.",3)
  return value
 def validate_transition(package_root,value):
  path=package_root.parents[1]/"consumers/workflow/stage0/transitions/base-current.schema.json"
@@ -82,7 +87,15 @@ def observe_base_current(package_root,public_input,transition,expected_repo=None
   return {"classification":"refresh_base","reason":"base_head_advanced","repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote}
  observation={"repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote,"authority_branch":branch,**refs,"clean":True,"current":True}
  return {"classification":"current","reason":"base_current","repo":locator,"observation":observation}
+def validate_return_task(repo,public_input):
+ returning=public_input.get("return_identity",{})
+ if returning.get("profile")=="active_task_scope_change":
+  try:task=resolve_active_task_checkout(repo,returning["task_locator"]).artifact
+  except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
+  if (task.task_id,task.lifecycle_generation)!=(returning["task_id"],returning["lifecycle_generation"]):
+   raise CommandError("stale_identity","return_identity.task_id","Rebuild the current active-task context request.",3)
 def bind_owner_to_public(package_root,repo,public_input,transition,owner_result):
+ validate_return_task(repo,public_input)
  repository=owner_result.get("repository") if isinstance(owner_result.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
  if observation["classification"]!="current":raise CommandError("stale_identity","base_current",observation["reason"],3)
@@ -92,6 +105,7 @@ def bind_owner_to_public(package_root,repo,public_input,transition,owner_result)
   raise CommandError("schema_mismatch","repository","Match the live base authority.")
  value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(repo,value["change_input"],value.get("history_preview",{}).get("limit",20));value["result_identity"]=identity(value);validate(package_root,value);return value
 def check_owner_binding(package_root,repo,public_input,transition,value):
+ validate_return_task(repo,public_input)
  repository=value.get("repository") if isinstance(value.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
  if observation["classification"]!="current":return observation

@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.8.schema.json",
+  "schema_version": "1.8",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
   "description": "Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
@@ -350,13 +350,12 @@
             "mode",
             "continuation_id"
           ],
-          "authoring_fields": [
-            "change_input"
-          ],
+          "authoring_fields": ["change_input", "clarify_profile"],
           "authoring_example": {
             "id": "pre_task_input",
-            "path": "examples/public-pre-task-input-2.0.json"
-          }
+            "path": "examples/public-pre-task-input-3.0.json"
+          },
+          "alternate_authoring": [{"id": "reviewed_plan", "authoring_fields": ["change_input", "clarify_profile", "source_locators"], "authoring_example": {"id": "pre_task_reviewed_input", "path": "examples/public-pre-task-reviewed-input.json"}}]
         },
         "transition": {
           "source_field": "transition",

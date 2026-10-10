@@ -1,20 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-2.0.json",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-3.0.json",
   "title": "Guru Team requirements clarification result",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schema_version", "skill_id", "generated_at", "mode", "typed_exit",
-    "invocation_context", "review_target", "target_disposition", "context_evidence",
-    "confirmed_facts", "repository_answerable_questions",
-    "clarification_rounds", "open_questions", "scope_proposals",
-    "source_actions", "mutation_results",
-    "active_task_evidence", "ai_review_gate", "affected_contracts",
-    "content_identity", "reason", "consumer", "error"
-  ],
+  "required": ["schema_version", "skill_id", "generated_at", "mode", "typed_exit", "invocation_context", "review_target", "target_disposition", "context_evidence", "confirmed_facts", "repository_answerable_questions", "clarification_rounds", "open_questions", "scope_proposals", "source_actions", "mutation_results", "active_task_evidence", "ai_review_gate", "affected_contracts", "content_identity", "reason", "consumer", "error", "source_selection"],
   "properties": {
-    "schema_version": {"const": "2.0"},
+    "schema_version": {"const": "3.0"},
     "skill_id": {"const": "guru-clarify-requirements"},
     "generated_at": {"type": "string", "format": "date-time"},
     "mode": {"enum": ["workflow", "standalone"]},
@@ -36,7 +28,8 @@
     "content_identity": {"$ref": "#/$defs/contentIdentity"},
     "reason": {"$ref": "#/$defs/nonEmpty"},
     "consumer": {"$ref": "#/$defs/consumer"},
-    "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
+    "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]},
+    "source_selection": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["locator", "section", "authority_kind"], "properties": {"locator": {"type": "string", "minLength": 1}, "section": {"type": "string", "minLength": 1}, "authority_kind": {"enum": ["requirement", "design_constraint", "advisory"]}}}}
   },
   "allOf": [
     {
@@ -163,17 +156,11 @@
       "type": "object", "additionalProperties": false,
       "required": ["kind", "caller", "task_locator", "resume_target"],
       "properties": {
-        "kind": {"enum": ["initial_issue", "proposed_draft", "active_task_scope_change", "standalone_review"]},
+        "kind": {"enum": ["initial_issue", "proposed_draft", "active_task_scope_change", "standalone_review", "normal_scenario_scope_confirmation", "solution_mechanism_scope_confirmation"]},
         "caller": {"$ref": "#/$defs/nonEmpty"},
         "task_locator": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/portablePath"}]},
         "resume_target": {
-          "enum": [
-            "guru-review-contract-wording", "guru-standalone-caller",
-            "guru-active-task-planning-review", "guru-resume-requirement-exploration",
-            "guru-resume-implementation", "guru-resume-phase2-check",
-            "guru-resume-spec-evaluation", "guru-resume-task-commit",
-            "guru-resume-branch-review"
-          ]
+          "enum": ["guru-review-contract-wording", "guru-standalone-caller", "guru-active-task-planning-review", "guru-resume-requirement-exploration", "guru-resume-implementation", "guru-resume-phase2-check", "guru-resume-spec-evaluation", "guru-resume-task-commit", "guru-resume-branch-review", "guru-execute-task-free-change", "guru-clarify-requirements", "guru-review-change-request", "guru-approve-task-plan", "guru-reconcile-task-base", "guru-check-task", "guru-review-branch", "guru-review-task-delivery"]
         }
       }
     },

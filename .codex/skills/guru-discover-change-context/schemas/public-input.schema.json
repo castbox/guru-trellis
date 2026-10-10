@@ -1,9 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-stage0-discover-change-context-input-aggregate-2.0",
-  "oneOf": [
-    {
-      "$ref": "public-pre-task-input-2.0.schema.json"
-    }
-  ]
+  "$id": "guru-stage0-discover-change-context-input-aggregate-3.0",
+  "oneOf": [{"$ref": "public-pre-task-input-3.0.schema.json"}, {"$ref": "public-context-request-input.schema.json"}]
 }
