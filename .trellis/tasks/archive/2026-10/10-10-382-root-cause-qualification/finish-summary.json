@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-10T04:26:59Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-10-382-root-cause-qualification",
+    "title": "#382 根因、反事实与症状抑制资格审查",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-10-382-root-cause-qualification",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/382-root-cause-qualification",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#382 根因、反事实与症状抑制资格审查",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification",
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/design.md",
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/implement.md",
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/prd.md",
+          ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#382"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/382-root-cause-qualification"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification",
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/design.md",
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/implement.md",
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/prd.md",
+        ".trellis/tasks/archive/2026-10/10-10-382-root-cause-qualification/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#382 根因、反事实与症状抑制资格审查；#382；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
