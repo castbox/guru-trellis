@@ -87,3 +87,7 @@ Validation follows `quality-guidelines.md` Validation Scope Ownership. Ordinary
 feature work runs targeted package/runtime, canonical/installed/platform,
 reapply/drift, and any Issue-required single representative clean throwaway;
 it does not claim the cumulative multi-platform installer or Release Gate.
+
+## Root-Cause Candidate Usage
+
+RDT candidate mechanisms consume `guru-qualify-root-cause` after normal/solution qualification when new or materially changed. Later stages reread authority and consume applicable conclusions while reviewing their current evidence. Root qualification owns candidate admission; the common causal-completion authority belongs to #383 and is not duplicated here.

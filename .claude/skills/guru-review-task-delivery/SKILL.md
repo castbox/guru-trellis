@@ -39,3 +39,21 @@ Do not read another Skill's private checkpoint. Do not use a prior Delivery,
 Completion, Finish, PR body, current branch name, or historical output as this
 round's semantic authority. Emit exactly one declared typed exit. Missing,
 stale, ambiguous, multiple, unmapped, or checker-failed evidence fails closed.
+
+
+At this candidate boundary, consume actual normal-scenario and solution-mechanism
+outcomes before loading `guru-qualify-root-cause` with `publication_candidate_set`. Supply only eligible
+refs. New or materially changed incident/protection mechanisms enter that owner;
+ordinary features receive its stable applicability disposition. Consume a
+still-applicable same-mechanism conclusion on later stages and independently
+review this stage's current work/evidence; caller change alone does not repeat
+qualification. Root `classified` continues this stage, retaining diagnosis or
+mitigation disposition without claiming repair. `mechanism_revision_required`
+removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
+the unsupported repair and continues bounded investigation of the returned
+gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
+symptom suppression into unrelated scope confirmation, cache qualifications,
+or use qualification as completion. Actual scope changes use existing routes.
+New/materially changed Delivery candidates first load normal and solution
+owners with `publication_candidate_set`; stage disposition uses this owner's
+existing planning/implementation/scope/blocked exits, never an invented exit.

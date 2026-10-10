@@ -99,6 +99,13 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"scope_confirmation_required","consumer":{"kind":"skill","id":"guru-clarify-requirements"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-solution-mechanism-mechanism-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-qualify-solution-mechanism","exit":"blocked","consumer":{"kind":"stop","id":"solution-mechanism-qualification-blocked"}} -->
+### Cross-phase root-cause qualification owner
+<!-- guru-skill-invoke: {"skill":"guru-qualify-root-cause","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-root-cause","exit":"classified","consumer":{"kind":"workflow","id":"guru-root-cause-classified-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-root-cause","exit":"mechanism_revision_required","consumer":{"kind":"workflow","id":"guru-root-cause-mechanism-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-root-cause","exit":"diagnosis_required","consumer":{"kind":"workflow","id":"guru-root-cause-diagnosis-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-qualify-root-cause","exit":"blocked","consumer":{"kind":"stop","id":"root-cause-qualification-blocked"}} -->
+
 ### Phase 0 owners
 <!-- guru-skill-invoke: {"skill":"guru-select-workflow-mode","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-select-workflow-mode","exit":"standard_intake","consumer":{"kind":"workflow","id":"guru-workflow-standard-intake-router"}} -->
@@ -281,6 +288,9 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-workflow-target: {"id":"guru-normal-scenario-mechanism-router"} -->
 <!-- guru-workflow-target: {"id":"guru-solution-mechanism-classified-router"} -->
 <!-- guru-workflow-target: {"id":"guru-solution-mechanism-mechanism-router"} -->
+<!-- guru-workflow-target: {"id":"guru-root-cause-classified-router"} -->
+<!-- guru-workflow-target: {"id":"guru-root-cause-mechanism-router"} -->
+<!-- guru-workflow-target: {"id":"guru-root-cause-diagnosis-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-completed"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-resume-active-task-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-free-scope-change-router"} -->
@@ -331,6 +341,7 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"solution-mechanism-qualification-blocked"} -->
+<!-- guru-stop-target: {"id":"root-cause-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"task-free-change-blocked"} -->
 <!-- guru-stop-target: {"id":"base-sync-blocked"} -->
 <!-- guru-stop-target: {"id":"change-context-blocked"} -->
@@ -493,7 +504,7 @@ or post-Completion Closure/Finish judgments from their owning packages.
 
 ### Mandatory qualification profiles
 
-The workflow invokes both stable qualification owners at these exact candidate
+The workflow invokes the normal and solution qualification owners at these exact candidate
 boundaries. `guru-qualify-normal-scenario` qualifies the problem scenario and
 `guru-qualify-solution-mechanism` qualifies the proposed mechanism; neither
 owner replaces the other. Each caller supplies only its profile-specific
@@ -532,6 +543,33 @@ results stop at `solution-mechanism-qualification-blocked`.
 For `implementation_discovery`, the semantic owner remains
 `guru-phase2-implementation-coordinator`; its deterministic clarification resume
 target is the existing `guru-resume-implementation` workflow API.
+
+
+### Root-cause qualification routing
+
+For each profile in the table, after the caller consumes actual normal and
+solution qualification outcomes, explicitly load `guru-qualify-root-cause`
+for new or materially changed eligible mechanisms. Consume still-applicable
+same-mechanism conclusions at later stages; stage/caller change alone does not
+repeat qualification. Step-local applicability and causal judgment belong to
+the new package. Each stage still independently reviews current work/evidence.
+
+The three root-cause workflow routers consume their own closed schemas with
+direct projections. All select the existing owner in the table by `profile`;
+`implementation_discovery` resumes through `guru-resume-implementation` with
+`guru-phase2-implementation-coordinator` retaining semantic ownership.
+`classified` hands candidate dispositions to the stage; `mechanism_revision_required`
+returns candidate refs/reasons for remove/replace and complete-set reentry;
+`diagnosis_required` returns paused repair refs/gaps for bounded investigation
+and resubmission through that owner. Delivery uses its current
+`planning_revision_required|implementation_required|scope_confirmation_required|blocked`
+according to its own review. These routers do not decide completion, production
+permission, scope expansion or publication. Unknown/multiple/unmapped results
+stop at `root-cause-qualification-blocked`, which consumes the concrete reason.
+
+Qualification is candidate admission only. #383 owns the common causal
+completion SSOT and stage completion judgments; its absent file does not
+block this candidate contract or cause a substitute completion owner.
 
 ## Phase Index
 
@@ -833,7 +871,8 @@ If implementation discovery produces any candidate not already closed by the
 approved planning, invoke
 `guru-qualify-normal-scenario:implementation_discovery` before adding an edit,
 test, finding, or route for that candidate. Rejected candidates are dropped;
-then invoke `guru-qualify-solution-mechanism:implementation_discovery` before
+then invoke `guru-qualify-solution-mechanism:implementation_discovery` and
+`guru-qualify-root-cause:implementation_discovery` for new eligible mechanisms before
 accepting a proposed implementation mechanism. Mechanism revision returns
 here for remove/replace and a fresh invocation;
 blocked stops. The coordinator consumes the result in-process and writes no

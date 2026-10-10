@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "skill_id": "guru-qualify-root-cause",
+  "public_input": {
+    "profile": "implementation_discovery",
+    "mode": "workflow",
+    "caller": "guru-phase2-implementation-coordinator",
+    "target_locator": ".trellis/tasks/08-15-237-root-cause-qualification",
+    "target": {
+      "repo_locator": ".",
+      "task_ref": "08-15-237-root-cause-qualification",
+      "planning_identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "checkout_head": "60a2e962b68a02d08061795cfe9fafcdff206e80",
+      "diff_locator": "origin/main...HEAD"
+    },
+    "candidate_refs": [
+      "candidate-root-cause"
+    ],
+    "candidate_locators": [
+      {
+        "candidate_ref": "candidate-root-cause",
+        "locators": [
+          "path:AGENTS.md"
+        ]
+      }
+    ]
+  },
+  "candidate_results": [
+    {
+      "candidate_ref": "candidate-root-cause",
+      "goal": "ordinary_feature",
+      "classification": "not_incident_applicable",
+      "reason": "The requested display feature introduces no incident or protection mechanism.",
+      "evidence": {
+        "applicability_basis": "Current scope is a display feature; no failure-control behavior is introduced."
+      }
+    }
+  ],
+  "ai_review_gate": {
+    "status": "passed",
+    "reviewed_candidate_refs": [
+      "candidate-root-cause"
+    ],
+    "summary": "Reviewed current scope and candidate behavior; this is an ordinary feature."
+  },
+  "typed_exit": "classified",
+  "consumer": {
+    "kind": "workflow",
+    "id": "guru-root-cause-classified-router"
+  }
+}

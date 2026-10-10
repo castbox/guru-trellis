@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.77`
+- version：`current-main-0.6.17-guru.79`
 - status：`active`
-- source binding：reviewed #466 constitution/consumption contribution + immutable `.76` inheritance + ARCH-CUR-050/EVD-053；35 active Skills/159 exits/106 commands，零 planned，migration standalone-only，business33/153。当前正式 Fork `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / CLI/core `0.7.0-castbox.3` / CI `37735554354`，Guru `0.7.0-guru.3` 为未发布目标；Architecture ARCH-CUR-049/ARCH-DOM-034/ARCH-INT-037/ADR-018/closed ARCH-GAP-012/EVD-052。EVD-052仅证明 #503 source/代表性 clean-installed 候选，不是 #500 最终 Release gate。全部正常 `v0.6.x-guru.*` 和 `v0.7.0-guru.*` 来源按实际差异分组；历史 #495 唯一结果见 `docs/requirements-design-test-contributions/495-upgrade-version-families/test.md`。历史 `.75` Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CI `37647767799` 与 EVD-051只绑定精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源验收；EVD-050/.74 与 EVD-049/.73 保留为历史，首次失败与恢复不改写，不声明业务原始在途。晋升diff须freshPhase2/commit/独立完整BranchReview，后继文档HEAD不冒充同源重跑，merge/Completion/Closure/Finish/Release/真实业务安装/完整矩阵仍由各owner判断。knowledge identity 不是软件发布状态，#500 的最终候选须在准备与终态归档合并后从 fresh origin/main 独立验证。
+- source binding：reviewed #382 committed contribution + immutable .78 inheritance + ARCH-CUR-052 / ARCH-DOM-035 / ARCH-INT-038 / ADR-020 / EVD-055；registry36/163/109、business34/157；actual results owned only by docs/requirements-design-test-contributions/382-root-cause-qualification/test.md。software axes/GAP lifecycle unchanged；promotion-created diff requires fresh gates；business continuation/production/remote candidate/full Release matrix unverified。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
@@ -23,3 +23,7 @@ FOUNDATION 是横向约束；CURRENT 必须有 code/config/test/release evidence
 ## Freshness
 
 每次 gate 重读 live baseline locator/version/status、design constitution、project change contract/check descriptor、RDT public identity、task delta 和 source binding。任一 locator 缺失、CURRENT/TARGET 串位、版本冲突或 projection stale 时 fail closed，并进入 `repair`；不得靠本页摘要继续。
+
+## Root-Cause Candidate Usage
+
+Architecture retains independent responsibility and necessity judgment. New or materially changed incident mechanisms consume guru-qualify-root-cause after actual normal/solution outcomes; qualification does not promote Architecture or prove completion.

@@ -2094,3 +2094,7 @@ These package contracts are selected by the #434 canonical candidate's atomic
 workflow, registry, manifest and installed/platform projection; the old
 predecessor edges are retired there. Package tests alone do not prove remote
 publication or the full Release matrix.
+
+## Root-Cause Call-Local Transport
+
+Root qualification commands consume stdin and emit stdout only. Goal-specific semantic-result branches are call-local checker evidence, separate from public outputs. Git/planning/locator facts are checked by the shared deterministic qualification facts module. Local digests have no cross-stage authority. Public output schemas and root router/stop input schemas are independently owned and directly projected.

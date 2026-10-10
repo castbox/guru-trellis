@@ -1,0 +1,11 @@
+{
+  "exit_id": "classified",
+  "profile": "implementation_discovery",
+  "continuation_id": "root-cause:aaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_dispositions": [
+    {
+      "candidate_ref": "candidate-root-cause",
+      "classification": "not_incident_applicable"
+    }
+  ]
+}

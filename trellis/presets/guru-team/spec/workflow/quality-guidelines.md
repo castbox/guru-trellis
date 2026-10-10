@@ -1481,3 +1481,7 @@ run or claim the full multi-platform installer, upgrade, workflow-switch,
 marketplace, release-candidate, registry closure, active graph, installed
 projection, or platform projection gates. Those remain with their declared
 later owners; absence of those runs is not a C2 defect.
+
+## Root-Cause Validation Scope
+
+Root qualification validates diagnosis/mitigation/fix/protection separately, using paired factual cases, counterfactual/sample observations, actual native semantic execution, wrapper routes, normal stale/reentry, zero qualification residue and installed/platform/update/reapply checks. Native context receives facts and contracts without expected classifications. Stage reuse and material-change reentry are AI behavior checks, not digest caches. Full release installer matrices remain with their dedicated owner.

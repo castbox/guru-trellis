@@ -61,3 +61,18 @@ For the conflict-resolved path, run the resolved executor and then
 complete existing `guru-review-branch:branch_review` input directly; it is not
 an additional Reconcile typed exit and never enters Task Commit or bounded
 base continuity.
+
+
+At this candidate boundary, consume actual normal-scenario and solution-mechanism
+outcomes before loading `guru-qualify-root-cause` with `base_impact_candidate_set`. Supply only eligible
+refs. New or materially changed incident/protection mechanisms enter that owner;
+ordinary features receive its stable applicability disposition. Consume a
+still-applicable same-mechanism conclusion on later stages and independently
+review this stage's current work/evidence; caller change alone does not repeat
+qualification. Root `classified` continues this stage, retaining diagnosis or
+mitigation disposition without claiming repair. `mechanism_revision_required`
+removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
+the unsupported repair and continues bounded investigation of the returned
+gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
+symptom suppression into unrelated scope confirmation, cache qualifications,
+or use qualification as completion. Actual scope changes use existing routes.
