@@ -249,7 +249,7 @@ printf '%s\\n' post-commit >> "{hook_log}"
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())
   catalog=json.loads((PACKAGE/"errors/catalog.json").read_text())
-  command_schema=json.loads((SKILLS/"schemas/skill-commands.schema.json").read_text())
+  command_schema=json.loads((SKILLS/"schemas/skill-commands-1.1.schema.json").read_text())
   error_schema=json.loads((SKILLS/"schemas/skill-error-catalog.schema.json").read_text())
   self.assertEqual([],list(Draft202012Validator(command_schema).iter_errors(commands)))
   self.assertEqual([],list(Draft202012Validator(error_schema).iter_errors(catalog)))

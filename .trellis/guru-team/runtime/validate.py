@@ -206,7 +206,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
     skills, registry_path, packages, kernel = _package_paths(root, mode)
     registry = read_json_file(registry_path, "registry")
     active = _active_rows(registry)
-    command_schema = skills / "schemas/skill-commands.schema.json"
+    command_schema = skills / "schemas/skill-commands-1.1.schema.json"
     error_schema = skills / "schemas/skill-error-catalog.schema.json"
     commands_seen: dict[str, str] = {}
     complete = 0
@@ -245,6 +245,14 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
             .get("invocation", {})
             .get("wrapper", "")
         )
+        public_source = (package / public_wrapper).read_text(encoding="utf-8")
+        public_commands = {
+            validator["runtime_command"] for validator in interface["validators"]
+            if validator["command"] == public_wrapper
+            and re.search(r'(?:source|exec)\s+"[^"]+"\s+' + re.escape(validator["runtime_command"]) + r'(?:\s|$)', public_source)
+        }
+        if len(public_commands) != 1:
+            raise CommandError("owner_mismatch", f"{package_id}.public_invocation", "Bind the public wrapper to exactly one declared runtime command.")
         actual = {item["validator_id"] for item in metadata["commands"]}
         if set(declared) != actual:
             raise CommandError("owner_mismatch", f"{package_id}.commands", "Cover every interface validator runtime_command exactly once.")
@@ -259,6 +267,9 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
             commands_seen[command_id] = package_id
             wrapper = package / declared[command["validator_id"]]
             entrypoint = package / command["entrypoint"]
+            expected_stdout = "single_typed_exit" if command_id in public_commands else "intermediate_receipt"
+            if command["stdout"] != expected_stdout:
+                raise CommandError("schema_mismatch", f"{package_id}.{command_id}.stdout", "Classify stdout by the declared public invocation wrapper; other commands return intermediate receipts.")
             if command["owner"] != package_id or not wrapper.is_file() or not entrypoint.is_file() or wrapper.is_symlink() or entrypoint.is_symlink():
                 raise CommandError("owner_mismatch", f"{package_id}.{command_id}", "Restore the declared owner, wrapper and entrypoint.")
             expected_role = "preview" if command_id.startswith("preview-") else "sync" if command_id == "sync-base" else Path(command["entrypoint"]).stem

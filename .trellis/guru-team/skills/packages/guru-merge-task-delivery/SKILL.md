@@ -52,3 +52,6 @@ stale task, head, base, PR body, checks, policy, message, gate, or terminal
 identity. Never use squash or rebase fallback, parse PR body as Delivery
 history, mutate an Issue, complete or archive a task, run Finish, or clean a
 branch/worktree/runtime owned by another step.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

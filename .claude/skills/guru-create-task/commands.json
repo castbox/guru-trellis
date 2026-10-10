@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-create-task",
   "commands": [
     {
@@ -25,7 +25,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "invalid_json",
@@ -63,7 +63,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "invalid_json",
@@ -102,7 +102,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "invalid_json",
@@ -140,7 +140,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "invalid_json",
@@ -179,7 +179,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
         "invalid_json",

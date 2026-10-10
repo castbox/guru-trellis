@@ -14,6 +14,7 @@ import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
+from runtime.io import project_intermediate_receipt
 import sys
 from unittest import mock
 
@@ -488,6 +489,7 @@ class SharedRuntimeTests(unittest.TestCase):
             installed_root = repo / ".trellis/guru-team"
             copy_active_runtime(repo)
             shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
             package = SKILLS / "packages/guru-select-workflow-mode"
             shutil.copytree(package, installed_root / "skills/packages/guru-select-workflow-mode")
             projected = repo / ".agents/skills/guru-select-workflow-mode"
@@ -578,7 +580,7 @@ class SharedRuntimeTests(unittest.TestCase):
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
         manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
-        self.assertEqual(len(active), 35)
+        self.assertEqual(len(active), 36)
         self.assertEqual({row["id"] for row in active}, set(manifest["public_api"]["skill_contracts"]["active_skill_ids"]))
         for row in active:
             with self.subTest(skill=row["id"]):
@@ -654,6 +656,7 @@ class SharedRuntimeTests(unittest.TestCase):
             installed_root = repo / ".trellis/guru-team"
             copy_active_runtime(repo)
             shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
             shutil.copytree(
                 SKILLS / "packages" / skill_id,
                 installed_root / "skills/packages" / skill_id,
@@ -691,6 +694,7 @@ class SharedRuntimeTests(unittest.TestCase):
             installed_root = repo / ".trellis/guru-team"
             copy_active_runtime(repo)
             shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
             shutil.copytree(
                 SKILLS / "packages" / skill_id,
                 installed_root / "skills/packages" / skill_id,
@@ -786,7 +790,7 @@ class SharedRuntimeTests(unittest.TestCase):
                 "public_input": public_input,
                 "transition": transition,
                 "owner_context": {},
-                "owner_result": json.loads(recorded.stdout),
+                "owner_result": project_intermediate_receipt(json.loads(recorded.stdout), SKILLS / "schemas"),
             }))
             result = subprocess.run(
                 [
@@ -816,7 +820,7 @@ class SharedRuntimeTests(unittest.TestCase):
 
     def test_command_and_error_contracts_for_pilots(self) -> None:
         from jsonschema import Draft202012Validator
-        command_schema = json.loads((SKILLS / "schemas/skill-commands.schema.json").read_text())
+        command_schema = json.loads((SKILLS / "schemas/skill-commands-1.1.schema.json").read_text())
         error_schema = json.loads((SKILLS / "schemas/skill-error-catalog.schema.json").read_text())
         for package_id in ("guru-sync-base", "guru-clarify-requirements"):
             package = SKILLS / "packages" / package_id
@@ -2626,6 +2630,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             child_code = """
 import importlib.util,json,os,subprocess,sys
 from pathlib import Path
+from runtime.io import project_intermediate_receipt
 adapter_path,codex,root_value=sys.argv[1:]
 root=Path(root_value)
 spec=importlib.util.spec_from_file_location("managed_venv_native_adapter",adapter_path)

@@ -18,3 +18,6 @@ Follow the exact semantic profile: forward behavior, AI Review Gate,
 conditional current-dialogue confirmation, executor/validator, one typed exit.
 Unknown versions, stale decisions, missing provenance and unmapped exits stop.
 Scripts do not decide scope, semantic sufficiency, task disposition or approval.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

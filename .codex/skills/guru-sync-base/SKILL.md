@@ -39,3 +39,6 @@ resolve, execute, and check sequence, then emits one `synced`, `skipped`, or
 `blocked` minimal DTO. Do not invoke the low-level components first, read/import
 the shared Python runtime, or pass the private base-sync result as the next
 Skill input.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

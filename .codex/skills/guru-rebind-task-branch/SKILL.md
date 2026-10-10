@@ -15,3 +15,6 @@ Use `scripts/record-plan.sh` to capture the exact pre-state and
 `scripts/invoke.sh --root <repository> --input -` to execute or recover.
 After lost output, recover from the same plan without executing again. Never
 persist checkout paths in task identity, branch binding or session state.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

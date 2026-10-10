@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest import mock
 
 import jsonschema
+from runtime.io import project_intermediate_receipt
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -68,8 +69,9 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             else REPO / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
         )
         with tempfile.TemporaryDirectory() as temp:
-            package = Path(temp) / "guru-verify-extension-installation"
+            package = Path(temp) / "skills/packages/guru-verify-extension-installation"
             shutil.copytree(PACKAGE, package)
+            shutil.copytree(PACKAGE.parents[1] / "schemas", package.parents[1] / "schemas")
             (package / "runtime/owner.py").write_text(
                 "def cmd_execute_extension_verification(args):\n"
                 "    return {'status': 'executed', 'capabilities': args.capability}\n",
@@ -98,7 +100,7 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0, result)
         self.assertEqual(
-            json.loads(result.stdout),
+            project_intermediate_receipt(json.loads(result.stdout), PACKAGE.parents[1] / "schemas"),
             {"status": "executed", "capabilities": capabilities},
         )
         self.assertEqual(result.stderr, "")
@@ -384,7 +386,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(result.returncode, 0, result)
-            payload = json.loads(result.stdout)
+            from runtime.io import project_intermediate_receipt
+            payload = project_intermediate_receipt(json.loads(result.stdout), PACKAGE.parents[1] / "schemas")
             self.assertEqual(payload["guru_team_extension"]["version"], "0.6.16-guru.41")
             self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.6.17"])
             self.assertEqual(payload["guru_team_extension"]["selected_platforms"], ["codex"])

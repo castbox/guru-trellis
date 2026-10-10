@@ -5,7 +5,7 @@ description: Qualify whether a proposed implementation mechanism can carry the r
 
 # Qualify Solution Mechanisms
 
-Read `references/contract.md` completely before judging the candidate set. The
+Read `references/contract.md` and `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` completely before judging the candidate set. The
 Skill is a semantic owner: read current requirement, planning, architecture,
 dependency/caller graph, diff, tests, and repository contract yourself. Then
 review the complete candidate set and invoke `scripts/invoke.sh --invocation -`
@@ -23,6 +23,6 @@ state, artifacts, logs, caches, configuration, and durable records when their
 existence, inode, FD, or open state is not used as authority, fencing, leader
 election, or a concurrency protocol.
 
-Return exactly one declared typed exit. The runtime only checks closed shape,
+Return exactly one declared typed exit through public invoke; consume its route and positive-exit conditions. The runtime only checks closed shape,
 identity, freshness, enum aggregation, and consumer binding; it must not decide
 whether a mechanism is good or bad and must not write qualification state.

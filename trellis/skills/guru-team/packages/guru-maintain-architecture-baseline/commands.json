@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-maintain-architecture-baseline",
   "commands": [
     {
@@ -12,7 +12,7 @@
         {"flag": "--owner-result", "required": false, "kind": "string", "description": "Completed semantic owner result JSON locator.", "repeatable": false, "conflicts": ["--invocation"]}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": ["invalid_arguments", "conflicting_arguments", "environment_unavailable", "internal_error"],
       "side_effect": "none",
       "schema_bindings": [],

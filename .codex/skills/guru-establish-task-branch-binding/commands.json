@@ -1,34 +1,34 @@
 {
-  "schema_version": "1.0", "package_id": "guru-establish-task-branch-binding",
+  "schema_version": "1.1", "package_id": "guru-establish-task-branch-binding",
   "commands": [
     {
       "id": "discover-task-branch-binding-candidates", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Current task identity and status.", "repeatable": false, "conflicts": []}],
-      "stdin": "optional_json", "stdout": "single_json_object", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
+      "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "git_read", "schema_bindings": ["schemas/public-input.schema.json"], "validator_id": "candidate_discovery", "runtime_role": "invoke"
     },
     {
       "id": "record-task-branch-binding-plan", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Reviewed candidate selection.", "repeatable": false, "conflicts": []}],
-      "stdin": "optional_json", "stdout": "single_json_object", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
+      "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "git_read", "schema_bindings": ["schemas/public-input.schema.json"], "validator_id": "plan_recorder", "runtime_role": "invoke"
     },
     {
       "id": "establish-task-branch-binding", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Reviewed candidate and expected HEAD.", "repeatable": false, "conflicts": []}],
-      "stdin": "optional_json", "stdout": "single_json_object", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
+      "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "repo_write", "schema_bindings": ["schemas/public-input.schema.json", "schemas/public-output.schema.json"], "validator_id": "branch_executor", "runtime_role": "invoke"
     },
     {
       "id": "check-task-branch-binding-result", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Exact recovered binding result.", "repeatable": false, "conflicts": []}],
-      "stdin": "optional_json", "stdout": "single_json_object", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
+      "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "git_read", "schema_bindings": ["schemas/public-input.schema.json", "schemas/public-output.schema.json"], "validator_id": "result_checker", "runtime_role": "invoke"
     },
     {
       "id": "recover-established-task-branch-binding-result", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
       "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Exact output-loss recovery identity.", "repeatable": false, "conflicts": []}],
-      "stdin": "optional_json", "stdout": "single_json_object", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
+      "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "git_read", "schema_bindings": ["schemas/public-input.schema.json", "schemas/public-output.schema.json"], "validator_id": "result_recovery", "runtime_role": "invoke"
     },
     {
@@ -37,7 +37,7 @@
       {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
       {"flag": "--input", "required": true, "kind": "json", "description": "Reviewed current task binding action.", "repeatable": false, "conflicts": []}
     ],
-    "stdin": "optional_json", "stdout": "single_json_object",
+    "stdin": "optional_json", "stdout": "single_typed_exit",
     "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
     "side_effect": "repo_write", "schema_bindings": ["schemas/public-input.schema.json", "schemas/public-output.schema.json"],
     "validator_id": "public_invocation", "runtime_role": "invoke"

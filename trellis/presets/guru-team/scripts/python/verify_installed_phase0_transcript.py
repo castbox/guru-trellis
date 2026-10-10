@@ -167,6 +167,13 @@ def load_json(path: Path) -> dict[str, Any]:
     return payload
 
 
+def project_intermediate(root: Path, receipt: dict[str, Any]) -> dict[str, Any]:
+    runtime_root = root / ".trellis/guru-team"
+    sys.path.insert(0, str(runtime_root))
+    from runtime.io import project_intermediate_receipt
+    return project_intermediate_receipt(receipt, runtime_root / "skills/schemas")
+
+
 def assert_forbidden_runtime_absent(root: Path) -> None:
     runtime = root / ".trellis/.runtime/guru-team"
     if not runtime.exists():
@@ -622,10 +629,11 @@ def record_semantic(
         / "scripts"
         / script
     )
-    return json_stdout(
+    receipt = json_stdout(
         run([path, *arguments], cwd=root, env=env, stdin=payload),
         f"semantic recorder {skill_id}",
     )
+    return project_intermediate(root, receipt)
 
 
 def assert_owner_binding(
@@ -808,7 +816,7 @@ def context_owner_for_issue(
         "--query-json",
         json.dumps(change_input, ensure_ascii=False, sort_keys=True),
     ]
-    preview = json_stdout(run(preview_args, cwd=root, env=env), "context history preview")
+    preview = project_intermediate(root, json_stdout(run(preview_args, cwd=root, env=env), "context history preview"))
     return {
         "schema_version": "3.0",
         "skill_id": "guru-discover-change-context",

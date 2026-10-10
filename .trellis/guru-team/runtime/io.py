@@ -47,6 +47,14 @@ def write_json(payload: dict[str, Any], *, stream: Any = None) -> None:
     target.write(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def project_intermediate_receipt(payload: Any, schemas: Path) -> dict[str, Any]:
+    """Project current CLI transport for the same owner's record/check consumer."""
+    from .schema import validate_json
+
+    validate_json(payload, schemas / "intermediate-command-receipt-1.0.schema.json", "stdout")
+    return payload["result"]
+
+
 def fail(error: CommandError) -> int:
     payload = error.response or {
         "code": error.code,

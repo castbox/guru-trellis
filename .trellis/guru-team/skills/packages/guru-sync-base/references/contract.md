@@ -51,7 +51,7 @@ symbolically attached to the selected branch, have registered HEAD == checkout
 HEAD == local selected-base ref, and be clean. Missing, ambiguous, dirty, or
 identity-mismatched authority returns stable `blocked`; runtime never reselects
 a lower-priority base and never creates, checks out, or switches a worktree.
-Resolve-only emits canonical JSON with source, selected base, remote,
+Resolve-only CLI receipt `result` contains source, selected base, remote,
 candidates, authority checkout branch and HEAD as the existing
 `decision_checkout`, plus `resolution_sha256`, on stdout only. The authority
 path remains invocation-local routing state and is not added to the closed
@@ -96,8 +96,9 @@ decision checkout HEAD == local selected-base HEAD == remote-tracking HEAD
 Here `decision checkout` is the selected-base authority checkout, not the
 possibly detached invocation checkout.
 
-The executor emits a closed `guru-base-sync-result-1.0` object,
-`post_sync_resolution_sha256`, and `facts_sha256` on stdout. This deterministic Skill has no selected-base AI
+The executor returns a closed `guru-base-sync-result-1.0` object with
+`post_sync_resolution_sha256` and `facts_sha256`; its intermediate CLI stdout
+wraps that object in receipt `result`. This deterministic Skill has no selected-base AI
 confirmation, post-execution AI Review Gate or conditional human confirmation.
 
 ## Objective Validation And Exits

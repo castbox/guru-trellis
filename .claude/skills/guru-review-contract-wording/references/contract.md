@@ -238,8 +238,8 @@ classification history, file digests, or this Skill's private result.
 For the normal Issue chain, copy public `target_locator` from the actual
 Clarification stdout's `transition.target_locator` and retain that transition
 unchanged. The locator and captured `change_request.identity` must be the same
-canonical issue URL, not the short `#N` search/display form. Pass actual record
-stdout and checker's `validation_receipt` to invoke; do not rebuild a transition,
+canonical issue URL, not the short `#N` search/display form. Pass actual record receipt `result`
+and checker's `validation_receipt` to invoke; do not rebuild a transition,
 source snapshot or receipt from examples. Readiness consumes the resulting
 invoke stdout with that same canonical target identity.
 
@@ -258,11 +258,11 @@ profile/mode prerequisite and scope/scan snapshot digests. The public serializer
 requires that receipt and performs no GitHub read. Independent CLI invocations
 still validate live authority in the checker.
 
-Keep the complete recorder stdout and checker stdout in current-owner call-local
-memory. The checker response has `status`, `typed_exit`, `facts_sha256`, and
-`validation_receipt`; that outer response is not itself a receipt. Set
-`invoke.owner_result` to the unchanged recorder output and
-`invoke.validation_receipt = checker_response.validation_receipt` to the nested
+Keep the complete recorder receipt `result` and checker receipt `result` in current-owner call-local
+memory. The checker receipt `result` has `status`, `typed_exit`, `facts_sha256`, and
+`validation_receipt`; the outer transport is not the nested validation receipt. Set
+`invoke.owner_result` to the unchanged recorder receipt `result` and
+`invoke.validation_receipt = checker_response.result.validation_receipt` to the nested
 object unchanged. Do not serialize that object as a string, recompute it, or
 copy a receipt from an example. Preserve the current public input and required
 transition in the existing invoke envelope.
@@ -300,7 +300,7 @@ is caller-owned and its updated_at can be null. No locator aliases are added.
    `semantic_review`. Existing result validation remains authoritative.
 3. Run `"$GURU_SKILL_PACKAGE/scripts/check-contract-wording-review.sh" --root . --invocation -`
    with unchanged source/profile/mode and `owner_result` equal to the exact
-   recorder output. The checker rebuilds the scope/scan and rereads live Issue
+   recorder receipt `result`. The checker rebuilds the scope/scan and rereads live Issue
    authority before issuing its receipt. Optional `--expected-facts-sha256`
    retains its existing digest assertion.
 4. Run the unchanged public invoke with `public_input`, `owner_result`, the

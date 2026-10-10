@@ -101,3 +101,6 @@ path re-enters `evidence_refresh` with `reactivation_anchor`, not `merge_result`
 author the same current-generation identity and fresh evidence using
 `examples/reactivation-evidence-refresh-authoring.json`. Delivery-based
 `evidence_refresh` retains its exact same-generation merge result.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

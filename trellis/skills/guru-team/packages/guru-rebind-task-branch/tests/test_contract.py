@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.io import project_intermediate_receipt
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
@@ -74,6 +75,31 @@ class RebindTaskBranchTests(unittest.TestCase):
         with self.assertRaisesRegex(Exception, "rebind_base_stale"):
             MODULE.prepare(self.root, stale)
         self.assertEqual(self.git("branch", "--show-current"), "task/demo")
+
+    def test_real_atomic_receipt_and_recovery_keep_one_binding_revision(self) -> None:
+        def call(script, payload):
+            process = subprocess.run(
+                [str(PACKAGE / "scripts" / script), "--root", str(self.root), "--input", "-"],
+                input=json.dumps(payload), text=True, capture_output=True,
+            )
+            self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+            return json.loads(process.stdout)
+
+        prepared = project_intermediate_receipt(call("record-plan.sh", self.request), PACKAGE.parents[1] / "schemas")
+        payload = {"profile": "task_branch_rebind", "mode": "workflow", "action": "execute", "plan": prepared["plan"]}
+        executed = project_intermediate_receipt(call("rebind.sh", payload), PACKAGE.parents[1] / "schemas")
+        self.assertEqual(executed["exit_id"], "rebound")
+        self.assertEqual(self.git("branch", "--show-current"), "task/new")
+        binding = BranchBindingStore(self.repository).read(self.key)
+        self.assertEqual(binding.binding_revision, 1)
+        recovery_input = {**payload, "action": "recover"}
+        for script in ("check-result.sh", "recover-result.sh"):
+            recovered = project_intermediate_receipt(call(script, recovery_input), PACKAGE.parents[1] / "schemas")
+            self.assertEqual(recovered, executed)
+        formal = call("invoke.sh", recovery_input)
+        self.assertEqual(formal, executed)
+        self.assertNotIn("formal_exit", formal)
+        self.assertEqual(BranchBindingStore(self.repository).read(self.key), binding)
 
 
 if __name__ == "__main__":

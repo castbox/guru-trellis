@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public I/O, private state and Skill boundary authority"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Deterministic command and stdout owner contracts"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Accepted-scope validation and actual Agent evidence"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Direct evolution and old caller retirement"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "Separate objective and actual behavioral repair evidence"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "Current constitution authority"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Project architecture assessment protocol"}
+{"file": "docs/requirements/README.md", "reason": "Current RDT authority navigation"}

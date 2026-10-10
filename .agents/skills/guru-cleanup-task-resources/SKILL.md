@@ -55,3 +55,6 @@ its Guru-owned pending local resources. Both require independent deletion
 confirmation and can reread a recorded result after output loss. The active
 #434 workflow invokes normal Cleanup after Finish; this package does not
 choose the global consumer route.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

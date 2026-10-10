@@ -1,0 +1,20 @@
+schema_version: "1.0"
+task_ref: "453-formal-skill-exit-boundary"
+task_locator: ".trellis/tasks/10-10-453-formal-skill-exit-boundary"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/453"
+source_contract: "2026-10-10-r1"
+source_version: "current-main-0.6.17-guru.81"
+expected_current_version: "current-main-0.6.17-guru.81"
+status: "reviewed_promoted"
+authority_scope: "isolated_contribution"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.82"
+  status: "active"
+architecture_candidate:
+  contribution_locator: ".trellis/tasks/10-10-453-formal-skill-exit-boundary/architecture-contribution.md"
+  promotion_state: "reviewed_promoted"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false
+promoted_version: "current-main-0.6.17-guru.82"
+promotion_preimage: "current-main-0.6.17-guru.81"

@@ -34,3 +34,6 @@ Malformed terminal output is recorded explicitly as
 never replace the structured failure facts. A failed command or a failed
 inventory, ownership, sidecar, or capability postcheck likewise records one
 deterministic `postcheck_failure`; `status=failed` never carries `failure=null`.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

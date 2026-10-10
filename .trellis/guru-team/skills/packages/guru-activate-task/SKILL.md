@@ -108,3 +108,6 @@ remain accepted with their original meanings; new actions are
 `resume_execution`/`recover_execution`, with an independent
 `execution_resumed` 1.0 output. There is one parser and no legacy fallback,
 new Skill, lifecycle status or source authority.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

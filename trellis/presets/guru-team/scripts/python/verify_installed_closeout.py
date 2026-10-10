@@ -167,7 +167,9 @@ class InstalledPackageClient:
         result = run([str(wrapper), *arguments], self.root, check=False)
         if result.returncode != 0:
             raise self.WorkflowError(result)
-        return single_json_stdout(result, f"installed {self.skill_id} {script}")
+        output = single_json_stdout(result, f"installed {self.skill_id} {script}")
+        public_wrapper = read_json(self.package / "interface.json")["public_contracts"]["invocation"]["wrapper"]
+        return output if "scripts/" + script == public_wrapper else phase0_transcript.project_intermediate(self.root, output)
 
     def cmd_record_planning_approval(self, args: argparse.Namespace) -> dict[str, Any]:
         values = ["--root", args.root, "--task", args.task, "--input", args.input]

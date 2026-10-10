@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from .io import CommandError, fail, read_json_file, write_json
+from .schema import validate_json
 
 
 def _help(package_id: str, command: dict) -> str:
@@ -78,6 +79,8 @@ def _validate_argument_cardinality(command: dict, argv: list[str]) -> None:
 def main(package_root: Path, argv: list[str]) -> int:
     try:
         metadata = read_json_file(package_root / "commands.json", "commands.json")
+        schemas = package_root.parents[1] / "schemas"
+        validate_json(metadata, schemas / "skill-commands-1.1.schema.json", "commands")
         if metadata.get("package_id") != package_root.name:
             raise CommandError("owner_mismatch", "commands.package_id", "Match package_id and every command owner to the package directory.")
         if not argv:
@@ -100,6 +103,9 @@ def main(package_root: Path, argv: list[str]) -> int:
         result = module.run(package_root, command, rest)
         if not isinstance(result, dict):
             raise CommandError("invalid_runtime_output", "stdout", "Return one JSON object from the package entrypoint.")
+        if command["stdout"] == "intermediate_receipt":
+            result = {"schema_version": "1.0", "formal_exit": False, "result": result}
+            validate_json(result, schemas / "intermediate-command-receipt-1.0.schema.json", "stdout")
         write_json(result)
         return 0
     except CommandError as exc:

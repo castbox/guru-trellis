@@ -13,3 +13,6 @@ be made by the script. No tracked task or runtime mapping is written.
 
 Use `scripts/invoke.sh --root <task-checkout> --input -`. Return exactly one
 typed exit; invalid or duplicate task identities fail closed.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

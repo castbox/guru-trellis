@@ -46,7 +46,7 @@ class NormalScenarioQualificationContractTest(unittest.TestCase):
     def test_interface_registry_commands_errors_and_evals_are_closed(self) -> None:
         interface = self.load(PACKAGE / "interface.json")
         self.assert_valid(interface, self.load(SKILLS / "schemas/skill-interface-1.6.schema.json"))
-        self.assert_valid(self.load(PACKAGE / "commands.json"), self.load(SKILLS / "schemas/skill-commands.schema.json"))
+        self.assert_valid(self.load(PACKAGE / "commands.json"), self.load(SKILLS / "schemas/skill-commands-1.1.schema.json"))
         self.assert_valid(self.load(PACKAGE / "errors/catalog.json"), self.load(SKILLS / "schemas/skill-error-catalog.schema.json"))
         self.assert_valid(self.load(PACKAGE / "evals/evals.json"), self.load(SKILLS / "schemas/skill-evals-2.0.schema.json"))
         registry = self.load(SKILLS / "registry.json")

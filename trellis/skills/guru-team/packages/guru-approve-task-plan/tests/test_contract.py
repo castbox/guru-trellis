@@ -77,7 +77,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(checked_process.returncode, 0, checked_process.stderr)
-            checked = json.loads(checked_process.stdout)
+            checked = json.loads(checked_process.stdout)["result"]
             self.assertEqual(checked["typed_exit"], "approved")
             self.assertEqual(
                 checked["consumer"],
@@ -128,7 +128,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(recorded.returncode, 0, recorded)
-            owner_result = json.loads(recorded.stdout)
+            owner_result = json.loads(recorded.stdout)["result"]
             self.assertEqual(owner_result["typed_exit"], "clarify_scope")
 
             checked = subprocess.run(
@@ -145,7 +145,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(checked.returncode, 0, checked)
-            self.assertEqual(json.loads(checked.stdout)["typed_exit"], "clarify_scope")
+            self.assertEqual(json.loads(checked.stdout)["result"]["typed_exit"], "clarify_scope")
 
             public_input = fixture / ".trellis/.runtime/guru-team/evals/public-input.json"
             public_input.parent.mkdir(parents=True, exist_ok=True)
@@ -210,7 +210,8 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(result.returncode, 0, result)
-            payload = json.loads(result.stdout)
+            from runtime.io import project_intermediate_receipt
+            payload = project_intermediate_receipt(json.loads(result.stdout), self.repo / "schemas")
             self.assertEqual(payload["task_dir_relative"], ".trellis/tasks/08-12-example")
             self.assertEqual(
                 [item["exists"] for item in payload["markdown_artifacts"]],

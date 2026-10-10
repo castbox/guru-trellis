@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-approve-task-plan",
   "commands": [
     {
@@ -11,7 +11,7 @@
         {"flag": "--task", "required": false, "kind": "string", "description": "Task directory, task-relative path, or task slug.", "repeatable": false, "conflicts": []}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments", "conflicting_arguments", "unsafe_path", "internal_error"],
       "side_effect": "repo_read",
       "schema_bindings": [],
@@ -57,7 +57,7 @@
         }
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -109,7 +109,7 @@
         }
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",
@@ -162,7 +162,7 @@
         }
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
         "conflicting_arguments",

@@ -91,7 +91,11 @@ class ExecutionConsumptionTests(unittest.TestCase):
 
     def successful(self, result: subprocess.CompletedProcess) -> dict:
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        return json.loads(result.stdout)
+        payload = json.loads(result.stdout)
+        if Path(result.args[0]).name != "invoke.sh":
+            from runtime.io import project_intermediate_receipt
+            return project_intermediate_receipt(payload, PACKAGE.parents[1] / "schemas")
+        return payload
 
     def completed_execution(self, operation: str = "resume_execution") -> None:
         planning = PACKAGE.parent / "guru-approve-task-plan"

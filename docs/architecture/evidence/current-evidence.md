@@ -567,3 +567,9 @@ EVD-055 及更早仍绑定原对象；knowledge successor 的新 diff 须 fresh 
 已独立审查实现范围 `origin/main@8dfa2a35bd2ccae236f7b8bc679f107f3ec1ffde...00102ccc5cb6a2102c6146421224962782ecd49f`，144 paths。独立 reviewer 先亲自完成 committed Architecture，再执行完整 Branch Review，各自调用原正式边界，最终无 current-scope P0–P3 findings。[贡献](../contributions/468-direct-source-replanning-compatibility.md)承接 expected `.80→.81` promotion；[唯一 Test](../../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有实际结果、首次失败与未验证边界，本文不复制 suite/trace。
 
 EVD-056 及更早保持原执行对象；promotion 新 diff 须 fresh Phase2/TaskCommit/独立完整 Branch Review。Fixture 只证明 transport，旧 Closure missing_workspace 失败仍保留；native external eval、官方 init/update 完整链、candidate 远端安装、Backend 安装/重试/生产及完整 Upgrade/Release matrix 未验证。
+
+## EVD-058：#453 中间 transport 独立审查
+
+已独立审查完整 committed range `origin/main@a080da319147fc9ccd6f85b10df60f3ce2e07e36...49c3e11ae9ce26fa391c038b6ba351adac25ff04`，541 paths。独立评估先读取 Architecture authority、实际完整 diff 与 consumers，再执行完整 Branch Review；两者分别调用原公共 wrapper，Architecture 为 reviewed_candidate，Branch Review 实际 passed，无开放 P0–P3 finding。[贡献](../contributions/453-formal-skill-exit-boundary.md)承接 expected `.81→.82`；[唯一 Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有实际验证与未覆盖边界，本文不复制 suite/trace。
+
+历史 EVD-057 及更早保持原执行对象；新晋升 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review。知识晋升不代表软件 Release、所有模型行为或业务生产升级。

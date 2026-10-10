@@ -36,3 +36,6 @@ workflow routers. `explicit_task_mode` carries TaskLifecycleDTO to
 `guru-current-phase-router`; `binding_blocked` carries ReasonDTO to
 `task-session-binding-blocked`. Each consumer derives TaskRef afresh if needed.
 Unknown, stale, ambiguous or mismatched official identity stops without writing.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

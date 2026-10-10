@@ -15,7 +15,7 @@ FINISH_SCHEMA=next(path for path in (
 for path in (RUNTIME.parent,LOCAL):
  if str(path) not in sys.path:sys.path.insert(0,str(path))
 from runtime.command import main
-from runtime.io import CommandError
+from runtime.io import CommandError, project_intermediate_receipt
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 from common import active_task,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
@@ -25,7 +25,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
  def test_command_and_error_contract_close(self):
   commands=json.loads((PACKAGE/"commands.json").read_text())
   catalog=json.loads((PACKAGE/"errors/catalog.json").read_text())
-  command_schema=json.loads((SKILLS/"schemas/skill-commands.schema.json").read_text())
+  command_schema=json.loads((SKILLS/"schemas/skill-commands-1.1.schema.json").read_text())
   error_schema=json.loads((SKILLS/"schemas/skill-error-catalog.schema.json").read_text())
   self.assertEqual([],list(Draft202012Validator(command_schema).iter_errors(commands)))
   self.assertEqual([],list(Draft202012Validator(error_schema).iter_errors(catalog)))
@@ -87,7 +87,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     self.assertEqual(result.returncode,code,(result.stdout,result.stderr))
     self.assertEqual(snapshot(),before)
     self.assertEqual(list(repo.rglob("__pycache__")),[])
-    return json.loads(result.stdout)
+    output=json.loads(result.stdout)
+    return project_intermediate_receipt(output,SKILLS/"schemas") if code==0 and wrapper!=public_wrapper else output
    initial=snapshot()
    envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text())}
    for mode in ("workflow","standalone"):

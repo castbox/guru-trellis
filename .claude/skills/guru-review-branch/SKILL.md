@@ -204,3 +204,6 @@ the unsupported repair and continues bounded investigation of the returned
 gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
 symptom suppression into unrelated scope confirmation, cache qualifications,
 or use qualification as completion. Actual scope changes use existing routes.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

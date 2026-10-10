@@ -63,3 +63,6 @@ are not task identity or a persisted inventory. Preserve the reason code and
 stop. For unsupported old/mixed records, use `guru-upgrade-installation` for
 reviewed per-record migration or manual disposition; never silently skip,
 convert, or delete the record. Old minimal blocked/invalid outputs remain valid.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

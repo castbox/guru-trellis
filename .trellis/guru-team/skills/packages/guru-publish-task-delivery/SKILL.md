@@ -26,3 +26,6 @@ decision, and continue without another push or PR create.
 This Skill never archives or completes a task, closes an Issue, emits a closing
 keyword, merges a PR, runs Finish, or cleans branches/worktrees. Unknown,
 multiple, fork-owned, terminal, stale, or unmapped state fails closed.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

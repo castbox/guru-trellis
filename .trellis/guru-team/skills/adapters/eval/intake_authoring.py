@@ -10,6 +10,7 @@ import subprocess
 from typing import Any
 
 from adapters.eval.fixture_io import run_git, write_fake_gh
+from runtime.io import project_intermediate_receipt
 
 INTAKE_SKILLS = (
     "guru-sync-base",
@@ -204,6 +205,8 @@ class IntakeCommands:
         if process.returncode:
             return result
         output = json.loads(process.stdout)
+        if command != "invoke":
+            output = project_intermediate_receipt(output, wrapper.parents[3] / "schemas")
         self.completed.append(step)
         if command.startswith("record-") and step != "scan":
             self.recorded = output

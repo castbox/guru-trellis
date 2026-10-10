@@ -1,5 +1,10 @@
 # Guru Team Workflow
 
+Intermediate command receipts are same-owner continuation material. The
+[shared transport contract](../../presets/guru-team/spec/workflow/companion-scripts.md#intermediate-command-stdout-10)
+and [migration](../../presets/guru-team/MIGRATION-453.md) govern CLI callers;
+workflow routing consumes only the actual declared public invocation exit.
+
 Causal evidence and disposition meanings live in the
 [common spec](../../presets/guru-team/spec/workflow/causal-completion-semantics.md).
 The existing qualification and stage Skills read its installed projection;

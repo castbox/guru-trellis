@@ -44,6 +44,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         cls.packages = installed / "skills/packages"
         ignore = shutil.ignore_patterns("__pycache__", "*.pyc")
         shutil.copytree(SKILLS / "runtime", installed / "runtime", ignore=ignore)
+        shutil.copytree(SKILLS / "schemas", installed / "skills/schemas", ignore=ignore)
         shutil.copytree(SKILLS / "consumers", installed / "skills/consumers", ignore=ignore)
         for skill in ("guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements",
                       "guru-review-contract-wording", "guru-review-change-request"):
@@ -148,7 +149,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         runtime = SimpleNamespace()
         compose_production_owner_command_runtime(self.target, runtime)
         completed = subprocess.CompletedProcess(
-            args=[], returncode=0, stdout='{"status":"ok"}\n', stderr="",
+            args=[], returncode=0, stdout='{"schema_version":"1.0","formal_exit":false,"result":{"status":"ok"}}\n', stderr="",
         )
         with mock.patch("adapters.eval.owner_runtime.subprocess.run", return_value=completed) as run:
             runtime.cmd_prepare_task_commit(SimpleNamespace(

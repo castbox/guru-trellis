@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "package_id": "guru-review-task-delivery",
   "commands": [
     {
@@ -13,7 +13,7 @@
         {"flag":"--dry-run","required":false,"kind":"boolean","description":"Validate without writing the private gate.","repeatable":false,"conflicts":[]}
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
       "side_effect": "runtime_write",
       "schema_bindings": ["schemas/public-delivery-review-input.schema.json","schemas/semantic-result.schema.json","schemas/delivery-review-gate.schema.json"],
@@ -30,7 +30,7 @@
         {"flag":"--expected-exit","required":false,"kind":"string","description":"Expected typed exit.","repeatable":false,"conflicts":[]}
       ],
       "stdin": "none",
-      "stdout": "single_json_object",
+      "stdout": "intermediate_receipt",
       "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
       "side_effect": "git_read",
       "schema_bindings": ["schemas/delivery-review-gate.schema.json"],
@@ -47,7 +47,7 @@
         {"flag":"--semantic-result","required":true,"kind":"json","description":"AI-completed Delivery Review semantic result.","repeatable":false,"conflicts":[]}
       ],
       "stdin": "optional_json",
-      "stdout": "single_json_object",
+      "stdout": "single_typed_exit",
       "errors": ["invalid_arguments","invalid_json","schema_mismatch","unsafe_path","stale_identity","internal_error"],
       "side_effect": "runtime_write",
       "schema_bindings": ["schemas/public-input.schema.json","schemas/semantic-result.schema.json","schemas/public-invocation-error.schema.json"],

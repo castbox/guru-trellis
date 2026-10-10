@@ -53,11 +53,16 @@ For change-request scan, record, and check, use the existing wrappers with
 `--invocation -` and the closed four-field envelope in
 `schemas/review-invocation.schema.json`: `profile`, `mode`, `change_request`,
 `owner_result`. Scan adds `--scan-only` and uses `owner_result={}`; record uses
-the flat AI authoring object; check uses the exact record output. Each reads
-stdin once. Keep the complete record and check outputs in current-owner memory.
-Set `invoke.validation_receipt = checker_response.validation_receipt` unchanged
+the flat AI authoring object; validate the intermediate recorder receipt and
+pass its unchanged `result` as the check's `owner_result`. Each reads stdin
+once. Keep the complete record and check receipts in current-owner memory.
+Validate the checker receipt and set
+`invoke.validation_receipt = checker_response.result.validation_receipt` unchanged
 as an object, not the outer checker response, a string, a recomputed receipt,
 or an example. For an invoke-envelope-only error after a successful check with
 unchanged facts and owner result, correct the envelope and invoke again as
 defined in the contract; do not re-record, re-check, or wait for another owner.
 The migration and remaining unmixed legacy callers are defined in the contract.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
