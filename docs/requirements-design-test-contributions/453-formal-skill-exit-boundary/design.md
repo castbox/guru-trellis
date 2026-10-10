@@ -1,6 +1,6 @@
 # #453 Design contribution
 
-候选，未晋升。继承 Design `.81/active` 与 public Architecture Baseline `.81/active`。设计责任定位如下；完整 reusable transport 合同只有 [companion spec](../../../trellis/presets/guru-team/spec/workflow/companion-scripts.md#intermediate-command-stdout-10) 一处。
+状态：reviewed_promoted；按 expected `.81` 晋升 `.82`，原 `.81` 为不可变 source/preimage。source/preimage 继承 Design `.81`；当前 Design 与 public Architecture Baseline 为 `.82/active`。设计责任定位如下；完整 reusable transport 合同只有 [companion spec](../../../trellis/presets/guru-team/spec/workflow/companion-scripts.md#intermediate-command-stdout-10) 一处。
 
 | Identity | Owner / contract locator |
 | --- | --- |
@@ -12,4 +12,4 @@
 
 脚本只执行/校验/序列化事实，不生成 semantic judgment、grading 或授权记录。共享 dispatcher 不接管原 Skill route；native harness 不输出 pass/fail 语义结论。当前 command inventory 是 36 packages（34 semantic、2 deterministic）/109 commands；formal classification 依据 interface 的公共 wrapper 与该 wrapper 实际固定 runtime command 的共同绑定，不能只按文件名、role 或 wrapper-path equality 猜测。
 
-[Architecture 候选](../../../.trellis/tasks/10-10-453-formal-skill-exit-boundary/architecture-contribution.md) 独立承接责任边界、兼容退出与 promotion；当前候选不创建新 ADR。
+[已晋升 Architecture 贡献](../../architecture/contributions/453-formal-skill-exit-boundary.md)承接责任边界、兼容退出与 promotion；无新 ADR。

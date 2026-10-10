@@ -17,3 +17,11 @@
 fresh final 完整 committed review `a080da3...225fe80` 返回 `implementation_required`：P2 BR453-WORDING-SKILL-PROJECTION。原 Skill 仍写 checker_response.validation_receipt，与真实 receipt 和已更新详细合同冲突；真实 checker stdout 按该表达式会触发 KeyError。修复只更新原 Skill 的 recorder/checker receipt 校验与 result 投影指令，经原完整 preset 同步五个安装/平台副本，不修改 runtime、owner schema、正式 DTO 或业务条件。Wording 既有 28 tests 通过；dogfood reapply/installed/drift 通过，五个 managed backup 的原 HEAD 字节已保留，最终零 sidecar/conflict。
 
 修复后通过原 native replay runner 实际运行 Codex 0.160.1 两条接续，使用原合法生成且业务 scope bytes 未变化的 owner/checker seed，完整 preset 更新到当前候选。checker-only 正向 run 在 invoke 前明确 formal_exit=false，原 invoke 实际返回 pass/planning_artifacts，消费 guru-contract-wording-pass-router 并读取 Planning owner entry；record+check blocked run 区分 checker 校验通过与语义 blocked，原 invoke 实际返回 blocked 并消费 contract-wording-blocked。两条真实 transcript 的声明、命令和 stdout 已审阅，无重复确认、重执行已完成动作或提前执行 downstream；证据只证明这两个本机正常路径。修复提交后的 finding closure、fresh final 完整 review 和 Architecture/RDT promotion 尚待完成。
+
+## Finding closure 与晋升前状态
+
+BR453-WORDING-SKILL-PROJECTION 在 `49c3e11ae9ce26fa391c038b6ba351adac25ff04` 完成 finding-owner closure；introduced 为 `225fe80afbee5f43f1ceeb2076cc795ece514c68`。closure 核验 committed 指令及五份副本、两组真实 recorder/checker stdout 的校验与 unchanged result 投影、native fixture/current bytes 一致，以及 positive/blocked 正式 invoke 与唯一 consumer。closure 仅关闭此 finding，不替代完整独立审查或晋升后 gates。
+
+完整 fresh final review `origin/main@a080da319147fc9ccd6f85b10df60f3ce2e07e36...49c3e11ae9ce26fa391c038b6ba351adac25ff04` 已完成独立 Architecture 与 Branch 原 recorder/checker/invoke，实际公共出口分别 baseline_current/reviewed_candidate 与 passed，541 paths，无开放 P0–P3 finding。source/installed、receipt3、Wording28、adapters28/40subtests、Rebind3、drift、compile/context/diff 由该完整审查实际执行；历史失败按逐测试首次诊断对照，未计 pass。上述 native/安装仍绑定原执行对象，不因文档晋升而声称重跑。
+
+Architecture/RDT 按 expected `current-main-0.6.17-guru.81` 串行晋升 `.82/active`，source/preimage 与历史结果保持。当前知识晋升 diff 的 fresh Phase2、TaskCommit、独立完整 Branch Review 仍待完成；原晋升前 pass 不支持 Delivery。软件发布、完整官方 update、其他版本/native host/model、完整 Release 矩阵与业务生产升级未验证。

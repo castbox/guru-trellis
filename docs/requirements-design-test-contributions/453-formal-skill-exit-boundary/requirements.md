@@ -1,6 +1,6 @@
 # #453 Requirements contribution
 
-候选，未晋升。来源为 [live Issue #453](https://github.com/castbox/guru-trellis/issues/453) 的 `2026-10-10-r1`；完整目标、正式出口语义与验收由该源拥有。继承 Requirements `.81/active`。以下只定义稳定 trace identity 与源定位，不复制源正文。
+状态：reviewed_promoted；按 expected `.81` 晋升 `.82`，原 `.81` 为不可变 source/preimage。来源为 [live Issue #453](https://github.com/castbox/guru-trellis/issues/453) 的 `2026-10-10-r1`；完整目标、正式出口语义与验收由该源拥有。当前 Requirements 为 `.82/active`，薄继承不可变 `.81`。以下只定义稳定 trace identity 与源定位，不复制源正文。
 
 | Identity | 源合同定位 / behavior |
 | --- | --- |

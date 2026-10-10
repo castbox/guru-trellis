@@ -1,6 +1,6 @@
 # Design SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.81` / `active`；[本版入口](./versions/current-main-0.6.17-guru.81/design-main.md)薄继承 immutable `.80`，承接已独立审查的 [#468 增量 trace](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/traceability.md)。Architecture 继承 `.81/active`，晋升 preimage 为 `.80`。[唯一 Test](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有实际结果与边界；晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review。官方 init/update 完整链、candidate 远端安装、native external eval、Backend 安装/重试/生产效果和完整 Release matrix 仍未验证。知识晋升不表示软件发布或任务完成。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.82` / `active`；[本版入口](./versions/current-main-0.6.17-guru.82/design-main.md)薄继承 immutable `.81`，承接已独立审查的 [#453 增量 trace](../requirements-design-test-contributions/453-formal-skill-exit-boundary/traceability.md)。Architecture 继承 `.82/active`，晋升 preimage `.81`。[唯一 Test](../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有实际结果与限制；知识晋升差异须 fresh Phase2/TaskCommit/独立完整 Branch Review，不表示软件发布或任务完成。
 
 历史 `.70` Design authority：[`versions/current-main-0.6.17-guru.70/design-main.md`](./versions/current-main-0.6.17-guru.70/design-main.md)。版本状态与 source binding 见同目录 `manifest.yaml`；#481 后的 registry（34 packages / 155 exits / 104 commands，零 planned）见 [`capability-inventory.md`](./versions/current-main-0.6.17-guru.70/capability-inventory.md)，引用链见 `traceability.md`，决策见 `decisions.md`。production workflow 为 33 mandatory invokes / 153 exits。Architecture 为 `.70` / `active`；`.69` 及更早版本保持 immutable。
 
@@ -12,7 +12,8 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.81` | [design-main.md](./versions/current-main-0.6.17-guru.81/design-main.md) |
+| `active` | `current-main-0.6.17-guru.82` | [新 current](./versions/current-main-0.6.17-guru.82/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.81` | [design-main.md](./versions/current-main-0.6.17-guru.81/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.80` | [design-main.md](./versions/current-main-0.6.17-guru.80/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.79` | [design-main.md](./versions/current-main-0.6.17-guru.79/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.78` | [design-main.md](./versions/current-main-0.6.17-guru.78/design-main.md) |

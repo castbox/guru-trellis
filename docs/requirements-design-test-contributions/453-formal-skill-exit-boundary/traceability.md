@@ -1,6 +1,6 @@
 # #453 Traceability
 
-候选，未晋升。来源与版本见 manifest；每行有唯一当前设计责任及验证 consumer。
+状态：reviewed_promoted；按 expected `.81` 晋升 `.82`，原 `.81` 为不可变 source/preimage。来源与版本见 manifest；每行有唯一当前设计责任及验证 consumer。
 
 | Requirement / behavior | Design responsibility | Test strategy / scenario |
 | --- | --- | --- |
@@ -13,4 +13,4 @@
 | R453-07 / BEH453-REPORT | D453-05 | T453-05 |
 | R453-08 / BEH453-CONTINUE | D453-05 | T453-05 |
 
-正文 owner：requirements.md、design.md、test.md。当前 contribution 不覆盖 shared `.81/active`，不声明 Branch Review、publication、release 或 #396/#250/#292 完成。
+正文 owner：requirements.md、design.md、test.md。当前 contribution 由 `.82` 入口引用，完整晋升前 review 与后续 pending gates 见唯一 Test；不声明 publication、release 或 #396/#250/#292 完成。

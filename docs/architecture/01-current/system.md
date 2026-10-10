@@ -281,3 +281,7 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 ## ARCH-CUR-054：Direct Source 与活动重规划执行承接（.81）
 
 `ARCH-CUR-054`（reviewed #468 contribution；promotion 后 fresh gates pending）：原 Planning approved 唯一 consumer 按 live lifecycle 承接首次 activate 或活动 resume_execution。原 guru-activate-task 独占 execution-result 与 identity-only recover_execution；TaskId/generation/branch/checkout/in_progress 不变，原 Check 在正式 current passed 后调用原 owner retirement。Direct Source/必要用途/重开语义归原 stage owners；无第二 source、authority、writer 或长期结果 store。正文由 canonical owners 拥有，证据仅由[唯一 Test](../../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)承接。
+
+## ARCH-CUR-055：中间 receipt 与正式 Skill exit（.82）
+
+`ARCH-CUR-055`（reviewed #453 contribution；promotion 新 diff gates pending）：commands 1.1 显式声明 intermediate_receipt/single_typed_exit；dispatcher 仅包装中间成功 CLI stdout，固定 projection 服务真实当前 callers。正式 wrapper、public DTO、semantic/deterministic owner、内部 checkpoint/digest 与 atomic/recovery 保持。共享 [companion spec](../../../trellis/presets/guru-team/spec/workflow/companion-scripts.md#intermediate-command-stdout-10) 单写 transport 规则；[唯一 Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md) 分开承接 schema/consumer 与真实 native 声明/动作。无新 ADR/GAP/长期双读。

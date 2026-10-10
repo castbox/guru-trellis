@@ -123,3 +123,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-036`（#383 reviewed）：共同 spec 单写共用语义；root 只判候选准入，各 stage owner 单写本阶段 evidence sufficiency/route，Delivery Review 审 payload、Publish 执行，Completion 独占 whole-task 完成判断，Closure 拥有 source Issue action-set，Finish 承接 terminal bookkeeping。Delivery/Reactivate 的原 evidence slots 与 current anchor 保持；unknown production effect 由同 task pending/refresh 承接。Architecture/RDT 原 owner 串行 expected `.79→.80` promotion，没有新 writer、审批链或公共 causal DTO。
 
 `ARCH-DOM-037`（#468 reviewed）：Planning 审规划，workflow 展示/对话承接和全局 route，原 execution owner 审/执行 resume、单写 completed result 并拥有 recovery/retirement；Check 只消费正式 current producer 并调用原 owner retirement。Clarification/Delivery/Completion/Closure/Finish/Reactivate 原职责和 #464 dependency-scoped invalidation 保持。Architecture/RDT 各自原 owner 串行 expected `.80→.81` promotion；不增加授权存储或审批链。
+
+`ARCH-DOM-038`（#453 reviewed）：原 Skill 单写 semantic 判断、内部 owner/checkpoint 与 public exit，共享 dispatcher 单写声明驱动的 CLI transport；具名 caller 校验后投影 result，workflow 只消费真实 public invoke DTO。Architecture/RDT 原 promotion owner 按 expected `.81→.82` 串行更新共享 authority；无新增授权状态、reviewer ledger 或业务 writer。

@@ -1,7 +1,7 @@
 # #453 公共 intermediate transport 候选贡献
 
 Identity：architecture-453-intermediate-transport-v1；状态：task-owned candidate；path：target_native。
-本文件是候选 Architecture change contract，直接供 Planning、Phase2、独立 Branch Review 与 promotion owner 消费。它不代表 gate pass、实现完成或 shared current。
+本文件保留晋升前 Architecture change contract；下列历史阶段陈述仍绑定原候选对象。当前状态仅由末尾「晋升状态」定义，实际执行证据归唯一 Test。
 
 ## Authority / constitution binding
 Concern authority-binding：applicable。Guru 合同为 guru-maintain-architecture-baseline:2.0；baseline 为 docs/architecture/README.md 的 active current-main-0.6.17-guru.81；expected current identity 同为 .81。
@@ -53,6 +53,8 @@ Concern review-and-promotion：applicable。贡献 identity 为 architecture-453
 独立 committed review 完成后，Architecture owner 按 expected current .81 串行 promotion；若 baseline 已变，走 sync_required 原路，不覆盖。晋升产生新 diff 后重新 Phase2、Task Commit 与独立 full-diff Branch Review，再进入 Publication/Completion。
 ADR necessity：当前候选不提出新增 ADR，因为复用现有正式入口、semantic/执行分层、current-only 直接迁移和 baseline promotion 决策，没有新 owner、原则例外、GAP lifecycle 或长期 compatibility exit。独立 owner 仍需检查实际 before/after；若 discovery 出现该类变化，回到对应 Architecture assessment，不把此候选理由充当未来豁免。
 
-## 当前承接
+## 晋升状态
 
-本文件保留晋升前 `.81` 设计对象和阶段事实；当前 Architecture 状态及 `.82` 晋升绑定由[已晋升贡献](../../../docs/architecture/contributions/453-formal-skill-exit-boundary.md#晋升状态)拥有。后续 task stage 读取该贡献与 live baseline，不能将上述历史 candidate/pending 文字当作新的当前判断或绕过 fresh gates。
+Identity：architecture-453-intermediate-transport-v1；状态：reviewed_promoted；expected_current_identity=current-main-0.6.17-guru.81；promoted_identity=current-main-0.6.17-guru.82。完整实现范围 `origin/main@a080da319147fc9ccd6f85b10df60f3ce2e07e36...49c3e11ae9ce26fa391c038b6ba351adac25ff04` 已独立完成 committed Architecture 与完整 Branch Review，分别调用原公共 wrapper，Branch 实际出口为 passed。ADR necessity=false，既有 owners、GAP lifecycle、constitution 和软件版本轴保持。
+
+本次按 expected `.81` 串行知识晋升；`.81` 为不可变 preimage，`.82` 是当前 authority。历史 candidate/pending 陈述不是当前 gate 状态；晋升新 diff 仍须 fresh Phase2、TaskCommit、不同 reviewer 完整 Branch Review，之后才能进入 Delivery。唯一 [Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)保留实际验证、首次失败与未验证边界，不把原执行重标为后继文档候选重跑。

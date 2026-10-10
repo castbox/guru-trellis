@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.81`；状态：`active`；predecessor：`current-main-0.6.17-guru.80`；source baseline：[已独立审查的 Direct Source/活动重规划贡献](./contributions/468-direct-source-replanning-compatibility.md) + immutable `.80` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
+版本：`current-main-0.6.17-guru.82`；状态：`active`；predecessor：`current-main-0.6.17-guru.81`；source baseline：[已独立审查的 #453 contribution](./contributions/453-formal-skill-exit-boundary.md) + immutable `.81` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.81` 是唯一 active；`.80` 及更早为 immutable superseded history。当前增量为 ARCH-CUR-054 / ARCH-DOM-037 / ARCH-INT-040 / EVD-057，无新 ADR；完整继承 `.80` 的有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。候选 registry36/164/109、business34/158。新知识晋升差异必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
+版本历史：`current-main-0.6.17-guru.82` 是唯一 active；`.81` 及更早为 immutable superseded history。当前增量为 ARCH-CUR-055 / ARCH-DOM-038 / ARCH-INT-041 / EVD-058，无新 ADR；继承全部有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。registry36/164/109、business34/158 不变。晋升新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 
@@ -30,7 +30,7 @@
 
 历史 `.80` 按 expected `.79` 晋升 #383 已独立审查的共同因果语义 contribution；七个现有 owner 读取单一受管 spec，本阶段 evidence/route 和 whole-task Completion 职责保持。实际结果与边界由[唯一 Test](../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有；此次晋升 diff 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review，不表示 Delivery、Completion 或软件发布。
 
-当前 `.81` 按 expected `.80` 晋升 #468 已独立审查贡献；Planning approved 保持唯一 consumer，原 execution owner 增加活动 resume 与 identity-only completed-result recovery，Check 只调用其 retirement 端口。Direct Source/必要用途/重开与原完成 owners 保持。实际结果和限制由[唯一 Test](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有；晋升 diff 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review。软件版本轴、历史证据、ADR/GAP 生命周期保持。
+历史 `.81` 按 expected `.80` 晋升 #468 已独立审查贡献；Planning approved 保持唯一 consumer，原 execution owner 增加活动 resume 与 identity-only completed-result recovery，Check 只调用其 retirement 端口。Direct Source/必要用途/重开与原完成 owners 保持。实际结果和限制由[唯一 Test](../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有；晋升 diff 仍须 fresh Phase2/TaskCommit/独立完整 Branch Review。软件版本轴、历史证据、ADR/GAP 生命周期保持。
 
 读取顺序：FOUNDATION -> CURRENT -> DOMAIN/INTEGRATION -> TARGET/GAP -> GOVERNANCE/PLAN -> ADR/EVIDENCE。普通 task 先调用 `guru-maintain-architecture-baseline:task_impact_sync`，需要共享 authority 变化时走 contribution + `promotion`；不完整或冲突走 `repair`。
 
@@ -42,3 +42,5 @@
 | DOMAIN / INTEGRATION | [`03-domains/ownership.md`](./03-domains/ownership.md) / [`04-integrations/distribution.md`](./04-integrations/distribution.md) |
 | GAP / GOVERNANCE / PLAN | [`05-gaps/current-to-target.md`](./05-gaps/current-to-target.md) / [`06-governance/rules.md`](./06-governance/rules.md) / [`06-governance/change-contract.md`](./06-governance/change-contract.md) / [`07-plans/roadmap.md`](./07-plans/roadmap.md) |
 | ADR / EVIDENCE | [`adr/README.md`](./adr/README.md) / [`evidence/current-evidence.md`](./evidence/current-evidence.md) |
+
+当前 `.82` 按 expected `.81` 晋升 #453 已独立审查贡献；shared dispatcher 只拥有 CLI stdout transport，原 Skill 保留 semantic/deterministic 判断、正式 exit/consumer 与 owner/checkpoint/digest。current commands/callers 完整直接迁移；[唯一 Test](../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有客观与真实 native 行为证据及边界。晋升 diff 的 fresh gates 仍待执行；知识晋升不代表软件发布或生产升级。
