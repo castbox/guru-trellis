@@ -224,6 +224,22 @@ class PackageLocalRuntimeTest(unittest.TestCase):
      self.assertEqual(expected[exit_id],json.loads(result.stdout))
      self.assertEqual(exit_id=="passed",checkpoint_path.exists())
 
+   # A same-scope repair plan can need causal investigation without changing requirements.
+   value=owner("planning_stale")
+   value["candidate_classifications"][0]["decision"]="qualified_current"
+   value["semantic_review"]["scope_decisions"][0].update(
+    id="plan-revision:causal-basis",disposition="current_scope",
+    summary="Keep accepted repair scope; establish first failure and revise its causal plan.")
+   checkpoint_path.write_text("checkpoint\n")
+   result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],
+    input=json.dumps({"public_input":public,"owner_result":value}),text=True,
+    stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
+   self.assertEqual(0,result.returncode,result.stdout+result.stderr)
+   output=json.loads(result.stdout)
+   self.assertEqual("reapprove_plan",output["planning_route"])
+   self.assertEqual(["plan-revision:causal-basis"],output["proposal_refs"])
+   self.assertFalse(checkpoint_path.exists())
+
  def test_resolved_phase2_private_result_projects_reconcile_input_without_external_exit(self):
   with tempfile.TemporaryDirectory() as temporary:
    repo=Path(temporary).resolve();self.git(repo,"init","-q")

@@ -1,0 +1,17 @@
+schema_version: "1.0"
+task_ref: "383-causal-completion-semantics"
+task_locator: ".trellis/tasks/10-10-383-causal-completion-semantics"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/383"
+status: "draft"
+source_version: "current-main-0.6.17-guru.79"
+expected_current_version: "current-main-0.6.17-guru.79"
+contribution:
+  requirements: "docs/requirements-design-test-contributions/383-causal-completion-semantics/requirements.md"
+  design: "docs/requirements-design-test-contributions/383-causal-completion-semantics/design.md"
+  test: "docs/requirements-design-test-contributions/383-causal-completion-semantics/test.md"
+  traceability: "docs/requirements-design-test-contributions/383-causal-completion-semantics/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.79"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/383-causal-completion-semantics.md"

@@ -5,6 +5,9 @@ description: Reconcile one exact active-task and evolved-base pair through a sem
 
 # Reconcile Task Base
 
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
 Invoke this Skill only after its package-local pair guard returns `new_pair` at
 an eligible stable workflow boundary. Read `references/contract.md`, then bind
 the exact caller profile, base pair, task authority, planning, and candidate

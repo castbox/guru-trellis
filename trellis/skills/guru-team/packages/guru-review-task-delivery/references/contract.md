@@ -103,6 +103,26 @@ slice, validation performed, remaining work, unverified boundaries, and safety
 or deployment impact truthfully. It must not claim task completion or Issue
 closure. A task without an external Issue emits no Issue reference.
 
+## Causal public claims
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` before authoring
+or reviewing the exact PR payload. Apply its dimensions to the current
+independent slice, separately reporting code/test, static, integration,
+external and production evidence, mitigation and remaining risk. State the
+actual diagnosis/mitigation/repair goal and supported disposition; the payload
+must not upgrade the observation layer or imply task/root-cause completion.
+Publish receives this already-reviewed payload and performs no causal judgment.
+
+A payload-only overclaim is revised inside this owner and freshly reviewed.
+A content defect uses `implementation_required`; an inadequate slice/policy
+uses `planning_revision_required`; a real scope change uses
+`scope_confirmation_required`. Only evidence required for this slice but
+concretely unavailable blocks readiness. Production effects obtainable after
+merge/deploy are reported as unverified with their remaining-task evidence
+owner/condition; they do not make a valid independent slice circular.
+Diagnosis or mitigation with an unknown cause can reach `ready` when its own
+slice requirements are met. Keep Refs-only and the existing public I/O.
+
 ## Route Invariants
 
 - `ready`: all dimensions and conclusions pass, no open finding or proposal,

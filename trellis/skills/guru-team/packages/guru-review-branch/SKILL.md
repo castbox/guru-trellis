@@ -5,6 +5,9 @@ description: Review committed task content, bounded base continuity, or a comple
 
 # Guru Review Branch
 
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
 Use this Skill after `guru-create-task-commit:committed` and before publication.
 Read [references/contract.md](references/contract.md) completely before acting.
 

@@ -136,6 +136,18 @@ formatting. It requires a fresh Architecture Planning result before this owner
 can reconsider approval. The Architecture result remains live stage evidence;
 it is not added to this Skill's public DTO or compact checkpoint.
 
+## Causal planning dependency
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` when reviewing
+the current accepted goals, proposed mechanisms, evidence requirements and
+validation plan. Bind each diagnosis, mitigation or repair slice to its own
+observable acceptance; whole-task completion retains all accepted obligations.
+Use the existing qualification owners and plan revision/scope/blocked routes.
+Do not require an unknown root cause to be solved before bounded diagnosis or
+qualified mitigation can start or satisfy their own scope. Plan production
+proof only when accepted requirements need it and keep pre-delivery slice
+validation distinct from evidence obtainable after merge/deploy.
+
 ## Private Result
 
 New owner evidence uses schema `guru-planning-approval-3.0` in ignored runtime.

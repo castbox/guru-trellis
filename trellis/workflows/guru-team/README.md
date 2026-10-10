@@ -1,5 +1,11 @@
 # Guru Team Workflow
 
+Causal evidence and disposition meanings live in the
+[common spec](../../presets/guru-team/spec/workflow/causal-completion-semantics.md).
+The existing qualification and stage Skills read its installed projection;
+this workflow retains invocation/transition ownership and does not define
+causal completion or infer it from a Delivery merge.
+
 Normal revision and recovery follow the single continuation block in
 `workflow.md`. Check execution-fact reuse and Delivery Review anchor recovery
 are owned by their respective canonical Skill contracts, not this README.

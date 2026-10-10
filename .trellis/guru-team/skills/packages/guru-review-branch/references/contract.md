@@ -261,6 +261,22 @@ alone settles the observation. Never silently delete accepted scope. Keep
 applicable evidence in existing finding/gate fields without per-capability
 records, scores, keyword classifiers, public DTO growth or new exits.
 
+## Causal committed review
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` and independently
+apply it to the exact full committed range and real consumers. Inspect
+implementation-time additions, fixture/filter/default/error assertions, known
+first failure, sample completeness and failure redistribution. Current
+qualification applicability informs the review; Phase 2 pass does not replace
+it. Unknown cause alone creates no diagnosis/mitigation finding. Preserve
+protection supported by current authority and actual ownership.
+
+Committed mechanism deviations use `implementation_required`; a genuine change
+to accepted product scope uses `scope_confirmation_required`. Evidence gaps
+are stated at their actual layer and handled under the existing profile's
+contracts, without turning mitigation or a test pass into a repair claim.
+Bounded continuity remains bounded; archived review remains read-only.
+
 ## Gate And Exits
 
 After the AI gate exists, `review-branch` writes one compact owner-private

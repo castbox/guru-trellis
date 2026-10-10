@@ -5,6 +5,9 @@ description: Review one approved active-task Delivery slice through a fresh sema
 
 # Guru Review Task Delivery
 
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
 Use with a current checked Branch Review output for the exact committed HEAD.
 When Publish returns `review_stale`, its `task_ref` is only a seed: the caller
 authors the ordinary `delivery_review` profile using the contract's current

@@ -1,0 +1,29 @@
+{
+  "id": "383-causal-completion-semantics",
+  "name": "383-causal-completion-semantics",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 383,
+    "disposition": "exact_source"
+  },
+  "title": "#383 因果完成语义与阶段承接",
+  "description": "按 #383 r9 建立 canonical causal-completion-semantics.md 并让现有 qualification、Check、Branch Review、Delivery Review、Completion 消费共同语义，保留现有生命周期与唯一 typed-exit consumer。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅 #383 r9 accepted scope；诊断/缓解/修复的目标感知共同语义、阶段判断与既有回程、同 task evidence pending/refresh、生产证据等价性及定向真实行为和分发验证。不实施 #468/#464/#404，不重复 #382 未变化机制资格，不访问或修改业务生产，不执行完整累计 Release matrix。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-10",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

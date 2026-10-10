@@ -32,6 +32,55 @@ needing a new conclusion return through the existing independent assessment
 route; missing committed review/promotion keeps its existing blocking route.
 The Completion owner still judges whole-task scope and evidence separately.
 
+## Causal whole-task judgment
+
+Before the semantic gate, read
+`.trellis/spec/workflow/causal-completion-semantics.md`, current accepted
+completion definition, live source Issue authority, all business Deliveries
+and current evidence from their normal sources. Judge the entire scope using
+the common evidence/dispositions, rather than this merge alone or a prior
+stage pass. Preserve the actual observation layer and residual uncertainty.
+No fixed evidence-field checklist or recorder output proves cause removal.
+
+Ordinary features complete their accepted RDT scope. Diagnosis, mitigation and
+implementation-only repairs may complete their own requirements without
+claiming production root-cause closure. Inspect source/parent requirements
+before selecting a closure disposition: do not choose `close_source` for one
+still requiring root-cause repair or production closure. If the accepted
+source scope truly needs revision, use `requirements_revision_required`;
+Closure executes the current reviewed disposition rather than inventing one.
+A diagnosis that itself requires identifying the cause remains unfinished
+while the cause is unknown. Required investigation/work uses `remaining_work`
+or the actual existing revision owner, not automatic production pending.
+
+For production repair requirements, judge same-input or strictly equivalent
+production evidence under the common authority. Sufficient lawfully obtained
+evidence can support `completed` even when original inputs cannot safely be
+replayed. Insufficient evidence uses `evidence_pending`, with the concrete gap,
+existing acquisition owner and condition for refresh in existing reason/evidence
+fields. Preserve the active task; do not archive, create a replacement task,
+force dangerous replay or request business production access.
+
+`evidence_pending` has exactly the existing `evidence_refresh` consumer.
+With no new evidence, wait for that condition instead of immediately invoking
+another review. On arrival, reread applicable authority, whole scope and current
+evidence: Delivery-based refresh retains the exact same-generation
+`merge_result`; Reactivate-only refresh retains the current
+`reactivation_anchor` and this generation's evidence. Historical merge,
+Completion or Finish does not substitute for that anchor or new evidence.
+Keep Delivery slots `planning`, `delivery_review`, `delivery_publication`
+and Reactivate slots `reactivation`, `validation` unchanged; read production
+facts from their existing source and bind the current evidence identity using
+existing fields, without a production/global causal slot.
+
+After merge/deploy, new facts may require `requirements_revision_required`,
+`implementation_revision_required` or `additional_delivery_required` in the
+same active task. Normal unfinished work remains `remaining_work`. Use
+`blocked` only for a concrete missing authority/dependency or inability to form
+a reliable judgment, not ordinary pending evidence. Only the whole accepted
+scope with all required evidence complete can return `completed` to the sole
+`guru-complete-task-closure` consumer, then Finish; Finalizer stays historical.
+
 ```bash
 scripts/invoke.sh --input <completion-input.json> \
   --semantic-result <semantic-result.json> --json
