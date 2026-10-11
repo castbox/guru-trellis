@@ -139,7 +139,7 @@ class WorkflowModeContractTest(unittest.TestCase):
         workflow = (ROOT / "trellis/workflows/guru-team/workflow.md").read_text()
         self.assertIn("这次走 task-free", skill)
         self.assertIn("File count, paths, and", skill)
-        self.assertIn("never reads remote branch protection", skill)
+        self.assertIn("never reads remote branch protection", " ".join(skill.split()))
         self.assertIn('"skill":"guru-execute-task-free-change"', workflow)
         execution = ROOT / "trellis/skills/guru-team/packages/guru-execute-task-free-change/SKILL.md"
         self.assertIn("Never query branch protection", execution.read_text())

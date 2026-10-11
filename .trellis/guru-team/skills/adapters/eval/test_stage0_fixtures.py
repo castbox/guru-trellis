@@ -141,13 +141,37 @@ class ReadinessAdapterTests(unittest.TestCase):
         runtime = load_package_owner_runtime(self.target, package.name)
         binary = write_fake_gh(self.root, "readiness-ready")
         with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}):
-            for profile in ("proposed_draft", "standalone_request"):
-                with self.subTest(profile=profile):
-                    _, state, _ = build_readiness_owner(
-                        runtime, self.fixture, package, "readiness-ready", "standalone", profile
-                    )
-                    output = stage0_command(self.fixture, package.name, "invoke", state["invocation"], "--invocation", "-")
-                    self.assertEqual("ready", output["exit_id"])
+            for mode in ("workflow", "standalone"):
+                for profile in ("proposed_draft", "standalone_request"):
+                    with self.subTest(mode=mode, profile=profile):
+                        _, state, source = build_readiness_owner(
+                            runtime, self.fixture, package, "readiness-ready", mode, profile
+                        )
+                        envelope = state["invocation"]
+                        producers = state["producer_results"]["public_outputs"]
+                        original = copy.deepcopy(producers)
+                        self.assertEqual(
+                            ["context_ready", "clear", "pass"],
+                            [value["exit_id"] for value in producers.values()],
+                        )
+                        self.assertTrue(all(value["transition"]["mode"] == mode for value in producers.values()))
+                        self.assertEqual(producers["wording"]["transition"], envelope["transition"])
+                        self.assertEqual(source, envelope["owner_context"]["change_request"])
+                        output = stage0_command(
+                            self.fixture, package.name, "invoke", envelope, "--invocation", "-",
+                        )
+                        self.assertEqual("ready", output["exit_id"])
+                        self.assertEqual(mode, output["mode"])
+                        target = output["transition"]["target"]
+                        self.assertEqual(profile, target["kind"])
+                        self.assertEqual(
+                            source["draft_id"],
+                            target["draft_id" if profile == "proposed_draft" else "request_id"],
+                        )
+                        self.assertEqual(original, producers)
+                        self.assertEqual("", run_git(self.fixture, "status", "--porcelain"))
+                        self.assertFalse((self.fixture / ".trellis/tasks").exists())
+                        self.assertFalse((self.fixture / ".trellis/workspace").exists())
 
     def draft_seed(self, recipe="readiness-ready", *, source=None):
         package = self.packages / "guru-review-change-request"

@@ -169,3 +169,33 @@ callers together; see the canonical Clarify
 [API migration](../../skills/guru-team/packages/guru-clarify-requirements/references/MIGRATION-250.md).
 Upstream start/continue/brainstorm remain upstream-owned and discoverable; the
 current workflow and Clarify contract constrain method reuse and resume.
+
+## Isolated task-free execution (#521)
+
+Mode selection is independent of checkout location. The canonical
+`guru-execute-task-free-change` contract owns linked non-base location selection
+before the first write and its existing `location_required` interaction;
+worktree/branch creation has its own exact operation boundary. Read-only work
+creates no resources. No Task identity, Task-specific checkout API or
+persistent location mapping is introduced for task-free execution. Formal new
+Task creation also uses linked non-base execution through its existing owner;
+old Task recovery and base Sync retain their original contracts.
+
+The workflow's single continuation block is the Guru caller for start,
+ordinary/same-chat, new-chat and explicit continuation. Actual upstream
+`trellis-continue:no_current_task` ends that upstream step, then the caller
+freshly resolves current request, binding and live candidate facts before the
+existing no-task route. Valid bindings return to their Task owner; stale or
+conflicting ones stop. Other-chat inventory never supplies this chat's identity.
+Upstream start/continue/extractor/hooks remain unchanged. If the native entry
+cannot hand the return to this caller, that path remains an upstream-owned
+unverified dependency; installation or route tests do not prove it works.
+
+Automatic partial-edit expansion returns to the selector; explicit expansion
+returns to the execution owner's narrow-or-Intake choice. Preserve existing
+candidates and unrelated dirty content, stop remaining writes, and retain
+formal acquisition's clean invariant. Exact carryover, Task creation and each
+Git/publication/install/cleanup action keep their own independent boundaries.
+Install/update/reapply the canonical workflow and Skill projections together;
+old current-checkout editing is directly replaced, not a fallback mode. Source
+checks do not prove target installation or native Agent continuation.

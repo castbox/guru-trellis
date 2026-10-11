@@ -222,6 +222,12 @@ def prepare_creation_inputs(
     if acquisition.route == "adopt_invocation_checkout":
         if acquisition.invocation_checkout is None or acquisition.provision_disposition is not None:
             raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the exact invocation checkout.")
+        invocation = inspect_repository(acquisition.invocation_checkout)
+        if invocation.git_dir == invocation.common_dir:
+            raise LifecycleContractError(
+                "primary_checkout_requires_isolation", "acquisition.invocation_checkout",
+                "Review a clean linked non-base checkout for adoption or provision a linked worktree before creating the task.",
+            )
     elif acquisition.provision_disposition not in {"new_branch", "existing_branch", "existing_checkout"}:
         raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Bind the reviewed provision disposition.")
     for registration in list_worktree_registrations(repository):

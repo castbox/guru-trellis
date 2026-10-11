@@ -28,8 +28,9 @@ Issue presence, file count, paths, and keywords
 cannot independently decide the outcome.
 
 Checkout suitability is owned by `guru-execute-task-free-change`, not this DTO.
-That Skill checks only local repository, branch/worktree,
-active-task scope, and dirty overlap facts before writes and never queries
-branch protection. The dialogue-local origin of the selection distinguishes
+That Skill reads live local topology, binding, scope and dirty facts and owns
+linked non-base execution location selection before writes; isolation alone
+never selects standard Intake. It never queries branch protection. The selector
+decides only mode and never acquires resources or creates a Task identity. The dialogue-local origin of the selection distinguishes
 automatic re-selection from explicit-task-free scope narrowing without adding
 public fields or persisted authorization state.
