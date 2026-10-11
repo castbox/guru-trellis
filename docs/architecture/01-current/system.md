@@ -289,3 +289,9 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 ## ARCH-CUR-056：唯一 Phase 0 Intake 与来源回程（.83）
 
 `ARCH-CUR-056`（reviewed #250 contribution；promotion 新 diff gates pending）：Clarify 以六个独立 profiles 拥有 Intake 语义；standard/reviewed 保留 Sync→Discovery→Clarify 顺序，四类 context request 精确保留原 profile/target/continuation 与必要 caller identity。两 qualifier confirmation 各回原 owner。Clarify 只产出最小 selected locator/section/role，经当前 Wording/readiness 交给 Planning fresh reread；最终设计处置仍只在 design.md。Interface 1.8 的具名 profile selector 是薄 schema projection，不新增语义 router、表达式引擎、来源缓存或未来 Author 前置。current-only successor/migration 显式退役旧固定回程；实际证据和恢复边界只由[唯一 Test](../../requirements-design-test-contributions/250-phase0-intake-owner/test.md)拥有。原 task/source/Closure/恢复 owners、软件轴与 GAP lifecycle 保持。
+
+## ARCH-CUR-057：隔离修改与无 Task caller continuation（.84）
+
+`ARCH-CUR-057`（reviewed #521 contribution；promotion 新 diff gates pending）：task-free 的原 execution owner 在首次写入和续接前读取 live topology、branch/HEAD、完整 dirty 差额与当前 binding，在 linked/non-base 位置执行；位置需要不升级 mode 或创建 Task。Guru 单一 workflow caller 消费实际 upstream `no_current_task`，fresh 核对范围/位置/绑定后回原 selector/execution owner。C6 creation preparation 拒绝 primary adoption，共享 acquisition/resolver 与旧 primary created-result recovery 不扩大禁令。无 Issue Review 的来源 profile 和 mode 独立，真实 workflow transition 被接受并保留三方 equality。
+
+实际原生 caller/partial expansion、runtime 和一个代表性安装的不同证据层由[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有；standard 接管到独立创建/承接边界，不认领未执行 Task/binding/carryover。原 owners、公共 exits、软件轴和 GAP lifecycle 保持，无 Task-free store、mapping 或授权状态。

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Current workflow caller, task-free and lifecycle owners"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Targeted validation and native evidence boundaries"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "Deterministic runtime and managed Python constraints"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public Skill contracts and unique typed exit consumers"}

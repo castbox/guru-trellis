@@ -296,7 +296,25 @@ class ChangeRequestReviewPackageTest(unittest.TestCase):
         self.raw_target.pop("draft_id")
         self.public["profile"] = "standalone_request"
         self.target = review_common.normalize_target(self.source, self.raw_target)
-        self.assertEqual("ready", self.run_command(review_invoke, self.checked(self.envelope()))["exit_id"])
+        for mode in ("workflow", "standalone"):
+            with self.subTest(mode=mode):
+                self.public["mode"] = self.transition["mode"] = mode
+                envelope = self.checked(self.envelope())
+                output = self.run_command(review_invoke, envelope)
+                self.assertEqual("ready", output["exit_id"])
+                self.assertEqual(mode, output["mode"])
+                self.assertEqual("standalone_request", output["transition"]["target"]["kind"])
+                self.assertEqual(self.source["draft_id"], output["transition"]["target"]["request_id"])
+                self.assertEqual(self.transition, envelope["transition"])
+                self.assertEqual([], list(self.root.iterdir()))
+
+                # Ordinary caller mode mistakes still fail after accepting both modes.
+                mismatched = self.envelope()
+                mismatched["transition"]["mode"] = "standalone" if mode == "workflow" else "workflow"
+                self.assert_error(review_record, mismatched, "stale_identity")
+                mismatched = self.envelope()
+                mismatched["owner_result"]["mode"] = "standalone" if mode == "workflow" else "workflow"
+                self.assert_error(review_record, mismatched, "schema_mismatch")
 
     def test_single_live_read_and_no_serializer_live_calls(self):
         self.source = {"kind": "issue", "repo": "example/guru-extension", "number": 27, "state": "open",

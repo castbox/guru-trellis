@@ -17,9 +17,21 @@ unsupported creation inputs.
 
 Review the exact TaskId, date-prefixed TaskRef, title, ordinary scope, selected
 base and delivery target. Choose one checkout acquisition route:
-`adopt_invocation_checkout` for the unique clean branch-bound invocation
-checkout at the reviewed decision HEAD, or `provision_linked_worktree` with
+`adopt_invocation_checkout` for the unique clean registered linked invocation
+checkout on a non-base, non-delivery branch at the reviewed decision HEAD,
+or `provision_linked_worktree` with
 an explicit `new_branch | existing_branch | existing_checkout` disposition.
+New Task creation never adopts the primary checkout, including when it already
+has a non-base branch. Read live topology, HEAD/ref, dirty/untracked contents
+and the current conversation binding before choosing the location. Preserve
+existing content and other worktrees; never switch or detach the primary HEAD
+to prepare this Task. With no suitable linked location, review the exact path,
+branch, source ref/HEAD and creation side effects before acquiring it.
+`record-task-plan` and `create-task` reject primary adoption before mutation.
+This create-only precondition does not govern read-only recovery of an already
+created primary Task; old-Task migration, base Sync and Cleanup retain their
+existing owners and clean-checkout requirements.
+
 Review the actual branch and absolute call-local checkout path, plus the five
 cleanup ownership projections. Show the exact task and Git side effects in
 the current dialogue before invoking the executor.

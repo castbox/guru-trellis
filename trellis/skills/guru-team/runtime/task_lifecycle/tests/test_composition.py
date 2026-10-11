@@ -73,7 +73,7 @@ class CompositionTests(unittest.TestCase):
             "reviewed_base_head": self.head,
         }
 
-    def acquisition(self, route: str = "adopt_invocation_checkout", disposition: str = "new_branch", invocation: Path | None = None) -> CheckoutAcquisitionPlan:
+    def acquisition(self, route: str = "provision_linked_worktree", disposition: str = "new_branch", invocation: Path | None = None) -> CheckoutAcquisitionPlan:
         return CheckoutAcquisitionPlan(
             route=route,
             repository_context=self.repo,
@@ -92,16 +92,21 @@ class CompositionTests(unittest.TestCase):
         )
 
     def test_both_reviewed_source_profiles_and_checkout_routes_are_inputs_only(self) -> None:
+        linked = Path(self.temporary.name) / "adopted"
+        self.git("worktree", "add", "-b", "codex/new-task", str(linked))
         for profile in ("standalone_request", "existing_issue"):
             for route in ("adopt_invocation_checkout", "provision_linked_worktree"):
                 with self.subTest(profile=profile, route=route):
-                    result = prepare_creation_inputs(self.repo, self.creation(profile), self.acquisition(route))
+                    plan = self.acquisition(route, invocation=linked)
+                    if route == "provision_linked_worktree":
+                        plan = replace(plan, branch_ref="codex/provision-task")
+                    result = prepare_creation_inputs(self.repo, self.creation(profile), plan)
                     self.assertEqual(result.reviewed_source["kind"], "no_issue" if profile == "standalone_request" else "issue")
                     self.assertEqual(result.accepted_scope_identity, "scope:reviewed")
                     self.assertNotIn("accepted_scope_identity", result.reviewed_source)
                     self.assertEqual(result.acquisition.route, route)
         self.assertFalse((self.repo / TASK_REF).exists())
-        self.assertEqual(self.git("branch", "--list", "codex/new-task"), "")
+        self.assertEqual(self.git("symbolic-ref", "HEAD"), "refs/heads/main")
 
     def test_creation_rejects_profile_mismatch_and_preexisting_identity(self) -> None:
         payload = self.creation()
@@ -341,9 +346,39 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "creation_identity_mismatch")
         self.assertEqual(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), ledger)
 
-    def test_adopt_primary_ownership(self) -> None:
+    def test_new_creation_rejects_primary_adoption_before_mutation(self) -> None:
         self.git("switch", "-c", "codex/new-task")
-        self.assert_created("adopt_invocation_checkout")
+        before = (self.git("symbolic-ref", "HEAD"), self.git("rev-parse", "HEAD"),
+                  self.git("status", "--porcelain"), self.git("worktree", "list", "--porcelain"))
+        with self.assertRaises(LifecycleContractError) as caught:
+            prepare_creation_inputs(self.repo, self.creation(), self.acquisition("adopt_invocation_checkout"))
+        self.assertEqual(caught.exception.code, "primary_checkout_requires_isolation")
+        self.assertEqual(before, (self.git("symbolic-ref", "HEAD"), self.git("rev-parse", "HEAD"),
+                                 self.git("status", "--porcelain"), self.git("worktree", "list", "--porcelain")))
+        self.assertFalse((self.repo / TASK_REF).exists())
+        repository = inspect_repository(self.repo)
+        key = TaskLifecycleKey(TASK_ID, 0)
+        self.assertIsNone(BranchBindingStore(repository).read(key))
+        self.assertIsNone(ResourceLedgerStore(repository).read(key))
+
+    def test_existing_primary_created_result_remains_recoverable(self) -> None:
+        from runtime.task_lifecycle.composition import CreationInputs
+
+        self.git("switch", "-c", "codex/new-task")
+        plan = self.acquisition("adopt_invocation_checkout")
+        data = self.creation()
+        inputs = CreationInputs(
+            TASK_ID, TASK_REF, data["source_profile"], data["reviewed_source"],
+            data["accepted_scope_identity"], data["delivery_target"], "refs/heads/main", self.head, plan,
+        )
+        acquired = acquire_checkout(plan)
+        task = self.repo / TASK_REF
+        task.mkdir(parents=True)
+        (task / "task.json").write_text(json.dumps(self.task_metadata("planning")), encoding="utf-8")
+        binding = establish_created_control_state(inputs, acquired)
+        before = (self.git("status", "--porcelain"), (task / "task.json").read_bytes())
+        self.assertEqual(recover_created_control_state(inputs, acquired, expected_result_id=inputs.result_id), binding)
+        self.assertEqual(before, (self.git("status", "--porcelain"), (task / "task.json").read_bytes()))
 
     def test_adopt_linked_ownership(self) -> None:
         self.git("branch", "codex/new-task")
@@ -365,11 +400,10 @@ class CompositionTests(unittest.TestCase):
         self.assert_created("provision_linked_worktree", "existing_checkout")
 
     def test_created_session_missing_context_or_write_failure_preserves_control_state(self) -> None:
-        self.git("switch", "-c", "codex/new-task")
         plan = self.acquisition()
         inputs = prepare_creation_inputs(self.repo, self.creation(), plan)
         acquired = acquire_checkout(plan)
-        task = self.repo / TASK_REF
+        task = acquired.checkout.path / TASK_REF
         task.mkdir(parents=True)
         (task / "task.json").write_text(json.dumps(self.task_metadata("planning", inputs.reviewed_source)), encoding="utf-8")
         binding = establish_created_control_state(inputs, acquired)

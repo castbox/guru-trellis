@@ -50,7 +50,10 @@ class CreateTaskTests(unittest.TestCase):
         self.git("add", ".")
         self.git("commit", "-qm", "fixture")
         self.head = self.git("rev-parse", "HEAD")
-        self.git("switch", "-q", "-c", "codex/example-task")
+        self.primary = self.root
+        linked = Path(self.temporary.name) / "invocation"
+        self.git("worktree", "add", "-q", "-b", "codex/example-task", str(linked))
+        self.root = linked
         prefix = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%m-%d")
         self.ref = f".trellis/tasks/{prefix}-example-task"
         self.payload = {
@@ -98,6 +101,23 @@ class CreateTaskTests(unittest.TestCase):
         validate_json(example, PACKAGE / "schemas/public-invocation-error.schema.json", "invocation_error")
         self.assertEqual(example["code"], "stale_identity")
 
+    def test_primary_creation_and_record_plan_reject_before_mutation(self) -> None:
+        self.root = self.primary
+        data = json.loads(json.dumps(self.payload))
+        data["acquisition"]["invocation_checkout"] = str(self.primary)
+        before = (self.git("symbolic-ref", "HEAD"), self.git("rev-parse", "HEAD"),
+                  self.git("status", "--porcelain"), self.git("worktree", "list", "--porcelain"))
+        self.assertEqual(self.invoke(data), {"exit_id": "blocked", "reason_code": "primary_checkout_requires_isolation"})
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "input.json"
+            path.write_text(json.dumps(data))
+            with self.assertRaises(MODULE.CommandError):
+                MODULE.run(PACKAGE, {"id": "record-task-plan"}, ["--root", str(self.root), "--input", str(path)])
+        self.assertFalse((self.primary / self.ref).exists())
+        self.assertFalse((self.primary / ".git/trellis/task-resources/example-task").exists())
+        self.assertEqual(before, (self.git("symbolic-ref", "HEAD"), self.git("rev-parse", "HEAD"),
+                                 self.git("status", "--porcelain"), self.git("worktree", "list", "--porcelain")))
+
     def test_adopt_no_issue_create_and_read_only_recovery(self) -> None:
         result = self.invoke(self.payload)
         self.assertEqual(result, {
@@ -128,7 +148,7 @@ class CreateTaskTests(unittest.TestCase):
         self.git("add", ".trellis/tasks/archive")
         self.git("commit", "-qm", "historical task")
         head = self.git("rev-parse", "HEAD")
-        self.git("branch", "-f", "main", head)
+        subprocess.run(["git", "merge", "--ff-only", head], cwd=self.primary, check=True, stdout=subprocess.DEVNULL)
         self.payload["creation"]["reviewed_base_head"] = head
         self.payload["acquisition"]["decision_head"] = head
         result = self.invoke(self.payload)
@@ -437,7 +457,7 @@ class CreateTaskTests(unittest.TestCase):
                 self.assertFalse((self.root / self.ref).exists())
                 self.assertEqual(self.git("branch", "--list"), before_branches)
                 self.assertEqual(self.git("worktree", "list", "--porcelain"), before_worktrees)
-                self.assertFalse((self.root / ".git/trellis/task-resources/example-task").exists())
+                self.assertFalse((self.primary / ".git/trellis/task-resources/example-task").exists())
         # The normal objective preflight reports its declared invocation error,
         # rather than converting the lifecycle failure into internal_error.
         with tempfile.TemporaryDirectory() as directory:
@@ -465,7 +485,7 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(list(directory.iterdir()), [])
         self.assertEqual(self.git("branch", "--list"), before_branches)
         self.assertEqual(self.git("worktree", "list", "--porcelain"), before_worktrees)
-        self.assertFalse((self.root / ".git/trellis/task-resources/example-task").exists())
+        self.assertFalse((self.primary / ".git/trellis/task-resources/example-task").exists())
 
     def test_optional_diagnostic_preserves_minimal_stop_contracts(self):
         for exit_id, suffix in (("blocked", "blocked"), ("invalid_task_state", "invalid-task-state")):
@@ -488,7 +508,7 @@ class CreateTaskTests(unittest.TestCase):
         self.git("add", ".")
         self.git("commit", "-qm", "install current preset")
         head = self.git("rev-parse", "HEAD")
-        self.git("branch", "-f", "main", head)
+        subprocess.run(["git", "merge", "--ff-only", head], cwd=self.primary, check=True, stdout=subprocess.DEVNULL)
         self.payload["creation"]["reviewed_base_head"] = head
         self.payload["acquisition"]["decision_head"] = head
         path = self.mixed_sibling()
@@ -537,7 +557,8 @@ class CreateTaskTests(unittest.TestCase):
         self.assert_public_creation_and_recovery({"kind": "no_issue"})
 
     def test_provision_new_linked_checkout_and_exact_source(self) -> None:
-        self.git("switch", "-q", "main")
+        subprocess.run(["git", "worktree", "remove", str(self.root)], cwd=self.primary, check=True)
+        self.root = self.primary
         self.git("branch", "-D", "codex/example-task")
         linked = Path(self.temporary.name) / "linked"
         request = json.loads(json.dumps(self.payload))

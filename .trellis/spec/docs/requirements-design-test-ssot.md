@@ -2,16 +2,16 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.83`
+- version：`current-main-0.6.17-guru.85`
 - status：`active`
-- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.83`，薄继承 immutable `.82` 并承接 reviewed #396 contribution。
-- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.82` / `active`；当前任务独立 Architecture owner 判定 no-impact 时不产生 contribution/ADR，新 candidate 仍独立评估。
-- 结果 authority：`docs/requirements-design-test-contributions/396-draft-intake-recovery/test.md`；objective/native/分发、fresh gates 与 lifecycle 独立，知识晋升不推定后续完成。
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.85`，薄继承 immutable `.84` 并承接 reviewed #521 contribution；旧 current-checkout / primary new-Task adoption 条款由本增量定向替换。
+- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.84` / `active`。
+- 结果 authority：`docs/requirements-design-test-contributions/521-checkout-isolation/test.md`；首次失败、实际 native 边界与未执行创建/承接如实保留。晋升差额 fresh gates、业务 #120 安装/PHX、软件发布和生命周期独立。
 
 ## Predecessor identity and provenance
 
 - version：`current-main-0.6.17-guru.77`
-- status：`active`
+- status：`historical`
 - Requirements：`docs/requirements/README.md`
 - Design：`docs/design/README.md`
 - Test：`docs/test/README.md`
@@ -27,4 +27,4 @@
 
 ## Freshness
 
-每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.83` 薄继承 immutable `.82`，承接 R396/D396/T396 增量，Architecture继承 `.82/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。
+每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.85` 薄继承 immutable `.84`，承接 R521/D521/T521 增量，Architecture继承 `.84/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。

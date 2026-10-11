@@ -579,3 +579,9 @@ EVD-056 及更早保持原执行对象；promotion 新 diff 须 fresh Phase2/Tas
 已独立审查完整 committed range `origin/main@6362e080a97fb3851ad3565c65a0e21abd5c49b4...fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`，508 paths（`--no-renames`；rename 识别后 502）。fresh generic reviewer 先执行 committed Architecture，再执行完整 Branch Review；实际 public outputs 分别为 `.82` 的 architecture_impact/reviewed_candidate 与 task/commit 匹配的 passed，原 checker receipt 为 owner_checkpoint_validated，不能替代正式出口。[贡献](../contributions/250-phase0-intake-owner.md)承接 expected `.82→.83`；[唯一 Test](../../requirements-design-test-contributions/250-phase0-intake-owner/test.md)拥有实际测试/native、首次失败/恢复和未验证边界，本文不复制 suite/trace。
 
 EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh Phase2/TaskCommit/独立完整 Branch Review。完整多平台 Upgrade/Release matrix、其它 host/model、真实 external GitHub mutation、业务安装/部署和软件发布未验证，knowledge promotion 不替代 Delivery/Completion。
+
+## EVD-060：#521 隔离位置与无 Task continuation 独立审查
+
+已独立审查完整 committed range `origin/main@44a8b9c1f8495e2f811f892f248a1f2693a8bc80...5bcee456787cfb70bb6f26956a90af696083e73d`，76 paths。fresh reviewer 先读取 Architecture authority、实际差额和受影响 consumers，执行九 concern 项目协议，再完成 Branch Review；实际 Architecture 为 `.83` 的 `baseline_current / architecture_impact / reviewed_candidate`，Branch Review 原 recorder/checker/public invoke 后实际 `passed`，无开放 P0–P3。[贡献](../contributions/521-checkout-isolation.md)承接 expected `.83→.84` 和 ADR-021；[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有原生轨迹、首次失败/同输入修复和安装结果，本文不复制 suite/trace。
+
+原 review 与 evidence 仍绑定实现 commit；新晋升差额尚须 fresh Phase2/TaskCommit/独立完整 Branch Review。现有 primary recovery 保留不等于旧对象迁移完成，标准接管只到独立副作用边界。业务 #120 安装/PHX、其它 native hosts、完整矩阵、Release 与生产效应未验证；知识晋升不替代 Delivery/Completion。

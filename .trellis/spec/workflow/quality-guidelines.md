@@ -48,7 +48,8 @@ surfaces that expose it:
 
 For `no_task` file-changing behavior, the canonical workflow must invoke
 `guru-select-workflow-mode` before normal Intake. Explicit task-free intent
-selects the bounded current-checkout route directly. Without explicit intent,
+selects bounded task-free semantics directly; execution requires a suitable
+linked non-base worktree before the first write. Without explicit intent,
 the AI automatically selects high-confidence bounded low-risk work, asks once
 only when evidence is insufficient, and selects standard Intake for clearly
 complex or high-risk work. Issue presence, file count, paths, and keywords are
@@ -57,9 +58,12 @@ must not classify intent.
 
 Selector `task_free` must invoke semantic `guru-execute-task-free-change`
 without adding checkout facts to the selector output. Contract and real-wrapper
-evals cover suitable default/non-default checkout, same-scope active task,
+evals cover linked non-base suitability, primary/base rejection, same-scope active task,
 scope expansion, unrelated worktree, dirty overlap, insufficient position,
 automatic re-selection, explicit-choice re-entry, and blocked handling.
+Real Agent traces separately prove start, same-chat/new-chat and explicit
+no_current_task caller continuation, and automatic/explicit expansion after
+native partial edits. Host-prewritten candidates/results prove transport only.
 `completed` is valid only when the AI-authored current result includes write-before
 suitability, actual edited paths, at least one passed targeted check with no
 failed check, and passed post-write scope/risk review. Deterministic runtime may

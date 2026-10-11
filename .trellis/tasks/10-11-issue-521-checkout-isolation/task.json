@@ -1,0 +1,29 @@
+{
+  "id": "issue-521-checkout-isolation",
+  "name": "issue-521-checkout-isolation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 521,
+    "disposition": "exact_source"
+  },
+  "title": "保护主 checkout 并支持隔离 task-free 接续",
+  "description": "实现 Guru #521 的修改类操作工作树隔离、无 Task continuation、绑定冲突与部分修改保留；不改 upstream-owned 入口或自动升级业务仓。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Guru canonical workflow、selector/task-free execution、正式 Task acquisition、适用 runtime/templates/dogfood/install projections 和真实行为验收。保留旧 owner 与发布边界，不新增账本或第二生命周期。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-11",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -255,12 +255,17 @@ fake-production 结果不能证明 pressure matrix、模型稳定性或未来模
 
 Selector 的最小 `task_free` DTO 通过 target-owned authoring seed 调用 semantic
 `guru-execute-task-free-change`。该 Skill 在写入前只读检查本地 branch/worktree、活动 task
-scope、dirty/untracked 与目标文件重叠；默认或非默认 branch 本身都不阻塞，也不查询远端
-branch protection。它独占限定编辑、targeted checks 和写后 scope/risk 复核；`completed`
+scope、dirty/untracked 与目标文件重叠；首次写入须位于本仓已注册 linked worktree 的非 base 工作分支，
+位置需求不强制创建 Task，也不查询远端 branch protection。没有合适位置由 `location_required`
+回原执行 owner，沿精确 Git 副作用边界创建或复用后重读事实。它独占限定编辑、targeted checks 和写后 scope/risk 复核；`completed`
 必须同时有写前 suitability、实际 edited paths、通过的 targeted check 和写后复核，并向
 completion consumer 报告实际修改路径、精简检查结果和未验证边界。自动选择的 task-free
 在真实 partial edit 后发现风险扩大时立即停止剩余写入并重新判断 mode；显式 task-free 同样
 停止剩余写入，再由用户选择缩小范围或进入标准 Intake。
+
+真实 upstream `trellis-continue:no_current_task` 由 Guru workflow caller fresh 核对范围、位置和绑定后接续，
+不将无 Task 变成建 Task 门禁。Guru 不改写上游入口；真实 native 接续不可用时保留未交付依赖。
+正式新 Task 的 primary 拒绝仅作用于创建前置，旧 Task recovery、base Sync 与 Cleanup 保留原 owner。
 
 Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/task/worktree/branch
 创建以及 commit、push、PR、merge、tag、release、安装、清理和关闭 Issue 都是独立的后续

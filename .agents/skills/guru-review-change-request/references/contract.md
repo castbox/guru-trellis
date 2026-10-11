@@ -31,6 +31,12 @@ review; `blocked` stops. Rejected candidates do not become findings, tests,
 clarification, or follow-up work. This review stores no qualification artifact,
 checkpoint, result locator, or cross-round state store.
 
+The source profile and execution mode are independent: `standalone_request`
+means a reviewed request without an Issue and accepts both `workflow` and
+`standalone` modes. Preserve the actual producer transition; `public_input.mode`,
+`owner_result.mode`, and `transition.mode` must agree. Selecting this profile
+does not change its target identity, readiness consumer, or Task creation gates.
+
 Workflow and standalone modes have identical entry preconditions. Both require
 the complete compatible Guru Team preset, extension manifest, dispatcher,
 runtime, installed inventory, and selected discovery copy. A copied package is

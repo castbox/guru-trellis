@@ -217,7 +217,7 @@ information-only direct answer. The selector's `standard_intake` exit enters
 `guru-sync-base`, then automatically follows the public graph through current
 context discovery, requirements clarification, wording review, change-request
 review, and the `guru-task-intake-router`. Its `task_free` exit enters only the
-bounded current-checkout edit target.
+bounded task-free edit owner, which determines linked non-base execution before the first write.
 
 `guru-sync-base` public invocation is the only authoritative synchronization
 entry. The workflow, platform launchers, prompts, and Skill Markdown do not
@@ -287,6 +287,14 @@ expansion routes bind real partial-edit and stopped-remaining-write evidence.
 The `completed` workflow handoff reports only actual edited paths, concise
 validation results, and unverified boundaries. The global workflow owns only
 their unique consumers and fail-closed routing.
+
+Task-free mode never establishes a Task identity. Its existing execution owner
+handles linked non-base location acquisition and suitability; isolation alone
+does not select standard Intake. The Guru workflow caller consumes actual
+upstream no_current_task into fresh no-Task routing without modifying upstream
+entries. Native caller delivery remains distinct from serializer evidence.
+New formal Task primary rejection belongs only to create preparation; existing
+primary recovery, clean acquisition, Sync and Cleanup retain their owners.
 
 ### Phase 1 — Planning
 
