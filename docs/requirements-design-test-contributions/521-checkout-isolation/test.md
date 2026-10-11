@@ -1,6 +1,6 @@
 # #521 验收与实际结果
 
-状态：candidate，定向实现与真实 native 验收已完成（2026-10-11）；正式 Check、committed review 与 promotion 各走原 owner。此文件是 #521 定向验收结果的唯一长期 owner。测试只覆盖 honest 正常路径及当前合同要求的普通冲突/外部状态变化。
+状态：reviewed_promoted，定向实现与真实 native 验收已完成（2026-10-11）；晋升前正式 Check 与独立完整 Branch Review 已通过，review commit 为 `5bcee456787cfb70bb6f26956a90af696083e73d`。RDT .85 / Architecture .84 晋升差额仍须 fresh Phase2、TaskCommit 和新的独立完整 Branch Review。此文件是 #521 定向验收结果的唯一长期 owner。测试只覆盖 honest 正常路径及当前合同要求的普通冲突/外部状态变化。
 
 | Test identity | 执行入口与观察 | 当前结果 |
 | --- | --- | --- |
@@ -35,5 +35,9 @@ dogfood首次apply产生29个`.bak`，逐一核对等于对应HEAD旧字节后�
 
 客观 Python/runtime/schema pass 不证明 Agent 执行、完整调用链或业务安装。native traces 必须由实际模型调用生成，既有 post_owner host预写候选/结果只能证明 serializer消费，不能作为first-write/partial-edit行为证据。无法实际接续时保留原失败、依赖owner与未交付边界。
 
-完整多平台 Release matrix、tag/Release、业务 #120 安装及 PHX验收、生产效应均未验证，且不由此定向测试推定。后续独立 committed review、知识晋升与 fresh gates尚未发生。
+完整多平台 Release matrix、tag/Release、业务 #120 安装及 PHX验收、生产效应均未验证，且不由此定向测试推定。晋升前独立完整 committed review 已发生；本次知识晋升后的 fresh gates 尚未发生。
 
+
+## 晋升前独立 committed review 的实际结果
+
+原 Branch Review recorder/checker/public invoke 对 `origin/main@44a8b9c1...5bcee456` 实际返回正式 `passed`，无开放 P0–P3 finding；Architecture 同阶段正式 `baseline_current / reviewed_candidate`，不以 Phase2 结果代替。独立 composition26、bind12、Review单文件22、selector16、execution11、Stage0全套10通过；create23初跑一项因缺固定Fork跳过，核对 `5c760463...` 后补跑该项通过。41变化投影字节一致、dogfood drift通过，原生轨迹直接核对及31现存路径hash/topology保留。以上结果不证明晋升后候选已通过新Check或新Branch Review，也不认领实际Task创建/承接、发布或业务采用。

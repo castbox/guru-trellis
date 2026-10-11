@@ -1,6 +1,6 @@
 # #521 隔离修改增量需求
 
-状态：candidate；Direct Source：[Guru #521](https://github.com/castbox/guru-trellis/issues/521)。继承 current RDT `current-main-0.6.17-guru.84` 与 Architecture `.83/active`。本增量不替代 canonical workflow/Skill 的步骤定义，不证明安装或发布。
+状态：reviewed_promoted；Direct Source：[Guru #521](https://github.com/castbox/guru-trellis/issues/521)。晋升至 current RDT `current-main-0.6.17-guru.85`，薄继承不可变 `.84`；Architecture 继承 `.84/active`。本增量不替代 canonical workflow/Skill 的步骤定义，不证明安装或发布。
 
 | Identity / behavior | 必须行为 |
 | --- | --- |

@@ -80,3 +80,9 @@ Promotion：`required` / `promoted_identity=""` / `expected_current_identity=cur
 这改变默认位置决策，仍使用 target_native 与上述 proposed ADR；不是 no-impact 文案修正。九 concern 的适用性、原 single-writer、当前 necessity、旧模式删除出口与 expected .83 promotion 保持。Architecture project check 评估上述实际 before/after 和职责图；客观命令仅提供事实，不代替判断。当前实现没有把无 Task 或位置缺失转换为强制创建，也未把 create-only 拒绝扩大至旧 Task recovery。
 
 真实标准接管、绑定及 caller 的测试充分性继续由唯一 Test 与本阶段 Check owner 判断；首次失败和恢复只绑定各自实际候选。Architecture current candidate 不能把未执行的 Task/承接、副作用、业务安装或 Release 当作完成，亦不能将 serializer/静态合同当 native proof。完整 committed review 与 shared promotion 尚未发生；当前候选字节变化后重新 freshness 评估。
+
+## 已执行的 committed review 与知识晋升
+
+Identity：`architecture-contribution-521-checkout-isolation-v1`；当前状态：`reviewed_promoted`；expected_current_identity=`current-main-0.6.17-guru.83`；promoted_identity=`current-main-0.6.17-guru.84`。独立审查范围为 `origin/main@44a8b9c1f8495e2f811f892f248a1f2693a8bc80...5bcee456787cfb70bb6f26956a90af696083e73d`。实际 committed Architecture public output 为 `baseline_current / architecture_impact / reviewed_candidate`，完整 Branch Review public output 为 `passed`；原 recorder/checker/public invoke 均完成，task/commit 匹配。后续 publication eligibility 因尚未 promotion 实际返回 `sync_required / promotion_required`。
+
+原 Architecture owner fresh 复核 expected `.83` 后串行晋升 `.84`，将上述 ADR-521-CANDIDATE 登记为 [ADR-021](../adr/021-checkout-isolation.md)。constitution、GAP 生命周期、原 Task/Bind/Sync/recovery/terminal owners、公共 exits 和软件四轴保持；唯一 Test 继续拥有实际结果与首次失败，不改写原证据对象。上文 implementation/Planning/Phase2 candidate 与 pending 字段保留为 preimage，当前状态以本 successor 节为准。晋升产生的新 diff 尚须 fresh Phase2/TaskCommit/独立完整 Branch Review；不声明其已完成，也不表示 Delivery、Completion、Release、业务 #120 安装或旧 primary Task 迁移已完成。

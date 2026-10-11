@@ -12,5 +12,5 @@
 | R521-08 / BEH521-CREATE | D521-03/05 / CON521-C6/DISTRIBUTE | T521-01/07/08 |
 | R521-09 / BEH521-EVIDENCE | D521-02/05 / CON521-CALLER/DISTRIBUTE | T521-03/06/07/08 |
 
-Requirements/Design/Test 各层由本目录的[requirements](requirements.md)、[design](design.md)、[test](test.md)拥有。manifest 绑定 expected current RDT .84 和 Architecture .83；candidate未晋升，现 authority不被覆写。必要ADR与九concern由Architecture contribution拥有，不复制第二authority。
+Requirements/Design/Test 各层由本目录的[requirements](requirements.md)、[design](design.md)、[test](test.md)拥有。manifest 绑定晋升 preimage RDT .84、新 current .85 和 Architecture .84；本 contribution 已晋升，晋升差额仍须 fresh Phase2/TaskCommit/独立完整 Branch Review。必要ADR与九concern由Architecture contribution拥有，不复制第二authority。
 

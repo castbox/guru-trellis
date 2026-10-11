@@ -1,6 +1,6 @@
 # #521 设计职责
 
-状态：candidate；Architecture 由[任务贡献](../../architecture/contributions/521-checkout-isolation.md)拥有，change path `target_native`。各步骤的完整合同只在其 canonical owner 定义。
+状态：reviewed_promoted；Architecture 由[任务贡献](../../architecture/contributions/521-checkout-isolation.md)拥有，change path `target_native`。各步骤的完整合同只在其 canonical owner 定义。
 
 | Identity | 唯一职责与直接 consumer |
 | --- | --- |
