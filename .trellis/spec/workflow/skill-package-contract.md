@@ -205,9 +205,9 @@ guess from optional fields, file presence, package content, or extension
 defaults. In that snapshot the extension published one `interface_schema_id`, the registry id,
 and exact public-input, typed-output, and private-artifact schema inventories
 for that snapshot's 32 active packages and 142 external exits. The
-`production-current-v4` remains the current four-package submanifest and contains exactly four
+`production-current-v5` selects the current four-package submanifest and contains exactly four
 packages and 15 exits, including `guru-qualify-normal-scenario`; additive
-activation of other packages does not rewrite that membership. Versioned v2/v3
+activation of other packages does not rewrite that membership. Versioned v2/v3/v4
 files remain immutable legacy assets. The #434 Delivery/terminal graph is
 selected separately by the live registry and workflow.
 
@@ -725,16 +725,25 @@ compatibility contract. A legacy DTO that cannot establish the current stage or
 source-preserving provenance fails closed and reruns its current producer; it
 must not default missing fields or derive them from ambient live state.
 
-For `guru-clarify-requirements:clear`, a checker-passed
-`active_task_scope_change` result may legitimately carry
-`target_disposition=null` when the accepted action updates only the active task
-scope. That one fixed profile projects to public `retained`; null disposition in
-initial or standalone profiles remains an invalid owner projection.
+Current Clarify active-task private evidence uses 4.0. Accepted current scope
+returns scope_ready 1.0 to the original clear router's independently owned
+scope-ready 1.0 input; direct projection contains only exit_id, mode, task_ref,
+source_selection and AI-selected revision_refs. The router drops exit_id and
+adds fixed active_task_scope_change for the existing Author input. Non-current
+active clear still permits null target disposition and projects retained;
+initial/standalone null remains invalid. Historical 3.0 private/clear and 2.0
+clear consumer assets are immutable. Successful old active results re-enter
+original Clarify; no conversion or inferred pass. No planning-bound task action
+or lifecycle writer belongs to this boundary.
 
 ### Four-Package Manifest And Historical Routing Snapshot
 
 `trellis/skills/guru-team/contracts/production-current-4.0.json` with contract id
-`production-current-v4` is the current four-package submanifest. Its historical
+`production-current-v4` is a pinned historical four-package submanifest. The
+current selector is `production-current-v5`; #292 migrates Approval revision
+and normal qualification while retaining this membership and the historical
+160-case control. The DTOs, profile count and self-authoring edge below describe
+the pinned snapshot, not current Planning. Its historical
 activation extended the then-live six-Skill/23-exit Intake contract, not the
 #434 split Intake graph. The production contract contains exactly:
 
@@ -922,7 +931,7 @@ scope-choice authorization occurs only in the current conversation. No
 authorization value, wording, timestamp, digest, or reference enters the
 public input, private checkpoint, archive, or output.
 
-New private evidence uses `guru-planning-approval-3.0` under ignored runtime.
+New private evidence uses `guru-planning-approval-4.0` under ignored runtime.
 It stores only mode, task/planning locators, authority refs, compact Docs SSOT,
 one composite planning-content freshness token, the final semantic result,
 typed exit, reason, and consumer. The token serves only the local checker before
@@ -937,19 +946,31 @@ only selects `initial_review`, `revision_reentry`, or
 The four external exits and unique consumers are:
 
 - `approved` -> workflow target `phase-1-task-activation`;
-- `revision_required` -> Skill `guru-approve-task-plan`;
+- `revision_required` -> workflow target `guru-task-plan-approval-revision-router`;
 - `clarify_scope` -> workflow target `guru-task-plan-clarify-scope-router`;
 - `blocked` -> stop `task-plan-approval-blocked`.
 
-`revision_required` restarts after task-local planning changes and a fresh
-wording review. `clarify_scope` delegates through the three-field routing-only
+`revision_required` carries concrete revision_actions through its 2.0 public
+projection to Author approval_revision; Approval never writes the plan. The
+affected dependencies, Wording and final Architecture precede Approval re-entry.
+`clarify_scope` delegates through the three-field routing-only
 workflow target, which establishes scope context and mandatory invokes
 `guru-clarify-requirements:active_task_scope_change`; the caller AI authors the
 complete clarification input from fresh live context before all eight planning
 entry checks restart. Unknown, duplicate, multiple, unmapped, or
 consumer-mismatched exits fail closed. The package uses current-only closed
-schema `guru-planning-approval-3.0`; any other shape fails schema validation and
+schema `guru-planning-approval-4.0`; any other shape fails schema validation and
 requires a complete current semantic review.
+
+`guru-author-task-plan` independently owns eight closed inputs and four minimal
+outputs through Interface 1.6. It is the sole business writer for task planning
+documents and official JSONL. Its package contract owns source-design
+convergence, writing and profile-local recovery; global order and thin routers
+remain in the canonical workflow. Architecture planning uses purpose-specific
+3.0 contracts: candidate_assessment returns to Author and final_plan returns
+to adjacent Approval. Nonplanning Architecture contracts retain 2.0. The
+matching workflow/preset migration is defined in MIGRATION-292; interrupted
+old planning re-enters the current Author without a compatibility parser.
 
 `guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
 before every task work stage/commit side effect. It exposes only `committed`,
@@ -1231,8 +1252,9 @@ Unique consumers are `pass` -> workflow target
 `guru-contract-wording-change-router`, and `blocked` -> stop
 `contract-wording-blocked`. Those routers use only the checker-validated
 profile and exit. Unknown, multiple, stale, or unmapped profile/exit evidence
-fails closed. Planning approval consumes only the current checked
-`planning_artifacts:pass` exit and cannot become a second vocabulary,
+fails closed. The checked `planning_artifacts:pass` reaches Architecture
+final_plan; only its current result reaches Planning approval. Approval cannot
+become a second vocabulary,
 classification, scanner, or semantic-review owner. It rereads the three current
 planning files and does not import scanner hits, classification history, file
 digests, or the wording owner's private result. Inputs outside the current

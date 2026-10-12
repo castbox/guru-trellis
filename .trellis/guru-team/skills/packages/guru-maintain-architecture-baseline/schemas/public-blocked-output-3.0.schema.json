@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-output-blocked-3.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "reason_code",
+        "remediation"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "blocked"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "reason_code",
+        "remediation",
+        "planning_purpose",
+        "stage",
+        "task_locator"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "blocked"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "reason_code",
+        "remediation",
+        "planning_purpose",
+        "stage",
+        "task_locator"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "blocked"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}

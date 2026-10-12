@@ -187,7 +187,6 @@
     ".claude/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".cursor/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".agents/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
-    ".trellis/workflow.md": "074c5d502341b880e5947acb1c18eb2586b40b578714a1c63c52f6a0daf4755f",
     ".codex/hooks/inject-subagent-context.py": "bf3968484a2297b28a513dc77695da882b476226c2a5ed99cc1200e67d45c67b",
     ".trellis/scripts/common/session_storage.py": "621a91158a99233b5ed4f7c71b79860dddbf923b824fd654b595e667e378a2f5",
     ".trellis/scripts/common/continuation_contract.py": "63fcebdfebc859f07292e027979874982c9e01c676ac67363f402cf595f2210a",

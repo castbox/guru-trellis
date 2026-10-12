@@ -143,7 +143,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
     def test_project_spec_index_routes_to_current_lifecycle(self) -> None:
         index = PROJECT_INDEX.read_text(encoding="utf-8")
         current = index.split("## Local Architecture\n", 1)[1].split("\n## Required Validation", 1)[0]
-        self.assertIn("35 active packages, 159 exits", current)
+        self.assertIn(f"{self.active_count} active packages, {self.exit_count} exits", current)
         self.assertIn("`guru-review-task-delivery`", current)
         self.assertIn("`guru-review-task-completion`", current)
         self.assertIn("pinned-old history only", current)
@@ -198,7 +198,7 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         )[0]
         self.assertIn("Delivery/Completion graph", current)
         self.assertIn("## Retired Task Finalization Package Activation (pinned-old only)", installer)
-        self.assertIn("35-Skill/159-package-exit/106-command", installer)
+        self.assertIn(f"{self.active_count}-Skill/{self.exit_count}-package-exit/{self.command_count}-command", installer)
         self.assertIn("install one current Task Delivery graph", installer)
         self.assertNotIn("install only current Finalizer and Publication", installer)
         self.assertNotIn("The business Finalizer may consume this current manifest", installer)

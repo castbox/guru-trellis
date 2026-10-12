@@ -484,14 +484,14 @@ arguments to the formal resolver. Source validation, discovery, invocation, and
 install consume exactly this live closure.
 
 The current four-package production submanifest is
-`trellis/skills/guru-team/contracts/production-current-4.0.json`, with schema id
-`guru-team-production-contract-manifest-4.0` and contract id
-`production-current-v4`. It binds exactly the three planning/check/commit
-packages plus `guru-qualify-normal-scenario`, 20 structured profiles, 15 stable
+`trellis/skills/guru-team/contracts/production-current-5.0.json`, with schema id
+`guru-team-production-contract-manifest-5.0` and contract id
+`production-current-v5`. It binds exactly the three planning/check/commit
+packages plus `guru-qualify-normal-scenario`, 22 structured profiles, 15 stable
 exits, current per-exit schema and example identities, consumer inputs,
-projections, private artifact ids, four authoring-seed edges, the 160 x 5 host
+projections, private artifact ids, three authoring-seed edges, the 160 x 5 host
 production control, and canonical eval cases. Inputs and owner artifacts must
-validate against the current package schemas; versioned v2/v3 files are
+validate against the current package schemas; versioned v2/v3/v4 files are
 immutable legacy assets and no alternate executor, projection, or manifest
 participates in those package invocations. This submanifest is not a complete
 inventory of the #434 lifecycle graph; the live registry and workflow select
@@ -759,16 +759,20 @@ task/binding/worktree identity fails closed.
 
 `guru-approve-task-plan` is the sole semantic owner of Phase 1 planning
 approval. New owner evidence uses closed schema
-`guru-planning-approval-3.0` and lives only in ignored
+`guru-planning-approval-4.0` and lives only in ignored
 `.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/planning-approval.json`.
 It is a short-lived owner checkpoint, not a tracked task artifact, public DTO,
 handoff, or archive file.
 
-The AI rereads live requirement authority, current wording result, `prd.md`,
+The AI rereads live requirement authority, current wording and final-plan
+Architecture results, `prd.md`,
 `design.md`, `implement.md`, and the Docs SSOT decision.
 It reviews eight dimensions: requirement authority, scope boundary, design
 adequacy, implementation plan, acceptance verifiability, Docs SSOT,
-provenance, and supported unusual scenarios. Formatting, spelling, link,
+provenance, and supported unusual scenarios. Source design is checked against
+the Author-owned disposition and actual landing points; revision_required
+projects concrete revision_actions to Author rather than an Approval writer.
+Formatting, spelling, link,
 derived-text, and workflow-metadata changes are classified by their real
 semantic effect; only changed dependencies are refreshed.
 
@@ -797,8 +801,8 @@ The closed exits are:
 
 - `approved` -> `workflow:phase-1-task-activation`, with every dimension true
   and no finding, revision action, scope proposal, or blocker;
-- `revision_required` -> `skill:guru-approve-task-plan`, with one or more
-  task-local revision actions;
+- `revision_required` -> `workflow:guru-task-plan-approval-revision-router`,
+  projecting one or more task-local revision_actions to Author approval_revision;
 - `clarify_scope` -> `workflow:guru-task-plan-clarify-scope-router`, with one
   or more exact scope proposal refs;
 - `blocked` -> `stop:task-plan-approval-blocked`, with one or more concrete
@@ -812,7 +816,7 @@ Neither command decides scope, sufficiency, finding severity, revision,
 authorization, or route. Unknown, multiple, stale, ambiguous, or
 consumer-mismatched results fail closed; mapped re-entry remains automatic.
 
-The recorder accepts only current schema 3.0. Any other shape returns
+The recorder accepts only current schema 4.0. Any other shape returns
 `planning_approval_schema_version_invalid` and requires a complete current
 semantic review. `task.py start` is only a status transition and never approval
 evidence.
@@ -2104,3 +2108,20 @@ publication or the full Release matrix.
 ## Root-Cause Call-Local Transport
 
 Root qualification commands consume stdin and emit stdout only. Goal-specific semantic-result branches are call-local checker evidence, separate from public outputs. Git/planning/locator facts are checked by the shared deterministic qualification facts module. Local digests have no cross-stage authority. Public output schemas and root router/stop input schemas are independently owned and directly projected.
+
+## #292 active-scope boundary
+
+Clarify owns accepted scope before the original Author writes planning.
+Current active private result is 4.0; scope_ready public output and the original
+clear-router's independent consumer input are 1.0. The output is exactly
+exit_id/mode/task_ref/source_selection/revision_refs. The thin router drops
+exit_id, adds fixed profile=active_task_scope_change and passes the remaining
+fields unchanged to Author's existing input 1.0. AI chooses revision_refs from
+actual revisions; scripts do not infer them. Updated planning, planning hashes,
+reentry owners and active_task_scope_update are not Clarify prerequisites.
+Original Sync/Discovery still handles source mutation or missing context.
+Original activation/resume_execution retains TaskId/generation and in_progress.
+Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
+old successful active results require fresh original Clarify, while other
+profiles keep their contracts. This migration does not imply native semantic,
+fixture resume, full installer-matrix or release qualification.

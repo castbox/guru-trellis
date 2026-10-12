@@ -79,6 +79,7 @@ PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
     }),
 }
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
+    "production-contract-manifest-5.0.schema.json",
     "production-contract-manifest-4.0.schema.json",
     "production-contract-manifest-3.0.schema.json",
     "production-contract-manifest-2.0.schema.json",

@@ -1,0 +1,10 @@
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "Phase1 mandatory调用与唯一typed exit消费者；注入会截断；显式读取完整Phase1、mandatory Architecture/qualification、typed routers与trellis-continuation。"}
+{"file": "trellis/skills/guru-team/registry.json", "reason": "公共Skill注册与新增Author闭包"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "public I/O与最小private state合同；注入会截断；显式读取完整Public Skill I/O And Private State与新增package/interface闭包。"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性script角色与stdout transport；注入会截断；显式读取完整Intermediate Command Stdout 1.0及受影响public invocation合同。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "scope-required与test value；注入会截断；显式读取完整Test And Validation Value、Validation Scope Ownership和受影响Required Checks。"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "planning2.0直接退役和非planning保留"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "#383共同语义"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern与project checks"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md", "reason": "独立评估与promotion边界"}
+{"file": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/contract.md", "reason": "独立approval及展示边界"}

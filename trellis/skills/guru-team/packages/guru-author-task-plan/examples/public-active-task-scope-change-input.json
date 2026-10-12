@@ -1,0 +1,15 @@
+{
+  "profile": "active_task_scope_change",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/10-11-sample-planning",
+  "source_selection": [
+    {
+      "locator": "issue:example/repo#12",
+      "section": "Design A",
+      "authority_kind": "design_constraint"
+    }
+  ],
+  "revision_refs": [
+    "source:Design A"
+  ]
+}

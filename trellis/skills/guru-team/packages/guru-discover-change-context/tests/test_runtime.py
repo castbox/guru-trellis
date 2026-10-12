@@ -167,6 +167,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    payload=binding.as_dict();payload["branch_name"]="feat/context";store.path_for(key).write_text(json.dumps(payload))
    self.assertEqual((td.resolve(),task),active_task(repo,ref))
    task["status"]="planning";(td/"task.json").write_text(json.dumps(task))
+   self.assertEqual((td.resolve(),task),active_task(repo,ref))
+   task["status"]="completed";(td/"task.json").write_text(json.dumps(task))
    with self.assertRaises(CommandError) as stale:active_task(repo,ref)
    self.assertEqual("stale_identity",stale.exception.code)
 

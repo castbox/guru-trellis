@@ -973,7 +973,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 self.assertNotIn("expected_exit", native_request)
                 self.assertNotIn("owner_result", json.dumps(native_request).lower())
                 self.assertIn("references/contract.md", context)
-                self.assertIn("schemas/semantic-result.schema.json", context)
+                self.assertIn("schemas/semantic-result-planning-3.0.schema.json", context)
                 owner_repository = Path(protocol["owner_repository"])
                 self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
 
@@ -986,9 +986,9 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     projection / "SKILL.md",
                     projection / "references/contract.md",
                     projection / "interface.json",
-                    projection / "schemas/semantic-result.schema.json",
-                    projection / "schemas/public-input-aggregate.schema.json",
-                    projection / "schemas/public-input-impact.schema.json",
+                    projection / "schemas/semantic-result-planning-3.0.schema.json",
+                    projection / "schemas/public-input-aggregate-3.0.schema.json",
+                    projection / "schemas/public-input-impact-current-3.0.schema.json",
                 ]
                 case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
                 owner_reads = [

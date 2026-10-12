@@ -69,8 +69,8 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current source registry has 36 active packages, 164 package exits, and 109
-commands. The business-task workflow declares 34 mandatory invocations and 158
+The current source registry has 37 active packages, 169 package exits, and 110
+commands. The business-task workflow declares 35 mandatory invocations and 163
 external exits; `guru-verify-extension-installation` and
 `guru-upgrade-installation` are standalone-only. These
 counts are checks against the live registry and workflow markers, not an
@@ -298,10 +298,15 @@ primary recovery, clean acquisition, Sync and Cleanup retain their owners.
 
 ### Phase 1 — Planning
 
-Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, including
-one explicit Docs SSOT Plan. Before presenting those files, mandatory invoke
-`guru-review-contract-wording` with the planning profile. Then mandatory invoke
-`guru-approve-task-plan` and automatically consume its typed exit. Only
+The canonical workflow delegates planning business writing to mandatory
+`guru-author-task-plan`, including the three planning documents and official
+planning JSONL. Its `requirements_ready` enters the original Architecture
+owner's planning `candidate_assessment`; that current result returns to Author
+for solution writing. Author `plan_ready` enters Wording, whose planning pass
+enters Architecture `final_plan`; only that current result enters adjacent
+Approval. The packages own their local contracts, including source-design
+disposition, Delivery Policy and Docs SSOT Plan. Automatically consume each
+declared typed exit. Only
 `approved` reaches `phase-1-task-activation`. That target first presents the
 three planning links, semantic conclusion, key choices, alternatives,
 trade-offs, and unverified boundaries, then owns the dialogue-local review
@@ -311,7 +316,8 @@ in-progress replan. The same approved consumer selects `activate` or
 activation changes status; active resumption preserves identity, branch,
 checkout and `in_progress`. Questions, revision
 requests, partial choices, and ambiguous replies remain paused. Material plan
-changes rerun wording and semantic review before a new presentation; an older
+changes re-enter the earliest affected Author/dependency and repeat current
+Wording, final Architecture and Approval before a new presentation; an older
 reply and any Phase 0 confirmation are not reusable. Explicit autonomous
 execution may omit only the ordinary unchanged-plan pause; scope, authority,
 material design, or risk changes still pause.
@@ -400,8 +406,12 @@ recovery or rematerialization, while a semantic result is rerun fresh by its
 semantic owner. Missing checkpoints, clean Git state, commit messages, task
 status, old summaries, and earlier confirmation are never substitutes.
 
-The Phase 1 matrix preserves the current owner for task-created attachment,
-partial planning, planning wording, Planning Architecture, plan approval,
+The Phase 1 matrix routes current created and C3/C4/C5-resolved planning tasks
+to Author using fresh original source selection, including incomplete or stale
+planning documents. Lost selection returns to original Clarify/context; a
+legitimate branch rebind does not replay initial creation. It preserves the
+current owner and purpose for planning wording, both Planning Architecture
+calls, plan approval,
 dialogue-local plan acceptance, and activation. `guru-activate-task` performs
 the status-only transition once after current approval and confirmation; lost
 output is recovered through `recover_activation` for that same first operation.
@@ -675,3 +685,20 @@ The global initial classifier distinguishes information-only questions about
 existing facts from proposed-change requirements/design/planning intent. Deferred
 file writes or resource creation preserve that intent and its current Guru route.
 See the marketplace workflow Guru Team Gate for the single routing definition.
+
+## #292 active-scope boundary
+
+Clarify owns accepted scope before the original Author writes planning.
+Current active private result is 4.0; scope_ready public output and the original
+clear-router's independent consumer input are 1.0. The output is exactly
+exit_id/mode/task_ref/source_selection/revision_refs. The thin router drops
+exit_id, adds fixed profile=active_task_scope_change and passes the remaining
+fields unchanged to Author's existing input 1.0. AI chooses revision_refs from
+actual revisions; scripts do not infer them. Updated planning, planning hashes,
+reentry owners and active_task_scope_update are not Clarify prerequisites.
+Original Sync/Discovery still handles source mutation or missing context.
+Original activation/resume_execution retains TaskId/generation and in_progress.
+Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
+old successful active results require fresh original Clarify, while other
+profiles keep their contracts. This migration does not imply native semantic,
+fixture resume, full installer-matrix or release qualification.

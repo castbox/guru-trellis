@@ -27,3 +27,20 @@ clear → Wording → readiness → task intake → current Planning. Create Tas
 created DTO is still TaskId/TaskRef/generation. Loss or source revision returns
 to the original Clarify/context owner. No task.json source model or future
 Author prerequisite is introduced.
+
+## #292 active-scope boundary
+
+Clarify owns accepted scope before the original Author writes planning.
+Current active private result is 4.0; scope_ready public output and the original
+clear-router's independent consumer input are 1.0. The output is exactly
+exit_id/mode/task_ref/source_selection/revision_refs. The thin router drops
+exit_id, adds fixed profile=active_task_scope_change and passes the remaining
+fields unchanged to Author's existing input 1.0. AI chooses revision_refs from
+actual revisions; scripts do not infer them. Updated planning, planning hashes,
+reentry owners and active_task_scope_update are not Clarify prerequisites.
+Original Sync/Discovery still handles source mutation or missing context.
+Original activation/resume_execution retains TaskId/generation and in_progress.
+Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
+old successful active results require fresh original Clarify, while other
+profiles keep their contracts. This migration does not imply native semantic,
+fixture resume, full installer-matrix or release qualification.

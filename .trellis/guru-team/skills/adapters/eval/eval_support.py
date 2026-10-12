@@ -734,7 +734,14 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
     public_assets = intake_projection_assets(interface) if intake_flow else public_projection_assets(interface)
     if request.get("native_execution_mode") == "semantic_authoring" and not intake_flow:
         public_assets.add(Path("references/contract.md"))
-        public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
+        if request["skill_id"] == "guru-maintain-architecture-baseline":
+            from adapters.eval.architecture_authoring import contract_paths
+            from adapters.eval.fixture_io import public_input_path
+
+            public = json.loads(public_input_path(request).read_text())
+            public_assets.update(Path(path) for path in contract_paths(public))
+        else:
+            public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative
         if source.is_symlink() or not source.is_file():

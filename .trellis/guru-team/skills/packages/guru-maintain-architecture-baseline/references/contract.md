@@ -1,4 +1,4 @@
-# Architecture Baseline Contract 2.0
+# Architecture Baseline: Planning 3.0 and Nonplanning 2.0
 
 ## Authority model
 
@@ -58,7 +58,7 @@ decision, project-check descriptor or result, review conclusion, semantic pass,
 or typed route.
 
 After rereading those live locators, the AI-owned semantic result records the
-reviewed impact kind and reason. Architecture-impact results additionally bind
+reviewed impact kind and reason. Nonplanning and final-plan Architecture-impact results additionally bind
 exactly one change path, the task-owned contribution, the current descriptors
 reread from project authority, exactly one result for every descriptor
 identity, and the stage-specific review state. The semantic result records the
@@ -234,7 +234,8 @@ is valid only after the contribution has an independent reviewed state.
 
 ## Stage lifecycle
 
-Planning creates the current impact result. Implementation discovery re-enters
+Planning assesses the real prewrite candidate before solution writing, then
+Wording-current final facts immediately before Approval. Implementation discovery re-enters
 when a material boundary expands. Phase 2 performs applicable project checks
 and a first before/after semantic judgment. Branch Review independently
 recomputes the same concerns from the committed full diff. Publication rejects
@@ -331,3 +332,50 @@ the prior round and the failed invocation is never converted into an
 Architecture judgment. Only a platform that cannot perform the required AI
 review, public/live reads, result authoring, or formal invocation may report a
 true execution-capability gap.
+
+## Planning 3.0
+
+This purpose-specific section owns the planning delta to the 2.0 rules above.
+Both purposes use the same Architecture semantic owner and independent read
+order. Public inputs select purpose and locate the real design object; they
+never preselect impact or a decision. The project_contract binds
+`guru-maintain-architecture-baseline:planning:3.0`; project descriptors and
+check-result contracts remain 2.0. Shared project authority is promoted only
+through its original owner after committed review.
+
+For candidate_assessment, read current baseline/constitution/change contract,
+then call-local design_facts + real source constraint_refs or design_locator,
+then affected consumers and current project checks. Candidate facts are the
+actual design object without PRD/acceptance narrative. Form the independent
+judgment before reading necessary explanations. An impact binds change_path,
+actual decision_refs for necessary ADR/contribution writing and applicable
+project checks; it omits contribution_locator/identity, promotion_state and
+review. No-impact binds a concise reason without path/check/ADR burden. The
+current output's purpose, authority identities, impact/reason, path/decisions
+and design freshness have direct consumers in the current router and Author.
+It makes no future contribution or reviewed_candidate claim.
+
+For final_plan, read Wording-current design and consumers before explanations
+and real contribution/necessary ADR. Apply the existing independent assessment
+applicability rule: if candidate facts changed, obtain a fresh independent
+conclusion; if the prior independent conclusion remains applicable, this owner
+still rereads the final object and personally judges and invokes final current
+eligibility. Candidate DTO alone cannot satisfy final input, real contribution,
+current binding or final semantic execution. Final impact requires actual
+reviewed_candidate or legitimate reviewed_promoted state, selected change_path
+and current task-local contribution; no-impact keeps no_change without burden.
+The final current router goes only to adjacent Approval.
+
+Freshness binds the exact candidate object or design file as sha256:<content>.
+It is local stale detection, never semantic authority. All other six exits
+preserve this invocation's planning_purpose and task identity. Sync/bootstrap/
+repair return to the original purpose's fresh task impact after maintenance;
+maintenance's 2.0 current DTO cannot stand in for planning 3.0. Conflict/gaps
+return to Author's architecture_conflict_resolution via original planning
+router; actual scope choice then uses Clarify. Regression uses existing
+implementation/check correction; blocked remains a stop.
+
+Retire task-impact planning 2.0 at the matching graph switch, without a legacy
+reader, guessed purpose or second parser. Nonplanning and maintenance 2.0 keep
+their meanings. The sync router is only the thin owner-preserving transition
+needed to retain purpose across maintenance; it owns no assessment or writer.

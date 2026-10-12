@@ -58,6 +58,7 @@ from adapters.eval.owner_staging import (
     stage_owner_execution,
 )
 from adapters.eval import phase2_authoring, architecture_authoring
+from adapters.eval.fixture_io import public_input_path
 from adapters.eval.intake_authoring import (
     COMMANDS, FACTS_PATH, INTAKE_SKILLS, IntakeCommands, standard_intake, validate_intake_trace,
 )
@@ -675,6 +676,13 @@ def build_context(
             f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {path}"
             for path in profile_schema_paths
         )
+        owner_schema_path = "schemas/semantic-result.schema.json"
+        if request["skill_id"] == phase2_authoring.SKILL:
+            owner_schema_path = "schemas/phase2-check.schema.json"
+        elif request["skill_id"] == ARCHITECTURE_SKILL:
+            owner_schema_path = architecture_authoring.contract_paths(
+                json.loads(public_input_path(request).read_text())
+            )[3]
         context = context.replace(
             f"First read the exact Skill contract with: {helper_path} {helper_arguments} read --kind skill_contract --path {skill_path}",
             f"First read the exact Skill contract with: {helper_path} {qualification_helper_arguments} read --kind skill_contract --path {skill_path}",
@@ -688,11 +696,11 @@ def build_context(
                 "closed when any listed read is absent:\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'references/contract.md'}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {public_interface_path}\n"
-                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / ('schemas/phase2-check.schema.json' if request['skill_id'] == phase2_authoring.SKILL else 'schemas/semantic-result.schema.json')}\n"
+                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / owner_schema_path}\n"
                 + (
                     f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input.schema.json'}\n"
                     if qualification_codex or request["skill_id"] == phase2_authoring.SKILL else
-                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input-aggregate.schema.json'}\n"
+                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input-aggregate-3.0.schema.json'}\n"
                 )
                 + "Then execute exactly one of the following profile-schema reads: choose the schema whose "
                 "declared discriminator equals the public_input.profile you author. Do not infer the profile "
@@ -955,14 +963,9 @@ def validate_native_trace(
     if isolated_authoring and case_reads != declared_case_reads:
         raise ValueError("semantic authoring trace must re-read every staged case file")
     if semantic_authoring:
-        required_public_reads = {
-            skill_path,
-            projection_root / "references/contract.md",
-            projection_root / "interface.json",
-            projection_root / "schemas/semantic-result.schema.json",
-            projection_root / "schemas/public-input-aggregate.schema.json",
-            projection_root / "schemas/public-input-impact.schema.json",
-        }
+        required_public_reads = {projection_root / path for path in architecture_authoring.contract_paths(
+            json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+        )} if not phase2 else set()
         if phase2:
             required_public_reads = {projection_root / path for path in phase2_authoring.PUBLIC_READS}
         observed_public_reads = {

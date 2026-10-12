@@ -52,17 +52,18 @@ class RootCauseRuntimeTest(unittest.TestCase):
         callers = {
             "task_free_pre_write": "guru-execute-task-free-change", "task_free_evolution": "guru-execute-task-free-change",
             "requirements_scope_set": "guru-clarify-requirements", "change_request_candidate_set": "guru-review-change-request",
-            "planning_scenario_set": "guru-approve-task-plan", "implementation_discovery": "guru-phase2-implementation-coordinator",
+            "author_candidate_set": "guru-author-task-plan", "planning_scenario_set": "guru-approve-task-plan", "implementation_discovery": "guru-phase2-implementation-coordinator",
             "base_impact_candidate_set": "guru-reconcile-task-base", "phase2_candidate_set": "guru-check-task",
             "branch_review_candidate_set": "guru-review-branch", "publication_candidate_set": "guru-review-task-delivery",
         }
         planning_paths = [".trellis/tasks/current/prd.md", ".trellis/tasks/current/design.md", ".trellis/tasks/current/implement.md"]
-        planning_identity = qualification_common.file_set_identity(self.repo, planning_paths)
+        planning_identity = qualification_common.file_set_identity(self.repo, planning_paths) if profile != "author_candidate_set" else "0" * 64
         targets = {
             "task_free_pre_write": {"repo_locator":".","request_locator":"request:test","checkout_head":self.head,"bounded_paths":["AGENTS.md"]},
             "task_free_evolution": {"repo_locator":".","request_locator":"request:test","checkout_head":self.head,"approved_paths":["AGENTS.md"],"edited_paths":["AGENTS.md"]},
             "requirements_scope_set": {"repo_locator":".","authority_kind":"active_task","authority_locator":".trellis/tasks/current","authority_identity":"current-task","scope_locator":"path:AGENTS.md"},
             "change_request_candidate_set": {"repo_locator":".","request_locator":"request:test","request_identity":"current-request","readiness_locators":["path:AGENTS.md"]},
+            "author_candidate_set": {"repo_locator":".","task_ref":"current","author_paths":[".trellis/tasks/current/prd.md"],"author_identity":qualification_common.file_set_identity(self.repo, [".trellis/tasks/current/prd.md"])},
             "planning_scenario_set": {"repo_locator":".","task_ref":"current","planning_paths":planning_paths,"planning_identity":planning_identity},
             "implementation_discovery": {"repo_locator":".","task_ref":"current","planning_identity":planning_identity,"checkout_head":self.head,"diff_locator":"HEAD^...HEAD"},
             "base_impact_candidate_set": {"repo_locator":".","task_ref":"current","old_base_head":self.head,"new_base_head":self.head,"task_head":self.head,"base_pair_locator":"HEAD...HEAD"},
@@ -81,6 +82,18 @@ class RootCauseRuntimeTest(unittest.TestCase):
     def invoke(self, semantic):
         with mock.patch("sys.stdin", io.StringIO(json.dumps({"schema_version":"1.0", "semantic_result":semantic}))):
             return qualification_invoke.run(PACKAGE, {}, ["--invocation", "-"])
+
+    def test_author_candidate_requires_only_current_prd_and_detects_revision(self):
+        for name in ("design.md", "implement.md"):
+            (self.repo / ".trellis/tasks/current" / name).unlink()
+        candidate = self.semantic(profile="author_candidate_set")
+        output = self.invoke(candidate)
+        self.assertEqual("classified", output["exit_id"])
+        self.assertEqual("author_candidate_set", output["profile"])
+        (self.repo / ".trellis/tasks/current/prd.md").write_text("ordinary author revision\n", encoding="utf-8")
+        with self.assertRaises(CommandError) as raised:
+            self.invoke(candidate)
+        self.assertEqual("stale_identity", raised.exception.code)
 
     def test_all_profile_modes_no_repo_residue(self):
         for profile in qualification_common.PROFILE_SCHEMAS:
