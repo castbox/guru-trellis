@@ -18,4 +18,4 @@
 | R292-14 / BEH292-DISTRIBUTION | D292-DISTRIBUTION | T292-DISTRIBUTION, T292-INSTALL |
 | R292-15 / BEH292-HANDOFF | D292-AUTHOR, D292-CONSUMERS, D292-QUALIFICATION | T292-PACKAGES, T292-CHAIN |
 
-[requirements](requirements.md)、[design](design.md)、[test](test.md) 分别拥有本层内容。manifest 的 expected-current 是当前 main 的 RDT `.87`，继承 Architecture `.84/active`；此前 `.86/.84/.83` 候选已随 main 整合更新。该贡献尚未晋升，promotion binding 由原 owner 在独立 committed review 后 fresh 确定；未验证项均由 Test 显式保留。
+[requirements](requirements.md)、[design](design.md)、[test](test.md) 分别拥有本层内容。manifest 的 source/expected `.87` 是此次晋升preimage；promoted `.88` 完整继承该历史并承接上表 accepted 增量，公开Architecture继承 `.85/active`。来源身份是 TaskId `292-unique-planning-author` / generation `0` 及 planning documents `prd.md`、`design.md#D2/#D9/#D10`、`implement.md#V1–V8`；durable canonical/contribution links拥有当前运行合同，不复制来源矩阵。真实验证与未验证边界均由唯一Test拥有；promotion差异的后续gates分别执行。

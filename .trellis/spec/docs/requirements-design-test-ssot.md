@@ -2,8 +2,17 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.87`
+- version：`current-main-0.6.17-guru.88`
 - status：`active`
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.88`，完整薄继承 immutable `.87` 并承接 reviewed #292 contribution。
+- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.85` / `active`。
+- 结果authority：`docs/requirements-design-test-contributions/292-unique-planning-author/test.md`；scope-required分层结果、历史失败及未验证边界仅由唯一Test拥有。晋升差异须fresh Phase2/TaskCommit/不同reviewer完整Branch；Delivery、Publication、Merge、Completion、Closure、Finish和Release各由原owners判断。
+- Planning source identity：TaskId `292-unique-planning-author` / generation `0`；documents `prd.md`、`design.md#D2/#D9/#D10`、`implement.md#V1–V8`。长期合同与双向trace使用durable canonical/contribution locators，不依赖active task位置。
+
+## Immutable .87 predecessor provenance
+
+- version：`current-main-0.6.17-guru.87`
+- status：`superseded`
 - Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.87`，薄继承 immutable `.86` 并承接 reviewed #535 contribution。
 - Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.84` / `active`。
 - 结果authority：`docs/requirements-design-test-contributions/535-review-zero-candidates/test.md`；分层实际结果、首次失败与未验证边界由该文件拥有。晋升差额须fresh Phase2/TaskCommit/独立完整Branch；Delivery、Completion/Closure/Finish、#292恢复和Release独立。
@@ -27,4 +36,4 @@
 
 ## Freshness
 
-每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.87` 薄继承 immutable `.86`，承接 R535/D535/T535 增量，Architecture继承 `.84/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。
+每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.88` 薄继承 immutable `.87`，承接 R292/BEH292、D292、T292 增量，Architecture继承 `.85/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。

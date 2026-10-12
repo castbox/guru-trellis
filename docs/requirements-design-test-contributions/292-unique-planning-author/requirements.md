@@ -1,6 +1,6 @@
 # #292 需求增量
 
-来源：[live #292](https://github.com/castbox/guru-trellis/issues/292) 的 `2026-10-10-r27`；需求 identity 与验收映射见 [task PRD](../../../.trellis/tasks/10-11-292-unique-planning-author/prd.md)。本贡献为 RDT `.87` 的隔离候选，继承 Architecture `.84/active`，尚未晋升。下表登记新增行为 identity；不复制来源设计处置矩阵或 step-local 合同。
+来源：[live #292](https://github.com/castbox/guru-trellis/issues/292) 的 `2026-10-10-r27`；需求及验收定位为 TaskId `292-unique-planning-author` / generation `0` 的 planning document `prd.md`。本贡献已按 expected RDT `.87` 晋升至 `.88`，继承实际 Architecture `.85/active`。下表登记增量行为 identity；不复制来源设计处置矩阵或 step-local 合同。
 
 | Requirement | Behavior identity / 增量 |
 | --- | --- |

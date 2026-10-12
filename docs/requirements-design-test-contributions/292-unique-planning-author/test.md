@@ -1,6 +1,6 @@
 # #292 唯一验证结果
 
-验证口径：本文件按 [task implement V1–V8](../../../.trellis/tasks/10-11-292-unique-planning-author/implement.md) 记录 package/installed、真实 AI owner 和外部 GitHub 的实际证据。初稿遗漏、两个不同 Delivery 修订原因及同任务执行恢复已有下述实际出口；四 Docs 策略按各自适用的规划与原 RDT 结果报告。S 的 fresh Phase 2、Task Commit、独立完整 Branch Review 和共享 promotion 由原 owners 判断，本文件不预告其结果。完整多平台矩阵、远端版本发布与业务生产安装未验证。
+验证口径：本文件按 TaskId `292-unique-planning-author` / generation `0` 的 planning document `implement.md#V1–V8` 记录 package/installed、真实 AI owner 和外部 GitHub 的实际证据。初稿遗漏、两个不同 Delivery 修订原因及同任务执行恢复已有下述实际出口；四 Docs 策略按各自适用的规划与原 RDT 结果报告。S 的 fresh Phase 2、Task Commit、独立完整 Branch Review 和共享 promotion 由原 owners 判断，本文件不预告其结果。完整多平台矩阵、远端版本发布与业务生产安装未验证。
 
 历史完整 Check 的原 recorder/checker/public invoke 实际返回 `blocked`，当轮缺来源设计遗漏、两个 Delivery producer/reason 和适用 Completion 回程；该失败保留。后续真实初稿遗漏与 A/C 链分别补齐这些证据，不倒写旧 blocked 为通过，也不由局部证据推定 S Check passed。该轮 installer 计数 P3 已改为由声明 checker 从 registry/interfaces 推导，并由发现 owner 亲读确认闭合。以下历史数字、失败和阶段状态均只绑定各自轮次；生命周期以原 owners、Git 与 live facts 为准。
 

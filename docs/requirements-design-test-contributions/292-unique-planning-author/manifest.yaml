@@ -1,19 +1,22 @@
 schema_version: "1.0"
 task_ref: "292-unique-planning-author"
+# Historical creation locator; current planning identity is TaskId/gen0 plus document name.
 task_locator: ".trellis/tasks/10-11-292-unique-planning-author"
 task_id: "292-unique-planning-author"
 lifecycle_generation: 0
 issue_ref: "https://github.com/castbox/guru-trellis/issues/292"
 source_contract: "2026-10-10-r27"
-# 当前 main 已整合；隔离贡献继承 .87 / Architecture .84，promotion 仍待独立 committed review。
+# source/expected .87 是此次晋升不可变preimage；公开Architecture已串行晋升至 .85。
 source_version: "current-main-0.6.17-guru.87"
 expected_current_version: "current-main-0.6.17-guru.87"
-status: "draft_review_pending"
+status: "reviewed_promoted"
 authority_scope: "isolated_contribution"
 architecture_baseline:
   locator: "docs/architecture/README.md"
-  version: "current-main-0.6.17-guru.84"
+  version: "current-main-0.6.17-guru.85"
   status: "active"
-architecture_contribution: ".trellis/tasks/10-11-292-unique-planning-author/design.md#D9"
+architecture_contribution: "docs/architecture/contributions/292-unique-planning-author.md"
 promotion_owner: "guru-maintain-requirements-design-test-ssot"
 shared_current_write: false
+promoted_version: "current-main-0.6.17-guru.88"
+promotion_preimage: "current-main-0.6.17-guru.87"
