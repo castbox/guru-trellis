@@ -29,7 +29,7 @@
     },
     "remaining_work_state":{"enum":["none","remaining"]},
     "candidate_classifications":{
-      "type":"array","minItems":1,
+      "type":"array",
       "items":{
         "type":"object","additionalProperties":false,
         "required":["candidate_ref","decision","witness","consumer_use"],

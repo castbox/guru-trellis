@@ -1,0 +1,18 @@
+schema_version: "1.0"
+task_ref: "535-review-zero-candidates"
+task_locator: ".trellis/tasks/10-12-535-review-zero-candidates"
+task_id: "issue-535-review-zero-candidates"
+lifecycle_generation: 0
+issue_ref: "https://github.com/castbox/guru-trellis/issues/535"
+source_contract: "2026-10-12T14:36:07Z"
+source_version: "current-main-0.6.17-guru.86"
+expected_current_version: "current-main-0.6.17-guru.86"
+status: "reviewed_contribution"
+authority_scope: "isolated_contribution"
+requirements_locator: "docs/requirements-design-test-contributions/535-review-zero-candidates/requirements.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.84"
+  status: "active"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false

@@ -14,6 +14,24 @@ Read [references/contract.md](references/contract.md) completely before acting.
 Before judging committed validation or its claims, read and apply
 `.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
 
+## Actual Candidate Set
+
+Complete the selected profile's semantic review before forming the actual
+candidate set. When that complete review finds no real candidate, record
+`candidate_classifications=[]` and invoke none of the three nonempty-only
+qualification owners. Do not invent a no-defect candidate from a reviewed file,
+feature, or a passing check. An empty set does not establish `passed`,
+`continuity_passed`, or `archived_review_passed`: every applicable entry,
+Architecture, Docs, range, dimension, evidence, freshness and route condition
+still applies. Bounded continuity remains bounded and archived review read-only.
+
+When real candidates exist, invoke the existing normal-scenario and
+solution-mechanism owners, then root-cause qualification for eligible refs,
+using `branch_review_candidate_set`. Keep every actual terminal classification,
+witness and semantic disposition. Nonempty all-rejected candidates are distinct
+from no candidates. Every finding, proposal, observation, follow-up and rejected
+candidate still binds a classified ref; an empty set cannot carry such a row.
+
 ## Archived Read-Only Review
 
 Aggregate input schema 5.0 adds the independent `archived_review` profile.
@@ -57,7 +75,7 @@ candidate qualification. A negative finding or impact conclusion cannot rely
 on a single-language zero result, and no query process enters the gate or DTO.
 
 Validate all eight entry preconditions in workflow or standalone mode. Perform one
-independent semantic review of the complete current range. Form only candidate
+independent semantic review of the complete current range. When real candidates exist, form only candidate
 refs and live locators, then invoke `guru-qualify-normal-scenario` with
 `branch_review_candidate_set` before assigning severity.
 For delete, replace, merge, or compatibility-impacting ranges, apply
@@ -88,7 +106,7 @@ to task work for remove/replace and fresh qualification; blocked stops. The
 review gate records only this owner's final classifications and direct-consumer
 witness, never a qualification artifact.
 
-Before a proposed review mechanism participates in severity, findings, scope,
+For a real candidate, before a proposed review mechanism participates in severity, findings, scope,
 or blocker judgment, invoke `guru-qualify-solution-mechanism` with
 `branch_review_candidate_set`. A `mechanism_revision_required` result removes
 or replaces only that mechanism and returns to task work for fresh
@@ -191,7 +209,7 @@ through the stable stale-identity path. Any other current input shape fails
 closed through the normal invalid-input path.
 
 
-At this candidate boundary, consume actual normal-scenario and solution-mechanism
+For a nonempty actual candidate set at this boundary, consume actual normal-scenario and solution-mechanism
 outcomes before loading `guru-qualify-root-cause` with `branch_review_candidate_set`. Supply only eligible
 refs. New or materially changed incident/protection mechanisms enter that owner;
 ordinary features receive its stable applicability disposition. Consume a

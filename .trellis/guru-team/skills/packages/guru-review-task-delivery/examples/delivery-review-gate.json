@@ -10,29 +10,7 @@
   "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "schema_version": "1.0",
   "semantic_result": {
-    "candidate_classifications": [
-      {
-        "candidate_ref": "candidate:delivery:no-defect",
-        "consumer_use": "delivery_review_route_checker",
-        "decision": "rejected_not_reproduced",
-        "witness": {
-          "defect_observation": "Current evidence does not reproduce a Delivery Review defect.",
-          "excluded_assumptions": [],
-          "existing_caller_refs": [
-            "caller:guru-review-task-delivery"
-          ],
-          "honest_action_sequence": [
-            "Review the current slice and complete candidate."
-          ],
-          "requirement_refs": [
-            "R435-01"
-          ],
-          "supported_entry_refs": [
-            "entry:delivery-review"
-          ]
-        }
-      }
-    ],
+    "candidate_classifications": [],
     "conclusions": {
       "delivery_readiness": {
         "evidence_refs": [

@@ -129,6 +129,9 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
 
     def test_eof_blank_line_is_non_blocking_after_policy(self):
         """Post-change behavior: the same EOF-only candidate is rejected."""
+        (self.repo / "app.txt").write_text("feature\n\n")
+        self.git("commit", "-qam", "add an EOF-only blank line")
+        self.head = self.git("rev-parse", "HEAD")
         auth = self.auth("passed")
         auth["candidate_classifications"] = [{
             "candidate_ref": "candidate:eof-blank-line",
@@ -142,6 +145,12 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
                 "excluded_assumptions": ["EOF-only whitespace is not a blocking finding."],
             },
             "consumer_use": "branch_review_route_checker",
+        }]
+        auth["semantic_review"]["rejected_candidates"] = [{
+            "candidate_ref": "candidate:eof-blank-line",
+            "disposition": "rejected_candidate",
+            "affected_behavior": "Only an EOF blank line is present.",
+            "path": "app.txt", "evidence_refs": ["diff:app.txt"],
         }]
         receipt = self.record(
             self.public("initial_review"), auth, "passed"
@@ -281,19 +290,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
                     "without claiming remaining work complete."
                 ),
             },
-            "candidate_classifications": [{
-                "candidate_ref": "candidate-no-defect",
-                "decision": "rejected_not_reproduced",
-                "witness": {
-                    "requirement_refs": ["PRD R1"],
-                    "supported_entry_refs": ["entry:branch-review"],
-                    "existing_caller_refs": ["caller:guru-review-branch"],
-                    "honest_action_sequence": ["review the complete supported range"],
-                    "defect_observation": "Current evidence does not reproduce a defect.",
-                    "excluded_assumptions": [],
-                },
-                "consumer_use": "branch_review_route_checker",
-            }],
+            "candidate_classifications": [],
             "semantic_review": {
                 "qualified_findings": [],
                 "scope_proposals": [],
@@ -374,6 +371,44 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             "invoke.sh", "--task", TASK_REF, "--input", public_path, ok=False
         )
         self.assertEqual("stale_identity", repeated["code"])
+
+    def test_initial_review_zero_candidates_uses_original_full_chain(self):
+        public = self.public("initial_review")
+        self.record(public, self.auth())
+        self.assertEqual([], json.loads(self.checkpoint().read_text())["candidate_classifications"])
+        self.assertEqual("passed", self.run_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF,
+        )["typed_exit"])
+        self.assertEqual("passed", self.run_wrapper(
+            "invoke.sh", "--task", TASK_REF,
+            "--input", self.write("initial-zero.json", public),
+        )["exit_id"])
+        self.assertFalse(self.checkpoint().exists())
+
+    def test_zero_candidates_do_not_admit_unclassified_dispositions(self):
+        for key, disposition in (
+            ("observations", "observation"),
+            ("followup_candidates", "followup_candidate"),
+            ("rejected_candidates", "rejected_candidate"),
+        ):
+            with self.subTest(key=key):
+                auth = self.auth()
+                auth["semantic_review"][key] = [{
+                    "candidate_ref": "candidate:unclassified",
+                    "disposition": disposition,
+                    "affected_behavior": "The owner omitted this candidate classification.",
+                    "path": "app.txt", "evidence_refs": ["diff:app.txt"],
+                }]
+                result = self.record(auth=auth, ok=False)
+                self.assertEqual("candidate_classifications", result["field_path"])
+                self.assertFalse(self.checkpoint().exists())
+
+    def test_zero_candidates_still_require_complete_review_evidence(self):
+        auth = self.auth()
+        auth["verification_evidence"]["evidence"] = []
+        result = self.record(auth=auth, ok=False)
+        self.assertEqual("schema_mismatch", result["code"])
+        self.assertFalse(self.checkpoint().exists())
 
     def test_record_and_check_allow_canonical_metadata_only_dirty_paths(self):
         metadata_changes = {

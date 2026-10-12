@@ -138,21 +138,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
 
     def semantic_review(self) -> dict:
         return {
-            "candidate_classifications": [
-                {
-                    "candidate_ref": "candidate-no-defect",
-                    "decision": "rejected_not_reproduced",
-                    "witness": {
-                        "requirement_refs": ["PRD R1"],
-                        "supported_entry_refs": ["entry:branch-review"],
-                        "existing_caller_refs": ["caller:guru-review-branch"],
-                        "honest_action_sequence": ["review the complete supported range"],
-                        "defect_observation": "Current evidence does not reproduce a defect.",
-                        "excluded_assumptions": [],
-                    },
-                    "consumer_use": "branch_review_route_checker",
-                }
-            ],
+            "candidate_classifications": [],
             "delivery_review": {
                 "task_scope": ["PRD R1"],
                 "delivery_slice": ["PRD R1"],
