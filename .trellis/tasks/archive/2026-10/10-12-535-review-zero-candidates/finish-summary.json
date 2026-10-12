@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-12T16:17:17Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-12-535-review-zero-candidates",
+    "title": "#535 修复 Branch Review 与 Delivery Review 正常零候选不可达",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-12-535-review-zero-candidates",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/535-review-zero-candidates",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "#535 修复 Branch Review 与 Delivery Review 正常零候选不可达",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates",
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/design.md",
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/implement.md",
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/prd.md",
+          ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#535"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/535-review-zero-candidates"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates",
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/design.md",
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/implement.md",
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/prd.md",
+        ".trellis/tasks/archive/2026-10/10-12-535-review-zero-candidates/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#535 修复 Branch Review 与 Delivery Review 正常零候选不可达；#535；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
