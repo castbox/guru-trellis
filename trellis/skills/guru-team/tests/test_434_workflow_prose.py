@@ -198,7 +198,8 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         )[0]
         self.assertIn("Delivery/Completion graph", current)
         self.assertIn("## Retired Task Finalization Package Activation (pinned-old only)", installer)
-        self.assertIn(f"{self.active_count}-Skill/{self.exit_count}-package-exit/{self.command_count}-command", installer)
+        self.assertIn("The atomic current package inventory is derived from the active registry and", installer)
+        self.assertIn("the current registry/interfaces by the declared package and workflow checkers", installer)
         self.assertIn("install one current Task Delivery graph", installer)
         self.assertNotIn("install only current Finalizer and Publication", installer)
         self.assertNotIn("The business Finalizer may consume this current manifest", installer)
