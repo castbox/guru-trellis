@@ -129,14 +129,42 @@ class ExecutionConsumptionTests(unittest.TestCase):
             inputs = prepare_resume_execution_inputs(self.repo, payload, session)
         EXECUTION_OWNER.record_execution_result(self.repo, inputs, operation=operation)
 
-    def record_check(self, *, blocked: bool = False, reason: str | None = None) -> dict:
+    def record_check(self, *, blocked: bool = False, reason: str | None = None,
+                     candidates: list | None = None, result: str = "passed") -> dict:
         example = json.loads((PACKAGE / "examples/phase2-check.json").read_text())
         authoring = {key: copy.deepcopy(example[key]) for key in CHECK_FIELDS}
+        if candidates is not None:
+            authoring["candidate_classifications"] = copy.deepcopy(candidates)
         tracked = self.git("ls-files", "-z").split("\0")
         untracked = self.git("ls-files", "--others", "--exclude-standard", "-z").split("\0")
         authoring["reviewed_paths"] = sorted({path for path in [*tracked, *untracked] if path})
         if reason is not None:
             authoring["reason"] = reason
+        if result == "resolved_reconciliation_passed":
+            authoring["typed_exit"] = result
+            authoring["consumer"] = {"kind": "skill", "id": "guru-reconcile-task-base"}
+        elif result in {"implementation_required", "planning_stale"}:
+            authoring["typed_exit"] = result
+            authoring["semantic_review"]["status"] = result
+            ref = authoring["candidate_classifications"][0]["candidate_ref"]
+            if result == "implementation_required":
+                authoring["consumer"] = {"kind": "workflow", "id": "guru-resume-implementation"}
+                authoring["semantic_review"]["adequacy_dimensions"][2]["status"] = "failed"
+                authoring["semantic_review"]["findings"] = [{
+                    "id": "F-boundary", "candidate_ref": ref, "severity": "P2",
+                    "summary": "The upper endpoint is excluded.",
+                    "path": "candidate.txt", "status": "open",
+                }]
+                decision = "current_scope"
+            else:
+                authoring["consumer"] = {"kind": "workflow", "id": "guru-task-check-planning-router"}
+                authoring["route"] = "reapprove_plan"
+                decision = "scope_change_required"
+            authoring["semantic_review"]["scope_decisions"] = [{
+                "id": "scope-boundary", "candidate_ref": ref,
+                "disposition": decision, "summary": "The endpoint contract requires current review.",
+                "finding_id": "F-boundary" if result == "implementation_required" else None,
+            }]
         if blocked:
             authoring["typed_exit"] = "blocked"
             authoring["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
@@ -151,6 +179,95 @@ class ExecutionConsumptionTests(unittest.TestCase):
 
     def invoke_check(self, owner: dict) -> subprocess.CompletedProcess:
         return self.command(PACKAGE, "invoke.sh", "--invocation", "-", input=json.dumps({"public_input": self.public, "owner_result": owner}))
+
+    def select_profile(self, profile: str) -> None:
+        names = {
+            "initial_check": "initial-check", "finding_fix_rerun": "finding-fix-rerun",
+            "planning_reentry": "planning-reentry", "resolved_reconciliation": "resolved-reconciliation",
+        }
+        self.public = json.loads((PACKAGE / f"examples/public-{names[profile]}-input.json").read_text())
+        self.public["task_ref"] = TASK_REF
+
+    def project_resolved(self, owner: dict) -> subprocess.CompletedProcess:
+        public_path = self.runtime / "resolved-public.json"
+        public_path.write_text(json.dumps(self.public))
+        authoring = json.loads((PACKAGE / "examples/public-resolved-reconciliation-authoring.json").read_text())
+        authoring["parent_order"][0] = owner["phase2_capture_commit"]
+        authoring_path = self.runtime / "resolved-authoring.json"
+        authoring_path.write_text(json.dumps(authoring))
+        return self.command(PACKAGE, "project-resolved-reconciliation.sh",
+                            "--input", str(public_path), "--owner-result", str(self.checkpoint),
+                            "--authoring", str(authoring_path))
+
+    def boundary_candidate(self, decision: str = "rejected_not_reproduced") -> dict:
+        row = json.loads((PACKAGE / "examples/phase2-rejected-candidates.json").read_text())[0]
+        row["decision"] = decision
+        if decision == "qualified_current":
+            row["witness"]["defect_observation"] = "The staged current-scope implementation excludes the upper endpoint."
+        elif decision == "qualified_approved_expansion":
+            row["witness"]["defect_observation"] = "The current authority requests a new endpoint contract."
+        return row
+
+    def test_zero_and_all_rejected_sets_use_original_chains_for_all_profiles(self) -> None:
+        for profile in ("initial_check", "finding_fix_rerun", "planning_reentry", "resolved_reconciliation"):
+            for candidates in ([], [self.boundary_candidate()]):
+                with self.subTest(profile=profile, candidates=len(candidates)):
+                    self.completed_execution()
+                    self.select_profile(profile)
+                    execution = self.execution_path.read_bytes()
+                    resolved = profile == "resolved_reconciliation"
+                    owner = self.record_check(candidates=candidates,
+                                              result="resolved_reconciliation_passed" if resolved else "passed")
+                    self.assertEqual(candidates, owner["candidate_classifications"])
+                    output = self.successful(self.project_resolved(owner) if resolved else self.invoke_check(owner))
+                    self.assertEqual(TASK_REF, output["task_ref"])
+                    self.assertEqual(owner["phase2_capture_commit"], output["phase2_commit_anchor"])
+                    if resolved:
+                        self.assertEqual("resolved_candidate", output["profile"])
+                        self.assertEqual("resolved_reconciliation_passed", output["source_exit"])
+                        self.assertNotIn("exit_id", output)
+                        self.assertEqual(execution, self.execution_path.read_bytes())
+                    else:
+                        self.assertEqual("passed", output["exit_id"])
+                        self.assertFalse(self.execution_path.exists())
+                    self.assertEqual(owner, json.loads(self.checkpoint.read_text()))
+
+    def test_nonempty_findings_and_planning_routes_keep_original_profile_consumers(self) -> None:
+        for profile in ("initial_check", "finding_fix_rerun", "planning_reentry", "resolved_reconciliation"):
+            for result, decision in (("implementation_required", "qualified_current"),
+                                     ("planning_stale", "qualified_approved_expansion")):
+                with self.subTest(profile=profile, result=result):
+                    self.completed_execution()
+                    self.select_profile(profile)
+                    execution = self.execution_path.read_bytes()
+                    owner = self.record_check(candidates=[self.boundary_candidate(decision)], result=result)
+                    output = self.successful(self.invoke_check(owner))
+                    self.assertEqual(result, output["exit_id"])
+                    key, refs = ("finding_refs", ["F-boundary"]) if result == "implementation_required" else ("proposal_refs", ["scope-boundary"])
+                    self.assertEqual(refs, output[key])
+                    self.assertEqual(execution, self.execution_path.read_bytes())
+                    self.assertFalse(self.checkpoint.exists())
+
+    def test_zero_candidates_do_not_bypass_missing_evidence_or_content_freshness(self) -> None:
+        for profile in ("initial_check", "finding_fix_rerun", "planning_reentry", "resolved_reconciliation"):
+            with self.subTest(profile=profile):
+                self.completed_execution()
+                self.select_profile(profile)
+                execution = self.execution_path.read_bytes()
+                blocked = self.record_check(blocked=True)
+                self.assertEqual([], blocked["candidate_classifications"])
+                self.assertEqual({"exit_id": "blocked"}, self.successful(self.invoke_check(blocked)))
+                self.assertEqual(execution, self.execution_path.read_bytes())
+                self.assertFalse(self.checkpoint.exists())
+                resolved = profile == "resolved_reconciliation"
+                owner = self.record_check(result="resolved_reconciliation_passed" if resolved else "passed")
+                checked = self.checkpoint.read_bytes()
+                (self.repo / "candidate.txt").write_text(f"New ordinary content after {profile} review.\n")
+                outcome = self.project_resolved(owner) if resolved else self.invoke_check(owner)
+                self.assertEqual(3, outcome.returncode, outcome.stdout + outcome.stderr)
+                self.assertEqual("stale_identity", json.loads(outcome.stdout)["code"])
+                self.assertEqual(execution, self.execution_path.read_bytes())
+                self.assertEqual(checked, self.checkpoint.read_bytes())
 
     def test_current_passed_consumes_each_completed_operation_and_rematerializes_output(self) -> None:
         for operation in ("activate", "resume_execution"):

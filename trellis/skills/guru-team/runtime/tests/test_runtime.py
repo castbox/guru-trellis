@@ -1765,7 +1765,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             ).read_text(encoding="utf-8")
         )
         expected = {
-            "passed": ("candidate:phase2:no-defect", "rejected_not_reproduced"),
+            "passed": (None, None),
             "implementation_required": (
                 "candidate:phase2:defect",
                 "qualified_current",
@@ -1774,7 +1774,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 "candidate:phase2:scope",
                 "qualified_approved_expansion",
             ),
-            "blocked": ("candidate:phase2:no-defect", "rejected_not_reproduced"),
+            "blocked": (None, None),
         }
         with tempfile.TemporaryDirectory() as temporary:
             fixture = Path(temporary)
@@ -1797,7 +1797,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     errors = list(Draft202012Validator(schema).iter_errors(current))
                     self.assertEqual([], errors)
                     self.assertEqual(
-                        [(candidate_ref, decision)],
+                        [(candidate_ref, decision)] if candidate_ref else [],
                         [
                             (row["candidate_ref"], row["decision"])
                             for row in payload["candidate_classifications"]
@@ -1808,7 +1808,9 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                         for key in ("scope_decisions", "findings")
                         for row in payload["semantic_review"][key]
                     }
-                    self.assertLessEqual(linked_refs, {candidate_ref})
+                    self.assertLessEqual(
+                        linked_refs, {candidate_ref} if candidate_ref else set()
+                    )
 
     def test_production_branch_review_inputs_close_schema_6_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures

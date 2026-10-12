@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 Skill 的 semantic/确定性边界、I/O 与安装投影"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围和真实入口证据层级"}
+{"file": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md", "reason": "Check 原完整语义循环、四 profiles 和 checkpoint 消费者"}

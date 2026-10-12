@@ -40,10 +40,16 @@ Informational changes do not automatically invalidate this round; material
 requirement or necessary-evidence changes return to the earliest affected
 owner under dependency-scoped validation. These facts do not change task
 source, Closure authority or repository topology.
-Classify
-every candidate through `guru-qualify-normal-scenario:phase2_candidate_set`
-before assigning P0-P3 severity, then
-review the nine Phase 2 adequacy dimensions. Worker output is ephemeral input to
+When the complete current review observes no defect candidates, record
+`candidate_classifications=[]` and do not invoke the three qualification owners.
+Do not invent a no-defect candidate or use reviewed paths as candidates. When
+actual candidates exist, classify every candidate through
+`guru-qualify-normal-scenario:phase2_candidate_set` before assigning P0-P3
+severity, and invoke the applicable solution and root qualification profiles
+only for their eligible non-empty inputs. In both branches review all nine
+Phase 2 adequacy dimensions and the same Docs, Architecture, validation and
+freshness preconditions; an empty set does not supply a pass.
+Worker output is ephemeral input to
 the owner; it is not a handoff, assignment, raw report, or persisted review
 transcript.
 For delete, replace, or merge work, apply
