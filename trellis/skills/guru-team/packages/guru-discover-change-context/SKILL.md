@@ -47,7 +47,8 @@ A caller-authored `refresh_base` result
 records only the observed current stale codes, then reruns the complete Skill
 through `guru-sync-base` and live authority.
 
-For an active-task workflow invocation, pass `--active-task <task>` to record,
+For a current `planning` or `in_progress` task workflow invocation, pass
+`--active-task <task>` to record,
 check, and public invoke so live validation binds the task's TaskId and
 lifecycle generation to its Git common-dir branch binding and registered
 checkout without creating a checkpoint. Only when this same owner

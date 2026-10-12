@@ -13,7 +13,7 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE.parents[1]))
-from runtime.io import project_intermediate_receipt
+from runtime.io import CommandError, project_intermediate_receipt
 DIMENSIONS = (
     "complete_profile_scope", "all_hits_classified", "zero_unchecked_hits",
     "product_semantics_preserved", "retained_reasons_sufficient",
@@ -168,6 +168,67 @@ class SingleReadDispatcherTest(unittest.TestCase):
             error = self.command("check-contract-wording-review.sh", owner,
                                  (*selectors, "--input", "-"), expected=3)
             self.assertEqual("stale_identity", error["code"])
+
+    def changed_markdown(self, profile):
+        task_ref = ".trellis/tasks/wording-reentry"
+        folder = self.root / task_ref if profile == "planning_artifacts" else self.root
+        folder.mkdir(parents=True, exist_ok=True)
+        files = ("prd.md", "design.md", "implement.md") if profile == "planning_artifacts" else ("contract.md",)
+        for name in files:
+            (folder / name).write_text("Original contract.\n")
+        changed = folder / files[-1]
+        before = hashlib.sha256(changed.read_bytes()).hexdigest()
+        changed.write_text("Current contract.\n")
+        mode = "workflow" if profile == "planning_artifacts" else "standalone"
+        selectors = ("--task", task_ref) if profile == "planning_artifacts" else ("--path", "contract.md")
+        args = ("--profile", profile, "--mode", mode, *selectors)
+        scan = self.command("record-contract-wording-review.sh", args=(*args, "--scan-only"))
+        auth = self.author(scan, "content_changed")
+        locator = changed.relative_to(self.root).as_posix()
+        auth["revisions"] = [{
+            "revision_id": "current-wording-revision", "locator": locator,
+            "before_sha256": before, "after_sha256": hashlib.sha256(changed.read_bytes()).hexdigest(),
+            "reason": "Equivalent wording clarification completed in this invocation.",
+            "rescan_sha256": scan["scan"]["scan_sha256"],
+        }]
+        if profile == "planning_artifacts":
+            auth["ai_review_gate"]["planning_checked_dimensions"] = dict.fromkeys(PLANNING, True)
+        owner = self.command("record-contract-wording-review.sh", auth, (*args, "--input", "-"))
+        checked = self.command("check-contract-wording-review.sh", owner, (*selectors, "--input", "-"))
+        public = json.loads((PACKAGE / ("examples/public-planning-artifacts-input.json" if profile == "planning_artifacts" else "examples/public-explicit-paths-input.json")).read_text())
+        if profile == "planning_artifacts":
+            public["task_locator"] = task_ref
+        else:
+            public["paths"] = ["contract.md"]
+        invocation = {"public_input": public, "owner_result": owner,
+                      "validation_receipt": checked["validation_receipt"]}
+        return self.envelope_command("invoke.sh", invocation), locator
+
+    def test_real_changed_planning_stdout_validates_author_reentry_without_private_reads(self):
+        from runtime.schema import validate_json
+        output, locator = self.changed_markdown("planning_artifacts")
+        interface = json.loads((PACKAGE / "interface.json").read_text())
+        consumer = next(row for row in interface["public_contracts"]["consumer_inputs"]
+                        if row["id"] == "content_changed_workflow_input")
+        validate_json(output, PACKAGE.parents[1] / consumer["contract"]["path"], "consumer")
+        # Only actual public stdout supplies data; the workflow supplies fixed profile/mode.
+        author_input = {"profile": "wording_reentry", "mode": "workflow",
+                        "task_ref": output["task_ref"], "change_refs": output["change_refs"]}
+        author_schema = PACKAGE.parent / "guru-author-task-plan/schemas/public-wording-reentry-input.schema.json"
+        validate_json(author_input, author_schema, "author_input")
+        self.assertEqual([locator], author_input["change_refs"])
+        self.assertEqual({"exit_id", "profile", "task_ref", "change_refs"}, set(output))
+        for field in ("task_ref", "change_refs"):
+            incomplete = dict(output)
+            incomplete.pop(field)
+            with self.subTest(missing=field), self.assertRaises(CommandError):
+                validate_json(incomplete, PACKAGE.parents[1] / consumer["contract"]["path"], "consumer")
+
+    def test_changed_explicit_paths_preserves_nonplanning_output(self):
+        output, _ = self.changed_markdown("explicit_paths")
+        self.assertEqual({"exit_id", "profile", "continuation_id"}, set(output))
+        self.assertEqual("explicit_paths", output["profile"])
+        self.assertEqual("content_changed", output["exit_id"])
 
     def test_source_metadata_keeps_legacy_scan_behavior(self):
         for comments in ([], [{"id": "comment-1", "body": "Existing source metadata"}]):

@@ -144,6 +144,26 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "author_candidate_input",
+      "path": "schemas/public-author-candidate-set-input.schema.json"
+    },
+    {
+      "id": "public_input_2",
+      "path": "schemas/public-input-2.0.schema.json"
+    },
+    {
+      "id": "classified_output_2",
+      "path": "schemas/public-classified-output-2.0.schema.json"
+    },
+    {
+      "id": "scope_confirmation_required_output_2",
+      "path": "schemas/public-scope-confirmation-required-output-2.0.schema.json"
+    },
+    {
+      "id": "mechanism_revision_required_output_2",
+      "path": "schemas/public-mechanism-revision-required-output-2.0.schema.json"
     }
   ],
   "validators": [
@@ -238,8 +258,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-normal-scenario-input-aggregate-1.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-normal-scenario-input-aggregate-2.0",
+        "path": "schemas/public-input-2.0.schema.json"
       },
       "profiles": [
         {
@@ -391,6 +411,21 @@
             "field": "profile",
             "value": "publication_candidate_set"
           }
+        },
+        {
+          "id": "author_candidate_set",
+          "schema": {
+            "schema_id": "guru-normal-scenario-input-author-candidate-set-1.0",
+            "path": "schemas/public-author-candidate-set-input.schema.json"
+          },
+          "example": {
+            "id": "author_candidate_set_input",
+            "path": "examples/public-author-candidate-set-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "author_candidate_set"
+          }
         }
       ]
     },
@@ -430,8 +465,8 @@
       {
         "exit_id": "classified",
         "schema": {
-          "schema_id": "guru-normal-scenario-output-classified-1.0",
-          "path": "schemas/public-classified-output.schema.json"
+          "schema_id": "guru-normal-scenario-output-classified-2.0",
+          "path": "schemas/public-classified-output-2.0.schema.json"
         },
         "example": {
           "id": "classified_output",
@@ -444,8 +479,8 @@
       {
         "exit_id": "scope_confirmation_required",
         "schema": {
-          "schema_id": "guru-normal-scenario-output-scope-confirmation-required-1.0",
-          "path": "schemas/public-scope-confirmation-required-output.schema.json"
+          "schema_id": "guru-normal-scenario-output-scope-confirmation-required-2.0",
+          "path": "schemas/public-scope-confirmation-required-output-2.0.schema.json"
         },
         "example": {
           "id": "scope_confirmation_required_output",
@@ -458,8 +493,8 @@
       {
         "exit_id": "mechanism_revision_required",
         "schema": {
-          "schema_id": "guru-normal-scenario-output-mechanism-revision-required-1.0",
-          "path": "schemas/public-mechanism-revision-required-output.schema.json"
+          "schema_id": "guru-normal-scenario-output-mechanism-revision-required-2.0",
+          "path": "schemas/public-mechanism-revision-required-output-2.0.schema.json"
         },
         "example": {
           "id": "mechanism_revision_required_output",
@@ -494,8 +529,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-normal-scenario-classified-router-input-1.0",
-          "path": "consumers/workflow/production/normal-scenario-classified-router.schema.json"
+          "schema_id": "guru-normal-scenario-classified-router-input-2.0",
+          "path": "consumers/workflow/production/normal-scenario-classified-router-2.0.schema.json"
         }
       },
       {
@@ -521,8 +556,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-normal-scenario-mechanism-router-input-1.0",
-          "path": "consumers/workflow/production/normal-scenario-mechanism-router.schema.json"
+          "schema_id": "guru-normal-scenario-mechanism-router-input-2.0",
+          "path": "consumers/workflow/production/normal-scenario-mechanism-router-2.0.schema.json"
         }
       },
       {

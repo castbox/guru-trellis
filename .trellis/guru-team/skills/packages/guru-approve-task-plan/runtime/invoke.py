@@ -11,13 +11,14 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   envelope=load(repo,package_root,a.invocation,"invocation");public=envelope.get("public_input");owner=envelope.get("owner_result")
  else:public=load(repo,package_root,a.input,"input");owner=load(repo,package_root,a.owner_result,"owner_result")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and checked owner result.")
- validate_json(owner,package_root/"schemas/planning-approval.schema.json","owner_result")
+ validate_json(owner,package_root/"schemas/planning-approval-4.0.schema.json","owner_result")
  if owner["task_ref"]!=public.get("task_ref") or owner["mode"]!=public.get("mode"):raise CommandError("stale_identity","owner_result","Rerun planning for the exact public input.",3)
  exit_id=owner["typed_exit"];out={"exit_id":exit_id}
  if exit_id in {"approved","revision_required","clarify_scope"}:out["task_ref"]=owner["task_ref"]
+ if exit_id=="revision_required":out["revision_actions"]=list(owner["semantic_review"]["revision_actions"])
  if exit_id=="approved":out["planning_result_id"]="planning:"+owner["reviewed_content_sha256"]
  if exit_id=="clarify_scope":out["proposal_refs"]=list(owner["semantic_review"]["scope_proposals"])
- names={"approved":"public-approved-output.schema.json","revision_required":"public-revision-required-output.schema.json","clarify_scope":"public-clarify-scope-output.schema.json","blocked":"public-blocked-output.schema.json"}
+ names={"approved":"public-approved-output.schema.json","revision_required":"public-revision-required-output-2.0.schema.json","clarify_scope":"public-clarify-scope-output.schema.json","blocked":"public-blocked-output.schema.json"}
  if exit_id not in names:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
  validate_json(out,package_root/"schemas"/names[exit_id],"stdout")
  if not a.invocation:consume_checkpoint(repo,task(repo,owner["task_ref"]),a.owner_result)

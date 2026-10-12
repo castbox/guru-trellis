@@ -22,7 +22,7 @@
   由独立 consistency/installation gate 验证，任一漂移仍阻塞，但其变化本身不构成
   capability loss。A archive 后 history query 可发现唯一 `PR #301` finish-summary candidate。
 - `ARCH-CUR-010`（`verified_external`）：经单独确认的 disposable GitHub A route 以 source head `6a7b721a…` 完成 PR #2 expected-head rebase merge与 Issue #1 closure；provider failure 在同一 Finalizer transaction 恢复，remote branch/repository cleanup 后 retained-ref reachability 仍通过。
-- `ARCH-CUR-011`（`source_confirmed` + `reviewed`）：Architecture public contract 已原子切换到 2.0；每个标准 task 在 Planning、qualified implementation discovery、Phase 2、committed full-diff Branch Review、Publication 与 Acceptance/Finish 重读 current baseline、设计宪法与项目 change contract，并只通过稳定 typed route 继续。
+- `ARCH-CUR-011`（`source_confirmed` + `reviewed`）：Architecture 历史公共合同切换为 2.0；current Planning 使用目的专属 3.0（见 `ARCH-CUR-058`），非 Planning 与 maintenance 仍为 2.0；每个标准 task 在 Planning、qualified implementation discovery、Phase 2、committed full-diff Branch Review、Publication 与 Acceptance/Finish 重读 current baseline、设计宪法与项目 change contract，并只通过稳定 typed route 继续。
 - `ARCH-CUR-012`（`reviewed`）：#283 以 `target_native` 建立设计宪法 `guru-trellis-design-constitution-v1`、项目 change contract `guru-trellis-architecture-change-contract-v1`、project check `guru-trellis-architecture-convergence@1`、task-owned contribution、必要 ADR 与 expected-current-bound serialized promotion；shared current 单写且 promotion 后强制重新进入 Phase 2/commit/Branch Review。
 - `ARCH-CUR-013`（`source_confirmed` + `reviewed`）：`guru-sync-base` 先按 explicit、config scalar、ordered exact refs、remote default 选择 base，再绑定同一 common-dir 中 exact、clean、branch/HEAD/ref 一致的 authority checkout；detached session 仅承载调用，fetch、`merge --ff-only`、三向 equality 与 public repository locator 均由 authority checkout 独占，下游按 source 和完整 candidates exact revalidate。
 - `ARCH-CUR-014`（`source_confirmed` + `reviewed`）：Finalizer provenance producer 使用独立
@@ -295,3 +295,11 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 `ARCH-CUR-057`（reviewed #521 contribution；promotion 新 diff gates pending）：task-free 的原 execution owner 在首次写入和续接前读取 live topology、branch/HEAD、完整 dirty 差额与当前 binding，在 linked/non-base 位置执行；位置需要不升级 mode 或创建 Task。Guru 单一 workflow caller 消费实际 upstream `no_current_task`，fresh 核对范围/位置/绑定后回原 selector/execution owner。C6 creation preparation 拒绝 primary adoption，共享 acquisition/resolver 与旧 primary created-result recovery 不扩大禁令。无 Issue Review 的来源 profile 和 mode 独立，真实 workflow transition 被接受并保留三方 equality。
 
 实际原生 caller/partial expansion、runtime 和一个代表性安装的不同证据层由[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有；standard 接管到独立创建/承接边界，不认领未执行 Task/binding/carryover。原 owners、公共 exits、软件轴和 GAP lifecycle 保持，无 Task-free store、mapping 或授权状态。
+
+## ARCH-CUR-058：唯一 Planning writer 与两目的评估（.85）
+
+`guru-author-task-plan` 是标准 Task 规划语义的唯一 writer，拥有 initial_review、solution_planning、wording_reentry、approval_revision、delivery_plan_revision、active_task_scope_change、architecture_conflict_resolution、requirements_revision 八 profiles，四 exits 为 requirements_ready、plan_ready、clarify_scope、blocked。原 workflow caller 显式调用该 owner；upstream brainstorm 仅提供讨论方法，不成为第二 writer。
+
+同一 Architecture owner 的 planning3.0 candidate_assessment 消费真实当前候选，不依赖未来 contribution；其 current route 回 Author solution_planning。final_plan 消费 Wording-current design 与真实 contribution/必要 ADR，current route 只回相邻 Approval。原独立评估方法、四 profiles、七 exits 保持；合法非 planning2.0 不变。Author 前置资格只消费当前候选/source，Approval 继续使用其原 planning_scenario_set；scope_ready 先完成活动 scope 判断再由 Author 写作，避免前置写作循环。
+
+Wording/Approval、Delivery policy gap/Completion next independent delivery 的修订分别经薄 projection 回同一 Author；approved 仍由原 execution owner 承接 activate 或 resume_execution，TaskId/generation 与 lifecycle writer 不变。bound planning Discovery recovery 使用原 context owner；sync purpose 只在当前调用承接。没有第二 Architecture/Approval writer、旧 planning dual reader、长期规划 cache 或授权存储。必要决策见 ADR-022/023；机制来源和当前边界见[durable contribution](../contributions/292-unique-planning-author.md)，实际结果与未验证边界见[唯一 Test](../../requirements-design-test-contributions/292-unique-planning-author/test.md)。

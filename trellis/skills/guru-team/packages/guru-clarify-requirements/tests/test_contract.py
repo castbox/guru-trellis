@@ -93,11 +93,12 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         )
         self.assertEqual(
             [item["id"] for item in self.interface["external_exits"]],
-            ["clear", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"],
+            ["clear", "scope_ready", "needs_context", "refresh_context", "retarget_context", "new_task", "blocked"],
         )
         self.assertEqual(
             [item["consumer"] for item in self.interface["external_exits"]],
             [
+                {"kind": "workflow", "id": "guru-requirements-clear-router"},
                 {"kind": "workflow", "id": "guru-requirements-clear-router"},
                 {"kind": "skill", "id": "guru-discover-change-context"},
                 {"kind": "skill", "id": "guru-sync-base"},
@@ -123,10 +124,10 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "dedicated dialogue-local choice",
             "optional_mechanism_origin=true",
             "mechanism_removed",
-            "current transient `context_evidence` digest",
-            "update time are reread directly",
-            "writes no authorization fields",
-            "does not require a second Discovery result",
+            "private 4.0 / scope_ready 1.0",
+            "time directly",
+            "no authorization",
+            "original caller-aware",
             "There is no mutation executor",
             "Success returns `refresh_context`",
             "compact owner-result `decision_trail`",
@@ -521,7 +522,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn("schema_mismatch", rejected.stdout)
 
-    def test_public_invoke_projects_active_task_clear_null_disposition_as_retained(self) -> None:
+    def test_active_scope_ready_and_historical_success_requires_fresh_producer(self) -> None:
         from jsonschema import Draft202012Validator
 
         owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())
@@ -557,7 +558,38 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "decision_trail": None,
             "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"],
         }
+        historical = copy.deepcopy(owner)
+        historical_schema = json.loads((self.package / "schemas/requirements-clarification.schema.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(historical_schema).iter_errors(historical)))
+        rejected = self.command("record-requirements-clarification.sh", self.authoring(historical),
+                                "--mode", "workflow", "--input", "-")
+        self.assertEqual(3, rejected.returncode, rejected.stdout + rejected.stderr)
+        self.assertIn("Re-enter original Clarify", rejected.stdout)
+        # Freshly authored fixture review; this is not a runtime conversion or AI semantic proof.
+        owner["schema_version"] = "4.0"
+        owner["typed_exit"] = "scope_ready"
+        owner["revision_refs"] = ["https://github.com/example/project/issues/145#acceptance"]
+        owner["source_selection"] = [{"locator": "https://github.com/example/project/issues/145",
+                                    "section": "body/acceptance", "authority_kind": "requirement"}]
+        del owner["active_task_evidence"]["planning_documents"]
+        del owner["active_task_evidence"]["reentry_owners"]
+        fresh_authoring = self.authoring(owner)
         owner = self.record_owner(owner)
+        checked = self.command("check-requirements-clarification.sh", owner, "--input", "-")
+        self.assertEqual(0, checked.returncode, checked.stdout + checked.stderr)
+        for field, value in (("revision_refs", []), ("open_questions", ["unresolved"])):
+            incomplete = copy.deepcopy(fresh_authoring)
+            incomplete[field] = value
+            rejected = self.command("record-requirements-clarification.sh", incomplete, "--mode", "workflow", "--input", "-")
+            self.assertEqual(2, rejected.returncode, rejected.stdout + rejected.stderr)
+        no_accepted = copy.deepcopy(fresh_authoring)
+        no_accepted["scope_proposals"][0]["decision"] = "related"
+        rejected = self.command("record-requirements-clarification.sh", no_accepted, "--mode", "workflow", "--input", "-")
+        self.assertEqual(2, rejected.returncode, rejected.stdout + rejected.stderr)
+        # Unrelated scope resumes the existing clear contract, with no planning prerequisites.
+        no_accepted["typed_exit"] = "clear"
+        no_accepted["revision_refs"] = []
+        self.record_owner(no_accepted)
         typed = json.loads((self.package / "examples/public-clear-output-3.0.json").read_text())
         transition = copy.deepcopy(typed["transition"])
         transition["stage"] = "context_current"
@@ -600,16 +632,20 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             )
         self.assertEqual(result.returncode, 0, result)
         output = json.loads(result.stdout)
-        self.assertEqual(output["exit_id"], "clear")
-        self.assertEqual(output["target_disposition"], "retained")
-        self.assertEqual(
-            output["transition"]["target_disposition"],
-            {
-                "disposition_sha256": owner["content_identity"]["disposition_sha256"],
-                "duplicate_facts_sha256": owner["content_identity"]["disposition_sha256"],
-            },
-        )
+        self.assertEqual(output, {
+            "exit_id": "scope_ready", "mode": "workflow", "task_ref": public_input["task_locator"],
+            "source_selection": owner["source_selection"], "revision_refs": owner["revision_refs"],
+        })
         self.assertNotIn("Traceback", result.stdout + result.stderr)
+        from adapters.eval.intake_authoring import next_intake_owner
+        # Author is outside the Intake-only adapter; the new DTO has no resume_target.
+        self.assertIsNone(next_intake_owner("guru-clarify-requirements", output, self.interface))
+        consumer_schema = json.loads((self.package.parents[1] / "consumers/workflow/stage0/clarify-requirements-scope-ready-1.0.schema.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(consumer_schema).iter_errors(output)))
+        author_input = {key: value for key, value in output.items() if key != "exit_id"}
+        author_input["profile"] = "active_task_scope_change"
+        author_schema = json.loads((self.package.parent / "guru-author-task-plan/schemas/public-active-task-scope-change-input.schema.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(author_schema).iter_errors(author_input)))
 
         standalone = copy.deepcopy(invocation)
         standalone["public_input"] = {"resume_target": "guru-standalone-caller",
@@ -620,6 +656,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             "continuation_id": "stage0-current",
         }
         standalone["transition"]["mode"] = "standalone"
+        standalone["owner_result"] = historical
         standalone["owner_result"]["mode"] = "standalone"
         standalone["owner_result"]["invocation_context"] = {
             "kind": "standalone_review",

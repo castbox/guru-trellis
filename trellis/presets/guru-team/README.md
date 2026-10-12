@@ -170,6 +170,17 @@ callers together; see the canonical Clarify
 Upstream start/continue/brainstorm remain upstream-owned and discoverable; the
 current workflow and Clarify contract constrain method reuse and resume.
 
+## Current Planning migration (#292)
+
+The sole task-plan business writer is `guru-author-task-plan`. The global
+workflow invokes its requirements and solution exits around purpose-specific
+Architecture planning 3.0, then current Wording, final Architecture and Approval.
+Step-local behavior stays in the selected packages; upstream brainstorm/start/
+continue and hooks remain upstream-owned. Install the matching complete preset
+and marketplace workflow together using the [version and in-flight migration](./MIGRATION-292.md).
+Package closure, installed callability, actual native planning and Release are
+separate conclusions; the migration document specifies their evidence boundary.
+
 ## Isolated task-free execution (#521)
 
 Mode selection is independent of checkout location. The canonical

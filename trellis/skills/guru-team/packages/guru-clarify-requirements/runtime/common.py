@@ -3,10 +3,15 @@ import copy,hashlib,json
 from runtime.io import CommandError
 from runtime.schema import validate_json
 
-CONSUMERS={"clear":{"kind":"workflow","id":"guru-requirements-clear-router"},"needs_context":{"kind":"skill","id":"guru-discover-change-context"},"refresh_context":{"kind":"skill","id":"guru-sync-base"},"retarget_context":{"kind":"skill","id":"guru-sync-base"},"new_task":{"kind":"workflow","id":"guru-full-task-intake-chain"},"blocked":{"kind":"stop","id":"requirements-clarification-blocked"}}
+CONSUMERS={"scope_ready":{"kind":"workflow","id":"guru-requirements-clear-router"},"clear":{"kind":"workflow","id":"guru-requirements-clear-router"},"needs_context":{"kind":"skill","id":"guru-discover-change-context"},"refresh_context":{"kind":"skill","id":"guru-sync-base"},"retarget_context":{"kind":"skill","id":"guru-sync-base"},"new_task":{"kind":"workflow","id":"guru-full-task-intake-chain"},"blocked":{"kind":"stop","id":"requirements-clarification-blocked"}}
 def digest(v): return hashlib.sha256(json.dumps(v,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
 def validate_shape(package,payload):
-    validate_json(payload,package/"schemas/requirements-clarification.schema.json","input")
+    active = payload.get("invocation_context", {}).get("kind") == "active_task_scope_change"
+    if active and payload.get("schema_version") == "3.0" and payload.get("typed_exit") != "blocked":
+        raise CommandError("stale_identity", "input.schema_version",
+                           "Re-enter original Clarify with current active-task 4.0 evidence; do not convert a historical success.", 3)
+    schema = "requirements-clarification-active-task-4.0.schema.json" if payload.get("schema_version") == "4.0" else "requirements-clarification.schema.json"
+    validate_json(payload, package / "schemas" / schema, "input")
     exit_id=payload.get("typed_exit")
     if payload.get("consumer")!=CONSUMERS.get(exit_id): raise CommandError("semantic_result_invalid","input.consumer","Match the declared typed-exit consumer.",3)
     gate=(payload.get("ai_review_gate") or {}).get("status")

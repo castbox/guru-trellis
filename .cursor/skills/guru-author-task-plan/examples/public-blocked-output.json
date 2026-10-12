@@ -1,0 +1,7 @@
+{
+  "exit_id": "blocked",
+  "task_ref": ".trellis/tasks/10-11-sample-planning",
+  "missing_refs": [
+    "source:current selection"
+  ]
+}

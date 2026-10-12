@@ -60,7 +60,7 @@ stdout, a result/report, locator, or checkpoint.
 ## Architecture Stage Consumption
 
 The global workflow mandatory invokes
-`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)` before
+`guru-maintain-architecture-baseline:task_impact_sync(stage=planning, planning_purpose=final_plan)` 3.0 before
 this owner can approve Planning. Its fresh `baseline_current` is the adjacent
 upstream result and proves that the contract-selected Architecture AI owner has
 already completed semantic authoring and the formal deterministic invocation.
@@ -150,7 +150,7 @@ validation distinct from evidence obtainable after merge/deploy.
 
 ## Private Result
 
-New owner evidence uses schema `guru-planning-approval-3.0` in ignored runtime.
+New owner evidence uses schema `guru-planning-approval-4.0` in ignored runtime.
 It retains only:
 
 - mode and task locator;
@@ -176,7 +176,7 @@ retain per-file hashes, sizes, mtimes, repository snapshots, full scan history,
 reviewer metadata, raw reports, handoffs, assignments, authorization, or
 authorization digests.
 
-Only schema 3.0 is a valid current owner result. Any other schema version or
+Only schema 4.0 is a valid current owner result. Any other schema version or
 unknown CLI option is rejected by the current validator; callers rerun this
 owner with the current public profile instead of projecting prior fields.
 
@@ -194,10 +194,10 @@ Keep cwd at the task repository root. The installed package is
 the normal recorder input. Normal authoring contains exactly these eight
 top-level fields: `mode`, `authority_refs`, `delivery_policy`, `docs_ssot_plan`,
 `semantic_review`, `typed_exit`, `consumer`, and `reason`. Populate their semantic content using
-the corresponding definitions in `schemas/planning-approval.schema.json`.
+the corresponding definitions in `schemas/planning-approval-4.0.schema.json`.
 Omit `schema_version`, `skill_id`, `task_ref`, `planning_paths`, and
 `reviewed_content_sha256`: the recorder supplies those from the exact task and
-current planning files. An object with `schema_version=3.0` is already a
+current planning files. An object with `schema_version=4.0` is already a
 complete recorded result and must not be used as partial authoring.
 
 Use the existing commands in this order. Record and invoke each receive one
@@ -224,13 +224,30 @@ valid public projection retires it before control reaches the next owner.
 ## Exits
 
 - `approved`: every dimension passed and the activation workflow receives only
-  `exit_id` and `task_ref`, and the current Planning-stage Architecture result
+  `exit_id`, `task_ref`, and `planning_result_id`, and the current Planning-stage Architecture result
   is still fresh; the consumer must still satisfy its own
   presentation and dialogue-local review boundary.
-- `revision_required`: task-local revision actions return to this owner.
+- `revision_required`: actual task-local revision actions go through
+  `guru-task-plan-approval-revision-router` to Author `approval_revision`;
+  after the affected gates refresh, this owner reviews `revision_reentry`.
 - `clarify_scope`: exact scope proposal references route to requirements
   clarification.
 - `blocked`: a concrete authority or evidence gap stops the workflow.
 
 Mapped re-entry is automatic. Unknown, multiple, stale, ambiguous, or unmapped
 exits fail closed without creating a routine user prompt.
+
+
+## #292 author boundary
+
+Author owns business writing and original-source design dispositions. This
+owner reviews the sole design.md matrix commitment by commitment, actual
+retain landing points, change/reject rationale/impact and required upstream
+handling; no provenance flag substitutes. Check implement's unique Delivery
+Policy and Docs SSOT Plan with their actual remaining-work/Completion and RDT
+reconciliation consumers. Only Wording-current final_plan Architecture output
+is eligible; candidate_assessment never substitutes. Revision returns actual
+revision_actions through the workflow router to Author approval_revision, then
+fresh dependent gates and this owner's revision_reentry. The old Approval
+self-writing edge and private 3.0 checkpoint are retired; private 4.0 and revision
+output 2.0 are the current selectors. Approved output and #468 semantics remain.

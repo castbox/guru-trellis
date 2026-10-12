@@ -1,5 +1,5 @@
 {
-  "schema_version": "3.0",
+  "schema_version": "4.0",
   "skill_id": "guru-approve-task-plan",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/example-task",
@@ -9,13 +9,26 @@
     ".trellis/tasks/example-task/implement.md"
   ],
   "reviewed_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "authority_refs": ["issue:27"],
+  "authority_refs": [
+    "issue:27"
+  ],
   "delivery_policy": {
-    "task_scope": ["R1", "R2"],
-    "delivery_slice": ["R1"],
-    "remaining_work": ["R2"],
-    "independent_delivery_conditions": ["R1 can be validated and used without R2 being complete."],
-    "validation_boundaries": ["Targeted R1 checks are required; R2 validation remains future work."],
+    "task_scope": [
+      "R1",
+      "R2"
+    ],
+    "delivery_slice": [
+      "R1"
+    ],
+    "remaining_work": [
+      "R2"
+    ],
+    "independent_delivery_conditions": [
+      "R1 can be validated and used without R2 being complete."
+    ],
+    "validation_boundaries": [
+      "Targeted R1 checks are required; R2 validation remains future work."
+    ],
     "remaining_work_owner": "The active task remains responsible for R2 after this delivery."
   },
   "docs_ssot_plan": {
@@ -46,5 +59,8 @@
   },
   "typed_exit": "approved",
   "reason": "The semantic owner completed the current planning review.",
-  "consumer": {"kind": "workflow", "id": "phase-1-task-activation"}
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-task-activation"
+  }
 }

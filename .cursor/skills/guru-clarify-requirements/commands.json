@@ -58,7 +58,8 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/requirements-clarification.schema.json"
+        "schemas/requirements-clarification.schema.json",
+        "schemas/requirements-clarification-active-task-4.0.schema.json"
       ],
       "runtime_role": "record"
     },
@@ -114,7 +115,8 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/requirements-clarification.schema.json"
+        "schemas/requirements-clarification.schema.json",
+        "schemas/requirements-clarification-active-task-4.0.schema.json"
       ],
       "runtime_role": "check"
     },
@@ -151,7 +153,8 @@
         "schemas/public-refresh-context-output.schema.json",
         "schemas/public-retarget-context-output.schema.json",
         "schemas/public-new-task-output.schema.json",
-        "schemas/public-blocked-output.schema.json"
+        "schemas/public-blocked-output.schema.json",
+        "schemas/public-scope-ready-output-1.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

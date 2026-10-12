@@ -221,10 +221,11 @@ race, fault-injection or cross-OS hardening follows this same rule.
 
 ## Source Actions And Mutation Boundary
 
-Actions are exactly `none`, `issue_comment`, `issue_body_edit`,
+Historical 3.0 actions are exactly `none`, `issue_comment`, `issue_body_edit`,
 `proposed_draft_update`, `new_issue_draft`, `select_existing_issue`,
 `reopen_issue`, and `active_task_scope_update`. There is no mutation executor
-in this package.
+in this package. Current active 4.0 excludes active_task_scope_update;
+its independent scope_ready boundary is defined below.
 
 For `issue_comment` or `issue_body_edit`, the AI must reread the live preimage,
 match repo/issue/action/payload facts, execute the exact existing
@@ -245,58 +246,73 @@ a completed `issue_comment` or `issue_body_edit`, followed by live reread and
 for a load-bearing round. `non_load_bearing` does not require or permit an
 authority action merely to satisfy the contract.
 
-## Active-Task Scope Change
+## Active-Task Scope Change — private 4.0 / scope_ready 1.0
 
-Pause implementation/check/commit/review progression. Classify new input as
-current task scope, related, followup, new task or out-of-scope. Current
-inclusion requires the same delivery unit, no material boundary/risk/test
-expansion, complete updated planning and the required dialogue decision.
+Pause implementation/check/commit/review progression. Reread the same live
+TaskId/generation, Direct Source or legal no_issue relation and current scope.
+Classify new input as current task scope, related, followup, new task or
+out-of-scope. Current inclusion requires the same delivery unit and the actual
+scope choice where required. Clarify judges scope before planning is written;
+it never requires complete updated planning or writes planning itself.
 
-Active-task `clear` and `new_task` require a non-empty set containing only the
-seven terminal decisions: the five scope classifications `accepted_current`,
-`related`, `followup`, `new_task`, and `out_of_scope`, plus the mechanism
-dispositions `mechanism_removed` and `mechanism_replaced`. `new_task` must
-contain at least one `decision=new_task` classification. Every scope
-classification is finalized only after the required dialogue decision and
-binds one compact owner-result `decision_trail`. It is not a process trail: it
-contains only the final proposal decisions plus the remote authority locator
-and content checksum. It
-contains no user identity, wording, timestamp, confirmation reference,
-authorization digest, planning identity, review state, context snapshot,
-resume target or re-entry routing. Mechanism
-dispositions instead require `optional_mechanism_origin=true`; they never enter
-the trail or trigger GitHub/task authority mutation. A mechanism-only payload
-may return `clear`, and a mixed payload places only its five-classification
-subset in the trail.
-Mechanism-only still carries all three planning documents, re-entry owners,
-and current context evidence in the owner-private
-result; only `decision_trail` is null. Every
-terminal active-task path receives the same live task/context freshness check.
-The checker independently validates the owner-result trail against the current
-proposal set and live GitHub authority. Current planning, context, task action
-and re-entry facts are reread from their owning sources. Those rederivable
-bindings and the trail stay in the transient owner result.
+Current active calls use `requirements-clarification-active-task-4.0.schema.json`.
+The private result retains current context/authority, terminal proposals, the
+compact owner-result `decision_trail`, source selection and AI-selected
+`revision_refs`. Active evidence contains only task_locator,
+github_authority_facts_sha256 and nullable decision_trail. The trail contains
+final classification decisions plus the remote authority locator and content
+checksum; no authorization, planning hashes or reentry_owners are recorded.
+Mechanism dispositions require optional_mechanism_origin=true and remain outside
+the classification trail. Legal no_issue and no-classification cases may have
+null trail; an external authority classification uses the actual remote facts.
 
-GitHub comment/body mutation returns `refresh_context` before any task-local
-update. On re-entry, live authority kind/URL/content and update time are reread
-directly. The task-update action preimage must equal the current transient
-`context_evidence` digest. The AI then validates the current planning identities and
-one `active_task_scope_update` action. After the dialogue decision, the
-task-local write binds that action to the same five-class proposal set and the
-current preimage. Recorder/checker retain only the objective action and result
-facts; each component writes no authorization fields. A task-only update does not require a
-second Discovery result or a changed digest before `clear` or active-task
-`new_task` resumes the exact interrupted progression. `new_task` then carries only a reviewed
-side-effect-free draft; #112 still owns issue/task creation. This Skill records
-no dedicated clarification artifact and never writes another task directory.
+`scope_ready` requires current context, zero open questions, a passed AI Gate,
+a nonempty terminal proposal set containing accepted_current and nonempty
+revision_refs chosen by this AI from the actual revised sources. The seven
+terminal decisions retain their meanings: accepted_current, related, followup,
+new_task, out_of_scope, mechanism_removed and mechanism_replaced. Do not derive
+revision_refs from every selected source or let a script choose the scope.
+`scope_ready` means scope is ready for Author; it is not planning approval,
+activation, task mutation or permission to resume execution.
+
+The new public output contains exactly exit_id, mode, task_ref,
+source_selection and revision_refs. Its one consumer is the existing
+`guru-requirements-clear-router`, whose new independent 1.0 input receives the
+output directly. That router drops exit_id, adds fixed
+profile=active_task_scope_change and passes the other four fields unchanged to
+`guru-author-task-plan`. No transition, digest, planning identity, private
+result, caller-selected route or resume_target crosses this boundary.
+
+Active `clear` remains for terminal non-current/mechanism-only decisions and
+returns to the exact interrupted consumer; it cannot contain accepted_current.
+Active `new_task` requires an actual terminal new_task proposal and reviewed
+side-effect-free draft; original intake still owns new resource creation.
+Neither route requires planning hashes or an active_task_scope_update action.
+
+A GitHub comment/body/reopen mutation still returns refresh_context before
+current scope can proceed. The AI rereads authority kind/URL/content and update
+time directly, then fresh Sync/Discovery returns current context to this same
+profile. Missing context returns needs_context and the original caller-aware
+Discovery return. Runtime validates supplied schema/digest/context/task bindings;
+it does not perform the AI's live GitHub read or task-local write.
+
+Historical private 3.0, public clear 3.0 and workflow clear consumer 2.0 retain
+original bytes. Other profiles keep 3.0. A historical successful active 3.0
+result fails with fresh original-producer re-entry; it is never converted into
+scope_ready or a new pass. Historical blocked is preserved as evidence, not
+replayed as progress. Existing activate/resume_execution owners retain lifecycle
+status; an in_progress replan does not rerun initial activation.
 
 ## Recorder, Checker, And Exits
 
 Recorder derives proposal/action/payload/content/result SHA-256 values from the
 AI-reviewed payload and emits canonical result bytes. Checker recomputes
-them and validates current live GitHub/Git/task facts. Both are deterministic,
+them and validates supplied schema and content bindings. The AI owns live
+GitHub/context reads; public invoke validates the current active task identity. Both are deterministic,
 perform no GitHub write, and cannot synthesize a semantic pass.
 
+- `scope_ready` -> the same workflow target `guru-requirements-clear-router`,
+  then its fixed active-task Author input projection;
 - `clear` -> workflow target `guru-requirements-clear-router`;
 - `needs_context` -> Skill `guru-discover-change-context`;
 - `refresh_context` -> Skill `guru-sync-base`;
@@ -310,9 +326,9 @@ never write a repo cache, workspace journal or fixed handoff. The package
 requires the complete current Guru Team preset and is not self-contained or
 portable.
 
-The recorder accepts the closed Schema 3.0 semantic shape with only the derived
+The recorder accepts the closed Schema 3.0 non-active or Schema 4.0 active semantic shape with only the derived
 fields listed below omitted. It validates that shape before calculating values
-and validates the complete Schema 3.0 result before returning it. Checker and
+and validates the complete selected-version result before returning it. Checker and
 invoke require the complete result and independently recompute the same fields.
 Supplied derived values are consistency assertions, never silently replaced.
 No schema version, Skill id, decision, target, consumer or gate is defaulted.
@@ -324,15 +340,16 @@ only the transient private owner JSON consumed by record, not public input.
 
 | Required semantic fields | Source |
 | --- | --- |
-| `schema_version`, `skill_id`, `generated_at`, `mode` | Explicit current result metadata; `3.0` and `guru-clarify-requirements` |
+| `schema_version`, `skill_id`, `generated_at`, `mode` | Explicit current result metadata; `3.0` for non-active profiles, `4.0` for active and `guru-clarify-requirements` |
 | `typed_exit`, `consumer`, `invocation_context`, `reason`, `error` | Completed AI route and caller decision, with explicit nullable fields |
 | `review_target`, `target_disposition`, `context_evidence` | Current reviewed facts and final target decision; null disposition only where already allowed |
 | `confirmed_facts`, `repository_answerable_questions`, `clarification_rounds`, `open_questions`, `scope_proposals`, `affected_contracts` | AI-reviewed content and final proposal decisions; explicit arrays even when empty |
 | `source_actions`, `mutation_results`, `active_task_evidence` | Explicit selected actions, preimages, external receipts and task evidence; no-action still requires the existing `none` row |
+| `revision_refs` (4.0 only) | AI-selected changed source references; nonempty for scope_ready |
 | `ai_review_gate` | Complete explicit AI judgment; missing gate/status/decision never means passed |
 
-All nested semantic fields remain required by
-`.trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json`.
+All nested semantic fields remain required by the profile-selected private
+schema declared above; historical 3.0 remains immutable.
 The exact fields that normal authoring may omit are:
 
 | Omittable field | Deterministic derivation |
@@ -364,7 +381,7 @@ candidate `facts_sha256`, or disposition `duplicate_facts_sha256`. Copy these
 opaque values unchanged from Discovery. Invoke checks exact token and candidate
 fact equality plus target/query/time/authority bindings, without implementing
 Discovery's hash algorithm. Selected-issue facts, body/preimage checksums,
-mutation receipts, planning/authority checksums and decision-trail references
+mutation receipts, authority checksums and decision-trail references
 remain explicitly supplied evidence; this recorder does not select, reconstruct,
 or execute them. Changed content with old bindings is rejected by record,
 checker and invoke; after a fresh AI review, omit the listed fields to record
@@ -386,8 +403,7 @@ do not import an eval helper or run a package module with system Python.
 
 The clear router validates `invocation_context.resume_target` without making a
 new semantic decision: initial issue/draft uses `guru-review-contract-wording`
-(staged #114), standalone uses `guru-standalone-caller`, accepted-current
-active scope uses `guru-active-task-planning-review`, and a non-current active
+(staged #114), standalone uses `guru-standalone-caller`, scope_ready uses the fixed Author projection above, and a non-current active
 classification uses the exact declared interrupted Phase 1/2/3/Branch Review
 target. Any kind/target mismatch fails closed.
 
@@ -455,12 +471,12 @@ profile and identity with new context. Freshly project its actual stdout into
 the independently owned input; never reuse an old invocation object, owner
 result or stale duplicate snapshot on a repeated return.
 
-The AI authors `source_selection` in the schema 3.0 owner result. Each selected
+The AI authors `source_selection` in the selected 3.0/active 4.0 owner result. Each selected
 entry is only `locator`, `section`, and `authority_kind` (`requirement`,
 `design_constraint`, or `advisory`). The selection itself carries the
 irreducible choice of which comment/section and its authority role. Empty is
 legal when there is no introduced source. No full text, final design disposition,
-history, source matrix or authorization belongs here. `clear` hands it to the
+history, source matrix or authorization belongs here. `clear` or `scope_ready` hands it to the
 clear router; the transition relays it through current Wording/readiness to
 current Planning. Planning rereads sources and owns final retain/change/reject
 only in `design.md`. A lost selection re-enters this owner instead of guessing

@@ -2176,9 +2176,17 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "invoke-guru-reconcile-task-base",
         ):
             self.assertIn(command_id, public_api["companion_scripts"])
+        approval_interface = json.loads((
+            self.guru_root / "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json"
+        ).read_text(encoding="utf-8"))
+        approval_schema_id = next(
+            artifact["schema"]["schema_id"]
+            for artifact in approval_interface["public_contracts"]["private_artifacts"]
+            if artifact["id"] == "planning_approval"
+        )
         self.assertIn(
-            "guru-planning-approval-3.0",
-            public_api["skill_contracts"]["artifact_schema_ids"],
+            approval_schema_id,
+            public_api["skill_contracts"]["private_artifact_schema_ids"],
         )
 
         self.assertIn(
@@ -2228,14 +2236,10 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "workflow_markers",
             },
         )
-        for field, expected_count in (
-            ("private_artifact_schema_ids", 22),
-        ):
-            self.assertEqual(
-                public_api["skill_contracts"][field],
-                canonical["public_api"]["skill_contracts"][field],
-            )
-            self.assertEqual(len(public_api["skill_contracts"][field]), expected_count)
+        self.assertEqual(
+            public_api["skill_contracts"]["private_artifact_schema_ids"],
+            canonical["public_api"]["skill_contracts"]["private_artifact_schema_ids"],
+        )
         for field in ("public_input_schema_ids", "typed_output_schema_ids"):
             declared_ids = set(public_api["skill_contracts"][field])
             self.assertEqual(len(declared_ids), len(public_api["skill_contracts"][field]))
@@ -2285,7 +2289,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
             architecture_input_schema_ids,
         )
-        self.assertIn("guru-normal-scenario-input-aggregate-1.0", public_input_schema_ids)
         self.assertIn(
             "guru-normal-scenario-input-implementation-discovery-1.0",
             public_input_schema_ids,
@@ -2347,11 +2350,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             },
             architecture_output_schema_ids,
         )
-        self.assertIn("guru-normal-scenario-output-classified-1.0", typed_output_schema_ids)
-        self.assertIn(
-            "guru-normal-scenario-output-scope-confirmation-required-1.0",
-            typed_output_schema_ids,
-        )
         solution_mechanism_output_ids = {
             output["schema"]["schema_id"]
             for output in solution_mechanism_interface["public_contracts"]["outputs"]
@@ -2396,13 +2394,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         )
         self.assertEqual(
             public_api["skill_contracts"]["contract_manifests"],
-            [
-                {
-                    "id": "production-current-v4",
-                    "schema_id": "guru-team-production-contract-manifest-4.0",
-                    "path": "contracts/production-current-4.0.json",
-                }
-            ],
+            canonical["public_api"]["skill_contracts"]["contract_manifests"],
         )
         self.assertEqual(
             public_api["skill_evals"]["adapter_request_schema_ids"],
@@ -2464,9 +2456,15 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         ):
             self.assertTrue((self.repo / ".trellis/guru-team/skills" / relative).is_file(), relative)
         installed_contracts = self.repo / ".trellis/guru-team/skills/contracts"
+        selected_manifest = canonical["public_api"]["skill_contracts"]["contract_manifests"][0]
+        installed_selected_manifest = self.repo / ".trellis/guru-team/skills" / selected_manifest["path"]
+        self.assertEqual(
+            installed_selected_manifest.read_bytes(),
+            (self.guru_root / "trellis/skills/guru-team" / selected_manifest["path"]).read_bytes(),
+        )
         self.assertEqual(
             (installed_contracts / "production-current.json").read_bytes(),
-            (installed_contracts / "production-current-4.0.json").read_bytes(),
+            installed_selected_manifest.read_bytes(),
         )
         self.assertIn("sync-base", public_api["companion_scripts"])
         self.assertIn("check-base-sync", public_api["companion_scripts"])

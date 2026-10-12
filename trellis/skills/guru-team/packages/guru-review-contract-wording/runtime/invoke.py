@@ -20,6 +20,16 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
    current=dict(transition);current.update({"transition_id":"wording_current:"+digest(wording)[:24],"stage":"wording_current","continuation_id":public["continuation_id"],"wording_facts_sha256":owner["facts_sha256"],"target_content_sha256":target_content_sha256,"wording":wording})
    out["transition"]=current
   schema="public-pass-output-2.0.schema.json"
- elif exit_id=="content_changed":out.update({"profile":public["profile"],"continuation_id":public["continuation_id"]});schema="public-content-changed-output.schema.json"
+ elif exit_id=="content_changed":
+  out["profile"]=public["profile"]
+  if public["profile"]=="planning_artifacts":
+   task=public.get("task_locator")
+   if not isinstance(task,str) or not task:raise CommandError("schema_mismatch","public_input.task_locator","Provide the current planning task locator.")
+   try:task_ref=(repo/task).resolve().relative_to(repo).as_posix()
+   except ValueError as exc:raise CommandError("stale_identity","public_input.task_locator","Use the checked task inside this repository.",3) from exc
+   if owner["scope"]["identity"]!="planning_artifacts:"+task_ref:raise CommandError("stale_identity","public_input.task_locator","Use the task checked by this Wording invocation.",3)
+   out.update(task_ref=task_ref,change_refs=list(dict.fromkeys(row["locator"] for row in owner["semantic_review"]["revisions"])))
+  else:out["continuation_id"]=public["continuation_id"]
+  schema="public-content-changed-output-2.0.schema.json"
  else:schema="public-blocked-output.schema.json"
  validate_json(out,package_root/"schemas"/schema,"stdout");return out

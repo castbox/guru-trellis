@@ -40,7 +40,7 @@ every touched non-generated code file as a mandatory mechanical-split or small-
 decoupling review trigger.
 
 Before that review may return `approved`, consume a fresh
-`guru-maintain-architecture-baseline:task_impact_sync(stage=planning)`
+`guru-maintain-architecture-baseline:task_impact_sync(stage=planning, planning_purpose=final_plan, schema_version=3.0)`
 `baseline_current` result from the adjacent upstream invocation and reread its project-owned Architecture Baseline,
 design-constitution authority, and Architecture change-contract authority.
 That current result proves the contract-selected Architecture AI owner already
@@ -80,7 +80,7 @@ authorization, its wording, time, source, reference, or digest into an input,
 checkpoint, gate, handoff, archive, schema, or public DTO. Mapped exits and
 same-scope re-entry continue automatically.
 
-After the semantic result exists, record and validate only the compact 3.0
+After the semantic result exists, record and validate only the compact 4.0
 owner-private projection. Its composite planning-content token serves the
 adjacent freshness checker; the checked `approved` exit projects it as the
 minimal `planning_result_id` consumed by Activation. The token is not semantic
@@ -109,3 +109,27 @@ or use qualification as completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Source design and Author revision boundary
+
+Freshly read the actual normative source commitments and the sole disposition
+matrix in design.md, one commitment at a time. Check concrete source locators,
+original promises, retain landing points, change/reject rationale/impact and
+applicable completed upstream handling. A provenance flag or a complete-looking
+matrix cannot replace this review. Missing normal source commitments return
+revision_required; an unresolved requirement/authority choice returns
+clarify_scope. Do not silently reinterpret normative design as advisory or
+upgrade advice into a constraint. PRD/implement must not duplicate the matrix.
+Explicitly verify the unique Delivery Policy and Docs SSOT Plan in implement,
+including remaining work/stages and whole-task Completion conditions where
+applicable, original RDT writer and final-Phase2 reconciliation order.
+
+Only adjacent current final_plan Architecture output is eligible for approval;
+candidate_assessment cannot establish final currentness. Final task design and
+real contribution/necessary ADR must remain current at this boundary. Preserve
+original eight dimensions and qualification owners. Approval never writes
+business planning. revision_required 2.0 projects actual revision_actions to
+its workflow router, which invokes Author approval_revision; afterwards refresh
+the earliest affected gates and re-enter Approval with its current input.
+The private checkpoint migrates to 4.0, and the old revision self-writer edge is
+retired by MIGRATION-292. Approved/Activation identity semantics stay unchanged.

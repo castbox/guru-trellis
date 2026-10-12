@@ -438,7 +438,8 @@ def stage_owner_execution(
             else:
                 raise ValueError(f"unsupported architecture baseline owner staging recipe: {recipe}")
             owner = {
-                "schema_version": "2.0",
+                "schema_version": public_payload["schema_version"],
+                **({"planning_purpose": public_payload["planning_purpose"]} if public_payload.get("schema_version") == "3.0" else {}),
                 "profile": public_payload["profile"],
                 "mode": public_payload["mode"],
                 "continuation_id": public_payload["continuation_id"],
@@ -470,7 +471,7 @@ def stage_owner_execution(
                 },
                 "consumer": {
                     "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
-                    "sync_required": {"kind": "skill", "id": "guru-maintain-architecture-baseline"},
+                    "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
                     "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
                     "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
                     "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},

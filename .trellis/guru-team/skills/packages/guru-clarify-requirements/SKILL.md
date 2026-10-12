@@ -89,21 +89,16 @@ executor and no dedicated tracked clarification artifact. GitHub writes remain
 AI-owned and require an exact current payload plus a live reread; the result
 records only objective action and mutation facts.
 
-Fail closed on missing/current-context drift, repository `answered` without
-checked evidence, invalid question
-lifecycle, open load-bearing questions, payload/live mutation or
-digest mismatch, missing/stale/multiple target disposition, unresolved or
-stale duplicate-candidate decisions, closed targets without an explicit legal
-disposition, empty/non-final active-task proposal sets on `clear`/`new_task`,
-any unresolved scope classification, any classification task update not bound
-to the same current proposal set,
-mechanism disposition with a classification trail or mutation, incomplete or
-stale planning content, missing compact
-owner-result `decision_trail`, or missing live GitHub-visible scope authority,
-load-bearing clarification without a current issue/draft
-authority action, authority/context/task-update order mismatch, invalid caller
-resume, stale active-task evidence, non-current artifact input, unknown exits,
-or missing current runtime. This package is not self-contained or portable.
+Fail closed on missing/current-context drift, unresolved load-bearing questions,
+invalid actual question lifecycle, stale/mismatched scope or source bindings,
+unknown exits or missing runtime. Current active scope uses private 4.0:
+accepted_current reaches scope_ready only with a terminal proposal set, current
+context, completed semantic Gate and AI-selected revision_refs. Historical
+successful active 3.0 requires fresh original Clarify re-entry. Non-active
+profiles retain 3.0; historical blocked remains evidence. Clarify does not write
+or require updated planning; the original Author consumes scope_ready. GitHub
+mutation still refreshes context first, and original activation/resume owners
+retain lifecycle status. This package is not self-contained or portable. See the full contract for objective checks and routes.
 
 ## Installed Commands And Authoring
 

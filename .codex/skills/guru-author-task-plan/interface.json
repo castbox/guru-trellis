@@ -1,0 +1,547 @@
+{
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
+  "id": "guru-author-task-plan",
+  "name": "guru-author-task-plan",
+  "description": "Author current task planning through source-design convergence, candidate Architecture assessment, and eight closed revision profiles.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "current_task",
+        "current_authority"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "current_task",
+        "current_authority"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "current_task",
+      "evidence": "current official task, C3/C4 checkout and source route",
+      "binding": "one live TaskId/generation/task_ref",
+      "freshness": "reread before every write and invocation"
+    },
+    {
+      "id": "current_authority",
+      "evidence": "fresh source selection, repository authority and current producer output",
+      "binding": "selected profile and affected dependency",
+      "freshness": "lost or changed upstream output re-enters its original owner"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "public_active_task_scope_change_input",
+      "path": "examples/public-active-task-scope-change-input.json"
+    },
+    {
+      "id": "public_approval_revision_input",
+      "path": "examples/public-approval-revision-input.json"
+    },
+    {
+      "id": "public_architecture_conflict_resolution_input",
+      "path": "examples/public-architecture-conflict-resolution-input.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_clarify_scope_output",
+      "path": "examples/public-clarify-scope-output.json"
+    },
+    {
+      "id": "public_delivery_plan_revision_input",
+      "path": "examples/public-delivery-plan-revision-input.json"
+    },
+    {
+      "id": "public_initial_review_input",
+      "path": "examples/public-initial-review-input.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_plan_ready_output",
+      "path": "examples/public-plan-ready-output.json"
+    },
+    {
+      "id": "public_requirements_ready_output",
+      "path": "examples/public-requirements-ready-output.json"
+    },
+    {
+      "id": "public_requirements_revision_input",
+      "path": "examples/public-requirements-revision-input.json"
+    },
+    {
+      "id": "public_solution_planning_input",
+      "path": "examples/public-solution-planning-input.json"
+    },
+    {
+      "id": "public_wording_reentry_input",
+      "path": "examples/public-wording-reentry-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_active_task_scope_change_input",
+      "path": "schemas/public-active-task-scope-change-input.schema.json"
+    },
+    {
+      "id": "public_approval_revision_input",
+      "path": "schemas/public-approval-revision-input.schema.json"
+    },
+    {
+      "id": "public_architecture_conflict_resolution_input",
+      "path": "schemas/public-architecture-conflict-resolution-input.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_clarify_scope_output",
+      "path": "schemas/public-clarify-scope-output.schema.json"
+    },
+    {
+      "id": "public_delivery_plan_revision_input",
+      "path": "schemas/public-delivery-plan-revision-input.schema.json"
+    },
+    {
+      "id": "public_initial_review_input",
+      "path": "schemas/public-initial-review-input.schema.json"
+    },
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_plan_ready_output",
+      "path": "schemas/public-plan-ready-output.schema.json"
+    },
+    {
+      "id": "public_requirements_ready_output",
+      "path": "schemas/public-requirements-ready-output.schema.json"
+    },
+    {
+      "id": "public_requirements_revision_input",
+      "path": "schemas/public-requirements-revision-input.schema.json"
+    },
+    {
+      "id": "public_solution_planning_input",
+      "path": "schemas/public-solution-planning-input.schema.json"
+    },
+    {
+      "id": "public_wording_reentry_input",
+      "path": "schemas/public-wording-reentry-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-author-task-plan",
+      "objective_scope": "Validate a closed profile, exact call-local owner binding, live task status, current regular files and one minimal handoff; never write business planning or decide semantic routes."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "requirements_ready",
+      "evidence": "AI-reviewed current requirements-ready handoff",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-plan-requirements-ready-router"
+      }
+    },
+    {
+      "id": "plan_ready",
+      "evidence": "AI-reviewed current plan-ready handoff",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-plan-ready-router"
+      }
+    },
+    {
+      "id": "clarify_scope",
+      "evidence": "AI-reviewed current clarify-scope handoff",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-plan-clarify-scope-router"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "AI-reviewed current blocked handoff",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-plan-author-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "current TaskId/generation, source authority, profile and affected planning dependency",
+    "freshness": "reread current source and earliest affected producer; never infer approval from files",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_runtime.py",
+    "tests/test_planning_chain.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-author-task-plan-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "initial_review",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-initial-review-1.0",
+            "path": "schemas/public-initial-review-input.schema.json"
+          },
+          "example": {
+            "id": "initial_review_input",
+            "path": "examples/public-initial-review-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "initial_review"
+          }
+        },
+        {
+          "id": "active_task_scope_change",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-active-task-scope-change-1.0",
+            "path": "schemas/public-active-task-scope-change-input.schema.json"
+          },
+          "example": {
+            "id": "active_task_scope_change_input",
+            "path": "examples/public-active-task-scope-change-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "active_task_scope_change"
+          }
+        },
+        {
+          "id": "wording_reentry",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-wording-reentry-1.0",
+            "path": "schemas/public-wording-reentry-input.schema.json"
+          },
+          "example": {
+            "id": "wording_reentry_input",
+            "path": "examples/public-wording-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "wording_reentry"
+          }
+        },
+        {
+          "id": "approval_revision",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-approval-revision-1.0",
+            "path": "schemas/public-approval-revision-input.schema.json"
+          },
+          "example": {
+            "id": "approval_revision_input",
+            "path": "examples/public-approval-revision-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "approval_revision"
+          }
+        },
+        {
+          "id": "delivery_plan_revision",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-delivery-plan-revision-1.0",
+            "path": "schemas/public-delivery-plan-revision-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_plan_revision_input",
+            "path": "examples/public-delivery-plan-revision-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_plan_revision"
+          }
+        },
+        {
+          "id": "requirements_revision",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-requirements-revision-1.0",
+            "path": "schemas/public-requirements-revision-input.schema.json"
+          },
+          "example": {
+            "id": "requirements_revision_input",
+            "path": "examples/public-requirements-revision-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "requirements_revision"
+          }
+        },
+        {
+          "id": "solution_planning",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-solution-planning-1.0",
+            "path": "schemas/public-solution-planning-input.schema.json"
+          },
+          "example": {
+            "id": "solution_planning_input",
+            "path": "examples/public-solution-planning-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "solution_planning"
+          }
+        },
+        {
+          "id": "architecture_conflict_resolution",
+          "schema": {
+            "schema_id": "guru-author-task-plan-input-architecture-conflict-resolution-1.0",
+            "path": "schemas/public-architecture-conflict-resolution-input.schema.json"
+          },
+          "example": {
+            "id": "architecture_conflict_resolution_input",
+            "path": "examples/public-architecture-conflict-resolution-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "architecture_conflict_resolution"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-author-task-plan-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-initial-review-input.json",
+        "--owner-result",
+        "examples/semantic-result.json"
+      ],
+      "error_example": {
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
+      }
+    },
+    "outputs": [
+      {
+        "exit_id": "requirements_ready",
+        "schema": {
+          "schema_id": "guru-author-task-plan-output-requirements-ready-1.0",
+          "path": "schemas/public-requirements-ready-output.schema.json"
+        },
+        "example": {
+          "id": "requirements_ready_output",
+          "path": "examples/public-requirements-ready-output.json"
+        },
+        "consumer_use_ids": [
+          "requirements_ready"
+        ]
+      },
+      {
+        "exit_id": "plan_ready",
+        "schema": {
+          "schema_id": "guru-author-task-plan-output-plan-ready-1.0",
+          "path": "schemas/public-plan-ready-output.schema.json"
+        },
+        "example": {
+          "id": "plan_ready_output",
+          "path": "examples/public-plan-ready-output.json"
+        },
+        "consumer_use_ids": [
+          "plan_ready"
+        ]
+      },
+      {
+        "exit_id": "clarify_scope",
+        "schema": {
+          "schema_id": "guru-author-task-plan-output-clarify-scope-1.0",
+          "path": "schemas/public-clarify-scope-output.schema.json"
+        },
+        "example": {
+          "id": "clarify_scope_output",
+          "path": "examples/public-clarify-scope-output.json"
+        },
+        "consumer_use_ids": [
+          "clarify_scope"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-author-task-plan-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "requirements_ready",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-plan-requirements-ready-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-author-task-plan-consumer-requirements-ready-1.0",
+          "path": "consumers/workflow/requirements-ready.schema.json"
+        }
+      },
+      {
+        "id": "plan_ready",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-plan-ready-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-author-task-plan-consumer-plan-ready-1.0",
+          "path": "consumers/workflow/plan-ready.schema.json"
+        }
+      },
+      {
+        "id": "clarify_scope",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-plan-clarify-scope-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-author-task-plan-consumer-clarify-scope-1.0",
+          "path": "consumers/workflow/clarify-scope.schema.json"
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-plan-author-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-author-task-plan-consumer-blocked-1.0",
+          "path": "consumers/stop/blocked.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "requirements_ready",
+        "exit_id": "requirements_ready",
+        "consumer_input_id": "requirements_ready",
+        "operation": "direct"
+      },
+      {
+        "id": "plan_ready",
+        "exit_id": "plan_ready",
+        "consumer_input_id": "plan_ready",
+        "operation": "direct"
+      },
+      {
+        "id": "clarify_scope",
+        "exit_id": "clarify_scope",
+        "consumer_input_id": "clarify_scope",
+        "operation": "direct"
+      },
+      {
+        "id": "blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": []
+  }
+}

@@ -207,11 +207,12 @@ skill and typed exits instead of repeating its step-local contract.
 
 Public planning docs must name `guru-approve-task-plan` as the only semantic
 owner of the ignored-runtime `planning-approval.json` checkpoint, schema id
-`guru-planning-approval-3.0`, and runtime commands `record-planning-approval` /
+`guru-planning-approval-4.0`, and runtime commands `record-planning-approval` /
 `check-planning-approval`. They must state that any necessary task-activation
 or scope-choice authorization stays in the current conversation and is not
 persisted. They list the four exits and consumers: `approved` to
-`phase-1-task-activation`, `revision_required` to the same Skill,
+`phase-1-task-activation`, `revision_required` with revision_actions through
+`guru-task-plan-approval-revision-router` to Author approval_revision,
 `clarify_scope` to routing-only workflow target
 `guru-task-plan-clarify-scope-router`, and `blocked` to
 `task-plan-approval-blocked`. Public docs state that the router consumes only
@@ -220,7 +221,11 @@ invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
 authors the complete clarification input from fresh live context. Workflow
 prose and platform entry text reference the Skill and route only; the package
 contract owns adequacy, provenance, unusual-scenario review, authorization
-necessity, and re-entry. Public docs state that only current schema 3.0 is
+necessity, and re-entry. Public docs name `guru-author-task-plan` as the unique
+planning writer and distinguish Architecture candidate_assessment from
+Wording-current final_plan; only the latter reaches Approval. They reference
+the selected package contracts rather than duplicating profile-local steps.
+Public docs state that only current Approval schema 4.0 is
 accepted and every other shape fails closed without upgrade or projection. Public docs
 also state that equivalent metadata/formatting deltas refresh only directly
 affected owner identity, while material authority/scope/design/acceptance
@@ -478,11 +483,11 @@ machine-local hidden state.
 
 All three public README files describe
 `trellis/skills/guru-team/contracts/production-current.json` with contract id
-`production-current-v4` as the sole current planning/check/commit/qualification
-manifest. It contains exactly the current four Skills, 20 profiles, 15 exits,
+`production-current-v5` as the sole current planning/check/commit/qualification
+manifest. It contains exactly the current four Skills, 22 profiles, 15 exits,
 output schemas, authoring-seed edges, private-artifact ids, examples, production
 control, and eval bindings. The READMEs publish only this current manifest and
-its declared assets; v2/v3 are immutable legacy assets. Inputs
+its declared assets; v2/v3/v4 are immutable legacy assets. Inputs
 outside current package schemas fail closed and the owning Skill is rerun from
 its current public profile.
 

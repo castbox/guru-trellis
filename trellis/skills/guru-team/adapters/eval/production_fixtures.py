@@ -90,7 +90,7 @@ def production_planning_input(
     }
     consumers = {
         "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
-        "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
+        "revision_required": {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"},
         "clarify_scope": {
             "kind": "workflow", "id": "guru-task-plan-clarify-scope-router",
         },

@@ -228,10 +228,40 @@ history.
 
 ## Planning Approval Consumer
 
-`guru-approve-task-plan` consumes only the current invocation's checked
-`planning_artifacts:pass` exit. It then rereads the current planning documents
-and owns its own compact semantic result. It does not import scanner hits,
-classification history, file digests, or this Skill's private result.
+The current `planning_artifacts:pass` router enters fresh Architecture
+`final_plan` before adjacent `guru-approve-task-plan`. Neither downstream owner
+imports scanner hits, classification history, file digests, or this Skill's
+private result.
+
+## Planning Content-Changed Handoff 2.0 (#292)
+
+The selected `content_changed` output/consumer 2.0 is a closed profile union.
+For `planning_artifacts`, the output contains only `exit_id`, the fixed
+`profile`, `task_ref`, and nonempty unique `change_refs`. After the real
+record/check sequence, this owner's invoke validates that the public task
+locator names the checked planning scope, normalizes it to a repo-relative
+task ref, and projects completed `semantic_review.revisions[].locator` values
+in their first-occurrence order. Record the actual changed file/section
+locators when completing revisions, never a caller-authored replacement list.
+No scan, hash, revision history, gate, or continuation checkpoint crosses this
+boundary.
+
+The original change router consumes that public DTO and builds the existing
+Author `wording_reentry` input with fixed `profile=wording_reentry`,
+`mode=workflow`, and unchanged `task_ref/change_refs`. Author judges which
+dependency is affected; this projection does not decide whether the change is
+equivalent wording or changed design facts. Missing producer fields fail
+closed; consumers never read private revisions to complete the handoff.
+
+For `change_request` and `explicit_paths`, 2.0 retains the existing closed
+`exit_id/profile/continuation_id` shape and their original consumers. Historical
+content-changed output/consumer 1.0 remain pinned assets but are not selected
+by the current interface. Apply the matching package and workflow projection
+together. A held old planning DTO is insufficient for Author: re-enter the
+original Wording producer. An unchanged, still-current owner result and actual
+checker receipt may be serialized again by that owner under the corrected
+invoke contract; otherwise fresh complete review is required. Do not add a
+revision merely to obtain `content_changed` or relabel a `pass`/`blocked` exit.
 
 ## Interface 1.4 Public Handoff
 

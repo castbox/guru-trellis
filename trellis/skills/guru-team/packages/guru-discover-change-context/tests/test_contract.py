@@ -127,7 +127,7 @@ class ChangeContextPackageContractTests(unittest.TestCase):
             "do not issue a second duplicate search or re-read candidates after review",
             "never create a task, workspace, or ignored runtime file",
             "normal mapped route remains repository-write-free",
-            "Active-task identity remains an ephemeral `--active-task` invocation argument",
+            "direct task identity independently as `--active-task`",
             "Only a real interruption adds `--recovery-continuation-id`",
             "change-context-recovery.json",
             "public wrapper deletes a current checkpoint only after its typed DTO passes",
