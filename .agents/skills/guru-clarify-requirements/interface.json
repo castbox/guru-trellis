@@ -45,13 +45,13 @@
       "id": "context_evidence",
       "evidence": "current-session discovery conclusions or explicit missing/stale evidence plus live target authority",
       "binding": "current target, repository evidence and load-bearing decisions without a producer locator",
-      "freshness": "live authority is reread before clear; missing evidence returns needs_context"
+      "freshness": "AI rereads live authority before clear/scope_ready; missing evidence returns needs_context"
     },
     {
       "id": "source_authority",
       "evidence": "live issue/draft facts plus exact target disposition, authority-impact classification, source-action preimage and post-mutation facts when applicable",
       "binding": "the selected issue or draft that fresh intake will read and every load-bearing clarification required by later implementation",
-      "freshness": "AI rereads immediately before mutation and checker rereads declared target, duplicate and mutation facts"
+      "freshness": "AI rereads declared target, duplicate and mutation facts immediately before recording; runtime validates shape and supplied bindings, not live GitHub"
     },
     {
       "id": "invocation_freshness",
@@ -131,6 +131,10 @@
     {
       "id": "reviewed_plan_intake_artifacts",
       "path": "examples/public-reviewed-plan-intake-input.json"
+    },
+    {
+      "id": "public_output_scope_ready_example",
+      "path": "examples/public-scope-ready-output-1.0.json"
     }
   ],
   "schemas": [
@@ -193,6 +197,14 @@
     {
       "id": "reviewed_plan_intake_schemas",
       "path": "schemas/public-reviewed-plan-intake-input.schema.json"
+    },
+    {
+      "id": "active_task_clarification_schema",
+      "path": "schemas/requirements-clarification-active-task-4.0.schema.json"
+    },
+    {
+      "id": "public_output_scope_ready",
+      "path": "schemas/public-scope-ready-output-1.0.schema.json"
     }
   ],
   "validators": [
@@ -218,7 +230,15 @@
   "external_exits": [
     {
       "id": "clear",
-      "evidence": "zero open questions, passed AI Review Gate, one current keep disposition for initial intake or current active-task authority, persisted load-bearing answers, and no unrefreshed mutation",
+      "evidence": "zero open questions, passed AI Gate and current authority; active clear contains no accepted_current scope and resumes only its interrupted consumer",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-requirements-clear-router"
+      }
+    },
+    {
+      "id": "scope_ready",
+      "evidence": "current active-task 4.0 scope, terminal proposal set with accepted_current, zero open questions, passed AI Gate and AI-selected nonempty revision_refs; planning has not been written",
       "consumer": {
         "kind": "workflow",
         "id": "guru-requirements-clear-router"
@@ -250,7 +270,7 @@
     },
     {
       "id": "new_task",
-      "evidence": "an independent delivery unit has a reviewed side-effect-free new issue draft and any active task persisted only the compact final classification plus remote authority before fresh re-entry",
+      "evidence": "an independent unit has a reviewed side-effect-free draft; active 4.0 carries terminal scope classifications without planning-bound task mutation",
       "consumer": {
         "kind": "workflow",
         "id": "guru-full-task-intake-chain"
@@ -305,12 +325,109 @@
         "schema_id": "guru-stage0-clarify-requirements-input-aggregate-3.0",
         "path": "schemas/public-input.schema.json"
       },
-      "profiles": [{"id": "standard_intake", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-standard-intake-1.0", "path": "schemas/public-standard-intake-input.schema.json"}, "example": {"id": "standard_intake_input", "path": "examples/public-standard-intake-input.json"}, "discriminator": {"field": "profile", "value": "standard_intake"}}, {"id": "reviewed_plan_intake", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-reviewed-plan-intake-1.0", "path": "schemas/public-reviewed-plan-intake-input.schema.json"}, "example": {"id": "reviewed_plan_intake_input", "path": "examples/public-reviewed-plan-intake-input.json"}, "discriminator": {"field": "profile", "value": "reviewed_plan_intake"}}, {"id": "active_task_scope_change", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-active-task-scope-change-2.0", "path": "schemas/public-active-task-scope-change-input.schema.json"}, "example": {"id": "active_task_scope_change_input", "path": "examples/public-active-task-scope-change-input.json"}, "discriminator": {"field": "profile", "value": "active_task_scope_change"}}, {"id": "standalone_review", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-standalone-review-2.0", "path": "schemas/public-standalone-review-input.schema.json"}, "example": {"id": "standalone_review_input", "path": "examples/public-standalone-review-input.json"}, "discriminator": {"field": "profile", "value": "standalone_review"}}, {"id": "normal_scenario_scope_confirmation", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-1.0", "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"}, "example": {"id": "normal_scenario_scope_confirmation_input", "path": "examples/public-normal-scenario-scope-confirmation-input.json"}, "discriminator": {"field": "profile", "value": "normal_scenario_scope_confirmation"}}, {"id": "solution_mechanism_scope_confirmation", "schema": {"schema_id": "guru-stage0-clarify-requirements-input-solution-mechanism-scope-confirmation-1.0", "path": "schemas/public-solution-mechanism-scope-confirmation-input.schema.json"}, "example": {"id": "solution_mechanism_scope_confirmation_input", "path": "examples/public-solution-mechanism-scope-confirmation-input.json"}, "discriminator": {"field": "profile", "value": "solution_mechanism_scope_confirmation"}}]
+      "profiles": [
+        {
+          "id": "standard_intake",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-standard-intake-1.0",
+            "path": "schemas/public-standard-intake-input.schema.json"
+          },
+          "example": {
+            "id": "standard_intake_input",
+            "path": "examples/public-standard-intake-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standard_intake"
+          }
+        },
+        {
+          "id": "reviewed_plan_intake",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-reviewed-plan-intake-1.0",
+            "path": "schemas/public-reviewed-plan-intake-input.schema.json"
+          },
+          "example": {
+            "id": "reviewed_plan_intake_input",
+            "path": "examples/public-reviewed-plan-intake-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "reviewed_plan_intake"
+          }
+        },
+        {
+          "id": "active_task_scope_change",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-active-task-scope-change-2.0",
+            "path": "schemas/public-active-task-scope-change-input.schema.json"
+          },
+          "example": {
+            "id": "active_task_scope_change_input",
+            "path": "examples/public-active-task-scope-change-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "active_task_scope_change"
+          }
+        },
+        {
+          "id": "standalone_review",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-standalone-review-2.0",
+            "path": "schemas/public-standalone-review-input.schema.json"
+          },
+          "example": {
+            "id": "standalone_review_input",
+            "path": "examples/public-standalone-review-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "standalone_review"
+          }
+        },
+        {
+          "id": "normal_scenario_scope_confirmation",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-normal-scenario-scope-confirmation-1.0",
+            "path": "schemas/public-normal-scenario-scope-confirmation-input.schema.json"
+          },
+          "example": {
+            "id": "normal_scenario_scope_confirmation_input",
+            "path": "examples/public-normal-scenario-scope-confirmation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "normal_scenario_scope_confirmation"
+          }
+        },
+        {
+          "id": "solution_mechanism_scope_confirmation",
+          "schema": {
+            "schema_id": "guru-stage0-clarify-requirements-input-solution-mechanism-scope-confirmation-1.0",
+            "path": "schemas/public-solution-mechanism-scope-confirmation-input.schema.json"
+          },
+          "example": {
+            "id": "solution_mechanism_scope_confirmation_input",
+            "path": "examples/public-solution-mechanism-scope-confirmation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "solution_mechanism_scope_confirmation"
+          }
+        }
+      ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_selector": {"source": "aggregate_public_input", "field": "profile"}},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
+      },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
         "schema_id": "guru-stage0-clarify-requirements-invocation-error-1.0",
@@ -346,6 +463,20 @@
         },
         "consumer_use_ids": [
           "project_clear"
+        ]
+      },
+      {
+        "exit_id": "scope_ready",
+        "schema": {
+          "schema_id": "guru-stage0-clarify-requirements-output-scope-ready-1.0",
+          "path": "schemas/public-scope-ready-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "scope_ready_output",
+          "path": "examples/public-scope-ready-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_scope_ready"
         ]
       },
       {
@@ -440,6 +571,19 @@
         }
       },
       {
+        "id": "scope_ready_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-requirements-clear-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-stage0-clarify-requirements-workflow-scope-ready-input-1.0",
+          "path": "consumers/workflow/stage0/clarify-requirements-scope-ready-1.0.schema.json"
+        }
+      },
+      {
         "id": "needs_context_context_request_input",
         "consumer": {
           "kind": "skill",
@@ -451,7 +595,13 @@
           "interface_path": "packages/guru-discover-change-context/interface.json",
           "input_kind": "structured_json",
           "profile_id": "context_request",
-          "seed_fields": ["source_exit", "profile", "mode", "continuation_id", "return_identity"],
+          "seed_fields": [
+            "source_exit",
+            "profile",
+            "mode",
+            "continuation_id",
+            "return_identity"
+          ],
           "authoring_fields": [
             "change_input"
           ],
@@ -521,14 +671,66 @@
         "exit_id": "clear",
         "consumer_input_id": "clear_workflow_input",
         "operation": "select",
-        "mappings": [{"source": "exit_id", "target": "exit_id"}, {"source": "resume_target", "target": "resume_target"}, {"source": "target_disposition", "target": "target_disposition"}, {"source": "continuation_id", "target": "continuation_id"}, {"source": "profile", "target": "profile"}, {"source": "source_selection", "target": "source_selection"}]
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "exit_id"
+          },
+          {
+            "source": "resume_target",
+            "target": "resume_target"
+          },
+          {
+            "source": "target_disposition",
+            "target": "target_disposition"
+          },
+          {
+            "source": "continuation_id",
+            "target": "continuation_id"
+          },
+          {
+            "source": "profile",
+            "target": "profile"
+          },
+          {
+            "source": "source_selection",
+            "target": "source_selection"
+          }
+        ]
+      },
+      {
+        "id": "project_scope_ready",
+        "exit_id": "scope_ready",
+        "consumer_input_id": "scope_ready_workflow_input",
+        "operation": "direct"
       },
       {
         "id": "project_needs_context",
         "exit_id": "needs_context",
         "consumer_input_id": "needs_context_context_request_input",
         "operation": "rename",
-        "mappings": [{"source": "exit_id", "target": "source_exit"}, {"source": "handoff_profile", "target": "profile"}, {"source": "handoff_mode", "target": "mode"}, {"source": "handoff_continuation_id", "target": "continuation_id"}, {"source": "return_identity", "target": "return_identity"}]
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_profile",
+            "target": "profile"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_continuation_id",
+            "target": "continuation_id"
+          },
+          {
+            "source": "return_identity",
+            "target": "return_identity"
+          }
+        ]
       },
       {
         "id": "project_refresh_context",
@@ -607,6 +809,15 @@
         "schema": {
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-3.0.json",
           "path": "schemas/requirements-clarification.schema.json"
+        },
+        "persistence": "stdout_only_pre_task"
+      },
+      {
+        "id": "active_task_clarification_result",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-requirements-clarification-active-task-4.0.json",
+          "path": "schemas/requirements-clarification-active-task-4.0.schema.json"
         },
         "persistence": "stdout_only_pre_task"
       }

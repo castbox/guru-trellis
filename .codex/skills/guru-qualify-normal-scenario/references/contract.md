@@ -169,3 +169,11 @@ Never create or request an output path, result locator, checkpoint path, tempora
 The result is valid only for its current authority, planning, target, caller graph, candidate set, diff/range/HEAD or base pair, tests, and publication payload. Any relevant change requires a complete fresh invocation. A mechanism revision, scope choice, or finding fix also requires a full rerun.
 
 The classified and mechanism routers route only by validator-confirmed profile and its fixed resume owner. They do not parse reasons or witnesses and do not repeat qualification. After scope clarification, the original Owner rereads live context, reconstructs the appropriate profile input, and invokes this Skill again. Unknown, missing, duplicate, multiple, unmapped, or consumer-mismatched results fail closed.
+
+## Author candidate set
+
+Author owns `author_candidate_set` (caller `guru-author-task-plan`), binding
+current source/candidate locators and existing author_paths with author_identity.
+It does not require future design/implement files. Original planning_scenario_set
+remains Approval-only and requires three current docs. Return classified and
+mechanism results to Author; scope/diagnosis/blocked retain original owners.

@@ -284,6 +284,8 @@ Task-free 只授权限定编辑、保留无关改动和 targeted checks；Issue/
 
 Guru Team preset 提供面向规划、实现检查、任务提交、分支审查、发布审核和最终收口的协作能力，使每个阶段都能读取前序结果，同时保持职责清晰。
 
+Phase 1 的业务写作唯一归 `guru-author-task-plan`。需求与真实候选先进入独立 Architecture `candidate_assessment`，方案写作后进入 Wording，再由当前 `final_plan` Architecture 结果相邻交给独立 Approval。来源设计处置、Delivery Policy 与 Docs SSOT Plan 由 Author 承接；正常 brainstorm 和恢复入口仍遵从当前 workflow。迁移须同时应用 matching preset 与 marketplace workflow，具体见 [MIGRATION-292](trellis/presets/guru-team/MIGRATION-292.md)。
+
 当前交付由 `guru-review-task-delivery` 根据 accepted slice、current requirement authority、完整 reviewed diff 与目标分支审查中文 Refs-only PR 标题正文。其 `ready` 交给 `guru-publish-task-delivery` 完成 push/PR/Ready；`ready_for_merge` 再交给 `guru-merge-task-delivery` 做独立 expected-head merge。Merge 只产生一次 Delivery result，task 保持 active；`guru-review-task-completion` 随后判断剩余工作，只有 `completed` 才进入 Closure、Finish 与 Cleanup。旧 Publication/Finalizer/Merge closeout 和 finish summary 1/2 仅是历史或 pinned-old 版本事实，不提供当前 runtime adapter。
 
 旧 Finalizer 的 provenance metadata-tail 行为属于 pinned-old 交付链，不能作为当前

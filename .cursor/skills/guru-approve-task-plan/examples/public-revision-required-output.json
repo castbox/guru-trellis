@@ -1,4 +1,7 @@
 {
   "exit_id": "revision_required",
-  "task_ref": ".trellis/tasks/example-task"
+  "task_ref": ".trellis/tasks/example-task",
+  "revision_actions": [
+    "Complete the current task-local planning gap."
+  ]
 }

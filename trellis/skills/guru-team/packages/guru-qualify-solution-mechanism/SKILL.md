@@ -26,3 +26,4 @@ election, or a concurrency protocol.
 Return exactly one declared typed exit through public invoke; consume its route and positive-exit conditions. The runtime only checks closed shape,
 identity, freshness, enum aggregation, and consumer binding; it must not decide
 whether a mechanism is good or bad and must not write qualification state.
+Author candidate inputs/returns: `references/contract.md#author-candidate-set`.

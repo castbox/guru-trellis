@@ -124,6 +124,14 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     (evidence / "before-transport.py.txt").write_text(baseline_source)
     if public["stage"] == "branch_review":
         public["committed_range"] = {"base_ref": "origin/main", "base_head": base, "review_head": head}
+    if public.get("schema_version") == "3.0":
+        if design is not None:
+            public["candidate"] = {"design_locator": str(task / "design.md")}
+            current = hashlib.sha256((fixture / task / "design.md").read_bytes()).hexdigest()
+        else:
+            public["candidate"] = {"design_facts": ["No proposed candidate mechanism was supplied."], "constraint_refs": [public["requirement_authority"]]}
+            current = hashlib.sha256(json.dumps(public["candidate"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        public["freshness_identity"] = "sha256:" + current
     # Bind fixture-local input to real Git facts; the case file is only its seed.
     (evidence / "public-input.json").write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n")
     reads = [public["constitution"]["authority_locator"], public["baseline"]["locator"], public["project_contract"]["change_contract_locator"]]
@@ -144,16 +152,24 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     }, indent=2) + "\n")
 
 
+def contract_paths(public: dict) -> tuple[str, ...]:
+    """Select actual current public contracts without choosing a semantic route."""
+    semantic = "schemas/semantic-result-planning-3.0.schema.json" if public.get("schema_version") == "3.0" else "schemas/semantic-result.schema.json"
+    return ("SKILL.md", "references/contract.md", "interface.json", semantic,
+            "schemas/public-input-aggregate-3.0.schema.json",
+            "schemas/public-input-impact-current-3.0.schema.json")
+
+
 def reviewer_context(repository: Path, package: Path, helper_command: str, reads: list[str], input_locator: Path, *, upstream: bool) -> str:
     """Build operational locators only. Outcomes remain entirely reviewer-owned."""
     read = lambda path, kind="owner_file": f"{helper_command} read --kind {kind} --path {path}"
     return "\n".join([
         "You are a fresh independent Architecture reviewer for this repository candidate.",
         "This fresh ephemeral worker has no candidate-author history. Inspect the actual native prelude before proceeding. If it preloads task PRD, acceptance, implementation summaries or pass narratives, stop with the existing blocked/re-entry contract; do not retroactively claim independence.",
-        "Load the Architecture Skill and contract below for the reviewer method and existing 2.0 authoring/wrapper contract. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
+        "Load the Architecture Skill and contract below for the reviewer method and purpose-selected current authoring/wrapper contract. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
         f"Repository locator: {repository}",
         f"Public input locator: {input_locator}",
-        *[read(package / path, "owner_file" if upstream else "skill_contract") for path in ("SKILL.md", "references/contract.md", "interface.json", "schemas/semantic-result.schema.json", "schemas/public-input-aggregate.schema.json", "schemas/public-input-impact.schema.json")],
+        *[read(package / path, "owner_file" if upstream else "skill_contract") for path in contract_paths(json.loads(input_locator.read_text()))],
         "First read current Constitution, Baseline and project change contract, then actual candidate design/full diff, changed responsibilities/defaults/state/dependencies, unchanged production callers and comparable capabilities/constraints. The ordered evidence locators follow:",
         *[read(repository / path) for path in reads],
         read(input_locator, "owner_file"),

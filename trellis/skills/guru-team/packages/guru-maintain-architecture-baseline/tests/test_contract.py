@@ -234,7 +234,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
     def invoke(self, public_input, selected):
         exit_id = selected["typed_exit"]
         owner = {
-            "schema_version": "2.0",
+            "schema_version": public_input.get("schema_version", "2.0"),
             "profile": public_input["profile"],
             "mode": public_input["mode"],
             "continuation_id": public_input["continuation_id"],
@@ -255,7 +255,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "typed_exit": exit_id,
             "consumer": {
                 "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
-                "sync_required": {"kind": "skill", "id": "guru-maintain-architecture-baseline"},
+                "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
                 "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
                 "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
                 "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
@@ -264,6 +264,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             }[exit_id],
             **selected,
         }
+        if "planning_purpose" in public_input:
+            owner["planning_purpose"] = public_input["planning_purpose"]
         if public_input["profile"] == "promotion":
             for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
                 owner[field] = copy.deepcopy(public_input[field])
@@ -279,7 +281,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
     def invoke_canonical(self, public_input, selected):
         exit_id = selected["typed_exit"]
         owner = {
-            "schema_version": "2.0",
+            "schema_version": public_input.get("schema_version", "2.0"),
             "profile": public_input["profile"],
             "mode": public_input["mode"],
             "continuation_id": public_input["continuation_id"],
@@ -300,7 +302,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "typed_exit": exit_id,
             "consumer": {
                 "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
-                "sync_required": {"kind": "skill", "id": "guru-maintain-architecture-baseline"},
+                "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
                 "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
                 "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
                 "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
@@ -309,6 +311,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             }[exit_id],
             **selected,
         }
+        if "planning_purpose" in public_input:
+            owner["planning_purpose"] = public_input["planning_purpose"]
         if public_input["profile"] == "promotion":
             for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
                 owner[field] = copy.deepcopy(public_input[field])
@@ -351,14 +355,14 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             cwd=self.repository,
         )
 
-    def test_preserves_public_graph_identity_and_selects_only_2_0(self):
+    def test_preserves_nonplanning_2_0_and_selects_purpose_bound_planning_3_0(self):
         interface = json.loads((self.package / "interface.json").read_text())
         aggregate = interface["public_contracts"]["input"]["aggregate_schema"]
         self.assertEqual(
             aggregate,
             {
-                "schema_id": "guru-architecture-baseline-input-aggregate-2.0",
-                "path": "schemas/public-input-aggregate.schema.json",
+                "schema_id": "guru-architecture-baseline-input-aggregate-3.0",
+                "path": "schemas/public-input-aggregate-3.0.schema.json",
             },
         )
         self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
@@ -370,8 +374,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             {item["id"] for item in interface["external_exits"]},
             {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
         )
-        self.assertTrue(all(item["schema"]["schema_id"].endswith("2.0") for item in interface["public_contracts"]["input"]["profiles"]))
-        self.assertTrue(all(item["schema"]["schema_id"].endswith("2.0") for item in interface["public_contracts"]["outputs"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith("3.0" if item["id"] == "task_impact_sync" else "2.0") for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith("3.0") for item in interface["public_contracts"]["outputs"]))
         architecture_input_ids = {
             interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
             *(
@@ -387,7 +391,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(len(architecture_output_ids), 7)
         for manifest_path in (
             self.repo_root / "trellis/guru-team-extension.json",
-            self.repo_root / ".trellis/guru-team/extension.json",
+            # Installed parity is asserted only after matching preset apply.
         ):
             with self.subTest(manifest=manifest_path):
                 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -956,45 +960,13 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(result.returncode, 3)
         self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.review")
 
-    def test_each_sync_output_seed_merges_with_authoring_into_promotion_input(self):
+    def test_sync_router_preserves_current_output_without_reconstructing_a_promotion(self):
         interface = json.loads((self.package / "interface.json").read_text())
-        sync_projection = next(
-            item for item in interface["public_contracts"]["projections"]
-            if item["id"] == "sync_projection"
-        )
-        contract = next(
-            item["contract"] for item in interface["public_contracts"]["consumer_inputs"]
-            if item["id"] == "sync_input"
-        )
-        authoring = self.load("public-promotion-authoring.json")
-        self.assertEqual(set(authoring), set(contract["authoring_fields"]))
-        required = set(self.schema("public-input-promotion.schema.json")["required"])
-        self.assertEqual(set(contract["seed_fields"]) | set(contract["authoring_fields"]), required)
-        self.assertFalse(set(contract["seed_fields"]) & set(contract["authoring_fields"]))
-        outputs = [
-            {"sync_kind": "promotion_required", "expected_current_identity": "current-v1", "current_identity": "current-v1", "sync_target": {"kind": "contribution", "locator": "docs/architecture/contributions/example", "expected_identity": "contribution-v1", "current_identity": "contribution-v1"}},
-            {"sync_kind": "baseline_advanced", "expected_current_identity": "current-v1", "current_identity": "current-v2", "sync_target": {"kind": "baseline", "locator": "docs/architecture/README.md", "expected_identity": "current-v1", "current_identity": "current-v2"}},
-            {"sync_kind": "constitution_advanced", "expected_current_identity": "current-v2", "current_identity": "current-v2", "sync_target": {"kind": "constitution", "locator": "docs/architecture/00-foundation/design-constitution.md", "expected_identity": "constitution-v1", "current_identity": "constitution-v2"}},
-            {"sync_kind": "contribution_stale", "expected_current_identity": "current-v2", "current_identity": "current-v2", "sync_target": {"kind": "contribution", "locator": "docs/architecture/contributions/example", "expected_identity": "contribution-v1", "current_identity": "contribution-v2"}},
-            {"sync_kind": "repair", "expected_current_identity": "current-v2", "current_identity": "current-v2", "sync_target": {"kind": "project_contract", "locator": "docs/architecture/06-governance/change-contract.md", "expected_identity": "project-change-contract-v1", "current_identity": "project-change-contract-v1"}},
-        ]
-        schema = self.schema("public-input-promotion.schema.json")
-        for case in outputs:
-            with self.subTest(sync_kind=case["sync_kind"]):
-                output = {
-                    "exit_id": "sync_required",
-                    "task_locator": ".trellis/tasks/example",
-                    "stage": "acceptance_finish",
-                    "freshness_identity": "promotion-fresh-v1",
-                    **case,
-                }
-                seed = {
-                    mapping["target"]: copy.deepcopy(output[mapping["source"]])
-                    for mapping in sync_projection["mappings"]
-                }
-                self.assertEqual(set(seed), set(contract["seed_fields"]))
-                merged = {**authoring, **seed}
-                self.assert_schema_valid(schema, merged)
+        projection = next(x for x in interface["public_contracts"]["projections"] if x["id"] == "sync_projection")
+        consumer = next(x for x in interface["public_contracts"]["consumer_inputs"] if x["id"] == "sync_input")
+        self.assertEqual(projection["operation"], "direct")
+        self.assertEqual(consumer["consumer"]["id"], "guru-architecture-baseline-sync-router")
+        self.assert_schema_valid(json.loads((self.package / consumer["contract"]["path"]).read_text()), self.load("public-output-sync-required.json"))
 
     def test_review_and_project_check_conditions_are_closed_and_duplicated_consistently(self):
         semantic = self.schema("semantic-result.schema.json")
@@ -1412,7 +1384,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "Load [references/contract.md](references/contract.md) completely before acting.",
-            "schemas/semantic-result.schema.json",
+            "selected planning 3.0 or nonplanning 2.0 schema",
             "scripts/invoke.sh --invocation -",
             "owner_not_yet_executed",
             "platform truly cannot provide the contract-required",
@@ -1431,6 +1403,67 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "not a retry within",
         ):
             self.assertIn(phrase, contract)
+
+    def test_prewrite_current_assesses_real_facts_without_future_contribution(self):
+        public = self.load("public-input-candidate-assessment-3.0.json")
+        selected = self.architecture_selection(public)
+        for field in ("promotion_state", "contribution_locator", "contribution_identity"):
+            selected.pop(field)
+        selected["decision_refs"] = ["source:Design A planning owner"]
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["planning_purpose"], "candidate_assessment")
+        self.assertEqual(output["change_path"], "target_native")
+        self.assertNotIn("promotion_state", output)
+        self.assertNotIn("contribution_locator", output)
+        self.assertFalse((self.repository / public["task_locator"] / "design.md").exists())
+
+    def test_final_current_requires_actual_wording_current_design_and_contribution(self):
+        public = self.load("public-input-final-plan-3.0.json")
+        path = self.repository / public["design_locator"]
+        path.parent.mkdir(parents=True)
+        path.write_text("Current design and real task-local contribution; necessary ADR decision.")
+        public["freshness_identity"] = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        selected = self.architecture_selection(public, contribution_locator=public["design_locator"], contribution_identity=public["freshness_identity"])
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["planning_purpose"], "final_plan")
+        path.write_text("Normally revised Wording-current design")
+        stale = self.invoke(public, selected)
+        self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
+        self.assertEqual(json.loads(stale.stdout)["field_path"], "input.freshness_identity")
+
+    def test_planning_other_exits_preserve_both_purposes(self):
+        cases = {
+            "sync_required": {"sync_kind":"baseline_advanced", "expected_current_identity":"current-v0", "current_identity":"current-v1", "sync_target":{"kind":"baseline","locator":"docs/architecture/README.md","expected_identity":"current-v0","current_identity":"current-v1"}},
+            "baseline_incomplete": {"authority_locator":"docs/architecture/README.md", "missing_refs":["authority:missing"], "repair_profile":"repair"},
+            "architecture_conflict": {"conflict_refs":["source:Design A"], "return_route":"planning"},
+            "contract_incomplete": {"missing_refs":["source:current concern"], "return_route":"planning"},
+            "fitness_regression": {"regression_refs":["design:owner expansion"], "return_route":"check"},
+            "blocked": {"reason_code":"authority_missing", "remediation":"Read current authority."},
+        }
+        for purpose in ("candidate_assessment", "final_plan"):
+            public = self.load(f"public-input-{purpose.replace('_', '-')}-3.0.json")
+            if purpose == "final_plan":
+                path = self.repository / public["design_locator"]
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Current design")
+                public["freshness_identity"] = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+            for exit_id, fields in cases.items():
+                with self.subTest(purpose=purpose, exit=exit_id):
+                    result = self.invoke(public, {"typed_exit":exit_id, **fields})
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    output = json.loads(result.stdout)
+                    self.assertEqual(output["planning_purpose"], purpose)
+                    self.assertEqual(output["task_locator"], public["task_locator"])
+
+    def test_retired_purpose_less_planning_2_0_requires_fresh_producer(self):
+        public = self.load("public-input-impact.json")
+        public["stage"] = "planning"
+        result = self.invoke(public, {"typed_exit":"blocked", "reason_code":"missing_current_input", "remediation":"Freshly enter Author."})
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["field_path"], "schema_version")
 
     def test_eval_schema_closes_native_execution_mode(self):
         schema = json.loads(

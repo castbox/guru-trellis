@@ -15,3 +15,6 @@ Fail closed on missing live evidence, stale identity, an unknown or mismatched c
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+The Author candidate profile and its original-owner returns are defined in
+`references/contract.md#author-candidate-set`.

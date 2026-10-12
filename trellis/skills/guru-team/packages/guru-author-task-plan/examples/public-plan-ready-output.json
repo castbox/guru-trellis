@@ -1,0 +1,4 @@
+{
+  "exit_id": "plan_ready",
+  "task_ref": ".trellis/tasks/10-11-sample-planning"
+}

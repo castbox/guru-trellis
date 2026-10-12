@@ -123,3 +123,11 @@ admission under the goal-specific contract above; it does not judge completion
 or duplicate the common semantics. Each subsequent stage applies that same
 authority to its own actual work/evidence and retains its existing routes.
 Qualification alone establishes neither a stage pass nor whole-task completion.
+
+## Author candidate set
+
+Author owns `author_candidate_set` (caller `guru-author-task-plan`), binding
+current source/candidate locators and existing author_paths with author_identity.
+It does not require future design/implement files. Original planning_scenario_set
+remains Approval-only and requires three current docs. Return classified and
+mechanism results to Author; scope/diagnosis/blocked retain original owners.

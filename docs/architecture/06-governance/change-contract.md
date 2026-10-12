@@ -6,7 +6,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 | Concern | Required current meaning |
 | --- | --- |
-| `authority-binding` | 同时绑定 `guru-maintain-architecture-baseline:2.0`、current baseline 与本 change-contract identity |
+| `authority-binding` | Planning 绑定 `guru-maintain-architecture-baseline:planning:3.0` 与明确的 `candidate_assessment` 或 `final_plan`；非 Planning 与 maintenance 绑定 `guru-maintain-architecture-baseline:2.0`；同时绑定 current baseline 与本 change-contract identity |
 | `constitution-binding` | 绑定 current constitution locator、status、version/content identity 与实际命中的原则 refs |
 | `boundary-and-decision` | 记录 requirement/behavior authority、current/target boundary、decision/GAP refs 与唯一 change path |
 | `owner-and-single-writer` | 明确 current/target semantic owner、task writer 与 shared-current promotion single-writer |
@@ -31,7 +31,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 - `dedicated_refactor_slice`：在行为/API/规则不变前提下，以单一主写的小切片收敛旧实现，要求可验证、可观测、可回滚和明确删除条件。
 - `no_architecture_impact`：只记录 current baseline/constitution、task/stage 与可审核理由，不创建 contribution、ADR 或 project-check burden。
 
-阶段顺序固定为 Planning impact/path -> qualified implementation discovery re-entry -> Phase 2 before/after + project checks -> task contribution/necessary ADR -> independent committed full-diff Branch Review -> expected-current-bound serialized promotion -> fresh Phase 2/commit/Branch Review -> Publication/Acceptance current consumption。未 promotion 的 `reviewed_candidate` 不得进入 Publication/Finish。
+阶段顺序固定为 Planning candidate_assessment impact/path -> Author solution writing -> Wording -> final_plan actual contribution/current eligibility -> Approval -> qualified implementation discovery re-entry -> Phase 2 before/after + project checks -> task contribution/necessary ADR -> independent committed full-diff Branch Review -> expected-current-bound serialized promotion -> fresh Phase 2/commit/Branch Review -> Publication/Acceptance current consumption。未 promotion 的 `reviewed_candidate` 不得进入 Publication/Finish。
 
 ## Current project-check descriptor
 
@@ -43,3 +43,9 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 - result contract：`guru-project-architecture-check-result-2.0`；freshness source 是当前 task candidate 或 exact committed range。
 
 稳定失败路由为：缺适用 contract/constitution/check facts -> `contract_incomplete`；与 current authority 冲突 -> `architecture_conflict`；新增或恶化偏移、owner 扩张、无退出双写或 closed GAP 重现 -> `fitness_regression`；baseline、constitution、contribution 或 expected-current stale -> `sync_required`。AI 根据 applicability 与 task 真实依赖决定 `blocking`，runtime 只验证 descriptor/result 一一绑定、locator、freshness 与 route consistency。
+
+## Current Planning boundary
+
+`guru-author-task-plan` 独占 PRD/design/implement 的规划语义写作及已有 revision 回程，Clarify 的来源/scope 判断、Architecture 独立评估、Wording 受控 rewrite 与 Approval 批准分别归其原 owner。`candidate_assessment` 评估真实候选但不要求尚未产生的 contribution，不输出 promotion_state；其 current consumer 是 Author solution_planning。`final_plan` 评估 Wording-current design 与真实 contribution/必要 ADR，保留 reviewed_candidate 或合法 reviewed_promoted 约束，current consumer 只为相邻 Approval。前置结果不能替代最终结果；两目的仍属于同一 Architecture owner/stage，project descriptor/result 保持2.0。
+
+Clarify active scope_ready1.0 在完成 scope 判断后，经原 clear-router 的薄 consumer1.0 projection 交同一 Author，先判断后写作；不写 planning hash、生命周期或授权状态。Wording change refs、Approval revision actions 与 Delivery/Completion 的适用修订原因均经显式 projection 回唯一 writer。旧 planning2.0 无 purpose 入口不作 runtime fallback，中断旧调用 fresh 重入；合法非 Planning2.0 和历史 validation assets 保持原边界。canonical workflow/preset matching migration 是唯一安装切换路径。

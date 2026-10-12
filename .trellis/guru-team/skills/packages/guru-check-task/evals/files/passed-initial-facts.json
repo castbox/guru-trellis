@@ -1,5 +1,5 @@
 {
-  "scenario": "The complete Phase 2 owner round passes against the current dirty snapshot.",
+  "scenario": "A staged complete Phase 2 result contains zero candidates and reaches the original passed route against the current dirty snapshot. This is deterministic post-owner evidence only.",
   "owner_evidence": {
     "semantic_gate": "passed",
     "checker_required": true

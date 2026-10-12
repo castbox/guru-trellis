@@ -8,6 +8,7 @@ from common import validate_owner
 
 OUTPUT_SCHEMAS = {
     "clear": "public-clear-output-3.0.schema.json",
+    "scope_ready": "public-scope-ready-output-1.0.schema.json",
     "needs_context": "public-needs-context-output.schema.json",
     "refresh_context": "public-refresh-context-output.schema.json",
     "retarget_context": "public-retarget-context-output.schema.json",
@@ -20,6 +21,16 @@ def typed_output(package_root, public, transition, owner):
     exit_id = owner["typed_exit"]
     if exit_id == "blocked":
         output = {"exit_id": "blocked"}
+    elif exit_id == "scope_ready":
+        if not isinstance(transition, dict) or transition.get("stage") != "context_current":
+            raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
+        output = {
+            "exit_id": "scope_ready",
+            "mode": public["mode"],
+            "task_ref": public["task_locator"],
+            "source_selection": owner["source_selection"],
+            "revision_refs": owner["revision_refs"],
+        }
     elif exit_id == "clear":
         identity = owner["content_identity"]
         disposition = owner["target_disposition"]

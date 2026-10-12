@@ -66,3 +66,16 @@ The migration and remaining unmixed legacy callers are defined in the contract.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+
+For planning_artifacts, pass routes through the existing pass router to
+Architecture task_impact_sync planning 3.0 final_plan on Wording-current design,
+then adjacent Approval. content_changed goes through the original change
+router with the selected content_changed 2.0 planning DTO: `task_ref` and
+`change_refs` projected by this owner from the checked task scope and completed
+revision locators. The router adds only fixed `profile=wording_reentry` and
+`mode=workflow` for Author; it never reads this owner's private result. Author distinguishes
+equivalent wording from changed design facts and re-enters the earliest
+affected dependency. Wording remains the controlled rewrite owner, never the
+business planner or approval owner. Do not route a planning pass directly to
+Approval or replay a prewrite Architecture result.

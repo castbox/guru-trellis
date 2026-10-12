@@ -53,9 +53,9 @@ Before editing workflow behavior:
   request enters `guru-create-task`.
 - `trellis/skills/guru-team/` owns the public workflow skill registry, interface schemas, packages, and test-only fixtures.
 - The live registry and selected Interfaces, not old cardinalities, define the
-  active packages. The current candidate has 35 active packages, 159 exits, and
-  106 commands; the business workflow has 33 mandatory invokes and 153 exits.
-  `production-current-v4` remains a four-package submanifest, not the complete
+  active packages. The current candidate has 37 active packages, 169 exits, and
+  110 commands; the business workflow has 35 mandatory invokes and 163 exits.
+  `production-current-v5` remains a four-package submanifest, not the complete
   Delivery/Completion lifecycle selector. The standalone extension verifier
   and installation migration do not enter the business-task graph.
 - `discover-skill-contract` is the stable deterministic public discovery
@@ -67,8 +67,11 @@ Before editing workflow behavior:
   session binding, and Planning activation are separate current owners. TaskId
   and lifecycle generation, live Git checkout facts, and their selected
   branch/resource contracts replace old task/workspace mapping authority.
+- `guru-author-task-plan` owns task planning business writing; the canonical
+  workflow routes its requirements through candidate Architecture and its
+  current plan through Wording/final Architecture to independent Approval.
 - `guru-approve-task-plan` owns the Phase 1 semantic planning approval closed
-  loop. Its shared recorder/checker validate the compact schema 3.0 semantic
+  loop. Its shared recorder/checker validate the compact schema 4.0 semantic
   projection in ignored owner-private runtime; consumers receive only one
   minimal typed exit and never parse `planning-approval.json`.
 - `guru-check-task` owns the complete Phase 2 semantic check, scope-before-

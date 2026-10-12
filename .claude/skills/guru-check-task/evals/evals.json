@@ -8,7 +8,7 @@
       "id": "native-owner-clean",
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "passed",
-      "expected_output": "The current AI completes the nine dimensions from live fixture facts and the original wrapper returns passed.",
+      "expected_output": "The current AI completes all nine dimensions from live facts with no observed candidates, records an empty candidate array, and consumes the original passed output.",
       "input_profile_id": "initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -51,6 +51,68 @@
           {
             "id": "reviewer-first",
             "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "genuine-zero-candidates",
+            "criterion": "The complete live review observes no defect candidates and authors candidate_classifications=[] without invented no-defect, reviewed-path or business-function candidates. None of the three qualifiers is invoked with an empty set. The original recorder, checker and public initial_check run after current Architecture, Docs and mandatory validation are satisfied; empty candidates do not substitute for those judgments.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-all-rejected",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. One candidate observation to investigate is a possible upper-endpoint exclusion in interval.py; reproduce via contains(4, 2, 4) and the actual endpoint tests. Review the actual task, implementation, Docs, diff and Architecture authority, qualify the actual candidate, author your own complete current-round result and consume the original formal wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The actual endpoint concern is qualified and rejected using live code and tests. Its classification and witness remain in the non-empty array with no findings, and the original wrapper emits passed.",
+      "input_profile_id": "initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "current-ai-owner",
+            "criterion": "The current AI reads the installed contract, complete task facts and actual upstream Architecture result, reviews all nine dimensions, then authors its own Phase 2 result after consuming a separate fresh Architecture worker actual wrapper result. Recorder/checker/wrapper receipts reflect that authoring, not host conclusions.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "reviewer-first",
+            "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-all-rejected",
+            "criterion": "The owner investigates the supplied concrete upper-endpoint observation via the supported predicate and actual tests, invokes applicable qualification owners for the real non-empty input, retains its rejected classification and six-part witness, and authors no finding. This case is distinct from a zero-candidate review, and rejected candidates never produce implementation or planning work.",
             "evidence_selector": "transcript"
           }
         ]
@@ -110,9 +172,9 @@
     },
     {
       "id": "passed-initial",
-      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived passed route.",
+      "prompt": "Invoke the original guru-check-task public wrapper for this staged initial_check owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "passed",
-      "expected_output": "The public DTO is the declared passed route.",
+      "expected_output": "The original recorder/checker/public initial_check accepts the staged zero-candidate owner result and emits passed; this is deterministic post-owner evidence only.",
       "input_profile_id": "initial_check",
       "assertions": {
         "deterministic": [
@@ -180,11 +242,12 @@
       "files": [
         "evals/files/passed-initial-input.json",
         "evals/files/passed-initial-facts.json"
-      ]
+      ],
+      "native_execution_mode": "post_owner"
     },
     {
       "id": "implementation-required",
-      "prompt": "Complete the finding_fix_rerun semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived implementation_required route.",
+      "prompt": "Invoke the original guru-check-task public wrapper for this staged finding_fix_rerun owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "implementation_required",
       "expected_output": "The public DTO is the declared implementation_required route.",
       "input_profile_id": "finding_fix_rerun",
@@ -202,11 +265,12 @@
       "files": [
         "evals/files/implementation-required-input.json",
         "evals/files/implementation-required-facts.json"
-      ]
+      ],
+      "native_execution_mode": "post_owner"
     },
     {
       "id": "planning-stale",
-      "prompt": "Complete the planning_reentry semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived planning_stale route.",
+      "prompt": "Invoke the original guru-check-task public wrapper for this staged planning_reentry owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "planning_stale",
       "expected_output": "The public DTO is the declared planning_stale route.",
       "input_profile_id": "planning_reentry",
@@ -224,11 +288,12 @@
       "files": [
         "evals/files/planning-stale-input.json",
         "evals/files/planning-stale-facts.json"
-      ]
+      ],
+      "native_execution_mode": "post_owner"
     },
     {
       "id": "blocked-initial",
-      "prompt": "Complete the initial_check semantic owner round and invoke guru-check-task through its public wrapper; return the checker-derived blocked route.",
+      "prompt": "Invoke the original guru-check-task public wrapper for this staged initial_check owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO is the declared blocked route.",
       "input_profile_id": "initial_check",
@@ -246,7 +311,8 @@
       "files": [
         "evals/files/blocked-initial-input.json",
         "evals/files/blocked-initial-facts.json"
-      ]
+      ],
+      "native_execution_mode": "post_owner"
     },
     {
       "id": "native-owner-historical-red",

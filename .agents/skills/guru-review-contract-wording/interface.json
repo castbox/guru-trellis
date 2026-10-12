@@ -115,6 +115,10 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_output_content_changed_example_2_0",
+      "path": "examples/public-content-changed-output-2.0.json"
     }
   ],
   "schemas": [
@@ -161,6 +165,10 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_output_content_changed_2_0",
+      "path": "schemas/public-content-changed-output-2.0.schema.json"
     }
   ],
   "validators": [
@@ -346,12 +354,12 @@
       {
         "exit_id": "content_changed",
         "schema": {
-          "schema_id": "guru-stage0-review-contract-wording-output-content-changed-1.0",
-          "path": "schemas/public-content-changed-output.schema.json"
+          "schema_id": "guru-stage0-review-contract-wording-output-content-changed-2.0",
+          "path": "schemas/public-content-changed-output-2.0.schema.json"
         },
         "example": {
-          "id": "content_changed_output",
-          "path": "examples/public-content-changed-output.json"
+          "id": "content_changed_output_2_0",
+          "path": "examples/public-content-changed-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_content_changed"
@@ -404,8 +412,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-review-contract-wording-workflow-content_changed-input-1.0",
-          "path": "consumers/workflow/stage0/review-contract-wording-content-changed.schema.json"
+          "schema_id": "guru-stage0-review-contract-wording-workflow-content_changed-input-2.0",
+          "path": "consumers/workflow/stage0/review-contract-wording-content-changed-2.0.schema.json"
         }
       },
       {

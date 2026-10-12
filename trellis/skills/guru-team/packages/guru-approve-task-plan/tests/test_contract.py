@@ -16,7 +16,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.package = Path(__file__).resolve().parents[1]
         self.repo = self.package.parents[1]
         self.interface = self.read("interface.json")
-        self.schema = self.read("schemas/planning-approval.schema.json")
+        self.schema = self.read("schemas/planning-approval-4.0.schema.json")
         self.example = self.read("examples/planning-approval.json")
 
     def read(self, relative: str) -> dict:
@@ -254,14 +254,14 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             [(item["id"], item["consumer"]) for item in self.interface["external_exits"]],
             [
                 ("approved", {"kind": "workflow", "id": "phase-1-task-activation"}),
-                ("revision_required", {"kind": "skill", "id": "guru-approve-task-plan"}),
+                ("revision_required", {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"}),
                 ("clarify_scope", {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}),
                 ("blocked", {"kind": "stop", "id": "task-plan-approval-blocked"}),
             ],
         )
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-planning-approval-3.0.json"))
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-planning-approval-4.0.json"))
         self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
             "Owner-private composite freshness token",
@@ -283,7 +283,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             example = self.read(f"examples/public-{name}-input.json")
             Draft202012Validator(schema).validate(example)
         for name in ("approved", "revision-required", "clarify-scope", "blocked"):
-            schema = self.read(f"schemas/public-{name}-output.schema.json")
+            schema = self.read(next(row["schema"]["path"] for row in self.interface["public_contracts"]["outputs"] if row["exit_id"] == name.replace("-", "_")))
             example = self.read(f"examples/public-{name}-output.json")
             Draft202012Validator(schema).validate(example)
 
@@ -316,7 +316,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 "revision_actions": ["Revise the task-local plan."],
                 "scope_proposals": [],
                 "blocking_reasons": [],
-                "consumer": {"kind": "skill", "id": "guru-approve-task-plan"},
+                "consumer": {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"},
             },
             "clarify_scope": {
                 "status": "clarify_scope",
@@ -391,13 +391,12 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         sources = {
             "skill": self.package / "SKILL.md",
             "contract": self.package / "references/contract.md",
-            "workflow": repo / "trellis/workflows/guru-team/workflow.md",
         }
         required = (
-            "task_impact_sync(stage=planning)",
+            "final_plan",
             "baseline_current",
             "design constitution",
-            "Architecture change contract",
+            "change contract",
             "no_architecture_impact",
         )
         for label, path in sources.items():
@@ -411,11 +410,11 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertIn("cannot approve a missing or stale Architecture result", skill)
         self.assertIn("do not copy the Architecture owner's reasoning", skill)
 
-        workflow = sources["workflow"].read_text(encoding="utf-8")
-        phase = workflow.split("#### 1.4 Task plan approval", 1)[1].split("#### 1.5 Task activation", 1)[0]
+        workflow = (repo / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
+        phase = workflow.split("#### 1.1 Unique Author and global sequence", 1)[1].split("#### 1.5 Task activation", 1)[0]
         self.assertLess(
-            phase.index("task_impact_sync(stage=planning)"),
-            phase.index("invoke guru-approve-task-plan"),
+            phase.index("Architecture\nfinal_plan"),
+            phase.index("Approval"),
         )
         for exit_id in (
             "sync_required", "baseline_incomplete", "architecture_conflict",
@@ -690,7 +689,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertEqual(self.example["schema_version"], "3.0")
+        self.assertEqual(self.example["schema_version"], "4.0")
         self.assertEqual(self.example["skill_id"], "guru-approve-task-plan")
 
 

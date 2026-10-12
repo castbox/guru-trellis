@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-output-clarify-scope-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "scope_question_refs"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "clarify_scope"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope_question_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
