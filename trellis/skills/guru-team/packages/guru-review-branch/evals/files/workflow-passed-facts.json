@@ -1,5 +1,5 @@
 {
-  "scenario": "The workflow owner records a clean current review, preserves all three current-scope no-defect candidates as rejected_candidate without finding fields, and the wrapper derives the route.",
+  "scenario": "The workflow owner completes the full current review and finds no actual candidate. It records empty candidate_classifications without calling nonempty qualifiers, preserves every remaining gate condition, and consumes the actual public wrapper route.",
   "owner_evidence": {
     "semantic_gate": "passed",
     "checker_required": true
@@ -23,6 +23,9 @@
     "recipe": "review-passed"
   },
   "public_invocation": {
-    "arguments": ["--input", ".trellis/.runtime/guru-team/evals/public-input.json"]
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json"
+    ]
   }
 }

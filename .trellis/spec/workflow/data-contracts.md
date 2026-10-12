@@ -1787,8 +1787,11 @@ continuity, records the prior complete review commit separately from the current
 legacy stale inventory, not current runtime authority; any non-7.0 gate fails
 closed.
 
-Only `review-gate.json` is written for a new review. It contains a non-empty
-terminal-only `candidate_classifications` set. Each row binds `candidate_ref`,
+Only `review-gate.json` is written for a new review. Its terminal-only
+`candidate_classifications` set is empty when the complete selected-profile
+review finds no real candidate. Empty does not establish a passing exit or skip
+any remaining gate condition. Nonempty sets retain every actual candidate.
+Each row binds `candidate_ref`,
 one of the three qualified or four rejected terminal decisions, the six-part
 normal-scenario witness, and `consumer_use=branch_review_route_checker`.
 Duplicate refs, a scope-confirmation/mechanism/blocked decision, or any

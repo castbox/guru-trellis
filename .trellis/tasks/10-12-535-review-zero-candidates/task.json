@@ -1,0 +1,29 @@
+{
+  "id": "issue-535-review-zero-candidates",
+  "name": "535-review-zero-candidates",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 535,
+    "disposition": "exact_source"
+  },
+  "title": "#535 修复 Branch Review 与 Delivery Review 正常零候选不可达",
+  "description": "完整语义审查确无候选时支持原Review公开调用链，保留所有门禁与真实finding引用。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅current Branch/Delivery合同/schema/runtime/examples/tests及受管投影与RDT；不修改#292 fixture，不改变Task/Delivery生命周期。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-12",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -2,11 +2,11 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.85`
+- version：`current-main-0.6.17-guru.87`
 - status：`active`
-- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.85`，薄继承 immutable `.84` 并承接 reviewed #521 contribution；旧 current-checkout / primary new-Task adoption 条款由本增量定向替换。
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.87`，薄继承 immutable `.86` 并承接 reviewed #535 contribution。
 - Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.84` / `active`。
-- 结果 authority：`docs/requirements-design-test-contributions/521-checkout-isolation/test.md`；首次失败、实际 native 边界与未执行创建/承接如实保留。晋升差额 fresh gates、业务 #120 安装/PHX、软件发布和生命周期独立。
+- 结果authority：`docs/requirements-design-test-contributions/535-review-zero-candidates/test.md`；分层实际结果、首次失败与未验证边界由该文件拥有。晋升差额须fresh Phase2/TaskCommit/独立完整Branch；Delivery、Completion/Closure/Finish、#292恢复和Release独立。
 
 ## Predecessor identity and provenance
 
@@ -27,4 +27,4 @@
 
 ## Freshness
 
-每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.85` 薄继承 immutable `.84`，承接 R521/D521/T521 增量，Architecture继承 `.84/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。
+每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.87` 薄继承 immutable `.86`，承接 R535/D535/T535 增量，Architecture继承 `.84/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。

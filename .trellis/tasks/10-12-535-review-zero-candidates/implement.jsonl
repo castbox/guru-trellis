@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/workflow/semantic-retrieval.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}
+{"file": ".trellis/spec/docs/requirements-design-test-ssot.md", "reason": "#535 original Review owner, objective validation and managed projection scope"}

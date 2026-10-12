@@ -102,6 +102,10 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         if exit_id == "ready":
             return value
         value["route"] = {"typed_exit": exit_id}
+        value["candidate_classifications"] = [self.classification(
+            "candidate:delivery:" + exit_id, "qualified_current",
+            "The current Delivery dimension requires the evidenced non-ready route.",
+        )]
         if exit_id == "planning_revision_required":
             self.mark_dimension(value, "delivery_policy", "finding")
             value["conclusions"]["delivery_readiness"]["status"] = "finding"
@@ -113,7 +117,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         elif exit_id == "scope_confirmation_required":
             self.mark_dimension(value, "requirement_authority", "finding")
             value["conclusions"]["delivery_readiness"]["status"] = "finding"
-            value["scope_proposals"] = [{"proposal_ref":"proposal:scope","candidate_ref":"candidate:delivery:no-defect","summary":"Expand the approved slice.","evidence_refs":["issue:#435"],"status":"open"}]
+            value["scope_proposals"] = [{"proposal_ref":"proposal:scope","candidate_ref":"candidate:delivery:scope_confirmation_required","summary":"Expand the approved slice.","evidence_refs":["issue:#435"],"status":"open"}]
         elif exit_id == "blocked":
             self.mark_dimension(value, "base_and_live_facts", "blocked")
             value["conclusions"]["delivery_readiness"]["status"] = "blocked"
@@ -127,7 +131,21 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
 
     @staticmethod
     def finding(ref: str, dimension: str, route_class: str) -> dict:
-        return {"finding_ref":ref,"candidate_ref":"candidate:delivery:no-defect","dimension":dimension,"summary":"Current evidence requires this route.","evidence_refs":["evidence:current"],"route_class":route_class,"status":"open","closure_evidence":[]}
+        return {"finding_ref":ref,"candidate_ref":"candidate:delivery:" + {"planning_revision":"planning_revision_required", "implementation":"implementation_required", "external_blocker":"blocked"}[route_class],"dimension":dimension,"summary":"Current evidence requires this route.","evidence_refs":["evidence:current"],"route_class":route_class,"status":"open","closure_evidence":[]}
+
+    @staticmethod
+    def classification(ref: str, decision: str, observation: str) -> dict:
+        return {
+            "candidate_ref": ref, "decision": decision,
+            "witness": {
+                "requirement_refs": ["PRD current Delivery policy and slice"],
+                "supported_entry_refs": ["entry:delivery-review"],
+                "existing_caller_refs": ["caller:guru-review-task-delivery"],
+                "honest_action_sequence": ["Review the current slice, payload and required evidence."],
+                "defect_observation": observation, "excluded_assumptions": [],
+            },
+            "consumer_use": "delivery_review_route_checker",
+        }
 
     def invoke(self, semantic: dict) -> dict:
         return invoke(
@@ -150,6 +168,37 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.assertEqual("remaining", output["remaining_work_state"])
         self.assertRegex(output["delivery_cycle_ref"], r"^delivery-cycle:v1:[0-9a-f]{64}$")
         self.assertFalse(self.checkpoint().exists())
+
+    def test_actual_nonempty_rejected_candidate_can_be_ready(self):
+        semantic = self.semantic()
+        semantic["candidate_classifications"] = [self.classification(
+            "candidate:payload-closing-effect", "rejected_not_reproduced",
+            "The inspected body uses Refs #435 and contains no closing keyword; the proposed closing effect does not reproduce.",
+        )]
+        self.assertEqual("ready", self.invoke(semantic)["exit_id"])
+        self.assertFalse(self.checkpoint().exists())
+
+    def test_zero_candidates_do_not_admit_an_unclassified_finding_or_proposal(self):
+        for exit_id in ("implementation_required", "scope_confirmation_required"):
+            with self.subTest(exit_id=exit_id):
+                semantic = self.semantic(exit_id)
+                semantic["candidate_classifications"] = []
+                with self.assertRaises(CommandError) as caught:
+                    self.invoke(semantic)
+                self.assertEqual("candidate_classifications", caught.exception.field_path)
+                self.assertFalse(self.checkpoint().exists())
+
+    def test_zero_candidates_still_require_all_dimensions_and_conclusions(self):
+        for missing in ("dimension", "conclusion"):
+            with self.subTest(missing=missing):
+                semantic = self.semantic()
+                if missing == "dimension":
+                    semantic["dimensions"].pop()
+                else:
+                    semantic["conclusions"].pop("docs_rdt_architecture")
+                with self.assertRaises(CommandError):
+                    self.invoke(semantic)
+                self.assertFalse(self.checkpoint().exists())
 
     def test_same_head_fresh_reentry_after_output_loss_and_retirement(self):
         # Each invocation supplies a fresh completed owner result. This tests

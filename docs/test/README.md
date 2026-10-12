@@ -1,6 +1,6 @@
 # Test Strategy / Test Plan SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.86` / `active`；[本版入口](./versions/current-main-0.6.17-guru.86/test-strategy.md)继承 immutable `.85`，承接 [#532 增量 trace](../requirements-design-test-contributions/532-phase2-zero-candidates/traceability.md)。Architecture 继承 `.84/active`。本增量 [Test](../requirements-design-test-contributions/532-phase2-zero-candidates/test.md)拥有实际结果与未验证边界；晋升后的完整 diff 须 fresh Phase2、Task Commit 与独立完整 Branch Review。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.87` / `active`；[本版入口](./versions/current-main-0.6.17-guru.87/test-strategy.md)继承 immutable `.86`，承接 [#535 增量 trace](../requirements-design-test-contributions/535-review-zero-candidates/traceability.md)。Architecture继承 `.84/active`。[Test](../requirements-design-test-contributions/535-review-zero-candidates/test.md)拥有实际结果与未验证边界；晋升后的完整diff须fresh Phase2、TaskCommit与独立完整Branch Review。
 
 历史 `.70` authority：[`versions/current-main-0.6.17-guru.70/test-strategy.md`](./versions/current-main-0.6.17-guru.70/test-strategy.md) 与 [`test-plan.md`](./versions/current-main-0.6.17-guru.70/test-plan.md)。`traceability.md` 连接 Requirements、Design、Architecture `.70/active` 和 evidence；`.69` 及更早版本保持 immutable。
 
@@ -10,7 +10,8 @@
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.86` | [新 current](./versions/current-main-0.6.17-guru.86/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.87` | [新 current](./versions/current-main-0.6.17-guru.87/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.86` | [新 current](./versions/current-main-0.6.17-guru.86/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.85` | [新 current](./versions/current-main-0.6.17-guru.85/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.84` | [新 current](./versions/current-main-0.6.17-guru.84/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.83` | [新 current](./versions/current-main-0.6.17-guru.83/test-strategy.md) |

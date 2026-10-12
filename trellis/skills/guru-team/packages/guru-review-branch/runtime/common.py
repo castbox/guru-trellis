@@ -462,11 +462,11 @@ def validate_gate(package_root, repo, value, expected_exit=None):
         for item in classifications
         if isinstance(item, dict)
     ] if isinstance(classifications, list) else []
-    if not refs or len(refs) != len(classifications) or len(set(refs)) != len(refs):
+    if not isinstance(classifications, list) or len(refs) != len(classifications) or len(set(refs)) != len(refs):
         raise CommandError(
             "schema_mismatch",
             "candidate_classifications",
-            "Record one complete non-empty classification for every unique current candidate.",
+            "Record one complete classification for every unique current candidate; use an empty list when no candidate exists.",
         )
     known = set(refs)
     linked = []
