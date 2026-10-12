@@ -1069,7 +1069,7 @@ into Phase 2.
 
 ## Task Commit Candidate
 
-Each `guru-create-task-commit` invocation owns one temporary candidate under
+Each dirty exact-commit `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
 increasing id. Current schema `guru-task-commit-candidate-5.0` binds only task
@@ -2125,3 +2125,12 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
+
+## Clean Committed TaskCommit Re-entry
+
+TaskCommit's additive `committed_reentry` input profile consumes the adjacent
+Phase 2 `passed` anchor. Its output remains the existing `committed` DTO:
+`task_ref`, `base_ref`, and `branch_review_commit`. The next pair guard and
+Branch Review consume an explicit thin projection of that current identity;
+no producer-private checkpoint is a Branch Review input. Step-local checks and
+checkpoint consumption belong to the canonical TaskCommit contract.

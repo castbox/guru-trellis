@@ -702,3 +702,12 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
+
+## Clean Committed TaskCommit Re-entry
+
+Fresh Phase 2 `passed` and an unchanged `post_check` pair guard enter the
+existing TaskCommit owner, including when Reconcile has already committed the
+candidate. Its current `committed` result enters the unchanged `post_commit`
+pair guard. A new pair returns through Reconcile and fresh Phase 2; an unchanged
+pair enters fresh Branch Architecture and independent full Branch Review.
+Candidate selection and verification belong only to TaskCommit's package.

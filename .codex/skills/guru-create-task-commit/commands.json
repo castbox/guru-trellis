@@ -160,7 +160,8 @@
           "description": "Prepared candidate locator shown in the confirmed commit action.",
           "repeatable": false,
           "conflicts": [
-            "--invocation"
+            "--invocation",
+            "--committed-reentry"
           ]
         },
         {
@@ -170,7 +171,19 @@
           "description": "Compatibility-only call-local invocation envelope or dash for stdin.",
           "repeatable": false,
           "conflicts": [
-            "--candidate-artifact"
+            "--candidate-artifact",
+            "--committed-reentry"
+          ]
+        },
+        {
+          "flag": "--committed-reentry",
+          "required": false,
+          "kind": "json",
+          "description": "Read-only committed_reentry public_input/owner_result envelope; dash for stdin only.",
+          "repeatable": false,
+          "conflicts": [
+            "--candidate-artifact",
+            "--invocation"
           ]
         }
       ],
@@ -187,7 +200,8 @@
       ],
       "side_effect": "git_write",
       "schema_bindings": [
-        "schemas/happy-path-result.schema.json"
+        "schemas/happy-path-result.schema.json",
+        "schemas/committed-reentry-envelope.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

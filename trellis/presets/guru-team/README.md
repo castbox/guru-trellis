@@ -210,3 +210,13 @@ Git/publication/install/cleanup action keep their own independent boundaries.
 Install/update/reapply the canonical workflow and Skill projections together;
 old current-checkout editing is directly replaced, not a fallback mode. Source
 checks do not prove target installation or native Agent continuation.
+
+## 已提交候选接续（#530）
+
+post_commit Reconcile 后，fresh Phase 2 与 pair guard 仍进入原 TaskCommit
+owner。新增 `committed_reentry` 只读输入核验当前已提交候选并返回原 `committed`
+身份，再进入 fresh Architecture 与首次独立完整 Branch Review；真实待提交增量
+保留原 exact commit 路径。该输入随完整 preset 的 canonical package、runtime、
+schema 与平台 Skill 投影一起安装/reapply，使用方法由
+[TaskCommit contract](../../skills/guru-team/packages/guru-create-task-commit/references/contract.md)拥有。
+本接续不创建空提交，不替代 Phase 2 或 Branch Review。

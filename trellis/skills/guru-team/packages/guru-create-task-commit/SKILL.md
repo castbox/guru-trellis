@@ -17,7 +17,17 @@ platform discovery without that routing; it still requires the complete,
 current Guru Team preset and extension runtime. This Skill directory is not
 a self-contained or portable package.
 
-The recommended Happy Path is exactly two package calls:
+First read the passed DTO, task and complete Git state. A clean current
+committed range uses `committed_reentry`: complete the current TaskCommit
+semantic gate, then call `scripts/invoke.sh --committed-reentry -` once with
+one `public_input`/`owner_result` stdin envelope (see contract). It verifies
+existing Git facts through the original Phase 2 checker and emits the existing
+committed DTO; it never creates a commit or requests commit confirmation.
+Dirty increments use the existing path below. Both paths preserve post_commit
+pair guard and first independent full Branch Review; no caller synthesizes a
+committed DTO, empty commit or artificial dirty change.
+
+The recommended dirty Happy Path is exactly two package calls:
 
 1. Use `scripts/prepare-task-commit.sh` once to record the AI-owned path
    classifications, seven structured message fields, and completed semantic
@@ -41,7 +51,7 @@ read as commit preconditions.
 `scripts/invoke.sh` is the sole public invocation wrapper. Its
 `--candidate-artifact` mode is the normal path. Existing callers that already
 orchestrate an executor result may continue to use compatibility-only
-`--invocation`; the two argument shapes are mutually exclusive, and the
+`--invocation`; all three argument shapes are mutually exclusive, and the
 compatibility branch is never run before the normal transaction.
 
 `scripts/check-task-commit-plan.sh` and `scripts/create-task-commit.sh` remain
