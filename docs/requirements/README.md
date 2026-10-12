@@ -1,6 +1,6 @@
 # Requirements SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.86` / `active`；[本版入口](./versions/current-main-0.6.17-guru.86/requirement-main.md)继承 immutable `.85`，承接 [#532 增量 trace](../requirements-design-test-contributions/532-phase2-zero-candidates/traceability.md)。Architecture 继承 `.84/active`。本增量 [Test](../requirements-design-test-contributions/532-phase2-zero-candidates/test.md)拥有实际结果与未验证边界；晋升后的完整 diff 须 fresh Phase2、Task Commit 与独立完整 Branch Review。
+唯一 current RDT authority 是 `current-main-0.6.17-guru.87` / `active`；[本版入口](./versions/current-main-0.6.17-guru.87/requirement-main.md)继承 immutable `.86`，承接 [#535 增量 trace](../requirements-design-test-contributions/535-review-zero-candidates/traceability.md)。Architecture继承 `.84/active`。[Test](../requirements-design-test-contributions/535-review-zero-candidates/test.md)拥有实际结果与未验证边界；晋升后的完整diff须fresh Phase2、TaskCommit与独立完整Branch Review。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +8,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.86` | [新 current](./versions/current-main-0.6.17-guru.86/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.87` | [新 current](./versions/current-main-0.6.17-guru.87/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.86` | [新 current](./versions/current-main-0.6.17-guru.86/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.85` | [新 current](./versions/current-main-0.6.17-guru.85/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.84` | [新 current](./versions/current-main-0.6.17-guru.84/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.83` | [新 current](./versions/current-main-0.6.17-guru.83/requirement-main.md) |
