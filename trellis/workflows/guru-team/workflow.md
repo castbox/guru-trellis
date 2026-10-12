@@ -60,7 +60,9 @@ Classify the initial request before repository or network semantic reads:
   task-free; evidence that is probably suitable but insufficient opens one
   concise mode question; clearly complex or high-risk work routes automatically
   to standard Intake. Issue presence, file count, path, or keywords never decide
-  the mode by themselves.
+  the mode by themselves. Needing isolated execution never alone selects
+  standard Intake; the execution owner acquires a suitable linked non-base
+  location before candidate writes under its own operation boundary.
 
 Missing packages or markers, duplicate markers, unknown or multiple exits,
 unmapped exits, consumer mismatch, target-kind mismatch, dangling targets, or
@@ -596,14 +598,43 @@ Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycl
 | completed | Load the single continuation contract below and resume the current Finish or Cleanup consumer. |
 | invalid task identity or state | Load the single continuation contract below and stop at `invalid-task-state`. |
 
-## Active Task Continuation
+## Guru Continuation
 
 [trellis-continuation]
-### Guru active-task continuation
+### Guru caller continuation
+
+For start, ordinary continuation, a resumed/new chat, and explicit
+`trellis-continue`, first read the actual current-chat binding in this Git
+common-dir and the current request. A valid formal Task uses the exact bound
+Task route below. Stale, conflicting or unreadable binding stops at the original
+identity owner; another chat's Task inventory does not establish this chat's
+identity. A failed helper or missing injection is not `no_current_task`.
+
+When upstream `trellis-continue` actually returns `no_current_task`, its stop
+ends that upstream step only. This Guru workflow caller consumes the return by
+freshly checking the absence of a relevant formal binding and reading current
+request, live topology and complete candidate diff. Follow the existing
+`[workflow-state:no_task]` route: a still-current same-scope task-free selection
+re-enters `guru-execute-task-free-change`; a fresh bounded request invokes
+`guru-select-workflow-mode` first. Preserve dialogue-local selection origin;
+new-chat context must establish the scope and candidate from explicit request
+and live facts, not a Task-free identity record. Missing location or scope
+returns to its existing interaction/stop, not forced Task creation. Only an
+exact relevant Task or archive enters its original lifecycle owner.
+
+This caller does not create, activate or bind a Task to resume task-free work,
+clear real bindings, or modify upstream start/continue/extractor/hooks. If a
+native entry cannot deliver that upstream return to the Guru caller, stop that
+dependent path and report the exact upstream entry/return and missing caller
+consumption as unverified. Do not patch the upstream entry or claim a DTO/text
+check proves native continuation.
+
+### Bound formal Task continuation
 
 Use the current TaskId/generation session binding when present. Resolve its current task_ref, TaskBranchBinding and checkout from live Git facts, then reread `task.json.status` before choosing an owner. The generic Trellis `task.py current` / `get_context.py` result is context only, not proof of a Guru branch binding; always use `guru-ensure-task-checkout` before task operations. In explicit-task mode, require an explicitly selected and validated TaskId; an invocation checkout or directory name never establishes identity. Missing branch binding enters `guru-establish-task-branch-binding`; ambiguous or conflicting identity stops at `invalid-task-state`. Do not infer identity from old mappings or previous dialogue.
 
-The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block for the exact bound task. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Delivery/Completion owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
+The active workflow must contain exactly this one non-empty continuation block. SessionStart, UserPromptSubmit, explicit `trellis-start`, explicit `trellis-continue`, natural-language continuation, and `确认继续` with no current side-effect plan all load this block; the caller handles verified no-Task continuation above
+before the exact bound-task dispatch below. `planning-inline` follows the same Phase 1 owners as `planning`; `in_progress-inline` follows the same Delivery/Completion owners as `in_progress`. Inline/sub-agent execution changes only the execution carrier.
 
 #### Closed state dispatch
 
@@ -676,6 +707,8 @@ When a unique, complete, current side-effect plan is already displayed, `确认�
 [/trellis-continuation]
 
 [workflow-state:no_task]
+For actual upstream `trellis-continue:no_current_task`, consume the Guru caller
+continuation above before taking this route; it is not a Task-creation gate.
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
 Every change-intent request first resolves task identity for the current
@@ -709,8 +742,11 @@ task-free wording.
 `这次走 task-free` is direct.
 Otherwise: high-confidence bounded low-risk -> `task_free`; insufficient
 evidence -> one question; complex/high-risk -> `standard_intake`. Mapped exits
-and same-scope retries do not ask again. Task-free still requires checkout
-suitability before bounded writes and never authorizes Git/GitHub publication.
+and same-scope retries do not ask again. A legitimate same-scope task-free
+continuation re-enters its execution owner with current request and live facts.
+Task-free requires suitable linked non-base execution before the first write;
+its execution owner consumes location_required and the exact acquisition
+action. No Task identity is introduced. Publication remains independent.
 [/workflow-state:no_task]
 
 [workflow-state:planning]
@@ -1119,7 +1155,9 @@ Stop that automatic invocation chain and report the failed step, original
 error (with secrets redacted), known repo/task/worktree/branch/HEAD/Issue/PR,
 and unfinished steps. Read available live facts directly; mark unreadable
 facts `unknown`. Missing injection or a failed helper is not evidence of
-`no_task`. Do not enter new Intake, switch to task-free, rebuild mappings,
+`no_task`. This failure stop is distinct from the actual upstream
+`trellis-continue:no_current_task` return consumed by the Guru caller above.
+Do not enter new Intake, switch to task-free, rebuild mappings,
 repair hooks/runtime, or manufacture checkpoints to continue.
 
 An automatic stop does not prohibit a user's explicit independent manual

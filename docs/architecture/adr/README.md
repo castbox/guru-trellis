@@ -45,3 +45,5 @@
 `ADR-019` 正文见 [`019-independent-architecture-assessment.md`](./019-independent-architecture-assessment.md)。
 
 `ADR-020`（accepted）：独立目标感知根因候选准入，normal/solution/root 与现有阶段完成 owners 分离。正文见 [`020-root-cause-qualification.md`](./020-root-cause-qualification.md)；ADR-008/019/005 的有效职责继续继承。
+
+`ADR-021`（accepted）：隔离修改由原 task-free execution/C6 creation-only owners 承接，Guru caller 消费真实无 Task 返回，既有 primary recovery/Sync/绑定与独立副作用边界保持。正文见 [`021-checkout-isolation.md`](./021-checkout-isolation.md)。

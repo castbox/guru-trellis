@@ -51,7 +51,6 @@
     "delivery_policy": {"$ref": "#/$defs/deliveryPolicy"},
     "candidate_classifications": {
       "type": "array",
-      "minItems": 1,
       "uniqueItems": true,
       "items": {"$ref": "#/$defs/candidateClassification"}
     },

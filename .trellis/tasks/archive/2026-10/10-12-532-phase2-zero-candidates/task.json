@@ -1,0 +1,29 @@
+{
+  "id": "532-phase2-zero-candidates",
+  "name": "532-phase2-zero-candidates",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 532,
+    "disposition": "exact_source"
+  },
+  "title": "修复 guru-check-task 正常零候选初检不可达",
+  "description": "允许完整 Check 真实零候选走原 recorder/checker/public initial_check，保留语义门禁及受影响 profiles 兼容性。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "#532：Check owner 零候选分支、schema/runtime、示例/tests/evals、canonical/dogfood/单个 installed 公开链路与 apply/reapply 定向验证。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-12",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

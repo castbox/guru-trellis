@@ -10,11 +10,27 @@ KERNEL_ROOT=SKILLS if (SKILLS/"runtime/command.py").is_file() else SKILLS.parent
 if str(KERNEL_ROOT) not in sys.path: sys.path.insert(0,str(KERNEL_ROOT))
 if str(PACKAGE/"runtime") not in sys.path: sys.path.insert(0,str(PACKAGE/"runtime"))
 from runtime.command import main
-from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths
+from common import PHASE2_WORKTREE_CONTENT_ALGORITHM, content_identity, dirty_paths, validate_candidate_classifications
 from runtime.io import CommandError
 import project as project_runtime
 
 class PackageLocalRuntimeTest(unittest.TestCase):
+ def test_empty_candidates_preserve_array_uniqueness_and_reference_checks(self):
+  value=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
+  self.assertEqual([],value["candidate_classifications"])
+  validate_candidate_classifications(value)
+  for rows in (None,{},"",False):
+   invalid=copy.deepcopy(value);invalid["candidate_classifications"]=rows
+   with self.subTest(rows=rows),self.assertRaises(CommandError):validate_candidate_classifications(invalid)
+  for key in ("scope_decisions","findings"):
+   invalid=copy.deepcopy(value);invalid["semantic_review"][key]=[{"candidate_ref":"candidate:phase2:boundary"}]
+   with self.subTest(link=key),self.assertRaises(CommandError):validate_candidate_classifications(invalid)
+  rejected={"candidate_ref":"candidate:phase2:boundary","decision":"rejected_not_reproduced"}
+  value["candidate_classifications"]=[rejected]
+  validate_candidate_classifications(value)
+  value["candidate_classifications"].append(copy.deepcopy(rejected))
+  with self.assertRaises(CommandError):validate_candidate_classifications(value)
+
  def git(self,repo,*args,input=None):
   return subprocess.run(["git",*args],cwd=repo,input=input,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=True).stdout.strip()
 

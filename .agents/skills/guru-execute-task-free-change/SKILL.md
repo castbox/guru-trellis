@@ -40,9 +40,15 @@ and unverified boundaries.
 
 `reselect_mode` and `explicit_choice_required` require evidence of the actual
 partial edit, the discovered scope/risk expansion, immediate write stop,
-remaining target writes not performed, and applicable targeted checks. No exit
-authorizes commit, push, PR, merge, release, installation, cleanup, Issue
-closure, or any lifecycle resource.
+remaining target writes not performed, and applicable targeted checks. Neither
+mode selection nor an exit authorizes commit, push, PR, merge, release, installation, cleanup, Issue
+closure, or Task creation/activation/binding. Worktree/branch acquisition is this
+owner's pre-write location action with its own exact authorization, never a
+Task lifecycle operation.
+
+Read [references/contract.md](references/contract.md) before location selection
+or editing, including first-write isolation, continuation and partial-edit
+carryover boundaries. A read-only turn creates no resources.
 
 Return exactly one of `completed`, `resume_active_task`, `scope_change`,
 `location_required`, `reselect_mode`, `explicit_choice_required`, or `blocked`.

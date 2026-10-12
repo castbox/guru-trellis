@@ -33,8 +33,8 @@ Workers may supply evidence but their absence does not remove your ownership.
 2. Read the current task, approved `prd.md`, `design.md`, `implement.md`,
    live Issue authority, complete diff and dirty paths, implementation, tests,
    Docs SSOT, fresh Phase 2 Architecture result, and actual validation evidence.
-3. Execute the Semantic Loop below yourself, including qualification and all
-   nine adequacy dimensions. Judge the outcome from the evidence, not from a
+3. Execute the Semantic Loop below yourself, including qualification for actual
+   candidates and all nine adequacy dimensions. Judge the outcome from the evidence, not from a
    desired exit.
 4. Author the minimal semantic content described under Recorder Authoring.
 5. Call the original recorder, checker, and public wrapper in that order.
@@ -183,9 +183,19 @@ diagnostic attribution alone must not add a business rejection.
    digest as semantic authority. Missing, invalid, unknown, or mismatched
    provenance does not exempt the file, and path, UTF-8, and JSON validation
    always remains active.
-3. Form a candidate-only set, then invoke
-   `guru-qualify-normal-scenario:phase2_candidate_set`. Only candidates returned
-   eligible through `classified` may receive P0-P3 findings.
+3. Form the actual candidate-only set for this complete current round.
+   If it is empty, do not invoke `guru-qualify-normal-scenario`,
+   `guru-qualify-solution-mechanism`, or `guru-qualify-root-cause`; their input
+   contracts still require non-empty sets. Record `candidate_classifications=[]`
+   and continue the complete review and original recorder/checker/public entry.
+   Reviewed paths, business functions and invented no-defect placeholders are
+   not defect candidates. If it is non-empty, invoke
+   `guru-qualify-normal-scenario:phase2_candidate_set` and the applicable
+   solution-mechanism profile. The root owner receives only the eligible refs
+   returned by those preceding owners, never an empty or fabricated input.
+   Keep final classifications and witnesses for every actual candidate,
+   including rejected candidates; all-rejected is distinct from no candidates.
+   Only candidates returned eligible through `classified` may receive P0-P3 findings.
    `scope_confirmation_required` enters requirements clarification,
    `mechanism_revision_required` returns to implementation for remove/replace
    and full rerun, and `blocked` stops. Rejected candidates never become a
@@ -306,9 +316,20 @@ For each current candidate it directly retains the final classification and
 the six-part witness required by the existing Task Commit consumer:
 `requirement_refs`, `supported_entry_refs`, `existing_caller_refs`,
 `honest_action_sequence`, `defect_observation`, and `excluded_assumptions`.
+An empty current candidate set is recorded as an empty array, with no findings
+or candidate-linked scope decisions. It does not skip any adequacy, Docs,
+Architecture, mandatory-validation, freshness or route judgment. This applies
+equally to `initial_check`, `finding_fix_rerun`, `planning_reentry` and
+`resolved_reconciliation`: rerun input refs do not manufacture current candidates.
 These fields are authored by the Phase 2 semantic owner from current live
 evidence; they do not import or reference qualification stdout, a result/report,
 temporary locator, or checkpoint.
+
+`examples/phase2-check.json` illustrates the zero-candidate result.
+`examples/phase2-rejected-candidates.json` separately illustrates a non-empty
+candidate array after investigating a concrete upper-endpoint concern. Keep
+that array when all actual candidates are rejected; do not collapse it to `[]`.
+Both are deidentified authoring examples, not evidence of an executed review.
 
 It does not retain implementation handoffs, worker identity, raw output,
 assignments, liveness, repository snapshots, per-file digests, artifact-digest
@@ -349,8 +370,9 @@ metadata:
 - `validation`: actual command outcomes, summaries, and explicitly blocking
   or nonblocking unverified items.
 - `docs_ssot`: strategy, durable paths, status, and evidence-based conclusion.
-- `candidate_classifications`: this owner's final decisions and six-part
-  normal-scenario witness for the Task Commit consumer.
+- `candidate_classifications`: `[]` when this complete round observes no
+  candidates, otherwise this owner's final decisions and six-part
+  normal-scenario witness for each actual candidate for the Task Commit consumer.
 - `semantic_review`: status, summary, all nine named adequacy dimensions,
   scope decisions, and findings linked to current candidates.
 - `typed_exit`, `route`, `reason`, and `consumer`: your justified result

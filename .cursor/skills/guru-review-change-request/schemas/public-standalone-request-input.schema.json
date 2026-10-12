@@ -19,7 +19,10 @@
       "minLength": 1
     },
     "mode": {
-      "const": "standalone"
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
     },
     "target_locator": {
       "type": "string",
