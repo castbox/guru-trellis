@@ -57,6 +57,14 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         Draft202012Validator(interface_schema).validate(self.interface)
         Draft202012Validator.check_schema(self.schema)
         Draft202012Validator(self.schema).validate(self.example)
+        self.assertEqual([], self.example["candidate_classifications"])
+        rejected = copy.deepcopy(self.example)
+        rejected["candidate_classifications"] = self.read("examples/phase2-rejected-candidates.json")
+        Draft202012Validator(self.schema).validate(rejected)
+        for rows in (None, {}, "", False):
+            invalid = copy.deepcopy(self.example)
+            invalid["candidate_classifications"] = rows
+            self.assertFalse(Draft202012Validator(self.schema).is_valid(invalid))
 
         for name in ("initial-check", "finding-fix-rerun", "planning-reentry", "resolved-reconciliation"):
             Draft202012Validator(self.read(f"schemas/public-{name}-input.schema.json")).validate(
@@ -214,7 +222,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
 
     def test_native_cases_require_ai_authoring_without_host_owner_recipes(self) -> None:
         cases = {item["id"]: item for item in self.read("evals/evals.json")["evals"]}
-        for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-finding", "implementation_required"), ("native-owner-test-boundary", "implementation_required"), ("native-owner-test-support", "implementation_required"), ("native-owner-selection-assertion", "implementation_required")):
+        for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-all-rejected", "passed"), ("native-owner-finding", "implementation_required"), ("native-owner-test-boundary", "implementation_required"), ("native-owner-test-support", "implementation_required"), ("native-owner-selection-assertion", "implementation_required")):
             case = cases[case_id]
             self.assertEqual(case["native_execution_mode"], "semantic_authoring")
             self.assertEqual(case["native_execution_adapter"], "codex")

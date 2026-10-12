@@ -97,6 +97,10 @@
       "path": "examples/phase2-check.json"
     },
     {
+      "id": "phase2_rejected_candidates_example",
+      "path": "examples/phase2-rejected-candidates.json"
+    },
+    {
       "id": "public_input_initial_check_example",
       "path": "examples/public-initial-check-input.json"
     },
