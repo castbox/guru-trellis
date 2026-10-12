@@ -23,7 +23,7 @@ Execute one profile in this order:
 3. run or inspect every applicable project check and judge its applicability,
    blocking effect, and before/after meaning;
 4. make the applicable judgments as the contract-selected AI owner;
-5. author one complete result matching `schemas/semantic-result.schema.json`;
+5. author one complete result matching the selected planning 3.0 or nonplanning 2.0 schema;
 6. submit `public_input` plus that `owner_result` once through the formal
    `scripts/invoke.sh --invocation -` boundary; and
 7. consume exactly one declared typed exit.
@@ -41,7 +41,9 @@ required only for a real choice or side effect; it never supplies the semantic
 result and is never recorded in the owner result or another authorization
 artifact.
 
-Every standard task enters `task_impact_sync` at Planning. The AI rereads the
+Every standard task enters `task_impact_sync` twice at Planning: first
+`candidate_assessment` on actual prewrite facts, then `final_plan` on Wording-current
+design. Read the purpose-specific contract below before either invocation. The AI rereads the
 project Architecture Baseline, design-constitution authority, project
 change-contract identity, task scope, and applicable project-check protocol.
 It returns either a reviewed `no_architecture_impact` result or exactly one of
@@ -68,7 +70,7 @@ Phase 2 and committed full-diff Branch Review before Publication.
 
 The AI owns applicability, sufficiency, conflict, regression, contribution,
 ADR, promotion, and route judgment. The deterministic runtime validates only
-the closed 2.0 input/result/output contracts, exact identity/freshness binding,
+purpose-bound planning 3.0 and valid nonplanning 2.0 contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
@@ -113,3 +115,26 @@ it never changes an AI-selected route. Ordinary sources retain all seven exits.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Purpose-specific Planning 3.0 migration
+
+Planning task impact requires schema_version=3.0 and planning_purpose. Read
+references/contract.md's Planning 3.0 section. Candidate assessment consumes
+current call-local design_facts/constraint_refs or the current design_locator;
+it never requires an unwritten contribution, projects promotion_state, or
+claims reviewed_candidate. Its current router returns only to Author
+solution_planning. Final assessment consumes Wording-current design_locator
+and actual task-local contribution/necessary ADR; current returns directly to
+Approval. The first result is never reused as the second result.
+
+All seven planning exits bind the same purpose. Sync goes through the thin
+sync router back to this original owner and preserves the original purpose;
+bootstrap/repair current reruns fresh task impact for that purpose. Conflict or
+contract gap returns through the planning router to Author's corresponding
+conflict profile; fitness regression and blocked retain their original meaning.
+No new Architecture owner or lifecycle stage is introduced.
+
+Old task-impact planning 2.0 input fails closed; interrupted old planning fresh
+re-enters Author. Bootstrap, repair, promotion and valid nonplanning task impact
+remain 2.0. Historical schemas are validation assets only, never a planning
+fallback. MIGRATION-292 defines the matching workflow/preset update boundary.

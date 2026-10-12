@@ -34,7 +34,7 @@ EXITS = {
 }
 CONSUMERS = {
     "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
-    "sync_required": {"kind": "skill", "id": "guru-maintain-architecture-baseline"},
+    "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
     "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
     "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
     "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
@@ -300,6 +300,9 @@ def _check_sync_route(value: dict, field: str) -> None:
 
 
 def _check_architecture_current(public: dict, recorded: dict) -> None:
+    if public.get("planning_purpose") == "candidate_assessment":
+        _check_candidate_current(public, recorded)
+        return
     if not recorded.get("impact_reason"):
         raise CommandError("semantic_result_invalid", "owner_result.impact_reason", "Record the reviewed Architecture impact reason.", 3)
     if recorded["impact_kind"] == "architecture_impact":
@@ -343,9 +346,44 @@ def _check_architecture_current(public: dict, recorded: dict) -> None:
                 raise CommandError("semantic_result_invalid", f"owner_result.{field}", "No-impact work cannot create Architecture contribution or check burden.", 3)
 
 
+def _check_candidate_current(public: dict, recorded: dict) -> None:
+    if not recorded.get("impact_reason"):
+        raise CommandError("semantic_result_invalid", "owner_result.impact_reason", "Record the actual current candidate assessment reason.", 3)
+    for field in ("promotion_state", "contribution_locator", "contribution_identity", "review"):
+        if field in recorded:
+            raise CommandError("semantic_result_invalid", f"owner_result.{field}", "Prewrite assessment cannot claim a future contribution or promotion.", 3)
+    fields = ("change_path", "decision_refs", "project_check_descriptors", "project_checks")
+    if recorded["impact_kind"] == "architecture_impact":
+        for field in fields:
+            if field not in recorded:
+                raise CommandError("semantic_result_invalid", f"owner_result.{field}", "Assess the real candidate path, decisions and applicable project checks.", 3)
+        _check_project_checks(recorded["project_check_descriptors"], recorded["project_checks"], public["freshness_identity"], "owner_result.project_checks")
+    elif any(field in recorded for field in fields):
+        raise CommandError("semantic_result_invalid", "owner_result.impact_kind", "A no-impact candidate adds no contribution, path or check burden.", 3)
+
+
+def _planning_facts(public: dict) -> None:
+    if public.get("schema_version") != "3.0":
+        return
+    locator = public.get("design_locator") or public.get("candidate", {}).get("design_locator")
+    if locator:
+        _locator(locator, "input.design_locator")
+        if locator != f"{public['task_locator']}/design.md":
+            raise CommandError("stale_identity", "input.design_locator", "Assess this exact task's current design.", 3)
+        path = Path.cwd() / locator
+        if not path.is_file() or path.is_symlink():
+            raise CommandError("stale_identity", "input.design_locator", "Read the current regular task design.", 3)
+        current = hashlib.sha256(path.read_bytes()).hexdigest()
+    else:
+        current = _digest(public["candidate"])
+    if public["freshness_identity"] != "sha256:" + current:
+        raise CommandError("stale_identity", "input.freshness_identity", "Bind this assessment to the current design facts.", 3)
+
+
 def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     recorded = copy.deepcopy(owner)
-    validate_json(recorded, _schema(package_root, "semantic-result.schema.json"), "owner_result")
+    semantic_schema = "semantic-result-planning-3.0.schema.json" if public["schema_version"] == "3.0" else "semantic-result.schema.json"
+    validate_json(recorded, _schema(package_root, semantic_schema), "owner_result")
     if recorded["input_sha256"] != _digest(public):
         raise CommandError("stale_identity", "owner_result.input_sha256", "Rerun semantic review against the exact current 2.0 input.", 3)
     for field in (
@@ -360,6 +398,8 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
         "freshness_identity",
     ):
         _bind_identity(public, recorded, field)
+    if public["schema_version"] == "3.0":
+        _bind_identity(public, recorded, "planning_purpose")
     if public["profile"] == "promotion":
         for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
             _bind_identity(public, recorded, field)
@@ -424,6 +464,16 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             raise CommandError("stale_identity", "owner_result.constitution_identity", "Reread the live constitution identity.", 3)
         if public["profile"] == "task_impact_sync":
             _check_architecture_current(public, recorded)
+            if public.get("planning_purpose") == "final_plan" and recorded["impact_kind"] == "architecture_impact":
+                locator = recorded["contribution_locator"]
+                if not locator.startswith(public["task_locator"] + "/"):
+                    raise CommandError("stale_identity", "owner_result.contribution_locator", "Review this task's actual local contribution.", 3)
+                contribution_path = Path.cwd() / locator
+                if not contribution_path.is_file() or contribution_path.is_symlink():
+                    raise CommandError("stale_identity", "owner_result.contribution_locator", "Read the current regular contribution file.", 3)
+                identity = "sha256:" + hashlib.sha256((Path.cwd() / locator).read_bytes()).hexdigest()
+                if recorded["contribution_identity"] != identity:
+                    raise CommandError("stale_identity", "owner_result.contribution_identity", "Reread the actual current task contribution.", 3)
         elif public["profile"] == "promotion":
             _check_architecture_current(public, recorded)
             sync_kind = public["sync_kind"]
@@ -485,22 +535,35 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     owner = envelope.get("owner_result") if envelope else _json(args.owner_result, "owner_result", True)
     if not isinstance(public, dict) or not isinstance(owner, dict):
         raise CommandError("invalid_arguments", "owner_result", "Provide a completed semantic owner result.")
-    if public.get("schema_version") != "2.0":
-        raise CommandError("schema_mismatch", "schema_version", "Architecture Baseline accepts only the closed 2.0 contract.")
+    planning = public.get("schema_version") == "3.0" and public.get("stage") == "planning" and public.get("profile") == "task_impact_sync"
+    if not planning and (public.get("schema_version") != "2.0" or (public.get("stage") == "planning" and public.get("profile") == "task_impact_sync")):
+        raise CommandError("schema_mismatch", "schema_version", "Use purpose-bound planning 3.0 or a valid nonplanning 2.0 contract; rerun interrupted old planning.")
     profile = public.get("profile")
     if profile not in PROFILES:
         raise CommandError("schema_mismatch", "profile", "Use one declared Architecture Baseline profile.")
-    validate_json(public, _schema(package_root, PROFILE_SCHEMAS[profile]), "input")
+    schema_name = "public-input-impact-current-3.0.schema.json" if profile == "task_impact_sync" else PROFILE_SCHEMAS[profile]
+    validate_json(public, _schema(package_root, schema_name), "input")
+    _planning_facts(public)
     owner = _check_owner_result(package_root, public, owner)
     exit_id = owner["typed_exit"]
     output = {"exit_id": exit_id}
     for key in OUTPUT_FIELDS[exit_id]:
         if key in owner:
             output[key] = owner[key]
+    if planning:
+        output.update({"planning_purpose": public["planning_purpose"], "task_locator": public["task_locator"], "stage": "planning"})
+        if exit_id == "baseline_current":
+            if public["planning_purpose"] == "candidate_assessment":
+                output.pop("promotion_state", None)
+                output["impact_reason"] = owner["impact_reason"]
+                if owner["impact_kind"] == "architecture_impact":
+                    output["decision_refs"] = owner["decision_refs"]
+            if owner["impact_kind"] == "architecture_impact":
+                output["change_path"] = owner["change_path"]
     if exit_id == "baseline_current" and owner.get("impact_kind") == "no_architecture_impact":
         output["impact_reason"] = owner["impact_reason"]
     if exit_id == "baseline_current":
         output["source_profile"] = owner["profile"]
         output["constitution_status"] = owner["constitution"]["authority_status"]
-    validate_json(output, _schema(package_root, EXITS[exit_id]), "stdout")
+    validate_json(output, _schema(package_root, EXITS[exit_id].replace(".schema.json", "-3.0.schema.json")), "stdout")
     return copy.deepcopy(output)

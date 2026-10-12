@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-consumer-incomplete-3.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "authority_locator",
+        "missing_refs",
+        "repair_profile"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "baseline_incomplete"
+        },
+        "authority_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "repair_profile": {
+          "enum": [
+            "bootstrap_foundation",
+            "repair"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "authority_locator",
+        "missing_refs",
+        "repair_profile",
+        "planning_purpose",
+        "stage",
+        "task_locator"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "baseline_incomplete"
+        },
+        "authority_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "repair_profile": {
+          "enum": [
+            "bootstrap_foundation",
+            "repair"
+          ]
+        },
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "authority_locator",
+        "missing_refs",
+        "repair_profile",
+        "planning_purpose",
+        "stage",
+        "task_locator"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "baseline_incomplete"
+        },
+        "authority_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "repair_profile": {
+          "enum": [
+            "bootstrap_foundation",
+            "repair"
+          ]
+        },
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}

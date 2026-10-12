@@ -119,3 +119,11 @@ inspect mechanism meaning, select a route, persist authorization, or create a
 qualification report, persistent decision state, checkpoint, handoff, or result file. Any material
 authority, dependency graph, mechanism, candidate, diff, test, or target change
 requires a complete fresh invocation.
+
+## Author candidate set
+
+Author owns `author_candidate_set` (caller `guru-author-task-plan`), binding
+current source/candidate locators and existing author_paths with author_identity.
+It does not require future design/implement files. Original planning_scenario_set
+remains Approval-only and requires three current docs. Return classified and
+mechanism results to Author; scope/diagnosis/blocked retain original owners.

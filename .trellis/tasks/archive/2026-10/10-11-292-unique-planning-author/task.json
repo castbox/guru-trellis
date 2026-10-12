@@ -1,0 +1,29 @@
+{
+  "id": "292-unique-planning-author",
+  "name": "292-unique-planning-author",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 292,
+    "disposition": "exact_source"
+  },
+  "title": "#292 Phase 1 唯一 Planning Author 与来源设计承接集成",
+  "description": "按 castbox/guru-trellis #292 当前 r27 正文交付唯一 Planning Author、来源设计处置和 Phase 1 实际入口集成，保留现有生命周期与独立语义 owner。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "仅 #292：Author package、Phase 1 workflow edges/targets 和薄投影、受影响 Architecture/Wording/Approval/平台/preset 合同及实际激活行为验证；保留 #468/#383、qualification、共享 authority promotion；不启动 #521，不修改上游 trellis-*，不执行 Release/deploy 或完整多平台矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-11",
+  "completedAt": "2026-10-12",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

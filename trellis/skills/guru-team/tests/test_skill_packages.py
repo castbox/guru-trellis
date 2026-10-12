@@ -480,9 +480,9 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             public_api["skill_contracts"]["contract_manifests"],
             [
                 {
-                    "id": "production-current-v4",
-                    "schema_id": "guru-team-production-contract-manifest-4.0",
-                    "path": "contracts/production-current-4.0.json",
+                    "id": "production-current-v5",
+                    "schema_id": "guru-team-production-contract-manifest-5.0",
+                    "path": "contracts/production-current-5.0.json",
                 }
             ],
         )
@@ -516,8 +516,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "schemas/skill-eval-control-map-1.0.schema.json": (
                 "guru-team-skill-eval-control-map-1.0"
             ),
-            "schemas/production-contract-manifest-4.0.schema.json": (
-                "guru-team-production-contract-manifest-4.0"
+            "schemas/production-contract-manifest-5.0.schema.json": (
+                "guru-team-production-contract-manifest-5.0"
             ),
         }
         for relative, schema_id in schema_ids.items():
@@ -531,9 +531,9 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.7.json",
         )
         production_contract = json.loads(
-            (SKILLS / "contracts/production-current-4.0.json").read_text(encoding="utf-8")
+            (SKILLS / "contracts/production-current-5.0.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(production_contract["contract_id"], "production-current-v4")
+        self.assertEqual(production_contract["contract_id"], "production-current-v5")
         self.assertEqual(
             production_contract["production_eval_control"],
             {
@@ -595,8 +595,8 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 "schemas/skill-eval-adapter-response-3.0.schema.json",
                 "schemas/skill-eval-run-4.0.schema.json",
                 "schemas/skill-eval-control-map-1.0.schema.json",
-                "schemas/production-contract-manifest-4.0.schema.json",
-                "contracts/production-current-4.0.json",
+                "schemas/production-contract-manifest-5.0.schema.json",
+                "contracts/production-current-5.0.json",
                 "contracts/production-current.json",
                 "contracts/production-current-3.0.json",
                 "contracts/production-current-2.0.json",
@@ -609,11 +609,11 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 self.assertEqual(installed_schema["$id"], schema_id)
             self.assertEqual(
                 (installed_root / "contracts/production-current.json").read_bytes(),
-                (installed_root / "contracts/production-current-4.0.json").read_bytes(),
+                (installed_root / "contracts/production-current-5.0.json").read_bytes(),
             )
             self.assertEqual(
-                (installed_root / "contracts/production-current-4.0.json").read_bytes(),
-                (SKILLS / "contracts/production-current-4.0.json").read_bytes(),
+                (installed_root / "contracts/production-current-5.0.json").read_bytes(),
+                (SKILLS / "contracts/production-current-5.0.json").read_bytes(),
             )
             for legacy in ("production-current-2.0.json", "production-current-3.0.json"):
                 self.assertEqual(

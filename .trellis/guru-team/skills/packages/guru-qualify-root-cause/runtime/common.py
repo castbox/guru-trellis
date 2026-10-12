@@ -20,6 +20,7 @@ PROFILE_SCHEMAS = {
     "requirements_scope_set": "public-requirements-scope-set-input.schema.json",
     "change_request_candidate_set": "public-change-request-candidate-set-input.schema.json",
     "planning_scenario_set": "public-planning-scenario-set-input.schema.json",
+    "author_candidate_set": "public-author-candidate-set-input.schema.json",
     "implementation_discovery": "public-implementation-discovery-input.schema.json",
     "base_impact_candidate_set": "public-base-impact-candidate-set-input.schema.json",
     "phase2_candidate_set": "public-phase2-candidate-set-input.schema.json",
@@ -33,9 +34,9 @@ CONSUMERS = {
     "blocked": {"kind": "stop", "id": "root-cause-qualification-blocked"},
 }
 OUTPUT_SCHEMAS = {
-    "classified": "public-classified-output.schema.json",
-    "diagnosis_required": "public-diagnosis-required-output.schema.json",
-    "mechanism_revision_required": "public-mechanism-revision-required-output.schema.json",
+    "classified": "public-classified-output-2.0.schema.json",
+    "diagnosis_required": "public-diagnosis-required-output-2.0.schema.json",
+    "mechanism_revision_required": "public-mechanism-revision-required-output-2.0.schema.json",
     "blocked": "public-blocked-output.schema.json",
 }
 

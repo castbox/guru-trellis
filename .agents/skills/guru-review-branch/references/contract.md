@@ -4,6 +4,24 @@ GitHub review/check/mergeability facts use the shared authenticated,
 repo-bound `gh` adapter in `.trellis/spec/workflow/workflow-contract.md`; they
 remain evidence for, not substitutes for, this Skill's semantic judgment.
 
+## Actual Candidate Set
+
+Complete the selected profile's semantic review before forming the actual
+candidate set. When that complete review finds no real candidate, record
+`candidate_classifications=[]` and invoke none of the three nonempty-only
+qualification owners. Do not invent a no-defect candidate from a reviewed file,
+feature, or a passing check. An empty set does not establish `passed`,
+`continuity_passed`, or `archived_review_passed`: every applicable entry,
+Architecture, Docs, range, dimension, evidence, freshness and route condition
+still applies. Bounded continuity remains bounded and archived review read-only.
+
+When real candidates exist, invoke the existing normal-scenario and
+solution-mechanism owners, then root-cause qualification for eligible refs,
+using `branch_review_candidate_set`. Keep every actual terminal classification,
+witness and semantic disposition. Nonempty all-rejected candidates are distinct
+from no candidates. Every finding, proposal, observation, follow-up and rejected
+candidate still binds a classified ref; an empty set cannot carry such a row.
+
 ## Entry
 
 ### Archived Review
@@ -140,7 +158,7 @@ archived review read-only. Qualified current-scope defects and evidence gaps
 use the profile's existing finding or blocked routes and existing gate fields.
 
 Perform one independent semantic review of the complete current
-`origin/<base>...HEAD` range. Form a candidate-only set, then invoke
+`origin/<base>...HEAD` range. For a nonempty actual candidate set, invoke
 `guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
 severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned

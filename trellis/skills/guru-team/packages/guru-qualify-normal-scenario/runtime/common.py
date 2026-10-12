@@ -20,6 +20,7 @@ PROFILE_SCHEMAS = {
     "requirements_scope_set": "public-requirements-scope-set-input.schema.json",
     "change_request_candidate_set": "public-change-request-candidate-set-input.schema.json",
     "planning_scenario_set": "public-planning-scenario-set-input.schema.json",
+    "author_candidate_set": "public-author-candidate-set-input.schema.json",
     "implementation_discovery": "public-implementation-discovery-input.schema.json",
     "base_impact_candidate_set": "public-base-impact-candidate-set-input.schema.json",
     "phase2_candidate_set": "public-phase2-candidate-set-input.schema.json",
@@ -32,6 +33,7 @@ RESUME_TARGETS = {
     "requirements_scope_set": "guru-clarify-requirements",
     "change_request_candidate_set": "guru-review-change-request",
     "planning_scenario_set": "guru-approve-task-plan",
+    "author_candidate_set": "guru-author-task-plan",
     "implementation_discovery": "guru-resume-implementation",
     "base_impact_candidate_set": "guru-reconcile-task-base",
     "phase2_candidate_set": "guru-check-task",
@@ -45,9 +47,9 @@ CONSUMERS = {
     "blocked": {"kind": "stop", "id": "normal-scenario-qualification-blocked"},
 }
 OUTPUT_SCHEMAS = {
-    "classified": "public-classified-output.schema.json",
-    "scope_confirmation_required": "public-scope-confirmation-required-output.schema.json",
-    "mechanism_revision_required": "public-mechanism-revision-required-output.schema.json",
+    "classified": "public-classified-output-2.0.schema.json",
+    "scope_confirmation_required": "public-scope-confirmation-required-output-2.0.schema.json",
+    "mechanism_revision_required": "public-mechanism-revision-required-output-2.0.schema.json",
     "blocked": "public-blocked-output.schema.json",
 }
 

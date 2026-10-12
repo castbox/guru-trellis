@@ -25,7 +25,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     task_dir = task(repo, args.task)
     path = checkpoint(repo, task_dir, "planning-approval.json")
     value = load(repo, package_root, str(path), "artifact")
-    validate_json(value, package_root / "schemas/planning-approval.schema.json", "artifact")
+    validate_json(value, package_root / "schemas/planning-approval-4.0.schema.json", "artifact")
     paths = [rel(repo, task_dir / name) for name in ("prd.md", "design.md", "implement.md")]
     if (
         value["task_ref"] != rel(repo, task_dir)

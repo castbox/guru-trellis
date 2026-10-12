@@ -61,6 +61,9 @@ def verify_current_facts(public_input: dict, repo: Path) -> None:
             planning_paths = [(task_path / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
         if target["planning_identity"] != file_set_identity(repo, planning_paths):
             raise CommandError("stale_identity", "public_input.target.planning_identity", "Reread the current planning files and rerun qualification.", 3)
+    if "author_identity" in target:
+        if target["author_identity"] != file_set_identity(repo, target["author_paths"]):
+            raise CommandError("stale_identity", "public_input.target.author_identity", "Reread the current source/candidate evidence and rerun Author qualification.", 3)
     for row in public_input["candidate_locators"]:
         for locator in row["locators"]:
             if locator.startswith("path:"):

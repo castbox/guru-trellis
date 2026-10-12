@@ -3,7 +3,7 @@
   "delivery_policy":{"task_scope_refs":["R435-01","R435-02"],"delivery_slice_refs":["R435-01"],"remaining_work_refs":["R435-02"],"independent_delivery_conditions":["The review package is independently installable after registry projection."],"validation_boundaries":["Package contract and runtime tests are current."],"followup_owner":"guru-publish-task-delivery"},
   "pr_payload":{"title":"交付：新增 Active Task Delivery Review owner","body":"## 变更摘要\n\n- 交付当前 Review slice。\n\n## 验证结果\n\n- Package contract and runtime tests passed.\n\n## Remaining Work\n\n- Publish and Merge remain active work.\n\n## 安全与部署影响\n\n- No deployment mutation in this slice.\n\nRefs #435\n"},
   "remaining_work_state":"remaining",
-  "candidate_classifications":[{"candidate_ref":"candidate:delivery:no-defect","decision":"rejected_not_reproduced","witness":{"requirement_refs":["R435-01"],"supported_entry_refs":["entry:delivery-review"],"existing_caller_refs":["caller:guru-review-task-delivery"],"honest_action_sequence":["Review the current slice and complete candidate."],"defect_observation":"Current evidence does not reproduce a Delivery Review defect.","excluded_assumptions":[]},"consumer_use":"delivery_review_route_checker"}],
+  "candidate_classifications":[],
   "dimensions":[
     {"id":"requirement_authority","status":"passed","summary":"Current authority is explicit.","evidence_refs":["issue:#435"]},
     {"id":"delivery_policy","status":"passed","summary":"The approved policy is complete.","evidence_refs":["planning:delivery-policy"]},

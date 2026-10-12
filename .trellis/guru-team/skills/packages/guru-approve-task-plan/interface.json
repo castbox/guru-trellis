@@ -135,7 +135,7 @@
   ],
   "schemas": [
     {
-      "id": "planning_approval_schema",
+      "id": "legacy_private_gate_planning_approval",
       "path": "schemas/planning-approval.schema.json"
     },
     {
@@ -173,6 +173,14 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "planning_approval",
+      "path": "schemas/planning-approval-4.0.schema.json"
+    },
+    {
+      "id": "revision_required_output_2",
+      "path": "schemas/public-revision-required-output-2.0.schema.json"
     }
   ],
   "validators": [
@@ -214,8 +222,8 @@
       "id": "revision_required",
       "evidence": "the AI identified one or more task-local planning revisions",
       "consumer": {
-        "kind": "skill",
-        "id": "guru-approve-task-plan"
+        "kind": "workflow",
+        "id": "guru-task-plan-approval-revision-router"
       }
     },
     {
@@ -364,8 +372,8 @@
       {
         "exit_id": "revision_required",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-revision-required-1.0",
-          "path": "schemas/public-revision-required-output.schema.json"
+          "schema_id": "guru-production-approve-task-plan-output-revision-required-2.0",
+          "path": "schemas/public-revision-required-output-2.0.schema.json"
         },
         "example": {
           "id": "revision_required_output",
@@ -419,30 +427,16 @@
         }
       },
       {
-        "id": "revision_reentry_seed_input",
+        "id": "revision_workflow_input",
         "consumer": {
-          "kind": "skill",
-          "id": "guru-approve-task-plan"
+          "kind": "workflow",
+          "id": "guru-task-plan-approval-revision-router"
         },
         "payload_kind": "structured_json",
         "contract": {
-          "kind": "skill_input_authoring_seed",
-          "interface_path": "packages/guru-approve-task-plan/interface.json",
-          "input_kind": "structured_json",
-          "profile_id": "revision_reentry",
-          "seed_fields": [
-            "source_exit",
-            "task_ref"
-          ],
-          "authoring_fields": [
-            "profile",
-            "mode",
-            "reentry_reason"
-          ],
-          "authoring_example": {
-            "id": "revision_reentry_authoring",
-            "path": "examples/public-revision-reentry-authoring.json"
-          }
+          "kind": "json_schema",
+          "schema_id": "guru-production-approve-task-plan-revision-consumer-2.0",
+          "path": "consumers/workflow/production/approve-task-plan-revision-2.0.schema.json"
         }
       },
       {
@@ -477,18 +471,8 @@
       {
         "id": "project_revision_required",
         "exit_id": "revision_required",
-        "consumer_input_id": "revision_reentry_seed_input",
-        "operation": "rename",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "source_exit"
-          },
-          {
-            "source": "task_ref",
-            "target": "task_ref"
-          }
-        ]
+        "consumer_input_id": "revision_workflow_input",
+        "operation": "direct"
       },
       {
         "id": "project_clarify_scope",
@@ -509,8 +493,8 @@
         "id": "planning_approval",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-3.0.json",
-          "path": "schemas/planning-approval.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-4.0.json",
+          "path": "schemas/planning-approval-4.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

@@ -16,6 +16,7 @@ from test_discovery_stdin_integration import run_preset_install
 from test_readiness_transition_integration import producers
 from jsonschema import Draft202012Validator
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 SOURCE = Path(__file__).resolve().parents[5]
 
@@ -92,7 +93,11 @@ class InstalledIntakeProfilesTests(unittest.TestCase):
         (task_dir / "task.json").write_text(json.dumps(task))
         with (root / ".git/info/exclude").open("a") as stream:
             stream.write("\n.trellis/tasks/\n")
-        BranchBindingStore(inspect_repository(root)).establish(TaskLifecycleKey(task["id"], 0), "main")
+        repository = inspect_repository(root)
+        BranchBindingStore(repository).establish(TaskLifecycleKey(task["id"], 0), "main")
+        ResourceLedgerStore(repository).establish_current(
+            TaskLifecycleKey(task["id"], 0), binding_revision=0, branch_name="main",
+            branch_ownership="caller_owned", worktree_ownership="not_applicable")
         entries = [("standard_intake", "reuse"), ("reviewed_plan_intake", "reuse"),
                    ("active_task_scope_change", "no_issue"), ("active_task_scope_change", "reference_only"),
                    ("standalone_review", "no_issue")]
@@ -116,6 +121,8 @@ class InstalledIntakeProfilesTests(unittest.TestCase):
                 if profile == "standalone_review":
                     public["mode"] = owner["mode"] = transition["mode"] = "standalone"
                 if profile == "active_task_scope_change":
+                    owner["schema_version"] = "4.0"
+                    owner["revision_refs"] = []
                     owner["target_disposition"] = None
                     public.update(task_locator=task_ref, task_id=task["id"], lifecycle_generation=0)
                     owner["invocation_context"]["task_locator"] = task_ref
@@ -140,15 +147,43 @@ class InstalledIntakeProfilesTests(unittest.TestCase):
                         "proposed_contracts": ["task scope"], "cost": "Current planning reread.", "alternatives": ["Defer the added scope."],
                         "consequence_if_omitted": "The supported scope choice remains unresolved.", "origin_requirement_status": "explicit",
                         "optional_mechanism_origin": False, "decision": "accepted_current"}]
-                    owner["active_task_evidence"] = {"task_locator": task_ref, "github_authority_facts_sha256": owner["review_target"]["facts_sha256"],
-                        "planning_documents": [{"path": task_ref + "/" + name, "content_sha256": "1" * 64} for name in ("prd.md", "design.md", "implement.md")],
-                        "decision_trail": None, "reentry_owners": ["guru-approve-task-plan", "guru-check-task", "guru-review-branch"]}
-                owner["typed_exit"] = "clear"
+                    owner["active_task_evidence"] = {
+                        "task_locator": task_ref,
+                        "github_authority_facts_sha256": owner["review_target"]["facts_sha256"],
+                        "decision_trail": None,
+                    }
+                    owner["revision_refs"] = [discovery["handoff_target_locator"] + "#current-scope"]
+                owner["typed_exit"] = "scope_ready" if profile == "active_task_scope_change" else "clear"
                 owner["consumer"] = {"kind": "workflow", "id": "guru-requirements-clear-router"}
                 owner["context_evidence"] = clarity_owner["context_evidence"]
                 cleared = self.clarify(root, env, public, transition, owner)
-                self.assertEqual(profile, cleared["profile"])
-                self.assertEqual(owner["invocation_context"]["resume_target"], cleared["resume_target"])
+                if profile == "active_task_scope_change":
+                    self.assertEqual("scope_ready", cleared["exit_id"])
+                    projected = self.project(root, "guru-clarify-requirements", cleared)
+                    self.assertEqual(cleared, projected)
+                    author_input = {key: value for key, value in projected.items() if key != "exit_id"}
+                    author_input["profile"] = "active_task_scope_change"
+                    author_package = root / ".trellis/guru-team/skills/packages/guru-author-task-plan"
+                    schema = json.loads((author_package / "schemas/public-active-task-scope-change-input.schema.json").read_text())
+                    self.assertEqual([], list(Draft202012Validator(schema).iter_errors(author_input)))
+                    # Prove scope readiness before any planning exists, then exercise the original writer's wrapper.
+                    self.assertFalse((task_dir / "design.md").exists())
+                    self.assertFalse((task_dir / "implement.md").exists())
+                    (task_dir / "prd.md").write_text("# Fixture requirements\nCurrent source scope is retained.\n")
+                    input_path = self.work / "author-active-input.json"
+                    input_path.write_text(json.dumps(author_input))
+                    author_owner = {"public_input": author_input,
+                        "output": {"exit_id": "requirements_ready", "task_ref": task_ref,
+                                   "candidate": {"design_facts": ["Retain the existing interface owner."],
+                                                 "constraint_refs": owner["revision_refs"]}},
+                        "ai_review_gate": {"status": "passed", "summary": "Deterministic fixture gate; not native AI semantic evidence."}}
+                    invoked = transcript.run([author_package / "scripts/invoke.sh", "--input", input_path, "--owner-result", "-"],
+                                             cwd=root, env=env, stdin=author_owner)
+                    self.assertEqual("requirements_ready", json.loads(invoked.stdout)["exit_id"])
+                    self.assertEqual("in_progress", json.loads((task_dir / "task.json").read_text())["status"])
+                else:
+                    self.assertEqual(profile, cleared["profile"])
+                    self.assertEqual(owner["invocation_context"]["resume_target"], cleared["resume_target"])
         # A normal generation change requires fresh active input, not a preserved old return.
         task["lifecycle_generation"] = 1
         (task_dir / "task.json").write_text(json.dumps(task))

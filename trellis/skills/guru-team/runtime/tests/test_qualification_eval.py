@@ -909,12 +909,12 @@ class QualificationEvalTests(unittest.TestCase):
     def test_current_manifest_binds_real_ten_profile_matrix_without_private_artifact(self) -> None:
         trellis_root = SKILLS.parents[1]
         manifest = json.loads(
-            (SKILLS / "contracts/production-current-4.0.json").read_text(encoding="utf-8")
+            (SKILLS / "contracts/production-current-5.0.json").read_text(encoding="utf-8")
         )
         eval_runner.validate_instance(
             manifest,
-            SKILLS / "schemas/production-contract-manifest-4.0.schema.json",
-            "production_current_v4",
+            SKILLS / "schemas/production-contract-manifest-5.0.schema.json",
+            "production_current_v5",
         )
         package = SKILLS / "packages/guru-qualify-normal-scenario"
         interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
@@ -933,7 +933,7 @@ class QualificationEvalTests(unittest.TestCase):
         self.assertEqual(qualification["private_artifact_ids"], [])
         self.assertEqual(
             set(qualification["input_profile_ids"]),
-            eval_runner.QUALIFICATION_PROFILES,
+            eval_runner.QUALIFICATION_PROFILES | {"author_candidate_set"},
         )
         self.assertEqual(
             {item["exit_id"] for item in qualification["exit_bindings"]},
@@ -961,16 +961,16 @@ class QualificationEvalTests(unittest.TestCase):
                 if item["input_profile_id"] == binding["profile_id"]
             ]
             self.assertEqual(binding["eval_case_selector"]["expected_case_count"], len(rows))
-            self.assertEqual(len(rows), 16)
+            self.assertEqual(len(rows), 0 if binding["profile_id"] == "author_candidate_set" else 16)
         extension = json.loads(
             (trellis_root / "guru-team-extension.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
             extension["public_api"]["skill_contracts"]["contract_manifests"],
             [{
-                "id": "production-current-v4",
-                "schema_id": "guru-team-production-contract-manifest-4.0",
-                "path": "contracts/production-current-4.0.json",
+                "id": "production-current-v5",
+                "schema_id": "guru-team-production-contract-manifest-5.0",
+                "path": "contracts/production-current-5.0.json",
             }],
         )
         self.assertEqual(
@@ -985,7 +985,7 @@ class QualificationEvalTests(unittest.TestCase):
         )
         self.assertEqual(
             (SKILLS / "contracts/production-current.json").read_bytes(),
-            (SKILLS / "contracts/production-current-4.0.json").read_bytes(),
+            (SKILLS / "contracts/production-current-5.0.json").read_bytes(),
         )
         self.assertTrue((SKILLS / "contracts/production-current-2.0.json").is_file())
 

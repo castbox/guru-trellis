@@ -51,7 +51,24 @@ round's semantic authority. Emit exactly one declared typed exit. Missing,
 stale, ambiguous, multiple, unmapped, or checker-failed evidence fails closed.
 
 
-At this candidate boundary, consume actual normal-scenario and solution-mechanism
+## Actual Candidate Set
+
+Complete all ten dimensions and the current conclusions before forming the
+actual candidate set. If there is no real candidate, use
+`candidate_classifications=[]` and invoke none of the three nonempty-only
+qualification owners. Reviewed files, delivered features and passing checks do
+not become no-defect candidates. An empty set does not establish `ready`:
+Architecture, Docs/RDT, complete Branch Review, Delivery policy, evidence,
+freshness, truthful Refs-only payload and every route condition still apply.
+
+For real candidates, use the existing normal-scenario and solution-mechanism
+owners with `publication_candidate_set`, then root-cause qualification for
+eligible refs. Preserve actual terminal classifications and witnesses,
+including nonempty all-rejected sets. Every finding and proposal still binds a
+classified candidate; neither can be attached to an empty set. The original
+planning, implementation, scope and blocked exits remain unchanged.
+
+For a nonempty actual candidate set at this boundary, consume actual normal-scenario and solution-mechanism
 outcomes before loading `guru-qualify-root-cause` with `publication_candidate_set`. Supply only eligible
 refs. New or materially changed incident/protection mechanisms enter that owner;
 ordinary features receive its stable applicability disposition. Consume a

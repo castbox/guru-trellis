@@ -90,7 +90,7 @@ def production_planning_input(
     }
     consumers = {
         "approved": {"kind": "workflow", "id": "phase-1-task-activation"},
-        "revision_required": {"kind": "skill", "id": "guru-approve-task-plan"},
+        "revision_required": {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"},
         "clarify_scope": {
             "kind": "workflow", "id": "guru-task-plan-clarify-scope-router",
         },
@@ -196,23 +196,7 @@ def production_phase2_input(
     scope_decisions: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
     unverified_items: list[dict[str, Any]] = []
-    candidate_classifications = [{
-        "candidate_ref": "candidate:phase2:no-defect",
-        "decision": "rejected_not_reproduced",
-        "witness": {
-            "requirement_refs": ["task:prd:R1"],
-            "supported_entry_refs": ["entry:guru-check-task:phase2"],
-            "existing_caller_refs": ["caller:production-phase2-eval"],
-            "honest_action_sequence": [
-                "run the installed Phase 2 owner through its supported entry",
-            ],
-            "defect_observation": (
-                "The supported production eval path does not reproduce a task defect."
-            ),
-            "excluded_assumptions": [],
-        },
-        "consumer_use": "task_commit_preflight",
-    }]
+    candidate_classifications: list[dict[str, Any]] = []
     route = None
     consumer = {
         "passed": {"kind": "skill", "id": "guru-create-task-commit"},

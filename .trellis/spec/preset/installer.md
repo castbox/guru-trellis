@@ -704,7 +704,7 @@ Python dependency imports are not product-runtime evidence.
 
 ## Production Skill Atomic Activation
 
-`production-current-v4` is the sole current planning/check/commit/qualification
+`production-current-v5` is the sole current planning/check/commit/qualification
 contract. The preset stages its schema, manifest, four public package projections, consumer
 schemas, registry, extension inventory, installed provenance, and selected
 platform copies in one transaction. The transaction validates the complete
@@ -720,9 +720,10 @@ executable modes without `.new` or `.bak` sidecars.
 transaction as registry, extension inventory, shared consumers, Interface
 schema, runtime, workflow and selected platform copies. It extends the active
 closure to ten Skills and 39 exits without changing the then-current legacy
-production manifest's three-Skill/11-exit membership. The current v4 manifest
+production manifest's three-Skill/11-exit membership. The current v5 manifest
 includes qualification and the current
-committed consumer/projection binding and four authoring-seed edges.
+committed consumer/projection binding and three authoring-seed edges. Approval
+revision now reaches Author through its workflow router.
 
 The current installation routes Branch Review `passed` through its declared
 continue entries to Delivery Review. Delivery publication and merge keep the
@@ -807,8 +808,8 @@ Finalizer plan can satisfy this entry contract.
 
 Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, and descriptor-selected platform package/corpus byte identity,
-wrapper executable modes, the current 35-Skill/159-package-exit/106-command
-closure and 33-invoke/153-production-exit workflow graph, and current
+wrapper executable modes, the package closure and workflow graph derived from
+the current registry/interfaces by the declared package and workflow checkers, and current
 ownership schema 4.0 with 22 descriptors, 43 managed claims, and 22 overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 

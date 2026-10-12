@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-output-plan-ready-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "plan_ready"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

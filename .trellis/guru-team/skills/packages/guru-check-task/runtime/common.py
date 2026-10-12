@@ -114,7 +114,7 @@ def dirty_paths(repo):
  return sorted(set(out))
 def validate_candidate_classifications(payload):
  rows=payload.get("candidate_classifications")
- if not isinstance(rows,list) or not rows:raise CommandError("schema_mismatch","candidate_classifications","Record the complete non-empty current candidate set.")
+ if not isinstance(rows,list):raise CommandError("schema_mismatch","candidate_classifications","Record the complete current candidate set as an array, including an empty array when no candidates were observed.")
  refs=[row.get("candidate_ref") for row in rows if isinstance(row,dict)]
  if len(refs)!=len(rows) or len(set(refs))!=len(refs):raise CommandError("schema_mismatch","candidate_classifications","Candidate refs must be unique and complete.")
  known=set(refs)

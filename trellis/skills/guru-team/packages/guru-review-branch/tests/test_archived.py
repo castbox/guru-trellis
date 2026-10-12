@@ -184,13 +184,24 @@ class ArchivedReviewTest(unittest.TestCase):
     def test_open_finding_remains_truthful_blocked_and_retires(self):
         semantic = self.auth("blocked")
         semantic["semantic_review"]["qualified_findings"] = [{
-            "candidate_ref": "candidate-no-defect", "disposition": "qualified_finding",
+            "candidate_ref": "candidate:missing-behavior", "disposition": "qualified_finding",
             "affected_behavior": "Current documented behavior is absent.", "path": "app.txt",
             "evidence_refs": ["diff:app.txt"], "finding_ref": "finding:missing-behavior",
             "severity": "P2", "introduced_head": self.head, "fix_head": None,
             "closure_head": None, "status": "open", "closure_evidence": [],
         }]
-        semantic["candidate_classifications"][0]["decision"] = "qualified_current"
+        semantic["candidate_classifications"] = [{
+            "candidate_ref": "candidate:missing-behavior", "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["archived PRD required behavior"],
+                "supported_entry_refs": ["entry:archived-review"],
+                "existing_caller_refs": ["caller:guru-review-branch"],
+                "honest_action_sequence": ["Review current archive content against its required behavior."],
+                "defect_observation": "Current documented behavior is absent from app.txt.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "branch_review_route_checker",
+        }]
         self.record("blocked", semantic)
         self.assertEqual("open", json.loads(self.checkpoint().read_text())["semantic_review"]["qualified_findings"][0]["status"])
         self.assertEqual({"exit_id": "blocked"}, self.invoke())

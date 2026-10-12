@@ -136,7 +136,8 @@ def next_intake_owner(skill: str, output: dict[str, Any], interface: dict[str, A
     consumer = next(row["consumer"] for row in interface["external_exits"] if row["id"] == output["exit_id"])
     target = consumer["id"]
     if target == "guru-requirements-clear-router":
-        target = output["resume_target"]
+        # scope_ready leaves this Intake-only adapter for the original Author.
+        target = "guru-author-task-plan" if output["exit_id"] == "scope_ready" else output["resume_target"]
     elif target == "guru-contract-wording-pass-router":
         target = INTAKE_SKILLS[4] if output["profile"] == "change_request" else None
     index = INTAKE_SKILLS.index(skill)

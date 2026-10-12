@@ -1,0 +1,30 @@
+{
+  "public_input": {
+    "profile": "initial_review",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/10-11-sample-planning",
+    "source_selection": [
+      {
+        "locator": "issue:example/repo#12",
+        "section": "Design A",
+        "authority_kind": "design_constraint"
+      }
+    ]
+  },
+  "output": {
+    "exit_id": "requirements_ready",
+    "task_ref": ".trellis/tasks/10-11-sample-planning",
+    "candidate": {
+      "design_facts": [
+        "Keep current service ownership."
+      ],
+      "constraint_refs": [
+        "issue:example/repo#12 Design A"
+      ]
+    }
+  },
+  "ai_review_gate": {
+    "status": "passed",
+    "summary": "Illustrative owner result; actual invocation requires current AI source and candidate review."
+  }
+}

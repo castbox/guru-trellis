@@ -54,10 +54,10 @@ class SolutionMechanismQualificationContractTest(unittest.TestCase):
         self.assertEqual(1, len(rows))
         self.assertEqual("guru-team-skill-interface-1.6", rows[0]["interface_schema_id"])
 
-    def test_interface_declares_ten_profiles_eleven_decisions_four_exits_and_no_artifacts(self) -> None:
+    def test_interface_declares_eleven_profiles_eleven_decisions_four_exits_and_no_artifacts(self) -> None:
         interface = self.load(PACKAGE / "interface.json")
         profiles = interface["public_contracts"]["input"]["profiles"]
-        self.assertEqual(10, len(profiles))
+        self.assertEqual(11, len(profiles))
         self.assertEqual({row["id"] for row in profiles}, {row["discriminator"]["value"] for row in profiles})
         decisions = self.load(PACKAGE / "schemas/semantic-result.schema.json")["$defs"]["candidateResult"]["properties"]["decision"]["enum"]
         self.assertEqual(11, len(decisions))
@@ -167,13 +167,13 @@ class SolutionMechanismQualificationContractTest(unittest.TestCase):
     def test_consumer_contracts_are_independently_owned_and_projection_complete(self) -> None:
         interface = self.load(PACKAGE / "interface.json")
         contracts = {row["id"]: row for row in interface["public_contracts"]["consumer_inputs"]}
-        self.assertEqual("consumers/workflow/production/solution-mechanism-classified-router.schema.json", contracts["classified_router_input"]["contract"]["path"])
+        self.assertEqual("consumers/workflow/production/solution-mechanism-classified-router-2.0.schema.json", contracts["classified_router_input"]["contract"]["path"])
         self.assertEqual("solution_mechanism_scope_confirmation", contracts["scope_confirmation_requirements_input"]["contract"]["profile_id"])
-        self.assertEqual("consumers/workflow/production/solution-mechanism-mechanism-router.schema.json", contracts["mechanism_router_input"]["contract"]["path"])
+        self.assertEqual("consumers/workflow/production/solution-mechanism-mechanism-router-2.0.schema.json", contracts["mechanism_router_input"]["contract"]["path"])
         self.assertEqual("consumers/stop/production/solution-mechanism-qualification-blocked.schema.json", contracts["blocked_stop_input"]["contract"]["path"])
         for output_name, consumer_path in (
-            ("public-classified-output.schema.json", "consumers/workflow/production/solution-mechanism-classified-router.schema.json"),
-            ("public-mechanism-revision-required-output.schema.json", "consumers/workflow/production/solution-mechanism-mechanism-router.schema.json"),
+            ("public-classified-output-2.0.schema.json", "consumers/workflow/production/solution-mechanism-classified-router-2.0.schema.json"),
+            ("public-mechanism-revision-required-output-2.0.schema.json", "consumers/workflow/production/solution-mechanism-mechanism-router-2.0.schema.json"),
             ("public-blocked-output.schema.json", "consumers/stop/production/solution-mechanism-qualification-blocked.schema.json"),
         ):
             self.assertEqual(self.load(PACKAGE / "schemas" / output_name)["required"], self.load(SKILLS / consumer_path)["required"])

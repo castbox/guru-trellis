@@ -1,8 +1,8 @@
 {
-  "$schema": "../schemas/production-contract-manifest-4.0.schema.json",
-  "schema_id": "guru-team-production-contract-manifest-4.0",
-  "schema_version": "4.0",
-  "contract_id": "production-current-v4",
+  "$schema": "../schemas/production-contract-manifest-5.0.schema.json",
+  "schema_id": "guru-team-production-contract-manifest-5.0",
+  "schema_version": "5.0",
+  "contract_id": "production-current-v5",
   "registry_schema_id": "guru-team-skill-registry-1.4",
   "activation_policy": "preset_transaction",
   "production_eval_control": {
@@ -51,15 +51,6 @@
     "guru-qualify-normal-scenario"
   ],
   "authoring_seed_edges": [
-    {
-      "producer_skill_id": "guru-approve-task-plan",
-      "exit_id": "revision_required",
-      "consumer_skill_id": "guru-approve-task-plan",
-      "profile_id": "revision_reentry",
-      "consumer_input_id": "revision_reentry_seed_input",
-      "projection_id": "project_revision_required",
-      "authoring_example_id": "revision_reentry_authoring"
-    },
     {
       "producer_skill_id": "guru-check-task",
       "exit_id": "passed",
@@ -131,9 +122,9 @@
         },
         {
           "exit_id": "revision_required",
-          "output_schema_id": "guru-production-approve-task-plan-output-revision-required-1.0",
+          "output_schema_id": "guru-production-approve-task-plan-output-revision-required-2.0",
           "output_example_id": "revision_required_output",
-          "consumer_input_id": "revision_reentry_seed_input",
+          "consumer_input_id": "revision_workflow_input",
           "projection_id": "project_revision_required",
           "eval_case_ids": [
             "revision-required"
@@ -175,7 +166,8 @@
       "input_profile_ids": [
         "initial_check",
         "finding_fix_rerun",
-        "planning_reentry"
+        "planning_reentry",
+        "resolved_reconciliation"
       ],
       "profile_case_bindings": [
         {
@@ -341,7 +333,8 @@
         "base_impact_candidate_set",
         "phase2_candidate_set",
         "branch_review_candidate_set",
-        "publication_candidate_set"
+        "publication_candidate_set",
+        "author_candidate_set"
       ],
       "profile_case_bindings": [
         {
@@ -553,12 +546,19 @@
             ],
             "expected_case_count": 16
           }
+        },
+        {
+          "profile_id": "author_candidate_set",
+          "eval_case_selector": {
+            "input_profile_id": "author_candidate_set",
+            "expected_case_count": 0
+          }
         }
       ],
       "exit_bindings": [
         {
           "exit_id": "classified",
-          "output_schema_id": "guru-normal-scenario-output-classified-1.0",
+          "output_schema_id": "guru-normal-scenario-output-classified-2.0",
           "output_example_id": "classified_output",
           "consumer_input_id": "classified_router_input",
           "projection_id": "project_classified",
@@ -569,7 +569,7 @@
         },
         {
           "exit_id": "scope_confirmation_required",
-          "output_schema_id": "guru-normal-scenario-output-scope-confirmation-required-1.0",
+          "output_schema_id": "guru-normal-scenario-output-scope-confirmation-required-2.0",
           "output_example_id": "scope_confirmation_required_output",
           "consumer_input_id": "scope_confirmation_requirements_input",
           "projection_id": "project_scope_confirmation_required",
@@ -580,7 +580,7 @@
         },
         {
           "exit_id": "mechanism_revision_required",
-          "output_schema_id": "guru-normal-scenario-output-mechanism-revision-required-1.0",
+          "output_schema_id": "guru-normal-scenario-output-mechanism-revision-required-2.0",
           "output_example_id": "mechanism_revision_required_output",
           "consumer_input_id": "mechanism_router_input",
           "projection_id": "project_mechanism_revision_required",

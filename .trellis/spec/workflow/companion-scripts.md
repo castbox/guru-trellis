@@ -439,9 +439,14 @@ hash, size, mtime, absolute path, and freshness facts before serialization.
 Those runtime-derived facts are never required from the Agent-facing public
 input.
 
-The clarification serializer treats `target_disposition=null` as public
+For terminal non-current decisions only, the clarification serializer treats `target_disposition=null` as public
 `retained` only for a checker-passed `active_task_scope_change` clear result.
 Initial and standalone null dispositions continue to fail closed.
+Active accepted_current uses private 4.0 and scope_ready 1.0 instead. The
+recorder/checker select the schema and validate supplied content; they neither
+write planning nor reread GitHub. Invoke validates live TaskId/generation and
+the caller-aware task/context envelope, then directly projects AI-selected
+revision_refs. Record/check arguments and stdout receipt contracts stay stable.
 
 The Agent remains the semantic owner of scope, adequacy, findings, confirmation,
 and typed route for semantic packages. Runtime may only validate the declared
@@ -570,7 +575,7 @@ dispatch to these same commands; no parallel artifact or
 second runtime implementation is allowed.
 
 The recorder consumes one already completed AI semantic result and writes the
-closed `guru-planning-approval-3.0` projection to the owner-private ignored
+closed `guru-planning-approval-4.0` projection to the owner-private ignored
 runtime checkpoint. It validates the exact authored field set, mode, current
 task/planning locators, non-empty required planning files, unique authority
 refs, compact Docs SSOT shape, semantic/exit/consumer union, and output schema.
