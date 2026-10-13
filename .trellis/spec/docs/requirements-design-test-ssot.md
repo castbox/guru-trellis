@@ -2,8 +2,17 @@
 
 ## Current identity
 
-- version：`current-main-0.6.17-guru.88`
+- version：`current-main-0.6.17-guru.89`
 - status：`active`
+- Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.89`，完整薄继承 immutable `.88` 并承接 reviewed #530 contribution。
+- Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.86` / `active`。
+- 结果 authority：`docs/requirements-design-test-contributions/530-clean-committed-reentry/test.md`；scope-required 分层结果、历史失败及未验证边界只由唯一 Test 拥有；晋升差异须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview。
+- 双向 trace：`R530/BEH530 -> D530/CON530 -> T530`，durable canonical/contribution locators 拥有长期正文，不依赖 active Task 移动路径。
+
+## Immutable .88 predecessor provenance
+
+- version：`current-main-0.6.17-guru.88`
+- status：`superseded`
 - Requirements / Design / Test：各层 `docs/**/README.md` 指向 `.88`，完整薄继承 immutable `.87` 并承接 reviewed #292 contribution。
 - Architecture inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.85` / `active`。
 - 结果authority：`docs/requirements-design-test-contributions/292-unique-planning-author/test.md`；scope-required分层结果、历史失败及未验证边界仅由唯一Test拥有。晋升差异须fresh Phase2/TaskCommit/不同reviewer完整Branch；Delivery、Publication、Merge、Completion、Closure、Finish和Release各由原owners判断。
@@ -36,4 +45,4 @@
 
 ## Freshness
 
-每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.88` 薄继承 immutable `.87`，承接 R292/BEH292、D292、T292 增量，Architecture继承 `.85/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。
+每次 gate 重读三个 README 的 current locator/version/status、Architecture public identity、live task delta 与 source binding。缺失/冲突/trace断裂/projection落后进入原 owner repair。当前 RDT `.89` 薄继承 immutable `.88`，承接 R530/BEH530、D530/CON530、T530 增量，Architecture 继承 `.86/active`。软件四轴与知识版本独立；前驱历史身份及证据保持不可变。当前晋升diff须fresh Phase2/TaskCommit/独立完整BranchReview；Publication、merge、Completion、Closure、Finish及Release分别由原owners判断，不由知识晋升推定。

@@ -1,6 +1,6 @@
 # #530 设计职责
 
-状态：implementation_candidate。架构由[任务 contribution](../../architecture/contributions/530-clean-committed-reentry.md)拥有。Step-local SSOT 为 canonical TaskCommit contract，workflow 只编排。
+状态：promoted / current-main-0.6.17-guru.89。架构由[任务 contribution](../../architecture/contributions/530-clean-committed-reentry.md)拥有。Step-local SSOT 为 canonical TaskCommit contract，workflow 只编排。
 
 | Design responsibility / contract | 唯一职责与直接 consumer |
 | --- | --- |

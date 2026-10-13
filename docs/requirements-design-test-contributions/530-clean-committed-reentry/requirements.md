@@ -1,6 +1,6 @@
 # #530 增量需求
 
-状态：implementation_candidate；Direct Source：[Guru #530](https://github.com/castbox/guru-trellis/issues/530)。原 TaskId `issue-530-clean-committed-reentry` / generation 0。此增量尚未晋升共享 authority。
+状态：promoted / current-main-0.6.17-guru.89；Direct Source：[Guru #530](https://github.com/castbox/guru-trellis/issues/530)。原 TaskId `issue-530-clean-committed-reentry` / generation 0。此增量由原 owner 晋升至共享 .89 authority；.88 为 immutable predecessor。
 
 | Requirement / behavior | 必须行为 |
 | --- | --- |

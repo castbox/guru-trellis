@@ -1,8 +1,8 @@
-# #530 Architecture Phase 2 contribution
+# #530 reviewed Architecture contribution
 
-当前 HEAD `9535f61b423e52e3945426b29102a8ed7e4059c2` 上完整 tracked/untracked 候选的独立判断为 `architecture_impact / target_native`。原 TaskCommit 只读承接已有 committed candidate，Check、Reconcile、BranchReview 继续分别拥有原内容检查、整合提交与完整独立审查。当前 authority 为 active `.85`；未复用旧 `.84` pass。
+原 Phase2 候选位于 HEAD `9535f61b423e52e3945426b29102a8ed7e4059c2`，首次完整独立 committed review 位于 `origin/main@8b55f624114accb0b19562dee296b582d178a17d...d7cde2f062a25b43fe1f554b3187506457225820`。同原 TaskCommit/Check/Reconcile/BranchReview owners 的 `architecture_impact / target_native` 机制保持。原 `.85` 是晋升来源；`.86` 为本次 expected-current successor。
 
-本轮只拥有 Phase 2 架构候选判断。实际本任务 committed full-diff review、shared promotion 和 downstream lifecycle 尚未执行；验证层次与 official init/update/upgrade、Backend、Release 未验证边界仅由唯一 Test 文档承接。
+本贡献只承接必要的架构身份、职责、独立 committed range 与 promotion；原 Phase2 project-check 摘要是历史证据，新阶段必须本人重新判断。晋升产生的 diff 尚须 fresh gates；实际测试及外部未验证边界由[唯一Test](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)拥有，不声明软件发布或 backend 效果。
 
 ```json
 {
@@ -85,7 +85,7 @@
     {
       "id": "review-and-promotion",
       "applicability": "applicable",
-      "rationale": "本轮仅Phase2 reviewed_candidate，review pending/无committed range；无必要ADR。实际committed full-diff Architecture和BranchReview仍须由fresh独立owner执行，shared promotion随后绑定当时live expected current；promotion diff再fresh Phase2/TaskCommit/完整审查，未晋升不进入Publication/Finish。"
+      "rationale": "独立 Architecture(branch_review) 与首次完整 BranchReview 已绑定 prepromotion origin/main8b55...d7cde...；shared-current successor .86 继承 expected .85，由原 owner 串行晋升。无必要ADR；晋升新增diff须freshPhase2/TaskCommit/不同reviewer完整审查后才进入Delivery。"
     }
   ],
   "owner_transition": {
@@ -227,13 +227,17 @@
     "reason": "实际owner/state/consumer图保持ARCH-DOM-021/016/038与ADR-005/009/011/015边界；仅补同owner additive input，不改变decision/principle exception/GAP/single-writer/compatibility exit。"
   },
   "review": {
-    "status": "pending",
-    "independent": false,
-    "committed_range": null
+    "status": "reviewed",
+    "independent": true,
+    "committed_range": {
+      "base_ref": "origin/main",
+      "base_head": "8b55f624114accb0b19562dee296b582d178a17d",
+      "review_head": "d7cde2f062a25b43fe1f554b3187506457225820"
+    }
   },
   "promotion": {
-    "state": "required",
-    "promoted_identity": ""
+    "state": "reviewed_promoted",
+    "promoted_identity": "current-main-0.6.17-guru.86"
   }
 }
 ```
