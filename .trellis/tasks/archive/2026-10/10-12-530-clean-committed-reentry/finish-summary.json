@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-13T00:39:16Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-12-530-clean-committed-reentry",
+    "title": "修复 post_commit Reconcile 后已提交候选的 Phase 2→Branch Review 接续",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-12-530-clean-committed-reentry",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/530-clean-committed-reentry",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "修复 post_commit Reconcile 后已提交候选的 Phase 2→Branch Review 接续",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry",
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/design.md",
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/implement.md",
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/prd.md",
+          ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#530"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/530-clean-committed-reentry"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry",
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/design.md",
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/implement.md",
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/prd.md",
+        ".trellis/tasks/archive/2026-10/10-12-530-clean-committed-reentry/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复 post_commit Reconcile 后已提交候选的 Phase 2→Branch Review 接续；#530；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
