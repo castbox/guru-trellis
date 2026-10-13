@@ -1,5 +1,43 @@
 # `guru-create-task-commit` Contract
 
+## Committed Re-entry
+
+After fresh Phase 2 passed and the `post_check` pair guard is unchanged,
+TaskCommit reads the full current Git state. A dirty task uses the existing
+prepare/exact-commit route below. A completely clean existing task range uses
+`profile=committed_reentry`; missing or ambiguous facts stop at the existing
+owner. Never create artificial dirty files, an empty commit, or a caller-made
+committed DTO.
+
+Complete the TaskCommit semantic gate against current task scope, complete
+selected-base...HEAD, fresh Phase 2 and the existing commit. Invoke once:
+`scripts/invoke.sh --root <checkout> --committed-reentry -` with one stdin
+JSON envelope containing `public_input` (the closed profile, mode, task_ref,
+source_exit=passed and phase2_commit_anchor) and `owner_result` (only current
+status, concrete summary and evidence). This is a read-only candidate path;
+it has no commit action to confirm and no message/stage authoring.
+
+The original Phase 2 public checker verifies reviewed content, dirty-path
+coverage and capture ancestry through its current intermediate receipt.
+TaskCommit explicitly consumes receipt.result and additionally requires
+passed checkpoint capture, adjacent passed anchor and HEAD to be identical,
+matching mode/task, in_progress TaskId/generation and registered branch
+checkout, full clean status/index, no active merge/cherry-pick/revert/rebase/
+sequencer/am state, selected-base ancestry, nonempty committed range and current
+task metadata committed at HEAD. Stale evidence re-enters fresh Phase 2;
+an evolved base re-enters the existing pair guard/Reconcile; unresolved Git
+operations stay with their existing recovery owner.
+
+On semantic passed, validate and emit the existing committed DTO then retire
+only the consumed Phase 2 checkpoint. No candidate, receipt, commit, hooks,
+ref/index writes, tracked progress file or persistent state are created.
+Revision-required or blocked retain the checkpoint. The three invoke argument
+shapes are mutually exclusive; this path never uses compatibility --invocation.
+Both committed paths enter the original post_commit pair guard, fresh
+Architecture(branch_review), and first independent full-range Branch Review.
+Finding-fix/fresh-final intent stays with its original closure/recovery caller;
+this entry never declares Branch Review passed or substitutes continuity.
+
 ## Entry And Candidate
 
 Workflow and standalone mode perform the same six preconditions. Read the
@@ -74,7 +112,7 @@ ambiguous.
 
 ### Public Happy Path
 
-The unique recommended normal path is one
+The recommended dirty normal path is one
 `scripts/prepare-task-commit.sh` call followed, after the unchanged action is
 confirmed in the current conversation, by one
 `scripts/invoke.sh --candidate-artifact <prepared-locator>` call. Its stable

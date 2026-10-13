@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
-  "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
+  "description": "Create an exact reviewed task commit or verify a clean existing committed candidate after fresh Phase 2, preserving independent full Branch Review.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -40,7 +40,7 @@
     {
       "id": "task_identity",
       "evidence": "task.json and candidate task object",
-      "binding": "task id, repo-relative directory, branch and in_progress status",
+      "binding": "TaskId/generation, repo-relative directory, registered branch/checkout and in_progress status",
       "freshness": "files and current branch still match"
     },
     {
@@ -127,6 +127,14 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_input_committed_reentry_example",
+      "path": "examples/public-committed-reentry-input.json"
+    },
+    {
+      "id": "committed_reentry_envelope_example",
+      "path": "examples/committed-reentry-envelope.json"
     }
   ],
   "schemas": [
@@ -173,6 +181,14 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_input_committed_reentry",
+      "path": "schemas/public-committed-reentry-input.schema.json"
+    },
+    {
+      "id": "committed_reentry_envelope",
+      "path": "schemas/committed-reentry-envelope.schema.json"
     }
   ],
   "validators": [
@@ -198,7 +214,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-create-task-commit",
-      "objective_scope": "Sole public entry: prepared-candidate Happy Path with one mutation-boundary validation, exact transaction, typed-exit projection and same-commit stdout-loss recovery; old --invocation envelopes select compatibility projection only"
+      "objective_scope": "Sole public entry: prepared dirty candidate with exact transaction and same-commit recovery, or mutually exclusive committed_reentry stdin with current Phase2 checker receipt and exact clean HEAD/base/task verification; old --invocation selects compatibility projection only"
     }
   ],
   "external_exits": [
@@ -228,13 +244,14 @@
     }
   ],
   "reentry": {
-    "identity": "task id, sequence, passed DTO phase2_commit_anchor and pre-commit HEAD",
+    "identity": "TaskId/generation, passed DTO phase2_commit_anchor and current HEAD; dirty candidate additionally binds sequence",
     "freshness": "the minimal Phase 2 result, live task, Git state and complete dirty snapshot still match",
     "stale_behavior": "fail_closed"
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_happy_path.py"
+    "tests/test_happy_path.py",
+    "tests/test_committed_reentry.py"
   ],
   "platform_destinations": [
     "shared",
@@ -327,6 +344,21 @@
           "discriminator": {
             "field": "profile",
             "value": "recovery_resume"
+          }
+        },
+        {
+          "id": "committed_reentry",
+          "schema": {
+            "schema_id": "guru-production-create-task-commit-input-committed-reentry-1.0",
+            "path": "schemas/public-committed-reentry-input.schema.json"
+          },
+          "example": {
+            "id": "committed_reentry_input",
+            "path": "examples/public-committed-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "committed_reentry"
           }
         }
       ]

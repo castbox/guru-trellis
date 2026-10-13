@@ -1,0 +1,6 @@
+{
+  "scenario": "The fixture first obtains an actual dirty TaskCommit candidate, then fresh Phase2 passed at the clean committed HEAD; the owner re-enters through its sole formal readonly profile.",
+  "owner_evidence": {"semantic_gate": "passed", "checker_required": true},
+  "owner_staging": {"recipe": "commit-committed-reentry"},
+  "public_invocation": {"arguments": ["--committed-reentry", "-"]}
+}

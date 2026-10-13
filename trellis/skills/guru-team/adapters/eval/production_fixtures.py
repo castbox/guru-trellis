@@ -431,6 +431,44 @@ def production_commit_for_review(
         raise ValueError("production Branch Review fixture retained its consumed candidate")
     return str(executed["commit_sha"]), str(candidate["git"]["base_ref"])
 
+def production_committed_reentry_invocation(
+    runtime: Any, fixture: Path, task: Path, checked: dict[str, Any],
+    public_input: dict[str, Any],
+) -> None:
+    """Stage clean reentry from actual Check and TaskCommit public outputs."""
+    packages = fixture / ".trellis/guru-team/skills/packages"
+    task_ref = task.relative_to(fixture).as_posix()
+
+    def invoke(skill: str, *arguments: str) -> dict[str, Any]:
+        process = subprocess.run(
+            [str(packages / skill / "scripts/invoke.sh"), *arguments, "--json"],
+            cwd=fixture, text=True, capture_output=True, check=False,
+        )
+        if process.returncode:
+            raise ValueError(process.stderr.strip() or process.stdout.strip())
+        return json.loads(process.stdout)
+
+    check_input = {"profile": "initial_check", "mode": "workflow", "task_ref": task_ref, "source_exit": "implementation_complete"}
+    check_path = fixture / OWNER_INPUT
+    runtime.write_json(check_path, check_input)
+    passed = invoke("guru-check-task", "--root", str(fixture), "--input", str(check_path), "--owner-result", checked["artifact_path"])
+    dirty_input = {"profile": "initial_commit", "mode": "workflow", "task_ref": passed["task_ref"], "source_exit": passed["exit_id"], "phase2_commit_anchor": passed["phase2_commit_anchor"]}
+    candidate_path, _candidate, _prepared = production_prepare_task_commit(
+        runtime, fixture, dirty_input,
+        production_task_commit_authoring(runtime, fixture, checked, "passed"),
+    )
+    committed = invoke("guru-create-task-commit", "--root", str(fixture), "--candidate-artifact", str(candidate_path))
+    if committed["branch_review_commit"] != run_git(fixture, "rev-parse", "HEAD") or run_git(fixture, "status", "--porcelain"):
+        raise ValueError("committed reentry fixture did not produce a clean exact TaskCommit candidate")
+    fresh = production_record_phase2(runtime, fixture, task, packages / "guru-check-task", "passed")
+    runtime.write_json(check_path, check_input)
+    passed = invoke("guru-check-task", "--root", str(fixture), "--input", str(check_path), "--owner-result", fresh["artifact_path"])
+    public_input.update(task_ref=passed["task_ref"], source_exit=passed["exit_id"], phase2_commit_anchor=passed["phase2_commit_anchor"])
+    runtime.write_json(fixture / OWNER_INVOCATION, {
+        "public_input": public_input,
+        "owner_result": {"status": "passed", "summary": "The fixture reviewed the exact current clean task range after fresh Phase2.", "evidence": ["Actual public TaskCommit candidate and fresh public Phase2 passed output."]},
+    })
+
 def production_review_candidate(
     exit_id: str,
     head: str,
@@ -1791,6 +1829,10 @@ def stage_production_owner_execution(
         )
         owner_result_path = Path(checked["artifact_path"])
         if skill_id == "guru-create-task-commit":
+            if recipe == "commit-committed-reentry":
+                production_committed_reentry_invocation(runtime, fixture, task, checked, public_input)
+                runtime.write_json(fixture / OWNER_INPUT, public_input)
+                return package, fixture_runtime_target, production_environment
             public_input["phase2_commit_anchor"] = checked[
                 "phase2_capture_commit"
             ]

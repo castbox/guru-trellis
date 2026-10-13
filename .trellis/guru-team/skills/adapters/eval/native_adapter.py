@@ -184,8 +184,9 @@ def start_public_runtime_boundary(
                     raise ValueError("installed public invocation wrapper is unavailable")
                 arguments = arguments[2:]
                 stdin_text = None
-                if "--invocation" in arguments:
-                    invocation_index = arguments.index("--invocation")
+                envelope_flag = next((flag for flag in ("--invocation", "--committed-reentry") if flag in arguments), None)
+                if envelope_flag is not None:
+                    invocation_index = arguments.index(envelope_flag)
                     if (
                         invocation_index + 1 < len(arguments)
                         and arguments[invocation_index + 1] == "-"

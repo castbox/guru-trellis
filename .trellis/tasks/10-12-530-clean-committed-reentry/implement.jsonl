@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Phase2/TaskCommit/Reconcile/full BranchReview routing"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "AI judgment and deterministic executor/validator boundaries"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "Current Task and reviewed-content identity contracts"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Additive public profile and minimal handoff consumer contracts"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Scope-matched validation and meaningful regression requirements"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Preserve existing supported dirty path without redundant mechanisms"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Canonical source and installed projection ownership"}

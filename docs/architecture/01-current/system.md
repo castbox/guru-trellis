@@ -303,3 +303,9 @@ publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结
 同一 Architecture owner 的 planning3.0 candidate_assessment 消费真实当前候选，不依赖未来 contribution；其 current route 回 Author solution_planning。final_plan 消费 Wording-current design 与真实 contribution/必要 ADR，current route 只回相邻 Approval。原独立评估方法、四 profiles、七 exits 保持；合法非 planning2.0 不变。Author 前置资格只消费当前候选/source，Approval 继续使用其原 planning_scenario_set；scope_ready 先完成活动 scope 判断再由 Author 写作，避免前置写作循环。
 
 Wording/Approval、Delivery policy gap/Completion next independent delivery 的修订分别经薄 projection 回同一 Author；approved 仍由原 execution owner 承接 activate 或 resume_execution，TaskId/generation 与 lifecycle writer 不变。bound planning Discovery recovery 使用原 context owner；sync purpose 只在当前调用承接。没有第二 Architecture/Approval writer、旧 planning dual reader、长期规划 cache 或授权存储。必要决策见 ADR-022/023；机制来源和当前边界见[durable contribution](../contributions/292-unique-planning-author.md)，实际结果与未验证边界见[唯一 Test](../../requirements-design-test-contributions/292-unique-planning-author/test.md)。
+
+## ARCH-CUR-059：已提交候选的正式接续（.86）
+
+原 TaskCommit owner 在既有 public invoke 中增加互斥 `committed_reentry` 输入，先执行自己的 semantic gate，再复用原 Check checker 校验当前 Phase2；从 live TaskId/generation/registered checkout、clean HEAD/index、无 active Git operation、selected-base ancestor/非空 range 与 committed task metadata 承接已有候选。正式输出仍是原 `task_ref/base_ref/branch_review_commit`，成功只消费原 Phase2 checkpoint。
+
+post_commit Reconcile → fresh Phase2 → unchanged post_check → clean committed identity → 原 post_commit guard → fresh Branch Architecture → 首次完整独立 BranchReview 继续由原 owners 执行。dirty 候选仍使用原非空 exact_stage_paths 提交；base 再演进和 stale 经原恢复路径重建，不复用旧 commit。没有空提交、相同内容提交、第二内容算法、candidate/receipt/store 或 tracked 推进文件。[职责来源](../contributions/530-clean-committed-reentry.md)与[唯一测试结果](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)分别承接架构和实际验证层次。
