@@ -184,14 +184,20 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
     ref = normalize_task_ref(task_ref)
     data = _read_task_metadata(repo_root, ref)
     archived = ref.startswith(".trellis/tasks/archive/")
-    current = _current_task_metadata(data, archived=archived)
-    legacy = not current and (archived or _known_legacy_active_metadata(data))
-    if not current and not legacy:
+    if data.get("schema_version") == "2.0":
+        from ..delivery_projection.adapter import upstream_modules
+        try:
+            record = upstream_modules(repo_root).delivery_schema.parse_task_v2(data)
+        except ValueError as exc:
+            raise LifecycleContractError(getattr(exc, "code", "invalid_task_metadata"), ref, "Read a valid upstream Task schema-2 record; do not reconstruct it from a legacy status.") from exc
+        return TaskArtifactIdentity(record["id"], ref, record["lifecycle_generation"], "archived" if archived else "active")
+    legacy = archived or _known_legacy_active_metadata(data) or _current_task_metadata(data, archived=archived)
+    if not legacy:
         raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
         ref,
-        0 if legacy else lifecycle_generation(data, field_path=f"{ref}/task.json.lifecycle_generation"),
+        lifecycle_generation(data, field_path=f"{ref}/task.json.lifecycle_generation"),
         "archived" if archived else "active",
         legacy,
     )
@@ -303,6 +309,18 @@ def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | 
     return selected
 
 
+def task_resource_state(repo_root: Path | str, metadata: dict[str, Any]) -> str:
+    """Task resource eligibility, never Delivery development-stage routing."""
+    if metadata.get("schema_version") == "2.0":
+        from ..delivery_projection.adapter import upstream_modules
+        try:
+            upstream_modules(repo_root).delivery_schema.parse_task_v2(metadata)
+        except ValueError as exc:
+            raise LifecycleContractError(getattr(exc, "code", "invalid_task_metadata"), "task.json", "Resolve the public Task record before resource operations.") from exc
+        return "active"
+    raise LifecycleContractError("unsupported_task_schema", "task.json", "Use the public Task schema-2 installation. Old records reserve identity and require reviewed upstream migration; status is not an execution authority.")
+
+
 def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
     requested = normalize_task_id(task_id)
     matches = [(candidate_id, ref) for candidate_id, ref in _identity_reservations(repo_root)
@@ -374,10 +392,22 @@ def discover_archived_issue_candidate(
             matched = bool(clues) and all(clue == {issue_number} for clue in clues)
         if not matched:
             continue
+        if artifact.legacy:
+            finished = task.get("status") == "completed"
+        else:
+            from ..delivery_projection.adapter import upstream_modules
+            public_record = upstream_modules(repo_root).delivery_schema.parse_task_v2(task)
+            completions = [r for r in public_record["completion_results"]
+                           if r["lifecycle_generation"] == artifact.lifecycle_generation
+                           and r["accepted_scope"] == public_record["accepted_scope"]]
+            finished = bool(completions) and any(
+                r["lifecycle_generation"] == artifact.lifecycle_generation
+                and r["completion_result_id"] == completions[-1]["result_id"]
+                for r in public_record["closure_results"])
         if (
             task.get("id") != artifact.task_id
             or (not artifact.legacy and normalize_generation(task.get("lifecycle_generation", 0)) != artifact.lifecycle_generation)
-            or task.get("status") != "completed"
+            or not finished
             or summary.get("task", {}).get("archive_dir") != artifact.task_ref
             or summary.get("task", {}).get("status") != "completed"
         ):
@@ -413,5 +443,5 @@ def origin_matches(repo_root: Path, repo_ref: str) -> bool:
 
 __all__ = [
     "ArchivedIssueCandidate", "TaskArtifactIdentity", "discover_archived_issue_candidate", "lifecycle_generation", "normalize_generation", "normalize_task_id",
-    "normalize_task_ref", "origin_matches", "resolve_task_id", "resolve_task_ref", "task_id_key", "task_inventory",
+    "normalize_task_ref", "origin_matches", "resolve_task_id", "resolve_task_ref", "task_id_key", "task_inventory", "task_resource_state",
 ]

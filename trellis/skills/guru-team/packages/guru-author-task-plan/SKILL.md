@@ -1,6 +1,6 @@
 ---
 name: guru-author-task-plan
-description: Author current task planning through source-design convergence, candidate Architecture assessment, and eight closed revision profiles.
+description: Author current task planning through source-design convergence, whole-Task requirements and eight independent Delivery planning profiles.
 ---
 
 # Author Task Plan
@@ -9,8 +9,9 @@ description: Author current task planning through source-design convergence, can
 before any planning write. Workflow and standalone modes use the same current
 TaskId/generation, source, checkout, upstream output and dependency checks.
 
-This is the sole business writer of `prd.md`, `design.md`, `implement.md` and
-official planning JSONL. Wording owns only its controlled rewrite; Architecture
+This is the sole business writer: task_scope_requirements writes only the
+root overall PRD; eight delivery_<original_profile> entries write that
+Delivery planning_root PRD/design/implement and official JSONL. Wording owns only its controlled rewrite; Architecture
 owns independent assessment; Approval owns semantic approval. Loading upstream
 `trellis-brainstorm` may supply a method, but never another planning writer.
 
@@ -22,6 +23,9 @@ chosen output. The validator checks objective facts and emits one exit; it
 does not write docs, review source commitments or choose the next route.
 No persistent Author checkpoint or authorization record is created.
 
+- `scope_requirements_ready`: `guru-task-scope-requirements-ready-router`
+  passes only the actual root requirements locator to original Clarify scope
+  acceptance, with fresh original source selection. It is not Task Planning.
 - `requirements_ready`: `guru-task-plan-requirements-ready-router` projects the
   real candidate into original Architecture `candidate_assessment`.
 - `plan_ready`: `guru-task-plan-ready-router` invokes Wording on current docs.

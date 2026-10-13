@@ -1,3 +1,62 @@
+## Public Delivery integration 1.0
+
+This current Skill consumes the target installation's reviewed Delivery API
+1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
+`delivery_key` is the opaque public identity. Read the current `interface.json`
+profile schema and its exact exit consumer before invoking. Do not derive an
+identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
+Deliveries use the same entry and lifecycle. The public phase never proves a
+semantic pass. Historical facts never prove a currently applicable gate.
+
+Read the Delivery's public `planning_root` for its three planning documents and
+context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
+identity and returns through the real current stage owner's public operation to
+the earliest affected role. Invalidate only the affected results. Unchanged,
+still-applicable execution facts need not be rerun. A successful recorder is
+objective evidence only; the AI must actually perform this Skill's full review.
+Missing public API or an unmigrated old record stops with precise migration
+remediation. Do not install a private alternative, select a source fallback,
+convert a legacy checkpoint into pass, or switch an old installation before
+upstream migration/default-cutover qualification.
+
+### Slice readiness and refresh
+
+`delivery_delivery_review` consumes the actual `full_review_result_id` and
+current candidate. Retain all ten semantic dimensions, independent slice and
+remaining scope, complete Chinese truthful payload, Refs-only policy, current
+source and external facts. `ready` records public Readiness and emits its
+`readiness_result_id` to Publish. Planning/implementation changes rework the
+same Delivery through this fixed readiness owner; scope changes return to the
+Task scope owner rather than changing aggregate authority here.
+
+`delivery_readiness_refresh` consumes `task_ref`, `delivery_key` and
+`reentry_reason` from Publish/Merge, plus caller-authored mode/profile. Read that
+reason as the current review obligation and reread the actual full Review slot
+and public candidate. Perform the complete readiness semantic round with
+bounded delta validation; never manufacture a pass from a phase or historical
+publication. If full Review is inapplicable, return its exact refresh need to
+the existing independent Review owner before readiness can pass.
+
+### Scope withdrawal in the current stage
+
+`delivery_scope_withdrawal` is an independent semantic entry with mode,
+`task_ref` and `delivery_key`. Before authoring its separate review input,
+read the current whole-scope decision and selected undelivered slice; judge
+that its full scope was withdrawn/replaced, with no remaining obligations in
+that slice. Partial changes use ordinary same-Delivery rework. This package
+uses only its fixed public role and expected phase; it never accepts a role
+parameter or selects an owner from phase. Record the actual reason,
+`scope_decision` and minimum evidence through public `stop`, then release the
+selection. `delivery_stopped` hands Task identity to whole-task Completion.
+Stop preserves commits/PR/resources; PR close and cleanup require their actual
+owners and any necessary current side-effect confirmation. Lost output retries
+the identical stored stop result and releases selection without another stop.
+
+## Preserved semantic and transaction duties
+
+The duties below apply to the current Delivery input and output contracts.
+Historical data is read only by its named history or migration owner.
+
 # Guru Review Task Delivery Contract
 
 ## Ownership And Boundary
@@ -13,40 +72,11 @@ checks the completed judgment, projects one DTO, and retires private state.
 
 ## Public Entry
 
-The only input profile is `delivery_review`:
-
-- `profile=delivery_review`;
-- `mode=workflow|standalone`;
-- `task_ref` identifies one active task below `.trellis/tasks/`;
-- `branch_review_commit` is the exact current committed HEAD passed by the
-  complete Branch Review.
-
-Publish's `review_stale` exit projects only `task_ref`. The caller authors
-`profile=delivery_review`, `mode`, and `branch_review_commit` from a currently
-applicable checked Branch Review output as follows:
-
-- If that output is still available in the current context, reread live
-  candidate, base, exact review range and applicable review obligations. When
-  all remain unchanged, use its existing anchor directly and execute fresh
-  Delivery Review. Loss of Delivery output or Publish-private state, and normal
-  checkpoint retirement, do not by themselves require another Branch Review.
-- If committed content or applicable review obligations changed, return to
-  the earliest affected existing owner. Required content revisions use the
-  existing implementation/Phase 2/Task Commit path, followed by complete
-  independent Branch Review for the new exact base-to-HEAD. Base evolution
-  uses the existing pair guard, Reconcile and bounded-continuity contracts;
-  it is not an automatic full-history replay or a base/range bypass.
-- If the Branch Review output itself is unavailable, rerun that semantic
-  owner against current authority. Do not manufacture it from Git shape,
-  task status, an old summary, mutation receipt, or Phase 2 checkpoint. A
-  new raw commit value alone does not establish that Branch Review occurred.
-
-`stale_reason` remains Publish-owned context and is not part of this Skill's
-public input. An authority identity update requires its original owner's fresh
-applicability judgment; an equivalent applicable contract does not alone
-invalidate unrelated review. Current facts and the checked output, rather than
-a changed-path whitelist, establish anchor applicability. This entry creates
-no additional recovery DTO, retained checkpoint, or continuation authority.
+Use `delivery_delivery_review` for an adjacent current full Review output.
+Use `delivery_readiness_refresh` for Publish/Merge's reason and actual selected
+key. Read the reason and all earlier live evidence before authoring this full
+semantic round. A missing or inapplicable full Review returns to that owner;
+no phase, PR body, cycle or historical output can reconstruct approval.
 
 The owner freshly reads current requirement authority, approved planning,
 Delivery policy, current slice, remaining work, independent delivery
@@ -57,7 +87,7 @@ Branch Review anchor remains applicable; fresh review does not mechanically
 replay unaffected Planning, Check, Task Commit or Branch Review.
 
 Before readiness, consume the actual matching
-`task_impact_sync(stage=publication)` current result. Its Architecture owner
+`delivery_task_impact_sync(stage=publication)` current result. Its Architecture owner
 uses the contract's Downstream eligibility entry with the still-applicable
 independent conclusion and live committed-review/promotion facts. A caller
 change alone does not dispatch a duplicate assessment; a relabelled Branch
@@ -156,33 +186,21 @@ slice requirements are met. Keep Refs-only and the existing public I/O.
 
 Planning gaps do not become external blockers. Ordinary remaining work does not
 block an independently deliverable current slice. Prior Completion or Finish
-does not prove the current cycle. A validation-only Reactivate with no business
+does not prove the current Delivery gates. A validation-only Reactivate with no business
 diff belongs to the Completion owner and does not manufacture a Delivery.
 
 ## Private Gate And Freshness
 
-The invocation derives task identity, current HEAD, base identity, and a
-call-local `delivery_cycle_ref`. The cycle reference is deterministic over the
-task, reviewed HEAD, and exact reviewed PR payload. It is a transport identity
-for this cycle, not a Delivery ledger or historical authority.
-
-The private gate is written under
-`.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/delivery-review-gate.json`.
-The checker rereads task status, branch/worktree binding, current HEAD and base,
-validates the semantic union and digest, and rejects drift. It does not judge
-scope, sufficiency, findings, truthfulness, or route.
-
-After the checker-passed DTO validates against its per-exit schema, the same
-invocation deletes the checkpoint and its empty owner directory. Output loss
-requires a fresh semantic Delivery Review; no public or downstream consumer may
-read, interpret, or delete this private gate. Apply the Public Entry anchor
-rules during that fresh review; absence of this normally retired gate does not
-invalidate an otherwise current checked Branch Review output. Same-mutation
-Publish recovery remains Publish-owned and never comes from this gate.
+The invocation validates current registered checkout, Task/Delivery identity,
+HEAD and base. The public gate is the upstream readiness result, bound to actual full Review,
+candidate, scope and plan. The original semantic policy/payload validation
+remains local to this owner. No cycle or private task-wide ledger is written.
+Output loss returns to this owner for the full same-candidate semantic review;
+Publish's remote transaction recovers only through Publish.
 
 ## Public Exits
 
-- `ready`: `task_ref`, `delivery_cycle_ref`, `reviewed_head`, `pr_title`,
+- `ready`: `task_ref`, `delivery_key`, `readiness_result_id`, `reviewed_head`, `pr_title`,
   `pr_body`, `remaining_work_state`; sole consumer is
   `guru-publish-task-delivery`.
 - `planning_revision_required`: `task_ref`, `reason_refs`; sole consumer is the
@@ -196,3 +214,19 @@ Publish recovery remains Publish-owned and never comes from this gate.
 No output contains review prose, timestamps, Git snapshots, digests, private
 gate fields, authorization, completion state, closure intent, or historical
 Delivery records.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

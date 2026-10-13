@@ -15,6 +15,27 @@ from runtime.io import project_intermediate_receipt
 
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
+    def test_current_clear_and_context_outputs_reach_declared_consumers(self) -> None:
+        from runtime.schema import validate_json
+        contracts = self.interface["public_contracts"]
+        for projection_id in ("project_clear", "project_needs_context"):
+            projection = next(row for row in contracts["projections"] if row["id"] == projection_id)
+            output_contract = next(row for row in contracts["outputs"] if row["exit_id"] == projection["exit_id"])
+            output = json.loads((self.package / output_contract["example"]["path"]).read_text())
+            seed = {row["target"]: output[row["source"]] for row in projection["mappings"]}
+            consumer = next(row for row in contracts["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
+            contract = consumer["contract"]
+            if contract["kind"] == "json_schema":
+                validate_json(seed, self.package / contract["path"], "consumer")
+            else:
+                authoring = json.loads((self.package / contract["authoring_example"]["path"]).read_text())
+                self.assertEqual(set(authoring), set(contract["authoring_fields"]))
+                self.assertEqual(set(seed), set(contract["seed_fields"]))
+                target_interface_path = self.package.parents[1] / contract["interface_path"]
+                target_interface = json.loads(target_interface_path.read_text())
+                target = next(row for row in target_interface["public_contracts"]["input"]["profiles"] if row["id"] == contract["profile_id"])
+                validate_json({**authoring, **seed}, target_interface_path.parent / target["schema"]["path"], "consumer")
+
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
         package = Path(__file__).resolve().parents[1]
         for path in ("SKILL.md", "references/contract.md"):
@@ -610,42 +631,37 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             (self.package.parents[1] / "consumers/workflow/stage0/invocations/semantic-owner.schema.json").read_text()
         )
         self.assertEqual(list(Draft202012Validator(schema).iter_errors(invocation)), [])
-        from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
-        with tempfile.TemporaryDirectory() as name:
-            repo = Path(name)
-            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
-            subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--allow-empty", "-qm", "fixture"], cwd=repo, check=True)
-            task_dir = repo / public_input["task_locator"]
-            task_dir.mkdir(parents=True)
-            task = {"id": public_input["task_id"], "name": "current", "title": "Current", "description": "Active input",
-                    "status": "in_progress", "priority": "P2", "createdAt": "2026-01-01", "notes": "",
-                    "lifecycle_generation": public_input["lifecycle_generation"], "source": {"kind": "no_issue"},
-                    "children": [], "relatedFiles": [], "meta": {},
-                    **{k: None for k in ("dev_type", "scope", "package", "completedAt", "base_branch", "worktree_path", "commit", "pr_url", "parent")}}
-            (task_dir / "task.json").write_text(json.dumps(task))
-            BranchBindingStore(inspect_repository(repo)).establish(TaskLifecycleKey(task["id"], task["lifecycle_generation"]), "main")
-            result = subprocess.run(
-                [sys.executable, "-m", "runtime.command", str(self.package), "invoke-guru-clarify-requirements", "--invocation", "-"],
-                input=json.dumps(invocation), text=True, cwd=repo,
-                env={**os.environ, "PYTHONPATH": str(self.package.parents[1])},
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-            )
-        self.assertEqual(result.returncode, 0, result)
-        output = json.loads(result.stdout)
-        self.assertEqual(output, {
-            "exit_id": "scope_ready", "mode": "workflow", "task_ref": public_input["task_locator"],
-            "source_selection": owner["source_selection"], "revision_refs": owner["revision_refs"],
-        })
+        sys.path.insert(0, str(self.package.parent / "guru-create-delivery/tests"))
+        from support import installed_fixture
+        fixture = installed_fixture(self)
+        record = fixture.projection.read_record()
+        from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+        from runtime.task_lifecycle.git_facts import inspect_repository
+        subprocess.run(["git", "add", "."], cwd=fixture.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "active clarification fixture"], cwd=fixture.root, check=True)
+        BranchBindingStore(inspect_repository(fixture.root)).establish(
+            TaskLifecycleKey(record["id"], record["lifecycle_generation"]), "task")
+        public_input.update(task_locator=fixture.task_ref, task_id=record["id"],
+                            lifecycle_generation=record["lifecycle_generation"])
+        owner["invocation_context"]["task_locator"] = fixture.task_ref
+        owner["active_task_evidence"]["task_locator"] = fixture.task_ref
+        owner = self.record_owner(owner)
+        invocation["owner_result"] = owner
+        result = subprocess.run(
+            [sys.executable, "-m", "runtime.command", str(self.package), "invoke-guru-clarify-requirements", "--invocation", "-"],
+            input=json.dumps(invocation), text=True, cwd=fixture.root,
+            env={**os.environ, "PYTHONPATH": str(self.package.parents[1])},
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(result.returncode, 3, result)
+        self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
         self.assertNotIn("Traceback", result.stdout + result.stderr)
-        from adapters.eval.intake_authoring import next_intake_owner
-        # Author is outside the Intake-only adapter; the new DTO has no resume_target.
-        self.assertIsNone(next_intake_owner("guru-clarify-requirements", output, self.interface))
+        # Historical producer output is still a validation asset; it is not
+        # mechanically given a key or admitted to the new Author runtime.
+        historical = {"exit_id":"scope_ready", "mode":"workflow", "task_ref":public_input["task_locator"],
+                      "source_selection":owner["source_selection"], "revision_refs":owner["revision_refs"]}
         consumer_schema = json.loads((self.package.parents[1] / "consumers/workflow/stage0/clarify-requirements-scope-ready-1.0.schema.json").read_text())
-        self.assertEqual([], list(Draft202012Validator(consumer_schema).iter_errors(output)))
-        author_input = {key: value for key, value in output.items() if key != "exit_id"}
-        author_input["profile"] = "active_task_scope_change"
-        author_schema = json.loads((self.package.parent / "guru-author-task-plan/schemas/public-active-task-scope-change-input.schema.json").read_text())
-        self.assertEqual([], list(Draft202012Validator(author_schema).iter_errors(author_input)))
+        self.assertEqual([], list(Draft202012Validator(consumer_schema).iter_errors(historical)))
 
         standalone = copy.deepcopy(invocation)
         standalone["public_input"] = {"resume_target": "guru-standalone-caller",
@@ -672,7 +688,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertNotEqual(rejected.returncode, 0)
-        self.assertEqual(json.loads(rejected.stdout)["field_path"], "input.target_disposition")
+        self.assertEqual(json.loads(rejected.stdout)["code"], "schema_mismatch")
         self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
 
     def test_needs_context_rejects_missing_or_malformed_base_as_json_command_error(self) -> None:

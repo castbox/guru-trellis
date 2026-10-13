@@ -91,14 +91,14 @@ records only objective action and mutation facts.
 
 Fail closed on missing/current-context drift, unresolved load-bearing questions,
 invalid actual question lifecycle, stale/mismatched scope or source bindings,
-unknown exits or missing runtime. Current active scope uses private 4.0:
-accepted_current reaches scope_ready only with a terminal proposal set, current
-context, completed semantic Gate and AI-selected revision_refs. Historical
-successful active 3.0 requires fresh original Clarify re-entry. Non-active
-profiles retain 3.0; historical blocked remains evidence. Clarify does not write
-or require updated planning; the original Author consumes scope_ready. GitHub
-mutation still refreshes context first, and original activation/resume owners
-retain lifecycle status. This package is not self-contained or portable. See the full contract for objective checks and routes.
+unknown exits or missing runtime. Current schema2 scope calls use the independent
+Delivery/whole-scope inputs and scope_ready 2.0 contract below. Non-active
+intake and standalone profiles retain their existing contract. Private active
+4.0 and scope_ready 1.0 describe pinned-old validation evidence only; current
+installations do not invoke their Task-status path. Historical successful
+results require fresh original owner re-entry and do not supply a current pass.
+This package is not self-contained or portable. See the full contract for
+objective checks and routes.
 
 ## Installed Commands And Authoring
 
@@ -147,6 +147,44 @@ or use qualification as completion. Actual scope changes use existing routes.
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
 
-Use the six profiles and four caller-aware context returns in the contract.
+Use the current declared profiles and caller-aware context returns in the contract.
 Preserve selected source locators and their normative/advisory roles for current
 Planning; do not decide final design dispositions or create an alternate owner.
+
+## Delivery scope revision
+
+Use delivery_active_task_scope_change with exact DeliveryKey, or
+delivery_task_scope_revision with TaskKey when whole-task scope changes and
+no current Delivery is needed. Initial whole scope after public Task creation
+uses the latter profile with source_exit=created and the Creation resume target.
+Read the current source and whole-task authority; if a Delivery exists, also
+read its affected plan before the same semantic Clarify gate. Null accepted_scope
+is not approval. Return source_selection/revision_refs and scope_action (revised,
+no_change or withdrawal_required) to Author task_scope_requirements; do not
+publish scope before Author writes the reviewed root PRD.
+Partial revision returns to the same Delivery's earliest affected owner after
+scope acceptance. Whole withdrawal returns to its current stage owner for legal
+public stop and automatic selection release; task_scope must not impersonate
+another role. Existing PR/history survives; PR closure/cleanup remain independent.
+No-current-Delivery closeout and evidence refresh do not create empty slices.
+The old active_task_scope_change activity input requires the pinned old complete
+installation; it is not a current fallback or schema-2 writer.
+
+## Current schema2 whole-scope continuation
+
+The new distribution retires legacy active_task_scope_change runtime; its old
+schema remains pinned-old validation evidence. delivery_active_task_scope_change
+and delivery_task_scope_revision judge current source and overall scope, return
+scope_ready 2.0 to the same Author task_scope_requirements, and do not publish
+scope or write PRD. They preserve source_selection/revision_refs; files and
+metadata cannot reconstruct missing selection.
+
+task_scope_requirements_acceptance consumes only the actual scope-only Author
+root requirements_locator plus the adjacent original selection/revision_refs.
+Freshly review that whole PRD and scope commitments, then invoke the public
+accept_scope operation with its real AuthorityRef. scope_ready 2.0 on this
+profile carries TaskKey to Creation/affected Delivery routing, not back to root
+writing. Scope_action is route intent; the current Delivery stage owner alone
+performs legal rework or full withdrawal stop/release. No current Delivery is
+required for whole-scope acceptance. Public operation retries recover the same
+accepted authority; they do not create new Task, Delivery, or current gate pass.

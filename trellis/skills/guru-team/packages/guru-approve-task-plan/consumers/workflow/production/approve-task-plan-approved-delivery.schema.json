@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-production-approve-task-plan-workflow-approved-input-3.0-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "planning_result_id",
+    "delivery_key"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "approved"
+    },
+    "planning_result_id": {
+      "type": "string",
+      "pattern": "^planning:[0-9a-f]{64}$"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; validated by the installed public API."
+    }
+  }
+}

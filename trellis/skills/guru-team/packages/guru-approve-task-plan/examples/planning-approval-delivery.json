@@ -1,0 +1,71 @@
+{
+  "schema_version": "delivery-1.0",
+  "skill_id": "guru-approve-task-plan",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "planning_paths": [
+    ".trellis/tasks/example-task/deliveries/11111111-1111-4111-8111-111111111111/design.md",
+    ".trellis/tasks/example-task/deliveries/11111111-1111-4111-8111-111111111111/implement.md",
+    ".trellis/tasks/example-task/deliveries/11111111-1111-4111-8111-111111111111/prd.md"
+  ],
+  "reviewed_content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "authority_refs": [
+    "issue:27"
+  ],
+  "delivery_policy": {
+    "task_scope": [
+      "R1",
+      "R2"
+    ],
+    "delivery_slice": [
+      "R1"
+    ],
+    "remaining_work": [
+      "R2"
+    ],
+    "independent_delivery_conditions": [
+      "R1 can be validated and used without R2 being complete."
+    ],
+    "validation_boundaries": [
+      "Targeted R1 checks are required; R2 validation remains future work."
+    ],
+    "remaining_work_owner": "The active task remains responsible for R2 after this delivery."
+  },
+  "docs_ssot_plan": {
+    "strategy": "ssot_first",
+    "durable_paths": [
+      ".trellis/spec/workflow/data-contracts.md",
+      "docs/requirements/requirement-main.md"
+    ],
+    "summary": "Durable workflow contracts are updated before implementation."
+  },
+  "semantic_review": {
+    "status": "passed",
+    "summary": "The current task plan is adequate, scoped, and ready for activation.",
+    "checked_dimensions": {
+      "requirement_authority": true,
+      "scope_boundary": true,
+      "design_adequacy": true,
+      "implementation_plan": true,
+      "acceptance_verifiability": true,
+      "docs_ssot": true,
+      "provenance": true,
+      "unusual_scenarios": true
+    },
+    "findings": [],
+    "revision_actions": [],
+    "scope_proposals": [],
+    "blocking_reasons": []
+  },
+  "typed_exit": "approved",
+  "reason": "The semantic owner completed the current planning review.",
+  "consumer": {
+    "kind": "workflow",
+    "id": "phase-1-delivery-activation"
+  },
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "11111111-1111-4111-8111-111111111111"
+  }
+}

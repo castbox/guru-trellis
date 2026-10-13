@@ -11,7 +11,7 @@ from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import discover_worktree_facts, inspect_repository
-from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.identity import resolve_task_id, task_resource_state
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
@@ -47,7 +47,7 @@ def invoke(root: Path, data: dict) -> dict:
     if task.lifecycle_state != "active" or task.lifecycle_generation != key.lifecycle_generation:
         return {"exit_id": "invalid_task_state", "reason_code": "task_identity_stale"}
     metadata = json.loads((current.path / task.task_ref / "task.json").read_text(encoding="utf-8"))
-    if metadata.get("status") not in {"planning", "in_progress"}:
+    if task_resource_state(current.path, metadata) != "active":
         return {"exit_id": "invalid_task_state", "reason_code": "task_status_mismatch"}
     return {
         "exit_id": "checkout_resolved", "task_id": key.task_id, "task_ref": task.task_ref,

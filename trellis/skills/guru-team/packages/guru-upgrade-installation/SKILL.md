@@ -5,7 +5,7 @@ description: Upgrade a supported Guru 0.6.x or 0.7.0 family installation from th
 
 Load this standalone semantic Skill from the complete target canonical source
 checkout before asking an old installation to validate current runtime state.
-Read [the owned contract](references/contract.md) and the selected public input
+Read [the owned contract](references/contract.md), [Delivery migration](references/delivery-migration.md), and the selected public input
 and per-exit schemas in `interface.json`. Use `scripts/preview.sh` only for
 read-only owner facts; `scripts/invoke.sh` is the sole normal public entry.
 

@@ -1,3 +1,105 @@
+## Public Delivery integration 1.0
+
+### Bounded private historical merge migration
+
+The original Merge owner reviews the exact schema-1 gate/cycle and actual
+Task/generation/PR/head/body/message/parents plus the public Publication fact.
+Only then call owner-private `scripts/migrate-delivery-transaction.sh` with
+private `historical_merge_migration` input and actual migration review. For an
+already MERGED PR it validates original three-field message bytes and parents,
+records only `historical_success`, and retains the minimal key/Publication
+result/original gate locator for same-result formal output recovery. The old
+gate is a historical source, never a currently passing six-dimension review.
+An OPEN PR returns `fresh_merge_review_required` without copying a gate or
+performing a merge; the original owner performs current review/confirmation.
+No historical message is rewritten into schema-2. Upgrade consumes only the
+intermediate receipt and exact owner-private writes for recovery/rollback.
+New merges continue to require the five-field schema-2 trailer contract.
+
+`--preview` checks the same actual historical message, parents and target-base
+ancestry without writing. It reports only the exact association and any
+necessary public-record write. A normal archive move changes `task_ref`, not
+the original gate's stable Task identity/generation. MERGED recovery reads that
+identity and actual PR facts without requiring an active binding or current
+HEAD; an OPEN source still requires fresh current Merge review before mutation.
+
+The installed public store permits archived history reads, not a new
+`record_delivery` write. If the reviewed Plan2 target record already contains
+the exact historical Delivery fact, this owner validates it and recovers output
+without another public apply. If it is missing, stop with the explicit
+`delivery_result` migration prerequisite: the original Merge owner must supply
+its reviewed historical result in the prospective Plan2 target record. Required
+fields are result/owner IDs, minimal PR/merge evidence, pull_request profile,
+the exact public Publication candidate, repo/PR/reviewed HEAD/merge SHA/target
+ref. No reopen, direct aggregate write or current gate pass substitutes for it.
+
+This current Skill consumes the target installation's reviewed Delivery API
+1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
+`delivery_key` is the opaque public identity. Read the current `interface.json`
+profile schema and its exact exit consumer before invoking. Do not derive an
+identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
+Deliveries use the same entry and lifecycle. The public phase never proves a
+semantic pass. Historical facts never prove a currently applicable gate.
+
+Read the Delivery's public `planning_root` for its three planning documents and
+context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
+identity and returns through the real current stage owner's public operation to
+the earliest affected role. Invalidate only the affected results. Unchanged,
+still-applicable execution facts need not be rerun. A successful recorder is
+objective evidence only; the AI must actually perform this Skill's full review.
+Missing public API or an unmigrated old record stops with precise migration
+remediation. Do not install a private alternative, select a source fallback,
+convert a legacy checkpoint into pass, or switch an old installation before
+upstream migration/default-cutover qualification.
+
+### Expected-head merge and historical recovery
+
+`delivery_ready_for_merge` consumes the exact public Publication result and
+current readiness applicability before a new remote merge. Preserve all six
+semantic dimensions, real CI/reviews/policy, expected HEAD, exact merge method,
+message and first-parent evidence. New merge messages use schema-2 trailers:
+
+```text
+Guru-Task-Identity: <stable-task-id>
+Guru-Delivery-Schema: 2
+Guru-Delivery-Head: <reviewed-head>
+Guru-Delivery-Identity: <public-delivery-id>
+Guru-Task-Generation: <lifecycle-generation>
+```
+
+Schema-1 three-field history remains readable; its attribution must be judged
+and migrated by the history owner, never guessed from a cycle. Schema-2 history
+returns explicit public identity in its separately versioned result.
+
+Read actual MERGED PR, exact message/parents and current-base ancestry before
+projecting `record_delivery(historical_success=true)`. Public projection failure
+retains the same recovery input/gate; retries never repeat an already successful
+merge and do not demand a current gate to record historical fact. `delivered`
+contains only `task_ref` and `task_key` beside the exit; whole-task Completion
+rereads all public facts, and Merge never declares overall completion.
+`review_refresh_required.reason_code` goes directly to Readiness refresh;
+implementation re-entry uses this fixed delivery owner and public rework.
+
+### Scope withdrawal in the current stage
+
+`delivery_scope_withdrawal` is an independent semantic entry with mode,
+`task_ref` and `delivery_key`. Before authoring its separate review input,
+read the current whole-scope decision and selected undelivered slice; judge
+that its full scope was withdrawn/replaced, with no remaining obligations in
+that slice. Partial changes use ordinary same-Delivery rework. This package
+uses only its fixed public role and expected phase; it never accepts a role
+parameter or selects an owner from phase. Record the actual reason,
+`scope_decision` and minimum evidence through public `stop`, then release the
+selection. `delivery_stopped` hands Task identity to whole-task Completion.
+Stop preserves commits/PR/resources; PR close and cleanup require their actual
+owners and any necessary current side-effect confirmation. Lost output retries
+the identical stored stop result and releases selection without another stop.
+
+## Preserved semantic and transaction duties
+
+The duties below apply to the current Delivery input and output contracts.
+Historical data is read only by its named history or migration owner.
+
 # Contract
 
 ## Ownership
@@ -14,18 +116,12 @@ stop consumers declared by the active interface.
 
 ## Public Input
 
-The `ready_for_merge` input contains only `task_ref`, call-local
-`delivery_cycle_ref`, `repo_ref`, `pr_number`, `expected_head_sha`, and the
-SHA-256 of the exact published PR body. Workflow and standalone modes apply
-the same preconditions.
-
-The task must remain `in_progress` in its registered active checkout, with the
-current TaskId/generation and Git common-dir branch binding. The canonical
-TaskId is the stable identity used in the merge trailer; retired
-`task.json.branch` and task/workspace mappings are not identity inputs. The
-live PR must be Ready/Open,
-same-repository, at the exact expected head, and its body bytes must match the
-publication digest. Closing keywords are prohibited.
+Current `delivery_ready_for_merge` consumes the exact Publication result,
+Delivery key, repository/PR/head and actual PR-body revision. New remote
+mutation requires current public readiness and candidate, active unique Task
+checkout, full semantic Merge review and the exact dialogue-local action.
+Historical MERGED recovery reads the actual PR, parents, base ancestry and
+trailers before projection; it does not require current HEAD or gate pass.
 
 ## Semantic Gate
 
@@ -65,7 +161,7 @@ attempt. A successful post-read requires:
 - remote target base ref equals the merge commit immediately after mutation,
   or, on read-only output-loss recovery after a normal base advance, the exact
   merge commit is proven an ancestor of current base HEAD by GitHub compare;
-- trailer task identity, schema `1`, and reviewed head are exact;
+- trailer Task/Delivery identity, schema `2`, generation and reviewed head are exact;
 - the PR body still has no closing keyword;
 - the active task identity remains current.
 
@@ -81,7 +177,7 @@ second merge.
 `discover-task-deliveries` is a deterministic, read-only package command. Its
 closed query contains only the stable task identity, repository, and target
 base. It scans the fresh target-base first-parent merge history, ignores merge
-commits without Delivery trailers, and requires the exact schema-1 trailer
+commits without Delivery trailers, and reads exact schema-1 or schema-2 trailer
 block for every matching task Delivery.
 
 Each matching merge is cross-checked against exactly one GitHub merged PR:
@@ -95,16 +191,28 @@ bookkeeping merge without the trailers is excluded.
 
 ## Typed Outputs
 
-`delivered` 2.0 contains `exit_id`, a current `task_artifact` with TaskId,
-TaskRef and generation, and the complete nine-field `merge_result` with the
-same identity, Delivery cycle, repository, PR, reviewed head, merge commit and
-stable merge-commit-bound result ID. Its declared `completion_seed` projects
-those two nested objects to the active Completion `completion` profile. That
-owner freshly authors profile, mode, accepted scope and evidence slots before
-its separate semantic judgment. The result says nothing about completion,
-closure, archive, Finish, Reactivate, or cleanup.
+`delivered` contains only `exit_id`, `task_ref` and `task_key`. Completion
+reads the public aggregate and current authority to review all actual Delivery
+facts and whole Task responsibilities. Historical facts remain facts; current
+Check/readiness and Completion still require their own actual conclusions.
 
 `implementation_required` contains `task_ref`, `finding_refs`, and
 `resume_target=phase-2`. `review_refresh_required` contains `task_ref` and a
 reason code. `merge_blocked` contains repository/PR identity plus a reason and
 remediation. No output mutates task or Issue lifecycle state.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

@@ -13,8 +13,8 @@ an eligible stable workflow boundary. Read `references/contract.md`, then bind
 the exact caller profile, base pair, task authority, planning, and candidate
 evidence before forming the AI judgment.
 
-Use the exact caller profile supplied by the boundary. For `post_plan`,
-`post_check`, and `post_commit`, resolve the selected base live and derive the
+Use the exact caller profile supplied by the boundary. For `delivery_post_plan`,
+`delivery_post_check`, and `delivery_post_commit`, resolve the selected base live and derive the
 old base from the unique live merge base; callers do not supply an old/new base
 pair. Post-review profiles bind their adjacent reviewed pair explicitly. Treat
 that operation pair as an integration clock only: its advance does not by
@@ -24,12 +24,12 @@ Build the temporary candidate through the declared deterministic command.
 After the AI has separately judged authority, task-content, and integration
 impact, a compatible pre-review result must display and execute one confirmed,
 expected-head-bound local merge commit before recording `reconciled`.
-`post_plan` then resumes task activation. `post_check` and `post_commit` return
+`delivery_post_plan` then resumes Delivery activation. `delivery_post_check` and `delivery_post_commit` return
 to fresh Phase 2 so that checks and Task Commit are rebuilt against the new
 committed integration HEAD.
 
-Only `post_branch_review`, `post_publication`, and
-`finalizer_base_mismatch` may return `review_continuity_required` when the
+Only `delivery_post_branch_review`, `delivery_post_publication`, and
+`delivery_finalizer_base_mismatch` may return `review_continuity_required` when the
 prior full review remains valid but the compatible candidate needs a new
 reviewed-content identity. For every committed reconciliation route, display
 the exact task branch, prior task HEAD, selected new base, candidate tree,
@@ -82,3 +82,7 @@ or use qualification as completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## 公共 Delivery 迁移边界
+
+新 runtime 只接受 `delivery_*` profiles；旧 schema 是历史读取资产。每个输入显式携带 `delivery_key`，公共 upstream query 校验 Task/Delivery/generation 关系；不读 Task.status 或根 Planning。`delivery_post_plan` 返回 `delivery_activation`。局部 base pair 的 Git identity、candidate、AI impact 判断及 prior review continuity 保留；pair guard 不生成或代替 Planning、Check、Full Review、Readiness gate。owner checkpoint 以 Task generation 与 Delivery identity 隔离，消费后删除。candidate/base 改变由 consumer 按 upstream invalidation 合同重新确认受影响阶段。

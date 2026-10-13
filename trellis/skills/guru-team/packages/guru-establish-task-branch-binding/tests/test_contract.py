@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
@@ -26,12 +27,13 @@ class BranchBindingTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        install_common(self.root)
         self.git("init", "-q", "-b", "main")
         self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "initial", "--allow-empty")
         self.git("checkout", "-qb", "task/demo")
         task = self.root / ".trellis/tasks/demo"
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({
+        (task / "task.json").write_text(json.dumps(public_task({
             "id": "demo", "name": "demo", "lifecycle_generation": 0,
             "source": {"kind": "no_issue"}, "title": "Demo",
             "description": "Reviewed task", "status": "planning",
@@ -40,13 +42,13 @@ class BranchBindingTests(unittest.TestCase):
             "base_branch": "main", "worktree_path": None, "commit": None,
             "pr_url": None, "children": [], "parent": None,
             "relatedFiles": [], "notes": "", "meta": {},
-        }), encoding="utf-8")
+        })), encoding="utf-8")
         self.git("add", ".")
         self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "task")
         self.head = self.git("rev-parse", "HEAD")
         self.repo = inspect_repository(self.root)
         self.key = TaskLifecycleKey("demo", 0)
-        self.input = {"profile": "active_task", "mode": "workflow", "action": "establish", "task_id": "demo", "task_ref": ".trellis/tasks/demo", "lifecycle_generation": 0, "expected_status": "planning"}
+        self.input = {"profile": "delivery_active_task", "mode": "workflow", "action": "establish", "task_id": "demo", "task_ref": ".trellis/tasks/demo", "lifecycle_generation": 0}
 
     def git(self, *args: str) -> str:
         return subprocess.check_output(["git", *args], cwd=self.root, text=True).strip()

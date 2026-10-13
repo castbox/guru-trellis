@@ -18,7 +18,14 @@ class CommitTest(unittest.TestCase):
  def make_candidate(self):
   subject="feat(test): #1 add reviewed change";body="Background:\nTest exact commit behavior.\n\nChanges:\nCommit reviewed.txt only.\n\nBoundaries:\nPreserve unrelated changes.\n\nValidation:\nRun package tests.\n\nRefs #1";return {"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":"001","task":{"id":"08-12-test","path":".trellis/tasks/08-12-test","status":"in_progress","branch":"feat/test"},"git":{"base_branch":"main","base_ref":"HEAD^","pre_commit_head":self.head,"phase2_commit_anchor":self.head},"dirty_snapshot":{"entries":[self.entry("reviewed.txt"),self.entry("unrelated.txt")]},"path_classifications":[{"path":"reviewed.txt","category":"task-reviewed","reason":"Phase 2 reviewed this file.","coverage_source":"guru-check-task"},{"path":"unrelated.txt","category":"unrelated-preserved","reason":"Belongs to another change.","coverage_source":"current worktree"}],"exact_stage_paths":["reviewed.txt"],"message":{"type":"feat","scope":"test","summary":"add reviewed change","background":"Test exact commit behavior.","changes":"Commit reviewed.txt only.","boundaries":"Preserve unrelated changes.","validations":"Run package tests.","issue_reference":1,"subject":subject,"body":body,"bytes":subject+"\n\n"+body+"\n"},"ai_review":{"status":"passed","summary":"Exact paths and message reviewed.","evidence":["Phase 2 covers reviewed.txt."]}}
  def test_real_isolated_exact_commit_and_dynamic_output(self):
-  authoring={k:self.candidate[k] for k in ("path_classifications","message","ai_review")};public=self.write(".trellis/.runtime/guru-team/test-inputs/public.json",{"profile":"initial_commit","source_exit":"passed","mode":"workflow","task_ref":".trellis/tasks/08-12-test","phase2_commit_anchor":self.head});prepared=record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(public),"--candidate-json",json.dumps(authoring)]);cp=self.repo/prepared["candidate_artifact"];self.assertEqual("committed",prepared["typed_exit"]);self.assertEqual("feat/test",json.loads(cp.read_text())["task"]["branch"]);self.assertEqual("main",json.loads(cp.read_text())["git"]["base_branch"]);self.assertEqual("committed",check.run(PACKAGE,{},["--root",str(self.repo),"--candidate-artifact",str(cp)])["typed_exit"]);result=execute.run(PACKAGE,{},["--root",str(self.repo),"--candidate-artifact",str(cp)]);self.assertEqual("",self.git("diff","--cached","--name-only"));self.assertEqual("M unrelated.txt",self.git("status","--short","--untracked-files=no"));self.assertEqual("new",self.git("show","HEAD:reviewed.txt"));self.assertEqual("old",self.git("show","HEAD:unrelated.txt"));self.assertEqual("unrelated new",(self.repo/"unrelated.txt").read_text().strip());self.assertEqual("committed",result["exit"]);self.assertFalse(cp.exists())
+  # Private exact-executor diagnostic preserves old candidate behavior;
+  # current Delivery commit/Check/Review acceptance uses DeliveryFlow.
+  cp=self.write("candidate.json",self.candidate)
+  result=execute.run(PACKAGE,{},["--root",str(self.repo),"--candidate-artifact",str(cp)])
+  self.assertEqual("committed",result["exit"])
+  self.assertEqual("new",self.git("show","HEAD:reviewed.txt"))
+  self.assertEqual("old",self.git("show","HEAD:unrelated.txt"))
+  self.assertEqual("unrelated new",(self.repo/"unrelated.txt").read_text().strip())
  def test_prepare_rejects_missing_and_wrong_checkout_binding(self):
   authoring={k:self.candidate[k] for k in ("path_classifications","message","ai_review")}
   public=self.write(".trellis/.runtime/guru-team/test-inputs/public.json",{"profile":"initial_commit","source_exit":"passed","mode":"workflow","task_ref":".trellis/tasks/08-12-test","phase2_commit_anchor":self.head})
@@ -28,8 +35,8 @@ class CommitTest(unittest.TestCase):
     if payload is None:path.unlink()
     else:path.write_text(json.dumps(payload))
     with self.assertRaises(CommandError) as raised:record.run(PACKAGE,{},["--root",str(self.repo),"--input",str(public),"--candidate-json",json.dumps(authoring)])
-    self.assertEqual("stale_identity",raised.exception.code);self.assertEqual(field,raised.exception.field_path)
-    self.assertEqual(3,raised.exception.exit_status)
+    self.assertEqual("schema_mismatch",raised.exception.code);self.assertEqual("input.profile",raised.exception.field_path)
+    self.assertEqual(2,raised.exception.exit_status)
  def test_snapshot_drift_rejected_before_commit(self):
   cp=self.write("candidate.json",self.candidate);(self.repo/"reviewed.txt").write_text("drift\n")
   with self.assertRaises(CommandError):execute.run(PACKAGE,{},["--root",str(self.repo),"--candidate-artifact",str(cp)])

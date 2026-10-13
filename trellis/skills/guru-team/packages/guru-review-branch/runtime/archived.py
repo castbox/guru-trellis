@@ -58,8 +58,10 @@ def facts(package_root, repo, public):
         stale("task_ref", "Use the exact completed archive locator.")
     metadata = load(repo, package_root, str(task_dir / "task.json"), "task")
     summary = load(repo, package_root, str(task_dir / "finish-summary.json"), "archive")
-    branch, base = metadata.get("branch"), metadata.get("base_branch")
     summary_task, summary_git = summary.get("task") or {}, summary.get("git") or {}
+    schema2 = metadata.get("schema_version") == "2.0"
+    branch = summary_git.get("branch") if schema2 else metadata.get("branch")
+    base = metadata.get("base_branch")
     if (not isinstance(summary_task, dict) or not isinstance(summary_git, dict)
         or summary_task.get("archive_dir") != task_ref
         or summary_task.get("slug") != task_dir.name
@@ -71,15 +73,23 @@ def facts(package_root, repo, public):
     if not isinstance(active, str) or not active.startswith(".trellis/tasks/") or active.startswith(".trellis/tasks/archive/") or (repo / active).exists():
         stale("archive", "Require the original active locator to be absent after archive.")
     head = git(repo, "rev-parse", "HEAD")
-    if metadata.get("status") != "completed" or not isinstance(branch, str) or not branch or not isinstance(base, str) or not base:
+    if schema2:
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        projection = DeliveryProjection(repo, task_ref)
+        projection.resolve(public["delivery_key"])
+        if not any(item["lifecycle_generation"] == metadata["lifecycle_generation"] for item in metadata["closure_results"]):
+            stale("task", "Require the actual archived generation Closure result.")
+    if (not schema2 and metadata.get("status") != "completed") or not isinstance(branch, str) or not branch or not isinstance(base, str) or not base:
         stale("task", "Archived review requires completed task branch/base identity.")
     if head != public["branch_review_commit"] or git(repo, "branch", "--show-current") != branch:
         stale("branch_review_commit", "Review the exact current archived branch HEAD.")
     if git(repo, "status", "--porcelain=v1", "--untracked-files=all"):
         stale("worktree", "Archived review requires a completely clean checkout.")
-    for name in ("task.json", "finish-summary.json", "prd.md", "design.md", "implement.md"):
-        path = task_dir / name
-        if not path.is_file() or path.is_symlink() or not git(repo, "ls-tree", head, "--", f"{task_ref}/{name}"):
+    paths = [task_dir / name for name in ("task.json", "finish-summary.json")]
+    planning = projection.planning_directory(public["delivery_key"]) if schema2 else task_dir
+    paths.extend(planning / name for name in ("prd.md", "design.md", "implement.md"))
+    for path in paths:
+        if not path.is_file() or path.is_symlink() or not git(repo, "ls-tree", head, "--", rel(repo, path)):
             stale("archive", "Review requires committed archive planning and finish-summary files.")
     config = config_values(repo)
     records = git(repo, "worktree", "list", "--porcelain").split("\n\n")
@@ -122,7 +132,7 @@ def facts(package_root, repo, public):
         stale("pull_request", "Require the exact same-repository PR head.")
     if type(pr.get("number")) is not int or pr["number"] < 1 or pr.get("url") != f"https://github.com/{repository}/pull/{pr['number']}":
         stale("pull_request", "Require complete canonical PR identity.")
-    if not isinstance(summary.get("github"), dict) or summary["github"].get("pr_url") != pr["url"] or (metadata.get("pr_url") and metadata["pr_url"] != pr["url"]):
+    if not schema2 and (not isinstance(summary.get("github"), dict) or summary["github"].get("pr_url") != pr["url"] or (metadata.get("pr_url") and metadata["pr_url"] != pr["url"])):
         stale("pull_request", "Task PR locator must match the existing PR.")
     snapshot = digest({"title": pr["title"], "body": pr["body"]})
     if snapshot != public["pr_payload_snapshot_sha256"]:

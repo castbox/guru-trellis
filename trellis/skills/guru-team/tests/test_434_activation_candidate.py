@@ -17,6 +17,7 @@ import yaml
 
 SKILLS = Path(__file__).resolve().parents[1]
 ROOT = SKILLS.parents[2]
+INSTALLED = Path(os.environ.get("GURU_TEST_INSTALLED_ROOT", str(ROOT))).resolve()
 PACKAGES = SKILLS / "packages"
 sys.path.insert(0, str(SKILLS))
 from runtime import validate as package_validator  # noqa: E402
@@ -28,7 +29,7 @@ RETIRED = {
     "guru-merge-task-pr", "guru-restore-archived-task",
 }
 NEW = {
-    "guru-create-issue", "guru-create-task", "guru-activate-task",
+    "guru-create-issue", "guru-create-task", "guru-activate-delivery", "guru-create-delivery",
     "guru-ensure-task-checkout", "guru-establish-task-identity",
     "guru-establish-task-branch-binding", "guru-rebind-task-branch",
 }
@@ -79,7 +80,7 @@ class ActivationCandidateTests(unittest.TestCase):
         result = subprocess.run(
             [sys.executable, str(script)], cwd=ROOT, capture_output=True, text=True,
             env={**os.environ, "GURU_FINISH_INTEGRATION_MODE": "installed",
-                 "GURU_FINISH_INTEGRATION_ROOT": str(ROOT), "PYTHONDONTWRITEBYTECODE": "1"},
+                 "GURU_FINISH_INTEGRATION_ROOT": str(INSTALLED), "PYTHONDONTWRITEBYTECODE": "1"},
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -111,12 +112,14 @@ class ActivationCandidateTests(unittest.TestCase):
         for relative in (
             "docs/architecture/contributions/454-task-lifecycle-gen7-taskid-domain.md",
             "docs/requirements-design-test-contributions/454-task-lifecycle-gen7-taskid-domain/design.md",
-            "trellis/presets/guru-team/spec/workflow/data-contracts.md",
-            ".trellis/spec/workflow/data-contracts.md",
         ):
             with self.subTest(path=relative):
                 text = (ROOT / relative).read_text(encoding="utf-8")
-                self.assertIn(lock["commit"], text)
+                # The immutable #454 contribution binds its own delivered
+                # source. Current source provenance belongs to the dedicated
+                # lock checked above, not an incidental prose mention.
+                expected = '8336e78b8fafe2a4bc4ea3d01815a61cf4f08983'
+                self.assertIn(expected, text)
 
     def test_fixed_fork_context_template_matches_installed_script(self) -> None:
         checkout = os.environ.get("GURU_FIXED_TRELLIS_CHECKOUT")
@@ -161,12 +164,14 @@ class ActivationCandidateTests(unittest.TestCase):
         self.assertIn("TASK_ID_PATTERN,", source.read_text(encoding="utf-8"))
         utility = ROOT / ".trellis/scripts/common/task_utils.py"
         self.assertIn('TASK_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")', utility.read_text(encoding="utf-8"))
-        for platform in (".agents", ".claude", ".cursor"):
-            with self.subTest(platform=platform):
-                guide = (ROOT / platform / "skills/trellis-meta/references/local-architecture/task-system.md").read_text(encoding="utf-8")
-                self.assertIn("Guru Team uses `guru-activate-task` instead", guide)
-                commands = guide.split("## Common Commands", 1)[1].split("```bash", 1)[1].split("```", 1)[0]
-                self.assertNotIn("task.py start", commands)
+        # Provider bundled references are not Guru preset ownership. Validate
+        # the current Guru route and explicit precedence in its own contract.
+        workflow = (ROOT / "trellis/workflows/guru-team/workflow.md").read_text()
+        contract = (ROOT / "trellis/presets/guru-team/spec/workflow/workflow-contract.md").read_text()
+        self.assertIn("guru-activate-delivery", workflow)
+        self.assertIn("Native Reference And Guru Route Ownership", contract)
+        self.assertIn("upstream `.trellis/delivery-contract.md`", contract)
+        self.assertIn("Do not patch bundled references", contract)
         with tempfile.TemporaryDirectory(prefix="guru-434-task-id-") as temporary:
             root = Path(temporary)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
@@ -177,7 +182,7 @@ class ActivationCandidateTests(unittest.TestCase):
                 result = subprocess.run(
                     [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
                      "--description", "TaskId fixture", "--slug", slug, "--task-id", task_id,
-                     "--creator", "test", "--assignee", "test", "--no-start"],
+                     "--source-json", '{"kind":"no_issue"}', "--no-start"],
                     cwd=root, capture_output=True, text=True,
                     env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
                 )
@@ -189,7 +194,7 @@ class ActivationCandidateTests(unittest.TestCase):
                 result = subprocess.run(
                     [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
                      "--description", "TaskId fixture", "--slug", "invalid", "--task-id", task_id,
-                     "--creator", "test", "--assignee", "test", "--no-start"],
+                     "--source-json", '{"kind":"no_issue"}', "--no-start"],
                     cwd=root, capture_output=True, text=True,
                     env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
                 )
@@ -200,7 +205,7 @@ class ActivationCandidateTests(unittest.TestCase):
             derived = subprocess.run(
                 [sys.executable, str(ROOT / ".trellis/scripts/task.py"), "create", "candidate",
                  "--description", "TaskId fixture", "--slug", "two words",
-                 "--creator", "test", "--assignee", "test", "--no-start"],
+                 "--source-json", '{"kind":"no_issue"}', "--no-start"],
                 cwd=root, capture_output=True, text=True,
                 env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}, check=False,
             )
@@ -211,7 +216,7 @@ class ActivationCandidateTests(unittest.TestCase):
     def test_candidate_adr_id_does_not_reuse_accepted_decision(self) -> None:
         seen: dict[str, Path] = {}
         for path in sorted((ROOT / "docs/architecture/adr").glob("[0-9][0-9][0-9]-*.md")):
-            match = re.match(r"# (ADR-\d{3}):", path.read_text(encoding="utf-8"))
+            match = re.match(r"# (ADR-\d{3})[:：]", path.read_text(encoding="utf-8"))
             self.assertIsNotNone(match, path)
             decision_id = match.group(1)
             self.assertEqual(path.name[:3], decision_id[-3:], path)
@@ -221,7 +226,7 @@ class ActivationCandidateTests(unittest.TestCase):
 
     def test_candidate_packages_and_unique_skill_consumers(self) -> None:
         self.assertEqual((len(self.ids), sum(len(i["external_exits"]) for i in self.interfaces.values())),
-                         (35, 159))
+                         (38, 187))
         for skill, interface in self.interfaces.items():
             outputs = interface["public_contracts"]["outputs"]
             projections = interface["public_contracts"]["projections"]
@@ -244,7 +249,7 @@ class ActivationCandidateTests(unittest.TestCase):
         self.assertFalse(RETIRED & active)
         result = package_validator.validate(ROOT, "source")
         self.assertEqual((result["status"], result["active_packages"], result["commands"]),
-                         ("passed", 35, 106))
+                         ("passed", 38, 114))
 
     def test_selected_interface_schema_is_installed(self) -> None:
         registry = read_json(SKILLS / "registry.json")
@@ -252,13 +257,13 @@ class ActivationCandidateTests(unittest.TestCase):
         for schema_id in selected:
             filename = f"skill-interface-{schema_id.rsplit('-', 1)[-1]}.schema.json"
             with self.subTest(schema_id=schema_id):
-                self.assertTrue((ROOT / ".trellis/guru-team/skills/schemas" / filename).is_file())
-                manifest = read_json(ROOT / ".trellis/guru-team/extension.json")
+                self.assertTrue((INSTALLED / ".trellis/guru-team/skills/schemas" / filename).is_file())
+                manifest = read_json(INSTALLED / ".trellis/guru-team/extension.json")
                 self.assertIn(
                     f".trellis/guru-team/skills/schemas/{filename}",
                     {row["path"] for row in manifest["skill_packages"]["files"]},
                 )
-        installed = package_validator.validate(ROOT, "installed")
+        installed = package_validator.validate(INSTALLED, "installed")
         self.assertEqual(installed["status"], "passed", installed)
 
     def test_entry_and_review_handoffs_do_not_use_retired_consumers(self) -> None:

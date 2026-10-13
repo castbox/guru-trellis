@@ -67,12 +67,9 @@ class ContractTest(unittest.TestCase):
         owner.validate_gate(PACKAGE, gate)
 
     def test_outputs_keep_delivery_completion_boundary(self) -> None:
-        delivered = json.loads((PACKAGE / "examples/public-delivered-output.json").read_text())
-        self.assertEqual(set(delivered), {"exit_id", "task_artifact", "merge_result"})
-        self.assertEqual(
-            {key: delivered["merge_result"][key] for key in delivered["task_artifact"]},
-            delivered["task_artifact"],
-        )
+        delivered = json.loads((PACKAGE / "examples/public-output-delivery-delivered-1.0.json").read_text())
+        self.assertEqual(set(delivered), {"exit_id", "task_ref", "task_key"})
+        self.assertNotIn("merge_result", delivered)
 
     def test_delivered_projection_matches_current_completion_merge_result(self) -> None:
         interface = json.loads((PACKAGE / "interface.json").read_text())
@@ -80,24 +77,21 @@ class ContractTest(unittest.TestCase):
                         if item["id"] == "completion_seed")
         projection = next(item for item in interface["public_contracts"]["projections"]
                           if item["id"] == "project_delivered")
-        delivered = json.loads((PACKAGE / "examples/public-delivered-output.json").read_text())
+        delivered = json.loads((PACKAGE / "examples/public-output-delivery-delivered-1.0.json").read_text())
         seed = {mapping["target"]: delivered[mapping["source"]]
                 for mapping in projection["mappings"]}
         contract = consumer["contract"]
         self.assertEqual(contract["kind"], "skill_input_authoring_seed")
         self.assertEqual(contract["interface_path"], "packages/guru-review-task-completion/interface.json")
-        self.assertEqual(contract["profile_id"], "completion")
+        self.assertEqual(contract["profile_id"], "delivery_completion")
         self.assertEqual(set(seed), set(contract["seed_fields"]))
         completion = GURU / "packages/guru-review-task-completion"
         authoring = json.loads((PACKAGE / contract["authoring_example"]["path"]).read_text())
         self.assertEqual(set(authoring), set(contract["authoring_fields"]))
         completion_input = {**seed, **authoring}
-        schema = json.loads((completion / "schemas/public-input.schema.json").read_text())
+        schema = json.loads((completion / "schemas/public-delivery-completion-input-1.0.schema.json").read_text())
         self.assertEqual(list(Draft202012Validator(schema).iter_errors(completion_input)), [])
-        self.assertEqual(set(seed["merge_result"]), {
-            "task_id", "task_ref", "lifecycle_generation", "delivery_cycle_ref", "repo_ref",
-            "pr_number", "reviewed_head", "merge_commit_sha", "result_id",
-        })
+        self.assertEqual(set(seed), {"task_ref", "task_key"})
         forbidden = {"completed", "closed", "closure", "archive", "finish", "cleanup"}
         for path in (PACKAGE / "schemas").glob("public-*-output.schema.json"):
             properties = json.loads(path.read_text()).get("properties", {})
@@ -107,11 +101,10 @@ class ContractTest(unittest.TestCase):
         text = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
         for expected in (
             "current production graph invokes this owner",
-            "registered active checkout",
-            "TaskId/generation and Git common-dir branch binding",
+            "active task identity",
+            "public identity",
             "proven an ancestor of current base HEAD",
-            "`delivered` 2.0 contains `exit_id`, a current `task_artifact`",
-            "`completion_seed` projects",
+            "`delivered` contains only `exit_id`, `task_ref` and `task_key`",
         ):
             self.assertIn(expected, text)
         for retired in (
@@ -136,7 +129,7 @@ class ContractTest(unittest.TestCase):
             item["consumer_input_id"]: item
             for item in interface["public_contracts"]["projections"]
         }
-        self.assertEqual(set(consumers), {"merge_blocked_stop_input", "implementation_router_input"})
+        self.assertEqual(set(consumers), {"merge_blocked_stop_input", "implementation_router_input", "scope_revised_input"})
         for consumer_id, consumer in consumers.items():
             with self.subTest(consumer=consumer_id):
                 schema_path = PACKAGE / consumer["contract"]["path"]
@@ -165,20 +158,22 @@ class ContractTest(unittest.TestCase):
             if item["id"] == "delivery_review_seed"
         )
         contract = consumer["contract"]
-        self.assertEqual(contract["profile_id"], "delivery_review")
-        self.assertEqual(contract["seed_fields"], ["task_ref"])
+        self.assertEqual(contract["profile_id"], "delivery_readiness_refresh")
+        self.assertEqual(contract["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
         self.assertEqual(
             contract["authoring_fields"],
-            ["profile", "mode", "branch_review_commit"],
+            ["profile", "mode"],
         )
         projection = next(
             item for item in interface["public_contracts"]["projections"]
             if item["id"] == "project_review_refresh_required"
         )
-        self.assertEqual(projection["operation"], "select")
+        self.assertEqual(projection["operation"], "rename")
         self.assertEqual(
             projection["mappings"],
-            [{"source": "task_ref", "target": "task_ref"}],
+            [{"source": "task_ref", "target": "task_ref"},
+             {"source": "delivery_key", "target": "delivery_key"},
+             {"source": "reason_code", "target": "reentry_reason"}],
         )
 
     def test_command_surface_has_one_public_mutation_entry(self) -> None:
@@ -186,7 +181,8 @@ class ContractTest(unittest.TestCase):
         self.assertEqual({item["id"] for item in commands}, {
             "preview-task-delivery-merge", "record-task-delivery-merge",
             "check-task-delivery-merge", "execute-task-delivery-merge",
-            "invoke-guru-merge-task-delivery", "discover-task-deliveries",
+        "invoke-guru-merge-task-delivery", "discover-task-deliveries",
+        "migrate-task-delivery-merge",
         })
         discovery = next(
             item for item in commands if item["id"] == "discover-task-deliveries"

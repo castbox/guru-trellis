@@ -16,10 +16,21 @@ ROOT = PACKAGE.parents[1]
 CLOSURE = PACKAGE.parent / "guru-complete-task-closure"
 
 
-def fixture():
-    public = json.loads((PACKAGE / "examples/public-input.json").read_text())
-    semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
-    return public, semantic
+@pytest.fixture
+def current():
+    import importlib.util
+    path=PACKAGE.parent/'guru-check-task/tests/test_delivery_flow.py'
+    spec=importlib.util.spec_from_file_location('completion_current_fixture',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    item=module.DeliveryFlow();item.setUp()
+    yield item
+    item.doCleanups()
+
+
+def fixture(current):
+    public={'profile':'delivery_completion','mode':'workflow','task_ref':current.task_ref,'task_key':{'task_id':'flow-task','lifecycle_generation':0}}
+    semantic={'profile':public['profile'],'mode':'workflow','reviewed_task_key':public['task_key'].copy(),'reviewed_scope':current.projection.read_record()['accepted_scope'],'reviewed_delivery_result_ids':[],'evidence':[current.projection.read_record()['accepted_scope']],'remaining_work_refs':[],'result_id':'completion:test','route':{'typed_exit':'completed'}}
+    return public,semantic
 
 
 def invoke(tmp_path, public, semantic):
@@ -35,32 +46,25 @@ def invoke(tmp_path, public, semantic):
     )
 
 
-def test_contract_assets_and_projection(tmp_path):
-    interface = json.loads((PACKAGE / "interface.json").read_text())
-    assert interface["$schema"] == "../../schemas/skill-interface-1.7.schema.json"
-    assert interface["schema_version"] == "1.7"
-    validate_json(interface, ROOT / "schemas/skill-interface-1.7.schema.json", "interface")
-    assert len(interface["external_exits"]) == 7
-    for group in ("artifacts", "schemas"):
-        for item in interface[group]:
-            assert (PACKAGE / item["path"]).is_file()
-    for output in interface["public_contracts"]["outputs"]:
-        value = json.loads((PACKAGE / output["example"]["path"]).read_text())
-        validate_json(value, PACKAGE / output["schema"]["path"], output["exit_id"])
-        validate_json(value, PACKAGE / "schemas/public-output.schema.json", output["exit_id"])
-    public, semantic = fixture()
-    result = invoke(tmp_path, public, semantic)
-    assert result.returncode == 0, result.stderr
-    output = json.loads(result.stdout)
-    assert set(output) == {"exit_id", "result_ref"}
-    assert output["result_ref"]["task_id"] == public["task_artifact"]["task_id"]
-    contract = next(row for row in interface["public_contracts"]["consumer_inputs"] if row["id"] == "closure")["contract"]
-    projection = next(row for row in interface["public_contracts"]["projections"] if row["id"] == "closure")
-    assert contract["seed_fields"] == ["source_exit", "completion_result"]
-    authored = json.loads((PACKAGE / contract["authoring_example"]["path"]).read_text())
-    authored.update({row["target"]: output[row["source"]] for row in projection["mappings"]})
-    authored["evidence_slots"]["completion"] = output["result_ref"]["result_id"]
-    validate_json(authored, CLOSURE / "schemas/public-input.schema.json", "closure")
+def test_contract_assets_and_projection(current):
+    interface=json.loads((PACKAGE/'interface.json').read_text())
+    validate_json(interface,ROOT/'schemas/skill-interface-1.7.schema.json','interface')
+    for group in ('artifacts','schemas'):
+        for item in interface[group]:assert (PACKAGE/item['path']).is_file()
+    for output in interface['public_contracts']['outputs']:
+        validate_json(json.loads((PACKAGE/output['example']['path']).read_text()),PACKAGE/output['schema']['path'],output['exit_id'])
+    # Known undelivered scope is not complete; first use the actual stop owner.
+    current.test_scope_withdrawal_and_stop_stdout_recovery()
+    public,semantic=fixture(current)
+    result=invoke(current.repo,public,semantic);assert result.returncode==0,result.stderr
+    output=json.loads(result.stdout);assert set(output)=={'exit_id','result_ref'}
+    assert output['result_ref']['task_id']==public['task_key']['task_id']
+    contract=next(row for row in interface['public_contracts']['consumer_inputs'] if row['id']=='closure')['contract']
+    projection=next(row for row in interface['public_contracts']['projections'] if row['id']=='closure')
+    authored=json.loads((PACKAGE/contract['authoring_example']['path']).read_text())
+    authored.update({row['target']:output[row['source']] for row in projection['mappings']})
+    authored['evidence_slots']['completion']=output['result_ref']['result_id']
+    validate_json(authored,CLOSURE/'schemas/public-input.schema.json','closure')
 
 
 @pytest.mark.parametrize("lineage,slots", [
@@ -68,7 +72,8 @@ def test_contract_assets_and_projection(tmp_path):
     ("pre_cutover_recovered", ["planning", "restore", "merge_recovery"]),
 ])
 def test_pre_cutover_lineage_cannot_enter_current_completion(tmp_path, lineage, slots):
-    public, semantic = fixture()
+    public=json.loads((PACKAGE / "examples/public-input.json").read_text())
+    semantic=json.loads((PACKAGE / "examples/semantic-result.json").read_text())
     public["merge_result"] = {
         "task_id": "example-task", "lifecycle_generation": 0, "repo_ref": "castbox/guru-trellis",
         "pr_number": 2, "merge_commit_sha": "c" * 40, "merge_lineage": lineage, "result_id": "merge:current",
@@ -80,110 +85,58 @@ def test_pre_cutover_lineage_cannot_enter_current_completion(tmp_path, lineage, 
     assert json.loads(result.stderr)["code"] == "schema_mismatch"
 
 
-@pytest.mark.parametrize("change", ["generation", "task_id", "locator", "scope", "merge", "evidence", "remaining"])
-def test_stale_and_incomplete_facts_do_not_complete(tmp_path, change):
-    public, semantic = fixture()
-    if change == "generation":
-        public["merge_result"]["lifecycle_generation"] = 1
-    elif change == "task_id":
-        public["merge_result"]["task_id"] = "other-task"
-    elif change == "locator":
-        public["merge_result"]["task_ref"] = ".trellis/tasks/other-task"
-    elif change == "scope":
-        semantic["reviewed_scope_identity"] = "scope:stale"
-    elif change == "merge":
-        semantic["reviewed_merge_result_id"] = "merge:stale"
-    elif change == "evidence":
-        semantic["reviewed_evidence_slots"]["planning"] = "plan:stale"
-    else:
-        semantic["remaining_work_refs"] = ["scope:unfinished"]
-    result = invoke(tmp_path, public, semantic)
-    assert result.returncode == 3
-    assert json.loads(result.stderr)["code"] == "stale_identity"
+@pytest.mark.parametrize('change',['generation','task_id','scope','delivery_history','remaining'])
+def test_stale_and_incomplete_facts_do_not_complete(current,change):
+    public,semantic=fixture(current)
+    if change=='generation':public['task_key']['lifecycle_generation']=1
+    elif change=='task_id':public['task_key']['task_id']='other-task'
+    elif change=='scope':semantic['reviewed_scope']['revision']='sha256:'+'a'*64
+    elif change=='delivery_history':semantic['reviewed_delivery_result_ids']=['delivery:missing']
+    else:semantic['remaining_work_refs']=['scope:unfinished']
+    result=invoke(current.repo,public,semantic)
+    assert result.returncode==3,result.stderr
+    assert json.loads(result.stderr)['code']=='stale_identity'
+    assert current.projection.read_record()['completion_results']==[]
 
 
-@pytest.mark.parametrize("route", [
-    "remaining_work", "evidence_pending", "additional_delivery_required",
-    "requirements_revision_required", "implementation_revision_required", "blocked",
-])
-def test_noncomplete_routes_use_artifact_and_reason(tmp_path, route):
-    public, semantic = fixture()
-    semantic["route"] = {"typed_exit": route, "reason": {"reason_code": "work_pending", "reason_refs": ["scope:current"]}}
-    semantic["remaining_work_refs"] = ["scope:current"]
-    result = invoke(tmp_path, public, semantic)
-    assert result.returncode == 0, result.stderr
-    output = json.loads(result.stdout)
-    assert output["exit_id"] == route
-    assert output["reason"] == semantic["route"]["reason"]
-    assert ("task_artifact" in output) == (route != "blocked")
-    assert "resume_target" not in output and "completion_ref" not in output
+@pytest.mark.parametrize('route',['remaining_work','evidence_pending','additional_delivery_required','requirements_revision_required','implementation_revision_required','blocked'])
+def test_noncomplete_routes_use_task_key_and_reason(current,route):
+    public,semantic=fixture(current);semantic['route']={'typed_exit':route,'reason':{'reason_code':'work_pending','reason_refs':['scope:current']}};semantic['remaining_work_refs']=['scope:current']
+    result=invoke(current.repo,public,semantic);assert result.returncode==0,result.stderr
+    output=json.loads(result.stdout);assert output['exit_id']==route;assert output['reason']==semantic['route']['reason']
+    assert ('task_key' in output)==(route!='blocked')
+    assert 'resume_target' not in output and 'task_artifact' not in output
+    assert current.projection.read_record()['completion_results']==[]
 
 
-def reactivation_fixture():
-    public = json.loads((PACKAGE / "examples/public-reactivation-validation-input.json").read_text())
-    semantic = json.loads((PACKAGE / "examples/reactivation-semantic-result.json").read_text())
-    return public, semantic
+@pytest.mark.parametrize('archive_month',['2026-09','2026-08'])
+def test_reactivation_validation_and_evidence_refresh(current,archive_month):
+    current.test_no_mutation_closure_records_public_result_and_recovers()
+    scope=current.projection.read_record()['accepted_scope']
+    current.projection.apply({'api_version':'1.0','operation':'reopen_task','key':{'task_id':'flow-task','lifecycle_generation':0},'owner_role':'task_scope','owner_id':'guru-test-task_scope','authority':scope})
+    public,semantic=fixture(current)
+    public.update(profile='delivery_reactivation_validation',task_key={'task_id':'flow-task','lifecycle_generation':1},reactivation_anchor={'task_id':'flow-task','archived_generation':0,'archive_ref':f'.trellis/tasks/archive/{archive_month}/flow-task','archive_head':current.head})
+    semantic.update(profile=public['profile'],reviewed_task_key=public['task_key'],reviewed_delivery_result_ids=['delivery:flow'])
+    semantic['route']={'typed_exit':'evidence_pending','reason':{'reason_code':'evidence_pending','reason_refs':['validation:current']}}
+    pending=invoke(current.repo,public,semantic);assert pending.returncode==0,pending.stderr
+    pending=json.loads(pending.stdout)
+    refreshed={'profile':'delivery_evidence_refresh','mode':'workflow','task_ref':current.task_ref,'task_key':pending['task_key'],'source_exit':'evidence_pending','reason':pending['reason']}
+    semantic.update(profile='delivery_evidence_refresh',route={'typed_exit':'completed'},result_id='completion:revalidation')
+    output=invoke(current.repo,refreshed,semantic);assert output.returncode==0,output.stderr
+    assert json.loads(output.stdout)['result_ref']['lifecycle_generation']==1
+    assert not any(row['lifecycle_generation']==1 for row in current.projection.read_record()['deliveries'])
 
 
-@pytest.mark.parametrize("archive_month", ["2026-09", "2026-08"])
-def test_reactivation_validation_and_evidence_refresh(tmp_path, archive_month):
-    public, semantic = reactivation_fixture()
-    archive_ref = f".trellis/tasks/archive/{archive_month}/example-task"
-    public["reactivation_anchor"]["archive_ref"] = archive_ref
-    semantic["reviewed_reactivation_anchor"]["archive_ref"] = archive_ref
-    interface = json.loads((PACKAGE / "interface.json").read_text())
-    profile = next(row for row in interface["public_contracts"]["input"]["profiles"]
-                   if row["id"] == "reactivation_validation")
-    validate_json(public, PACKAGE / profile["schema"]["path"], "profile")
-    output = json.loads(invoke(tmp_path, public, semantic).stdout)
-    assert output["exit_id"] == "completed"
-    assert output["result_ref"]["lifecycle_generation"] == 1
-    assert "merge_result" not in public
-
-    semantic["route"] = {"typed_exit": "evidence_pending", "reason": {
-        "reason_code": "evidence_pending", "reason_refs": ["validation:current"]}}
-    pending = json.loads(invoke(tmp_path, public, semantic).stdout)
-    assert pending["exit_id"] == "evidence_pending"
-    refreshed = json.loads((PACKAGE / "examples/reactivation-evidence-refresh-authoring.json").read_text())
-    refreshed["reactivation_anchor"]["archive_ref"] = archive_ref
-    refreshed.update({"source_exit": pending["exit_id"], "task_artifact": pending["task_artifact"],
-                      "reason": pending["reason"]})
-    validate_json(refreshed, PACKAGE / "schemas/public-evidence-refresh-input.schema.json", "refresh")
-    semantic["profile"] = "evidence_refresh"
-    semantic["route"] = {"typed_exit": "completed"}
-    assert json.loads(invoke(tmp_path, refreshed, semantic).stdout)["result_ref"]["lifecycle_generation"] == 1
-
-
-@pytest.mark.parametrize("change,code", [
-    ("old_merge", "schema_mismatch"), ("dual_basis", "schema_mismatch"),
-    ("wrong_generation", "stale_identity"), ("wrong_task", "stale_identity"),
-    ("old_archive", "stale_identity"), ("old_review", "schema_mismatch"),
-    ("stale_validation", "stale_identity"), ("missing_validation", "stale_identity"),
-    ("old_closeout", "schema_mismatch"),
-])
-def test_reactivation_cannot_inherit_old_completion_or_delivery(tmp_path, change, code):
-    public, semantic = reactivation_fixture()
-    if change == "old_merge":
-        public.pop("reactivation_anchor")
-        public["merge_result"] = fixture()[0]["merge_result"]
-    elif change == "dual_basis":
-        public["merge_result"] = fixture()[0]["merge_result"]
-    elif change == "wrong_generation":
-        public["task_artifact"]["lifecycle_generation"] = 2
-    elif change == "wrong_task":
-        public["reactivation_anchor"]["task_id"] = "other-task"
-    elif change == "old_archive":
-        semantic["reviewed_reactivation_anchor"]["archive_head"] = "d" * 40
-    elif change == "old_review":
-        semantic["reviewed_merge_result_id"] = "merge:old"
-    elif change == "stale_validation":
-        semantic["reviewed_evidence_slots"]["validation"] = "validation:old"
-    elif change == "missing_validation":
-        public["evidence_slots"].pop("validation")
-    else:
-        public.pop("reactivation_anchor")
-        public["merge_result"] = {"task_id": "example-task", "lifecycle_generation": 0,
-                                  "merge_lineage": "closeout", "result_id": "old:merge"}
-    result = invoke(tmp_path, public, semantic)
-    assert result.returncode != 0
-    assert json.loads(result.stderr)["code"] == code
+@pytest.mark.parametrize('change',['old_merge','dual_basis','wrong_generation','wrong_task','old_owner_profile'])
+def test_reactivation_cannot_inherit_old_completion_or_delivery(current,change):
+    public,semantic=fixture(current)
+    public.update(profile='delivery_reactivation_validation',reactivation_anchor={'task_id':'flow-task','archived_generation':0,'archive_ref':'.trellis/tasks/archive/2026-10/flow-task','archive_head':current.head})
+    semantic['profile']=public['profile']
+    code='schema_mismatch'
+    if change=='old_merge':public.pop('reactivation_anchor');public['merge_result']={'result_id':'merge:old'}
+    elif change=='dual_basis':public['merge_result']={'result_id':'merge:old'}
+    elif change=='wrong_generation':public['task_key']['lifecycle_generation']=2;code='stale_identity'
+    elif change=='wrong_task':public['reactivation_anchor']['task_id']='other-task';code='stale_identity'
+    else:public['profile']='reactivation_validation'
+    result=invoke(current.repo,public,semantic);assert result.returncode!=0
+    assert json.loads(result.stderr)['code']==code

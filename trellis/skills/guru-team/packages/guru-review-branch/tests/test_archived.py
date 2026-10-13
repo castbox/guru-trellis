@@ -26,7 +26,7 @@ class ArchivedContractTest(unittest.TestCase):
             Draft202012Validator.check_schema(schema)
             Draft202012Validator(schema).validate(value)
             self.assertEqual(set(value), set(schema["required"]))
-        output = json.loads((package / "examples/public-archived-review-passed-output.json").read_text())
+        output = json.loads((package / "examples/public-output-delivery-archived-review-passed-1.0.json").read_text())
         projection = next(p for p in interface["public_contracts"]["projections"] if p["exit_id"] == "archived_review_passed")
         self.assertEqual(projection["operation"], "direct")
         consumer = next(item for item in interface["public_contracts"]["consumer_inputs"]
@@ -152,6 +152,51 @@ class ArchivedReviewTest(unittest.TestCase):
         self.assertEqual(tree, self.git("rev-parse", "HEAD^{tree}"))
         self.assertEqual("", self.git("status", "--porcelain"))
         self.assertEqual("stale_identity", self.invoke(ok=False)["code"])
+
+    def test_schema2_archived_delivery_reviews_closure_and_own_plan(self):
+        import copy, importlib.util, shutil, sys
+        source=os.environ.get('TRELLIS_DELIVERY_API_COMMON')
+        if not source: self.skipTest('Set the reviewed candidate common directory.')
+        skills=test_contract.PACKAGE.parents[1]
+        spec=importlib.util.spec_from_file_location('archive_task_v2_fixture',skills/'packages/guru-check-task/tests/test_delivery_flow.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        fixture=module.DeliveryFlow();fixture.setUp()
+        try:
+            record=fixture.projection.read_record();record.update(deliveries=[],completion_results=[],closure_results=[])
+            (self.repo/'requirements.md').write_text('R1 archive current scope.\n')
+            sys.path.insert(0,str(skills))
+            from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+            scope=authority_ref(self.repo/'requirements.md',self.repo);record['accepted_scope']=scope
+            archive=self.repo/self.task_ref
+            active_ref='.trellis/tasks/09-16-example';active=self.repo/active_ref
+            active.mkdir(parents=True);(active/'task.json').write_text(json.dumps(record))
+            shutil.copytree(source,self.repo/'.trellis/scripts/common')
+            (self.repo/'.trellis/workflow.md').write_bytes((fixture.repo/'.trellis/workflow.md').read_bytes())
+            projection=DeliveryProjection(self.repo,active_ref);key=fixture.key
+            projection.apply({'api_version':'1.0','operation':'create_delivery','key':key,'owner_role':'creation','owner_id':'guru-test-creation','scope_ref':{'authority':scope,'anchors':['R1']},'profile':'local_commit'})
+            plan=projection.planning_directory(key);plan.mkdir(parents=True,exist_ok=True)
+            for name in ('prd.md','design.md','implement.md'):(plan/name).write_text('R1 archived Delivery plan.\n')
+            projection.apply({'api_version':'1.0','operation':'stop','key':key,'owner_role':'planning','owner_id':'guru-test-planning','expected_phase':'planning','result':{'result_id':'stop:archive','owner_id':'guru-test-planning','reason':scope,'scope_decision':scope,'evidence':[scope]}})
+            task_key={'task_id':key['task_id'],'lifecycle_generation':0}
+            projection.apply({'api_version':'1.0','operation':'complete_task','key':task_key,'owner_role':'completion','owner_id':'guru-test-completion','result':{'result_id':'complete:archive','owner_id':'guru-test-completion','evidence':[scope],'lifecycle_generation':0,'accepted_scope':scope,'delivery_result_ids':[],'outcome':'completed'}})
+            projection.apply({'api_version':'1.0','operation':'close_task','key':task_key,'owner_role':'closure','owner_id':'guru-test-closure','result':{'result_id':'close:archive','owner_id':'guru-test-closure','evidence':[scope],'lifecycle_generation':0,'completion_result_id':'complete:archive','disposition':'no_mutation','source_result':None}})
+            for name in ('task.json','deliveries'):
+                target=archive/name
+                if target.is_dir():shutil.rmtree(target)
+                elif target.exists():target.unlink()
+                shutil.move(str(active/name),str(target))
+            active.rmdir();projection=DeliveryProjection(self.repo,self.task_ref)
+            self.git('add','.');self.git('commit','-qm','archive public Task and Delivery')
+            self.head=self.git('rev-parse','HEAD');self.git('push','-q','origin','feat/archive')
+            self.pr['headRefOid']=self.head;self.provider_files()
+            self.public.update(profile='delivery_archived_review',delivery_key=key,branch_review_commit=self.head)
+            self.write('public.json',self.public)
+            before=copy.deepcopy(projection.read_record())
+            self.record()
+            result=self.invoke();self.assertEqual('archived_review_passed',result['exit_id'])
+            self.assertEqual(before,projection.read_record());self.assertNotIn('status',projection.read_record())
+            self.assertEqual('',self.git('status','--porcelain'))
+        finally: fixture.doCleanups()
 
     def test_archived_review_does_not_read_retired_mappings(self):
         self.assertFalse((self.repo / ".trellis/.runtime/guru-team/tasks").exists())

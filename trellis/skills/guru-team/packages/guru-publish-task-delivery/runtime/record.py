@@ -7,6 +7,9 @@ from owner import parser, plan_from_input, read_json, record_gate, repo_root, va
 
 
 def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
+    if command.get("id") == "migrate-task-delivery-publication":
+        from migration import run as migrate
+        return migrate(package_root, command, argv)
     del package_root, command
     args = parser("record").parse_args(argv)
     root = repo_root(Path(args.root or "."))

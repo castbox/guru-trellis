@@ -64,6 +64,18 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
 
+    def test_clean_install_and_reapply_close_canonical_workflow_specs(self) -> None:
+        sources = sorted((self.guru_root / "trellis/presets/guru-team/spec/workflow").glob("*.md"))
+        self.assertTrue(sources)
+        for source in sources:
+            target = self.repo / ".trellis/spec/workflow" / source.name
+            self.assertTrue(target.is_file(), source.name)
+            self.assertEqual(source.read_bytes(), target.read_bytes(), source.name)
+        result = self.install_current()
+        self.assertEqual(result["skill_installed_validation"]["returncode"], 0)
+        for source in sources:
+            self.assertEqual(source.read_bytes(), (self.repo / ".trellis/spec/workflow" / source.name).read_bytes())
+
     def managed_graph_snapshot(self) -> dict[str, tuple[bytes, int]]:
         extension_path = self.install_dst / "extension.json"
         extension = json.loads(extension_path.read_text(encoding="utf-8"))
@@ -431,9 +443,9 @@ class PresetTransactionInstallerTest(unittest.TestCase):
         self.assertTrue((self.install_dst / "skills/schemas/production-contract-manifest-4.0.schema.json").is_file())
         self.assertEqual(
             (self.install_dst / "skills/contracts/production-current.json").read_bytes(),
-            (self.install_dst / "skills/contracts/production-current-4.0.json").read_bytes(),
+            (self.install_dst / "skills/contracts/production-current-5.0.json").read_bytes(),
         )
-        for legacy in ("production-current-2.0.json", "production-current-3.0.json"):
+        for legacy in ("production-current-2.0.json", "production-current-3.0.json", "production-current-4.0.json"):
             self.assertEqual(
                 (self.install_dst / "skills/contracts" / legacy).read_bytes(),
                 (self.guru_root / "trellis/skills/guru-team/contracts" / legacy).read_bytes(),

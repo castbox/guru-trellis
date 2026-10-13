@@ -1,0 +1,12 @@
+{
+  "profile": "delivery_activation",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "11111111-1111-4111-8111-111111111111"
+  },
+  "planning_result_id": "planning:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "action": "activate"
+}

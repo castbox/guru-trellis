@@ -814,11 +814,11 @@ class BranchReviewContractTest(unittest.TestCase):
         self.assertNotIn("mapping", json.dumps(boundary).lower())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-production-review-branch-input-aggregate-5.0",
+            "guru-review-branch-input-delivery-aggregate-1.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
-            ["branch_review", "base_continuity", "archived_review"],
+            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision"],
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
@@ -833,6 +833,8 @@ class BranchReviewContractTest(unittest.TestCase):
                 "scope_confirmation_required",
                 "blocked",
                 "archived_review_passed",
+                "delivery_stopped",
+                "delivery_scope_revised",
             ],
             [output["exit_id"] for output in public["outputs"]],
         )
@@ -847,12 +849,9 @@ class BranchReviewContractTest(unittest.TestCase):
         ):
             text = path.read_text()
             normalized = " ".join(text.split())
-            self.assertIn("base_continuity", text)
-            self.assertIn("schema 4.0", text)
-            self.assertIn("schema 3.0", text)
-            self.assertIn("schema 7.0", text)
-            self.assertIn("schema 6.0", text)
-            self.assertRegex(text, r"legacy\s+stale")
+            self.assertIn("continuity", text)
+            self.assertIn("current", text)
+            self.assertIn("Delivery", text)
             self.assertIn("continuity_passed", text)
             self.assertIn("bounded", normalized)
             self.assertIn("full Branch Review", normalized)

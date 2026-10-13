@@ -12,12 +12,12 @@ def _managed_validation_command(command: list[str]) -> list[str]:
 
 def guard(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); allow_planning=public["profile"]=="post_plan"; task_identity(repo,public["task_ref"],allow_planning=allow_planning)
+    args=parse(parser,argv); repo=repo_root(args.root); public=read_json(repo,package_root,args.input,"input"); validate_public(package_root,public); task_identity(repo,public["task_ref"],delivery_key=public["delivery_key"])
     task,old,new=operation_pair(repo,public)
     status=("unchanged" if is_ancestor(repo,new,task) else "new_pair") if public["profile"] in PRE_REVIEW_PROFILES else ("unchanged" if new==old and is_ancestor(repo,new,task) else "new_pair")
     current_head=resolve_commit(repo,"HEAD","HEAD")
     if task != public["task_head"]: status="blocked"
-    cp=checkpoint_path(repo,public["task_ref"],allow_planning=allow_planning)
+    cp=checkpoint_path(repo,public["task_ref"],delivery_key=public["delivery_key"])
     typed_output=None
     if status=="new_pair" and cp.is_file():
         try:
@@ -28,11 +28,11 @@ def guard(package_root: Path, argv: list[str]) -> dict:
         except Exception: status="blocked"
     elif status != "blocked" and current_head != task:
         status="blocked"
-    result={"status":status,"task_ref":public["task_ref"],"task_head":public["task_head"],"old_base_head":old,"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/pair-guard-result.schema.json","result"); return result
+    result={"status":status,"task_ref":public["task_ref"],"delivery_key":public["delivery_key"],"task_head":public["task_head"],"old_base_head":old,"new_base_head":new,"resume_target":public["resume_target"],"typed_output":typed_output}; validate_json(result,package_root/"schemas/delivery-pair-guard-result.schema.json","result"); return result
 
 def candidate(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--request",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.request,"request"); validate_json(request,package_root/"schemas/candidate-request.schema.json","request")
+    args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.request,"request"); validate_json(request,package_root/"schemas/delivery-candidate-request.schema.json","request")
     task=resolve_commit(repo,request["task_head"],"task_head"); base=resolve_commit(repo,request["new_base_head"],"new_base_head"); validations=[]; conflicts=[]; tree=None
     with tempfile.TemporaryDirectory(prefix="guru-base-candidate-") as td:
         worktree=Path(td)/"worktree"; added=False
@@ -49,12 +49,12 @@ def candidate(package_root: Path, argv: list[str]) -> dict:
                     proc=subprocess.run(executed_command,cwd=worktree,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env={**os.environ,"GIT_TERMINAL_PROMPT":"0"}); validations.append({"argv":executed_command,"exit_code":proc.returncode})
         finally:
             if added: subprocess.run(["git","worktree","remove","--force",str(worktree)],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    result={"status":"ok","task_head":task,"new_base_head":base,"merge_status":"conflicted" if merge_failed else "clean","conflict_paths":conflicts,"candidate_tree_sha256":tree,"validations":validations}; validate_json(result,package_root/"schemas/candidate-result.schema.json","result"); return result
+    result={"status":"ok","task_head":task,"new_base_head":base,"merge_status":"conflicted" if merge_failed else "clean","conflict_paths":conflicts,"candidate_tree_sha256":tree,"validations":validations}; validate_json(result,package_root/"schemas/delivery-candidate-result.schema.json","result"); return result
 
 def reconcile(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--request",required=True)
-    args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.request,"request"); validate_json(request,package_root/"schemas/reconciliation-request.schema.json","request")
-    identity=task_identity(repo,request["task_ref"],allow_planning=request["profile"]=="post_plan")
+    args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.request,"request"); validate_json(request,package_root/"schemas/delivery-reconciliation-request.schema.json","request")
+    identity=task_identity(repo,request["task_ref"],delivery_key=request["delivery_key"])
     if identity["branch"] != request["branch"]:
         raise CommandError("stale_identity","branch","Use the exact current task branch.",3)
     prior=resolve_commit(repo,request["prior_task_head"],"prior_task_head")
@@ -123,9 +123,9 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
             dropped=subprocess.run(["git","stash","drop","stash@{0}"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             if dropped.returncode:
                 raise CommandError("reconciliation_failed","worktree",f"Pending task changes were restored but stash {stash_oid} remains.",3)
-    result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
+    result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
     if review is not None: result["branch_review_commit"]=review
-    validate_json(result,package_root/"schemas/reconciliation-result.schema.json","result"); return result
+    validate_json(result,package_root/"schemas/delivery-reconciliation-result.schema.json","result"); return result
 
 def _git_path(repo: Path, name: str) -> Path:
     path=Path(git(repo, "rev-parse", "--git-path", name))
@@ -146,8 +146,8 @@ def _commit_facts(repo: Path, commit: str) -> tuple[list[str], str, str]:
 def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.input,"input")
-    validate_json(request,package_root/"schemas/public-resolved-candidate-input.schema.json","input")
-    identity=task_identity(repo,request["task_ref"])
+    validate_json(request,package_root/"schemas/delivery-public-resolved-candidate-input.schema.json","input")
+    identity=task_identity(repo,request["task_ref"],delivery_key=request["delivery_key"])
     if identity["branch"] != request["branch"]:
         raise CommandError("stale_identity","branch","Use the exact current task branch.",3)
     phase2=resolve_commit(repo,request["phase2_commit_anchor"],"phase2_commit_anchor")
@@ -196,8 +196,8 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
             raise CommandError("reconciliation_failed","reconciled_task_head","The created commit differs from the reviewed parents, tree, or message.",3)
         require_clean_worktree(repo)
         status="committed"
-    result={"schema_version":"1.0","status":status,"task_ref":request["task_ref"],"branch":request["branch"],"phase2_commit_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}
-    validate_json(result,package_root/"schemas/resolved-reconciliation-result.schema.json","result"); return result
+    result={"schema_version":"1.0","status":status,"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"phase2_commit_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}
+    validate_json(result,package_root/"schemas/delivery-resolved-reconciliation-result.schema.json","result"); return result
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if command["id"]=="guard-task-base-pair": return guard(package_root,argv)

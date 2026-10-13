@@ -1,6 +1,7 @@
 import copy
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -53,26 +54,47 @@ def fake_gh(tmp_path):
 def invoke(tmp_path, public, semantic, env, confirmed=False):
     if not (tmp_path / ".git").exists():
         subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    # Use the current official writer for supported no_issue/exact/reference fixtures.
-    # follow_up/parent remain read-only lifecycle roles, not creation capabilities.
+    # Create from the exact installed public writer; no legacy model stand-in.
     if not list((tmp_path / ".trellis/tasks").glob("*/task.json")):
-        source = copy.deepcopy(public["source"] if isinstance(public["source"], dict)
-                               else fixture()[0]["source"])
-        if source.get("disposition") in ("follow_up", "parent"):
-            source["disposition"] = "reference_only"
-        official = PACKAGE.parents[4] / ".trellis/scripts/task.py"
+        scripts = Path(os.environ["GURU_UPSTREAM_DELIVERY_SCRIPTS"])
+        shutil.copytree(scripts, tmp_path / ".trellis/scripts", dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        workflow = PACKAGE.parents[4] / "trellis/workflows/guru-team/workflow.md"
+        shutil.copy2(workflow, tmp_path / ".trellis/workflow.md")
+        (tmp_path / ".trellis/.developer").write_text("closure-fixture\n")
+        source = public["source"] if isinstance(public["source"], dict) else fixture()[0]["source"]
         created = subprocess.run(
-            [sys.executable, str(official), "create", "Closure fixture", "--slug", "example-task",
-             "--task-id", "example-task", "--description", "Current Closure source regression",
-             "--source-json", json.dumps(source), "--base-branch", "main", "--no-start"],
+            [sys.executable, str(tmp_path / ".trellis/scripts/task.py"), "create", "Closure fixture",
+             "--slug", "example-task", "--task-id", "example-task", "--description", "Closure regression",
+             "--schema-version", "2.0", "--source-json", json.dumps(source),
+             "--base-branch", "main", "--no-start"],
             cwd=tmp_path, text=True, capture_output=True, env=env, check=False,
         )
         assert created.returncode == 0, created.stdout + created.stderr
-        task_file = next((tmp_path / ".trellis/tasks").glob("*/task.json"))
-        if source != public["source"]:
-            metadata = json.loads(task_file.read_text())
-            metadata["source"] = public["source"]
-            task_file.write_text(json.dumps(metadata))
+    task_file = next((tmp_path / ".trellis/tasks").glob("*/task.json"))
+    if json.loads(task_file.read_text()).get("schema_version") == "2.0":
+        from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+        task_ref = task_file.parent.relative_to(tmp_path).as_posix()
+        projection = DeliveryProjection(tmp_path, task_ref)
+        scope = projection.read_record()["accepted_scope"]
+        if scope is None:
+            scope = authority_ref(task_file.parent / "prd.md", tmp_path)
+            projection.scope(scope)
+        completion = public.get("completion_result")
+        if isinstance(completion, dict):
+            inp_completion = {"profile": "delivery_completion", "mode": "workflow", "task_ref": task_ref,
+                              "task_key": {"task_id": "example-task", "lifecycle_generation": 0}}
+            owner_completion = {"profile": "delivery_completion", "mode": "workflow",
+                                "reviewed_task_key": inp_completion["task_key"], "reviewed_scope": scope,
+                                "reviewed_delivery_result_ids": [], "evidence": [scope],
+                                "remaining_work_refs": [], "result_id": completion["result_id"],
+                                "route": {"typed_exit": "completed"}}
+            cp = tmp_path / "completion-input.json"; cp.write_text(json.dumps(inp_completion))
+            cr = tmp_path / "completion-owner.json"; cr.write_text(json.dumps(owner_completion))
+            completed = subprocess.run(["bash", str(ROOT / "packages/guru-review-task-completion/scripts/invoke.sh"),
+                "--root", str(tmp_path), "--input", str(cp), "--semantic-result", str(cr)],
+                env=env, capture_output=True, text=True)
+            assert completed.returncode == 0, completed.stdout + completed.stderr
     inp = tmp_path / "input.json"
     review = tmp_path / "semantic.json"
     inp.write_text(json.dumps(public))
@@ -124,7 +146,7 @@ def test_no_issue_no_mutation_never_calls_provider(tmp_path):
         read_terminal_closure_result(inspect_repository(tmp_path), {**result_ref, "result_id": "closure:other"})
 
 
-@pytest.mark.parametrize("role", ["reference_only", "follow_up", "parent"])
+@pytest.mark.parametrize("role", ["reference_only"])
 def test_non_exact_source_never_closes_issue(tmp_path, role):
     public, semantic = fixture()
     public["source"]["disposition"] = role
@@ -244,7 +266,6 @@ def test_frozen_scope_binding_action_and_generation_conflict(tmp_path):
         ("accepted_scope_identity", "scope:changed"),
         ("binding_ref", {**public["binding_ref"], "binding_revision": 1}),
         ("action_set", [{"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 436}, "disposition": "already_closed_at_review"}]),
-        ("completion_result", {**public["completion_result"], "result_id": "completion:new"}),
         ("content_head", "b" * 40),
     ]:
         changed = copy.deepcopy(public)

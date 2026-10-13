@@ -1,5 +1,12 @@
 # Companion Scripts
 
+#531 candidate projection code calls the installed upstream Delivery API only;
+public schema/status authority is not reproduced in Guru. See
+[MIGRATION-531.md](task-delivery-migration.md) for current I/O and cutover.
+Scope and implementation modules execute owner inputs without semantic route
+judgment or persistence. Original publication/merge transactions retain their
+private recovery responsibility; receipts never establish semantic pass.
+
 ## GitHub CLI Adapter
 
 Each owning Skill package contains its deterministic GitHub adapter. Package

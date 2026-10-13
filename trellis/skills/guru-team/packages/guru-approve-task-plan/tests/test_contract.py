@@ -8,6 +8,12 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import sys
+from pathlib import Path
+
+PACKAGE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PACKAGE.parent / "guru-create-delivery/tests"))
+from support import installed_fixture
 from pathlib import Path
 
 
@@ -16,26 +22,50 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.package = Path(__file__).resolve().parents[1]
         self.repo = self.package.parents[1]
         self.interface = self.read("interface.json")
-        self.schema = self.read("schemas/planning-approval-4.0.schema.json")
-        self.example = self.read("examples/planning-approval.json")
+        self.schema = self.read("schemas/planning-approval-delivery.schema.json")
+        self.example = self.read("examples/planning-approval-delivery.json")
 
     def read(self, relative: str) -> dict:
         return json.loads((self.package / relative).read_text(encoding="utf-8"))
 
-    def planning_fixture(self, root: Path) -> tuple[Path, Path]:
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
-        task = root / ".trellis/tasks/current"
-        task.mkdir(parents=True)
+    def planning_fixture(self):
+        fixture = installed_fixture(self)
+        key = fixture.create()
+        directory = fixture.projection.planning_directory(key)
         for name in ("prd.md", "design.md", "implement.md"):
-            (task / name).write_text(f"# {name}\n", encoding="utf-8")
-        authoring = {key: self.example[key] for key in (
+            (directory / name).write_text(f"# {name}\n", encoding="utf-8")
+        authoring = {name: copy.deepcopy(self.example[name]) for name in (
             "mode", "authority_refs", "delivery_policy", "docs_ssot_plan",
             "semantic_review", "typed_exit", "consumer", "reason",
         )}
-        authoring["mode"] = "workflow"
-        owner_input = root / "planning-owner-input.json"
-        owner_input.write_text(json.dumps(authoring) + "\n", encoding="utf-8")
-        return task, owner_input
+        path = fixture.root / "planning-owner-input.json"
+        path.write_text(json.dumps(authoring), encoding="utf-8")
+        return fixture, key, directory, path
+
+    def command(self, fixture, name, *args, expected=0):
+        result = subprocess.run([str(self.package / "scripts" / name), "--root", str(fixture.root), *args],
+                                cwd=fixture.root, text=True, capture_output=True)
+        self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
+        return json.loads(result.stdout)
+
+    def record(self, fixture, key, path):
+        return self.command(fixture, "record-planning-approval.sh", "--task", fixture.task_ref,
+                            "--delivery-key", json.dumps(key), "--input", str(path), "--json")["result"]
+
+    def check(self, fixture, key, expected=0):
+        return self.command(fixture, "check-planning-approval.sh", "--task", fixture.task_ref,
+                            "--delivery-key", json.dumps(key), "--json", expected=expected)
+
+    def public_invoke(self, fixture, key, owner, expected=0):
+        public = self.read("examples/public-delivery-initial-review-input-2.0.json")
+        public.update(task_ref=fixture.task_ref, delivery_key=key)
+        import hashlib
+        directory=fixture.projection.planning_directory(key)
+        public["architecture_assessment"]["freshness_identity"]="sha256:"+hashlib.sha256((directory/"design.md").read_bytes()).hexdigest()
+        path = fixture.root / "public-input.json"
+        path.write_text(json.dumps(public))
+        return self.command(fixture, "invoke.sh", "--input", str(path), "--owner-result", owner["artifact_path"], expected=expected)
+
 
     def test_architecture_stage_consumes_adjacent_completed_owner_result(self) -> None:
         skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
@@ -45,179 +75,75 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.assertRegex(text, r"second\s+external")
             self.assertRegex(text, r"already\s+completed")
 
-    def test_approve_planning_staging_uses_real_record_and_check_wrappers(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            fixture = Path(temp)
-            task, owner_input = self.planning_fixture(fixture)
-            task_ref = task.relative_to(fixture).as_posix()
-            recorded = subprocess.run(
-                [
-                    str(self.package / "scripts/record-planning-approval.sh"),
-                    "--root", str(fixture),
-                    "--task", task_ref,
-                    "--input", owner_input.relative_to(fixture).as_posix(),
-                    "--json",
-                ],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(recorded.returncode, 0, recorded.stderr)
-            checked_process = subprocess.run(
-                [
-                    str(self.package / "scripts/check-planning-approval.sh"),
-                    "--root", str(fixture),
-                    "--task", task_ref,
-                    "--json",
-                ],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(checked_process.returncode, 0, checked_process.stderr)
-            checked = json.loads(checked_process.stdout)["result"]
-            self.assertEqual(checked["typed_exit"], "approved")
-            self.assertEqual(
-                checked["consumer"],
-                {"kind": "workflow", "id": "phase-1-task-activation"},
-            )
-            checkpoint = json.loads(Path(checked["artifact_path"]).read_text(encoding="utf-8"))
-            self.assertEqual(checkpoint["delivery_policy"], self.example["delivery_policy"])
-            public_input = fixture / "public-input.json"
-            public_input.write_text(json.dumps({"mode": "workflow", "task_ref": task_ref}), encoding="utf-8")
-            invoked = subprocess.run(
-                [
-                    str(self.package / "scripts/invoke.sh"), "--root", str(fixture),
-                    "--input", str(public_input), "--owner-result", checked["artifact_path"],
-                ],
-                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-            )
-            self.assertEqual(invoked.returncode, 0, invoked.stderr)
-            self.assertEqual(json.loads(invoked.stdout), {
-                "exit_id": "approved", "task_ref": task_ref,
-                "planning_result_id": f"planning:{checkpoint['reviewed_content_sha256']}",
-            })
-            self.assertFalse(Path(checked["artifact_path"]).exists())
+    def test_approve_planning_staging_uses_real_record_and_check_wrappers(self):
+        fixture, key, directory, path = self.planning_fixture()
+        before = fixture.projection.resolve(key)
+        recorded = self.record(fixture, key, path)
+        checked = self.check(fixture, key)["result"]
+        self.assertEqual(checked["consumer"], {"kind": "workflow", "id": "phase-1-delivery-activation"})
+        output = self.public_invoke(fixture, key, recorded)
+        self.assertEqual(output, {"exit_id": "approved", "task_ref": fixture.task_ref,
+                                 "delivery_key": key, "planning_result_id": "planning:" + recorded["reviewed_content_sha256"]})
+        self.assertFalse(Path(recorded["artifact_path"]).exists())
+        self.assertEqual(fixture.projection.resolve(key), before)  # Approval does not activate.
+        from support import owner_module
+        activation = owner_module(self.package.parent / "guru-activate-delivery")
+        public = {"profile": "delivery_activation", "mode": "workflow", "task_ref": fixture.task_ref,
+                  "delivery_key": key, "action": "activate", "planning_result_id": output["planning_result_id"]}
+        result = activation.invoke(self.package.parent / "guru-activate-delivery", fixture.root, public,
+                                   {"typed_exit": "delivery_started", "reason": "The actual current plan was reviewed."})
+        self.assertEqual(result["exit_id"], "delivery_started")
+        self.assertNotEqual(result["planning_accepted_result_id"], output["planning_result_id"])
 
-    def test_clarify_scope_uses_real_record_check_and_invoke_wrappers(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            fixture = Path(temp)
-            task, owner_input = self.planning_fixture(fixture)
-            task_ref = task.relative_to(fixture).as_posix()
-            authoring = json.loads(owner_input.read_text(encoding="utf-8"))
-            authoring["typed_exit"] = "clarify_scope"
-            authoring["consumer"] = {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}
-            authoring["semantic_review"].update({
-                "status": "clarify_scope", "scope_proposals": ["scope-proposal:R13"],
-            })
-            owner_input.write_text(json.dumps(authoring) + "\n", encoding="utf-8")
 
-            recorded = subprocess.run(
-                [
-                    str(self.package / "scripts/record-planning-approval.sh"),
-                    "--root", str(fixture),
-                    "--task", task_ref,
-                    "--input", owner_input.relative_to(fixture).as_posix(),
-                    "--json",
-                ],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(recorded.returncode, 0, recorded)
-            owner_result = json.loads(recorded.stdout)["result"]
-            self.assertEqual(owner_result["typed_exit"], "clarify_scope")
+    def test_delivery_revision_actions_return_to_the_original_author_router(self):
+        fixture, key, directory, path = self.planning_fixture()
+        author = json.loads(path.read_text())
+        author.update(typed_exit="revision_required", consumer={
+            "kind": "workflow", "id": "guru-task-plan-approval-revision-router"})
+        actions = ["修订当前 Delivery 的来源设计处置。"]
+        author["semantic_review"].update(status="revision_required", revision_actions=actions)
+        path.write_text(json.dumps(author))
+        before = fixture.projection.read_record()
+        recorded = self.record(fixture, key, path)
+        self.assertEqual(self.check(fixture, key)["result"]["typed_exit"], "revision_required")
+        output = self.public_invoke(fixture, key, recorded)
+        self.assertEqual(output, {"exit_id": "revision_required", "task_ref": fixture.task_ref,
+                                 "delivery_key": key, "revision_actions": actions})
+        self.assertEqual(fixture.projection.read_record(), before)
+        self.assertFalse(Path(recorded["artifact_path"]).exists())
+        from jsonschema import Draft202012Validator
+        row = next(row for row in self.interface["public_contracts"]["consumer_inputs"]
+                   if row["id"] == "revision_workflow_input")
+        Draft202012Validator(self.read(row["contract"]["path"])).validate(output)
 
-            checked = subprocess.run(
-                [
-                    str(self.package / "scripts/check-planning-approval.sh"),
-                    "--root", str(fixture),
-                    "--task", task_ref,
-                    "--require-exit", "clarify_scope",
-                    "--json",
-                ],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(checked.returncode, 0, checked)
-            self.assertEqual(json.loads(checked.stdout)["result"]["typed_exit"], "clarify_scope")
+    def test_clarify_scope_uses_real_record_check_and_invoke_wrappers(self):
+        fixture, key, directory, path = self.planning_fixture()
+        author = json.loads(path.read_text())
+        author.update(typed_exit="clarify_scope", consumer={"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"})
+        author["semantic_review"].update(status="clarify_scope", scope_proposals=["scope-proposal:R13"])
+        path.write_text(json.dumps(author))
+        recorded = self.record(fixture, key, path)
+        self.assertEqual(self.check(fixture, key)["result"]["typed_exit"], "clarify_scope")
+        output = self.public_invoke(fixture, key, recorded)
+        self.assertEqual(output, {"exit_id": "clarify_scope", "task_ref": fixture.task_ref,
+                                 "delivery_key": key, "proposal_refs": ["scope-proposal:R13"]})
+        self.assertFalse(Path(recorded["artifact_path"]).exists())
+        self.assertEqual(fixture.projection.resolve(key)["phase"], "planning")
 
-            public_input = fixture / ".trellis/.runtime/guru-team/evals/public-input.json"
-            public_input.parent.mkdir(parents=True, exist_ok=True)
-            public_input.write_text(
-                json.dumps({
-                    "profile": "clarification_reentry",
-                    "mode": "workflow",
-                    "task_ref": task_ref,
-                    "source_exit": "clarify_scope",
-                    "reentry_reason": "authority_refreshed",
-                }),
-                encoding="utf-8",
-            )
-            checkpoint_relative = (
-                Path(".trellis/.runtime/guru-team/owner-checkpoints")
-                / task.name
-                / "planning-approval.json"
-            )
-            checkpoint = fixture / checkpoint_relative
-            invoked = subprocess.run(
-                [
-                    str(self.package / "scripts/invoke.sh"),
-                    "--root", str(fixture),
-                    "--input", public_input.relative_to(fixture).as_posix(),
-                    "--owner-result", checkpoint_relative.as_posix(),
-                ],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(invoked.returncode, 0, invoked)
-            self.assertEqual(
-                json.loads(invoked.stdout),
-                {
-                    "exit_id": "clarify_scope",
-                    "task_ref": task_ref,
-                    "proposal_refs": ["scope-proposal:R13"],
-                },
-            )
-            self.assertFalse(checkpoint.exists())
 
-    def test_planning_artifact_resolution_is_package_owned_and_compatible(self) -> None:
-        command = next(
-            item for item in self.read("commands.json")["commands"]
-            if item["id"] == "resolve-planning-artifacts"
-        )
-        self.assertEqual(command["entrypoint"], "runtime/check.py")
+    def test_planning_artifact_resolution_is_package_owned_and_compatible(self):
+        command = next(item for item in self.read("commands.json")["commands"] if item["id"] == "resolve-planning-artifacts")
         self.assertEqual(command["runtime_role"], "check")
         self.assertEqual(command["side_effect"], "repo_read")
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            task = root / ".trellis/tasks/08-12-example"
-            task.mkdir(parents=True)
-            (task / "prd.md").write_text("# PRD\n", encoding="utf-8")
-            wrapper = self.package / "scripts/resolve-human-artifacts.sh"
-            result = subprocess.run(
-                [str(wrapper), "--root", str(root), "--task", str(task), "--json"],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result)
-            from runtime.io import project_intermediate_receipt
-            payload = project_intermediate_receipt(json.loads(result.stdout), self.repo / "schemas")
-            self.assertEqual(payload["task_dir_relative"], ".trellis/tasks/08-12-example")
-            self.assertEqual(
-                [item["exists"] for item in payload["markdown_artifacts"]],
-                [True, False, False],
-            )
-            self.assertEqual(payload["markdown_artifacts"][0]["status"], "已生成")
+        fixture, key, directory, path = self.planning_fixture()
+        (directory / "implement.md").unlink()
+        result = self.command(fixture, "resolve-human-artifacts.sh", "--task", fixture.task_ref,
+                              "--delivery-key", json.dumps(key), "--json")["result"]
+        self.assertEqual(result["task_dir_relative"], directory.relative_to(fixture.root.resolve()).as_posix())
+        self.assertEqual([item["exists"] for item in result["markdown_artifacts"]], [True, True, False])
+        self.assertEqual((fixture.task / "prd.md").read_text(), "整体scope\n")
+
 
     def test_artifact_help_and_compatibility_wrapper_route_to_package(self) -> None:
         root = self.package.parents[4]
@@ -253,7 +179,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertEqual(
             [(item["id"], item["consumer"]) for item in self.interface["external_exits"]],
             [
-                ("approved", {"kind": "workflow", "id": "phase-1-task-activation"}),
+                ("approved", {"kind": "workflow", "id": "phase-1-delivery-activation"}),
                 ("revision_required", {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"}),
                 ("clarify_scope", {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}),
                 ("blocked", {"kind": "stop", "id": "task-plan-approval-blocked"}),
@@ -261,7 +187,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         )
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-planning-approval-4.0.json"))
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-planning-approval-delivery-1.0"))
         self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
             "Owner-private composite freshness token",
@@ -278,32 +204,26 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         Draft202012Validator.check_schema(self.schema)
         Draft202012Validator(self.schema).validate(self.example)
 
-        for name in ("initial-review", "revision-reentry", "clarification-reentry"):
+        for name in ("delivery-initial-review", "delivery-revision-reentry", "delivery-clarification-reentry"):
             schema = self.read(f"schemas/public-{name}-input.schema.json")
             example = self.read(f"examples/public-{name}-input.json")
             Draft202012Validator(schema).validate(example)
         for name in ("approved", "revision-required", "clarify-scope", "blocked"):
             schema = self.read(next(row["schema"]["path"] for row in self.interface["public_contracts"]["outputs"] if row["exit_id"] == name.replace("-", "_")))
-            example = self.read(f"examples/public-{name}-output.json")
+            example = self.read(next(row["example"]["path"] for row in self.interface["public_contracts"]["outputs"] if row["exit_id"] == name.replace("-", "_")))
             Draft202012Validator(schema).validate(example)
 
         consumer_schema = json.loads(
-            (self.repo / "consumers/workflow/production/approve-task-plan-approved.schema.json").read_text(encoding="utf-8")
+            (self.package / next(row["contract"]["path"] for row in self.interface["public_contracts"]["consumer_inputs"] if row["id"] == "approved_workflow_input")).read_text(encoding="utf-8")
         )
-        self.assertTrue(consumer_schema["$id"].endswith("approved-input-3.0"))
-        approved = self.read("examples/public-approved-output.json")
+        self.assertIn("approved", consumer_schema["$id"])
+        approved = self.read("examples/public-delivery-approved-output.json")
         consumer = Draft202012Validator(consumer_schema)
         consumer.validate(approved)
         self.assertFalse(consumer.is_valid({key: value for key, value in approved.items() if key != "planning_result_id"}))
-        activation = json.loads(
-            (self.package.parent / "guru-activate-task/examples/public-activate-input.json").read_text(encoding="utf-8")
-        )
-        activation_schema = json.loads(
-            (self.package.parent / "guru-activate-task/schemas/public-input.schema.json").read_text(encoding="utf-8")
-        )
-        activation["activation"]["task_ref"] = approved["task_ref"]
-        activation["activation"]["task_id"] = Path(approved["task_ref"]).name
-        activation["activation"]["planning_result_id"] = approved["planning_result_id"]
+        activation = json.loads((self.package.parent / "guru-activate-delivery/examples/public-delivery-activation-input.json").read_text())
+        activation.update(task_ref=approved["task_ref"], delivery_key=approved["delivery_key"], planning_result_id=approved["planning_result_id"])
+        activation_schema = json.loads((self.package.parent / "guru-activate-delivery/schemas/public-delivery-activation-input.schema.json").read_text())
         Draft202012Validator(activation_schema).validate(activation)
 
     def test_compact_gate_has_four_closed_semantic_routes(self) -> None:
@@ -413,7 +333,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         workflow = (repo / "trellis/workflows/guru-team/workflow.md").read_text(encoding="utf-8")
         phase = workflow.split("#### 1.1 Unique Author and global sequence", 1)[1].split("#### 1.5 Task activation", 1)[0]
         self.assertLess(
-            phase.index("Architecture\nfinal_plan"),
+            phase.index("final_plan"),
             phase.index("Approval"),
         )
         for exit_id in (
@@ -445,7 +365,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         )
         for phrase in required:
             self.assertIn(phrase, normalized)
-        self.assertLess(normalized.index("show clickable links to `prd.md`"), normalized.index("resume_target=task_activation"))
+        self.assertLess(normalized.index("show clickable links to `prd.md`"), normalized.index("resume_target=delivery_activation"))
 
         markers = [
             json.loads(raw)
@@ -587,44 +507,34 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
             self.assertEqual(rejected_result["status"], "evaluation_failed")
             self.assertFalse(rejected_result["cases"][0]["semantic_results"][0]["passed"])
 
-    def test_public_invoke_consumes_only_the_exact_successful_owner_checkpoint(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            subprocess.run(["git", "init", "-b", "main", str(root)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            task_ref = ".trellis/tasks/08-12-planning-consumption"
-            task_dir = root / task_ref
-            task_dir.mkdir(parents=True)
-            checkpoint = root / ".trellis/.runtime/guru-team/owner-checkpoints/08-12-planning-consumption/planning-approval.json"
-            checkpoint.parent.mkdir(parents=True)
-            owner = copy.deepcopy(self.example)
-            owner["mode"] = "workflow"
-            owner["task_ref"] = task_ref
-            owner["planning_paths"] = [f"{task_ref}/{name}" for name in ("prd.md", "design.md", "implement.md")]
-            checkpoint.write_text(json.dumps(owner), encoding="utf-8")
-            public_input = root / "public-input.json"
-            public_input.write_text(json.dumps({"mode": "workflow", "task_ref": task_ref}), encoding="utf-8")
+    def test_public_invoke_consumes_only_the_exact_successful_owner_checkpoint(self):
+        fixture, key, directory, path = self.planning_fixture()
+        recorded = self.record(fixture, key, path)
+        # A normal edit makes both check and invoke stale and retains recoverable evidence.
+        (directory / "design.md").write_text("New actual design obligation\n")
+        self.assertEqual(self.check(fixture, key, expected=3)["code"], "stale_identity")
+        self.assertEqual(self.public_invoke(fixture, key, recorded, expected=3)["code"], "stale_identity")
+        self.assertTrue(Path(recorded["artifact_path"]).exists())
+        self.record(fixture, key, path)
+        self.public_invoke(fixture, key, recorded)
+        self.assertFalse(Path(recorded["artifact_path"]).exists())
 
-            result = subprocess.run(
-                [str(self.package / "scripts/invoke.sh"), "--root", str(root), "--input", "public-input.json", "--owner-result", checkpoint.relative_to(root).as_posix()],
-                cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-            )
-            self.assertEqual(result.returncode, 0, result)
-            self.assertEqual(json.loads(result.stdout), {
-                "exit_id": "approved", "task_ref": task_ref,
-                "planning_result_id": f"planning:{owner['reviewed_content_sha256']}",
-            })
-            self.assertFalse(checkpoint.exists())
-            self.assertFalse(checkpoint.parent.exists())
+    def test_two_delivery_checkpoints_are_independent(self):
+        fixture, first, directory, path = self.planning_fixture()
+        first_owner = self.record(fixture, first, path)
+        fixture.stop(first)
+        second = fixture.create()
+        second_dir = fixture.projection.planning_directory(second)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (second_dir / name).write_text("D2 plan\n")
+        second_owner = self.record(fixture, second, path)
+        self.assertNotEqual(first_owner["artifact_path"], second_owner["artifact_path"])
+        self.assertNotEqual(first_owner["reviewed_content_sha256"], second_owner["reviewed_content_sha256"])
+        self.public_invoke(fixture, second, second_owner)
+        self.assertTrue(Path(first_owner["artifact_path"]).exists())
+        self.assertFalse(Path(second_owner["artifact_path"]).exists())
+        self.assertEqual((directory / "design.md").read_text(), "# design.md\n")
 
-            checkpoint.parent.mkdir(parents=True)
-            checkpoint.write_text(json.dumps(owner), encoding="utf-8")
-            public_input.write_text(json.dumps({"mode": "workflow", "task_ref": ".trellis/tasks/other"}), encoding="utf-8")
-            mismatch = subprocess.run(
-                [str(self.package / "scripts/invoke.sh"), "--root", str(root), "--input", "public-input.json", "--owner-result", checkpoint.relative_to(root).as_posix()],
-                cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
-            )
-            self.assertNotEqual(mismatch.returncode, 0, mismatch)
-            self.assertTrue(checkpoint.is_file())
 
     def test_subtraction_first_contract_is_loaded_without_public_authorization(self) -> None:
         repo = self.package.parents[4]
@@ -655,8 +565,8 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertTrue(policy["independent_delivery_conditions"])
         self.assertTrue(policy["validation_boundaries"])
         self.assertIn("remaining_work_owner", policy)
-        approved = self.read("examples/public-approved-output.json")
-        self.assertEqual({"exit_id", "task_ref", "planning_result_id"}, set(approved))
+        approved = self.read("examples/public-delivery-approved-output.json")
+        self.assertEqual({"exit_id", "task_ref", "delivery_key", "planning_result_id"}, set(approved))
         self.assertEqual(
             approved["planning_result_id"],
             f"planning:{self.example['reviewed_content_sha256']}",
@@ -689,7 +599,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
     def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertEqual(self.example["schema_version"], "4.0")
+        self.assertEqual(self.example["schema_version"], "delivery-1.0")
         self.assertEqual(self.example["skill_id"], "guru-approve-task-plan")
 
 

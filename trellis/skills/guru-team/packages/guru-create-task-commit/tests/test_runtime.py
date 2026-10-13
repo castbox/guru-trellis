@@ -290,6 +290,6 @@ printf '%s\\n' post-commit >> "{hook_log}"
   with contextlib.redirect_stdout(output):
    status=main(PACKAGE,["prepare-task-commit","--input","examples/public-initial-commit-input.json","--candidate-json","examples/task-commit-candidate.json","--json"])
   self.assertEqual(2,status)
-  self.assertEqual("input.task_ref",json.loads(output.getvalue())["field_path"])
+  self.assertEqual("input.profile",json.loads(output.getvalue())["field_path"])
 
 if __name__=="__main__": unittest.main()

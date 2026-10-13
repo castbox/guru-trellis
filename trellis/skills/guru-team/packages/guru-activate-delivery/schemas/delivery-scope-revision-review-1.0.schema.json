@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-activate-delivery-scope-revision-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "ai_review_gate"
+  ],
+  "properties": {
+    "public_input": {
+      "$ref": "public-delivery-scope-revision-input-1.0.schema.json"
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "const": "passed"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

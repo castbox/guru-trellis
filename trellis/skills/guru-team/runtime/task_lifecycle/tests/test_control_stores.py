@@ -9,6 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 from runtime.task_lifecycle.branch_store import TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
@@ -82,6 +83,10 @@ class SessionAdapterTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
         self.official = FakeOfficialSessionPort(self.root)
+        install_common(self.root)
+        for (task_id,generation),ref in self.official.tasks.items():
+            task=self.root/ref;task.mkdir(parents=True)
+            (task/"task.json").write_text(json.dumps(public_task({"id":task_id,"name":task_id,"lifecycle_generation":generation})))
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -94,7 +99,7 @@ class SessionAdapterTests(unittest.TestCase):
             platform_input={"context_key": context} if context else {},
         )
 
-    def test_bind_delegates_exact_schema_two_record_and_fresh_task_ref(self) -> None:
+    def test_bind_delegates_exact_schema_three_record_and_fresh_task_ref(self) -> None:
         result = self.bind()
         self.assertEqual((result.status, result.task_ref), (
             "session_bound",
@@ -103,7 +108,8 @@ class SessionAdapterTests(unittest.TestCase):
         self.assertEqual(
             next(iter(self.official.records.values())),
             {
-                "schema_version": 2,
+                "schema_version": 3,
+                "delivery_id": None,
                 "task_id": TASK_A,
                 "lifecycle_generation": 0,
             },
@@ -115,6 +121,7 @@ class SessionAdapterTests(unittest.TestCase):
                 "repository_facts",
                 "session_path",
                 "resolve_task_identity",
+                "record_exists",
                 "write_record",
                 "read_record",
             ],
@@ -181,6 +188,7 @@ class SessionAdapterTests(unittest.TestCase):
 
     def test_generation_change_invalidates_old_record_and_task_ref_is_fresh(self) -> None:
         self.assertEqual(self.bind().status, "session_bound")
+        (self.root/self.official.tasks[(TASK_A,0)]).rename(self.root/".trellis/tasks/09-24-renamed-task")
         self.official.tasks[(TASK_A, 0)] = ".trellis/tasks/09-24-renamed-task"
         moved = resolve_session(
             self.official,

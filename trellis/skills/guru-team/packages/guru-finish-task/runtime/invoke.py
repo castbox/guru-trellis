@@ -245,9 +245,16 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
         raise CommandError("stale_identity", "task.json.id", "Task identity does not match the resolved lifecycle.", 3)
     if "source" not in task:
         task["source"] = task_source_with_review(task, frozen_source) if frozen_source is not None else task_source(task)
-    task["status"] = "completed"
-    task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
-    task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
+    if task.get("schema_version") == "2.0":
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        record = DeliveryProjection(root, public["task_ref"]).read_record()
+        closure = next((r for r in record["closure_results"] if r["result_id"] == public["closure_result"]["result_id"]), None)
+        if closure is None or closure["lifecycle_generation"] != record["lifecycle_generation"]:
+            raise CommandError("stale_identity", "closure_result", "Recover the current public Closure before Finish archive projection.", 3)
+    else:
+        task["status"] = "completed"
+        task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
+        task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
     retire_archived_sessions(root, public["task_id"], task["lifecycle_generation"])
     archive_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(task_dir), str(archive_dir))

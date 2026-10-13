@@ -14,13 +14,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.checkout_acquisition import CheckoutAcquisitionPlan, acquire_checkout
 from runtime.task_lifecycle.composition import (
-    activate_task_status, bind_created_session, establish_created_control_state, prepare_activation_inputs, prepare_creation_inputs, prepare_resume_execution_inputs, recover_activation_inputs,
+    bind_created_session, establish_created_control_state, prepare_creation_inputs,
     recover_created_control_state,
 )
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.session_adapter import SessionAdapterResult
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 
 TASK_ID = "new-task"
@@ -32,6 +33,7 @@ class CompositionTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.repo = Path(self.temporary.name) / "repo"
         self.repo.mkdir()
+        install_common(self.repo)
         self.git("init", "-b", "main")
         self.git("config", "user.name", "Lifecycle Tests")
         self.git("config", "user.email", "tests@example.com")
@@ -48,7 +50,7 @@ class CompositionTests(unittest.TestCase):
 
     @staticmethod
     def task_metadata(status: str, source: dict | None = None, base_branch: str = "main") -> dict:
-        return {
+        return public_task({
             "id": TASK_ID, "name": "09-25-new-task", "lifecycle_generation": 0,
             "source": source or {"kind": "no_issue"}, "title": "New task",
             "description": "Reviewed scope", "status": status, "dev_type": None,
@@ -57,7 +59,7 @@ class CompositionTests(unittest.TestCase):
             "base_branch": base_branch, "worktree_path": None, "commit": None,
             "pr_url": None, "children": [], "parent": None,
             "relatedFiles": [], "notes": "", "meta": {},
-        }
+        })
 
     def creation(self, profile: str = "standalone_request") -> dict:
         return {
@@ -81,7 +83,7 @@ class CompositionTests(unittest.TestCase):
             task_ref=TASK_REF,
             lifecycle_generation=0,
             branch_ref="codex/new-task",
-            expected_status="planning",
+            expected_status="active",
             decision_head=self.head,
             transaction_id="acquire:1",
             result_id="checkout:1",
@@ -425,6 +427,9 @@ class CompositionTests(unittest.TestCase):
             def resolve_task_identity(self, facts, task_id, lifecycle_generation):
                 return type("Resolved", (), {"task_ref": TASK_REF})()
 
+            def record_exists(self, path):
+                return False
+
             def write_record(self, path, data, root):
                 self.writes += 1
                 raise OSError("session store unavailable")
@@ -439,148 +444,6 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(failing.writes, 1)
         self.assertEqual(BranchBindingStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), binding)
         self.assertIsNotNone(ResourceLedgerStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)))
-
-    def planning_task(self) -> None:
-        self.base_head = self.head
-        self.git("branch", "base", self.base_head)
-        path = self.repo / TASK_REF
-        path.mkdir(parents=True)
-        (path / "task.json").write_text(json.dumps(self.task_metadata("planning", base_branch="base")), encoding="utf-8")
-        for name in ("prd.md", "design.md", "implement.md"):
-            (path / name).write_text(f"# {name}\n", encoding="utf-8")
-        self.git("add", ".")
-        self.git("commit", "-m", "task")
-        self.head = self.git("rev-parse", "HEAD")
-        paths = [f"{TASK_REF}/{name}" for name in ("prd.md", "design.md", "implement.md")]
-        files = [
-            {"path": relative, "content_sha256": hashlib.sha256((self.repo / relative).read_bytes()).hexdigest()}
-            for relative in paths
-        ]
-        self.planning_digest = hashlib.sha256(
-            json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-        ).hexdigest()
-        repository = inspect_repository(self.repo)
-        key = TaskLifecycleKey(TASK_ID, 0)
-        BranchBindingStore(repository).establish(key, "main")
-        ResourceLedgerStore(repository).establish_current(
-            key, binding_revision=0, branch_name="main",
-            branch_ownership="caller_owned", worktree_ownership="not_applicable",
-        )
-
-    def activation(self) -> dict:
-        return {
-            "task_id": TASK_ID, "task_ref": TASK_REF, "lifecycle_generation": 0,
-            "planning_result_id": f"planning:{self.planning_digest}", "selected_base_ref": "base",
-            "continuity": {"kind": "base_current", "task_head": self.head, "base_head": self.base_head},
-            "session_mode": "explicit_task_mode",
-        }
-
-    def test_activation_accepts_explicit_mode_and_reconciled_continuity_without_mutation(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0), reason_code="context_key_unavailable")
-        result = prepare_activation_inputs(self.repo, self.activation(), session)
-        self.assertEqual(result.session_mode, "explicit_task_mode")
-        reconciled = self.activation()
-        reconciled["continuity"] = {
-            "kind": "reconciled", "task_head": self.head, "new_base_head": self.base_head,
-            "result_id": "reconcile:1", "resume_target": "task_activation",
-        }
-        self.assertEqual(prepare_activation_inputs(self.repo, reconciled, session).continuity["kind"], "reconciled")
-        bound = self.activation()
-        bound["session_mode"] = "session_bound"
-        self.assertEqual(
-            prepare_activation_inputs(self.repo, bound, SessionAdapterResult("session_bound", TaskLifecycleKey(TASK_ID, 0))).session_mode,
-            "session_bound",
-        )
-        self.assertEqual(json.loads((self.repo / TASK_REF / "task.json").read_text())["status"], "planning")
-
-    def test_activation_changes_only_status_and_recovery_is_read_only(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
-        payload = self.activation()
-        before = json.loads((self.repo / TASK_REF / "task.json").read_text())
-        inputs = prepare_activation_inputs(self.repo, payload, session)
-        activate_task_status(self.repo, inputs)
-        task_path = self.repo / TASK_REF / "task.json"
-        activated_bytes = task_path.read_bytes()
-        self.assertEqual(json.loads(activated_bytes), {**before, "status": "in_progress"})
-        self.assertNotIn("branch", json.loads(activated_bytes))
-        self.assertEqual(recover_activation_inputs(self.repo, payload, session), inputs)
-        self.assertEqual(task_path.read_bytes(), activated_bytes)
-        with self.assertRaises(LifecycleContractError) as raised:
-            activate_task_status(self.repo, inputs)
-        self.assertEqual(raised.exception.code, "activation_status_mismatch")
-
-    def test_active_execution_preparation_is_distinct_and_does_not_mutate(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
-        payload = self.activation()
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_resume_execution_inputs(self.repo, payload, session)
-        self.assertEqual(raised.exception.code, "activation_status_mismatch")
-        inputs = prepare_activation_inputs(self.repo, payload, session)
-        activate_task_status(self.repo, inputs)
-        before = (self.repo / TASK_REF / "task.json").read_bytes()
-        binding = BranchBindingStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0))
-        resumed = prepare_resume_execution_inputs(self.repo, payload, session)
-        self.assertEqual(resumed, inputs)
-        self.assertEqual((self.repo / TASK_REF / "task.json").read_bytes(), before)
-        self.assertEqual(BranchBindingStore(inspect_repository(self.repo)).read(TaskLifecycleKey(TASK_ID, 0)), binding)
-
-    def test_activation_rejects_stale_head_session_and_status(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
-        payload = self.activation()
-        (self.repo / "README.md").write_text("ordinary next commit\n")
-        self.git("add", "README.md")
-        self.git("commit", "-m", "next")
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, payload, session)
-        self.assertEqual(raised.exception.code, "activation_head_stale")
-        payload = self.activation()
-        payload["session_mode"] = "session_bound"
-        with self.assertRaises(LifecycleContractError):
-            prepare_activation_inputs(self.repo, payload, session)
-        fresh = self.activation()
-        fresh["continuity"]["task_head"] = self.git("rev-parse", "HEAD")
-        activate_task_status(self.repo, prepare_activation_inputs(self.repo, fresh, session))
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, self.activation(), session)
-        self.assertEqual(raised.exception.code, "activation_status_mismatch")
-
-    def test_activation_rejects_unverifiable_planning_result(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
-        payload = self.activation()
-        (self.repo / TASK_REF / "design.md").write_text("ordinary plan revision\n", encoding="utf-8")
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, payload, session)
-        self.assertEqual(raised.exception.code, "activation_approval_stale")
-        (self.repo / TASK_REF / "prd.md").write_text("changed\n", encoding="utf-8")
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, self.activation(), session)
-        self.assertEqual(raised.exception.code, "activation_approval_stale")
-
-    def test_activation_rejects_selected_base_drift_and_unrelated_reconcile(self) -> None:
-        self.planning_task()
-        session = SessionAdapterResult("explicit_task_mode", TaskLifecycleKey(TASK_ID, 0))
-        self.git("update-ref", "refs/heads/base", self.head)
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, self.activation(), session)
-        self.assertEqual(raised.exception.code, "activation_base_stale")
-        reconciled = self.activation()
-        reconciled["continuity"] = {
-            "kind": "reconciled", "task_head": self.head, "new_base_head": self.base_head,
-            "result_id": "reconcile:1", "resume_target": "task_activation",
-        }
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, reconciled, session)
-        self.assertEqual(raised.exception.code, "activation_base_stale")
-        wrong_base = self.activation()
-        wrong_base["selected_base_ref"] = "main"
-        with self.assertRaises(LifecycleContractError) as raised:
-            prepare_activation_inputs(self.repo, wrong_base, session)
-        self.assertEqual(raised.exception.code, "activation_base_mismatch")
 
 
 if __name__ == "__main__":

@@ -11,9 +11,9 @@ read `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub
 Operations). That global owner defines the boundary; this entry adds no recovery
 steps and does not turn a manual result into Guru completion.
 
-Load current task, repository, and phase facts with the live context helpers,
-then read `.trellis/workflow.md`. Use its Phase 3.6/3.7 route and mandatory load
-the applicable active owners by stable Skill id:
+Read the sole continuation in `.trellis/workflow.md` and current public
+Task/Delivery availability through the installed context helpers. Follow its
+Phase 3.6/3.7 route and mandatory load the applicable owners by stable Skill id:
 
 This is the exclusive finish entry for a Guru task. The upstream-owned
 `trellis-finish-work` Skill is not applicable to Guru tasks and must not be
@@ -38,7 +38,9 @@ Consume only current public typed exits and their mapped workflow consumers:
   enters the expected-head Delivery merge. `delivered` enters Completion,
   never directly closes the Issue or archives the task.
 - Completion `remaining_work` retains the active task; `additional_delivery_required`
-  plans another slice under the same TaskId. Only `completed` enters Closure.
+  enters explicit Delivery Creation and its own Planning under the same TaskId.
+  No-current Delivery can enter validation/Completion without an empty slice.
+  Only `completed` enters Closure.
 - Closure `closed` or `no_mutation` enters Finish. Finish `success` enters
   Cleanup; Cleanup `cleaned` ends the route, while remaining resources stay
   with the Cleanup owner.
@@ -51,9 +53,10 @@ just displayed, consume it for that action without asking them to repeat its
 SHA, digest, PR, or plan identity. Continue mapped internal exits automatically.
 Each independent Git/GitHub or resource mutation keeps its own exact
 dialogue-local confirmation; new external authority or a material scope decision
-may also pause the route. Old Finalizer/PR residue is not a new-graph DTO:
-route an in-flight old task to a pinned compatible version or explicit manual
-disposition after checking its exact task, PR, local/remote HEAD and base.
+may also pause the route. Old Finalizer/PR residue is not a current Delivery
+DTO. Follow the workflow installation-migration boundary and original transaction
+owner; unsupported migration preserves the complete old installation and stops.
+Historical success cannot replace any current gate.
 
 Do not call deterministic closeout scripts directly, reproduce package
 internals or artifact schemas, or create a handoff artifact. Return the

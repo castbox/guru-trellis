@@ -6,6 +6,7 @@ from pathlib import Path
 
 from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
+from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import branch_checked_out_paths, inspect_repository
@@ -13,11 +14,12 @@ from runtime.task_lifecycle.identity import normalize_task_ref, resolve_task_id
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
 
-PROFILES = {
+DELIVERY_PROFILES = {"delivery_" + name for name in {
     "initial_review", "active_task_scope_change", "wording_reentry",
     "approval_revision", "delivery_plan_revision", "requirements_revision",
     "solution_planning", "architecture_conflict_resolution",
-}
+}}
+PROFILES = DELIVERY_PROFILES | {"task_scope_requirements"}
 
 
 def _task(root: Path, task_ref: str) -> Path:
@@ -26,7 +28,8 @@ def _task(root: Path, task_ref: str) -> Path:
         path = root / task_ref
         metadata = read_json(str(path / "task.json"), "task_ref")
         identity = resolve_task_id(root, metadata["id"])
-        if identity.task_ref != task_ref or metadata["status"] not in {"planning", "in_progress"}:
+        record = DeliveryProjection(root, task_ref).read_record()
+        if identity.task_ref != task_ref or record["lifecycle_generation"] != identity.lifecycle_generation:
             raise CommandError("stale_identity", "task_ref", "Resolve the same active task lifecycle.", 3)
         repository = inspect_repository(root)
         key = TaskLifecycleKey(identity.task_id, identity.lifecycle_generation)
@@ -42,45 +45,71 @@ def _task(root: Path, task_ref: str) -> Path:
         raise CommandError("stale_identity", "task_ref", "Resolve the current TaskId and checkout through their original owners.", 3) from exc
 
 
-def _regular_content(path: Path, label: str) -> None:
-    if not path.is_file() or path.is_symlink() or not path.read_text(encoding="utf-8").strip():
+def _regular_content(path: Path, label: str, *, allow_empty: bool = False) -> None:
+    if not path.is_file() or path.is_symlink() or (not allow_empty and not path.read_text(encoding="utf-8").strip()):
         raise CommandError("stale_identity", label, "Complete the current regular planning file before invoking its handoff.", 3)
 
 
 def execute(package_root: Path, root: Path, public: dict, owner: dict) -> dict:
     profile = public.get("profile")
     if profile not in PROFILES:
-        raise CommandError("schema_mismatch", "input.profile", "Use one of the eight closed Author profiles.")
+        raise CommandError("schema_mismatch", "input.profile", "Use Task scope requirements or one of the eight Delivery Author profiles.")
     validate_json(public, package_root / "schemas" / f"public-{profile.replace('_', '-')}-input.schema.json", "input")
-    validate_json(owner, package_root / "schemas/semantic-result.schema.json", "owner_result")
+    validate_json(owner, package_root / "schemas/semantic-result-2.0.schema.json", "owner_result")
     if owner["public_input"] != public or owner["output"]["task_ref"] != public["task_ref"]:
         raise CommandError("stale_identity", "owner_result", "Repeat this owner review against the exact current input.", 3)
     output = owner["output"]
     exit_id = output["exit_id"]
     if (exit_id == "blocked") != (owner["ai_review_gate"]["status"] == "blocked"):
         raise CommandError("schema_mismatch", "owner_result.ai_review_gate", "Bind the gate status to the selected exit.")
-    if profile == "solution_planning" and exit_id == "requirements_ready":
+    scope_only = profile == "task_scope_requirements"
+    if scope_only and exit_id not in {"scope_requirements_ready", "clarify_scope", "blocked"}:
+        raise CommandError("schema_mismatch", "owner_result.output", "Task requirements cannot enter Delivery Planning or implementation.")
+    if not scope_only and (output.get("delivery_key") != public["delivery_key"] or exit_id == "scope_requirements_ready"):
+        raise CommandError("stale_identity", "delivery_key", "Return this exact Delivery's handoff.", 3)
+    if profile == "delivery_solution_planning" and exit_id == "requirements_ready":
         raise CommandError("schema_mismatch", "owner_result.output", "A changed candidate re-enters its requirements owner before solution writing.")
-    if profile in {"initial_review", "active_task_scope_change", "requirements_revision", "architecture_conflict_resolution"} and exit_id == "plan_ready":
+    if profile in {"delivery_initial_review", "delivery_active_task_scope_change", "delivery_requirements_revision", "delivery_architecture_conflict_resolution"} and exit_id == "plan_ready":
         raise CommandError("schema_mismatch", "owner_result.output", "This requirements profile hands a real candidate to Architecture before solution writing.")
     task = _task(root.resolve(), public["task_ref"])
-    if exit_id == "requirements_ready":
+    directory = task
+    if not scope_only:
+        try:
+            projection = DeliveryProjection(root, public["task_ref"])
+            key = public["delivery_key"]
+            delivery = projection.resolve(key)
+            current = projection.current()
+            if (key["lifecycle_generation"] != projection.read_record()["lifecycle_generation"]
+                    or current.get("kind") != "current" or current.get("key") != key
+                    or delivery["phase"] != "planning"
+                    or delivery["scope_ref"]["authority"] != projection.read_record()["accepted_scope"]):
+                raise CommandError("stale_identity", "delivery_key", "Re-enter the original stage owner for legal rework and exact selection before Author.", 3)
+            projection._call(projection.api.delivery_store.verify_authority, root, delivery["scope_ref"]["authority"])
+            directory = projection.planning_directory(key)
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+    if exit_id == "scope_requirements_ready":
+        if output["requirements_locator"] != f"{public['task_ref']}/prd.md":
+            raise CommandError("stale_identity", "requirements_locator", "Use the whole-Task root requirements view.", 3)
         _regular_content(task / "prd.md", "prd.md")
+    if exit_id == "requirements_ready":
+        _regular_content(directory / "prd.md", "prd.md")
         candidate = output["candidate"]
         if "design_locator" in candidate:
-            if candidate["design_locator"] != f"{public['task_ref']}/design.md":
-                raise CommandError("stale_identity", "candidate.design_locator", "Use this task's current design locator.", 3)
-            _regular_content(task / "design.md", "design.md")
+            if candidate["design_locator"] != (directory / "design.md").relative_to(root.resolve()).as_posix():
+                raise CommandError("stale_identity", "candidate.design_locator", "Use this Delivery's current design locator.", 3)
+            _regular_content(directory / "design.md", "design.md")
     elif exit_id == "plan_ready":
         for name in ("prd.md", "design.md", "implement.md", "implement.jsonl", "check.jsonl"):
-            _regular_content(task / name, name)
+            _regular_content(directory / name, name, allow_empty=name.endswith(".jsonl"))
             if name.endswith(".jsonl"):
-                for line in (task / name).read_text(encoding="utf-8").splitlines():
+                for line in (directory / name).read_text(encoding="utf-8").splitlines():
                     if line.strip():
                         entry = json.loads(line)
                         if not isinstance(entry, dict) or not entry.get("file") or not entry.get("reason"):
                             raise CommandError("schema_mismatch", name, "Use official task.py add-context entries.")
-    validate_json(output, package_root / "schemas" / f"public-{exit_id.replace('_', '-')}-output.schema.json", "stdout")
+    suffix = "" if exit_id == "scope_requirements_ready" else "-2.0"
+    validate_json(output, package_root / "schemas" / f"public-{exit_id.replace('_', '-')}-output{suffix}.schema.json", "stdout")
     return output
 
 

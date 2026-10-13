@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-output-delivery-plan-ready-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "delivery_key"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "plan_ready"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; only the installed public parser validates identity and relationship."
+    }
+  }
+}

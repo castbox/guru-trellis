@@ -46,6 +46,8 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 ## Current Planning boundary
 
-`guru-author-task-plan` 独占 PRD/design/implement 的规划语义写作及已有 revision 回程，Clarify 的来源/scope 判断、Architecture 独立评估、Wording 受控 rewrite 与 Approval 批准分别归其原 owner。`candidate_assessment` 评估真实候选但不要求尚未产生的 contribution，不输出 promotion_state；其 current consumer 是 Author solution_planning。`final_plan` 评估 Wording-current design 与真实 contribution/必要 ADR，保留 reviewed_candidate 或合法 reviewed_promoted 约束，current consumer 只为相邻 Approval。前置结果不能替代最终结果；两目的仍属于同一 Architecture owner/stage，project descriptor/result 保持2.0。
+`guru-author-task-plan` 独占整体 scope PRD 与每 Delivery PRD/design/implement 的规划语义写作及已有 revision 回程，Clarify 的来源/scope 判断、Architecture 独立评估、Wording 受控 rewrite 与 Approval 批准分别归其原 owner。`candidate_assessment` 评估真实候选但不要求尚未产生的 contribution，不输出 promotion_state；其 current consumer 是 Author solution_planning。`final_plan` 评估 Wording-current design 与真实 contribution/必要 ADR，保留 reviewed_candidate 或合法 reviewed_promoted 约束，current consumer 只为相邻 Approval。前置结果不能替代最终结果；两目的仍属于同一 Architecture owner/stage，project descriptor/result 保持2.0。
 
 Clarify active scope_ready1.0 在完成 scope 判断后，经原 clear-router 的薄 consumer1.0 projection 交同一 Author，先判断后写作；不写 planning hash、生命周期或授权状态。Wording change refs、Approval revision actions 与 Delivery/Completion 的适用修订原因均经显式 projection 回唯一 writer。旧 planning2.0 无 purpose 入口不作 runtime fallback，中断旧调用 fresh 重入；合法非 Planning2.0 和历史 validation assets 保持原边界。canonical workflow/preset matching migration 是唯一安装切换路径。
+
+#531以ADR-024迁移上述Planning责任：Task整体scope-only由Author写作后Clarify审查；Delivery candidate/final两目的独立Architecture、Wording、Approval与Activation保持原owner，同DeliveryKey/planning_root回程。Task-only Completion/Finish仍使用task_impact_sync，不将Delivery与Task结果换标签。

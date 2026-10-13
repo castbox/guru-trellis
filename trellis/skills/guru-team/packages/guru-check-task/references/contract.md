@@ -1,3 +1,59 @@
+## Public Delivery integration 1.0
+
+This current Skill consumes the target installation's reviewed Delivery API
+1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
+`delivery_key` is the opaque public identity. Read the current `interface.json`
+profile schema and its exact exit consumer before invoking. Do not derive an
+identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
+Deliveries use the same entry and lifecycle. The public phase never proves a
+semantic pass. Historical facts never prove a currently applicable gate.
+
+Read the Delivery's public `planning_root` for its three planning documents and
+context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
+identity and returns through the real current stage owner's public operation to
+the earliest affected role. Invalidate only the affected results. Unchanged,
+still-applicable execution facts need not be rerun. A successful recorder is
+objective evidence only; the AI must actually perform this Skill's full review.
+Missing public API or an unmigrated old record stops with precise migration
+remediation. Do not install a private alternative, select a source fallback,
+convert a legacy checkpoint into pass, or switch an old installation before
+upstream migration/default-cutover qualification.
+
+### Current Check entry and result
+
+Use `delivery_initial_check`, `delivery_finding_fix_rerun`,
+`delivery_planning_reentry`, or `delivery_resolved_reconciliation`. Every
+profile consumes the exact `planning_accepted_result_id` and selected public
+candidate. Retain the complete nine-dimension semantic payload and current
+Architecture/qualification duties described below. On `passed`, write the
+actual public Check result and hand only `task_ref`, `delivery_key`, and
+`check_result_id` to TaskCommit. The previous whole-worktree content token is
+only this owner's adjacent freshness validation; the public aggregate write
+must not make the unchanged clean business candidate require another commit.
+A retry can recover the exact recorded result, not a pass inferred from phase.
+The old Task Activation execution checkpoint is retired; this Skill does not
+load `guru-activate-task` or another owner's private checkpoint.
+
+### Scope withdrawal in the current stage
+
+`delivery_scope_withdrawal` is an independent semantic entry with mode,
+`task_ref` and `delivery_key`. Before authoring its separate review input,
+read the current whole-scope decision and selected undelivered slice; judge
+that its full scope was withdrawn/replaced, with no remaining obligations in
+that slice. Partial changes use ordinary same-Delivery rework. This package
+uses only its fixed public role and expected phase; it never accepts a role
+parameter or selects an owner from phase. Record the actual reason,
+`scope_decision` and minimum evidence through public `stop`, then release the
+selection. `delivery_stopped` hands Task identity to whole-task Completion.
+Stop preserves commits/PR/resources; PR close and cleanup require their actual
+owners and any necessary current side-effect confirmation. Lost output retries
+the identical stored stop result and releases selection without another stop.
+
+## Preserved semantic and transaction duties
+
+The duties below apply to the current Delivery input and output contracts.
+Historical data is read only by its named history or migration owner.
+
 # Guru Check Task Contract
 
 ## Ownership
@@ -54,24 +110,19 @@ Only an observed failure of the platform's required read or formal execution
 capability can justify an execution blocker. Worker dispatch failure alone
 does not prove such a platform failure.
 
-Public input schema 2.0 is a minimal route DTO:
-
-- `initial_check` identifies the current implementation-complete entry;
-- `finding_fix_rerun` carries only the finding references whose fixes require a
-  complete current-scope rerun;
-- `planning_reentry` identifies a refreshed planning route.
-- `resolved_reconciliation` identifies a conflict-resolved merge tree that has
-  returned from implementation and must pass fresh Phase 2 before Reconcile may
-  create the local merge commit.
-
-The caller does not submit semantic conclusions, findings, raw evidence, an AI
-gate, or an exit. Eval cases likewise choose a staged semantic case outside the
-public input and assert the actual exit only after the owner result returns.
+The current independently owned Delivery profiles and their minimal fields
+are declared in `interface.json`. Resolved-tree Check returns
+`resolved_reconciliation_passed` with key, task locator and pre-commit anchor
+to the resolved Reconcile router. `project-resolved-reconciliation` validates
+the same current semantic result and caller-authored exact Git facts, then
+projects the Reconcile input. It records no committed public Check gate.
+After the actual reconciliation commit, use legal same-Delivery rework,
+implementation candidate binding, fresh formal Check and independent full Review.
 
 ## Architecture Stage Consumption
 
 The global workflow mandatory invokes
-`guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` before this
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=phase2)` before this
 owner can select `passed`. The Architecture owner rereads the current baseline,
 design constitution, project change-contract identity, task-local Architecture
 change contract, and applicable project Architecture check results. This Skill
@@ -99,7 +150,7 @@ After `implementation_discovery` qualification, any expansion of scope, risk,
 owner, state authority, persistence, SDK lifecycle, external integration, or
 another architecture boundary makes the Planning Architecture result stale.
 The coordinator stops before the expanded edit or test and mandatory invokes
-`task_impact_sync(stage=implementation_discovery)`. Rejected candidates remain
+`delivery_task_impact_sync(stage=implementation_discovery)`. Rejected candidates remain
 out of scope; a qualified expansion resumes only from a fresh Architecture
 result.
 
@@ -302,15 +353,16 @@ not merely an unknown cause. An honest later production evidence obligation
 is not automatically a Check implementation defect. A pass covers this stage's
 accepted requirements, without claiming whole-task causal completion.
 
-## Private Result
+## Semantic payload and objective projection
 
-New evidence uses schema `guru-phase2-check-5.0` in ignored runtime. It retains
-only task and checked content identity, one composite
-`reviewed_content_sha256` freshness token computed with the private
-`guru-phase2-worktree-content-1.0` algorithm over live tracked and untracked
-worktree paths, reviewed path locators, validation
-summaries and unverified items, Docs SSOT conclusion, nine-dimension semantic
-result, scope decisions, findings, route, reason, and consumer.
+`schemas/phase2-check.schema.json` retains this owner's nine-dimension review,
+normal-scenario classifications, findings/scope decisions, validation and Docs
+SSOT conclusions. The worktree token binds only this local invocation. It is
+not a public handoff, authorization, approval or whole-lifecycle authority.
+The owner may use its recorder/checker to prepare objective facts; neither
+command produces a formal Skill exit. Use `scripts/invoke.sh` with the current
+Delivery input and the actual completed semantic payload. Delete call-local
+semantic authoring when its consumer completes.
 
 For each current candidate it directly retains the final classification and
 the six-part witness required by the existing Task Commit consumer:
@@ -319,8 +371,8 @@ the six-part witness required by the existing Task Commit consumer:
 An empty current candidate set is recorded as an empty array, with no findings
 or candidate-linked scope decisions. It does not skip any adequacy, Docs,
 Architecture, mandatory-validation, freshness or route judgment. This applies
-equally to `initial_check`, `finding_fix_rerun`, `planning_reentry` and
-`resolved_reconciliation`: rerun input refs do not manufacture current candidates.
+equally to `delivery_initial_check`, `delivery_finding_fix_rerun`,
+`delivery_planning_reentry` and `delivery_resolved_reconciliation`: rerun input refs do not manufacture current candidates.
 These fields are authored by the Phase 2 semantic owner from current live
 evidence; they do not import or reference qualification stdout, a result/report,
 temporary locator, or checkpoint.
@@ -331,100 +383,30 @@ candidate array after investigating a concrete upper-endpoint concern. Keep
 that array when all actual candidates are rejected; do not collapse it to `[]`.
 Both are deidentified authoring examples, not evidence of an executed review.
 
-It does not retain implementation handoffs, worker identity, raw output,
-assignments, liveness, repository snapshots, per-file digests, artifact-digest
-bundles, or authorization. The one composite token has a direct local consumer:
-the checker invoked inside this Skill's public wrapper before typed-output
-projection. A mismatch returns to this owner for AI delta classification; it is
-not authorization, semantic approval, a public DTO field, cross-Skill authority,
-or a digest chain. After the checked typed output passes its output schema, the
-producer retains the checkpoint only for `passed` and deletes it for the other
-three exits. Task Commit rereads the retained checkpoint, current content
-identity, and commit parent before its candidate and executor proceed, then
-deletes the checkpoint after successful publication or successful same-plan
-recovery. Failed attempts retain it. Only schema 5.0 is valid; any older artifact
-shape is rejected and the owner must run again from the current public profile.
+The invocation checks exact public key, accepted Planning result, actual
+candidate/HEAD, current reviewed paths and owner content identity. `passed`
+records the public Check result and hands its ID to TaskCommit. Repeating the
+same result after its own metadata write recovers that exact ID without asking
+for a commit. A different content/candidate requires a fresh semantic round.
+This Skill does not read Activation or another owner's private checkpoint.
 
-After its original checker validates the current `passed` result and the
-selected public output passes its schema, this wrapper calls
-`guru-activate-task`'s `retire_execution_result` helper with only the current
-`task_ref`. The execution owner alone reads its private completed-result
-checkpoint and validates current planning, task identity, branch binding and
-continuity before deleting a matching result. An absent pre-existing result
-needs no replacement gate; an ordinary stale result remains for its original
-owner. A nonpassed or stale Check never consumes execution recovery state.
-Check does not parse the other owner's checkpoint or treat that result as
-semantic approval, and its own passed checkpoint stays available for Task
-Commit and normal output-loss recovery.
+`implementation_required` and `planning_stale` use the lawful current Check
+owner's backward transition; `blocked` does not change phase. Full withdrawal
+uses the independent profile above. No public phase can synthesize pass, and
+no legacy Task-status entry runs in the current wrapper.
 
-## Recorder And Validator
+## Current-stage scope revision
 
-### Recorder Authoring
-
-Author exactly these existing recorder-input fields in a temporary JSON file
-under the task's ignored owner-private runtime, with no authorization or worker
-metadata:
-
-- `mode` and `reviewed_paths`: the invocation mode and reviewed repository
-  locators covering all current dirty paths.
-- `validation`: actual command outcomes, summaries, and explicitly blocking
-  or nonblocking unverified items.
-- `docs_ssot`: strategy, durable paths, status, and evidence-based conclusion.
-- `candidate_classifications`: `[]` when this complete round observes no
-  candidates, otherwise this owner's final decisions and six-part
-  normal-scenario witness for each actual candidate for the Task Commit consumer.
-- `semantic_review`: status, summary, all nine named adequacy dimensions,
-  scope decisions, and findings linked to current candidates.
-- `typed_exit`, `route`, `reason`, and `consumer`: your justified result
-  and its existing unique consumer, as constrained by schema 5.0.
-
-Read `schemas/phase2-check.schema.json` for the exact nested field shapes.
-Do not copy example conclusions. Omit the schema/version, skill/task, captured
-commit, and content-token fields from this authoring form: the original
-recorder derives them from the real task worktree, not from a model projection.
-The public input 2.0 remains a separate routing DTO.
-
-From the task worktree, use the installed package's
-`scripts/record-phase2-check.sh --root . --task <task-ref> --input <authoring-file>`,
-then `scripts/check-phase2-check.sh --root . --task <task-ref>`, then
-`scripts/invoke.sh --input <public-input-file> --owner-result <artifact-path>`.
-The artifact path is returned by the recorder; its file is the schema-5.0
-result, not the recorder's stdout metadata. Recorder input is a file locator,
-not stdin. Keep all public schemas, wrapper arguments, and checkpoint
-lifecycle unchanged. Delete the temporary authoring file after consumption.
-Normal owner-private recording needs no additional user confirmation; separate
-Git/GitHub side effects still require their existing dialogue-local gate.
-
-Native `semantic_authoring` evals must supply facts without an owner result,
-let the current AI complete this same review, and forward its authoring unchanged
-to these original commands. `post_owner` evals prove deterministic routing
-only; neither their staged results nor fake-native traces prove semantic review.
-
-The recorder writes the completed semantic result and derives the one composite
-worktree-content token. The validator recomputes that token before public output
-projection and checks closed schema shape, task/planning linkage, reviewed dirty-path
-coverage, the current content identity and commit-anchor ancestry, finding/scope linkage,
-and exit/consumer invariants. It never decides scope, severity, sufficiency,
-Docs SSOT, semantic pass, or route.
-
-The ignored runtime result is distinct from the public DTO. `passed` projects
-only `task_ref` and `phase2_commit_anchor` to `guru-create-task-commit`; finding and
-planning routes project only their direct consumer references.
-
-## Exits
-
-- `passed`: all nine dimensions pass with no open finding or blocking
-  unverified item, and the Phase 2 Architecture result and mandatory project
-  checks are current and passing.
-- An exact conflict-resolved tree records the private
-  `resolved_reconciliation_passed` result after the same semantic bar passes.
-  It is not an external exit. The package-local deterministic
-  `project-resolved-reconciliation` command checks that private result and
-  emits the target-owned `resolved_candidate` input directly; it never enters
-  ordinary Task Commit or adds a workflow marker.
-- `implementation_required`: A current-scope finding returns to implementation.
-- `planning_stale`: a current scope or authority change returns to planning.
-- `blocked`: a concrete evidence or dependency gap prevents a reliable result.
-
-Mapped re-entry is automatic. Unknown, multiple, stale, ambiguous, or
-consumer-mismatched exits fail closed without a routine user prompt.
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

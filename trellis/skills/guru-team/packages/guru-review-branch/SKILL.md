@@ -5,6 +5,8 @@ description: Review committed task content, bounded base continuity, or a comple
 
 # Guru Review Branch
 
+Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
@@ -34,17 +36,15 @@ candidate still binds a classified ref; an empty set cannot carry such a row.
 
 ## Archived Read-Only Review
 
-Aggregate input schema 5.0 adds the independent `archived_review` profile.
-The existing aggregate schema 4.0 profiles and ordinary gate schema 7.0
-behavior below are unchanged. Enter this profile only after Merge's
-`review_refresh_required`, never because a successfully consumed checkpoint
-was normally retired. Its input is exactly profile, mode, task_ref,
-branch_review_commit (A), and pr_payload_snapshot_sha256.
+Use the independent `delivery_archived_review` input with exact archive
+Task locator, public Delivery key, content HEAD and live PR payload snapshot.
+It requires actual current-generation Completion/Closure and committed archive
+summary/Delivery plans. It consumes no current Check and writes no active gate.
 
 Resolve the task's already-existing selected-base ref and live GitHub base to
 the same commit B before reviewing. Do not fetch, synchronize, or update refs.
 The global workflow owns the fresh Architecture
-`task_impact_sync(stage=branch_review)` invocation with
+`delivery_task_impact_sync(stage=branch_review)` invocation with
 `source_exit=review_refresh_required` over exact B...A. Consume only its
 read-only accepted result; missing evidence, blocked, or a result requiring
 promotion/repair stops, never enters a writable consumer.
@@ -62,10 +62,10 @@ commands. The dedicated closed `archived-1.0` gate admits only
 `archived_review_passed|blocked`; it is never synthesized from an ordinary
 checkpoint. Both exits retire the owner checkpoint after validated projection.
 The success output carries only task_ref, A, the exact title/body snapshot,
-and reviewed_base_head B. In the new graph this legacy archived-review result
+delivery_key and reviewed_base_head B. In the current graph this archived-review result
 stops for pinned-old or manual disposition; it does not feed Delivery Review.
 Stale A/B/PR payload, non-Ready
-state, dirty archive or mismatched legacy archive task/summary identity fail closed without repair.
+state, dirty archive or mismatched archive Task/summary identity fail closed without repair.
 
 ## Ordinary Reviews
 
@@ -113,7 +113,7 @@ or replaces only that mechanism and returns to task work for fresh
 qualification; it never enters scope confirmation.
 
 Before this review can pass, consume a fresh
-`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`
 result. The Architecture owner independently recomputes project checks and
 before/after satisfaction from the complete committed base-to-HEAD diff. This
 Skill then rereads the current Architecture Baseline, design constitution, and
@@ -190,24 +190,13 @@ complete-range Branch Review. Delivery Review cannot consume the pre-promotion
 review or a Phase 2 result in place of that fresh review; Delivery Review
 consumes only the post-promotion `passed` result.
 
-Aggregate public input schema 4.0 dispatches two profiles: `branch_review`
-schema 2.0 accepts only `initial_review` and `fresh_final_review`, while
-current-only `base_continuity` schema 2.0 accepts only `base_continuity` and
-separates the prior full-review `branch_review_commit` from the current
-committed reconciled `task_head`. The continuity recorder requires
-`task_head == HEAD`, the prior review and `new_base_head` to be ancestors of
-that HEAD, and the current committed tree to match `candidate_tree_sha256`.
-The owner-private gate is current-only schema 7.0. Its `review_commit` binds the
-current `task_head`; its integration pair separately binds the prior full-review
-commit, current HEAD, exact old/new base pair, candidate tree, relevant paths,
-and resume target. `continuity_passed` output schema 2.0 projects
-`branch_review_commit` as that current continuity-reviewed HEAD for the next
-owner. Aggregate input schema 3.0, base-continuity input/output schema 1.0, and
-gate schema 6.0 or older remain legacy stale inventory, not current runtime
-authority. Runtime does not dual-read them. Any non-7.0 gate fails closed
-through the stable stale-identity path. Any other current input shape fails
-closed through the normal invalid-input path.
-
+The current Delivery aggregate dispatches independent full Review, continuity,
+and archived profiles. Full Review and continuity bind the exact actual Check,
+current candidate and base. The full Review gate writes only after independent
+review. Continuity separates prior full-review HEAD from current committed
+integration HEAD/tree and never creates a new full Review result. Checkpoints
+are scoped by public Delivery UUID. Their legacy schemas serve historical
+inventory only, never a current development fallback.
 
 For a nonempty actual candidate set at this boundary, consume actual normal-scenario and solution-mechanism
 outcomes before loading `guru-qualify-root-cause` with `branch_review_candidate_set`. Supply only eligible
@@ -225,3 +214,19 @@ or use qualification as completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

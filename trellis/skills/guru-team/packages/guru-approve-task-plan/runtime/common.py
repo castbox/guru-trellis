@@ -47,11 +47,26 @@ def typed_output(package_root,exit_id):
  interface=json.loads((package_root/"interface.json").read_text());rows=[x for x in interface["public_contracts"]["outputs"] if x["exit_id"]==exit_id]
  if len(rows)!=1:raise CommandError("schema_mismatch","typed_exit","Return one declared typed exit.")
  row=rows[0];value=json.loads((package_root/row["example"]["path"]).read_text());validate_json(value,package_root/row["schema"]["path"],"stdout");return value
-def checkpoint(repo,t,name):return repo/".trellis/.runtime/guru-team/owner-checkpoints"/t.name/name
+def checkpoint(repo,t,name,key=None):
+ p=repo/".trellis/.runtime/guru-team/owner-checkpoints"/t.name
+ return (p/key["delivery_id"] if key else p)/name
+
+def planning_directory(repo,td,key):
+ from runtime.delivery_projection.adapter import DeliveryProjection
+ from runtime.task_lifecycle.errors import LifecycleContractError
+ try:
+  projection=DeliveryProjection(repo,rel(repo,td));delivery=projection.resolve(key);current=projection.current()
+  if (current.get("kind")!="current" or current.get("key")!=key or delivery["phase"]!="planning"
+      or key["lifecycle_generation"]!=projection.read_record()["lifecycle_generation"]
+      or delivery["scope_ref"]["authority"]!=projection.read_record()["accepted_scope"]):
+   raise CommandError("stale_identity","delivery_key","Review the selected current Delivery after its original stage rework.",3)
+  projection._call(projection.api.delivery_store.verify_authority,repo,delivery["scope_ref"]["authority"])
+  return projection.planning_directory(key)
+ except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
 def store(p,v):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(v,ensure_ascii=False,sort_keys=True,indent=2)+"\n")
-def consume_checkpoint(repo,t,value):
+def consume_checkpoint(repo,t,value,key=None):
  q=Path(str(value or ""));q=q if q.is_absolute() else repo/q
- expected=checkpoint(repo,t,"planning-approval.json")
+ expected=checkpoint(repo,t,"planning-approval.json",key)
  if q.is_symlink() or q.resolve()!=expected.resolve() or not q.is_file():raise CommandError("unsafe_path","owner_result","Use the exact current planning checkpoint.")
  q.unlink()
  for parent in (q.parent,q.parent.parent):

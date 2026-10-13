@@ -14,13 +14,26 @@ Normal revision/recovery contracts live in `guru-check-task` and
 `guru-review-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
-The existing `guru-activate-task` package also owns active replanning execution
-resumption and completed-result recovery. Its 2.0 aggregate public contracts,
-current Check consumer and marketplace workflow must be projected together;
-first-activation payloads preserve their meaning without a legacy parser.
-Pending plan acceptance stays in the current dialogue. The single short-lived
-execution result is private to that owner and retired after current Check
-consumption. Preset reapply does not select or rewrite the active workflow.
+The #531 candidate uses the upstream Task schema 2.0 / Delivery API 1.0.
+Read [MIGRATION-531.md](./spec/workflow/task-delivery-migration.md) before applying it.
+The current candidate binds product commit
+`1e40014023de53ddfd9368b3fb4d0a7a31e92293`
+and the matching CLI/Core tar identities recorded in that contract. PR #36
+is merged and upstream #31 is completed; that does not establish Guru joint readiness.
+The local source snapshot fingerprint is separate from the product commit and tar.
+The previous `5181ab…` copy-collision result remains historical. PR #32 is merged;
+its `ce36314b` predecessor is historical evidence, not the current pair.
+The API candidate is independent from the released package version.
+Older source locks below describe predecessor installation evidence,
+not Delivery API availability. Legacy targets require the upstream D2 migration
+and Guru private migration before switching; refusal preserves the old install.
+
+Every Delivery, including D1, owns its Planning. `guru-create-delivery` establishes
+the public identity before the existing Author; `guru-activate-delivery` records
+actual Planning after the current dialogue acceptance. Task identity/scope remains
+separate. The old Task activation runtime is absent from this candidate. Reapply
+never selects, migrates or advances a Task/Delivery, and the installed official
+runtime owns the public model.
 
 This preset installs the companion assets and current Skill packages for the
 `guru-team` canonical workflow into an existing Trellis project. The
@@ -77,12 +90,12 @@ The installer uses managed-file provenance. Known managed updates may create
 backups during the transaction; successful reapply must leave no unresolved
 `.new` or `.bak`. User-modified files are preserved for review, not silently
 overwritten. Current package wrappers load the installed shared runtime,
-including `runtime/task_lifecycle`; platform projections do not contain
+including `runtime/task_lifecycle` and the stateless `runtime/delivery_projection`; platform projections do not contain
 private runtime, tests or recovery state.
 
 The workflow's current path is Task Commit -> Branch Review -> Delivery
 Review/Publish/Merge (repeatable while active) -> Completion -> Closure ->
-Finish -> Cleanup. `guru-activate-task` owns Planning activation. The
+Finish -> Cleanup. `guru-activate-delivery` owns each Delivery Planning transition. The
 current task identity is TaskId and lifecycle generation from current task
 metadata. Path-free session focus selects the task; without a session context
 key, select an explicit TaskId. The
@@ -210,13 +223,3 @@ Git/publication/install/cleanup action keep their own independent boundaries.
 Install/update/reapply the canonical workflow and Skill projections together;
 old current-checkout editing is directly replaced, not a fallback mode. Source
 checks do not prove target installation or native Agent continuation.
-
-## 已提交候选接续（#530）
-
-post_commit Reconcile 后，fresh Phase 2 与 pair guard 仍进入原 TaskCommit
-owner。新增 `committed_reentry` 只读输入核验当前已提交候选并返回原 `committed`
-身份，再进入 fresh Architecture 与首次独立完整 Branch Review；真实待提交增量
-保留原 exact commit 路径。该输入随完整 preset 的 canonical package、runtime、
-schema 与平台 Skill 投影一起安装/reapply，使用方法由
-[TaskCommit contract](../../skills/guru-team/packages/guru-create-task-commit/references/contract.md)拥有。
-本接续不创建空提交，不替代 Phase 2 或 Branch Review。

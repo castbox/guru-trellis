@@ -5,6 +5,14 @@ description: Clean sealed Guru-owned resources or explicitly selected manual and
 
 # Guru Cleanup Task Resources
 
+Current Task archive verification uses stable identity/generation and actual
+public Closure together with committed Finish summary/target ancestry, never
+Task development status. Keep exact sealed/manual resource selection and
+current cleanup confirmation unchanged. Failed cleanup preserves completed
+Task and delivered facts; original business trees and provider resources are
+not implied cleanup targets.
+
+
 Normal Cleanup consumes only ResourceSealRefDTO and resolves Guru-owned
 incarnations from the common-dir ledger. It preserves caller-owned and unknown
 resources. Missing terminal ownership returns `manual_cleanup_required` with

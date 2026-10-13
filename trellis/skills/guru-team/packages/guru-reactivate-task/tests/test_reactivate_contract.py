@@ -9,6 +9,9 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
+from runtime.delivery_projection.tests.test_installed_projection import DECLARATION
+from runtime.delivery_projection import authority_ref
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
@@ -32,6 +35,9 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
     git(repo, "init", "-q", "-b", "main")
     git(repo, "config", "user.email", "test@example.com")
     git(repo, "config", "user.name", "Test")
+    install_common(repo)
+    (repo / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n"+json.dumps(DECLARATION)+"\n[/trellis-runtime-contract]\n")
+    (repo / "scope.md").write_text("受审查整体scope\n")
     (repo / ".gitignore").write_text(".trellis/.runtime/\n")
     git(repo, "add", ".gitignore")
     git(repo, "commit", "-qm", "initial")
@@ -58,6 +64,14 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
         metadata["lifecycle_generation"] = 0
         if legacy_locator:
             metadata["archive_dir"] = ".trellis/tasks/archive/2026-09/09-19-demo"
+    if not legacy:
+        metadata=public_task(metadata)
+        scope=authority_ref(repo / "scope.md",repo)
+        metadata['accepted_scope']=scope
+        metadata['completion_results']=[{'result_id':'completion:demo','owner_id':'guru-review-task-completion','evidence':[scope],
+            'lifecycle_generation':2,'accepted_scope':scope,'delivery_result_ids':[],'outcome':'completed'}]
+        metadata['closure_results']=[{'result_id':'closure:demo','owner_id':'guru-complete-task-closure','evidence':[scope],
+            'lifecycle_generation':2,'completion_result_id':'completion:demo','disposition':'no_mutation','source_result':None}]
     (archive / "task.json").write_text(json.dumps(metadata))
     archive_ref = ".trellis/tasks/archive/2026-09/09-19-demo"
     summary = {"schema_version": legacy_schema_version if legacy else 2, "task": {
@@ -91,7 +105,7 @@ def repository(tmp_path, *, old_branch="codex/demo-old", old_owner="caller_owned
 
 
 def inputs(repo, head, path, *, adopt=False, route="session_binding_recovery_required", generation=2):
-    public = {"profile": "reactivate_completed_task", "mode": "standalone",
+    public = {"profile": "delivery_reactivate_completed_task", "mode": "standalone",
               "archived_lifecycle": {"task_id": "demo", "lifecycle_generation": generation}}
     acquisition = {"task_id": "demo", "task_ref": ".trellis/tasks/09-19-demo", "lifecycle_generation": generation + 1,
                    "route": "adopt_invocation_checkout" if adopt else "provision_linked_worktree",
@@ -104,7 +118,7 @@ def inputs(repo, head, path, *, adopt=False, route="session_binding_recovery_req
     semantic = {**public, "route": route, "reason_refs": ["new work"],
                 "selected_base_ref": "refs/heads/main", "reviewed_base_head": head,
                 "session_outcome": "recovery_required" if route == "session_binding_recovery_required" else "explicit_task_mode",
-                "acquisition": acquisition}
+                "acquisition": acquisition, "authority": authority_ref(repo / "scope.md",repo)}
     return public, semantic
 
 
@@ -143,13 +157,13 @@ def test_reactivate_acquires_checkout_and_recovers_exact_transaction(tmp_path, a
     if adopt:
         git(repo, "switch", "-qc", "codex/demo-next")
     public, semantic = inputs(repo, head, checkout, adopt=adopt)
-    first = execute(repo, public, semantic, confirmed=True)
+    first = execute(repo, public, semantic)
     assert first["exit_id"] == "session_binding_recovery_required"
     assert first["task_id"] == "demo" and first["lifecycle_generation"] == 3
     metadata_path = checkout / ".trellis/tasks/09-19-demo/task.json"
     before = metadata_path.read_bytes()
     metadata = json.loads(before)
-    assert metadata["status"] == "planning" and metadata["worktree_path"] is None
+    assert "status" not in metadata and metadata["schema_version"] == "2.0" and metadata["worktree_path"] is None
     repository_facts = inspect_repository(repo)
     key = TaskLifecycleKey("demo", 3)
     binding = BranchBindingStore(repository_facts).read(key)
@@ -160,10 +174,10 @@ def test_reactivate_acquires_checkout_and_recovers_exact_transaction(tmp_path, a
     transaction = transaction_path(repository_facts, TaskLifecycleKey("demo", 2))
     transaction_before = transaction.read_bytes()
     assert str(checkout) not in transaction_before.decode()
-    assert execute(repo, public, semantic, confirmed=True) == first
+    assert execute(repo, public, semantic) == first
     assert metadata_path.read_bytes() == before and transaction.read_bytes() == transaction_before
     semantic["route"] = "resume_reactivation"
-    assert execute(repo, public, semantic, confirmed=False)["exit_id"] == "resume_reactivation"
+    assert execute(repo, public, semantic)["exit_id"] == "resume_reactivation"
 
 
 def test_reactivate_accepts_distinct_merge_head_and_bookkeeping_head(tmp_path):
@@ -175,7 +189,7 @@ def test_reactivate_accepts_distinct_merge_head_and_bookkeeping_head(tmp_path):
     record["target_head"] = merged
     transaction.write_text(json.dumps(record))
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new")
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic)["exit_id"] == "session_binding_recovery_required"
 
 
 @pytest.mark.parametrize("schema_version", [1, 2])
@@ -189,7 +203,7 @@ def test_legacy_archive_is_read_only_rejected(tmp_path, schema_version, legacy_s
     public, semantic = inputs(repo, head, target, generation=0)
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="unsupported_legacy_task"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert archive.read_bytes() == before
     assert not target.exists()
 
@@ -222,7 +236,7 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new")
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="finish_result_unsealed"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert not (tmp_path / "worktrees/new").exists()
     cleanup_package = PACKAGE.parent / "guru-cleanup-task-resources"
     spec = importlib.util.spec_from_file_location("guru_manual_cleanup_reactivate", cleanup_package / "runtime/invoke.py")
@@ -249,7 +263,7 @@ def test_reactivate_after_manual_cleanup_requires_exact_finished_receipt(tmp_pat
     if legacy_receipt:
         receipt = next((facts.common_dir / "guru-team/cleanup-results/demo").glob("selected-*.json"))
         receipt.rename(receipt.with_name(receipt.name.replace("selected-", "manual-", 1)))
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic)["exit_id"] == "session_binding_recovery_required"
 
 
 def test_reactivate_after_confirmed_empty_terminal_cleanup(tmp_path):
@@ -274,7 +288,7 @@ def test_reactivate_after_confirmed_empty_terminal_cleanup(tmp_path):
     public, semantic = inputs(repo, head, tmp_path / "worktrees/new")
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="finish_result_unsealed"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     cleanup_package = PACKAGE.parent / "guru-cleanup-task-resources"
     spec = importlib.util.spec_from_file_location("guru_empty_cleanup_reactivate", cleanup_package / "runtime/invoke.py")
     assert spec and spec.loader
@@ -296,7 +310,7 @@ def test_reactivate_after_confirmed_empty_terminal_cleanup(tmp_path):
         "--semantic-result", str(cleanup_semantic), "--confirmed-cleanup",
     ])["exit_id"] == "cleaned"
     assert len(list((facts.common_dir / "guru-team/cleanup-results/demo").glob("selected-*.json"))) == 1
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic)["exit_id"] == "session_binding_recovery_required"
 
 
 def test_source_correction_applies_once_and_stale_generation_is_zero_write(tmp_path):
@@ -306,31 +320,29 @@ def test_source_correction_applies_once_and_stale_generation_is_zero_write(tmp_p
     semantic.pop("session_outcome")
     semantic.pop("selected_base_ref")
     semantic.pop("reviewed_base_head")
+    semantic.pop("authority")
     semantic["route"] = "source_correction_required"
     semantic["source_correction"] = correction()
-    from runtime.io import CommandError
-    with pytest.raises(CommandError, match="confirmation_required"):
-        execute(repo, public, semantic, confirmed=False)
     metadata_path = repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json"
     assert json.loads(metadata_path.read_text())["source"] == {"kind": "no_issue"}
-    result = execute(repo, public, semantic, confirmed=True)
+    result = execute(repo, public, semantic)
     assert result["exit_id"] == "source_correction_required"
     corrected = metadata_path.read_bytes()
     assert json.loads(corrected)["source"] == semantic["source_correction"]["reviewed_source"]
     receipt = source_transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2))
     assert receipt.is_file()
-    assert execute(repo, public, semantic, confirmed=True) == result
+    assert execute(repo, public, semantic) == result
     assert metadata_path.read_bytes() == corrected
     altered = json.loads(json.dumps(semantic))
     altered["source_correction"]["result_id"] = "correction:other"
     with pytest.raises(Exception, match="source_correction_stale"):
-        execute(repo, public, altered, confirmed=True)
+        execute(repo, public, altered)
     assert (repo / ".trellis/tasks/archive/2026-09/09-19-demo").exists()
     public["archived_lifecycle"]["lifecycle_generation"] = 1
     semantic["archived_lifecycle"]["lifecycle_generation"] = 1
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="archived_lifecycle_stale"):
-        execute(repo, public, semantic, confirmed=False)
+        execute(repo, public, semantic)
     assert not transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).exists()
 
 
@@ -339,18 +351,18 @@ def test_ready_source_correction_applied_in_activation_and_recovered(tmp_path):
     checkout = tmp_path / "worktrees" / "new"
     public, semantic = inputs(repo, head, checkout)
     semantic["source_correction"] = correction()
-    first = execute(repo, public, semantic, confirmed=True)
+    first = execute(repo, public, semantic)
     assert first["exit_id"] == "session_binding_recovery_required"
     task_path = checkout / ".trellis/tasks/09-19-demo/task.json"
     assert json.loads(task_path.read_text())["source"] == correction()["reviewed_source"]
     assert json.loads(transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).read_text())[
         "source_correction_result_id"] == "correction:demo"
-    assert execute(repo, public, semantic, confirmed=True) == first
+    assert execute(repo, public, semantic) == first
     changed = json.loads(json.dumps(semantic))
     changed["source_correction"]["result_id"] = "correction:other"
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="reactivation_transaction_conflict"):
-        execute(repo, public, changed, confirmed=True)
+        execute(repo, public, changed)
 
 
 def test_invalid_session_route_does_not_acquire_checkout(tmp_path):
@@ -358,7 +370,7 @@ def test_invalid_session_route_does_not_acquire_checkout(tmp_path):
     target = tmp_path / "worktrees" / "new"
     public, semantic = inputs(repo, head, target, route="reactivated_to_planning")
     semantic["session_outcome"] = "recovery_required"
-    result = execute(repo, public, semantic, confirmed=True)
+    result = execute(repo, public, semantic)
     assert result["exit_id"] == "reactivate_blocked" and result["reason_code"] == "session_route_mismatch"
     assert not target.exists() and (repo / ".trellis/tasks/archive/2026-09/09-19-demo").is_dir()
 
@@ -370,7 +382,7 @@ def test_pending_guru_owned_old_branch_blocks_before_acquisition(tmp_path):
     repository_facts = inspect_repository(repo)
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert not target.exists()
     assert (repo / ".trellis/tasks/archive/2026-09/09-19-demo/task.json").is_file()
     assert BranchBindingStore(repository_facts).read(TaskLifecycleKey("demo", 3)) is None
@@ -391,7 +403,7 @@ def test_resolved_old_branch_reuse_releases_only_old_binding(tmp_path):
     ledger_store._write(resolved)
     public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
     semantic["acquisition"]["provision_disposition"] = "existing_branch"
-    result = execute(repo, public, semantic, confirmed=True)
+    result = execute(repo, public, semantic)
     assert result["exit_id"] == "session_binding_recovery_required"
     bindings = BranchBindingStore(facts)
     assert bindings.read(key) is None
@@ -410,7 +422,7 @@ def test_caller_retained_old_branch_requires_resolved_incarnation(tmp_path):
     semantic["acquisition"]["provision_disposition"] = "existing_branch"
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert ResourceLedgerStore(inspect_repository(repo)).read(key) == prior
 
 
@@ -422,7 +434,7 @@ def test_other_task_binding_still_blocks_branch_reuse(tmp_path):
     public, semantic = inputs(repo, head, target)
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="branch_responsibility_pending"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert not target.exists()
 
 
@@ -448,7 +460,7 @@ def test_unfinished_archive_cannot_reactivate(tmp_path, condition):
     public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
-        execute(repo, public, semantic, confirmed=True)
+        execute(repo, public, semantic)
     assert not (tmp_path / "worktrees/new").exists()
 
 
@@ -456,7 +468,7 @@ def test_unfinished_archive_cannot_reactivate(tmp_path, condition):
 def test_resume_rechecks_original_finish_generation(tmp_path, condition):
     repo, head = repository(tmp_path)
     public, semantic = inputs(repo, head, tmp_path / "worktrees" / "new")
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic)["exit_id"] == "session_binding_recovery_required"
     assert transaction_path(inspect_repository(repo), TaskLifecycleKey("demo", 2)).is_file()
     if condition == "missing_seal":
         ResourceLedgerStore(inspect_repository(repo)).path_for(TaskLifecycleKey("demo", 2)).unlink()
@@ -469,14 +481,14 @@ def test_resume_rechecks_original_finish_generation(tmp_path, condition):
     semantic["route"] = "resume_reactivation"
     from runtime.task_lifecycle.errors import LifecycleContractError
     with pytest.raises(LifecycleContractError, match="finish_result_unsealed|finish_transaction_unfinished"):
-        execute(repo, public, semantic, confirmed=False)
+        execute(repo, public, semantic)
 
 
 def test_session_recovery_then_planning_on_same_incarnation(tmp_path, monkeypatch):
     repo, head = repository(tmp_path)
     checkout = tmp_path / "worktrees" / "new"
     public, semantic = inputs(repo, head, checkout)
-    assert execute(repo, public, semantic, confirmed=True)["exit_id"] == "session_binding_recovery_required"
+    assert execute(repo, public, semantic)["exit_id"] == "session_binding_recovery_required"
     observed = []
     def resolved_session(root, key, task_ref):
         observed.append((root, key, task_ref))
@@ -485,7 +497,7 @@ def test_session_recovery_then_planning_on_same_incarnation(tmp_path, monkeypatc
     before = (checkout / ".trellis/tasks/09-19-demo/task.json").read_bytes()
     semantic["route"] = "reactivated_to_planning"
     semantic["session_outcome"] = "session_bound"
-    result = execute(repo, public, semantic, confirmed=True)
+    result = execute(repo, public, semantic)
     assert result["exit_id"] == "reactivated_to_planning"
     assert (result["task_id"], result["task_ref"], result["lifecycle_generation"]) == (
         "demo", ".trellis/tasks/09-19-demo", 3

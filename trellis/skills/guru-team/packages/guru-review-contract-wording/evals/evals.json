@@ -35,7 +35,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-pass-input.json", "evals/files/eval-pass-facts.json"],
+      "files": [
+        "evals/files/eval-pass-input.json",
+        "evals/files/eval-pass-facts.json"
+      ],
       "input_profile_id": "change_request"
     },
     {
@@ -54,8 +57,11 @@
           }
         ]
       },
-      "files": ["evals/files/eval-content-changed-input.json", "evals/files/eval-content-changed-facts.json"],
-      "input_profile_id": "planning_artifacts"
+      "files": [
+        "evals/files/eval-content-changed-input.json",
+        "evals/files/eval-content-changed-facts.json"
+      ],
+      "input_profile_id": "delivery_planning_artifacts"
     },
     {
       "id": "blocked-route",
@@ -73,7 +79,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "files": [
+        "evals/files/eval-blocked-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
       "input_profile_id": "explicit_paths"
     }
   ]

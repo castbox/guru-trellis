@@ -46,7 +46,7 @@ def _plan(root: Path, data: dict[str, Any]) -> CheckoutAcquisitionPlan:
         route=value["route"], repository_context=root,
         task_id=data["creation"]["task_id"], task_ref=data["creation"]["task_ref"],
         lifecycle_generation=0, branch_ref=value["branch_ref"],
-        expected_status="planning", decision_head=value["decision_head"],
+        expected_status="active", decision_head=value["decision_head"],
         transaction_id=value["transaction_id"], result_id=value["result_id"],
         provision_disposition=value.get("provision_disposition"),
         invocation_checkout=Path(value["invocation_checkout"]).resolve() if "invocation_checkout" in value else None,
@@ -81,6 +81,7 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         "--task-id", inputs.task_id,
         "--source-json", json.dumps(inputs.reviewed_source, separators=(",", ":")),
         "--base-branch", inputs.selected_base_ref.removeprefix("refs/heads/"),
+        "--schema-version", "2.0",
         "--no-start",
     ]
     completed = subprocess.run(
@@ -96,7 +97,7 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise LifecycleContractError("official_task_create_failed", "task.json", "Read the new official task artifact.") from exc
-    if (metadata.get("status") != "planning" or metadata.get("name") != slug
+    if (metadata.get("schema_version") != "2.0" or metadata.get("name") != slug
             or metadata.get("id") != inputs.task_id or metadata.get("source") != inputs.reviewed_source):
         raise LifecycleContractError("official_task_create_failed", "task.json", "Use the exact new planning task.")
     for legacy in (
@@ -106,7 +107,6 @@ def _create_official_task(checkout: Path, inputs: Any, task: dict[str, Any]) -> 
         "followup_issues", "archive_dir",
     ):
         metadata.pop(legacy, None)
-    metadata["lifecycle_generation"] = 0
     metadata["scope"] = task["scope"]
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

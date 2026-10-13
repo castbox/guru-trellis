@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.identity import (
@@ -28,6 +29,7 @@ class IdentityTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.repo = Path(self.temporary.name)
         (self.repo / ".trellis/tasks/archive").mkdir(parents=True)
+        install_common(self.repo)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -49,6 +51,15 @@ class IdentityTests(unittest.TestCase):
             })
             if modern:
                 payload["status"] = "completed"
+        if (modern or "/archive/" not in task_ref) and type(generation) is int:
+            payload=public_task(payload)
+        if modern and payload.get("schema_version") == "2.0":
+            scope={"locator":"scope.md","revision":"sha256:"+"a"*64}
+            payload['accepted_scope']=scope
+            payload['completion_results']=[{'result_id':'completed:'+task_id,'owner_id':'guru-review-task-completion','evidence':[scope],
+                'lifecycle_generation':generation,'accepted_scope':scope,'delivery_result_ids':[],'outcome':'completed'}]
+            payload['closure_results']=[{'result_id':'closed:'+task_id,'owner_id':'guru-complete-task-closure','evidence':[scope],
+                'lifecycle_generation':generation,'completion_result_id':'completed:'+task_id,'disposition':'no_mutation','source_result':None}]
         (directory / "task.json").write_text(json.dumps(payload), encoding="utf-8")
         return directory
 
@@ -86,6 +97,8 @@ class IdentityTests(unittest.TestCase):
         metadata_path = directory / "task.json"
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
         metadata.update(creator="team", assignee="team")
+        metadata.pop("schema_version",None)
+        metadata.update(status="completed")
         metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
         current = ".trellis/tasks/09-20-current"
         self.write_task(current, "current-id", 0)
@@ -108,7 +121,7 @@ class IdentityTests(unittest.TestCase):
         ):
             with self.subTest(field=field):
                 path.write_text(json.dumps({**current, field: value}), encoding="utf-8")
-                with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+                with self.assertRaisesRegex(LifecycleContractError, "invalid_record"):
                     resolve_task_ref(self.repo, ref)
         path.write_text(json.dumps(current), encoding="utf-8")
         self.assertEqual([row.task_id for row in task_inventory(self.repo)], ["current-id"])
@@ -321,7 +334,7 @@ class IdentityTests(unittest.TestCase):
             archive_ref = f".trellis/tasks/archive/2026-09/{task_id}"
             task = self.write_task(archive_ref, task_id, 0, modern=True)
             metadata = json.loads((task / "task.json").read_text(encoding="utf-8"))
-            metadata.update(status="completed", source={
+            metadata.update(source={
                 "kind": "issue", "repo_ref": "example/repo", "number": 154,
                 "disposition": disposition,
             })

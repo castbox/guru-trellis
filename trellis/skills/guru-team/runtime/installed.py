@@ -412,13 +412,14 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
                     Path("runtime") / path.name,
                     path,
                 )
-        lifecycle_root = kernel_root / "task_lifecycle"
-        if lifecycle_root.is_dir():
-            for path in collect_files(root, lifecycle_root, "installed task lifecycle runtime", errors):
-                if path.suffix == ".py":
-                    expect(path, Path("runtime/task_lifecycle") / path.name, path)
-                else:
-                    errors.append(f"unexpected installed task lifecycle runtime file: {path.name}")
+        for module_name in ("task_lifecycle", "delivery_projection"):
+            module_root = kernel_root / module_name
+            if module_root.is_dir():
+                for path in collect_files(root, module_root, f"installed {module_name} runtime", errors):
+                    if path.suffix == ".py":
+                        expect(path, Path("runtime") / module_name / path.relative_to(module_root), path)
+                    else:
+                        errors.append(f"unexpected installed {module_name} runtime file: {path.name}")
     selected_roots: dict[Path, set[str]] = {Path(".agents/skills"): {"shared"}}
     for platform in selected:
         selected_roots.setdefault(platform_roots[platform], set()).add(platform)

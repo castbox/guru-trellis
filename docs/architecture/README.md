@@ -1,10 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.86`；状态：`active`；predecessor：`current-main-0.6.17-guru.85`；source baseline：[#530 已提交候选接续 contribution](./contributions/530-clean-committed-reentry.md) + immutable `.85` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
+版本：`current-main-0.6.17-guru.87`；状态：`active`；predecessor：`current-main-0.6.17-guru.86`；source baseline：[#531 Task/Delivery contribution](./contributions/531-task-delivery-lifecycle.md) + immutable `.86` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.86` 是唯一 active；`.85` 及更早为 immutable superseded history。当前增量 ARCH-CUR-059 / ARCH-DOM-042 / ARCH-INT-045 由原 TaskCommit owner 承接 clean committed candidate，无新 Skill、exit 或 state store；没有必要 ADR。晋升差异仍须 fresh Phase2/TaskCommit/独立完整 BranchReview，知识晋升不证明软件发布。
+版本历史：`current-main-0.6.17-guru.87` 是唯一 active；`.86` 及更早为 immutable superseded history（Git历史）。当前增量 ARCH-CUR-060 / ARCH-DOM-043 / ARCH-INT-046 与 ADR-024 承接已独立审查的 #531 contribution。公共 Task/Delivery authority 归上游；Guru 保留语义门禁与私有发布事务，所有 Delivery 含 D1 独立 Planning。旧安装成套迁移前保留原完整版本。晋升差异仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview；知识晋升不证明软件发布或原业务恢复。历史 `.86` 的 #530 原TaskCommit clean接续决定与已审查事实继续继承。
 
 历史 `.85`：当时增量为 ARCH-CUR-058 / ARCH-DOM-041 / ARCH-INT-044 与 ADR-022/023；继承全部有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。当时 registry 为37 packages/169 exits/110 commands，business workflow为35 mandatory invokes/163 exits。历史 `.84` 的 #521 增量为 ARCH-CUR-057 / ARCH-DOM-040 / ARCH-INT-043 / EVD-060 与 ADR-021，其 registry36/164/109、business34/158 只绑定该轮。晋升新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
 

@@ -12,6 +12,8 @@ from pathlib import Path
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PACKAGE.parent / "guru-create-delivery/tests"))
+from support import installed_fixture
 sys.path.insert(0, str(PACKAGE.parents[1]))
 from runtime.io import CommandError, project_intermediate_receipt
 DIMENSIONS = (
@@ -150,24 +152,43 @@ class SingleReadDispatcherTest(unittest.TestCase):
         self.assertEqual("conflicting_arguments", error["code"])
 
     def test_original_markdown_profiles_keep_fixed_scopes(self):
-        for profile, mode in (("planning_artifacts", "workflow"), ("explicit_paths", "standalone")):
-            files = ("prd.md", "design.md", "implement.md") if profile == "planning_artifacts" else ("contract.md",)
-            for name in files:
-                (self.root / name).write_text("Exact contract.\n")
-            selectors = ("--task", ".") if profile == "planning_artifacts" else ("--path", "contract.md")
-            args = ("--profile", profile, "--mode", mode, *selectors)
-            scan = self.command("record-contract-wording-review.sh", args=(*args, "--scan-only"))
-            self.assertEqual(list(files), [x["path"].removeprefix("./") for x in scan["scope"]["items"]])
-            auth = self.author(scan)
-            if profile == "planning_artifacts":
-                auth["ai_review_gate"]["planning_checked_dimensions"] = {name: True for name in PLANNING}
-            owner = self.command("record-contract-wording-review.sh", auth, (*args, "--input", "-"))
-            checked = self.command("check-contract-wording-review.sh", owner, (*selectors, "--input", "-"))
-            self.assertEqual("pass", checked["typed_exit"])
-            (self.root / files[-1]).write_text("Updated contract.\n")
-            error = self.command("check-contract-wording-review.sh", owner,
-                                 (*selectors, "--input", "-"), expected=3)
-            self.assertEqual("stale_identity", error["code"])
+        (self.root / "contract.md").write_text("Exact contract.\n")
+        args = ("--profile", "explicit_paths", "--mode", "standalone", "--path", "contract.md")
+        scan = self.command("record-contract-wording-review.sh", args=(*args, "--scan-only"))
+        owner = self.command("record-contract-wording-review.sh", self.author(scan), (*args, "--input", "-"))
+        self.command("check-contract-wording-review.sh", owner, ("--path", "contract.md", "--input", "-"))
+        (self.root / "contract.md").write_text("Updated contract.\n")
+        self.command("check-contract-wording-review.sh", owner, ("--path", "contract.md", "--input", "-"), expected=3)
+
+    def test_delivery_markdown_scope_uses_installed_locator_and_exact_key(self):
+        fixture = installed_fixture(self)
+        self.root = fixture.root.resolve()
+        key = fixture.create()
+        directory = fixture.projection.planning_directory(key)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (directory / name).write_text("Exact contract.\n")
+        selectors = ("--task", fixture.task_ref, "--delivery-key", json.dumps(key))
+        args = ("--profile", "delivery_planning_artifacts", "--mode", "workflow", *selectors)
+        scan = self.command("record-contract-wording-review.sh", args=(*args, "--scan-only"))
+        self.assertEqual({item["path"] for item in scan["scope"]["items"]},
+                         {(directory / name).relative_to(self.root.resolve()).as_posix() for name in ("prd.md", "design.md", "implement.md")})
+        auth = self.author(scan)
+        auth["ai_review_gate"]["planning_checked_dimensions"] = {name: True for name in PLANNING}
+        owner = self.command("record-contract-wording-review.sh", auth, (*args, "--input", "-"))
+        checked = self.command("check-contract-wording-review.sh", owner, (*selectors, "--input", "-"))
+        public = json.loads((PACKAGE / "examples/public-delivery-planning-artifacts-input.json").read_text())
+        public.update(task_ref=fixture.task_ref, delivery_key=key)
+        output = self.envelope_command("invoke.sh", {"public_input": public, "owner_result": owner,
+                                                       "validation_receipt": checked["validation_receipt"]})
+        self.assertEqual(output["delivery_key"], key)
+        self.assertEqual(output["exit_id"], "pass")
+        self.assertEqual((fixture.task / "prd.md").read_text(), "整体scope\n")
+        before = fixture.projection.resolve(key)
+        (directory / "implement.md").write_text("Updated plan obligation.\n")
+        self.command("check-contract-wording-review.sh", owner, (*selectors, "--input", "-"), expected=3)
+        self.envelope_command("invoke.sh", {"public_input": public, "owner_result": owner,
+                                            "validation_receipt": checked["validation_receipt"]}, expected=3)
+        self.assertEqual(fixture.projection.resolve(key), before)
 
     def changed_markdown(self, profile):
         task_ref = ".trellis/tasks/wording-reentry"
@@ -206,23 +227,35 @@ class SingleReadDispatcherTest(unittest.TestCase):
 
     def test_real_changed_planning_stdout_validates_author_reentry_without_private_reads(self):
         from runtime.schema import validate_json
-        output, locator = self.changed_markdown("planning_artifacts")
-        interface = json.loads((PACKAGE / "interface.json").read_text())
-        consumer = next(row for row in interface["public_contracts"]["consumer_inputs"]
-                        if row["id"] == "content_changed_workflow_input")
-        validate_json(output, PACKAGE.parents[1] / consumer["contract"]["path"], "consumer")
-        # Only actual public stdout supplies data; the workflow supplies fixed profile/mode.
-        author_input = {"profile": "wording_reentry", "mode": "workflow",
-                        "task_ref": output["task_ref"], "change_refs": output["change_refs"]}
-        author_schema = PACKAGE.parent / "guru-author-task-plan/schemas/public-wording-reentry-input.schema.json"
-        validate_json(author_input, author_schema, "author_input")
+        fixture = installed_fixture(self)
+        self.root = fixture.root.resolve()
+        key = fixture.create()
+        folder = fixture.projection.planning_directory(key)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (folder / name).write_text("Original contract.\n")
+        changed = folder / "design.md"
+        before = hashlib.sha256(changed.read_bytes()).hexdigest()
+        changed.write_text("Current equivalent contract.\n")
+        selectors = ("--task", fixture.task_ref, "--delivery-key", json.dumps(key))
+        args = ("--profile", "delivery_planning_artifacts", "--mode", "workflow", *selectors)
+        scan = self.command("record-contract-wording-review.sh", args=(*args, "--scan-only"))
+        auth = self.author(scan, "content_changed")
+        locator = changed.relative_to(self.root).as_posix()
+        auth["revisions"] = [{"revision_id": "current-wording-revision", "locator": locator,
+            "before_sha256": before, "after_sha256": hashlib.sha256(changed.read_bytes()).hexdigest(),
+            "reason": "Equivalent wording clarified.", "rescan_sha256": scan["scan"]["scan_sha256"]}]
+        auth["ai_review_gate"]["planning_checked_dimensions"] = dict.fromkeys(PLANNING, True)
+        owner = self.command("record-contract-wording-review.sh", auth, (*args, "--input", "-"))
+        checked = self.command("check-contract-wording-review.sh", owner, (*selectors, "--input", "-"))
+        public = json.loads((PACKAGE / "examples/public-delivery-planning-artifacts-input.json").read_text())
+        public.update(task_ref=fixture.task_ref, delivery_key=key)
+        output = self.envelope_command("invoke.sh", {"public_input": public, "owner_result": owner,
+                                                   "validation_receipt": checked["validation_receipt"]})
+        author_input = {"profile": "delivery_wording_reentry", "mode": "workflow",
+                        **{name: output[name] for name in ("task_ref", "delivery_key", "change_refs")}}
+        validate_json(author_input, PACKAGE.parent / "guru-author-task-plan/schemas/public-delivery-wording-reentry-input.schema.json", "author_input")
         self.assertEqual([locator], author_input["change_refs"])
-        self.assertEqual({"exit_id", "profile", "task_ref", "change_refs"}, set(output))
-        for field in ("task_ref", "change_refs"):
-            incomplete = dict(output)
-            incomplete.pop(field)
-            with self.subTest(missing=field), self.assertRaises(CommandError):
-                validate_json(incomplete, PACKAGE.parents[1] / consumer["contract"]["path"], "consumer")
+        self.assertEqual({"exit_id", "profile", "task_ref", "delivery_key", "change_refs"}, set(output))
 
     def test_changed_explicit_paths_preserves_nonplanning_output(self):
         output, _ = self.changed_markdown("explicit_paths")
@@ -244,7 +277,7 @@ class SingleReadDispatcherTest(unittest.TestCase):
 
     def test_scan_example_matches_declared_schema(self):
         from jsonschema import Draft202012Validator
-        schema = json.loads((PACKAGE / "schemas/review-invocation.schema.json").read_text())
+        schema = json.loads((PACKAGE / "schemas/change-request-review-invocation.schema.json").read_text())
         example = json.loads((PACKAGE / "examples/review-scan-invocation.json").read_text())
         self.assertEqual([], list(Draft202012Validator(schema).iter_errors(example)))
         self.envelope_command("record-contract-wording-review.sh", example, "--scan-only")

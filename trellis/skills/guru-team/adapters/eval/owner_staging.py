@@ -87,9 +87,11 @@ def stage_owner_execution(
             != hashlib.sha256((request_package / "evals/evals.json").read_bytes()).hexdigest()
         ):
             raise ValueError("semantic authoring package does not match the evaluated contract")
-        from adapters.eval.architecture_authoring import stage_architecture_facts
+        from adapters.eval.architecture_authoring import DELIVERY_CONTEXT, stage_architecture_facts
         stage_architecture_facts(request, fixture)
-        return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {}
+        return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {
+            "TRELLIS_CONTEXT_ID": os.environ.get("TRELLIS_CONTEXT_ID") or DELIVERY_CONTEXT,
+        }
     if skill_id == "guru-qualify-root-cause":
         from adapters.eval.root_cause_fixtures import stage
         return stage(request, fixture)
@@ -169,7 +171,9 @@ def stage_owner_execution(
     task_required = skill_id != "guru-execute-task-free-change" or recipe in {
         "task-free-resume-active-task", "task-free-scope-change",
     }
-    if task_required:
+    if skill_id == ARCHITECTURE_SKILL and json.loads(public_input.read_text())["profile"].startswith("delivery_"):
+        task_required = False
+    if task_required and not (skill_id == "guru-review-contract-wording" and recipe == "wording-content-changed"):
         task.mkdir(parents=True, exist_ok=True)
         (task / "task.json").write_text(json.dumps({
             "id": "current", "name": "current", "title": "Stage 0 wording fixture",
@@ -197,6 +201,10 @@ def stage_owner_execution(
     (fixture / OWNER_INPUT).write_bytes(public_input.read_bytes())
     public_payload = json.loads(public_input.read_text(encoding="utf-8"))
     if skill_id == "guru-maintain-architecture-baseline":
+        if public_payload["profile"].startswith("delivery_"):
+            from adapters.eval.architecture_authoring import stage_delivery_identity
+            stage_delivery_identity(fixture, public_payload)
+            (fixture / OWNER_INPUT).write_text(json.dumps(public_payload))
         constitution = public_payload["constitution"]
         if constitution["authority_status"] == "current":
             constitution_locator = Path(constitution["authority_locator"])
@@ -242,7 +250,14 @@ def stage_owner_execution(
     public_mode = str(public_payload.get("mode") or "")
     fake_bin = write_fake_gh(execution_root, recipe)
     environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
+    if skill_id == ARCHITECTURE_SKILL and public_payload["profile"].startswith("delivery_"):
+        from adapters.eval.architecture_authoring import DELIVERY_CONTEXT
+        environment["TRELLIS_CONTEXT_ID"] = os.environ.get("TRELLIS_CONTEXT_ID") or DELIVERY_CONTEXT
     previous_path = os.environ.get("PATH")
+    previous_context = os.environ.get("TRELLIS_CONTEXT_ID")
+    if skill_id == "guru-review-contract-wording" and recipe == "wording-content-changed":
+        environment["TRELLIS_CONTEXT_ID"] = "wording-delivery-eval"
+        os.environ["TRELLIS_CONTEXT_ID"] = environment["TRELLIS_CONTEXT_ID"]
     os.environ["PATH"] = environment["PATH"]
     owner_context: dict[str, Any] = {}
     readiness_invocation = None
@@ -286,8 +301,9 @@ def stage_owner_execution(
             owner = build_context_owner(runtime, fixture, package, recipe)
         elif skill_id == "guru-review-contract-wording":
             owner, change_request = build_wording_owner(
-                runtime, fixture, package, recipe
+                runtime, fixture, package, recipe, public_payload
             )
+            (fixture / OWNER_INPUT).write_text(json.dumps(public_payload) + "\n")
             if owner.get("profile") == "change_request":
                 owner_context["change_request"] = change_request
         elif skill_id == "guru-review-change-request":
@@ -437,9 +453,12 @@ def stage_owner_execution(
                 }
             else:
                 raise ValueError(f"unsupported architecture baseline owner staging recipe: {recipe}")
+            if public_payload.get("planning_purpose") == "candidate_assessment":
+                selected.pop("promotion_state", None)
             owner = {
                 "schema_version": public_payload["schema_version"],
-                **({"planning_purpose": public_payload["planning_purpose"]} if public_payload.get("schema_version") == "3.0" else {}),
+                **({"planning_purpose": public_payload["planning_purpose"]} if "planning_purpose" in public_payload else {}),
+                **({"delivery_key": public_payload["delivery_key"], "planning_root": public_payload["planning_root"]} if public_payload["profile"].startswith("delivery_") else {}),
                 "profile": public_payload["profile"],
                 "mode": public_payload["mode"],
                 "continuation_id": public_payload["continuation_id"],
@@ -461,7 +480,7 @@ def stage_owner_execution(
                     "current_identity": str(public_payload["current_identity"]),
                     "sync_kind": str(public_payload["sync_kind"]),
                     "sync_target": copy.deepcopy(public_payload["sync_target"]),
-                } if public_payload["profile"] == "promotion" else {}),
+                } if public_payload["profile"] in {"promotion", "delivery_promotion"} else {}),
                 "ai_review_gate": {
                     "status": "passed",
                     "reviewed_scope": "Current Architecture authority, task-local change contract, project checks, and lifecycle stage.",
@@ -584,6 +603,10 @@ def stage_owner_execution(
         else:
             raise ValueError(f"owner staging is not implemented for {skill_id}")
     finally:
+        if previous_context is None:
+            os.environ.pop("TRELLIS_CONTEXT_ID", None)
+        else:
+            os.environ["TRELLIS_CONTEXT_ID"] = previous_context
         if previous_path is None:
             os.environ.pop("PATH", None)
         else:

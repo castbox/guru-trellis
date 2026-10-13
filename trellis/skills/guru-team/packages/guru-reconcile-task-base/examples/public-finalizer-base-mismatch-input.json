@@ -1,1 +1,16 @@
-{"profile":"finalizer_base_mismatch","mode":"workflow","task_ref":".trellis/tasks/current","task_head":"1111111111111111111111111111111111111111","selected_base_ref":"origin/main","old_base_head":"2222222222222222222222222222222222222222","new_base_head":"3333333333333333333333333333333333333333","resume_target":"finalization_resume","branch_review_commit":"1111111111111111111111111111111111111111"}
+{
+  "profile": "delivery_finalizer_base_mismatch",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "task_head": "1111111111111111111111111111111111111111",
+  "selected_base_ref": "origin/main",
+  "old_base_head": "2222222222222222222222222222222222222222",
+  "new_base_head": "3333333333333333333333333333333333333333",
+  "resume_target": "finalization_resume",
+  "branch_review_commit": "1111111111111111111111111111111111111111",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  }
+}

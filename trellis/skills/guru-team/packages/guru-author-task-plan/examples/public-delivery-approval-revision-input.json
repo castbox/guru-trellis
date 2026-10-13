@@ -1,0 +1,13 @@
+{
+  "profile": "delivery_approval_revision",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/10-11-sample-planning",
+  "revision_actions": [
+    "implement.md:complete current Delivery policy"
+  ],
+  "delivery_key": {
+    "task_id": "demo",
+    "lifecycle_generation": 0,
+    "delivery_id": "e26d112f-cd11-4402-8858-2d5e8f433821"
+  }
+}

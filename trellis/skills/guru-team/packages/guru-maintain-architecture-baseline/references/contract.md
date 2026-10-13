@@ -49,7 +49,8 @@ classifiers, public fields, or a second constitution checklist.
 
 ## Public and owner boundary
 
-The 2.0 public input is a caller-owned route and authority DTO. Every profile
+The repository 2.0 and Delivery delivery-1.0 public inputs are caller-owned
+route and authority DTOs. Every profile
 identifies the profile, stage, task, current baseline, constitution, project
 change contract, requirement/behavior authority, and freshness. Branch Review
 task impact and promotion also carry the exact structured committed range.
@@ -364,6 +365,11 @@ eligibility. Candidate DTO alone cannot satisfy final input, real contribution,
 current binding or final semantic execution. Final impact requires actual
 reviewed_candidate or legitimate reviewed_promoted state, selected change_path
 and current task-local contribution; no-impact keeps no_change without burden.
+Task-local denotes the contribution's ownership, not a required directory.
+Use the project's actual isolated contribution locator, including an existing
+`docs/architecture/contributions/` file. Review its Task attribution and current
+content; the validator checks a safe repository-relative regular file and its
+bound identity. Do not copy it into Task planning solely to satisfy a path rule.
 The final current router goes only to adjacent Approval.
 
 Freshness binds the exact candidate object or design file as sha256:<content>.
@@ -379,3 +385,30 @@ Retire task-impact planning 2.0 at the matching graph switch, without a legacy
 reader, guessed purpose or second parser. Nonplanning and maintenance 2.0 keep
 their meanings. The sync router is only the thin owner-preserving transition
 needed to retain purpose across maintenance; it owns no assessment or writer.
+
+## Delivery Architecture projection
+
+Development stages select delivery_task_impact_sync (schema_version
+delivery-1.0), carrying the exact opaque DeliveryKey and public planning_root
+in addition to this owner's original stage authorities. Read the selected
+Delivery's three planning documents and the Task's overall scope separately.
+The installed public API validates key/relationship and planning_root; the
+semantic owner result binds both fields and its exact public input. Independent
+assessment, required concerns, contribution, ADR, project checks and promotion
+remain under this original Architecture owner and contract. No second judgment
+or public Planning writer is added. Whole-task acceptance_finish may have no
+current Delivery and retains task_impact_sync; other development invocations
+without an explicit key are rejected. Delivery exits carry key/root to the
+original route; source_profile=delivery_task_impact_sync distinguishes them.
+Old Task development inputs require the pinned old complete installation.
+
+Delivery stage recovery uses `delivery_promotion`, `delivery_repair`, or
+`delivery_bootstrap_foundation` with the explicit original DeliveryKey and
+planning_root. These profiles execute the same baseline owner algorithms and
+return the original stage identity. Whole-task/global bootstrap, promotion and
+repair retain their existing profiles and never infer a Delivery from private state.
+
+`sync_required` has the sole workflow consumer
+`guru-architecture-baseline-sync-router`. It uses only the closed DTO shape and
+sync_kind to project the exact Task or Delivery promotion/repair/impact entry
+to this same owner. It performs no second semantic assessment and infers no identity.

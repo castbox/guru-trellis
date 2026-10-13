@@ -121,21 +121,21 @@ class ManualGitFallbackContractTest(unittest.TestCase):
         self.assertIn("Manual Git/GitHub Operations", no_task)
         self.assertIn("missing context is not proof of no task", no_task)
 
-    def test_existing_public_inventory_is_unchanged(self) -> None:
+    def test_current_delivery_public_inventory_is_complete(self) -> None:
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
-        self.assertEqual(len(active), 35)
+        self.assertEqual(len(active), 38)
         exits = commands = 0
         for row in active:
             interface = json.loads((SKILLS / row["interface"]).read_text(encoding="utf-8"))
             exits += len(interface["external_exits"])
             package_commands = SKILLS / row["package"] / "commands.json"
             commands += len(json.loads(package_commands.read_text(encoding="utf-8"))["commands"])
-        self.assertEqual((exits, commands), (159, 106))
-        self.assertEqual(self.workflow.count("<!-- guru-skill-invoke:"), 33)
-        self.assertEqual(self.workflow.count("<!-- guru-skill-exit:"), 153)
-        self.assertEqual(self.workflow.count("<!-- guru-workflow-target:"), 62)
-        self.assertEqual(self.workflow.count("<!-- guru-stop-target:"), 36)
+        self.assertEqual((exits, commands), (187, 114))
+        self.assertEqual(self.workflow.count("<!-- guru-skill-invoke:"), 36)
+        self.assertEqual(self.workflow.count("<!-- guru-skill-exit:"), 180)
+        self.assertEqual(self.workflow.count("<!-- guru-workflow-target:"), 74)
+        self.assertEqual(self.workflow.count("<!-- guru-stop-target:"), 40)
 
 
 if __name__ == "__main__":

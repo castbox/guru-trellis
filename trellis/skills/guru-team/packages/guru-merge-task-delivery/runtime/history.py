@@ -167,9 +167,11 @@ def parse_delivery_trailers(message: str, task_identity: str) -> dict[str, str] 
             "Use the exact LF-only Delivery trailer contract.",
             3,
         )
+    schema2 = "Guru-Delivery-Schema: 2" in lines
+    trailer_keys = (*TRAILER_KEYS, "Guru-Delivery-Identity", "Guru-Task-Generation") if schema2 else TRAILER_KEYS
     key_lines = {
         key: [line for line in lines if line.startswith(key + ":")]
-        for key in TRAILER_KEYS
+        for key in trailer_keys
     }
     if any(len(values) != 1 for values in key_lines.values()):
         raise CommandError(
@@ -178,8 +180,8 @@ def parse_delivery_trailers(message: str, task_identity: str) -> dict[str, str] 
             "Require each Delivery trailer exactly once.",
             3,
         )
-    if len(lines) < 5 or lines[-4] != "" or lines[-3:] != [
-        key_lines[key][0] for key in TRAILER_KEYS
+    if len(lines) < len(trailer_keys)+2 or lines[-len(trailer_keys)-1] != "" or lines[-len(trailer_keys):] != [
+        key_lines[key][0] for key in trailer_keys
     ]:
         raise CommandError(
             "stale_identity",
@@ -189,7 +191,7 @@ def parse_delivery_trailers(message: str, task_identity: str) -> dict[str, str] 
         )
     values = {
         key: key_lines[key][0].split(":", 1)[1].strip()
-        for key in TRAILER_KEYS
+        for key in trailer_keys
     }
     if values["Guru-Task-Identity"] != task_identity:
         raise CommandError(
@@ -198,7 +200,7 @@ def parse_delivery_trailers(message: str, task_identity: str) -> dict[str, str] 
             "Use one exact stable task identity per Delivery merge.",
             3,
         )
-    if values["Guru-Delivery-Schema"] != "1":
+    if values["Guru-Delivery-Schema"] not in {"1", "2"}:
         raise CommandError(
             "stale_identity",
             "history.merge_commit.schema",
@@ -213,7 +215,18 @@ def parse_delivery_trailers(message: str, task_identity: str) -> dict[str, str] 
             "Use the exact 40-hex reviewed head.",
             3,
         )
-    return {"task_identity": task_identity, "reviewed_head": reviewed_head}
+    result = {"task_identity": task_identity, "reviewed_head": reviewed_head}
+    if schema2:
+        import uuid
+        try:
+            delivery_id = str(uuid.UUID(values["Guru-Delivery-Identity"]))
+            generation = int(values["Guru-Task-Generation"])
+            if delivery_id != values["Guru-Delivery-Identity"] or generation < 0:
+                raise ValueError("invalid identity")
+        except ValueError as exc:
+            raise CommandError("stale_identity", "history.merge_commit.identity", "Read the exact public Delivery identity trailers.", 3) from exc
+        result["delivery_key"] = {"task_id": task_identity, "delivery_id": delivery_id, "lifecycle_generation": generation}
+    return result
 
 
 def commit_facts(root: Path, sha: str) -> dict[str, Any]:
@@ -383,17 +396,18 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
             "pr_number": pr_number,
             "merge_commit_sha": sha,
             "base_ref": query["base_ref"],
+            **({"delivery_key": trailers["delivery_key"]} if "delivery_key" in trailers else {}),
         })
 
     result = {
-        "schema_version": "1.0",
+        "schema_version": "2.0" if any("delivery_key" in row for row in deliveries) else "1.0",
         "status": "discovered",
         "task_identity": query["task_identity"],
         "repo_ref": query["repo_ref"],
         "base_ref": query["base_ref"],
         "deliveries": deliveries,
     }
-    validate_json(result, package_root / "schemas/delivery-history-result.schema.json", "stdout")
+    validate_json(result, package_root / ("schemas/delivery-history-result-2.0.schema.json" if result["schema_version"] == "2.0" else "schemas/delivery-history-result.schema.json"), "stdout")
     return result
 
 

@@ -1,6 +1,8 @@
 # Requirements SSOT
 
-唯一 current RDT authority 是 `current-main-0.6.17-guru.89` / `active`；[本版入口](./versions/current-main-0.6.17-guru.89/requirement-main.md)完整继承 immutable `.88`，承接 [#530 增量 trace](../requirements-design-test-contributions/530-clean-committed-reentry/traceability.md)。Architecture 继承 `.86/active`。[唯一Test](../requirements-design-test-contributions/530-clean-committed-reentry/test.md)拥有实际验证及未验证边界；晋升差异须 fresh Phase2、TaskCommit 与不同 reviewer 完整 BranchReview，知识晋升不代表软件发布。
+唯一current RDT authority为`current-main-0.6.17-guru.90/active`；[本版入口](./versions/current-main-0.6.17-guru.90/requirement-main.md)完整继承immutable `.89`，承接[#531唯一增量](../requirements-design-test-contributions/531-task-delivery-lifecycle/traceability.md)。Architecture继承`.87/active`；历史段落保持其原身份。promotion新diff须fresh gates，不证明软件发布或原业务恢复。
+
+历史 `.89` RDT authority 当时是 `current-main-0.6.17-guru.89` / `active`；[本版入口](./versions/current-main-0.6.17-guru.89/requirement-main.md)完整继承 immutable `.88`，承接 [#530 增量 trace](../requirements-design-test-contributions/530-clean-committed-reentry/traceability.md)。Architecture 继承 `.86/active`。[唯一Test](../requirements-design-test-contributions/530-clean-committed-reentry/test.md)拥有实际验证及未验证边界；晋升差异须 fresh Phase2、TaskCommit 与不同 reviewer 完整 BranchReview，知识晋升不代表软件发布。
 
 本目录是 Guru Team Trellis Extension 的唯一 Requirements authority。运行时行为仍由 canonical workflow 与 Skill package 定义；task-local `prd.md` 只描述单次变更，不是产品需求 authority。
 
@@ -8,7 +10,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.89` | [本版入口](./versions/current-main-0.6.17-guru.89/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.90` | [本版入口](./versions/current-main-0.6.17-guru.90/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.89` | [本版入口](./versions/current-main-0.6.17-guru.89/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.88` | [不可变前驱](./versions/current-main-0.6.17-guru.88/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.87` | [不可变前驱](./versions/current-main-0.6.17-guru.87/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.86` | [新 current](./versions/current-main-0.6.17-guru.86/requirement-main.md) |

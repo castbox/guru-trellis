@@ -14,13 +14,14 @@ causal completion or infer it from a Delivery merge.
 Normal revision and recovery follow the single continuation block in
 `workflow.md`. Check execution-fact reuse and Delivery Review anchor recovery
 are owned by their respective canonical Skill contracts, not this README.
-First activation and active replanning both consume the current Planning
-`approved` result through the same presentation/acceptance boundary. The
-existing [execution owner](../../skills/guru-team/packages/guru-activate-task/SKILL.md)
-distinguishes status activation, execution resumption and each completed
-operation's read-only output recovery. Its aggregate public schemas are 2.0;
-reapply the complete matching preset and workflow together. First-activation
-payloads retain their published meaning; no second parser is installed.
+The #531 candidate consumes upstream Task schema 2.0 / Delivery API 1.0 and
+requires the matching reviewed API source. The
+[migration contract](../../presets/guru-team/spec/workflow/task-delivery-migration.md) owns the supported
+D1 integration and D2 legacy-cutover boundary. A selected workflow does not
+migrate existing Tasks or prove installation/joint acceptance.
+Every Delivery has its own Planning and stable public identity before Author;
+`guru-activate-delivery` is the Planning transition owner for D1 and successors.
+The Task has overall scope/completion responsibility and no development-status router.
 
 The `guru-team` canonical workflow is the global AI routing contract. The
 canonical source is `workflow.md`; an installed `.trellis/workflow.md` is a
@@ -41,7 +42,7 @@ Actual native and projection evidence is owned by [#404 Test](../../../docs/requ
 ## Current Lifecycle
 
 ```text
-Intake -> task creation -> Planning -> task activation -> Phase 2
+Intake -> task identity/scope -> Delivery creation -> Delivery Planning -> implementation
   -> Task Commit -> Branch Review
   -> Delivery Review -> Publish Delivery -> Merge Delivery
   -> Completion -> (remaining work / another Delivery / Closure)
@@ -65,9 +66,10 @@ Ignored runtime mapping and checkout paths are neither task identity nor
 checkout-path authority. Missing binding enters
 `guru-establish-task-branch-binding`. The public
 `check-task-checkout-boundary.sh` validates the current task and checkout
-before writes; it does not rebuild old task/workspace mappings. `guru-activate-task`
-owns first Planning activation and active replan execution resumption; do not call the former `start-task.sh`
-or upstream `task.py start` to perform that transition.
+before writes; it does not rebuild old task/workspace mappings. Public Delivery
+query/selection supplies execution identity; scope/Planning/phase writes use the
+unique runtime declaration. Upstream `task.py start` binds a Task and does not
+accept Delivery Planning or begin implementation.
 
 ## Installation
 
@@ -205,13 +207,3 @@ Git/publication/install/cleanup action keep their own independent boundaries.
 Install/update/reapply the canonical workflow and Skill projections together;
 old current-checkout editing is directly replaced, not a fallback mode. Source
 checks do not prove target installation or native Agent continuation.
-
-## 已提交候选接续（#530）
-
-post_commit Reconcile 后，fresh Phase 2 与 pair guard 仍进入原 TaskCommit
-owner。新增 `committed_reentry` 只读输入核验当前已提交候选并返回原 `committed`
-身份，再进入 fresh Architecture 与首次独立完整 Branch Review；真实待提交增量
-保留原 exact commit 路径。该输入随完整 preset 的 canonical package、runtime、
-schema 与平台 Skill 投影一起安装/reapply，使用方法由
-[TaskCommit contract](../../skills/guru-team/packages/guru-create-task-commit/references/contract.md)拥有。
-本接续不创建空提交，不替代 Phase 2 或 Branch Review。

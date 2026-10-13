@@ -2,9 +2,9 @@
 
 ## Entry And Pair Guard
 
-The semantic Skill has six caller-owned input profiles: `post_plan`,
-`post_check`, `post_commit`, `post_branch_review`, `post_publication`, and
-`finalizer_base_mismatch`. Each carries one exact active-task identity,
+The semantic Skill has six caller-owned input profiles: `delivery_post_plan`,
+`delivery_post_check`, `delivery_post_commit`, `delivery_post_branch_review`, `delivery_post_publication`, and
+`delivery_finalizer_base_mismatch`. Each carries one exact active-task identity,
 selected base ref, task HEAD, and a closed `resume_target`. The three
 pre-review profiles do not accept caller-supplied old/new base SHAs: the guard
 resolves the selected base and derives the old base from the unique live merge
@@ -59,14 +59,18 @@ the integration clock. Live Issue authority, accepted scope, approved planning
 assumptions, and task content form the authority/task-content clock. Advancing
 the integration clock alone never makes planning stale and never changes the
 caller's closed `resume_target`. If authority and task content remain unchanged
-and the exact candidate is compatible, `post_plan`, `post_check`, and
-`post_commit` create one checked local reconciliation merge commit before
-returning `reconciled`. `post_plan` preserves `task_activation`; `post_check`
-and `post_commit` both route to fresh Phase 2. The three post-review profiles
+and the exact candidate is compatible, `delivery_post_plan`, `delivery_post_check`, and
+`delivery_post_commit` create one checked local reconciliation merge commit before
+returning `reconciled`. `delivery_post_plan` preserves `delivery_activation`; `delivery_post_check`
+and `delivery_post_commit` both route to fresh Phase 2. The three post-review profiles
 also return `reconciled` when the candidate preserves the reviewed-content
 identity. When that identity must advance, only those three profiles may return
-`review_continuity_required`; they do not route through implementation or a
-new full Branch Review. `planning_stale` is valid only when current live
+`review_continuity_required`. Bounded continuity does not itself require a new
+full Branch Review or provide a public gate pass. Its workflow consumer rereads
+public Check and full-review applicability for the reconciled candidate:
+missing/stale Check reenters the existing rework, begin-check, Check and clean
+TaskCommit path; missing/stale full review reenters independent complete Branch
+Review. `planning_stale` is valid only when current live
 authority or an approved planning assumption has actually changed; it carries
 exact reason refs for that change.
 
@@ -146,7 +150,7 @@ review rather than chained.
 
 ## Conflict-Resolved Candidate
 
-The `resolved_candidate` profile is entered only from
+The `delivery_resolved_candidate` profile is entered only from
 `guru-check-task:resolved_reconciliation_passed`. Its public input binds the
 fresh Phase 2 commit anchor, active `MERGE_HEAD`, selected new base, stage-0
 tree object, index-tree digest, exact parent order, branch, and commit message.
@@ -162,21 +166,28 @@ mutation.
 If stdout is lost after that commit, the same request may recover only when
 current `HEAD` has the exact reviewed parents, tree, and message in a clean
 terminal Git state. Recovery returns the existing commit and never creates a
-second commit. `project-resolved-full-review` combines that checked result with
-explicit Branch Review authoring and emits the complete existing
-`branch_review` input. This marker-free deterministic projection is not a
+second commit. Before Full Review, the reviewing owner invokes public rework
+to implementation; the implementation owner binds the reconciled candidate with
+`begin_check`, and the Check owner reviews current applicability and records a
+fresh candidate-bound public Check. This preserves the Delivery identity, plan
+and existing reconciled commit; still-valid test evidence need not be rerun.
+`project-resolved-full-review` combines that checked result with explicit Branch
+Review authoring only after validating the actual current public Check owner,
+passed result, predecessor applicability, exact reconciled HEAD/base, live
+candidate bytes and scope/plan/evidence references. A token by itself is not
+sufficient. It emits the complete current `delivery_branch_review` input. This marker-free deterministic projection is not a
 Reconcile external exit; bounded base continuity is not used for this path.
 
 ## Exits
 
 - `reconciled`: the workflow router receives task/current-base identity and the
-  checked resume target. `post_plan` preserves task activation; `post_check`
-  and `post_commit` route to fresh Phase 2; post-review profiles preserve their
+  checked resume target. `delivery_post_plan` preserves Delivery activation; `delivery_post_check`
+  and `delivery_post_commit` route to fresh Phase 2; post-review profiles preserve their
   closed target when no bounded continuity review is needed.
 - `review_continuity_required`: Branch Review receives the exact old/new pair,
   prior full-review commit, current reconciled task HEAD, candidate tree token,
   semantically relevant paths, and original route for bounded continuity. This
-  exit is invalid for `post_plan`, `post_check`, and `post_commit`, and cannot
+  exit is invalid for `delivery_post_plan`, `delivery_post_check`, and `delivery_post_commit`, and cannot
   substitute for the first complete Branch Review.
 - `implementation_required`: implementation receives exact finding refs and
   resumes the affected downstream graph.

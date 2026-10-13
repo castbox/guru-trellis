@@ -212,5 +212,13 @@ class DeliveryHistoryTest(unittest.TestCase):
                 HISTORY.discover(self.root, PACKAGE, self.query)
 
 
+    def test_schema_two_trailers_keep_public_identity_and_legacy_readable(self):
+        key={'task_id':self.task_identity,'lifecycle_generation':2,'delivery_id':'43134b50-2c8b-4d70-b114-218a735a82e2'}
+        message='交付当前切片。\n\nGuru-Task-Identity: '+self.task_identity+'\nGuru-Delivery-Schema: 2\nGuru-Delivery-Head: '+'a'*40+'\nGuru-Delivery-Identity: '+key['delivery_id']+'\nGuru-Task-Generation: 2'
+        parsed=HISTORY.parse_delivery_trailers(message,self.task_identity)
+        self.assertEqual(key,parsed['delivery_key'])
+        legacy=HISTORY.parse_delivery_trailers('历史切片。\n\nGuru-Task-Identity: '+self.task_identity+'\nGuru-Delivery-Schema: 1\nGuru-Delivery-Head: '+'b'*40,self.task_identity)
+        self.assertNotIn('delivery_key',legacy)
+
 if __name__ == "__main__":
     unittest.main()

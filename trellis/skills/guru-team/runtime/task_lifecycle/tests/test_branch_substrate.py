@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 from runtime.task_lifecycle.branch_resolution import (
     OwnershipCurrent,
@@ -45,18 +46,19 @@ class GitFixture:
         self.repo = root / name
         self.repo.mkdir(parents=True)
         self.git("init", "-b", "main")
+        install_common(self.repo)
         self.git("config", "user.email", "tests@example.com")
         self.git("config", "user.name", "Branch Substrate Tests")
         task = self.repo / TASK_REF
         task.mkdir(parents=True)
         (task / "task.json").write_text(
             json.dumps(
-                {
+                public_task({
                     "id": TASK_ID,
                     "name": task.name,
                     "status": "in_progress",
                     "lifecycle_generation": GENERATION,
-                },
+                }),
                 sort_keys=True,
             )
             + "\n",
@@ -263,7 +265,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         self.assertIsNotNone(resolution.selected)
         return resolution.selected
@@ -276,7 +278,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             selected_candidate_id=candidate.candidate_id,
             expected_candidate_head=candidate.head,
         )
@@ -370,7 +372,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             expected_candidate_head=self.fixture.head,
         )
         self.assertEqual(result.kind, "already_established")
@@ -391,7 +393,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             expected_candidate_head=self.fixture.head,
         )
         self.assertEqual(result.kind, "binding_established")
@@ -422,7 +424,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             expected_candidate_head=self.fixture.head,
         )
         self.assertEqual(result.kind, "binding_established")
@@ -441,7 +443,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             expected_candidate_head=self.fixture.head,
         )
         self.assertEqual(result.kind, "binding_established")
@@ -455,7 +457,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         self.assertEqual((unique.kind, len(unique.valid_candidates)), ("candidate_resolved", 1))
 
@@ -476,7 +478,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         self.assertEqual(
             (multiple.kind, multiple.reason_code, len(multiple.valid_candidates)),
@@ -525,7 +527,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 self.ownership,
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
             )
 
     def test_candidate_discovery_rejects_wrong_repository(self) -> None:
@@ -552,7 +554,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         self.assertEqual(candidates[0].reason_code, "branch_bound_to_other_task")
 
@@ -564,7 +566,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         self.assertEqual(candidates[0].reason_code, "unresolved_resource_incarnation")
 
@@ -593,7 +595,7 @@ class BranchSubstrateTests(unittest.TestCase):
                     self.ownership,
                     key=self.key,
                     task_ref=TASK_REF,
-                    expected_status="in_progress",
+                    expected_status="active",
                 )
             )
         )
@@ -618,7 +620,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             selected_candidate_id=reviewed.candidate_id,
             expected_candidate_head=reviewed.head,
         )
@@ -631,7 +633,7 @@ class BranchSubstrateTests(unittest.TestCase):
         recovery = {
             "key": self.key,
             "task_ref": TASK_REF,
-            "expected_status": "in_progress",
+            "expected_status": "active",
             "expected_revision": 0,
             "expected_branch_name": "main",
             "expected_head": result.selected.head,
@@ -661,7 +663,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 self.ownership,
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 expected_revision=1,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
@@ -676,7 +678,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 self.ownership,
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 expected_revision=True,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
@@ -694,7 +696,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 self.ownership,
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 expected_revision=0,
                 expected_branch_name="main",
                 expected_head=result.selected.head,
@@ -709,7 +711,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
         )
         result = establish_branch_binding(
             self.repository,
@@ -717,7 +719,7 @@ class BranchSubstrateTests(unittest.TestCase):
             self.ownership,
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             selected_candidate_id=resolution.selected.candidate_id,
             expected_candidate_head=resolution.selected.head,
         )
@@ -746,7 +748,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="topic-dirty",
         )
@@ -777,7 +779,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="existing_target",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="target",
         )
@@ -829,7 +831,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 route="existing_target",
                 key=key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 current_checkout=other.repo,
                 target_branch_name="wrong-target",
             )
@@ -843,7 +845,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="stale-source",
         )
@@ -864,7 +866,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="existing_target",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="stale-target",
         )
@@ -888,7 +890,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 route="existing_target",
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 current_checkout=self.fixture.repo,
                 target_branch_name="divergent",
             )
@@ -903,7 +905,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="rollback-target",
         )
@@ -944,7 +946,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="hook-failure-target",
         )
@@ -983,7 +985,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="existing_target",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="rollback-existing",
         )
@@ -1016,7 +1018,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="recovered-target",
         )
@@ -1038,7 +1040,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="revision-mismatch",
         )
@@ -1060,7 +1062,7 @@ class BranchSubstrateTests(unittest.TestCase):
             route="same_checkout_new_ref",
             key=self.key,
             task_ref=TASK_REF,
-            expected_status="in_progress",
+            expected_status="active",
             current_checkout=self.fixture.repo,
             target_branch_name="recovery-head-drift",
         )
@@ -1083,7 +1085,7 @@ class BranchSubstrateTests(unittest.TestCase):
                 route="same_checkout_new_ref",
                 key=self.key,
                 task_ref=TASK_REF,
-                expected_status="in_progress",
+                expected_status="active",
                 current_checkout=self.fixture.repo,
                 target_branch_name="blocked-target",
             )

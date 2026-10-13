@@ -420,12 +420,15 @@ def validate_task_dispositions(root: Path, plan: dict) -> None:
     for row in deferred:
         if state(relative_file(root, row["task_ref"] + "/task.json"))["sha256"] != row["expected_sha256"]:
             raise MigrationError("Deferred task bytes changed; review its disposition again")
-    # Shared current classification diagnoses malformed records and excludes
-    # known legacy from lifecycle authority. Only this migration consumes hashes.
+    # Plan1 historical consumption only: retain the original schema1 distinction
+    # without admitting it to the current Delivery lifecycle or public resolver.
+    from runtime.task_lifecycle.identity import _task_identities, _current_task_metadata
+    _task_identities(root)  # preserve malformed-record diagnostics
     current = {row.task_ref for row in task_inventory(root) if row.lifecycle_state == "active"}
     task_root = root / ".trellis/tasks"
     active = {p.relative_to(root).as_posix() for p in task_root.iterdir()
               if p.name != "archive" and p.is_dir() and (p / "task.json").exists()} if task_root.exists() else set()
+    current |= {ref for ref in active if _current_task_metadata(json.loads(relative_file(root, ref + "/task.json").read_text()), archived=False)}
     if active - current != refs:
         raise MigrationError("Active legacy task inventory differs from reviewed deferred dispositions")
 
@@ -505,6 +508,7 @@ def update_resume_source(package: Path, root: Path, recovery: Path, checkpoint: 
 
 
 def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, reviewed_plan: dict | None = None) -> dict:
+    source = source_root(package)
     if reviewed_plan is not None:
         update_resume_source(package, root, recovery, checkpoint, reviewed_plan)
     if checkpoint["root"] != str(root) or checkpoint["source"] != str(source_root(package)):
@@ -672,14 +676,42 @@ def run(package_root: Path, metadata: dict, argv: list[str]) -> dict:
     root = Path(args.root).resolve()
     public = read_json(args.input, "input")
     profile = public.get("profile")
-    if profile not in ("initial_upgrade", "resume", "rollback"):
+    delivery_profile = profile in ("delivery_upgrade", "delivery_resume", "delivery_rollback")
+    if profile not in ("initial_upgrade", "resume", "rollback") and not delivery_profile:
         raise CommandError("schema_mismatch", "input.profile", "Use a declared upgrade input profile")
     validate_json(public, package_root / f"schemas/public-{profile}-input.schema.json", "input")
     plan = read_json(args.plan, "plan") if args.plan else None
     if plan is not None:
-        validate_plan(package_root, plan)
+        if delivery_profile:
+            validate_json(plan, package_root / "schemas/private-delivery-plan.schema.json", "plan")
+        else:
+            validate_plan(package_root, plan)
     fork = Path(args.fork).resolve() if args.fork else None
     try:
+        if delivery_profile:
+            import delivery_upgrade
+            if metadata["runtime_role"] == "preview":
+                if profile != "delivery_upgrade":
+                    raise MigrationError("Delivery recovery consumes its original checkpoint; preview initial delivery_upgrade")
+                return delivery_upgrade.preview(package_root, root, public, plan, fork)
+            if profile == "delivery_upgrade":
+                if plan is None or fork is None:
+                    raise MigrationError("Delivery upgrade requires the frozen Plan2/private plan and installed CLI/Core")
+                recovery, checkpoint = delivery_upgrade.begin(package_root, root, public, plan, fork)
+                result = delivery_upgrade.resume(package_root, root, recovery, checkpoint)
+            else:
+                recovery = Path(git(root, "rev-parse", "--absolute-git-dir")) / "guru-team/install-upgrade" / public["recovery_ref"]
+                checkpoint = json.loads((recovery / "checkpoint.json").read_text())
+                validate_json(checkpoint, package_root / "schemas/private-delivery-recovery.schema.json", "recovery")
+                result = (delivery_upgrade.rollback(root, recovery, checkpoint) if profile == "delivery_rollback"
+                          else delivery_upgrade.resume(package_root, root, recovery, checkpoint, plan))
+            validate_json(result, package_root / f"schemas/public-{result['exit_id']}-output.schema.json", "output")
+            return result
+        # Existing private Plan1 functions remain historical consumers. They
+        # cannot be selected as a runtime fallback by the Delivery installation.
+        workflow = source_root(package_root) / "trellis/workflows/guru-team/workflow.md"
+        if workflow.is_file() and "[trellis-runtime-contract]" in workflow.read_text():
+            raise MigrationError("Historical Plan1 input cannot switch a Delivery installation; use delivery_upgrade/resume/rollback")
         if metadata["runtime_role"] == "preview":
             return preview(package_root, root, public, plan, fork)
         if profile == "initial_upgrade":

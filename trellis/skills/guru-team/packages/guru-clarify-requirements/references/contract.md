@@ -246,7 +246,11 @@ a completed `issue_comment` or `issue_body_edit`, followed by live reread and
 for a load-bearing round. `non_load_bearing` does not require or permit an
 authority action merely to satisfy the contract.
 
-## Active-Task Scope Change — private 4.0 / scope_ready 1.0
+## Historical Active-Task Scope Change — private 4.0 / scope_ready 1.0
+
+This section preserves the pinned-old contract for validation and migration
+evidence. Current schema2 installations must use the independent whole-scope
+writer and publication migration below; do not invoke this Task-status route.
 
 Pause implementation/check/commit/review progression. Reread the same live
 TaskId/generation, Direct Source or legal no_issue relation and current scope.
@@ -491,3 +495,42 @@ mutation path or exemption from current Guru gates.
 
 See [MIGRATION-250.md](./MIGRATION-250.md) for the synchronized public API
 replacement and current caller re-entry.
+
+## Delivery scope revision
+
+Use delivery_active_task_scope_change with exact DeliveryKey, or
+delivery_task_scope_revision with TaskKey when whole-task scope changes and
+no current Delivery is needed. Initial whole-Task scope after public Task
+creation uses the latter profile with source_exit=created and the Creation
+resume target. Null accepted_scope is not approval. Review current source,
+whole-task authority and the affected Delivery plan when present. Return the
+original source_selection/revision_refs and scope_action (revised, no_change
+or withdrawal_required) to Author task_scope_requirements. This pre-Author
+judgment does not accept_scope or write PRD.
+Partial revision returns to the same Delivery's earliest affected owner after
+post-Author scope acceptance. Whole withdrawal returns to its current stage
+owner for legal public stop and automatic selection release: task_scope must
+not impersonate another role. Existing PR/history survives; PR closure/cleanup
+remain independent. No-current-Delivery closeout and evidence refresh do not
+create empty slices. Legacy active_task_scope_change requires the pinned old
+complete installation; it is not a current fallback or schema-2 writer.
+
+## Whole-scope writer and publication migration (schema2)
+
+The single Author owns root whole requirements, while this same Clarify owner
+owns the initial source/scope judgment and the post-Author scope publication.
+New Delivery scope profiles emit scope_ready2.0 before authoring with original
+source_selection/revision_refs and scope_action; they perform no accept_scope.
+The task_scope_requirements_acceptance profile consumes the actual Author
+scope_requirements_ready requirements_locator plus the original current source
+selection. After fresh semantic review it binds the root PRD real revision and
+calls installed accept_scope using the declared task_scope owner. It returns
+scope_ready2.0 with TaskKey to Creation or affected-stage routing. Missing source
+selection refreshes Clarify; it is not recovered from PRD/metadata. Scope-only
+writing is not Task Planning and cannot reach Architecture/Approval/Activation.
+
+Legacy active_task_scope_change and missing-key gate results are pinned-old
+validation only; current migrated installations fresh re-enter the proper
+scope/Delivery owner. Do not convert an old pass by appending a key. History
+and committed clean content remain facts. This complete installation migration
+is the only switch; no old status writer or reader fallback is added.

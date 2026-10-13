@@ -297,15 +297,13 @@ class PublicationCheckoutTests(unittest.TestCase):
             ["git", *args], cwd=self.repo, text=True, stdout=subprocess.PIPE, check=True
         ).stdout.strip()
 
-    def test_new_task_without_legacy_checkout_fields_previews_current_branch(self) -> None:
-        with mock.patch.object(OWNER, "repository_identity", return_value="castbox/guru-trellis"), mock.patch.object(
-            OWNER, "remote_head", return_value=None
-        ), mock.patch.object(OWNER, "list_open_prs", return_value=[]):
-            plan = OWNER.plan_from_input(self.repo, self.public)
-        self.assertEqual("preview", plan["typed_exit"])
-        self.assertEqual("codex/435", plan["head_branch"])
-        self.assertEqual("main", plan["base_branch"])
-        self.assertEqual(self.head, plan["plan_identity"]["reviewed_head"])
+    def test_legacy_task_requires_public_record_migration(self) -> None:
+        with mock.patch.object(OWNER, "repository_identity") as provider:
+            with self.assertRaises(OWNER.WorkflowError) as raised:
+                OWNER.plan_from_input(self.repo, self.public)
+        self.assertEqual("task_identity_stale", raised.exception.code)
+        self.assertIn("migration", str(raised.exception))
+        provider.assert_not_called()
 
     def test_missing_or_wrong_branch_binding_maps_to_reprepare(self) -> None:
         self.bindings.path_for(self.key).unlink()

@@ -11,10 +11,10 @@ authorization -> recorder/validator -> typed exit
 ```
 
 The checked `approved` exit proves semantic adequacy; it does not accept the
-current solution direction or activate the task. Its stable consumer remains
-the workflow target `phase-1-task-activation`. That target separately owns the
+current solution direction or activate the Delivery. Its stable consumer remains
+the workflow target `phase-1-delivery-activation`. That target separately owns the
 human-readable plan presentation, dialogue-local review pause, and subsequent
-activation transition. The workflow boundary is outside this Skill's Gate,
+Delivery activation transition. The workflow boundary is outside this Skill's Gate,
 recorder, validator, private result, and public DTO.
 
 The conditional authorization step inside this Skill exists only when
@@ -34,12 +34,12 @@ current conversation before coding, compatibility tests, or self-fixing.
 
 ## Public Entry
 
-Public input schema 2.0 is a route DTO. Each profile carries only the owner
+Public input schema delivery-1.0 is a route DTO. Each profile carries only the owner
 entry identity needed for direct consumption:
 
-- `initial_review`: mode, task, and source route;
-- `revision_reentry`: the same identity plus a task-local revision reason;
-- `clarification_reentry`: the same identity plus an authority-refresh reason.
+- `delivery_initial_review`: mode, TaskRef, DeliveryKey, and source route;
+- `delivery_revision_reentry`: the same identity plus a task-local revision reason;
+- `delivery_clarification_reentry`: the same identity plus an authority-refresh reason.
 
 The caller does not author adequacy, provenance conclusions, findings,
 authorization, an AI gate, or an exit. Re-entry reasons select the owner entry;
@@ -60,7 +60,7 @@ stdout, a result/report, locator, or checkpoint.
 ## Architecture Stage Consumption
 
 The global workflow mandatory invokes
-`guru-maintain-architecture-baseline:task_impact_sync(stage=planning, planning_purpose=final_plan)` 3.0 before
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=planning, planning_purpose=final_plan)` before
 this owner can approve Planning. Its fresh `baseline_current` is the adjacent
 upstream result and proves that the contract-selected Architecture AI owner has
 already completed semantic authoring and the formal deterministic invocation.
@@ -150,7 +150,7 @@ validation distinct from evidence obtainable after merge/deploy.
 
 ## Private Result
 
-New owner evidence uses schema `guru-planning-approval-4.0` in ignored runtime.
+New owner evidence uses schema `guru-planning-approval-delivery-1.0` in ignored runtime.
 It retains only:
 
 - mode and task locator;
@@ -169,14 +169,14 @@ reviewed identity with the current planning files; its caller must not replace
 it with a freshly computed digest. The token detects same-path content drift,
 then returns control to this owner for AI delta classification. It is not
 authorization, semantic approval, or a digest chain. After the checked typed output passes
-its output schema, the same producer wrapper deletes the checkpoint. Task
+its output schema, the same producer wrapper deletes the checkpoint. Delivery
 activation and Phase 2 consume only the minimal DTO plus current planning/live
 facts; they never read or delete this private state. The checkpoint does not
 retain per-file hashes, sizes, mtimes, repository snapshots, full scan history,
 reviewer metadata, raw reports, handoffs, assignments, authorization, or
 authorization digests.
 
-Only schema 4.0 is a valid current owner result. Any other schema version or
+Only schema delivery-1.0 is a valid current owner result. Any other schema version or
 unknown CLI option is rejected by the current validator; callers rerun this
 owner with the current public profile instead of projecting prior fields.
 
@@ -190,14 +190,14 @@ scope, sufficiency, findings, revisions, authorization, semantic pass, or route.
 
 Keep cwd at the task repository root. The installed package is
 `.trellis/guru-team/skills/packages/guru-approve-task-plan`; its
-`examples/planning-approval.json` describes the complete recorded result, not
+`examples/planning-approval-delivery.json` describes the complete recorded result, not
 the normal recorder input. Normal authoring contains exactly these eight
 top-level fields: `mode`, `authority_refs`, `delivery_policy`, `docs_ssot_plan`,
 `semantic_review`, `typed_exit`, `consumer`, and `reason`. Populate their semantic content using
-the corresponding definitions in `schemas/planning-approval-4.0.schema.json`.
+the corresponding definitions in `schemas/planning-approval-delivery.schema.json`.
 Omit `schema_version`, `skill_id`, `task_ref`, `planning_paths`, and
 `reviewed_content_sha256`: the recorder supplies those from the exact task and
-current planning files. An object with `schema_version=4.0` is already a
+current planning files. An object with `schema_version=delivery-1.0` is already a
 complete recorded result and must not be used as partial authoring.
 
 Use the existing commands in this order. Record and invoke each receive one
@@ -205,8 +205,8 @@ JSON object on stdin; the checker does not read stdin:
 
 ```bash
 GURU_SKILL_PACKAGE=.trellis/guru-team/skills/packages/guru-approve-task-plan
-"$GURU_SKILL_PACKAGE/scripts/record-planning-approval.sh" --root . --task "$TASK_REF" --input -
-"$GURU_SKILL_PACKAGE/scripts/check-planning-approval.sh" --root . --task "$TASK_REF"
+"$GURU_SKILL_PACKAGE/scripts/record-planning-approval.sh" --root . --task "$TASK_REF" --delivery-key "$DELIVERY_KEY_JSON" --input -
+"$GURU_SKILL_PACKAGE/scripts/check-planning-approval.sh" --root . --task "$TASK_REF" --delivery-key "$DELIVERY_KEY_JSON"
 "$GURU_SKILL_PACKAGE/scripts/invoke.sh" --root . --input - --owner-result "$CHECKPOINT"
 ```
 
@@ -224,7 +224,7 @@ valid public projection retires it before control reaches the next owner.
 ## Exits
 
 - `approved`: every dimension passed and the activation workflow receives only
-  `exit_id`, `task_ref`, and `planning_result_id`, and the current Planning-stage Architecture result
+  `exit_id`, `task_ref`, `delivery_key`, and `planning_result_id`, and the current Planning-stage Architecture result
   is still fresh; the consumer must still satisfy its own
   presentation and dialogue-local review boundary.
 - `revision_required`: actual task-local revision actions go through
@@ -249,5 +249,37 @@ reconciliation consumers. Only Wording-current final_plan Architecture output
 is eligible; candidate_assessment never substitutes. Revision returns actual
 revision_actions through the workflow router to Author approval_revision, then
 fresh dependent gates and this owner's revision_reentry. The old Approval
-self-writing edge and private 3.0 checkpoint are retired; private 4.0 and revision
-output 2.0 are the current selectors. Approved output and #468 semantics remain.
+self-writing edge and private 3.0 checkpoint are retired; the Delivery checkpoint and
+revision_actions handoff are the current selectors. Approved output and #468 semantics remain.
+
+## Delivery Planning boundary (schema 2.0 installation)
+
+The public input carries an explicit opaque DeliveryKey, including D1. Resolve
+all three documents through the installed public planning_root; Task-root
+prd.md remains whole-task accepted scope and is not this Delivery's plan.
+The same key covers active replanning and partial scope revision. Full withdrawal
+returns through Clarify and the original current stage's legal stop owner.
+Author responsibilities remain with the existing unique Author; #292's delivered
+unique Author remains the sole business writer; Delivery identity is a thin projection.
+Approval never calls public record_gate. Only adjacent Activation consumes the
+Guru planning_result_id; the independent public planning_accepted_result_id is
+written by guru-activate-delivery. The checkpoint is keyed by Delivery and
+retired by this same owner on output, never read by another owner.
+The prior Task planning/activation inputs require the pinned complete old
+installation. No activity fallback or Task status mutation exists in this graph.
+
+## Adjacent final-plan input 2.0
+
+Each current Delivery profile uses its independent 2.0 input. The actual
+Architecture final_plan stdout supplies architecture_assessment via one thin
+projection: planning_purpose routes only final_plan; freshness_identity binds
+current selected design; baseline_identity and constitution_identity/status
+are the authorities this semantic owner rereads; impact_kind selects the
+applicable contribution judgment; promotion_state is this owner's current
+eligibility prerequisite. Do not hand-author this assessment from files or use
+candidate_assessment as final proof. No Architecture private result crosses.
+The invocation objectively checks design freshness, and semantic Approval
+still checks adequate current authority/contribution and full planning scope.
+The older Delivery1.0 input without that actual final producer is retained as
+a validation asset and fails closed at current invocation. Lost output refreshes
+final Architecture after Wording, not an inferred approval from public phase.

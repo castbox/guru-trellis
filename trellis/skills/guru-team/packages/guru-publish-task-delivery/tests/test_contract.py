@@ -52,7 +52,7 @@ class ContractTests(unittest.TestCase):
     def test_interface_is_delivery_only(self) -> None:
         interface = self.interface()
         self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual([item["id"] for item in interface["external_exits"]], ["ready_for_merge", "review_stale", "resume_publication", "reprepare_required", "blocked"])
+        self.assertEqual([item["id"] for item in interface["external_exits"]], ["ready_for_merge", "review_stale", "resume_publication", "reprepare_required", "blocked", "delivery_stopped", "delivery_scope_revised"])
         self.assertEqual(interface["public_contracts"]["private_artifacts"][0]["persistence"], "ignored_runtime")
         exit_ids = {item["id"] for item in interface["external_exits"]}
         self.assertTrue(exit_ids.isdisjoint({"completed", "archived", "issue_closed", "cleanup"}))
@@ -86,11 +86,11 @@ class ContractTests(unittest.TestCase):
             item for item in interface["public_contracts"]["projections"]
             if item["id"] == "project_review_stale"
         )
-        self.assertEqual(consumer["contract"]["profile_id"], "delivery_review")
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref"])
-        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode", "branch_review_commit"])
-        self.assertEqual(set(authoring), {"profile", "mode", "branch_review_commit"})
-        self.assertEqual([mapping["source"] for mapping in projection["mappings"]], ["task_ref"])
+        self.assertEqual(consumer["contract"]["profile_id"], "delivery_readiness_refresh")
+        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
+        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode"])
+        self.assertEqual(set(authoring), {"profile", "mode"})
+        self.assertEqual([mapping["source"] for mapping in projection["mappings"]], ["task_ref", "delivery_key", "stale_reason"])
 
     def test_review_stale_projection_matches_review_owned_profile(self) -> None:
         interface = self.interface()
@@ -104,12 +104,12 @@ class ContractTests(unittest.TestCase):
             for item in interface["public_contracts"]["projections"]
             if item["id"] == "project_review_stale"
         )
-        self.assertEqual(consumer["contract"]["profile_id"], "delivery_review")
-        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref"])
-        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode", "branch_review_commit"])
+        self.assertEqual(consumer["contract"]["profile_id"], "delivery_readiness_refresh")
+        self.assertEqual(consumer["contract"]["seed_fields"], ["task_ref", "delivery_key", "reentry_reason"])
+        self.assertEqual(consumer["contract"]["authoring_fields"], ["profile", "mode"])
         self.assertEqual(
             [mapping["source"] for mapping in projection["mappings"]],
-            ["task_ref"],
+            ["task_ref", "delivery_key", "stale_reason"],
         )
 
 

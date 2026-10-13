@@ -34,7 +34,7 @@ def invoke(root: Path, data: dict) -> dict:
         repository = inspect_repository(root)
         store = BranchBindingStore(repository)
         ownership = ResourceLedgerStore(repository)
-        args = dict(key=key, task_ref=artifact.task_ref, expected_status=data["expected_status"])
+        args = dict(key=key, task_ref=artifact.task_ref, expected_status="active")
         if data["action"] == "recover":
             result = recover_established_branch_binding(repository, store, ownership, **args, **data["recovery"])
         else:
@@ -86,7 +86,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("stale_identity", "task_ref", "Resolve the current active task incarnation.", 3)
         resolution = resolve_establishment(
             repository, BranchBindingStore(repository), ResourceLedgerStore(repository),
-            key=key, task_ref=artifact.task_ref, expected_status=data["expected_status"],
+            key=key, task_ref=artifact.task_ref, expected_status="active",
         )
         return {"status": resolution.kind, "reason_code": resolution.reason_code,
                 "candidates": [_candidate(row) for row in resolution.candidates]}

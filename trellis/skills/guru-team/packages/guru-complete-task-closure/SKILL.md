@@ -5,6 +5,14 @@ description: Apply the exact source Issue disposition after Completion approval 
 
 # Guru Complete Task Closure
 
+Before any Closure transaction, reread the exact public Completion result for
+the current Task generation and accepted scope. Keep source-disposition and
+frozen action-set review/confirmation/remote recovery unchanged. After actual
+source closure or no-mutation completion, project only the public Closure fact.
+Projection failure returns the same resume transaction; a closed Issue must not
+be closed again. No authorization is persisted. Closure is not Finish archive.
+
+
 Consume only the current Completion `completed` ResultRef. Freshly review source
 relation, accepted scope, target, branch binding, content and evidence slots,
 then author the complete per-Issue action set. No-Issue and relations without

@@ -37,6 +37,9 @@ class CheckTaskPackageContractTests(unittest.TestCase):
                 ("implementation_required", {"kind": "workflow", "id": "guru-resume-implementation"}),
                 ("planning_stale", {"kind": "workflow", "id": "guru-task-check-planning-router"}),
                 ("blocked", {"kind": "stop", "id": "task-check-blocked"}),
+                ("delivery_stopped", {"kind": "skill", "id": "guru-review-task-completion"}),
+                ("resolved_reconciliation_passed", {"kind": "workflow", "id": "guru-delivery-resolved-reconciliation-router"}),
+                ("delivery_scope_revised", {"kind": "workflow", "id": "guru-delivery-scope-revised-router"}),
             ],
         )
         private = self.interface["public_contracts"]["private_artifacts"]
@@ -204,7 +207,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text()
         for phrase in (
             "current AI executing this package", "owner_not_yet_executed",
-            "missing agent ID", "Recorder Authoring", "not stdin",
+            "missing agent ID", "Recorder Authoring", "actual completed semantic payload",
             "original diagnostic", "fresh semantic round",
         ):
             self.assertIn(phrase, contract if phrase != "missing agent ID" else (self.package / "SKILL.md").read_text())
@@ -214,11 +217,9 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             "5. Call the original recorder", "6. Consume exactly",
         )]
         self.assertEqual(positions, sorted(positions))
-        for field in (
-            "reviewed_paths", "validation", "docs_ssot", "candidate_classifications",
-            "semantic_review", "typed_exit", "route", "reason", "consumer",
-        ):
-            self.assertIn(f"`{field}`", contract)
+        for field in ("reviewed_paths", "validation", "docs_ssot", "candidate_classifications",
+                      "semantic_review", "typed_exit", "route", "reason", "consumer"):
+            self.assertIn(field, self.schema["properties"])
 
     def test_native_cases_require_ai_authoring_without_host_owner_recipes(self) -> None:
         cases = {item["id"]: item for item in self.read("evals/evals.json")["evals"]}

@@ -32,12 +32,16 @@ def load(repo,package_root,value,field):
  if not isinstance(v,dict):raise CommandError("invalid_json",field,"Provide one JSON object.")
  return v
 def load_review_invocation(repo,package_root,args,operation):
- if any(getattr(args,name,None) for name in ("mode","profile","input","task","path","change_request_input")):
+ if any(getattr(args,name,None) for name in ("mode","profile","input","task","path","change_request_input","delivery_key")):
   raise CommandError("conflicting_arguments","invocation","Do not mix --invocation with legacy scope or input arguments.")
  envelope=load(repo,package_root,args.invocation,"invocation")
- validate_json(envelope,package_root/"schemas/review-invocation.schema.json","invocation")
+ name="delivery-review-invocation.schema.json" if envelope.get("profile")=="delivery_planning_artifacts" else "change-request-review-invocation.schema.json"
+ validate_json(envelope,package_root/"schemas"/name,"invocation")
  if operation=="scan" and envelope["owner_result"]!={}:
   raise CommandError("schema_mismatch","invocation.owner_result","Scan requires an empty owner_result object.")
+ if envelope["profile"]=="delivery_planning_artifacts":
+  args.task=envelope["task_ref"];args.public_delivery_key=envelope["delivery_key"]
+  envelope["change_request"]=None
  return envelope
 def check_legacy_inputs(args):
  if args.input=="-" and args.change_request_input=="-":
@@ -46,9 +50,20 @@ def file_item(repo,path):
  q=(repo/path).resolve()
  if not q.is_relative_to(repo.resolve()) or not q.is_file() or q.is_symlink() or q.suffix!=".md":raise CommandError("unsafe_path","path","Use regular Markdown paths inside the repository.")
  data=q.read_bytes();return {"kind":"markdown_file","id":"file:"+path,"path":path,"size_bytes":len(data),"content_sha256":hashlib.sha256(data).hexdigest()}
-def scope(repo,profile,task=None,paths=None,change=None):
- if profile=="planning_artifacts":
-  td=(repo/str(task)).resolve();items=[file_item(repo,td.relative_to(repo).as_posix()+"/"+n) for n in ("prd.md","design.md","implement.md")];identity="planning_artifacts:"+td.relative_to(repo).as_posix()
+def scope(repo,profile,task=None,paths=None,change=None,delivery_key=None):
+ if profile=="delivery_planning_artifacts":
+  from runtime.delivery_projection.adapter import DeliveryProjection
+  from runtime.task_lifecycle.errors import LifecycleContractError
+  try:
+   projection=DeliveryProjection(repo,str(task));delivery=projection.resolve(delivery_key);current=projection.current()
+   if (current.get("kind")!="current" or current.get("key")!=delivery_key or delivery["phase"]!="planning"
+       or delivery_key["lifecycle_generation"]!=projection.read_record()["lifecycle_generation"]
+       or delivery["scope_ref"]["authority"]!=projection.read_record()["accepted_scope"]):
+    raise CommandError("stale_identity","delivery_key","Review the selected current Delivery after its original stage rework.",3)
+   projection._call(projection.api.delivery_store.verify_authority,repo,delivery["scope_ref"]["authority"])
+   td=projection.planning_directory(delivery_key)
+  except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
+  items=[file_item(repo,td.relative_to(repo).as_posix()+"/"+n) for n in ("prd.md","design.md","implement.md")];identity="delivery_planning_artifacts:"+td.relative_to(repo).as_posix()
  elif profile=="explicit_paths":
   items=[file_item(repo,x) for x in paths or []];identity="explicit_paths:"+digest([x["path"] for x in items])
  elif profile=="change_request":
@@ -86,10 +101,10 @@ def live_issue_source(change):
  return change
 
 # Private owner-staging API used only by the installed eval/test adapter.
-def contract_wording_build_scope(repo,profile,mode,*,task_dir=None,explicit_paths=None,change_request_input=None):
- if profile=="planning_artifacts":
+def contract_wording_build_scope(repo,profile,mode,*,task_dir=None,explicit_paths=None,change_request_input=None,delivery_key=None):
+ if profile=="delivery_planning_artifacts":
   if mode!="workflow" or task_dir is None or explicit_paths or change_request_input:raise CommandError("invalid_arguments","profile","Use the fixed workflow planning-artifacts scope.")
-  task_path=Path(task_dir).resolve();task=task_path.relative_to(Path(repo).resolve()).as_posix();sc=scope(Path(repo),profile,task=task)
+  task_path=Path(task_dir).resolve();task=task_path.relative_to(Path(repo).resolve()).as_posix();sc=scope(Path(repo).resolve(),profile,task=task,delivery_key=delivery_key)
   contents={item["id"]:(Path(repo)/item["path"]).read_text() for item in sc["items"]};return sc,contents
  if profile=="explicit_paths":
   if mode!="standalone" or task_dir is not None or change_request_input:raise CommandError("invalid_arguments","profile","Use the fixed standalone explicit-paths scope.")

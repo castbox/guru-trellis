@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 
@@ -23,11 +24,12 @@ class LifecycleHelperTests(unittest.TestCase):
         self.repo = Path(self.temp.name) / "repo"
         self.repo.mkdir()
         self.git("init", "-q", "-b", "main")
+        install_common(self.repo)
         self.git("config", "user.email", "test@example.com")
         self.git("config", "user.name", "Test")
         task = self.repo / TASK
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({
+        (task / "task.json").write_text(json.dumps(public_task({
             "id": "example-id", "name": "example", "status": "in_progress",
             "lifecycle_generation": 2, "branch": "retired-branch-is-not-authority",
             "source": {"kind": "no_issue"}, "title": "Example",
@@ -36,7 +38,7 @@ class LifecycleHelperTests(unittest.TestCase):
             "completedAt": None, "base_branch": "main", "worktree_path": None,
             "commit": None, "pr_url": None, "children": [], "parent": None,
             "relatedFiles": [], "notes": "", "meta": {},
-        }), encoding="utf-8")
+        })), encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-qm", "fixture")
 
