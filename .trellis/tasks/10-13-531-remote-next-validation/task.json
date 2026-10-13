@@ -1,0 +1,176 @@
+{
+  "schema_version": "2.0",
+  "id": "531-remote-next-validation",
+  "name": "531-remote-next-validation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "#531 真实远端事务恢复验收样本",
+  "description": "#531 新隔离远端事务恢复验收样本\n\n在 castbox/guru-trellis 的 codex/531-remote-next-base 上建立 no_issue Task 531-remote-next-validation/gen0 与一个 pull_request Delivery。唯一验证文本为 validation/531-remote-next.txt；候选包含文本、稳定 Task 身份、整体 PRD 和 Delivery 五规划/context 共八文件。仅验证当前已安装公共 API1/Task2 的原 Publish/Merge 真实远端成功、同结果输出恢复、expected-head/trailers 与历史事实读回，不交付产品/provider业务，不关闭任何 Issue，不修改业务原树或已有样本。当前 Guru 源与 CLI185e/Core45bb 已冻结核验；此样本不是 V07 旧clean迁移、正式source-lock或完整Release矩阵证据。全链按原唯一语义 owners 执行。",
+  "dev_type": null,
+  "scope": "独立no_issue样本的真实Publish/Merge成功、同结果输出恢复和历史事实读回；唯一txt加稳定Task/整体PRD/Delivery五规划context八文件。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-13",
+  "base_branch": "codex/531-remote-next-base",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+    "revision": "sha256:912d05ed7fbfabcf8f49f2a22b5a187cb2be077aa80df557e3b7697b0af00e20"
+  },
+  "deliveries": [
+    {
+      "id": "50166a7c-d30a-40b2-bb7f-ca28d7d836a7",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+          "revision": "sha256:912d05ed7fbfabcf8f49f2a22b5a187cb2be077aa80df557e3b7697b0af00e20"
+        },
+        "anchors": [
+          "验收责任",
+          "样本基础前序与写集"
+        ]
+      },
+      "planning_root": "deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+        "revision": "sha256:3fe2161b54a16b117dd33cb3639ec7a5318577450b2e524d3eb702ca75d53e1f"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:c8c558bb9980b9be5422ad2a685f871e95f009327493b6b5ec686c264335dfe6",
+        "paths": [
+          ".trellis/spec/architecture/index.md",
+          ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/check.jsonl",
+          ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+          ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.jsonl",
+          ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.md",
+          ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/prd.md",
+          ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+          "docs/architecture/00-foundation/design-constitution.md",
+          "docs/architecture/06-governance/change-contract.md",
+          "docs/architecture/README.md",
+          "docs/design/README.md",
+          "docs/requirements/README.md",
+          "docs/test/README.md",
+          "validation/531-remote-next.txt"
+        ],
+        "head_ref": "e1f5bf20153f743e1b5513883015d0f13d3881fe",
+        "base_ref": "e1f5bf20153f743e1b5513883015d0f13d3881fe"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:5d86083f-b39c-485e-9906-39bd2b053811",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+              "revision": "sha256:912d05ed7fbfabcf8f49f2a22b5a187cb2be077aa80df557e3b7697b0af00e20"
+            },
+            "anchors": [
+              "验收责任",
+              "样本基础前序与写集"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+            "revision": "sha256:3fe2161b54a16b117dd33cb3639ec7a5318577450b2e524d3eb702ca75d53e1f"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/prd.md",
+              "revision": "sha256:d1142929e2d12a9bb0509a7cffe1bc7d742200b6f84ad38e8bddbb98a0d9c6fa"
+            },
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+              "revision": "sha256:3fe2161b54a16b117dd33cb3639ec7a5318577450b2e524d3eb702ca75d53e1f"
+            },
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.md",
+              "revision": "sha256:afa753b941d291fb85556fba94494cc0a50cdcfe4a03d3737def4ae8927beab2"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:fdf8be6e7e20ac4b303d666ff57dec8f935015a35a6266114abb8cde59043be7",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+              "revision": "sha256:912d05ed7fbfabcf8f49f2a22b5a187cb2be077aa80df557e3b7697b0af00e20"
+            },
+            "anchors": [
+              "验收责任",
+              "样本基础前序与写集"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+            "revision": "sha256:3fe2161b54a16b117dd33cb3639ec7a5318577450b2e524d3eb702ca75d53e1f"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:c8c558bb9980b9be5422ad2a685f871e95f009327493b6b5ec686c264335dfe6",
+            "paths": [
+              ".trellis/spec/architecture/index.md",
+              ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/check.jsonl",
+              ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+              ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.jsonl",
+              ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.md",
+              ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/prd.md",
+              ".trellis/tasks/10-13-531-remote-next-validation/prd.md",
+              "docs/architecture/00-foundation/design-constitution.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/README.md",
+              "docs/design/README.md",
+              "docs/requirements/README.md",
+              "docs/test/README.md",
+              "validation/531-remote-next.txt"
+            ],
+            "head_ref": "e1f5bf20153f743e1b5513883015d0f13d3881fe",
+            "base_ref": "e1f5bf20153f743e1b5513883015d0f13d3881fe"
+          },
+          "predecessor_result_id": "planning-accepted:5d86083f-b39c-485e-9906-39bd2b053811",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/prd.md",
+              "revision": "sha256:d1142929e2d12a9bb0509a7cffe1bc7d742200b6f84ad38e8bddbb98a0d9c6fa"
+            },
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/design.md",
+              "revision": "sha256:3fe2161b54a16b117dd33cb3639ec7a5318577450b2e524d3eb702ca75d53e1f"
+            },
+            {
+              "locator": ".trellis/tasks/10-13-531-remote-next-validation/deliveries/50166a7c-d30a-40b2-bb7f-ca28d7d836a7/implement.md",
+              "revision": "sha256:afa753b941d291fb85556fba94494cc0a50cdcfe4a03d3737def4ae8927beab2"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
