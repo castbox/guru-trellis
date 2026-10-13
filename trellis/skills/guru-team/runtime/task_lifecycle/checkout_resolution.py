@@ -15,7 +15,7 @@ from .git_facts import (
     inspect_registered_worktree,
     inspect_repository,
 )
-from .identity import normalize_generation, normalize_task_id, normalize_task_ref
+from .identity import normalize_generation, normalize_task_id, normalize_task_ref, task_resource_state
 from .source import normalize_branch_ref
 
 
@@ -127,7 +127,7 @@ def _artifact_facts(candidate: WorktreeFacts, request: CheckoutRequest) -> tuple
         return None, "task_artifact_invalid"
     if task_id != request.task_id or generation != request.lifecycle_generation:
         return payload, "task_artifact_mismatch"
-    if payload.get("status") != request.expected_status:
+    if task_resource_state(candidate.path, payload) != request.expected_status:
         return payload, "task_status_mismatch"
     return payload, None
 

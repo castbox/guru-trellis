@@ -9,7 +9,7 @@
       "prompt": "Complete the workflow-mode initial Branch Review owner round and invoke the public wrapper using only checker-derived evidence.",
       "expected_exit": "passed",
       "expected_output": "The public DTO is the declared successful review handoff.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -73,7 +73,7 @@
       "prompt": "Complete the standalone-mode initial Branch Review owner round and invoke the public wrapper using only checker-derived evidence.",
       "expected_exit": "passed",
       "expected_output": "The public DTO is the declared successful standalone review handoff.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -95,7 +95,7 @@
       "prompt": "Complete a bounded continuity review that distinguishes the prior full-review commit from the current committed reconciled HEAD, then invoke the public wrapper.",
       "expected_exit": "continuity_passed",
       "expected_output": "The current-only DTO binds the exact base pair and candidate tree while projecting branch_review_commit as the current continuity-reviewed HEAD without claiming a full Branch Review.",
-      "input_profile_id": "base_continuity",
+      "input_profile_id": "delivery_base_continuity",
       "assertions": {
         "deterministic": [
           {
@@ -124,7 +124,7 @@
       "prompt": "Complete a qualification-first Branch Review round with one current-scope defect and invoke the public wrapper.",
       "expected_exit": "implementation_required",
       "expected_output": "The public DTO contains the current branch_review_commit and exact finding references.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -146,7 +146,7 @@
       "prompt": "Complete a qualification-first Branch Review round with one unconfirmed nonstandard proposal and invoke the public wrapper.",
       "expected_exit": "scope_confirmation_required",
       "expected_output": "The public DTO contains only the task identity and exact proposal references.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -168,7 +168,7 @@
       "prompt": "Complete a Branch Review owner round that selects the blocked stop route and invoke the public wrapper after recording the blocked Gate.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO contains only the blocked routing identity.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -190,7 +190,7 @@
       "prompt": "Complete the finding-fix review lifecycle, preserve closure evidence, run a fresh final review, and invoke the public wrapper.",
       "expected_exit": "passed",
       "expected_output": "The public DTO is the declared successful review handoff after finding closure.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -212,7 +212,7 @@
       "prompt": "Complete a fresh final review over the complete current range and invoke the public wrapper from the checked owner artifact.",
       "expected_exit": "passed",
       "expected_output": "The public DTO is the declared successful fresh-final handoff.",
-      "input_profile_id": "branch_review",
+      "input_profile_id": "delivery_branch_review",
       "assertions": {
         "deterministic": [
           {
@@ -234,7 +234,7 @@
       "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
       "expected_exit": "archived_review_passed",
       "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
-      "input_profile_id": "archived_review",
+      "input_profile_id": "delivery_archived_review",
       "assertions": {
         "deterministic": [
           {
@@ -264,7 +264,7 @@
       "prompt": "Consume the already reviewed archived fixture through the original public wrapper and declared current profile. Preserve its exact task, payload and range bindings, truthful findings and read-only boundary. This case checks post-owner transport/projection, not fresh native semantic authoring.",
       "expected_exit": "blocked",
       "expected_output": "The declared typed result from the checked fixture owner state, with zero business or remote mutation; no fresh-AI claim.",
-      "input_profile_id": "archived_review",
+      "input_profile_id": "delivery_archived_review",
       "assertions": {
         "deterministic": [
           {

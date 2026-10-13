@@ -26,6 +26,8 @@ class ArchitectureAuthoringTests(unittest.TestCase):
         subprocess.run(['git', 'init', '-q', '-b', 'main', str(repo)], check=True)
         for name, value in (('user.name', 'Eval'), ('user.email', 'eval@example.invalid')):
             subprocess.run(['git', '-C', str(repo), 'config', name, value], check=True)
+        (repo / '.trellis').mkdir()
+        shutil.copy2(PACKAGE.parents[3] / 'workflows/guru-team/workflow.md', repo / '.trellis/workflow.md')
         work = root / 'work'
         (work / 'evals/files').mkdir(parents=True)
         public = json.loads((PACKAGE / 'evals/files/impact-current-input.json').read_text())
@@ -93,7 +95,8 @@ class ArchitectureAuthoringTests(unittest.TestCase):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
                 repo = self.fixture(Path(temp), case=f"planning-constraint-{kind}-native")
                 facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
-                leaf = '.trellis/tasks/eval-task/constraints.md'
+                inventory = json.loads((repo / 'docs/architecture-eval/candidate-inventory.json').read_text())
+                leaf = str(Path(inventory['design_locator']).parent / 'constraints.md')
                 self.assertIn(leaf, facts['required_reads'])
                 self.assertTrue((repo / leaf).is_file())
                 self.assertIn("protocol='wire_v2'", (repo / 'transport.py').read_text())

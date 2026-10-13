@@ -3,11 +3,11 @@
   "schema_version": "1.4",
   "skills": [
     {
-      "id": "guru-activate-task",
+      "id": "guru-activate-delivery",
       "state": "active",
-      "name": "guru-activate-task",
-      "package": "packages/guru-activate-task",
-      "interface": "packages/guru-activate-task/interface.json",
+      "name": "guru-activate-delivery",
+      "package": "packages/guru-activate-delivery",
+      "interface": "packages/guru-activate-delivery/interface.json",
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "supported_platforms": [
         "shared",
@@ -35,7 +35,7 @@
         "snow"
       ],
       "validator_command": "check-skill-packages",
-      "workflow_route_id": "task-activation"
+      "workflow_route_id": "delivery-activation"
     },
     {
       "id": "guru-author-task-plan",
@@ -318,6 +318,41 @@
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "task-closure"
+    },
+    {
+      "id": "guru-create-delivery",
+      "state": "active",
+      "name": "guru-create-delivery",
+      "package": "packages/guru-create-delivery",
+      "interface": "packages/guru-create-delivery/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "supported_platforms": [
+        "shared",
+        "claude",
+        "cursor",
+        "opencode",
+        "codex",
+        "kilo",
+        "kiro",
+        "gemini",
+        "antigravity",
+        "devin",
+        "qoder",
+        "codebuddy",
+        "copilot",
+        "droid",
+        "dsh",
+        "pi",
+        "reasonix",
+        "zcode",
+        "trae",
+        "omp",
+        "grok",
+        "kimi",
+        "snow"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "delivery-creation"
     },
     {
       "id": "guru-create-issue",
@@ -814,42 +849,6 @@
       "workflow_route_id": "normal-scenario-qualification"
     },
     {
-      "id": "guru-qualify-solution-mechanism",
-      "state": "active",
-      "name": "guru-qualify-solution-mechanism",
-      "package": "packages/guru-qualify-solution-mechanism",
-      "interface": "packages/guru-qualify-solution-mechanism/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.6",
-      "workflow_integration_state": "integrated",
-      "supported_platforms": [
-        "shared",
-        "claude",
-        "cursor",
-        "opencode",
-        "codex",
-        "kilo",
-        "kiro",
-        "gemini",
-        "antigravity",
-        "devin",
-        "qoder",
-        "codebuddy",
-        "copilot",
-        "droid",
-        "dsh",
-        "pi",
-        "reasonix",
-        "zcode",
-        "trae",
-        "omp",
-        "grok",
-        "kimi",
-        "snow"
-      ],
-      "validator_command": "check-skill-packages",
-      "workflow_route_id": "solution-mechanism-qualification"
-    },
-    {
       "id": "guru-qualify-root-cause",
       "state": "active",
       "name": "guru-qualify-root-cause",
@@ -884,6 +883,42 @@
       ],
       "validator_command": "check-skill-packages",
       "workflow_route_id": "root-cause-qualification"
+    },
+    {
+      "id": "guru-qualify-solution-mechanism",
+      "state": "active",
+      "name": "guru-qualify-solution-mechanism",
+      "package": "packages/guru-qualify-solution-mechanism",
+      "interface": "packages/guru-qualify-solution-mechanism/interface.json",
+      "interface_schema_id": "guru-team-skill-interface-1.6",
+      "workflow_integration_state": "integrated",
+      "supported_platforms": [
+        "shared",
+        "claude",
+        "cursor",
+        "opencode",
+        "codex",
+        "kilo",
+        "kiro",
+        "gemini",
+        "antigravity",
+        "devin",
+        "qoder",
+        "codebuddy",
+        "copilot",
+        "droid",
+        "dsh",
+        "pi",
+        "reasonix",
+        "zcode",
+        "trae",
+        "omp",
+        "grok",
+        "kimi",
+        "snow"
+      ],
+      "validator_command": "check-skill-packages",
+      "workflow_route_id": "solution-mechanism-qualification"
     },
     {
       "id": "guru-reactivate-task",

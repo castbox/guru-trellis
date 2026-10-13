@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-activate-delivery-input-delivery-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-delivery-activation-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-scope-withdrawal-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-scope-revision-input-1.0.schema.json"
+    }
+  ]
+}

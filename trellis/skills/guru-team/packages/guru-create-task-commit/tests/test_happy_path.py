@@ -153,16 +153,10 @@ class PublicInvocationTest(unittest.TestCase):
         }
 
     def invoke_public(self) -> dict:
-        return invoke.run(
-            PACKAGE,
-            {"id": "invoke-guru-create-task-commit"},
-            [
-                "--root",
-                str(self.repo),
-                "--candidate-artifact",
-                ".trellis/.runtime/guru-team/task-commit-plans/09-02-happy-path/001.json",
-            ],
-        )
+        # Pinned-old exact-executor diagnostic coverage, never a current
+        # public Delivery result. Current dirty/clean paths live in DeliveryFlow.
+        return invoke._run_happy_path(PACKAGE, str(self.repo),
+            ".trellis/.runtime/guru-team/task-commit-plans/09-02-happy-path/001.json")
 
     def test_success_and_stdout_loss_recovery_execute_once(self) -> None:
         calls = 0
@@ -277,21 +271,9 @@ class PublicInvocationTest(unittest.TestCase):
 
         invoke.execute_commit = unexpected
         self.addCleanup(setattr, invoke, "execute_commit", original)
-        result = invoke.run(
-            PACKAGE,
-            {"id": "invoke-guru-create-task-commit"},
-            ["--root", str(self.repo), "--invocation", str(invocation_path)],
-        )
-
-        self.assertEqual(
-            {
-                "exit_id": "committed",
-                "task_ref": ".trellis/tasks/09-02-happy-path",
-                "base_ref": "origin/main",
-                "branch_review_commit": self.parent,
-            },
-            result,
-        )
+        with self.assertRaises(CommandError) as raised:
+            invoke.run(PACKAGE, {}, ["--root", str(self.repo), "--invocation", str(invocation_path)])
+        self.assertEqual("schema_mismatch", raised.exception.code)
 
     def test_public_arguments_are_mutually_exclusive_and_one_is_required(self) -> None:
         with self.assertRaises(CommandError) as conflicting:
@@ -342,21 +324,12 @@ class PublicInvocationTest(unittest.TestCase):
             key: candidate[key]
             for key in ("path_classifications", "message", "ai_review")
         }
-        prepared = record.run(
-            PACKAGE,
-            {},
-            [
-                "--root",
-                str(self.repo),
-                "--input",
-                str(public),
-                "--candidate-json",
-                json.dumps(authoring),
-            ],
-        )
-        self.assertEqual("001", Path(prepared["candidate_artifact"]).stem)
-        self.assertTrue(self.candidate_path.exists())
-        self.assertFalse(receipt.exists())
+        with self.assertRaises(CommandError) as raised:
+            record.run(PACKAGE, {}, ["--root", str(self.repo), "--input", str(public),
+                                    "--candidate-json", json.dumps(authoring)])
+        self.assertEqual("schema_mismatch", raised.exception.code)
+        self.assertFalse(self.candidate_path.exists())
+        self.assertTrue(receipt.exists())
 
     def test_recommended_route_meets_package_operation_budget(self) -> None:
         commands = json.loads((PACKAGE / "commands.json").read_text())["commands"]

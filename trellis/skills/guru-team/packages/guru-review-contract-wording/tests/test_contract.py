@@ -340,6 +340,50 @@ class ContractWordingPackageTest(unittest.TestCase):
                 wording_record.run(PACKAGE_ROOT, {}, ["--root", str(self.root), "--mode", "standalone", "--profile", "explicit_paths", "--input", str(path), "--path", "docs/contract.md"])
             self.assertEqual("schema_mismatch", raised.exception.code)
 
+    def test_delivery_content_changed_returns_actual_author_change_refs(self) -> None:
+        sys.path.insert(0, str(PACKAGE_ROOT.parent / "guru-create-delivery/tests"))
+        from support import installed_fixture
+        fixture = installed_fixture(self)
+        key = fixture.create()
+        planning = fixture.projection.planning_directory(key)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (planning / name).write_text("# 计划\n\n建议固定条件。\n", encoding="utf-8")
+        design = planning / "design.md"
+        before = design.read_bytes()
+        design.write_text("# 计划\n\n当候选已提交且 clean 时复用当前提交。\n", encoding="utf-8")
+        locator = design.relative_to(fixture.root.resolve()).as_posix()
+        record_before = fixture.projection.read_record()
+        envelope = {"profile": "delivery_planning_artifacts", "mode": "workflow",
+                    "task_ref": fixture.task_ref, "delivery_key": key, "owner_result": {}}
+        invocation_path = fixture.root / "wording-owner-input.json"
+        invocation_path.write_text(json.dumps(envelope), encoding="utf-8")
+        args = ["--root", str(fixture.root), "--invocation", str(invocation_path)]
+        scan = wording_record.run(PACKAGE_ROOT, {}, [*args, "--scan-only"])
+        authoring = self.authoring(scan, typed_exit="content_changed")
+        authoring["ai_review_gate"]["planning_checked_dimensions"] = {
+            name: True for name in wording_common.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS}
+        authoring["revisions"] = [{
+            "revision_id": "exact-clean-candidate-wording", "locator": locator,
+            "before_sha256": hashlib.sha256(before).hexdigest(),
+            "after_sha256": hashlib.sha256(design.read_bytes()).hexdigest(),
+            "reason": "Specify the clean committed candidate continuation condition.",
+            "rescan_sha256": scan["scan"]["scan_sha256"],
+        }]
+        envelope["owner_result"] = authoring
+        invocation_path.write_text(json.dumps(envelope), encoding="utf-8")
+        owner = wording_record.run(PACKAGE_ROOT, {}, args)
+        envelope["owner_result"] = owner
+        invocation_path.write_text(json.dumps(envelope), encoding="utf-8")
+        receipt = wording_check.run(PACKAGE_ROOT, {}, args)["validation_receipt"]
+        public = json.loads((PACKAGE_ROOT / "examples/public-delivery-planning-artifacts-input.json").read_text())
+        public.update(task_ref=fixture.task_ref, delivery_key=key)
+        invocation_path.write_text(json.dumps({"public_input": public, "owner_result": owner,
+                                               "validation_receipt": receipt}), encoding="utf-8")
+        output = wording_invoke.run(PACKAGE_ROOT, {}, args)
+        self.assertEqual(output, {"exit_id": "content_changed", "profile": "delivery_planning_artifacts",
+                                  "task_ref": fixture.task_ref, "delivery_key": key, "change_refs": [locator]})
+        self.assertEqual(record_before, fixture.projection.read_record())
+
     def test_exit_gate_and_revision_relations_fail_closed(self) -> None:
         scan = self.scan()
         cases = []

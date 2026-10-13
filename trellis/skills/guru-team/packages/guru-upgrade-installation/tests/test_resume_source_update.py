@@ -202,7 +202,7 @@ class ResumeSourceUpdateTests(unittest.TestCase):
             input_path.write_text(json.dumps({'profile': 'resume', 'recovery_ref': reference}))
             plan_path.write_text(json.dumps(proposed))
             result = {'exit_id': 'resume_required', 'profile': 'resume', 'recovery_ref': reference}
-            with patch('owner.git', return_value=str(git_dir)), patch('owner.begin') as begin, patch('owner.resume', return_value=result) as writer:
+            with patch('owner.source_root', return_value=source), patch('owner.git', return_value=str(git_dir)), patch('owner.begin') as begin, patch('owner.resume', return_value=result) as writer:
                 self.assertEqual(run(PACKAGE, {'runtime_role': 'invoke'}, ['--root', str(root), '--input', str(input_path), '--plan', str(plan_path)]), result)
                 begin.assert_not_called()
                 self.assertEqual(writer.call_args.args[-1], proposed)

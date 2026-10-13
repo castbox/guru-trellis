@@ -11,6 +11,9 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1].parent / "guru-create-delivery/tests"))
+from support import installed_fixture
+
 
 class ArchitectureBaselineContractTest(unittest.TestCase):
     def setUp(self):
@@ -20,8 +23,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             for parent in (self.package, *self.package.parents)
             if (parent / "trellis/guru-team-extension.json").is_file()
         )
-        self.fixture = tempfile.TemporaryDirectory()
-        self.repository = Path(self.fixture.name)
+        self.upstream = installed_fixture(self)
+        self.delivery_key = self.upstream.create()
+        self.fixture = self.upstream.temporary
+        self.repository = self.upstream.root
         subprocess.run(
             ["git", "init", "-q"],
             cwd=self.repository,
@@ -79,7 +84,14 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         ).hexdigest()
 
     def load(self, name):
-        return json.loads((self.package / "examples" / name).read_text())
+        value = json.loads((self.package / "examples" / name).read_text())
+        if name in {"public-input-candidate-assessment-3.0.json", "public-input-final-plan-3.0.json"}:
+            value.update(schema_version="delivery-1.0", profile="delivery_task_impact_sync",
+                         task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
+                         planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            if "design_locator" in value:
+                value["design_locator"] = value["task_locator"] + "/" + value["planning_root"] + "/design.md"
+        return value
 
     def schema(self, name):
         return json.loads((self.package / "schemas" / name).read_text())
@@ -231,10 +243,25 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contribution.update(overrides)
         return contribution
 
+    def delivery_entry(self, public_input, selected):
+        public_input, selected = copy.deepcopy(public_input), copy.deepcopy(selected)
+        # Existing semantic cases now enter their real Delivery stage on schema 2.
+        if public_input.get("profile") == "task_impact_sync" and public_input.get("stage") != "acceptance_finish":
+            public_input["profile"] = "delivery_task_impact_sync"
+            if public_input.get("schema_version") == "2.0":
+                public_input["schema_version"] = "delivery-1.0"
+            original = public_input["task_locator"]
+            public_input["task_locator"] = self.upstream.task_ref
+            public_input.update(delivery_key=self.delivery_key, planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            if selected.get("task_locator") == original:
+                selected["task_locator"] = public_input["task_locator"]
+        return public_input, selected
+
     def invoke(self, public_input, selected):
+        public_input, selected = self.delivery_entry(public_input, selected)
         exit_id = selected["typed_exit"]
         owner = {
-            "schema_version": public_input.get("schema_version", "2.0"),
+            "schema_version": public_input.get("schema_version", "invalid"),
             "profile": public_input["profile"],
             "mode": public_input["mode"],
             "continuation_id": public_input["continuation_id"],
@@ -266,7 +293,9 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input["profile"] == "promotion":
+        if public_input["profile"].startswith("delivery_"):
+            owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
+        if public_input["profile"] in {"promotion", "delivery_promotion"}:
             for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
                 owner[field] = copy.deepcopy(public_input[field])
         return subprocess.run(
@@ -279,9 +308,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         )
 
     def invoke_canonical(self, public_input, selected):
+        public_input, selected = self.delivery_entry(public_input, selected)
         exit_id = selected["typed_exit"]
         owner = {
-            "schema_version": public_input.get("schema_version", "2.0"),
+            "schema_version": public_input.get("schema_version", "invalid"),
             "profile": public_input["profile"],
             "mode": public_input["mode"],
             "continuation_id": public_input["continuation_id"],
@@ -313,7 +343,9 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input["profile"] == "promotion":
+        if public_input["profile"].startswith("delivery_"):
+            owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
+        if public_input["profile"] in {"promotion", "delivery_promotion"}:
             for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
                 owner[field] = copy.deepcopy(public_input[field])
         environment = os.environ.copy()
@@ -361,21 +393,21 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(
             aggregate,
             {
-                "schema_id": "guru-architecture-baseline-input-aggregate-3.0",
-                "path": "schemas/public-input-aggregate-3.0.schema.json",
+                "schema_id": "guru-maintain-architecture-baseline-input-delivery-index-1.0",
+                "path": "schemas/public-input-aggregate-delivery-index-1.0.schema.json",
             },
         )
         self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
         self.assertEqual(
             {item["id"] for item in interface["public_contracts"]["input"]["profiles"]},
-            {"bootstrap_foundation", "task_impact_sync", "promotion", "repair"},
+            {"bootstrap_foundation", "task_impact_sync", "promotion", "repair", "delivery_task_impact_sync", "delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"},
         )
         self.assertEqual(
             {item["id"] for item in interface["external_exits"]},
             {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
         )
-        self.assertTrue(all(item["schema"]["schema_id"].endswith("3.0" if item["id"] == "task_impact_sync" else "2.0") for item in interface["public_contracts"]["input"]["profiles"]))
-        self.assertTrue(all(item["schema"]["schema_id"].endswith("3.0") for item in interface["public_contracts"]["outputs"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
         architecture_input_ids = {
             interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
             *(
@@ -387,7 +419,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             item["schema"]["schema_id"]
             for item in interface["public_contracts"]["outputs"]
         }
-        self.assertEqual(len(architecture_input_ids), 5)
+        self.assertEqual(len(architecture_input_ids), 9)
         self.assertEqual(len(architecture_output_ids), 7)
         for manifest_path in (
             self.repo_root / "trellis/guru-team-extension.json",
@@ -498,7 +530,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         })
         self.assertEqual(result.returncode, 0, result.stderr)
         output = json.loads(result.stdout)
-        self.assertEqual(output["source_profile"], "task_impact_sync")
+        self.assertEqual(output["source_profile"], "delivery_task_impact_sync")
         self.assertEqual(output["constitution_status"], "current")
         self.assertNotIn("project_check_descriptors", public_input)
         self.assertNotIn("contribution_locator", output)
@@ -735,8 +767,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         ):
             contract_text = contract_path.read_text(encoding="utf-8")
             self.assertIn("source_profile=task_impact_sync", contract_text)
-            self.assertIn("source_profile=bootstrap_foundation|repair", contract_text)
-            self.assertIn("source_profile=promotion", contract_text)
+            self.assertIn("delivery_bootstrap_foundation|delivery_repair", contract_text)
+            self.assertIn("Task-only `bootstrap_foundation|repair` reruns the matching", contract_text)
+            self.assertIn("source_profile=delivery_task_impact_sync", contract_text)
+            self.assertIn("source_profile=delivery_promotion|promotion", contract_text)
 
         pending = self.load("public-input-impact.json")
         pending["constitution"]["authority_status"] = "pending_reviewed_promotion"
@@ -863,6 +897,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                 output = json.loads(result.stdout)
                 self.assertEqual(output["sync_target"], case["sync_target"])
                 self.assertNotIn("contribution_locator", output)
+                from runtime.schema import validate_json
+                validate_json(output, self.package / "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json", "consumer")
 
     def test_sync_kind_mismatches_fail_closed(self):
         public_input = self.load("public-input-impact.json")
@@ -962,11 +998,41 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
 
     def test_sync_router_preserves_current_output_without_reconstructing_a_promotion(self):
         interface = json.loads((self.package / "interface.json").read_text())
-        projection = next(x for x in interface["public_contracts"]["projections"] if x["id"] == "sync_projection")
-        consumer = next(x for x in interface["public_contracts"]["consumer_inputs"] if x["id"] == "sync_input")
-        self.assertEqual(projection["operation"], "direct")
-        self.assertEqual(consumer["consumer"]["id"], "guru-architecture-baseline-sync-router")
-        self.assert_schema_valid(json.loads((self.package / consumer["contract"]["path"]).read_text()), self.load("public-output-sync-required.json"))
+        exit_row = next(row for row in interface["external_exits"] if row["id"] == "sync_required")
+        self.assertEqual(exit_row["consumer"], {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"})
+        public = self.load("public-input-impact.json")
+        for kind, target in (("promotion_required", {"kind": "contribution", "locator": "docs/architecture/contributions/example", "expected_identity": "contribution-v1", "current_identity": "contribution-v1"}),
+                             ("repair", {"kind": "project_contract", "locator": public["project_contract"]["change_contract_locator"], "expected_identity": public["project_contract"]["change_contract_identity"], "current_identity": public["project_contract"]["change_contract_identity"]})):
+            result = self.invoke(public, {"typed_exit": "sync_required", "task_locator": public["task_locator"],
+                                         "sync_kind": kind, "expected_current_identity": public["baseline"]["identity"],
+                                         "current_identity": public["baseline"]["identity"], "sync_target": target})
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            output = json.loads(result.stdout)
+            self.assertEqual(output["delivery_key"], self.delivery_key)
+            self.assertEqual(output["planning_root"], self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            self.assertEqual(output["sync_kind"], kind)
+
+    def test_delivery_recovery_profiles_preserve_original_identity(self):
+        for profile in ("delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"):
+            public = self.load("public-input-" + profile.replace("_", "-") + "-1.0.json")
+            public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
+                          planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            if profile == "delivery_promotion":
+                selected = self.architecture_selection(public, promotion_state="reviewed_promoted",
+                                                       review={"status": "reviewed", "independent": True, "committed_range": public["committed_range"]})
+            else:
+                selected = {"typed_exit": "baseline_current", "task_locator": public["task_locator"],
+                            "baseline_identity": public.get("successor_baseline", public["baseline"])["identity"],
+                            "constitution_identity": public["constitution"]["identity"], "impact_kind": "no_architecture_impact",
+                            "impact_reason": "Current baseline recovery satisfies the original stage.", "promotion_state": "no_change"}
+            before = self.upstream.projection.read_record()
+            result = self.invoke(public, selected)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            output = json.loads(result.stdout)
+            self.assertEqual(output["delivery_key"], self.delivery_key)
+            self.assertEqual(output["source_profile"], profile)
+            self.assertEqual(self.upstream.projection.read_record(), before)
+
 
     def test_review_and_project_check_conditions_are_closed_and_duplicated_consistently(self):
         semantic = self.schema("semantic-result.schema.json")
@@ -1297,11 +1363,11 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         result = self.invoke(public_input, selected)
         self.assertEqual(result.returncode, 0, result.stderr)
-        envelope = json.loads(json.dumps(public_input))
+        envelope, _ = self.delivery_entry(public_input, {})
         owner_baseline = dict(envelope["baseline"])
         owner_baseline["identity"] = "stale"
         owner = {
-            "schema_version": "2.0", "profile": envelope["profile"], "mode": envelope["mode"],
+            "schema_version": envelope["schema_version"], "profile": envelope["profile"], "mode": envelope["mode"],
             "continuation_id": envelope["continuation_id"], "stage": envelope["stage"],
             "task_locator": envelope["task_locator"],
             "input_sha256": self.digest(envelope), "baseline": owner_baseline,
@@ -1311,6 +1377,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "typed_exit": "blocked", "consumer": {"kind": "stop", "id": "architecture-baseline-blocked"},
             "reason_code": "stale_identity", "remediation": "Reread.",
         }
+        owner.update(delivery_key=envelope["delivery_key"], planning_root=envelope["planning_root"])
         result = subprocess.run(
             [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
             input=json.dumps({"public_input": envelope, "owner_result": owner}),
@@ -1332,6 +1399,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "branch-review-independent-native", "planning-business-default-native",
             "planning-missing-candidate-native", "planning-inherited-business-default-native",
             "planning-constraint-sufficient-native", "planning-constraint-insufficient-native",
+            "delivery-task-impact-sync-identity", "delivery-promotion-identity", "delivery-repair-identity", "delivery-bootstrap-foundation-identity", "whole-task-acceptance-current",
         ])
         interface = json.loads((self.package / "interface.json").read_text())
         declared_profiles = {
@@ -1342,7 +1410,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(covered_profiles, declared_profiles)
         self.assertEqual(
             covered_profiles,
-            {"bootstrap_foundation", "promotion", "repair", "task_impact_sync"},
+            {"bootstrap_foundation", "task_impact_sync", "promotion", "repair", "delivery_task_impact_sync", "delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"},
         )
         semantic_case = next(
             item for item in evals if item["id"] == "planning-semantic-authoring"
@@ -1422,7 +1490,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
     def test_final_current_requires_actual_wording_current_design_and_contribution(self):
         public = self.load("public-input-final-plan-3.0.json")
         path = self.repository / public["design_locator"]
-        path.parent.mkdir(parents=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("Current design and real task-local contribution; necessary ADR decision.")
         public["freshness_identity"] = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
         selected = self.architecture_selection(public, contribution_locator=public["design_locator"], contribution_identity=public["freshness_identity"])
@@ -1433,6 +1501,26 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         stale = self.invoke(public, selected)
         self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
         self.assertEqual(json.loads(stale.stdout)["field_path"], "input.freshness_identity")
+
+    def test_final_plan_keeps_existing_project_owned_contribution_locator(self):
+        public = self.load("public-input-final-plan-3.0.json")
+        design = self.repository / public["design_locator"]
+        design.parent.mkdir(parents=True, exist_ok=True)
+        design.write_text("Current Wording design references the isolated project contribution.")
+        public["freshness_identity"] = "sha256:" + hashlib.sha256(design.read_bytes()).hexdigest()
+        locator = "docs/architecture/contributions/example/change-contract.json"
+        contribution = self.repository / locator
+        contribution.parent.mkdir(parents=True, exist_ok=True)
+        contribution.write_text('{"task_id":"example","expected_current":"current-v1"}')
+        selected = self.architecture_selection(public, contribution_locator=locator,
+            contribution_identity="sha256:" + hashlib.sha256(contribution.read_bytes()).hexdigest())
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse((self.repository / public["task_locator"] / "change-contract.json").exists())
+        contribution.write_text('{"task_id":"example","expected_current":"current-v2"}')
+        stale = self.invoke(public, selected)
+        self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
+        self.assertEqual(json.loads(stale.stdout)["field_path"], "owner_result.contribution_identity")
 
     def test_planning_other_exits_preserve_both_purposes(self):
         cases = {
@@ -1457,13 +1545,16 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                     output = json.loads(result.stdout)
                     self.assertEqual(output["planning_purpose"], purpose)
                     self.assertEqual(output["task_locator"], public["task_locator"])
+                    if exit_id == "sync_required":
+                        from runtime.schema import validate_json
+                        validate_json(output, self.package / "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json", "consumer")
 
     def test_retired_purpose_less_planning_2_0_requires_fresh_producer(self):
         public = self.load("public-input-impact.json")
         public["stage"] = "planning"
         result = self.invoke(public, {"typed_exit":"blocked", "reason_code":"missing_current_input", "remediation":"Freshly enter Author."})
         self.assertEqual(result.returncode, 2)
-        self.assertEqual(json.loads(result.stdout)["field_path"], "schema_version")
+        self.assertEqual(json.loads(result.stdout)["field_path"], "input")
 
     def test_eval_schema_closes_native_execution_mode(self):
         schema = json.loads(

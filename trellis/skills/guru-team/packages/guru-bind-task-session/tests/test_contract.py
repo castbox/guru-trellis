@@ -23,7 +23,7 @@ class ContractTest(unittest.TestCase):
             schema = load(row["schema"]["path"])
             example = load(row["example"]["path"])
             Draft202012Validator(schema).validate(example)
-            self.assertEqual(example["lifecycle_generation"], 1 if row["id"] == "reactivate_rebind" else 0)
+            self.assertEqual(example["lifecycle_generation"], 1 if row["id"] == "delivery_reactivate_rebind" else 0)
             self.assertEqual(example["profile"], row["id"])
             self.assertNotIn("task_ref", schema["properties"])
             self.assertNotIn("workspace", json.dumps(schema))

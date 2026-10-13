@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import json
+import os
 import unittest
 
 
@@ -10,7 +11,7 @@ README = Path(__file__).resolve().parents[4] / "README.md"
 CONTRIBUTION = Path(__file__).resolve().parents[4] / "docs/architecture/contributions/434-task-delivery-lifecycle.md"
 DISCOVERY = Path(__file__).resolve().parents[1] / "packages/guru-discover-change-context/references/contract.md"
 SPEC = Path(__file__).resolve().parents[4] / "trellis/presets/guru-team/spec/workflow"
-PROJECT_INDEX = Path(__file__).resolve().parents[4] / ".trellis/spec/workflow/index.md"
+PROJECT_INDEX = Path(os.environ.get("GURU_TEST_INSTALLED_ROOT", str(Path(__file__).resolve().parents[4]))) / ".trellis/spec/workflow/workflow-contract.md"
 INSTALLER_SPEC = Path(__file__).resolve().parents[4] / ".trellis/spec/preset/installer.md"
 PACKAGES = Path(__file__).resolve().parents[1] / "packages"
 
@@ -141,13 +142,13 @@ class WorkflowLifecycleProseTest(unittest.TestCase):
         self.assertNotIn("guru-create-task-workspace", current)
 
     def test_project_spec_index_routes_to_current_lifecycle(self) -> None:
-        index = PROJECT_INDEX.read_text(encoding="utf-8")
-        current = index.split("## Local Architecture\n", 1)[1].split("\n## Required Validation", 1)[0]
-        self.assertIn(f"{self.active_count} active packages, {self.exit_count} exits", current)
-        self.assertIn("`guru-review-task-delivery`", current)
-        self.assertIn("`guru-review-task-completion`", current)
-        self.assertIn("pinned-old history only", current)
-        self.assertNotIn("`guru-finalize-task` is the active", current)
+        index = " ".join(PROJECT_INDEX.read_text(encoding="utf-8").split())
+        self.assertIn(f"{self.active_count} active packages, {self.exit_count} package exits", index)
+        self.assertIn("`guru-review-task-delivery:ready`", index)
+        self.assertIn("`guru-review-task-completion`", index)
+        self.assertIn("Historical IDs and old DTOs cannot be projected", index)
+        self.assertIn("Each active package", index)
+        self.assertNotIn("`guru-finalize-task` is the active", index)
 
     def test_intake_package_spec_retains_old_workspace_as_history(self) -> None:
         contract = (SPEC / "skill-package-contract.md").read_text(encoding="utf-8")

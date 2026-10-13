@@ -133,13 +133,11 @@ def rel(repo: Path, path: Path) -> str:
     return path.resolve().relative_to(repo.resolve()).as_posix()
 
 
-def checkpoint(repo: Path, task_dir: Path) -> Path:
-    return (
-        repo
-        / ".trellis/.runtime/guru-team/owner-checkpoints"
-        / task_dir.name
-        / "review-gate.json"
-    )
+def checkpoint(repo: Path, task_dir: Path, delivery_key: dict | None = None) -> Path:
+    parent = repo / ".trellis/.runtime/guru-team/owner-checkpoints" / task_dir.name
+    if delivery_key:
+        parent = parent / delivery_key["delivery_id"]
+    return parent / "review-gate.json"
 
 
 def _prepare_checkpoint_parent(repo: Path, target: Path) -> None:
@@ -163,7 +161,7 @@ def _prepare_checkpoint_parent(repo: Path, target: Path) -> None:
 
 
 def store_checkpoint(repo: Path, task_dir: Path, value: dict) -> tuple[Path, bool]:
-    target = checkpoint(repo, task_dir)
+    target = checkpoint(repo, task_dir, value.get("delivery_key"))
     _prepare_checkpoint_parent(repo, target)
     duplicate = False
     if target.is_file() and not target.is_symlink():
@@ -189,8 +187,8 @@ def store_checkpoint(repo: Path, task_dir: Path, value: dict) -> tuple[Path, boo
     return target, duplicate
 
 
-def load_checkpoint(repo: Path, task_dir: Path) -> tuple[Path, dict]:
-    target = checkpoint(repo, task_dir)
+def load_checkpoint(repo: Path, task_dir: Path, delivery_key: dict | None = None) -> tuple[Path, dict]:
+    target = checkpoint(repo, task_dir, delivery_key)
     _lstat_below(repo, target, "checkpoint", "file")
     try:
         value = json.loads(target.read_text())
@@ -205,8 +203,8 @@ def load_checkpoint(repo: Path, task_dir: Path) -> tuple[Path, dict]:
     return target, value
 
 
-def retire_checkpoint(repo: Path, task_dir: Path) -> None:
-    target, _ = load_checkpoint(repo, task_dir)
+def retire_checkpoint(repo: Path, task_dir: Path, delivery_key: dict | None = None) -> None:
+    target, _ = load_checkpoint(repo, task_dir, delivery_key)
     target.unlink()
     for parent in (target.parent, target.parent.parent):
         try:
@@ -445,15 +443,18 @@ def validate_gate(package_root, repo, value, expected_exit=None):
             "Run a fresh Branch Review for the current reviewed-content contract.",
             3,
         )
-    schema = "archived-review-gate-1.0.schema.json" if archived else "review-gate-7.0.schema.json"
+    schema = ("delivery-archived-review-gate-1.0.schema.json" if archived else "delivery-review-gate-1.0.schema.json") if "delivery_key" in value else "archived-review-gate-1.0.schema.json" if archived else "review-gate-7.0.schema.json"
     validate_json(value, package_root / "schemas" / schema, "gate")
     if archived:
         from archived import facts
-        current_facts = facts(package_root, repo, {
+        archived_input = {
             "task_ref": value["task_dir"],
             "branch_review_commit": value["review_commit"],
             "pr_payload_snapshot_sha256": value["pr_payload_snapshot_sha256"],
-        })
+        }
+        if "delivery_key" in value:
+            archived_input["delivery_key"] = value["delivery_key"]
+        current_facts = facts(package_root, repo, archived_input)
         if any(value.get(key) != item for key, item in current_facts.items()):
             raise CommandError("stale_identity", "archived_review", "Run a fresh review for the current base and PR identity.", 3)
     classifications = value.get("candidate_classifications")
@@ -601,7 +602,8 @@ def validate_gate(package_root, repo, value, expected_exit=None):
 
 
 def validate_public_binding(package_root, repo, public, gate):
-    profile = public.get("profile")
+    original_profile = public.get("profile")
+    profile = original_profile.removeprefix("delivery_")
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
@@ -611,6 +613,10 @@ def validate_public_binding(package_root, repo, public, gate):
         raise CommandError(
             "schema_mismatch", "input.profile", "Use one declared Branch Review profile."
         )
+    if original_profile.startswith("delivery_"):
+        schema = "public-" + original_profile.replace("_", "-") + "-input-1.0.schema.json"
+        if gate.get("delivery_key") != public["delivery_key"] or (profile != "archived_review" and gate.get("check_result_id") != public["check_result_id"]):
+            raise CommandError("stale_identity", "delivery_key", "Use this exact Delivery and Check result.", 3)
     validate_json(public, package_root / "schemas" / schema, "input")
     expected = {
         "task_dir": public["task_ref"],

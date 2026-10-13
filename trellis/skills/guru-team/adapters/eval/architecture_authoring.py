@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -10,12 +11,17 @@ import sys
 from adapters.eval.eval_constants import ARCHITECTURE_PUBLIC_AUTHORING_FACTS
 from adapters.eval.fixture_io import public_input_path, run_git
 
+DELIVERY_CONTEXT = "architecture-delivery-eval"
+
 
 def stage_architecture_facts(request: dict, fixture: Path) -> None:
+    fixture = fixture.resolve()
     public = json.loads(public_input_path(request).read_text())
     task = Path(public["task_locator"])
     if task.is_absolute() or ".." in task.parts:
         raise ValueError("Architecture task locator is unsafe")
+    if public["profile"].startswith("delivery_"):
+        task = stage_delivery_identity(fixture, public).relative_to(fixture)
     case = request["case_id"]
     # These are candidate facts, never pre-authored owner results or pass evidence.
     baseline_source = "def send(payload, protocol='responses', retries=2):\n    if not 0 <= retries <= 8:\n        raise ValueError('retry count out of range')\n    return {'payload': payload, 'protocol': protocol, 'retries': retries}\n"
@@ -49,7 +55,7 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         design = None
         candidate_source = baseline_source
     files = {
-        str(task / "task.json"): json.dumps({"id": task.name, "name": task.name, "status": "planning" if public["stage"] == "planning" else "in_progress", "branch": "main", "base_branch": "main"}) + "\n",
+        **({} if public["profile"].startswith("delivery_") else {str(task / "task.json"): json.dumps({"id": task.name, "name": task.name, "status": "planning" if public["stage"] == "planning" else "in_progress", "branch": "main", "base_branch": "main"}) + "\n"}),
         public["constitution"]["authority_locator"]: "# Project Constitution\n\nIdentity: constitution-v1. Project rules are read from this current authority. Shared transport owns protocol communication and retry configuration; import semantics belong to import_pipeline. Caller-owned diagnostics must not reject an otherwise legal communication request.\n",
         public["baseline"]["locator"]: "# Project Architecture\n\nIdentity: current-v2. Active. transport.py is shared protocol transport. import_pipeline.py owns import processing; query_summary.py owns summarization. Both call transport.send. Retry configuration supports integers 0 through 8; default and recommended values are not hard invariants. Protocol values chat/responses are technical selectors. legacy_cache.py is a separate existing component.\n",
         public["project_contract"]["change_contract_locator"]: "# Change Contract\n\nIdentity: project-change-contract-v1. Concern set: project-concerns-v1. Examine ownership, state, dependencies, defaults and actual callers. There is no applicable project architecture-check command in this small project; inspect source and callers directly.\n",
@@ -160,6 +166,53 @@ def contract_paths(public: dict) -> tuple[str, ...]:
             "schemas/public-input-impact-current-3.0.schema.json")
 
 
+def public_contract_reads(package: Path, public: dict | None = None) -> list[Path]:
+    """Read the current Interface's input schemas, including local ref closure."""
+    from adapters.eval.eval_support import schema_projection_closure
+    interface = json.loads((package / "interface.json").read_text())
+    inputs = interface["public_contracts"]["input"]
+    assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json"),
+              Path("schemas/semantic-result.schema.json"), Path("schemas/semantic-result-delivery-1.0.schema.json")}
+    if public and public.get("schema_version") == "3.0":
+        assets.update(Path(path) for path in contract_paths(public))
+    assets.add(Path(inputs["aggregate_schema"]["path"]))
+    assets.update(Path(row["schema"]["path"]) for row in inputs["profiles"])
+    return [package / path for path in sorted(schema_projection_closure(package, assets))]
+
+
+def stage_delivery_identity(fixture: Path, public: dict, *, scope_content=None, scope_anchor="R1. Architecture eval") -> Path:
+    """Create the selected identity through the fixed installed API, never a model."""
+    from adapters.eval.delivery_production import installed_task
+    from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+    from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+    task = installed_task(fixture, "architecture-eval")
+    (task / "prd.md").write_text(scope_content or "# Whole Task\n\n## R1. Architecture eval\nCurrent accepted scope.\n")
+    projection = DeliveryProjection(fixture, task.relative_to(fixture).as_posix())
+    scope = authority_ref(task / "prd.md", fixture)
+    projection.scope(scope)
+    import uuid
+    key = {"task_id": "current", "lifecycle_generation": 0, "delivery_id": str(uuid.uuid4())}
+    projection.apply({"api_version": "1.0", "operation": "create_delivery", "key": key,
+                      "owner_role": "creation", "owner_id": projection.declaration()["owners"]["creation"],
+                      "scope_ref": {"authority": scope, "anchors": [scope_anchor]}, "profile": "pull_request"})
+    BranchBindingStore(inspect_repository(fixture)).establish(
+        TaskLifecycleKey("current", 0), run_git(fixture, "branch", "--show-current")
+    )
+    previous_context = os.environ.get("TRELLIS_CONTEXT_ID")
+    os.environ["TRELLIS_CONTEXT_ID"] = previous_context or DELIVERY_CONTEXT
+    try:
+        projection.select(key)
+    finally:
+        if previous_context is None:
+            os.environ.pop("TRELLIS_CONTEXT_ID", None)
+        else:
+            os.environ["TRELLIS_CONTEXT_ID"] = previous_context
+    record = projection.resolve(key)
+    public.update(task_locator=task.relative_to(fixture).as_posix(), delivery_key=key,
+                  planning_root=record["planning_root"])
+    return projection.planning_directory(key)
+
+
 def reviewer_context(repository: Path, package: Path, helper_command: str, reads: list[str], input_locator: Path, *, upstream: bool) -> str:
     """Build operational locators only. Outcomes remain entirely reviewer-owned."""
     read = lambda path, kind="owner_file": f"{helper_command} read --kind {kind} --path {path}"
@@ -169,7 +222,7 @@ def reviewer_context(repository: Path, package: Path, helper_command: str, reads
         "Load the Architecture Skill and contract below for the reviewer method and purpose-selected current authoring/wrapper contract. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
         f"Repository locator: {repository}",
         f"Public input locator: {input_locator}",
-        *[read(package / path, "owner_file" if upstream else "skill_contract") for path in contract_paths(json.loads(input_locator.read_text()))],
+        *[read(path, "owner_file" if upstream else "skill_contract") for path in public_contract_reads(package, json.loads(input_locator.read_text()))],
         "First read current Constitution, Baseline and project change contract, then actual candidate design/full diff, changed responsibilities/defaults/state/dependencies, unchanged production callers and comparable capabilities/constraints. The ordered evidence locators follow:",
         *[read(repository / path) for path in reads],
         read(input_locator, "owner_file"),

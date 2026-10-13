@@ -22,6 +22,14 @@
           "description": "Task directory, task-relative path, or task slug.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--delivery-key",
+          "required": true,
+          "kind": "json",
+          "description": "Exact public DeliveryKey for its own planning_root.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
@@ -71,6 +79,14 @@
           "required": false,
           "kind": "boolean",
           "description": "Validate without persistence.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--delivery-key",
+          "required": true,
+          "kind": "json",
+          "description": "Exact public DeliveryKey for its own planning_root.",
           "repeatable": false,
           "conflicts": []
         }
@@ -123,6 +139,14 @@
             "blocked"
           ],
           "description": "Required typed exit.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--delivery-key",
+          "required": true,
+          "kind": "json",
+          "description": "Exact public DeliveryKey for its own planning_root.",
           "repeatable": false,
           "conflicts": []
         }

@@ -184,9 +184,8 @@ def start_public_runtime_boundary(
                     raise ValueError("installed public invocation wrapper is unavailable")
                 arguments = arguments[2:]
                 stdin_text = None
-                envelope_flag = next((flag for flag in ("--invocation", "--committed-reentry") if flag in arguments), None)
-                if envelope_flag is not None:
-                    invocation_index = arguments.index(envelope_flag)
+                if "--invocation" in arguments:
+                    invocation_index = arguments.index("--invocation")
                     if (
                         invocation_index + 1 < len(arguments)
                         and arguments[invocation_index + 1] == "-"
@@ -699,9 +698,9 @@ def build_context(
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {public_interface_path}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / owner_schema_path}\n"
                 + (
-                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input.schema.json'}\n"
+                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / ('schemas/public-input-delivery-1.0.schema.json' if request['skill_id'] == phase2_authoring.SKILL else 'schemas/public-input.schema.json')}\n"
                     if qualification_codex or request["skill_id"] == phase2_authoring.SKILL else
-                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'schemas/public-input-aggregate-3.0.schema.json'}\n"
+                    f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / public_interface['public_contracts']['input']['aggregate_schema']['path']}\n"
                 )
                 + "Then execute exactly one of the following profile-schema reads: choose the schema whose "
                 "declared discriminator equals the public_input.profile you author. Do not infer the profile "
@@ -964,11 +963,8 @@ def validate_native_trace(
     if isolated_authoring and case_reads != declared_case_reads:
         raise ValueError("semantic authoring trace must re-read every staged case file")
     if semantic_authoring:
-        required_public_reads = {projection_root / path for path in architecture_authoring.contract_paths(
-            json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
-        )} if not phase2 else set()
-        if phase2:
-            required_public_reads = {projection_root / path for path in phase2_authoring.PUBLIC_READS}
+        required_public_reads = ({projection_root / path for path in phase2_authoring.PUBLIC_READS}
+                                 if phase2 else set(architecture_authoring.public_contract_reads(projection_root, json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text()))))
         observed_public_reads = {
             Path(str(event["path"])).resolve()
             for event in events

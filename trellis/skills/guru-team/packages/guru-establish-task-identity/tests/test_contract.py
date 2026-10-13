@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -23,11 +24,12 @@ class TaskIdentityTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        install_common(self.root)
         subprocess.run(["git", "init", "-q", "-b", "main"], cwd=self.root, check=True)
         task = self.root / ".trellis/tasks/demo"
         task.mkdir(parents=True)
         self.task_file = task / "task.json"
-        self.input = {"profile": "active_task", "mode": "workflow", "task_id": "demo", "task_ref": ".trellis/tasks/demo", "lifecycle_generation": 0}
+        self.input = {"profile": "delivery_active_task", "mode": "workflow", "task_id": "demo", "task_ref": ".trellis/tasks/demo", "lifecycle_generation": 0}
 
     def task(self, **fields: object) -> None:
         current = {
@@ -40,7 +42,7 @@ class TaskIdentityTests(unittest.TestCase):
             "pr_url": None, "children": [], "parent": None,
             "relatedFiles": [], "notes": "", "meta": {},
         }
-        self.task_file.write_text(json.dumps({**current, **fields}), encoding="utf-8")
+        self.task_file.write_text(json.dumps(public_task({**current, **fields})), encoding="utf-8")
 
     def invoke(self, **fields: object) -> dict:
         result = MODULE.invoke(self.root, {**self.input, **fields})
@@ -74,7 +76,7 @@ class TaskIdentityTests(unittest.TestCase):
                 del data["source"]
                 self.task_file.write_text(json.dumps(data))
                 before = self.task_file.read_bytes()
-                expected = {"exit_id": "blocked", "reason_code": "unsupported_legacy_task"}
+                expected = {"exit_id": "blocked", "reason_code": "invalid_record"}
                 self.assertEqual(self.invoke(), expected)
                 self.assertEqual(self.invoke(reviewed_source={"kind": "no_issue"}), expected)
                 self.assertEqual(self.task_file.read_bytes(), before)

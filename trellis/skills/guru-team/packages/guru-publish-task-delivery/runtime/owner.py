@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
+from runtime.delivery_projection.adapter import DeliveryProjection
+from runtime.schema import validate_json
 
 
 SKILL_ID = "guru-publish-task-delivery"
@@ -94,7 +96,8 @@ def gh_json(root: Path, command: list[str]) -> Any:
 
 
 def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
-    profile = value.get("profile")
+    delivery_profile = str(value.get("profile", "")).startswith("delivery_")
+    profile = str(value.get("profile", "")).removeprefix("delivery_")
     common = {"profile", "mode", "task_ref"}
     if profile == "review_ready":
         required = common | {"delivery_cycle_ref", "reviewed_head", "pr_title", "pr_body", "remaining_work_state"}
@@ -104,6 +107,11 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
         required = common | {"reason_code"}
     else:
         raise WorkflowError("Unknown publication input profile.", code="schema_mismatch")
+    if delivery_profile:
+        required.add("delivery_key")
+        if profile == "review_ready":
+            required.remove("delivery_cycle_ref")
+            required.add("readiness_result_id")
     if set(value) != required:
         raise WorkflowError("Publication input fields do not match the selected closed profile.", code="schema_mismatch")
     if value.get("mode") not in {"workflow", "standalone"}:
@@ -111,7 +119,7 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(value.get("task_ref"), str) or TASK_REF.fullmatch(value["task_ref"]) is None:
         raise WorkflowError("Invalid task_ref.", code="schema_mismatch")
     if profile == "review_ready":
-        if not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None:
+        if not delivery_profile and (not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None):
             raise WorkflowError("delivery_cycle_ref must use the current closed identity.", code="schema_mismatch")
         if not isinstance(value["reviewed_head"], str) or SHA40.fullmatch(value["reviewed_head"]) is None:
             raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch")
@@ -150,7 +158,9 @@ def task_context(root: Path, task_ref: str) -> tuple[Path, dict[str, Any]]:
     if root not in task_dir.parents or not task_dir.is_dir():
         raise WorkflowError("Task locator is outside the repository or missing.", code="unsafe_path")
     task = read_json(task_dir / "task.json")
-    if task.get("status") != "in_progress":
+    if task.get("schema_version") == "2.0":
+        task = DeliveryProjection(root, task_ref).read_record()
+    elif task.get("status") != "in_progress":
         raise WorkflowError("Delivery publication requires an active task.", code="task_not_active")
     try:
         branch = resolve_active_task_checkout(root, task_ref).branch_name
@@ -163,9 +173,10 @@ def task_context(root: Path, task_ref: str) -> tuple[Path, dict[str, Any]]:
 
 
 def repository_identity(root: Path) -> str:
-    value = gh_json(root, ["repo", "view", "--json", "nameWithOwner"])
+    from runtime.task_lifecycle.identity import origin_matches
+    value = gh_json(root, ["repo", "view", git_text(root, "remote", "get-url", "origin"), "--json", "nameWithOwner"])
     repo = value.get("nameWithOwner") if isinstance(value, dict) else None
-    if not isinstance(repo, str) or REPO_REF.fullmatch(repo) is None:
+    if not isinstance(repo, str) or REPO_REF.fullmatch(repo) is None or not origin_matches(root, repo):
         raise WorkflowError("Cannot resolve canonical GitHub repository identity.", code="repository_identity_stale")
     return repo
 
@@ -183,7 +194,7 @@ def remote_head(root: Path, branch: str) -> str | None:
 
 def list_open_prs(root: Path, branch: str) -> list[dict[str, Any]]:
     fields = "number,url,state,isDraft,title,body,headRefName,headRefOid,baseRefName,headRepositoryOwner"
-    value = gh_json(root, ["pr", "list", "--state", "open", "--head", branch, "--json", fields])
+    value = gh_json(root, ["pr", "list", "--repo", repository_identity(root), "--state", "open", "--head", branch, "--json", fields])
     if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
         raise WorkflowError("GitHub PR listing has invalid shape.", code="external_command_failed")
     return value
@@ -226,19 +237,20 @@ def normalize_pr(pr: dict[str, Any]) -> dict[str, Any]:
 
 def read_pr(root: Path, number: int) -> dict[str, Any]:
     fields = "number,url,state,isDraft,title,body,headRefName,headRefOid,baseRefName,headRepositoryOwner"
-    value = gh_json(root, ["pr", "view", str(number), "--json", fields])
+    value = gh_json(root, ["pr", "view", str(number), "--repo", repository_identity(root), "--json", fields])
     if not isinstance(value, dict):
         raise WorkflowError("GitHub PR read has invalid shape.", code="external_command_failed")
     return normalize_pr(value)
 
 
 def transaction_ref(public_input: dict[str, Any]) -> str:
-    if public_input["profile"] == "same_plan_resume":
+    if public_input["profile"].removeprefix("delivery_") == "same_plan_resume":
         return public_input["transaction_ref"]
-    return digest({"skill_id": SKILL_ID, "task_ref": public_input["task_ref"], "delivery_cycle_ref": public_input["delivery_cycle_ref"]})
+    identity = {"delivery_key": public_input["delivery_key"], "readiness_result_id": public_input["readiness_result_id"]} if "delivery_key" in public_input else {"delivery_cycle_ref": public_input["delivery_cycle_ref"]}
+    return digest({"skill_id": SKILL_ID, "task_ref": public_input["task_ref"], **identity})
 
 
-def unique_task_transaction(root: Path, task_ref: str) -> dict[str, Any]:
+def unique_task_transaction(root: Path, task_ref: str, delivery_key: dict | None = None) -> dict[str, Any]:
     owner_dir = root / ".trellis/.runtime/guru-team/guru-publish-task-delivery"
     matches: list[dict[str, Any]] = []
     if owner_dir.is_dir():
@@ -246,7 +258,7 @@ def unique_task_transaction(root: Path, task_ref: str) -> dict[str, Any]:
             if path.name.endswith(".gate.json"):
                 continue
             value = read_json(path)
-            if isinstance(value.get("input"), dict) and value["input"].get("task_ref") == task_ref:
+            if isinstance(value.get("input"), dict) and value["input"].get("task_ref") == task_ref and (delivery_key is None or value["input"].get("delivery_key") == delivery_key):
                 if value.get("stage") == "ready":
                     continue
                 validate_transaction(value)
@@ -284,13 +296,13 @@ def validate_transaction(transaction: dict[str, Any]) -> None:
 
 
 def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
-    if public_input["profile"] == "reprepare_publication":
-        existing = unique_task_transaction(root, public_input["task_ref"])
+    if public_input["profile"].removeprefix("delivery_") == "reprepare_publication":
+        existing = unique_task_transaction(root, public_input["task_ref"], public_input.get("delivery_key"))
         ref = existing["transaction_ref"]
     else:
         ref = transaction_ref(public_input)
         existing = load_transaction(root, ref)
-    if public_input["profile"] in {"same_plan_resume", "reprepare_publication"}:
+    if public_input["profile"].removeprefix("delivery_") in {"same_plan_resume", "reprepare_publication"}:
         if existing is None:
             raise WorkflowError("Requested publication transaction does not exist.", code="private_state_missing")
         validate_transaction(existing)
@@ -307,11 +319,29 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
             if existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
 
+    if "delivery_key" in source and existing is not None and existing["stage"] == "ready":
+        # Recover the original remote fact before requiring an active checkout
+        # or current gate. The continuation decision is made separately below.
+        return {"typed_exit": "historical_terminal", "output": ready_output(root, existing)}
     task_dir, task = task_context(root, source["task_ref"])
+    selected = None
+    if "delivery_key" in source:
+        projection = DeliveryProjection(root, source["task_ref"])
+        selected = projection.resolve(source["delivery_key"])
+        terminal_recovery = existing is not None and existing["stage"] == "ready"
+        if not terminal_recovery:
+            readiness = selected["results"]["readiness"]
+            if (readiness is None or readiness["result_id"] != source["readiness_result_id"]
+                    or projection.gate_applicability(source["delivery_key"])["readiness"]["kind"] != "applicable"
+                    or selected["candidate"]["head_ref"] != source["reviewed_head"]):
+                return {"typed_exit":"review_stale","output":{"exit_id":"review_stale","task_ref":source["task_ref"],"delivery_key":source["delivery_key"],"stale_reason":"readiness_changed"}}
+
+    if "delivery_key" in source and terminal_recovery:
+        return {"typed_exit": "historical_terminal", "output": ready_output(root, existing)}
     reviewed_head = source["reviewed_head"]
     live_head = git_text(root, "rev-parse", "HEAD")
     if live_head != reviewed_head:
-        return {"typed_exit": "review_stale", "output": {"exit_id": "review_stale", "task_ref": source["task_ref"], "stale_reason": "reviewed_head_changed"}}
+        return {"typed_exit": "review_stale", "output": {"exit_id": "review_stale", "task_ref": source["task_ref"], **({"delivery_key": source["delivery_key"]} if "delivery_key" in source else {}), "stale_reason": "reviewed_head_changed"}}
     repo_ref = repository_identity(root)
     branch = task["branch"]
     base = task["base_branch"]
@@ -332,7 +362,7 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
         return blocked("remote_pr_head_mismatch", "Converge the remote branch and PR head before publication.")
     plan_identity = {
         "task_ref": source["task_ref"],
-        "delivery_cycle_ref": source["delivery_cycle_ref"],
+        **({"delivery_key": source["delivery_key"]} if "delivery_key" in source else {"delivery_cycle_ref": source["delivery_cycle_ref"]}),
         "repo_ref": repo_ref,
         "base_branch": base,
         "head_branch": branch,
@@ -349,6 +379,7 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
         "confirmation_identity": digest(plan_identity),
         "plan_identity": plan_identity,
         "input": source,
+        "public_candidate": selected["candidate"] if selected else None,
         "repo_ref": repo_ref,
         "base_branch": base,
         "head_branch": branch,
@@ -374,6 +405,7 @@ def initial_transaction(context: dict[str, Any]) -> dict[str, Any]:
         "transaction_ref": context["transaction_ref"],
         "stage": "push_content",
         "input": context["input"],
+        "public_candidate": context.get("public_candidate"),
         "repo_ref": context["repo_ref"],
         "base_branch": context["base_branch"],
         "head_branch": context["head_branch"],
@@ -456,7 +488,7 @@ def bind_pr(root: Path, transaction: dict[str, Any]) -> None:
     source = transaction["input"]
     completed = _run(
         root,
-        ["gh", "pr", "create", "--draft", "--base", transaction["base_branch"], "--head", transaction["head_branch"], "--title", source["pr_title"], "--body", source["pr_body"]],
+        ["gh", "pr", "create", "--repo", transaction["repo_ref"], "--draft", "--base", transaction["base_branch"], "--head", transaction["head_branch"], "--title", source["pr_title"], "--body", source["pr_body"]],
         allow_failure=True,
     )
     pr = find_bindable_pr(root, transaction)
@@ -485,7 +517,7 @@ def converge_metadata(root: Path, transaction: dict[str, Any]) -> None:
     if not desired:
         if not decision["mutation_required"] or not original:
             raise WorkflowError("Bound PR metadata drifted outside the recorded convergence decision.", code="pr_identity_stale")
-        _run(root, ["gh", "pr", "edit", str(pr["number"]), "--title", source["pr_title"], "--body", source["pr_body"]], allow_failure=True)
+        _run(root, ["gh", "pr", "edit", str(pr["number"]), "--repo", transaction["repo_ref"], "--title", source["pr_title"], "--body", source["pr_body"]], allow_failure=True)
         pr = read_pr(root, bound["number"])
         if pr["title"] != source["pr_title"] or pr["body"] != source["pr_body"]:
             raise WorkflowError("PR metadata mutation did not converge.", code="external_command_failed")
@@ -504,7 +536,7 @@ def mark_ready(root: Path, transaction: dict[str, Any]) -> None:
     if pr["is_draft"]:
         if not decision["mutation_required"] or decision["original_is_draft"] is not True:
             raise WorkflowError("Draft state drifted outside the recorded Ready decision.", code="pr_identity_stale")
-        _run(root, ["gh", "pr", "ready", str(pr["number"])], allow_failure=True)
+        _run(root, ["gh", "pr", "ready", str(pr["number"]), "--repo", transaction["repo_ref"]], allow_failure=True)
         pr = read_pr(root, bound["number"])
         if pr["is_draft"]:
             raise WorkflowError("Ready mutation did not converge.", code="external_command_failed")
@@ -519,17 +551,42 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
     pr = read_pr(root, bound["number"])
     source = transaction["input"]
     if (
-        pr["state"] != "OPEN"
+        pr["state"] not in {"OPEN", "MERGED"}
         or pr["is_draft"]
         or pr["head_sha"] != transaction["reviewed_head"]
         or pr["title"] != source["pr_title"]
         or pr["body"] != source["pr_body"]
     ):
         raise WorkflowError("Ready publication terminal facts drifted.", code="publication_stale")
+    if "delivery_key" in source:
+        projection = DeliveryProjection(root, source["task_ref"])
+        selected = projection.resolve(source["delivery_key"])
+        candidate = transaction["public_candidate"]
+        result_id = "publication:" + transaction["transaction_ref"]
+        owner_id = projection.declaration()["owners"]["publication"]
+        pr_ref = {"locator": f"https://github.com/{transaction['repo_ref']}/pull/{pr['number']}", "revision": "sha256:" + hashlib.sha256(pr["body"].encode("utf-8")).hexdigest()}
+        fact = {"result_id": result_id, "owner_id": owner_id, "evidence": [pr_ref], "profile": "pull_request",
+                "candidate": candidate, "repo_ref": transaction["repo_ref"], "pr_number": pr["number"],
+                "reviewed_head": transaction["reviewed_head"], "target_ref": transaction["base_branch"], "publication_ref": pr_ref}
+        try:
+            projection.apply({"api_version":"1.0", "operation":"record_publication", "key":source["delivery_key"],
+                "owner_role":"publication", "owner_id":owner_id, "expected_phase":selected["phase"], "result":fact,
+                "historical_success":True})
+        except LifecycleContractError as exc:
+            raise WorkflowError(str(exc), code="external_command_failed") from exc
+        current = projection.resolve(source["delivery_key"])
+        readiness = current["results"]["readiness"]
+        if (pr["state"] == "MERGED" or git_text(root, "rev-parse", "HEAD") != source["reviewed_head"]
+                or readiness is None or readiness["result_id"] != source["readiness_result_id"]
+                or projection.gate_applicability(source["delivery_key"])["readiness"]["kind"] != "applicable"):
+            return {"exit_id":"review_stale", "task_ref":source["task_ref"], "delivery_key":source["delivery_key"], "stale_reason":"historical_success_current_readiness_changed"}
+        return {"exit_id":"ready_for_merge", "task_ref":source["task_ref"], "delivery_key":source["delivery_key"],
+                "repo_ref":transaction["repo_ref"], "pr_number":pr["number"], "expected_head_sha":transaction["reviewed_head"],
+                "publication_body_sha256":hashlib.sha256(source["pr_body"].encode()).hexdigest(), "publication_result_id":result_id}
     return {
         "exit_id": "ready_for_merge",
         "task_ref": source["task_ref"],
-        "delivery_cycle_ref": source["delivery_cycle_ref"],
+        **({"delivery_key": source["delivery_key"]} if "delivery_key" in source else {"delivery_cycle_ref": source["delivery_cycle_ref"]}),
         "repo_ref": transaction["repo_ref"],
         "pr_number": pr["number"],
         "expected_head_sha": transaction["reviewed_head"],
@@ -592,6 +649,21 @@ def preview(root: Path, input_path: str) -> dict[str, Any]:
     return plan_from_input(root, public_input)
 
 
+def project_review_stale(root: Path, output: dict[str, Any]) -> dict[str, Any]:
+    if output.get("exit_id") != "review_stale" or "delivery_key" not in output:
+        return output
+    projection = DeliveryProjection(root, output["task_ref"])
+    selected = projection.resolve(output["delivery_key"])
+    # Publication owns this fixed backward transition. A changed candidate or
+    # missing earlier gate still returns the real gap; no phase produces pass.
+    if selected["phase"] == "publishing" and projection.gate_applicability(output["delivery_key"])["full_review"]["kind"] == "applicable":
+        from runtime.delivery_projection.adapter import authority_ref
+        from runtime.delivery_projection.gates import rework
+        reason = authority_ref(projection.planning_directory(output["delivery_key"]) / "implement.md", root)
+        rework(projection, output["delivery_key"], "publication", "readiness", reason, ["readiness"])
+    return output
+
+
 def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None) -> dict[str, Any]:
     public_input = validate_public_input(read_json(input_path))
     review = validate_review(read_json(review_path))
@@ -600,16 +672,16 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
     except WorkflowError as exc:
         if exc.code in {"private_state_invalid", "private_state_missing"}:
             if (
-                public_input["profile"] == "review_ready"
+                public_input["profile"].removeprefix("delivery_") == "review_ready"
                 and exc.payload.get("retire_transaction_ref") == transaction_ref(public_input)
             ):
                 transaction_path(root, exc.payload["retire_transaction_ref"]).unlink(missing_ok=True)
-            return {"exit_id": "review_stale", "task_ref": public_input["task_ref"], "stale_reason": exc.code}
+            return project_review_stale(root, {"exit_id": "review_stale", "task_ref": public_input["task_ref"], **({"delivery_key":public_input["delivery_key"]} if "delivery_key" in public_input else {}), "stale_reason": exc.code})
         if exc.code in REPREPARE_REQUIRED_CODES:
-            return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], "reason_code": exc.code}
+            return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], **({"delivery_key":public_input["delivery_key"]} if "delivery_key" in public_input else {}), "reason_code": exc.code}
         raise
     if context.get("typed_exit") != "preview":
-        return context["output"]
+        return project_review_stale(root, context["output"])
     if not context["terminal_recovery"]:
         if not isinstance(confirmed, str) or confirmed != context["confirmation_identity"]:
             return blocked("confirmation_identity_mismatch", "Preview and confirm the current publication plan before mutation.")["output"]
@@ -620,9 +692,9 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
     except WorkflowError as exc:
         transaction = load_transaction(root, context["transaction_ref"])
         if transaction is not None and exc.code in {"external_command_failed"}:
-            return {"exit_id": "resume_publication", "task_ref": context["input"]["task_ref"], "transaction_ref": context["transaction_ref"]}
+            return {"exit_id": "resume_publication", "task_ref": context["input"]["task_ref"], **({"delivery_key":context["input"]["delivery_key"]} if "delivery_key" in context["input"] else {}), "transaction_ref": context["transaction_ref"]}
         if exc.code in REPREPARE_REQUIRED_CODES:
-            return {"exit_id": "reprepare_required", "task_ref": context["input"]["task_ref"], "reason_code": exc.code}
+            return {"exit_id": "reprepare_required", "task_ref": context["input"]["task_ref"], **({"delivery_key":context["input"]["delivery_key"]} if "delivery_key" in context["input"] else {}), "reason_code": exc.code}
         raise
 
 

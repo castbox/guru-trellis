@@ -30,15 +30,15 @@ class ContractTest(unittest.TestCase):
             self.assertEqual([],validate(PACKAGE/profile['schema']['path'],json.loads((PACKAGE/profile['example']['path']).read_text())))
         for output in interface['public_contracts']['outputs']:
             self.assertEqual([],validate(PACKAGE/output['schema']['path'],json.loads((PACKAGE/output['example']['path']).read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-request.schema.json',json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/reconciliation-result.schema.json',json.loads((PACKAGE/'examples/reconciliation-result.json').read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/resolved-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/resolved-reconciliation-result.json').read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/base-reconciliation.schema.json',json.loads((PACKAGE/'examples/base-reconciliation.json').read_text())))
-        self.assertEqual('guru-reconcile-task-base-output-review-continuity-required-2.0',next(item for item in interface['public_contracts']['outputs'] if item['exit_id']=='review_continuity_required')['schema']['schema_id'])
-        self.assertEqual('guru-reconcile-task-base-private-result-2.0',interface['public_contracts']['private_artifacts'][0]['schema']['schema_id'])
-        resolved=next(item for item in interface['public_contracts']['input']['profiles'] if item['id']=='resolved_candidate')
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-reconciliation-request.schema.json',json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/reconciliation-result.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-reconciliation-result.schema.json',json.loads((PACKAGE/'examples/resolved-reconciliation-result.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-base-reconciliation.schema.json',json.loads((PACKAGE/'examples/base-reconciliation.json').read_text())))
+        self.assertEqual('guru-reconcile-task-base-output-review-continuity-required-2.0-delivery-1.0',next(item for item in interface['public_contracts']['outputs'] if item['exit_id']=='review_continuity_required')['schema']['schema_id'])
+        self.assertEqual('guru-reconcile-task-base-private-result-2.0-delivery-1.0',interface['public_contracts']['private_artifacts'][0]['schema']['schema_id'])
+        resolved=next(item for item in interface['public_contracts']['input']['profiles'] if item['id']=='delivery_resolved_candidate')
         self.assertEqual([],validate(PACKAGE/resolved['schema']['path'],json.loads((PACKAGE/resolved['example']['path']).read_text())))
-        self.assertEqual([],validate(PACKAGE/'schemas/resolved-full-review-authoring.schema.json',json.loads((PACKAGE/'examples/public-full-review-authoring.json').read_text())))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-resolved-full-review-authoring.schema.json',json.loads((PACKAGE/'examples/public-full-review-authoring.json').read_text())))
         self.assertEqual(
             ['reconciled','review_continuity_required','implementation_required','planning_stale','scope_confirmation_required','blocked'],
             [item['id'] for item in interface['external_exits']],
@@ -48,16 +48,16 @@ class ContractTest(unittest.TestCase):
         self.assertEqual('resolved_full_review_projection',projection['validator_id'])
     def test_profiles_are_closed_and_not_interchangeable(self):
         post=json.loads((PACKAGE/'examples/public-post-plan-input.json').read_text())
-        self.assertTrue(validate(PACKAGE/'schemas/public-post-check-input.schema.json',post))
+        self.assertTrue(validate(PACKAGE/'schemas/delivery-public-post-check-input.schema.json',post))
         post['caller_continuity']={}
-        self.assertTrue(validate(PACKAGE/'schemas/public-post-plan-input.schema.json',post))
+        self.assertTrue(validate(PACKAGE/'schemas/delivery-public-post-plan-input.schema.json',post))
         post_commit=json.loads((PACKAGE/'examples/public-post-commit-input.json').read_text())
         self.assertNotIn('branch_review_commit',post_commit)
         self.assertNotIn('old_base_head',post_commit)
         self.assertNotIn('new_base_head',post_commit)
-        self.assertEqual([],validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-public-post-commit-input.schema.json',post_commit))
         post_commit['old_base_head']=post_commit['task_head']
-        self.assertTrue(validate(PACKAGE/'schemas/public-post-commit-input.schema.json',post_commit))
+        self.assertTrue(validate(PACKAGE/'schemas/delivery-public-post-commit-input.schema.json',post_commit))
     def test_eval_resume_assertions_follow_profile_routing(self):
         evals=json.loads((PACKAGE/'evals/evals.json').read_text())['evals']
         for case in evals:
@@ -65,7 +65,7 @@ class ContractTest(unittest.TestCase):
             if not assertions: continue
             input_path=next(path for path in case['files'] if path.endswith('-input.json'))
             request=json.loads((PACKAGE/input_path).read_text())
-            expected='phase2' if request['profile'] in {'post_check','post_commit'} else request['resume_target']
+            expected='phase2' if request['profile'] in {'delivery_post_check','delivery_post_commit'} else request['resume_target']
             with self.subTest(case=case['id']):
                 for assertion in assertions: self.assertEqual(expected,assertion['expected'])
     def test_workflow_consumer_locators_exist_and_accept_exact_projection(self):
@@ -75,7 +75,7 @@ class ContractTest(unittest.TestCase):
         for projection in interface['public_contracts']['projections']:
             consumer=inputs[projection['consumer_input_id']]
             if consumer['consumer']['kind']!='workflow': continue
-            locator=SKILLS/consumer['contract']['path']
+            locator=PACKAGE/consumer['contract']['path']
             self.assertTrue(locator.is_file(),locator)
             self.assertFalse(locator.is_symlink(),locator)
             payload=outputs[projection['exit_id']]
@@ -89,8 +89,8 @@ class ContractTest(unittest.TestCase):
         for path in list((PACKAGE/'runtime').glob('*.py'))+list((PACKAGE/'scripts').glob('*')):
             self.assertNotIn('guru_team_trellis.py',path.read_text())
     def test_post_review_continuity_contract_is_current_only_and_executor_bound(self):
-        schema=json.loads((PACKAGE/'schemas/base-reconciliation.schema.json').read_text())
-        self.assertEqual('guru-reconcile-task-base-private-result-2.0',schema['$id'])
+        schema=json.loads((PACKAGE/'schemas/delivery-base-reconciliation.schema.json').read_text())
+        self.assertEqual('guru-reconcile-task-base-private-result-2.0-delivery-1.0',schema['$id'])
         output=json.loads((PACKAGE/'examples/public-review-continuity-required-output.json').read_text())
         self.assertNotEqual(output['task_head'],output['branch_review_commit'])
         commands=json.loads((PACKAGE/'commands.json').read_text())['commands']

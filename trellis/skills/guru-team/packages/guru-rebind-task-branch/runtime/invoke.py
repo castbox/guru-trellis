@@ -18,7 +18,7 @@ def _plan_json(plan: RebindPlan, base_ref: str, base_head: str) -> dict:
     before = plan.pre_state
     return {
         "route": plan.route, "task_id": plan.key.task_id, "lifecycle_generation": plan.key.lifecycle_generation,
-        "task_ref": plan.task_ref, "expected_status": plan.expected_status,
+        "task_ref": plan.task_ref,
         "current_checkout": str(plan.current_checkout), "target_branch_name": plan.target_branch_name,
         "expected_revision": plan.expected_revision,
         "pre_state": {"path": str(before.path), "head": before.head, "branch_ref": before.branch_ref,
@@ -33,7 +33,7 @@ def _plan_from_json(data: dict) -> RebindPlan:
     before = data["pre_state"]
     return RebindPlan(
         route=data["route"], key=TaskLifecycleKey(data["task_id"], data["lifecycle_generation"]),
-        task_ref=data["task_ref"], expected_status=data["expected_status"],
+        task_ref=data["task_ref"], expected_status="active",
         current_checkout=Path(data["current_checkout"]), target_branch_name=data["target_branch_name"],
         expected_revision=data["expected_revision"],
         pre_state=CheckoutStateSnapshot(
@@ -48,7 +48,7 @@ def _plan_from_json(data: dict) -> RebindPlan:
 
 def prepare(root: Path, data: dict) -> dict:
     package = Path(__file__).resolve().parents[1]
-    validate_json(data, package / "schemas/public-plan-request.schema.json", "input")
+    validate_json(data, package / "schemas/public-plan-request-delivery-1.0.schema.json", "input")
     repository = inspect_repository(root)
     current = Path(data["current_checkout"]).resolve()
     matches = [row for row in discover_worktree_facts(repository) if row.path == current]
@@ -61,7 +61,7 @@ def prepare(root: Path, data: dict) -> dict:
     plan = prepare_rebind(
         repository, BranchBindingStore(repository), ResourceLedgerStore(repository),
         route=data["route"], key=TaskLifecycleKey(data["task_id"], data["lifecycle_generation"]),
-        task_ref=data["task_ref"], expected_status=data["expected_status"],
+        task_ref=data["task_ref"], expected_status="active",
         current_checkout=current, target_branch_name=data["target_branch_name"],
     )
     return _plan_json(plan, base_ref, base_head)
@@ -69,7 +69,7 @@ def prepare(root: Path, data: dict) -> dict:
 
 def invoke(root: Path, data: dict) -> dict:
     package = Path(__file__).resolve().parents[1]
-    validate_json(data, package / "schemas/public-input.schema.json", "input")
+    validate_json(data, package / "schemas/public-input-delivery-1.0.schema.json", "input")
     plan_data = data["plan"]
     try:
         repository = inspect_repository(root)
@@ -77,7 +77,7 @@ def invoke(root: Path, data: dict) -> dict:
         store, ownership = BranchBindingStore(repository), ResourceLedgerStore(repository)
         if data["action"] == "execute":
             request = {key: plan_data[key] for key in (
-                "route", "task_id", "task_ref", "lifecycle_generation", "expected_status",
+                "route", "task_id", "task_ref", "lifecycle_generation",
                 "current_checkout", "target_branch_name", "selected_base_ref", "reviewed_base_head",
             )}
             if prepare(root, request) != plan_data:

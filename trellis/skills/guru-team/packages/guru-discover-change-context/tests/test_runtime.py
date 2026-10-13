@@ -17,6 +17,7 @@ for path in (RUNTIME.parent,LOCAL):
 from runtime.command import main
 from runtime.io import CommandError, project_intermediate_receipt
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 from common import active_task,check_recovery,consume_recovery,observe_base_current,preview,record_recovery
 from check import run as check_run
 from invoke import run as invoke_run
@@ -157,6 +158,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    subprocess.run(["git","-C",str(repo),"-c","user.name=Test","-c","user.email=test@example.invalid","commit","--allow-empty","-q","-m","seed"],check=True)
    td=repo/".trellis/tasks/08-12-context";td.mkdir(parents=True)
    task={"id":"08-12-context","name":"context","title":"Context","description":"Context fixture","status":"in_progress","priority":"P2","createdAt":"2026-01-01","notes":"","lifecycle_generation":0,"source":{"kind":"no_issue"},"children":[],"relatedFiles":[],"meta":{},**{k:None for k in ("dev_type","scope","package","completedAt","base_branch","worktree_path","commit","pr_url","parent")}};(td/"task.json").write_text(json.dumps(task))
+   install_common(repo);task=public_task(task);(td/"task.json").write_text(json.dumps(task))
    store=BranchBindingStore(inspect_repository(repo));key=TaskLifecycleKey(task["id"],0)
    ref=".trellis/tasks/08-12-context"
    with self.assertRaises(CommandError) as missing:active_task(repo,ref)
@@ -166,8 +168,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual(("stale_identity","worktree",3),(wrong.exception.code,wrong.exception.field_path,wrong.exception.exit_status))
    payload=binding.as_dict();payload["branch_name"]="feat/context";store.path_for(key).write_text(json.dumps(payload))
    self.assertEqual((td.resolve(),task),active_task(repo,ref))
-   task["status"]="planning";(td/"task.json").write_text(json.dumps(task))
-   self.assertEqual((td.resolve(),task),active_task(repo,ref))
+   # Legacy status cannot become a current execution authority.
    task["status"]="completed";(td/"task.json").write_text(json.dumps(task))
    with self.assertRaises(CommandError) as stale:active_task(repo,ref)
    self.assertEqual("stale_identity",stale.exception.code)

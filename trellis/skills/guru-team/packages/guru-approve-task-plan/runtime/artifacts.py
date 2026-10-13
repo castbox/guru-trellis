@@ -72,6 +72,7 @@ def run(argv: list[str]) -> dict[str, Any]:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
     parser.add_argument("--task")
+    parser.add_argument("--delivery-key", required=True)
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -82,6 +83,10 @@ def run(argv: list[str]) -> dict[str, Any]:
         ) from exc
     root = _repo_root(Path(args.root or Path.cwd()))
     task_dir = _task_dir(root, args.task)
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    from runtime.io import read_json
+    task_ref = task_dir.relative_to(root).as_posix()
+    task_dir = DeliveryProjection(root, task_ref).planning_directory(read_json(args.delivery_key, "delivery_key"))
     relative = task_dir.relative_to(root).as_posix()
     artifacts = []
     for label, filename, purpose in ARTIFACTS:

@@ -1,0 +1,29 @@
+{
+  "id": "531-task-delivery-lifecycle",
+  "name": "531-task-delivery-lifecycle",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 531,
+    "disposition": "exact_source"
+  },
+  "title": "#531 解耦 Task 整体责任与 Delivery 生命周期",
+  "description": "先完成中文规划；对照上游 #31 公共候选和 #292/#530 成果迁移语义门禁、薄投影与旧安装。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Issue #531",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-12",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

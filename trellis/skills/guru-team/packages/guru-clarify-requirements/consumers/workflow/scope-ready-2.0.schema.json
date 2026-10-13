@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-consumer-scope-ready-2.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "mode",
+        "task_ref",
+        "source_selection",
+        "revision_refs",
+        "profile",
+        "scope_action"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "scope_ready"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_selection": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locator",
+              "section",
+              "authority_kind"
+            ],
+            "properties": {
+              "locator": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "type": "string",
+                "minLength": 1
+              },
+              "authority_kind": {
+                "enum": [
+                  "requirement",
+                  "design_constraint",
+                  "advisory"
+                ]
+              }
+            }
+          }
+        },
+        "revision_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "profile": {
+          "enum": [
+            "delivery_active_task_scope_change",
+            "delivery_task_scope_revision"
+          ]
+        },
+        "scope_action": {
+          "enum": [
+            "revised",
+            "withdrawal_required",
+            "no_change"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "mode",
+        "task_ref",
+        "source_selection",
+        "revision_refs",
+        "profile",
+        "scope_action",
+        "task_key"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "scope_ready"
+        },
+        "mode": {
+          "enum": [
+            "workflow",
+            "standalone"
+          ]
+        },
+        "task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_selection": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "locator",
+              "section",
+              "authority_kind"
+            ],
+            "properties": {
+              "locator": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "type": "string",
+                "minLength": 1
+              },
+              "authority_kind": {
+                "enum": [
+                  "requirement",
+                  "design_constraint",
+                  "advisory"
+                ]
+              }
+            }
+          }
+        },
+        "revision_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "profile": {
+          "const": "task_scope_requirements_acceptance"
+        },
+        "scope_action": {
+          "enum": [
+            "revised",
+            "withdrawal_required",
+            "no_change"
+          ]
+        },
+        "task_key": {
+          "type": "object",
+          "description": "Opaque upstream TaskKey."
+        }
+      }
+    }
+  ]
+}

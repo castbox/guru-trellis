@@ -51,76 +51,49 @@ def markers(kind: str) -> list[dict]:
 
 
 class CurrentFinishGraphTests(unittest.TestCase):
+    def delivery_fixture(self):
+        import importlib.util
+        path=SKILLS/'packages/guru-check-task/tests/test_delivery_flow.py'
+        # Test tooling may be taken from canonical while every package call below
+        # is redirected to the selected installed runtime.
+        if not path.is_file(): path=SOURCE/'trellis/skills/guru-team/packages/guru-check-task/tests/test_delivery_flow.py'
+        spec=importlib.util.spec_from_file_location('finish_public_delivery_fixture',path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.SKILLS=SKILLS;module.PACKAGE=SKILLS/'packages/guru-check-task'
+        fixture=module.DeliveryFlow();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        return fixture
+
     def test_reactivated_validation_only_completion_to_closure_and_finish(self) -> None:
-        completion = SKILLS / "packages/guru-review-task-completion"
-        closure = SKILLS / "packages/guru-complete-task-closure"
-        finish = SKILLS / "packages/guru-finish-task"
-        public = read_json(completion / "examples/public-reactivation-validation-input.json")
-        semantic = read_json(completion / "examples/reactivation-semantic-result.json")
-        self.assertNotIn("merge_result", public)
+        fixture=self.delivery_fixture()
+        fixture.test_no_mutation_closure_records_public_result_and_recovers()
+        projection=fixture.projection;scope=projection.read_record()['accepted_scope']
+        projection.apply({'api_version':'1.0','operation':'reopen_task','key':{'task_id':'flow-task','lifecycle_generation':0},'owner_role':'task_scope','owner_id':'guru-test-task_scope','authority':scope})
+        self.assertEqual(1,projection.read_record()['lifecycle_generation'])
+        self.assertFalse(any(row['lifecycle_generation']==1 for row in projection.read_record()['deliveries']))
+        public={'profile':'delivery_reactivation_validation','mode':'workflow','task_ref':fixture.task_ref,'task_key':{'task_id':'flow-task','lifecycle_generation':1},'reactivation_anchor':{'task_id':'flow-task','archived_generation':0,'archive_ref':'.trellis/tasks/archive/2026-10/flow-task','archive_head':fixture.head}}
+        semantic={'profile':public['profile'],'mode':public['mode'],'reviewed_task_key':public['task_key'],'reviewed_scope':scope,'reviewed_delivery_result_ids':['delivery:flow'],'evidence':[scope],'remaining_work_refs':[],'result_id':'completion:revalidated','route':{'typed_exit':'completed'}}
+        completed=fixture.wrapper('guru-review-task-completion','invoke.sh','--input',fixture.write('revalidated.json',public),'--semantic-result',fixture.write('revalidated-owner.json',semantic))
+        self.assertEqual('completed',completed['exit_id']);self.assertEqual(1,completed['result_ref']['lifecycle_generation'])
+        closure_input=read_json(SKILLS/'packages/guru-review-task-completion/examples/closure-authoring.json')
+        closure_input.update(source_exit='completed',completion_result=completed['result_ref'],source={'kind':'no_issue'},action_set=[],binding_ref={'task_id':'flow-task','lifecycle_generation':1,'binding_revision':0},evidence_slots={'completion':completed['result_ref']['result_id']},content_head=fixture.head)
+        closure_review=read_json(SKILLS/'packages/guru-complete-task-closure/examples/semantic-result.json');closure_review['reviewed_action_set']=[]
+        closed=fixture.wrapper('guru-complete-task-closure','invoke.sh','--input',fixture.write('revalidated-closure.json',closure_input),'--semantic-result',fixture.write('revalidated-closure-owner.json',closure_review))
+        self.assertEqual('no_mutation',closed['exit_id']);self.assertEqual(1,closed['result_ref']['lifecycle_generation'])
+        sys.path.insert(0,str(RUNTIME_ROOT))
+        from runtime.schema import validate_json
+        validate_json({'profile':'closure_completed','mode':'workflow','closure_result':closed['result_ref']},SKILLS/'packages/guru-finish-task/schemas/public-input.schema.json','finish')
+        self.assertNotIn('status',projection.read_record())
 
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            subprocess.run(["git", "init", "-q", str(root)], check=True)
-            task = root / public["task_artifact"]["task_ref"]
-            task.mkdir(parents=True)
-            (task / "task.json").write_text(json.dumps({
-                "id": "example-task", "status": "in_progress", "lifecycle_generation": 1,
-                "source": {"kind": "no_issue"},
-            }))
-
-            def run(package: Path, name: str, authored: dict, review: dict) -> dict:
-                input_path = root / f"{name}-input.json"
-                review_path = root / f"{name}-review.json"
-                input_path.write_text(json.dumps(authored))
-                review_path.write_text(json.dumps(review))
-                result = subprocess.run([
-                    sys.executable, str(package / "runtime/invoke.py"), "--root", str(root),
-                    "--input", str(input_path), "--semantic-result", str(review_path),
-                ], capture_output=True, text=True, check=False,
-                    env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
-                self.assertEqual(result.returncode, 0, result.stderr)
-                return json.loads(result.stdout)
-
-            completed = run(completion, "completion", public, semantic)
-            self.assertEqual(completed["exit_id"], "completed")
-            self.assertEqual(completed["result_ref"]["lifecycle_generation"], 1)
-            closure_input = read_json(completion / "examples/closure-authoring.json")
-            closure_input.update({"source_exit": completed["exit_id"], "completion_result": completed["result_ref"],
-                                  "source": {"kind": "no_issue"}, "action_set": [],
-                                  "binding_ref": {"task_id": "example-task", "lifecycle_generation": 1,
-                                                  "binding_revision": 0},
-                                  "evidence_slots": {"completion": completed["result_ref"]["result_id"]}})
-            closure_review = read_json(closure / "examples/semantic-result.json")
-            closure_review["reviewed_action_set"] = []
-            closed = run(closure, "closure", closure_input, closure_review)
-            self.assertEqual(closed["exit_id"], "no_mutation")
-            self.assertEqual(closed["result_ref"]["lifecycle_generation"], 1)
-            sys.path.insert(0, str(RUNTIME_ROOT))
-            from runtime.schema import validate_json
-            validate_json({"profile": "closure_completed", "mode": "workflow", "closure_result": closed["result_ref"]},
-                          finish / "schemas/public-input.schema.json", "finish")
-
-    def test_old_generation_merge_cannot_enter_reactivated_completion_chain(self) -> None:
-        completion = SKILLS / "packages/guru-review-task-completion"
-        authored = read_json(completion / "examples/public-reactivation-validation-input.json")
-        reviewed = read_json(completion / "examples/reactivation-semantic-result.json")
-        authored.pop("reactivation_anchor")
-        authored["merge_result"] = read_json(completion / "examples/public-input.json")["merge_result"]
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            input_path = root / "completion-input.json"
-            review_path = root / "completion-review.json"
-            input_path.write_text(json.dumps(authored))
-            review_path.write_text(json.dumps(reviewed))
-            result = subprocess.run([
-                sys.executable, str(completion / "runtime/invoke.py"), "--root", str(root),
-                "--input", str(input_path), "--semantic-result", str(review_path),
-            ], capture_output=True, text=True, check=False,
-                env={**os.environ, "PYTHONPATH": str(RUNTIME_ROOT), "PYTHONDONTWRITEBYTECODE": "1"})
-            self.assertNotEqual(result.returncode, 0)
-            self.assertEqual(json.loads(result.stderr)["code"], "schema_mismatch")
-            self.assertFalse((root / ".git").exists())
+    def test_old_generation_cannot_enter_reactivated_completion_chain(self) -> None:
+        fixture=self.delivery_fixture()
+        fixture.test_no_mutation_closure_records_public_result_and_recovers()
+        projection=fixture.projection;scope=projection.read_record()['accepted_scope']
+        projection.apply({'api_version':'1.0','operation':'reopen_task','key':{'task_id':'flow-task','lifecycle_generation':0},'owner_role':'task_scope','owner_id':'guru-test-task_scope','authority':scope})
+        public={'profile':'delivery_completion','mode':'workflow','task_ref':fixture.task_ref,'task_key':{'task_id':'flow-task','lifecycle_generation':0}}
+        semantic={'profile':public['profile'],'mode':'workflow','reviewed_task_key':public['task_key'],'reviewed_scope':scope,'reviewed_delivery_result_ids':['delivery:flow'],'evidence':[scope],'remaining_work_refs':[],'result_id':'completion:old','route':{'typed_exit':'completed'}}
+        result=fixture.wrapper('guru-review-task-completion','invoke.sh','--input',fixture.write('old.json',public),'--semantic-result',fixture.write('old-owner.json',semantic),success=False)
+        self.assertEqual('stale_identity',result['code'])
+        self.assertEqual(1,len(projection.read_record()['completion_results']))
 
     def test_every_active_exit_has_one_matching_marker_and_consumer(self) -> None:
         active = {
@@ -188,8 +161,8 @@ class CurrentFinishGraphTests(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         state = text.split("[workflow-state:no_task]", 1)[1].split("[/workflow-state:no_task]", 1)[0]
         for phrase in (
-            "Every file-changing request first resolves task identity",
-            "Unrelated `in_progress` tasks",
+            "Every change-intent request first resolves task identity",
+            "Unrelated active tasks",
             "A checkout path alone does not bind its task identity",
             "current repository and TaskId must be validated",
             "An unfinished task for the same Issue must resolve to its existing identity",

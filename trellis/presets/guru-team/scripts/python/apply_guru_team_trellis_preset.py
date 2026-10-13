@@ -32,6 +32,7 @@ from guru_platform_inventory import (
 )
 from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
+from delivery_installation import require_delivery_installation, diagnose_delivery_installation
 
 
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
@@ -144,6 +145,14 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 """
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_SPEC_PATHS = (
+    (
+        Path("trellis/presets/guru-team/spec/workflow/bootstrap-repository-ssot.md"),
+        Path(".trellis/spec/workflow/bootstrap-repository-ssot.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/task-delivery-migration.md"),
+        Path(".trellis/spec/workflow/task-delivery-migration.md"),
+    ),
     (
         Path("trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md"),
         Path(".trellis/spec/workflow/causal-completion-semantics.md"),
@@ -2452,6 +2461,7 @@ def install_assets(
         raise SystemExit(f"Missing source directory: {src}")
 
     guru_root = guru_root_from_script()
+    delivery_support = require_delivery_installation(guru_root, Path(os.path.abspath(repo)))
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     repo = Path(os.path.abspath(repo))
     python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False)
@@ -2497,6 +2507,7 @@ def install_assets(
             migration_preserved_paths=migration_preserved_paths or set(),
         )
         result["python_runtime"] = python_runtime
+        result["delivery_support"] = delivery_support
         result["managed_transaction"] = {
             **preflight,
             "preimage_file_count": preimage["file_count"],

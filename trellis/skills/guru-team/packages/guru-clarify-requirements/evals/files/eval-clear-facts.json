@@ -6,7 +6,11 @@
     "open_questions": 0
   },
   "semantic_retrieval_fixture": {
-    "concept_family": ["stale context", "上下文过期", "context freshness"],
+    "concept_family": [
+      "stale context",
+      "上下文过期",
+      "context freshness"
+    ],
     "evidence": [
       "The English Issue calls the behavior stale context.",
       "The Chinese Docs and commit history record the same decision as 上下文过期."

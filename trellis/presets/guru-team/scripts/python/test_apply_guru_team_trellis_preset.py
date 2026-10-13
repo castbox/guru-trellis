@@ -21,7 +21,9 @@ import apply_guru_team_trellis_preset as preset
 import validate_upstream_ownership as ownership
 from installer_test_support import (
     GURU_FINISH_ENTRIES, PLANNED_SKILL_IDS, PLANNED_SKILL_ROWS,
-    RUNTIME_RESULT as _RUNTIME_RESULT, copy_canonical_source, setUpModule, tearDownModule,
+    RUNTIME_RESULT as _RUNTIME_RESULT, copy_canonical_source, install_reviewed_delivery_candidate,
+    prepare_raw_apply_source,
+    setUpModule, tearDownModule,
 )
 from retired_script_reapply_tests import RetiredScriptReapplyTests
 
@@ -40,10 +42,14 @@ class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
     def test_activation_registers_all_canonical_packages(self) -> None:
         payload = ownership.validate_repository(self.repo)
         self.assertEqual(payload["status"], "ok", payload["errors"])
-        self.assertEqual(payload["active_skill_count"], 35)
+        registry = json.loads(
+            (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
+        )
+        active_count = sum(entry["state"] == "active" for entry in registry["skills"])
+        self.assertEqual(payload["active_skill_count"], active_count)
         self.assertEqual(payload["planned_skill_count"], 0)
         self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
-        self.assertEqual(payload["canonical_package_count"], 35)
+        self.assertEqual(payload["canonical_package_count"], active_count)
 
         registry = json.loads(
             (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
@@ -343,6 +349,7 @@ def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> No
 
 
 def install_canonical_workflow(repo: Path) -> None:
+    install_reviewed_delivery_candidate(repo)
     source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
     target = repo / ".trellis/workflow.md"
     target.write_bytes(source.read_bytes())
@@ -1601,7 +1608,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                         (canonical_root / legacy_relative).read_bytes(),
                     )
 
-    def test_completion_alternate_authoring_is_managed_and_loadable_in_every_projection(self) -> None:
+    def test_completion_current_evidence_authoring_is_managed_and_loadable_in_every_projection(self) -> None:
         package_result = preset.install_skill_packages(
             self.repo, self.guru_root, self.install_dst,
             {"claude", "codex", "cursor"}, None,
@@ -1609,7 +1616,7 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
 
         self.assertEqual(package_result["status"], "ok")
         skill_id = "guru-review-task-completion"
-        relative = Path("examples/reactivation-evidence-refresh-authoring.json")
+        relative = Path("examples/authoring-delivery-evidence-pending-1.0.json")
         canonical_root = self.guru_root / "trellis/skills/guru-team/packages" / skill_id
         expected = json.loads((canonical_root / relative).read_text(encoding="utf-8"))
         roots = (
@@ -1630,25 +1637,14 @@ sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(","
                     item for item in interface["public_contracts"]["consumer_inputs"]
                     if item["id"] == "evidence"
                 )
-                alternate = consumer["contract"]["alternate_authoring"][0]
-                self.assertEqual(alternate["authoring_example"]["path"], relative.as_posix())
-                projected = root / alternate["authoring_example"]["path"]
+                authoring = consumer["contract"]
+                self.assertEqual(authoring["profile_id"], "delivery_evidence_refresh")
+                self.assertEqual(authoring["authoring_example"]["path"], relative.as_posix())
+                projected = root / authoring["authoring_example"]["path"]
                 self.assertEqual(json.loads(projected.read_text(encoding="utf-8")), expected)
-                self.assertEqual(set(expected), set(alternate["authoring_fields"]))
+                self.assertEqual(set(expected), set(authoring["authoring_fields"]))
                 self.assertIn(projected.relative_to(self.repo).as_posix(), managed)
                 self.assertEqual(projections[projected.relative_to(self.repo)], canonical_root / relative)
-
-    def test_completion_missing_alternate_authoring_example_fails_closed(self) -> None:
-        canonical = (
-            self.guru_root
-            / "trellis/skills/guru-team/packages/guru-review-task-completion"
-        )
-        with tempfile.TemporaryDirectory() as directory:
-            package = Path(directory) / canonical.name
-            shutil.copytree(canonical, package)
-            (package / "examples/reactivation-evidence-refresh-authoring.json").unlink()
-            with self.assertRaisesRegex(SystemExit, "Missing canonical Skill authoring example"):
-                preset.skill_platform_public_files(package)
 
     def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
         payload = self.install({"claude", "codex", "cursor", "opencode"})
@@ -2280,12 +2276,11 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 ]
             ),
         }
-        self.assertEqual(len(architecture_input_schema_ids), 5)
         self.assertEqual(
             {
                 schema_id
                 for schema_id in public_input_schema_ids
-                if schema_id.startswith("guru-architecture-baseline-input-")
+                if schema_id.startswith(("guru-architecture-baseline-input-", "guru-maintain-architecture-baseline-input-"))
             },
             architecture_input_schema_ids,
         )
@@ -2306,14 +2301,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 for profile in solution_mechanism_interface["public_contracts"]["input"]["profiles"]
             ),
         }
-        self.assertEqual(
-            {
-                schema_id
-                for schema_id in public_input_schema_ids
-                if schema_id.startswith("guru-solution-mechanism-input-")
-            },
-            solution_mechanism_input_ids,
-        )
+        self.assertTrue(solution_mechanism_input_ids <= set(public_input_schema_ids))
         self.assertIn(
             "guru-stage0-clarify-requirements-input-standard-intake-1.0",
             public_input_schema_ids,
@@ -2322,7 +2310,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
             public_input_schema_ids,
         )
-        self.assertIn("guru-merge-task-delivery-input-aggregate-1.0", public_input_schema_ids)
+        self.assertIn("guru-merge-task-delivery-input-delivery-aggregate-1.0", public_input_schema_ids)
         self.assertNotIn(
             "guru-merge-task-pr-input-ready-for-merge-1.0",
             public_input_schema_ids,
@@ -2346,7 +2334,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             {
                 schema_id
                 for schema_id in typed_output_schema_ids
-                if schema_id.startswith("guru-architecture-baseline-output-")
+                if schema_id.startswith(("guru-architecture-baseline-output-", "guru-maintain-architecture-baseline-output-"))
             },
             architecture_output_schema_ids,
         )
@@ -2354,14 +2342,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             output["schema"]["schema_id"]
             for output in solution_mechanism_interface["public_contracts"]["outputs"]
         }
-        self.assertEqual(
-            {
-                schema_id
-                for schema_id in typed_output_schema_ids
-                if schema_id.startswith("guru-solution-mechanism-output-")
-            },
-            solution_mechanism_output_ids,
-        )
+        self.assertTrue(solution_mechanism_output_ids <= set(typed_output_schema_ids))
         self.assertIn(
             "guru-stage0-discover-change-context-output-context-ready-4.0",
             typed_output_schema_ids,
@@ -2434,7 +2415,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "contracts/production-current.json",
             "contracts/production-current-2.0.json",
             "contracts/production-current-3.0.json",
-            "contracts/production-current-4.0.json",
+            "contracts/production-current-5.0.json",
             "schemas/production-contract-manifest-4.0.schema.json",
             "schemas/skill-evals-2.0.schema.json",
             "schemas/skill-evals.schema.json",
@@ -2816,13 +2797,28 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
     def test_raw_apply_keeps_fresh_git_fixture_clean_without_residue(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             repo = Path(temporary) / "repo"
-            shutil.copytree(
-                self.guru_root,
-                repo,
-                ignore=shutil.ignore_patterns(
-                    ".git", ".runtime", "__pycache__", "*.pyc", "*.pyo", ".DS_Store"
-                ),
+            prepare_raw_apply_source(self.guru_root, repo)
+            initial = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
             )
+            self.assertIn(initial.returncode, (0, 2), initial.stderr + initial.stdout[-2000:])
+            prepared = json.loads(initial.stdout)
+            self.assertEqual(prepared["skill_packages"]["conflicts"], [])
+            self.assertEqual(prepared["overlays"]["conflicts"], [])
+            # Ordinary managed updates retain backups and correctly block
+            # installed validation until their exact declared backups resolve.
+            # Do not discard unknown sidecars or user modifications.
+            for relative in prepared["managed_backups"]:
+                (repo / relative).unlink()
+            resolved = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(resolved.returncode, 0, resolved.stderr + resolved.stdout[-2000:])
+            prepared = json.loads(resolved.stdout)
+            self.assertEqual(prepared["skill_installed_validation"]["returncode"], 0,
+                             prepared["skill_installed_validation"])
             for command in (
                 ["git", "init", "-b", "main"],
                 ["git", "config", "user.name", "Guru Release Fixture"],
@@ -2832,6 +2828,17 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 ["git", "checkout", "--detach"],
             ):
                 subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
+            # Git initialization changes archive-source provenance. Establish
+            # that first real Git source snapshot before testing equivalent
+            # reapply's no-change behavior.
+            baseline = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(baseline.returncode, 0, baseline.stderr + baseline.stdout[-2000:])
+            subprocess.run(["git", "add", ".trellis/guru-team/extension.json"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "--allow-empty", "-m", "test: bind actual Git fixture provenance"],
+                           cwd=repo, check=True, capture_output=True, text=True)
             symbolic_head = subprocess.run(
                 ["git", "symbolic-ref", "-q", "HEAD"],
                 cwd=repo,

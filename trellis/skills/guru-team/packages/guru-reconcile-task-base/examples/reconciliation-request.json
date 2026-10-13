@@ -1,1 +1,17 @@
-{"profile":"post_commit","task_ref":".trellis/tasks/current","branch":"feat/current","prior_task_head":"1111111111111111111111111111111111111111","selected_base_ref":"origin/main","old_base_head":"2222222222222222222222222222222222222222","new_base_head":"3333333333333333333333333333333333333333","resume_target":"branch_review","candidate_tree_sha256":"4444444444444444444444444444444444444444444444444444444444444444","commit_message":"chore(base): reconcile task with current base"}
+{
+  "profile": "delivery_post_commit",
+  "task_ref": ".trellis/tasks/current",
+  "branch": "feat/current",
+  "prior_task_head": "1111111111111111111111111111111111111111",
+  "selected_base_ref": "origin/main",
+  "old_base_head": "2222222222222222222222222222222222222222",
+  "new_base_head": "3333333333333333333333333333333333333333",
+  "resume_target": "branch_review",
+  "candidate_tree_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+  "commit_message": "chore(base): reconcile task with current base",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  }
+}

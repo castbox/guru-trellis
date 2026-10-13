@@ -8,6 +8,10 @@ for path in (SKILLS,LOCAL):
 import execute, invoke, record
 from common import index_tree_digest
 from runtime.io import CommandError
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
+from runtime.delivery_projection import DeliveryProjection, authority_ref
+from runtime.delivery_projection.gates import record_gate, rework
+from runtime.delivery_projection.tests.test_installed_projection import DECLARATION
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
 
 class RuntimeTest(unittest.TestCase):
@@ -18,7 +22,9 @@ class RuntimeTest(unittest.TestCase):
     def write(self,name,value): path=self.inputs/name; path.write_text(json.dumps(value)); return path
     def write_identity(self,status='in_progress',branch='feature',task_ref=None,task_id=None):
         task_ref=task_ref or self.task_ref; task_id=task_id or self.task_id; task_dir=self.repo/task_ref; task_dir.mkdir(parents=True,exist_ok=True)
-        (task_dir/'task.json').write_text(json.dumps({
+        install_common(self.repo)
+        (self.repo/'.trellis/workflow.md').write_text('[trellis-runtime-contract]\n'+json.dumps(DECLARATION)+'\n[/trellis-runtime-contract]\n')
+        (task_dir/'task.json').write_text(json.dumps(public_task({
             'id':task_id,'name':task_id,'lifecycle_generation':0,
             'source':{'kind':'no_issue'},'title':'Base reconciliation fixture',
             'description':'Current task and unchanged/evolved base pair.',
@@ -26,7 +32,18 @@ class RuntimeTest(unittest.TestCase):
             'priority':'P2','createdAt':'2026-10-09','completedAt':None,
             'base_branch':'main','worktree_path':None,'commit':None,'pr_url':None,
             'children':[],'parent':None,'relatedFiles':[],'notes':'','meta':{},
-        }))
+        })))
+        projection=DeliveryProjection(self.repo,task_ref)
+        (task_dir/'prd.md').write_text('整体 Task scope\n')
+        scope=authority_ref(task_dir/'prd.md',self.repo); projection.scope(scope)
+        delivery_key={'task_id':task_id,'lifecycle_generation':0,'delivery_id':'8ec361f1-a63e-4d75-819f-1e9b6a410871'}
+        projection.apply({'api_version':'1.0','operation':'create_delivery','key':delivery_key,
+                          'owner_role':'creation','owner_id':'guru-create-delivery','profile':'pull_request',
+                          'scope_ref':{'authority':scope,'anchors':['本次候选']}})
+        if task_id==self.task_id:self.delivery_key=delivery_key
+        if status=='done':
+            metadata=__import__('json').loads((task_dir/'task.json').read_text()); metadata['schema_version']='1.0'
+            (task_dir/'task.json').write_text(json.dumps(metadata))
         store=BranchBindingStore(inspect_repository(self.repo)); key=TaskLifecycleKey(task_id,0)
         binding=store.read(key)
         if binding is None:
@@ -35,10 +52,10 @@ class RuntimeTest(unittest.TestCase):
             path=store.path_for(key); data=binding.as_dict(); data['branch_name']=branch; path.write_text(json.dumps(data))
     def runtime_snapshot(self):
         root=self.repo/'.trellis/.runtime'; return {p.relative_to(root).as_posix():p.read_bytes() for p in root.rglob('*') if p.is_file()}
-    def public(self, profile='post_check'):
-        targets={'post_plan':'task_activation','post_check':'task_commit','post_commit':'branch_review','post_branch_review':'publication_review','post_publication':'delivery_publication','finalizer_base_mismatch':'finalization_resume'}
-        value={'profile':profile,'mode':'workflow','task_ref':self.task_ref,'task_head':self.head,'selected_base_ref':self.new,'resume_target':targets[profile]}
-        if profile in {'post_branch_review','post_publication','finalizer_base_mismatch'}:
+    def public(self, profile='delivery_post_check'):
+        targets={'delivery_post_plan':'delivery_activation','delivery_post_check':'task_commit','delivery_post_commit':'branch_review','delivery_post_branch_review':'publication_review','delivery_post_publication':'delivery_publication','delivery_finalizer_base_mismatch':'finalization_resume'}
+        value={'profile':profile,'mode':'workflow','task_ref':self.task_ref,'delivery_key':self.delivery_key,'task_head':self.head,'selected_base_ref':self.new,'resume_target':targets[profile]}
+        if profile in {'delivery_post_branch_review','delivery_post_publication','delivery_finalizer_base_mismatch'}:
             value.update({'old_base_head':self.old,'new_base_head':self.new,'branch_review_commit':self.head})
         return value
     def gate(self, candidate_tree=None): return {'authority_impact':'unchanged','task_content_impact':'unchanged','integration_impact':'compatible','reviewed_scope':['authority','planning','delta'],'key_delta_refs':['base.txt'],'validation_evidence':['candidate clean'],'unverified_boundaries':[],'summary':'Compatible.','typed_exit':'reconciled','route_payload':({} if candidate_tree is None else {'candidate_tree_sha256':candidate_tree,'relevant_paths':['base.txt']})}
@@ -49,8 +66,8 @@ class RuntimeTest(unittest.TestCase):
         return execute.candidate(PACKAGE,['--root',str(self.repo),'--request',str(request)])['candidate_tree_sha256']
     def execute_reconciliation(self,profile):
         candidate_tree=self.candidate_tree(); public=self.public(profile)
-        request={'profile':profile,'task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':public['resume_target'],'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
-        if profile in {'post_branch_review','post_publication','finalizer_base_mismatch'}: request['branch_review_commit']=self.head
+        request={'profile':profile,'task_ref':self.task_ref,'delivery_key':self.delivery_key,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':public['resume_target'],'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
+        if profile in {'delivery_post_branch_review','delivery_post_publication','delivery_finalizer_base_mismatch'}: request['branch_review_commit']=self.head
         receipt=execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write(profile+'-reconciliation-request.json',request))])
         return public,candidate_tree,receipt
     def expose_new_task_files(self):
@@ -243,7 +260,7 @@ class RuntimeTest(unittest.TestCase):
             return identity
         with mock.patch.dict(os.environ, {'GIT_ALLOW_PROTOCOL': '', 'GIT_TERMINAL_PROMPT': '0'}):
             with mock.patch.object(execute, 'index_tree_digest', side_effect=observe_index), mock.patch.object(execute, 'committed_tree_digest', wraps=execute.committed_tree_digest) as committed_digest:
-                public, candidate_tree, receipt = self.execute_reconciliation('post_branch_review')
+                public, candidate_tree, receipt = self.execute_reconciliation('delivery_post_branch_review')
             reconciled = receipt['reconciled_task_head']
             self.assertEqual(2, len(observations))
             self.assertEqual([candidate_tree] * 2, [row[2] for row in observations])
@@ -273,13 +290,13 @@ class RuntimeTest(unittest.TestCase):
     def test_guard_unchanged_and_new_pair_write_nothing(self):
         before=self.runtime_snapshot(); public=self.public(); path=self.write('public.json',public); result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)]); self.assertEqual('new_pair',result['status']); self.assertEqual(self.old,result['old_base_head']); public['selected_base_ref']=self.old; path=self.write('same.json',public); self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status']); self.assertEqual(before,self.runtime_snapshot())
     def test_delivery_review_pair_resumes_delivery_publication(self):
-        public=self.public('post_publication')
+        public=self.public('delivery_post_publication')
         unchanged={**public,'selected_base_ref':self.old,'old_base_head':self.old,'new_base_head':self.old}
         result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-unchanged.json',unchanged))])
         self.assertEqual(('unchanged','delivery_publication'),(result['status'],result['resume_target']))
         result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('delivery-new.json',public))])
         self.assertEqual(('new_pair','delivery_publication'),(result['status'],result['resume_target']))
-        public,candidate_tree,receipt=self.execute_reconciliation('post_publication')
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_publication')
         owner=record.run(PACKAGE,{},[
             '--root',str(self.repo),'--skill-input',str(self.write('delivery-public.json',public)),
             '--semantic-review-file',str(self.write('delivery-gate.json',self.continuity_gate(candidate_tree))),
@@ -289,20 +306,20 @@ class RuntimeTest(unittest.TestCase):
         output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('delivery-envelope.json',{'public_input':public,'owner_result':owner}))])
         self.assertEqual(('review_continuity_required','delivery_publication'),(output['exit_id'],output['resume_target']))
     def test_pre_review_input_rejects_caller_supplied_pair(self):
-        public=self.public('post_commit'); public.update({'old_base_head':self.old,'new_base_head':self.new})
+        public=self.public('delivery_post_commit'); public.update({'old_base_head':self.old,'new_base_head':self.new})
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('caller-pair.json',public))])
         self.assertEqual('schema_mismatch',raised.exception.code)
     def test_all_boundaries_unchanged_are_zero_write_and_need_no_review_identity(self):
-        for profile in ('post_plan','post_check','post_commit','post_branch_review','post_publication','finalizer_base_mismatch'):
+        for profile in ('delivery_post_plan','delivery_post_check','delivery_post_commit','delivery_post_branch_review','delivery_post_publication','delivery_finalizer_base_mismatch'):
             public=self.public(profile)
-            if profile in {'post_plan','post_check','post_commit'}: public['selected_base_ref']=self.old
+            if profile in {'delivery_post_plan','delivery_post_check','delivery_post_commit'}: public['selected_base_ref']=self.old
             else: public.update({'selected_base_ref':self.old,'old_base_head':self.old,'new_base_head':self.old})
             result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write(profile+'.json',public))])
             self.assertEqual('unchanged',result['status'],profile)
-        self.assertNotIn('branch_review_commit',self.public('post_commit'))
+        self.assertNotIn('branch_review_commit',self.public('delivery_post_commit'))
     def test_post_review_equal_pair_requires_selected_base_ancestry(self):
-        for profile in ('post_branch_review','post_publication','finalizer_base_mismatch'):
+        for profile in ('delivery_post_branch_review','delivery_post_publication','delivery_finalizer_base_mismatch'):
             public=self.public(profile); public['old_base_head']=self.new
             result=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write(profile+'-stale-equal-pair.json',public))])
             self.assertEqual('new_pair',result['status'],profile)
@@ -311,27 +328,26 @@ class RuntimeTest(unittest.TestCase):
         self.assertNotIn('branch', json.loads((self.task_dir/'task.json').read_text()))
         self.assertFalse((self.repo/'.trellis/.runtime/guru-team/tasks').exists())
         self.assertFalse((self.repo/'.trellis/.runtime/guru-team/workspaces').exists())
-        post_plan=self.public('post_plan'); post_plan['selected_base_ref']=self.old
+        post_plan=self.public('delivery_post_plan'); post_plan['selected_base_ref']=self.old
         self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-plan.json',post_plan))])['status'])
         post_plan['selected_base_ref']=self.new
-        public,candidate_tree,receipt=self.execute_reconciliation('post_plan'); post_plan=public
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_plan'); post_plan=public
         public_path=self.write('planning-new-pair.json',post_plan); gate_path=self.write('planning-gate.json',self.gate(candidate_tree)); receipt_path=self.write('planning-receipt.json',receipt)
         owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled','--reconciliation-result',str(receipt_path)])
         output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('planning-envelope.json',{'public_input':post_plan,'owner_result':owner}))])
-        self.assertEqual('task_activation',output['resume_target'])
+        self.assertEqual('delivery_activation',output['resume_target'])
         owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled','--reconciliation-result',str(receipt_path)])
         guarded=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(public_path)])
         self.assertEqual('current_pair',guarded['status'])
         self.assertEqual(owner['typed_output'],guarded['typed_output'])
-        post_check=self.public('post_check')
-        with self.assertRaises(CommandError) as raised:
-            execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-check.json',post_check))])
-        self.assertEqual('stale_identity',raised.exception.code)
+        post_check=self.public('delivery_post_check')
+        # Pair guard validates identity/base only; it never substitutes the Check gate.
+        self.assertEqual('blocked',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('planning-post-check.json',post_check))])['status'])
     def test_new_planning_task_survives_pre_review_base_reconciliation(self):
         self.expose_new_task_files()
         self.write_identity(status='planning')
         original=(self.task_dir/'task.json').read_bytes()
-        public,candidate_tree,receipt=self.execute_reconciliation('post_plan')
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_plan')
         self.assertEqual(original,(self.task_dir/'task.json').read_bytes())
         self.assertIn('?? .trellis/',self.git('status','--short'))
         self.assertEqual('',self.git('stash','list'))
@@ -343,7 +359,7 @@ class RuntimeTest(unittest.TestCase):
         (self.repo/'task.txt').write_text('staged\n'); self.git('add','task.txt')
         (self.repo/'task.txt').write_text('unstaged\n')
         staged=self.git('show',':task.txt'); worktree=(self.repo/'task.txt').read_bytes()
-        public,candidate_tree,receipt=self.execute_reconciliation('post_check')
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_check')
         self.assertEqual(staged,self.git('show',':task.txt'))
         self.assertEqual(worktree,(self.repo/'task.txt').read_bytes())
         self.assertIn('MM task.txt',self.git('status','--short'))
@@ -354,7 +370,7 @@ class RuntimeTest(unittest.TestCase):
     def test_dirty_candidate_mismatch_aborts_and_restores_planning(self):
         self.expose_new_task_files(); self.write_identity(status='planning')
         before=self.git('status','--porcelain=v1'); task=(self.task_dir/'task.json').read_bytes()
-        request={'profile':'post_plan','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'task_activation','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        request={'profile':'delivery_post_plan','task_ref':self.task_ref,'delivery_key':self.delivery_key,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'delivery_activation','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
         with self.assertRaises(CommandError) as raised:
             execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-mismatch.json',request))])
         self.assertEqual('stale_identity',raised.exception.code)
@@ -367,7 +383,7 @@ class RuntimeTest(unittest.TestCase):
         self.git('stash','push','-m','existing stash')
         previous=self.git('rev-parse','refs/stash')
         self.expose_new_task_files(); self.write_identity(status='planning')
-        self.execute_reconciliation('post_plan')
+        self.execute_reconciliation('delivery_post_plan')
         self.assertEqual(previous,self.git('rev-parse','refs/stash'))
         self.assertIn('?? .trellis/',self.git('status','--short'))
     def test_dirty_submodule_stop_restores_shelved_task_changes(self):
@@ -376,7 +392,7 @@ class RuntimeTest(unittest.TestCase):
         (self.repo/'task.txt').write_text('pending task work\n')
         child=self.repo/'vendor/child/child.txt'; child.write_text('pending child work\n')
         before=self.git('status','--short')
-        request={'profile':'post_check','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'task_commit','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        request={'profile':'delivery_post_check','task_ref':self.task_ref,'delivery_key':self.delivery_key,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'task_commit','candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
         with self.assertRaises(CommandError) as raised:
             execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-submodule.json',request))])
         self.assertEqual('stale_identity',raised.exception.code)
@@ -389,7 +405,7 @@ class RuntimeTest(unittest.TestCase):
     def test_post_review_dirty_worktree_stops_without_shelving(self):
         (self.repo/'task.txt').write_text('pending post-review work\n')
         before=self.git('status','--short')
-        request={'profile':'post_branch_review','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'publication_review','branch_review_commit':self.head,'candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
+        request={'profile':'delivery_post_branch_review','task_ref':self.task_ref,'delivery_key':self.delivery_key,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'publication_review','branch_review_commit':self.head,'candidate_tree_sha256':'0'*64,'commit_message':'chore(base): reconcile reviewed task'}
         with self.assertRaises(CommandError) as raised:
             execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-post-review.json',request))])
         self.assertEqual('stale_identity',raised.exception.code)
@@ -398,21 +414,21 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual('',self.git('stash','list'))
     def test_unrelated_post_plan_base_delta_preserves_task_activation(self):
         self.write_identity(status='planning')
-        public,candidate_tree,receipt=self.execute_reconciliation('post_plan'); public_path=self.write('unrelated-post-plan.json',public)
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_plan'); public_path=self.write('unrelated-post-plan.json',public)
         gate=self.gate(candidate_tree); gate.update({'key_delta_refs':['unrelated-base-only.txt'],'validation_evidence':['base-only delta is unrelated and candidate validations passed'],'summary':'Only the integration clock advanced; authority and approved planning assumptions remain current.'})
         gate_path=self.write('unrelated-post-plan-gate.json',gate)
         owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','reconciled','--reconciliation-result',str(self.write('unrelated-post-plan-receipt.json',receipt))])
         output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('unrelated-post-plan-envelope.json',{'public_input':public,'owner_result':owner}))])
         self.assertEqual('reconciled',output['exit_id'])
-        self.assertEqual('task_activation',output['resume_target'])
+        self.assertEqual('delivery_activation',output['resume_target'])
     def test_real_planning_authority_change_remains_planning_stale(self):
         self.write_identity(status='planning')
-        public=self.public('post_plan'); public_path=self.write('authority-change-post-plan.json',public)
+        public=self.public('delivery_post_plan'); public_path=self.write('authority-change-post-plan.json',public)
         gate=self.gate(); gate.update({'authority_impact':'changed','task_content_impact':'planning_stale','integration_impact':'compatible','summary':'Live Issue authority invalidated an approved planning assumption.','typed_exit':'planning_stale','route_payload':{'reason_refs':['live-issue-authority-changed']}})
         gate_path=self.write('authority-change-post-plan-gate.json',gate)
         owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(public_path),'--semantic-review-file',str(gate_path),'--typed-exit','planning_stale'])
         output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(self.write('authority-change-post-plan-envelope.json',{'public_input':public,'owner_result':owner}))])
-        self.assertEqual({'exit_id':'planning_stale','task_ref':self.task_ref,'reason_refs':['live-issue-authority-changed']},output)
+        self.assertEqual({'exit_id':'planning_stale','task_ref':self.task_ref,'delivery_key':self.delivery_key,'reason_refs':['live-issue-authority-changed']},output)
     def test_multiple_base_commits_form_one_cumulative_pair(self):
         self.git('switch','main'); (self.repo/'second.txt').write_text('second\n'); self.git('add','second.txt'); self.git('commit','-qm','second base advance'); newest=self.git('rev-parse','HEAD'); self.git('switch','feature')
         public=self.public(); public['selected_base_ref']=newest
@@ -423,7 +439,7 @@ class RuntimeTest(unittest.TestCase):
     def test_candidate_routes_python_validation_through_managed_interpreter(self):
         request=self.write('python-request.json',{'task_head':self.head,'new_base_head':self.new,'validation_commands':[['python3','-c','import sys; raise SystemExit(0 if sys.executable else 1)']]}); result=execute.candidate(PACKAGE,['--root',str(self.repo),'--request',str(request)]); self.assertEqual(sys.executable,result['validations'][0]['argv'][0]); self.assertEqual(0,result['validations'][0]['exit_code'])
     def test_post_review_profiles_create_one_local_commit_and_publish_current_head(self):
-        for profile in ('post_branch_review','post_publication','finalizer_base_mismatch'):
+        for profile in ('delivery_post_branch_review','delivery_post_publication','delivery_finalizer_base_mismatch'):
             with self.subTest(profile=profile):
                 public,candidate_tree,receipt=self.execute_reconciliation(profile)
                 reconciled=receipt['reconciled_task_head']; self.assertEqual([self.head,self.new],self.git('show','-s','--format=%P',reconciled).split()); self.assertEqual('',self.git('status','--short'))
@@ -432,7 +448,7 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual('review_continuity_required',output['exit_id']); self.assertEqual(reconciled,output['task_head']); self.assertEqual(self.head,output['branch_review_commit']); self.assertEqual(candidate_tree,output['candidate_tree_sha256'])
                 self.git('reset','--hard',self.head)
     def test_pre_review_compatible_reconciliation_commits_and_reenters_phase2(self):
-        for profile in ('post_check','post_commit'):
+        for profile in ('delivery_post_check','delivery_post_commit'):
             with self.subTest(profile=profile):
                 public,candidate_tree,receipt=self.execute_reconciliation(profile)
                 reconciled=receipt['reconciled_task_head']
@@ -448,7 +464,7 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual(reconciled,output['task_head'])
                 self.git('reset','--hard',self.head)
     def test_post_commit_cannot_enter_base_continuity(self):
-        public,candidate_tree,receipt=self.execute_reconciliation('post_commit')
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_post_commit')
         with self.assertRaises(CommandError) as raised:
             record.run(PACKAGE,{},[
                 '--root',str(self.repo),'--skill-input',str(self.write('post-commit-continuity-public.json',public)),
@@ -457,7 +473,7 @@ class RuntimeTest(unittest.TestCase):
             ])
         self.assertEqual('schema_mismatch',raised.exception.code)
     def test_post_review_current_pair_recovers_after_reconciliation_commit(self):
-        public,candidate_tree,receipt=self.execute_reconciliation('finalizer_base_mismatch')
+        public,candidate_tree,receipt=self.execute_reconciliation('delivery_finalizer_base_mismatch')
         gate=self.continuity_gate(candidate_tree)
         owner=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(self.write('recovery-public.json',public)),'--semantic-review-file',str(self.write('recovery-gate.json',gate)),'--typed-exit','review_continuity_required','--reconciliation-result',str(self.write('recovery-receipt.json',receipt))])
         guarded=execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('recovery-guard.json',public))])
@@ -465,26 +481,76 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(owner['typed_output'],guarded['typed_output'])
         self.assertEqual(receipt['reconciled_task_head'],guarded['typed_output']['task_head'])
         self.assertEqual('blocked',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(self.write('recovery-second-guard.json',public))])['status'])
-    def resolved_merge(self):
+    def resolved_merge(self,public_check=False):
         (self.repo/'conflict.txt').write_text('task\n'); self.git('add','conflict.txt'); self.git('commit','-qm','task conflict'); phase2=self.git('rev-parse','HEAD')
+        if public_check:
+            projection=DeliveryProjection(self.repo,self.task_ref)
+            plan=projection.planning_directory(self.delivery_key)/'design.md'; plan.write_text('本 Delivery 当前计划\n')
+            projection.apply({'api_version':'1.0','operation':'record_gate','key':self.delivery_key,
+                              'owner_role':'planning','owner_id':DECLARATION['owners']['planning'],'expected_phase':'planning',
+                              'result':{'result_id':'planning-resolved-fixture','owner_role':'planning',
+                                        'owner_id':DECLARATION['owners']['planning'],'outcome':'accepted',
+                                        'scope_ref':projection.resolve(self.delivery_key)['scope_ref'],
+                                        'plan_ref':authority_ref(plan,self.repo),'candidate':None,'predecessor_result_id':None,
+                                        'obligations':[],'evidence':[authority_ref(plan,self.repo)]}})
+            projection.begin_check(self.delivery_key,projection.candidate(['base.txt','task.txt','conflict.txt'],head_ref=phase2,base_ref=self.new))
+            record_gate(projection,self.delivery_key,'check','check-before-reconciliation','passed',[authority_ref(plan,self.repo)],[])
         self.git('switch','main'); (self.repo/'conflict.txt').write_text('base\n'); self.git('add','conflict.txt'); self.git('commit','-qm','base conflict'); new=self.git('rev-parse','HEAD'); self.git('switch','feature')
         merge=subprocess.run(['git','merge','--no-commit','--no-ff',new],cwd=self.repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         self.assertNotEqual(0,merge.returncode); (self.repo/'conflict.txt').write_text('resolved\n'); self.git('add','conflict.txt')
         tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
-        request={'profile':'resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
         return request
+
+    def fresh_resolved_check(self,request):
+        projection=DeliveryProjection(self.repo,self.task_ref)
+        reason=authority_ref(projection.planning_directory(self.delivery_key)/'design.md',self.repo)
+        rework(projection,self.delivery_key,'full_review','implementation',reason,['check','full_review','readiness'])
+        candidate=projection.candidate(['base.txt','task.txt','conflict.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=request['new_base_head'])
+        projection.begin_check(self.delivery_key,candidate)
+        record_gate(projection,self.delivery_key,'check','check-after-reconciliation','passed',[reason],[])
+
+    def project_resolved(self,request,result,check_id):
+        import project
+        authoring={'profile':'delivery_branch_review','mode':'workflow','base_ref':request['selected_base_ref'],
+                   'review_intent':'initial_review','check_result_id':check_id}
+        return project.run(PACKAGE,{'id':'project-resolved-full-review'},[
+            '--root',str(self.repo),'--input',str(self.write('project-resolved-input.json',request)),
+            '--result',str(self.write('project-resolved-result.json',result)),
+            '--authoring',str(self.write('project-resolved-authoring.json',authoring))])
+
     def test_resolved_candidate_commits_once_and_recovers_same_commit(self):
-        request=self.resolved_merge(); path=self.write('resolved-input.json',request)
+        request=self.resolved_merge(public_check=True); path=self.write('resolved-input.json',request)
         first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
         self.assertEqual('committed',first['status']); commit=first['reconciled_task_head']
         self.assertEqual(request['parent_order'],self.git('show','-s','--format=%P',commit).split())
         second=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
         self.assertEqual('recovered',second['status']); self.assertEqual(commit,second['reconciled_task_head'])
-        result_path=self.write('resolved-result.json',second)
-        authoring_path=self.write('resolved-review-authoring.json',{'profile':'branch_review','mode':'workflow','base_ref':request['selected_base_ref'],'review_intent':'initial_review'})
-        import project
-        output=project.run(PACKAGE,{'id':'project-resolved-full-review'},['--root',str(self.repo),'--input',str(path),'--result',str(result_path),'--authoring',str(authoring_path)])
-        self.assertEqual({'profile':'branch_review','mode':'workflow','task_ref':self.task_ref,'base_ref':request['selected_base_ref'],'branch_review_commit':commit,'review_intent':'initial_review'},output)
+        with self.assertRaises(CommandError) as raised:
+            self.project_resolved(request,second,'check-before-reconciliation')
+        self.assertEqual('stale_identity',raised.exception.code)
+        self.fresh_resolved_check(request)
+        output=self.project_resolved(request,second,'check-after-reconciliation')
+        self.assertEqual({'profile':'delivery_branch_review','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.delivery_key,'base_ref':request['selected_base_ref'],'branch_review_commit':commit,'review_intent':'initial_review','check_result_id':'check-after-reconciliation'},output)
+        self.assertEqual(output,self.project_resolved(request,second,'check-after-reconciliation'))
+        self.assertEqual(commit,self.git('rev-parse','HEAD'))
+
+    def resolved_projection_after_normal_edit(self,changed):
+        request=self.resolved_merge(public_check=True)
+        result=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(self.write('live-input.json',request))])
+        self.fresh_resolved_check(request)
+        projection=DeliveryProjection(self.repo,self.task_ref)
+        path=self.repo/'conflict.txt' if changed=='candidate' else projection.planning_directory(self.delivery_key)/'design.md'
+        path.write_text(path.read_text()+'正常下一轮修改\n')
+        with self.assertRaises(CommandError) as raised:
+            self.project_resolved(request,result,'check-after-reconciliation')
+        self.assertEqual('stale_identity',raised.exception.code)
+
+    def test_resolved_projection_requires_live_candidate(self):
+        self.resolved_projection_after_normal_edit('candidate')
+
+    def test_resolved_projection_requires_current_plan(self):
+        self.resolved_projection_after_normal_edit('plan')
 
     def test_resolved_candidate_accepts_task_head_tree_after_conflict_resolution(self):
         (self.repo/'base.txt').write_text('new\n')
@@ -502,7 +568,7 @@ class RuntimeTest(unittest.TestCase):
         tree=self.git('write-tree'); digest=index_tree_digest(self.repo)
         self.assertEqual(self.git('show','-s','--format=%T',phase2),tree)
         self.assertEqual('',self.git('diff','--cached'))
-        request={'profile':'resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
+        request={'profile':'delivery_resolved_candidate','mode':'workflow','source_exit':'resolved_reconciliation_passed','task_ref':self.task_ref,'delivery_key':self.delivery_key,'phase2_commit_anchor':phase2,'branch':'feature','selected_base_ref':new,'old_base_head':self.new,'new_base_head':new,'merge_head':new,'stage0_tree':tree,'index_tree_sha256':digest,'parent_order':[phase2,new],'commit_message':'chore(base): record resolved reconciliation','resume_target':'branch_review'}
         path=self.write('task-head-tree-resolved-input.json',request)
 
         first=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(path)])
@@ -531,7 +597,7 @@ class RuntimeTest(unittest.TestCase):
                 with self.assertRaises(CommandError): execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(self.write(case+'-resolved.json',request))])
                 self.tmp.cleanup(); self.setUp()
     def test_reconciliation_stale_dirty_and_candidate_mismatch_fail_without_commit(self):
-        candidate_tree=self.candidate_tree(); base={'profile':'post_branch_review','task_ref':self.task_ref,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'publication_review','branch_review_commit':self.head,'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
+        candidate_tree=self.candidate_tree(); base={'profile':'delivery_post_branch_review','task_ref':self.task_ref,'delivery_key':self.delivery_key,'branch':'feature','prior_task_head':self.head,'selected_base_ref':self.new,'old_base_head':self.old,'new_base_head':self.new,'resume_target':'publication_review','branch_review_commit':self.head,'candidate_tree_sha256':candidate_tree,'commit_message':'chore(base): reconcile reviewed task'}
         cases=[('stale-head',{**base,'prior_task_head':self.old},None),('candidate',{**base,'candidate_tree_sha256':'f'*64},None),('dirty',base,lambda:(self.repo/'dirty.txt').write_text('dirty\n'))]
         for name,request,mutate in cases:
             with self.subTest(name=name):
@@ -541,12 +607,12 @@ class RuntimeTest(unittest.TestCase):
                 if name=='dirty': (self.repo/'dirty.txt').unlink()
                 self.assertNotEqual(0,subprocess.run(['git','rev-parse','--verify','--quiet','MERGE_HEAD'],cwd=self.repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE).returncode)
     def test_record_invoke_consumes_checkpoint_once(self):
-        public=self.public('finalizer_base_mismatch'); pi=self.write('public.json',public); gate=self.write('gate.json',self.gate()); result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate),'--typed-exit','reconciled']); envelope=self.write('envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)]); self.assertEqual('reconciled',output['exit_id']); checkpoint=self.repo/'.trellis/.runtime/guru-team/owner-checkpoints/current/guru-reconcile-task-base/base-reconciliation.json'; self.assertFalse(checkpoint.exists())
+        public=self.public('delivery_finalizer_base_mismatch'); pi=self.write('public.json',public); gate=self.write('gate.json',self.gate()); result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gate),'--typed-exit','reconciled']); envelope=self.write('envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)]); self.assertEqual('reconciled',output['exit_id']); checkpoint=self.repo/'.trellis/.runtime/guru-team/owner-checkpoints/current/guru-reconcile-task-base/base-reconciliation.json'; self.assertFalse(checkpoint.exists())
         with self.assertRaises(CommandError) as raised:
             invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)])
         self.assertEqual('stale_identity',raised.exception.code)
     def test_reconciled_requires_complete_compatible_evidence(self):
-        public=self.public('finalizer_base_mismatch'); pi=self.write('reconciled-public.json',public)
+        public=self.public('delivery_finalizer_base_mismatch'); pi=self.write('reconciled-public.json',public)
         mutations=(('authority_impact','insufficient_evidence'),('task_content_impact','insufficient_evidence'),('integration_impact','insufficient_evidence'),('unverified_boundaries',['live validation unavailable']))
         for field,value in mutations:
             with self.subTest(field=field):
@@ -556,11 +622,11 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual('schema_mismatch',raised.exception.code)
     def test_current_pair_preserves_each_semantic_exit_and_retires_once(self):
         cases={
-            'reconciled':('finalizer_base_mismatch',{}),
-            'implementation_required':('finalizer_base_mismatch',{'finding_refs':['finding-1']}),
-            'planning_stale':('finalizer_base_mismatch',{'reason_refs':['planning-1']}),
-            'scope_confirmation_required':('finalizer_base_mismatch',{'proposal_refs':['proposal-1']}),
-            'blocked':('finalizer_base_mismatch',{}),
+            'reconciled':('delivery_finalizer_base_mismatch',{}),
+            'implementation_required':('delivery_finalizer_base_mismatch',{'finding_refs':['finding-1']}),
+            'planning_stale':('delivery_finalizer_base_mismatch',{'reason_refs':['planning-1']}),
+            'scope_confirmation_required':('delivery_finalizer_base_mismatch',{'proposal_refs':['proposal-1']}),
+            'blocked':('delivery_finalizer_base_mismatch',{}),
         }
         for exit_id,(profile,payload) in cases.items():
             with self.subTest(exit_id=exit_id):
@@ -570,11 +636,11 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual('current_pair',guarded['status']); self.assertEqual(owner['typed_output'],guarded['typed_output'])
                 self.assertEqual('new_pair',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(pi)])['status'])
     def test_132_161_replay_preserves_review_head_and_resumes_finalizer(self):
-        public=self.public('finalizer_base_mismatch'); pi=self.write('historical-finalizer.json',public); gate=self.gate(); gate['reviewed_scope'].append('historical #132/#161 base-only stale route'); gp=self.write('historical-gate.json',gate)
+        public=self.public('delivery_finalizer_base_mismatch'); pi=self.write('historical-finalizer.json',public); gate=self.gate(); gate['reviewed_scope'].append('historical #132/#161 base-only stale route'); gp=self.write('historical-gate.json',gate)
         result=record.run(PACKAGE,{},['--root',str(self.repo),'--skill-input',str(pi),'--semantic-review-file',str(gp),'--typed-exit','reconciled']); envelope=self.write('historical-envelope.json',{'public_input':public,'owner_result':result}); output=invoke.run(PACKAGE,{},['--root',str(self.repo),'--invocation',str(envelope)])
         self.assertEqual('finalization_resume',output['resume_target']); self.assertEqual(self.head,public['branch_review_commit']); self.assertNotIn('branch_review_commit',output)
     def test_history_rewrite_blocks(self):
-        public=self.public('post_branch_review'); public['old_base_head']=self.head; path=self.write('bad.json',public)
+        public=self.public('delivery_post_branch_review'); public['old_base_head']=self.head; path=self.write('bad.json',public)
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])
         self.assertEqual('stale_identity',raised.exception.code)
@@ -594,7 +660,7 @@ class RuntimeTest(unittest.TestCase):
     def test_reactivated_generation_requires_its_own_branch_binding(self):
         metadata=json.loads((self.task_dir/'task.json').read_text()); metadata['lifecycle_generation']=1
         (self.task_dir/'task.json').write_text(json.dumps(metadata))
-        public=self.public('post_check'); public['selected_base_ref']=self.old
+        public=self.public('delivery_post_check'); public['selected_base_ref']=self.old
         path=self.write('reactivated-pair.json',public)
         with self.assertRaises(CommandError) as raised:
             execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])
@@ -603,14 +669,21 @@ class RuntimeTest(unittest.TestCase):
         store=BranchBindingStore(inspect_repository(self.repo))
         store.path_for(TaskLifecycleKey(self.task_id,0)).unlink()
         store.establish(TaskLifecycleKey(self.task_id,1),'feature')
+        projection=DeliveryProjection(self.repo,self.task_ref)
+        scope=projection.read_record()['accepted_scope']
+        self.delivery_key={'task_id':self.task_id,'lifecycle_generation':1,'delivery_id':'2b3dc8b6-ec4b-45c0-942b-e642d0770c84'}
+        projection.apply({'api_version':'1.0','operation':'create_delivery','key':self.delivery_key,
+                          'owner_role':'creation','owner_id':'guru-create-delivery','profile':'pull_request',
+                          'scope_ref':{'authority':scope,'anchors':['后续工作']}})
+        public['delivery_key']=self.delivery_key; path=self.write('new-generation-pair.json',public)
         self.assertEqual('unchanged',execute.guard(PACKAGE,['--root',str(self.repo),'--input',str(path)])['status'])
     def test_checkpoint_namespace_binds_task_id_and_full_ref(self):
         from common import checkpoint_path
-        first=checkpoint_path(self.repo,self.task_ref)
+        first=checkpoint_path(self.repo,self.task_ref,delivery_key=self.delivery_key)
         moved='.trellis/tasks/moved-current'
         self.task_dir.rename(self.repo/moved)
-        second=checkpoint_path(self.repo,moved)
-        self.assertNotEqual(first.parent.parent.name,second.parent.parent.name)
+        second=checkpoint_path(self.repo,moved,delivery_key=self.delivery_key)
+        self.assertEqual(first.parent.parent.name,second.parent.parent.name)
         self.assertIn(self.task_id,first.parent.parent.name)
         self.assertIn(self.task_id,second.parent.parent.name)
 

@@ -104,7 +104,9 @@ class RuntimeTest(unittest.TestCase):
             OWNER.task_facts(repo, self.public)
         self.assertEqual("stale_identity", missing.exception.code)
         store.establish(key, "feat/current")
-        self.assertEqual("feat/current", OWNER.task_facts(repo, self.public)["branch"])
+        with self.assertRaises(OWNER.CommandError) as legacy:
+            OWNER.task_facts(repo, self.public)
+        self.assertEqual("stale_identity", legacy.exception.code)
         binding = store.read(key)
         assert binding is not None
         stale = binding.as_dict()

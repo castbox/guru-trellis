@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 
 import pytest
@@ -60,17 +61,20 @@ def repository(root: Path, source: dict) -> tuple[Path, str, dict]:
     git(root, "switch", "-q", "main")
     git(root, "merge", "--no-ff", "-qm", "fixture merge", "fixture-delivery")
     merge_head = git(root, "rev-parse", "HEAD")
-    (root / ".trellis").mkdir()
+    scripts = Path(os.environ['GURU_UPSTREAM_DELIVERY_SCRIPTS'])
+    shutil.copytree(scripts, root / '.trellis/scripts', ignore=shutil.ignore_patterns('__pycache__'))
+    shutil.copy2(SOURCE / 'trellis/workflows/guru-team/workflow.md', root / '.trellis/workflow.md')
+    (root / '.trellis/.developer').write_text('source-fixture\n')
     creation_source = copy.deepcopy(source)
     if creation_source.get("disposition") in {"follow_up", "parent"}:
         # Current creation supports exact/reference. These two published
         # read-only relations are legal existing metadata, not creation exits.
         creation_source["disposition"] = "reference_only"
     created = subprocess.run([
-        sys.executable, str(SOURCE / ".trellis/scripts/task.py"), "create",
+        sys.executable, str(root / ".trellis/scripts/task.py"), "create",
         "Portable source fixture", "--slug", "source-fixture", "--task-id", "source-fixture",
         "--description", "Only bounded fixture work is accepted scope",
-        "--source-json", json.dumps(creation_source), "--base-branch", "main", "--no-start",
+        "--schema-version", "2.0", "--source-json", json.dumps(creation_source), "--base-branch", "main", "--no-start",
     ], cwd=root, text=True, capture_output=True, check=False)
     assert created.returncode == 0, created.stdout + created.stderr
     task_file = next((root / ".trellis/tasks").glob("*/task.json"))
@@ -86,10 +90,13 @@ def repository(root: Path, source: dict) -> tuple[Path, str, dict]:
         "Related work: related/service#30 (information only).\n"
         "Follow-up: later/work#40 (outside accepted scope).\n")
     started = subprocess.run([
-        sys.executable, str(SOURCE / ".trellis/scripts/task.py"), "start", task_ref,
+        sys.executable, str(root / ".trellis/scripts/task.py"), "start", task_ref,
         "--allow-empty-context",
     ], cwd=root, text=True, capture_output=True, check=False)
     assert started.returncode == 0, started.stdout + started.stderr
+    from runtime.delivery_projection import DeliveryProjection, authority_ref
+    projection = DeliveryProjection(root, task_ref)
+    projection.scope(authority_ref(task_file.parent / 'prd.md', root))
     git(root, "add", ".trellis/tasks")
     git(root, "commit", "-qm", "current task facts")
     merge = {"task_id": "source-fixture", "task_ref": task_ref, "lifecycle_generation": 0,
@@ -140,24 +147,22 @@ def test_formal_source_completion_closure_preserves_identity_and_issue_purpose(t
     head = git(tmp_path, "rev-parse", "HEAD")
     branch = git(tmp_path, "branch", "--show-current")
     identity = invoke(tmp_path, "guru-establish-task-identity", {
-        "profile": "active_task", "mode": "workflow", "task_id": "source-fixture",
+        "profile": "delivery_active_task", "mode": "workflow", "task_id": "source-fixture",
         "task_ref": task_ref, "lifecycle_generation": 0,
     })
     assert identity["exit_id"] == "identity_established"
     assert identity["source"] == source
     assert task_file.read_bytes() == before
 
-    slots = {"planning": "fixture:planning", "delivery_review": "fixture:review",
-             "delivery_publication": "fixture:publication"}
-    # Explicit, already-selected semantic fixture: all accepted work is done;
-    # the informational links above have no required evidence or work role.
-    completed = invoke(tmp_path, "guru-review-task-completion", {
-        "profile": "completion", "mode": "workflow",
-        "task_artifact": {"task_id": "source-fixture", "task_ref": task_ref, "lifecycle_generation": 0},
-        "accepted_scope_identity": "fixture:scope", "merge_result": merge, "evidence_slots": slots,
-    }, {"profile": "completion", "mode": "workflow", "reviewed_scope_identity": "fixture:scope",
-        "reviewed_merge_result_id": merge["result_id"], "reviewed_evidence_slots": slots,
-        "remaining_work_refs": [], "route": {"typed_exit": "completed"}})
+    from runtime.delivery_projection import DeliveryProjection
+    projection = DeliveryProjection(tmp_path, task_ref)
+    scope = projection.read_record()['accepted_scope']
+    key = {'task_id': 'source-fixture', 'lifecycle_generation': 0}
+    completed = invoke(tmp_path, 'guru-review-task-completion', {
+        'profile': 'delivery_completion', 'mode': 'workflow', 'task_ref': task_ref, 'task_key': key,
+    }, {'profile': 'delivery_completion', 'mode': 'workflow', 'reviewed_task_key': key,
+        'reviewed_scope': scope, 'reviewed_delivery_result_ids': [], 'evidence': [scope],
+        'remaining_work_refs': [], 'result_id': 'completion:source-fixture', 'route': {'typed_exit': 'completed'}})
     assert completed["exit_id"] == "completed"
     can_close = source.get("disposition") == "exact_source"
     actions = [] if source["kind"] == "no_issue" else [
@@ -184,7 +189,12 @@ def test_formal_source_completion_closure_preserves_identity_and_issue_purpose(t
     assert closed["exit_id"] == ("closed" if can_close else "no_mutation")
     assert closed["result_ref"]["task_id"] == "source-fixture"
     assert closed["result_ref"]["lifecycle_generation"] == 0
-    assert task_file.read_bytes() == before
+    current = json.loads(task_file.read_text())
+    original = json.loads(before)
+    for field in ('id', 'lifecycle_generation', 'source', 'accepted_scope', 'deliveries'):
+        assert current[field] == original[field]
+    assert current['completion_results'] and current['closure_results']
+    closed_record = task_file.read_bytes()
     assert git(tmp_path, "rev-parse", "HEAD") == head
     assert git(tmp_path, "branch", "--show-current") == branch
     observed = json.loads(states.read_text())
@@ -212,7 +222,7 @@ def test_formal_source_completion_closure_preserves_identity_and_issue_purpose(t
         assert reopened["reason"]["reason_code"] == "required_closed_issue_reopened"
         assert reopened["transaction_ref"]["result_id"] == closed["result_ref"]["result_id"]
         assert transaction_path.read_bytes() == transaction
-        assert task_file.read_bytes() == before
+        assert task_file.read_bytes() == closed_record
         all_calls = [json.loads(line) for line in log.read_text().splitlines()]
         assert sum(call[:2] == ["issue", "close"] for call in all_calls) == 1
         assert json.loads(states.read_text())["source/other-repository#17"] == "OPEN"

@@ -218,7 +218,7 @@ class MigrationContractTests(unittest.TestCase):
             consumer = next(c for c in interface["public_contracts"]["consumer_inputs"] if c["id"] == projection["consumer_input_id"])
             if projection["operation"] == "select":
                 projected = {m["target"]: example[m["source"]] for m in projection["mappings"]}
-                target = PACKAGE / "schemas/public-resume-input.schema.json"
+                target = PACKAGE / f"schemas/public-{consumer['contract']['profile_id']}-input.schema.json"
             else:
                 projected = example
                 target = SKILLS / consumer["contract"]["path"]

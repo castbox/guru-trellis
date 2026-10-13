@@ -1,56 +1,91 @@
+## Public Delivery integration 1.0
+
+This current Skill consumes the target installation's reviewed Delivery API
+1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
+`delivery_key` is the opaque public identity. Read the current `interface.json`
+profile schema and its exact exit consumer before invoking. Do not derive an
+identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
+Deliveries use the same entry and lifecycle. The public phase never proves a
+semantic pass. Historical facts never prove a currently applicable gate.
+
+Read the Delivery's public `planning_root` for its three planning documents and
+context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
+identity and returns through the real current stage owner's public operation to
+the earliest affected role. Invalidate only the affected results. Unchanged,
+still-applicable execution facts need not be rerun. A successful recorder is
+objective evidence only; the AI must actually perform this Skill's full review.
+Missing public API or an unmigrated old record stops with precise migration
+remediation. Do not install a private alternative, select a source fallback,
+convert a legacy checkpoint into pass, or switch an old installation before
+upstream migration/default-cutover qualification.
+
+### Committed content and mutation are distinct
+
+All current commit profiles bind `delivery_key` and `check_result_id`.
+`delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
+non-metadata clean candidate, nonempty full base-to-HEAD diff and base ancestry.
+The public Task record must name a nonempty selected `base_branch`; missing base
+returns `stale_identity/base_branch` to its original base/binding owner. This
+clean path never inherits the dirty preparation path's default `main`.
+Current public Check identity, applicability and candidate verification remain
+required after base reconciliation. Its consumer performs post-commit pair
+guard, fresh Delivery Architecture and the first full independent Branch Review;
+Check and bounded continuity cannot replace that first Review. If clean stdout
+is lost, the same owner rereads the unchanged public Check/candidate and returns
+the same committed DTO. It keeps the public Check fact and creates no additional
+clean receipt or legacy Task checkpoint.
+The stable Task identity/source/generation and all five current Delivery
+planning files must match committed bytes. Actual Plan2 path relocations may
+use this owner's minimal committed source bridge below. A passed clean candidate
+returns `committed` without stage, commit, hook or tracked gate writes.
+
+Dirty `delivery_initial_commit`, `delivery_revision_reentry`, and
+`delivery_finding_fix_commit` retain exact path classifications, structured
+Chinese message, AI review, current conversational commit confirmation,
+executor and same-commit receipt recovery. Preserve unrelated paths and index
+state. The owner-private Delivery candidate/receipt is versioned independently;
+legacy Task candidates cannot become new Delivery pass. `committed` hands
+`task_ref`, `delivery_key`, `check_result_id`, `base_ref`, and
+`branch_review_commit` to the committed-candidate router. If the commit changed
+HEAD, that router invokes the real current stage owner for rework and a fresh
+Check before first full independent Review; a clean retained HEAD can proceed
+directly. A committed fact cannot replace that Review.
+
+### Bounded Plan2 committed source migration
+
+The original TaskCommit semantic owner reads the actual reviewed Plan2 artifact
+write set and original Git blobs, and judges the same Task/generation/scope and
+five-file association. Only then call owner-private
+`scripts/migrate-delivery-source.sh --input <delivery_source_migration> --owner-result <actual-review>`.
+Its independent input schema binds the actual Plan2 locator/workspace, key,
+source commit and five source paths, with optional `planning_projection=markdown_relative_links_v1`. Absence preserves strict original bytes/modes and existing associations are not automatically upgraded. It validates exact relocated bytes/modes,
+source ancestry and the upstream parsed Task/Delivery relation. The ignored
+source association retains only key, original commit, five source paths and the explicitly selected projection mode;
+no gate, content copy, review history, digest bundle or authorization is stored.
+Upgrade consumes its intermediate `source_binding` locator only for backup and
+same-plan recovery/rollback; it does not judge or fabricate the source mapping.
+
+Clean reentry uses direct HEAD paths when present. Only genuinely absent HEAD
+paths can consume that association; every current file must equal the original
+blob/mode (or the explicitly reviewed destination-only projection) and the current Check/candidate, stable identity and full diff remain
+required. Actual content changes use the dirty path. A successful necessary
+dirty commit retires the association. Missing input returns to this original
+owner, never invents a new commit or a private public-state authority.
+
+## Preserved semantic and transaction duties
+
+The duties below apply to the current Delivery input and output contracts.
+Historical data is read only by its named history or migration owner.
+
 # `guru-create-task-commit` Contract
-
-## Committed Re-entry
-
-After fresh Phase 2 passed and the `post_check` pair guard is unchanged,
-TaskCommit reads the full current Git state. A dirty task uses the existing
-prepare/exact-commit route below. A completely clean existing task range uses
-`profile=committed_reentry`; missing or ambiguous facts stop at the existing
-owner. Never create artificial dirty files, an empty commit, or a caller-made
-committed DTO.
-
-Complete the TaskCommit semantic gate against current task scope, complete
-selected-base...HEAD, fresh Phase 2 and the existing commit. Invoke once:
-`scripts/invoke.sh --root <checkout> --committed-reentry -` with one stdin
-JSON envelope containing `public_input` (the closed profile, mode, task_ref,
-source_exit=passed and phase2_commit_anchor) and `owner_result` (only current
-status, concrete summary and evidence). This is a read-only candidate path;
-it has no commit action to confirm and no message/stage authoring.
-
-The original Phase 2 public checker verifies reviewed content, dirty-path
-coverage and capture ancestry through its current intermediate receipt.
-TaskCommit explicitly consumes receipt.result and additionally requires
-passed checkpoint capture, adjacent passed anchor and HEAD to be identical,
-matching mode/task, in_progress TaskId/generation and registered branch
-checkout, full clean status/index, no active merge/cherry-pick/revert/rebase/
-sequencer/am state, selected-base ancestry, nonempty committed range and current
-task metadata committed at HEAD. Stale evidence re-enters fresh Phase 2;
-an evolved base re-enters the existing pair guard/Reconcile; unresolved Git
-operations stay with their existing recovery owner.
-
-On semantic passed, validate and emit the existing committed DTO then retire
-only the consumed Phase 2 checkpoint. No candidate, receipt, commit, hooks,
-ref/index writes, tracked progress file or persistent state are created.
-Revision-required or blocked retain the checkpoint. The three invoke argument
-shapes are mutually exclusive; this path never uses compatibility --invocation.
-Both committed paths enter the original post_commit pair guard, fresh
-Architecture(branch_review), and first independent full-range Branch Review.
-Finding-fix/fresh-final intent stays with its original closure/recovery caller;
-this entry never declares Branch Review passed or substitutes continuity.
 
 ## Entry And Candidate
 
-Workflow and standalone mode perform the same six preconditions. Read the
-current task, the minimal passed Phase 2 DTO and complete
-Git state. The DTO supplies `task_ref`, its profile-owned `source_exit`, and
-`phase2_commit_anchor`; Task Commit rereads the Phase 2 owner's retained
-checkpoint to verify its current reviewed-content identity and capture-commit
-ancestry. It never reads the Planning owner's private checkpoint. Dirty files
-are facts, not commit authorization.
-
-The public input is only `profile`, `mode`, `task_ref`, `source_exit`, and the
-`phase2_commit_anchor`. It never carries message authoring, path selection,
-semantic outcome, user authorization, an expected exit, or a Phase 2 digest.
+Workflow and standalone mode read the current Task identity, Delivery plans,
+actual passed public Check, exact current candidate and complete Git state.
+The input binds `delivery_key` and `check_result_id`; the original commit
+transaction validates them again at its mutation boundary. It does not read
+Check or Planning private checkpoints. Dirty paths are facts, not authority.
 
 Build the next three-digit candidate under the ignored owner-private path
 `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`.
@@ -61,7 +96,7 @@ authorization, cross-Skill digest, freshness journal, or terminal result. It is 
 task artifact, never enters `path_classifications` or `exact_stage_paths`, and
 is never staged or committed.
 
-Candidate 5.0 supersedes 4.0. An unfinished 4.0 candidate is not converted and
+The current Delivery candidate uses `delivery-1.0`. Older Task candidates are not converted and
 no removed facts are synthesized. The owner deletes or rejects it and performs
 a complete reprepare from current Phase 2 evidence, live task/HEAD/snapshot,
 scope classifications, and message review.
@@ -112,7 +147,7 @@ ambiguous.
 
 ### Public Happy Path
 
-The recommended dirty normal path is one
+The unique recommended normal path is one
 `scripts/prepare-task-commit.sh` call followed, after the unchanged action is
 confirmed in the current conversation, by one
 `scripts/invoke.sh --candidate-artifact <prepared-locator>` call. Its stable
@@ -123,7 +158,7 @@ authorization, a selected exit, message authoring, or replacement Git facts.
 The public invocation reuses the existing exact executor directly. It does not call the
 compatibility checker first because the executor already performs the same
 authoritative candidate validation at the mutation boundary. It then projects
-the executor's actual result through the existing public output schemas. Thus
+the executor's actual result through the current Delivery output schemas. Thus
 the normal Agent path is two package invocations rather than prepare, check,
 create, and legacy projection, while preserving one pre-confirmation prepare
 and one post-confirmation authoritative validation.
@@ -144,14 +179,13 @@ The next complete prepare for the same task retires the previous receipt before
 creating its new candidate. Compatibility executor calls do not request or
 write this public-invocation receipt.
 
-The old `scripts/invoke.sh --invocation <envelope>` shape remains a
-compatibility-only branch for callers that already orchestrate the executor
-result. It is mutually exclusive with `--candidate-artifact`, does not run
-before the normal branch, and does not write the recovery receipt.
+The old `scripts/invoke.sh --invocation <envelope>` raw-result projection and
+old Task candidate public invocation are retired with `schema_mismatch`.
+Pinned-old private executor diagnostics do not establish a current Delivery gate.
 `check-task-commit-plan.sh` and `create-task-commit.sh` remain stable
 package-private testing, diagnostic, and bounded recovery entries.
 
-`scripts/prepare-task-commit.sh` canonicalizes and validates candidate 5.0
+`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-1.0` candidates
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git
@@ -197,7 +231,7 @@ same-plan recovery.
 
 On success, immutable Git history is the source for parent, message, paths and
 tree facts. The executor returns only `pre_commit_head` and `commit_sha`, then
-deletes the private candidate and consumed Phase 2 checkpoint. A failed attempt
+deletes the private candidate and call-local semantic authoring. A failed attempt
 retains both for bounded retry; successful same-plan recovery verifies the
 published commit before deleting both. The executor does not append `committed`,
 `result`, `tree_evidence` or other Git-derived facts to tracked task metadata.
@@ -208,3 +242,9 @@ Return exactly one declared exit: `committed`, `revision-required`, or
 `blocked`. The committed DTO is projected to Branch Review, which verifies the
 current commit directly from live Git. A finding fix returns through
 implementation and a full Phase 2 rerun before a fresh private candidate.
+
+### Explicit Markdown link projection compatibility
+
+The original TaskCommit AI owner reviews actual committed blobs, each original reference target, and the exact Plan2 artifact writes before selecting `markdown_relative_links_v1`. The deterministic function `runtime/migration.py:project_planning_links` is shared by that write preparation and source equivalence validation. It supports UTF-8 inline Markdown links/images with plain or angle-bracket destinations and optional quoted titles; only relative destinations without spaces, escapes or parentheses are rebased to the same existing file from the new public planning root. Query/fragment and all other bytes are preserved. External schemes, absolute paths, fragment-only links, fenced/inline code and JSONL are unchanged. Reference definitions or unsupported inline syntax return to this original migration/Author owner; missing targets require restoration or semantic revision. No Markdown normalization, public origin field, Planning private bridge reader or second state authority is introduced.
+
+Clean validation recomputes projected bytes from original Git blobs and current public planning_root, including modes and ancestry. Direct HEAD paths always remain strict, regardless of association mode. A genuine content change uses the dirty path. Existing absent-mode associations cannot be relabeled; prepare a fresh execution copy/Plan2 and review its real mapping. The optional field is an explicit additive private 1.0 schema extension; old readers reject this mode until the matching package is installed, while existing absent-mode inputs retain their prior semantics.

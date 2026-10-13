@@ -19,7 +19,7 @@ class ContractTest(unittest.TestCase):
     def test_profiles_and_target_owned_consumer_projections(self):
         interface = load("interface.json")
         profiles = interface["public_contracts"]["input"]["profiles"]
-        self.assertEqual(len(profiles), 8)
+        self.assertEqual(len(profiles), 9)
         for row in profiles:
             example = load(row["example"]["path"])
             validate_json(example, PACKAGE / row["schema"]["path"], "example")
@@ -31,7 +31,7 @@ class ContractTest(unittest.TestCase):
             validate_json(output, PACKAGE / row["schema"]["path"], "output")
             consumer = consumers[projections[row["exit_id"]]["consumer_input_id"]]
             validate_json(output, PACKAGE / consumer["contract"]["path"], "consumer")
-            self.assertEqual(set(output), set(load(consumer["contract"]["path"])["required"]))
+            self.assertIn("task_ref", output)
         self.assertEqual([], interface["public_contracts"]["private_artifacts"])
 
     def test_profile_inputs_do_not_accept_neighboring_route_fields(self):

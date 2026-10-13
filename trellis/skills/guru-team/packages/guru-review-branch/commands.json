@@ -108,6 +108,14 @@
           "description": "Required typed exit.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--delivery-key",
+          "required": false,
+          "kind": "json",
+          "description": "Explicit selected public Delivery key JSON or locator; no current-selector inference.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "none",
@@ -153,7 +161,9 @@
           "kind": "json",
           "description": "Public-input-only invocation envelope or dash for stdin.",
           "repeatable": false,
-          "conflicts": ["--input"]
+          "conflicts": [
+            "--input"
+          ]
         },
         {
           "flag": "--input",
@@ -161,7 +171,17 @@
           "kind": "string",
           "description": "Public Branch Review input JSON locator.",
           "repeatable": false,
-          "conflicts": ["--invocation"]
+          "conflicts": [
+            "--invocation"
+          ]
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "json",
+          "description": "Completed scope withdrawal judgment for its independent profile.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
@@ -185,15 +205,43 @@
       "owner": "guru-review-branch",
       "entrypoint": "runtime/check.py",
       "arguments": [
-        {"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []},
-        {"flag": "--commit", "required": false, "kind": "string", "description": "Git commit; defaults to HEAD.", "repeatable": false, "conflicts": []},
-        {"flag": "--include-worktree", "required": false, "kind": "boolean", "description": "Overlay current worktree state.", "repeatable": false, "conflicts": []}
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository root.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--commit",
+          "required": false,
+          "kind": "string",
+          "description": "Git commit; defaults to HEAD.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--include-worktree",
+          "required": false,
+          "kind": "boolean",
+          "description": "Overlay current worktree state.",
+          "repeatable": false,
+          "conflicts": []
+        }
       ],
       "stdin": "none",
       "stdout": "intermediate_receipt",
-      "errors": ["invalid_arguments", "conflicting_arguments", "stale_identity", "internal_error"],
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "stale_identity",
+        "internal_error"
+      ],
       "side_effect": "none",
-      "schema_bindings": ["schemas/reviewed-content-identity-output.schema.json"],
+      "schema_bindings": [
+        "schemas/reviewed-content-identity-output.schema.json"
+      ],
       "validator_id": "reviewed_content_identity",
       "runtime_role": "check"
     }

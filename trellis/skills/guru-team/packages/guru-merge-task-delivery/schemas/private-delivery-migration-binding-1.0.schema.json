@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-delivery-private-migration-binding-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "delivery_key",
+    "publication_result_id",
+    "legacy_gate"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "publication_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "legacy_gate": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

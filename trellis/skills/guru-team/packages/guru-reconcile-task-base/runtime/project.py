@@ -6,6 +6,8 @@ from pathlib import Path
 
 from common import parse, read_json, repo_root, resolve_commit, validate_json
 from runtime.io import CommandError
+from runtime.delivery_projection import DeliveryProjection
+from runtime.task_lifecycle.errors import LifecycleContractError
 
 
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
@@ -19,11 +21,12 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     public = read_json(repo, package_root, args.input, "input")
     result = read_json(repo, package_root, args.result, "result")
     authoring = read_json(repo, package_root, args.authoring, "authoring")
-    validate_json(public, package_root / "schemas/public-resolved-candidate-input.schema.json", "input")
-    validate_json(result, package_root / "schemas/resolved-reconciliation-result.schema.json", "result")
-    validate_json(authoring, package_root / "schemas/resolved-full-review-authoring.schema.json", "authoring")
+    validate_json(public, package_root / "schemas/delivery-public-resolved-candidate-input.schema.json", "input")
+    validate_json(result, package_root / "schemas/delivery-resolved-reconciliation-result.schema.json", "result")
+    validate_json(authoring, package_root / "schemas/delivery-resolved-full-review-authoring.schema.json", "authoring")
     expected = {
         "task_ref": public["task_ref"],
+        "delivery_key": public["delivery_key"],
         "branch": public["branch"],
         "phase2_commit_anchor": public["phase2_commit_anchor"],
         "old_base_head": public["old_base_head"],
@@ -41,11 +44,21 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         or authoring["base_ref"] != public["selected_base_ref"]
     ):
         raise CommandError("stale_identity", "result", "Use the exact current resolved reconciliation result and Branch Review authoring.", 3)
+    projection = DeliveryProjection(repo, public["task_ref"])
+    try:
+        projection.require_current_check(
+            public["delivery_key"], authoring["check_result_id"],
+            head_ref=result["reconciled_task_head"],
+            base_ref=resolve_commit(repo, authoring["base_ref"], "authoring.base_ref"),
+        )
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", "check_result_id", "Re-enter implementation, bind the reconciled candidate, and consume fresh public Check before Full Review.", 3) from exc
     output = {
         **copy.deepcopy(authoring),
         "task_ref": public["task_ref"],
+        "delivery_key": public["delivery_key"],
         "branch_review_commit": result["reconciled_task_head"],
     }
-    target = package_root.parent / "guru-review-branch/schemas/public-branch-review-input.schema.json"
+    target = package_root.parent / "guru-review-branch/schemas/public-delivery-branch-review-input-1.0.schema.json"
     validate_json(output, target, "stdout")
     return output

@@ -247,9 +247,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
       expected[exit_id]["phase2_commit_anchor"]=value["phase2_capture_commit"]
      envelope=json.dumps({"public_input":public,"owner_result":value},separators=(",",":"))
      result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False,env=environment)
-     self.assertEqual(0,result.returncode,result.stderr)
-     self.assertEqual(expected[exit_id],json.loads(result.stdout))
-     self.assertEqual(exit_id=="passed",checkpoint_path.exists())
+     self.assertNotEqual(0,result.returncode,result.stdout)
+     self.assertTrue(checkpoint_path.exists())
 
    # A same-scope repair plan can need causal investigation without changing requirements.
    value=owner("planning_stale")
@@ -261,11 +260,8 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    result=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],
     input=json.dumps({"public_input":public,"owner_result":value}),text=True,
     stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
-   self.assertEqual(0,result.returncode,result.stdout+result.stderr)
-   output=json.loads(result.stdout)
-   self.assertEqual("reapprove_plan",output["planning_route"])
-   self.assertEqual(["plan-revision:causal-basis"],output["proposal_refs"])
-   self.assertFalse(checkpoint_path.exists())
+   self.assertNotEqual(0,result.returncode,result.stdout)
+   self.assertTrue(checkpoint_path.exists())
 
  def test_resolved_phase2_private_result_projects_reconcile_input_without_external_exit(self):
   with tempfile.TemporaryDirectory() as temporary:
@@ -313,14 +309,14 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    first_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
    self.assertEqual("ok",json.loads(first_check.stdout)["result"]["status"])
    envelope=json.dumps({"public_input":public,"owner_result":json.loads(artifact_path.read_text())},separators=(",",":"))
-   first=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   discarded_output=json.loads(first.stdout)
-
+   first=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
+   self.assertNotEqual(0, first.returncode)
+   self.assertTrue(artifact_path.exists())
+   # A successful private old checker cannot become a new public Delivery pass.
    second_check=subprocess.run([str(PACKAGE/"scripts/check-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
    self.assertEqual("ok",json.loads(second_check.stdout)["result"]["status"])
-   rematerialized=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
-   self.assertEqual(discarded_output,json.loads(rematerialized.stdout))
-   self.assertEqual("passed",discarded_output["exit_id"])
+   second=subprocess.run([str(PACKAGE/"scripts/invoke.sh"),"--root",str(repo),"--invocation","-"],input=envelope,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=False)
+   self.assertNotEqual(0, second.returncode)
    self.assertTrue(artifact_path.exists())
 
 if __name__=="__main__": unittest.main()

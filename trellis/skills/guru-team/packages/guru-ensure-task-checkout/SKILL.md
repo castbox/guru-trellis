@@ -18,5 +18,11 @@ Invoke `scripts/invoke.sh --root . --input -` with the structured input on
 stdin. Return exactly one declared typed exit. Reinvoke after an acquisition
 or establishment route; never infer a branch from a task name or checkout path.
 
+Use `delivery_active_task`. Validate the public Task schema-2 identity and
+its C4/C5 resource association without reading any Task development status.
+The branch-binding input no longer carries `expected_status`; Delivery phase
+belongs exclusively to the upstream model. Old profiles are rejected rather
+than reinterpreted as Delivery calls.
+
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

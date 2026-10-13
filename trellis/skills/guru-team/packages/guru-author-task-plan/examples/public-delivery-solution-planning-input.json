@@ -1,0 +1,17 @@
+{
+  "profile": "delivery_solution_planning",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/10-11-sample-planning",
+  "architecture_assessment": {
+    "planning_purpose": "candidate_assessment",
+    "baseline_identity": "current-example-1",
+    "constitution_identity": "example-design-constitution-1",
+    "impact_kind": "no_architecture_impact",
+    "impact_reason": "Uses current boundaries."
+  },
+  "delivery_key": {
+    "task_id": "demo",
+    "lifecycle_generation": 0,
+    "delivery_id": "e26d112f-cd11-4402-8858-2d5e8f433821"
+  }
+}

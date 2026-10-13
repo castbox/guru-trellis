@@ -38,6 +38,8 @@ preset = load_module(
     "guru_team_preset_integration",
     REPO / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
 )
+sys.path.insert(0, str(REPO / "trellis/presets/guru-team/scripts/python"))
+from installer_test_support import install_reviewed_delivery_candidate  # noqa: E402
 
 
 class InstalledWorkflowIntegrationStateTests(unittest.TestCase):
@@ -232,7 +234,16 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                     self.assertIn(output["example"]["path"], artifacts)
                     example = json.loads((package / output["example"]["path"]).read_text(encoding="utf-8"))
                     validate_json(example, package / output["schema"]["path"], f"{package_id}.{output['exit_id']}.example")
-                    validate_json(example, package / "schemas/public-output.schema.json", f"{package_id}.{output['exit_id']}.aggregate")
+                    # Build the aggregate from this Interface's current exits;
+                    # retained historical aggregates are not current contracts.
+                    with tempfile.TemporaryDirectory() as aggregate_directory:
+                        aggregate = Path(aggregate_directory) / "current-output.schema.json"
+                        aggregate.write_text(json.dumps({
+                            "$schema": "https://json-schema.org/draft/2020-12/schema",
+                            "oneOf": [{"$ref": (package / item["schema"]["path"]).resolve().as_uri()}
+                                      for item in outputs.values()],
+                        }), encoding="utf-8")
+                        validate_json(example, aggregate, f"{package_id}.{output['exit_id']}.aggregate")
 
                 for projection in projections.values():
                     output = outputs[projection["exit_id"]]
@@ -320,6 +331,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",
@@ -360,6 +372,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",
@@ -400,6 +413,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",
@@ -439,6 +453,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",
@@ -583,6 +598,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",
@@ -615,7 +631,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
                 (installed_root / "contracts/production-current-5.0.json").read_bytes(),
                 (SKILLS / "contracts/production-current-5.0.json").read_bytes(),
             )
-            for legacy in ("production-current-2.0.json", "production-current-3.0.json"):
+            for legacy in ("production-current-2.0.json", "production-current-3.0.json", "production-current-4.0.json"):
                 self.assertEqual(
                     (installed_root / "contracts" / legacy).read_bytes(),
                     (SKILLS / "contracts" / legacy).read_bytes(),
@@ -628,6 +644,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             (target / ".trellis/workflow.md").write_bytes(
                 (REPO / "trellis/workflows/guru-team/workflow.md").read_bytes()
             )
+            install_reviewed_delivery_candidate(target)
             preset.install_assets(
                 REPO / "trellis/workflows/guru-team",
                 target / ".trellis/guru-team",

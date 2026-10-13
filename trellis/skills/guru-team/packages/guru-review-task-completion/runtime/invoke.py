@@ -45,56 +45,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     root = Path(args.root or ".").resolve()
     public = _load(root, package_root, args.input, "input")
     semantic = _load(root, package_root, args.semantic_result, "semantic_result")
-    validate_json(public, package_root / "schemas/public-input.schema.json", "input")
-    validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
-    if (public["profile"], public["mode"]) != (semantic["profile"], semantic["mode"]):
-        raise CommandError("stale_identity", "semantic_result", "Completion profile or mode changed.", 3)
-
-    artifact = public["task_artifact"]
-    slots = public["evidence_slots"]
-    if "merge_result" in public:
-        merge = public["merge_result"]
-        if (artifact["task_id"], artifact["lifecycle_generation"]) != (merge["task_id"], merge["lifecycle_generation"]):
-            raise CommandError("stale_identity", "merge_result", "Merge result belongs to another lifecycle.", 3)
-        if merge["task_ref"] != artifact["task_ref"]:
-            raise CommandError("stale_identity", "merge_result.task_ref", "Merge task locator differs.", 3)
-        if set(slots) != DELIVERY_SLOTS:
-            raise CommandError("stale_identity", "evidence_slots", "Use exactly the current Delivery evidence slots.", 3)
-        reviewed_basis = (semantic.get("reviewed_merge_result_id") == merge["result_id"]
-                          and "reviewed_reactivation_anchor" not in semantic)
-    else:
-        anchor = public["reactivation_anchor"]
-        if (artifact["task_id"] != anchor["task_id"]
-                or artifact["lifecycle_generation"] != anchor["archived_generation"] + 1
-                or artifact["task_ref"].startswith(".trellis/tasks/archive/")):
-            raise CommandError("stale_identity", "reactivation_anchor", "Review the preceding archived generation and current active task.", 3)
-        if set(slots) != REACTIVATION_SLOTS:
-            raise CommandError("stale_identity", "evidence_slots", "Use current reactivation and validation evidence.", 3)
-        reviewed_basis = (semantic.get("reviewed_reactivation_anchor") == anchor
-                          and "reviewed_merge_result_id" not in semantic)
-    if (semantic["reviewed_scope_identity"] != public["accepted_scope_identity"]
-            or not reviewed_basis
-            or semantic["reviewed_evidence_slots"] != slots):
-        raise CommandError("stale_identity", "semantic_result", "Review the exact scope, completion basis and selected evidence slots.", 3)
-
-    exit_id = semantic["route"]["typed_exit"]
-    if exit_id == "completed":
-        if semantic["remaining_work_refs"]:
-            raise CommandError("stale_identity", "remaining_work_refs", "Accepted work remains.", 3)
-        digest = hashlib.sha256(json.dumps({"input": public, "semantic": semantic}, sort_keys=True, separators=(",", ":")).encode()).hexdigest()[:24]
-        output = {"exit_id": exit_id, "result_ref": {
-            "task_id": artifact["task_id"], "lifecycle_generation": artifact["lifecycle_generation"],
-            "result_id": "completion:" + digest,
-        }}
-    elif exit_id == "blocked":
-        output = {"exit_id": exit_id, "reason": semantic["route"]["reason"]}
-    elif exit_id in NON_COMPLETE:
-        output = {"exit_id": exit_id, "task_artifact": artifact,
-                  "reason": semantic["route"]["reason"]}
-    else:
-        raise CommandError("schema_mismatch", "semantic_result.route", "Unknown completion route.")
-    validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
-    return output
+    if public.get("profile", "").startswith("delivery_"):
+        from delivery import invoke
+        return invoke(root, package_root, public, semantic)
+    raise CommandError("schema_mismatch", "profile", "Use the current TaskKey Completion profile; migrate legacy result evidence through its original owner.")
 
 
 if __name__ == "__main__":

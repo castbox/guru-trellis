@@ -15,6 +15,7 @@ SOURCE = PACKAGE / "runtime/invoke.py"
 spec = importlib.util.spec_from_file_location("bind_package_runtime", SOURCE)
 bind = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bind)
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task, scripts_source
 
 
 def git(root, *args):
@@ -22,7 +23,7 @@ def git(root, *args):
 
 
 def current_task(name):
-    return {
+    return public_task({
         "id": name, "name": name, "lifecycle_generation": 0,
         "source": {"kind": "no_issue"}, "title": name,
         "description": "Reviewed task", "status": "in_progress",
@@ -31,11 +32,11 @@ def current_task(name):
         "base_branch": "main", "worktree_path": None, "commit": None,
         "pr_url": None, "children": [], "parent": None,
         "relatedFiles": [], "notes": "", "meta": {},
-    }
+    })
 
 
 def request(profile, task_id="a", generation=0, **extra):
-    value = {"profile": profile, "mode": "standalone", "task_id": task_id,
+    value = {"profile": "delivery_" + profile, "mode": "standalone", "task_id": task_id,
              "lifecycle_generation": generation, "continuation_id": "run-1", **extra}
     route = bind.PROFILE_ROUTES[profile]
     owner = {**value, "route": route, "resume_target": "phase-2",
@@ -86,6 +87,7 @@ class RuntimeTest(unittest.TestCase):
         self.root = Path(self.temp.name) / "repo"
         self.other = Path(self.temp.name) / "other"
         subprocess.check_call(["git", "init", "-q", "-b", "main", str(self.root)])
+        install_common(self.root)
         (self.root / "README").write_text("fixture\n")
         git(self.root, "add", ".")
         git(self.root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "seed")
@@ -127,7 +129,7 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(self.invoke("manual_recovery")["exit_id"], "session_manually_recovered")
         self.assertEqual(self.port.writes, 2)
         self.assertEqual(next(iter(self.port.records.values())),
-                         {"schema_version": 2, "task_id": "a", "lifecycle_generation": 0})
+                         {"schema_version": 3, "task_id": "a", "lifecycle_generation": 0, "delivery_id": None})
         self.assertFalse((self.root / ".trellis/.runtime/guru-team").exists())
 
     def test_switch_a_b_a_preserves_other_session(self):
@@ -218,13 +220,8 @@ class RuntimeTest(unittest.TestCase):
 
 
 class FixedForkIntegrationTest(unittest.TestCase):
-    def test_official_schema_two_port_with_real_git_checkout(self):
-        source = os.environ.get("TRELLIS_FIXED_FORK_SOURCE")
-        if not source:
-            self.skipTest("Set TRELLIS_FIXED_FORK_SOURCE to the Fixed Fork source checkout")
-        scripts = Path(source) / "packages/cli/src/templates/trellis/scripts"
-        if not (scripts / "common/session_storage.py").is_file():
-            self.skipTest("Fixed Fork source template unavailable")
+    def test_official_schema_three_port_with_real_git_checkout(self):
+        scripts = scripts_source()
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repo"
             other = Path(directory) / "other"
@@ -260,7 +257,7 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 self.assertEqual(output["exit_id"], "session_rebound")
                 session = root / ".git/trellis/sessions/package-fixture.json"
                 self.assertEqual(json.loads(session.read_text()),
-                                 {"schema_version": 2, "task_id": "a", "lifecycle_generation": 0})
+                                 {"schema_version": 3, "task_id": "a", "lifecycle_generation": 0, "delivery_id": None})
                 legacy_mapping = root / ".trellis/.runtime/guru-team/tasks/a.json"
                 legacy_mapping.parent.mkdir(parents=True)
                 legacy_mapping.write_text("not-json")
@@ -333,7 +330,7 @@ class FixedForkIntegrationTest(unittest.TestCase):
                 session.unlink()
                 self.assertEqual(invoke("rebind_missing_session", generation=1)["exit_id"], "session_rebound")
                 self.assertEqual(json.loads(session.read_text()),
-                                 {"schema_version": 2, "task_id": "a", "lifecycle_generation": 1})
+                                 {"schema_version": 3, "task_id": "a", "lifecycle_generation": 1, "delivery_id": None})
 
 
 if __name__ == "__main__":

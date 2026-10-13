@@ -19,7 +19,7 @@ from .git_facts import (
     discover_worktree_facts,
     list_local_branch_refs,
 )
-from .identity import normalize_generation, normalize_task_id, normalize_task_ref
+from .identity import normalize_generation, normalize_task_id, normalize_task_ref, task_resource_state
 
 
 Ownership = Literal["guru_owned", "caller_owned", "not_applicable"]
@@ -149,7 +149,7 @@ def _artifact_matches(
     return (
         task_id == key.task_id
         and generation == key.lifecycle_generation
-        and metadata.get("status") == expected_status
+        and task_resource_state(repository.context_path, metadata) == expected_status
     )
 
 

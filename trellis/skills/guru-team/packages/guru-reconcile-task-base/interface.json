@@ -176,103 +176,103 @@
   "schemas": [
     {
       "id": "public_input_definitions",
-      "path": "schemas/public-input-defs.schema.json"
+      "path": "schemas/delivery-public-input-defs.schema.json"
     },
     {
       "id": "public_input_post_plan",
-      "path": "schemas/public-post-plan-input.schema.json"
+      "path": "schemas/delivery-public-post-plan-input.schema.json"
     },
     {
       "id": "public_input_post_check",
-      "path": "schemas/public-post-check-input.schema.json"
+      "path": "schemas/delivery-public-post-check-input.schema.json"
     },
     {
       "id": "public_input_post_commit",
-      "path": "schemas/public-post-commit-input.schema.json"
+      "path": "schemas/delivery-public-post-commit-input.schema.json"
     },
     {
       "id": "public_input_post_branch_review",
-      "path": "schemas/public-post-branch-review-input.schema.json"
+      "path": "schemas/delivery-public-post-branch-review-input.schema.json"
     },
     {
       "id": "public_input_post_publication",
-      "path": "schemas/public-post-publication-input.schema.json"
+      "path": "schemas/delivery-public-post-publication-input.schema.json"
     },
     {
       "id": "public_input_finalizer_base_mismatch",
-      "path": "schemas/public-finalizer-base-mismatch-input.schema.json"
+      "path": "schemas/delivery-public-finalizer-base-mismatch-input.schema.json"
     },
     {
       "id": "public_input_resolved_candidate",
-      "path": "schemas/public-resolved-candidate-input.schema.json"
+      "path": "schemas/delivery-public-resolved-candidate-input.schema.json"
     },
     {
       "id": "public_input_aggregate",
-      "path": "schemas/public-input.schema.json"
+      "path": "schemas/delivery-public-input.schema.json"
     },
     {
       "id": "pair_guard_result",
-      "path": "schemas/pair-guard-result.schema.json"
+      "path": "schemas/delivery-pair-guard-result.schema.json"
     },
     {
       "id": "candidate_request",
-      "path": "schemas/candidate-request.schema.json"
+      "path": "schemas/delivery-candidate-request.schema.json"
     },
     {
       "id": "candidate_result",
-      "path": "schemas/candidate-result.schema.json"
+      "path": "schemas/delivery-candidate-result.schema.json"
     },
     {
       "id": "reconciliation_request",
-      "path": "schemas/reconciliation-request.schema.json"
+      "path": "schemas/delivery-reconciliation-request.schema.json"
     },
     {
       "id": "reconciliation_result",
-      "path": "schemas/reconciliation-result.schema.json"
+      "path": "schemas/delivery-reconciliation-result.schema.json"
     },
     {
       "id": "resolved_reconciliation_result",
-      "path": "schemas/resolved-reconciliation-result.schema.json"
+      "path": "schemas/delivery-resolved-reconciliation-result.schema.json"
     },
     {
       "id": "resolved_full_review_authoring",
-      "path": "schemas/resolved-full-review-authoring.schema.json"
+      "path": "schemas/delivery-resolved-full-review-authoring.schema.json"
     },
     {
       "id": "private_result",
-      "path": "schemas/base-reconciliation.schema.json"
+      "path": "schemas/delivery-base-reconciliation.schema.json"
     },
     {
       "id": "invocation_envelope",
-      "path": "schemas/invocation-envelope.schema.json"
+      "path": "schemas/delivery-invocation-envelope.schema.json"
     },
     {
       "id": "public_invocation_error",
-      "path": "schemas/public-invocation-error.schema.json"
+      "path": "schemas/delivery-public-invocation-error.schema.json"
     },
     {
       "id": "public_output_reconciled",
-      "path": "schemas/public-reconciled-output.schema.json"
+      "path": "schemas/delivery-public-reconciled-output.schema.json"
     },
     {
       "id": "public_output_review_continuity_required",
-      "path": "schemas/public-review-continuity-required-output.schema.json"
+      "path": "schemas/delivery-public-review-continuity-required-output.schema.json"
     },
     {
       "id": "public_output_implementation_required",
-      "path": "schemas/public-implementation-required-output.schema.json"
+      "path": "schemas/delivery-public-implementation-required-output.schema.json"
     },
     {
       "id": "public_output_planning_stale",
-      "path": "schemas/public-planning-stale-output.schema.json"
+      "path": "schemas/delivery-public-planning-stale-output.schema.json"
     },
     {
       "id": "public_output_scope_confirmation_required",
-      "path": "schemas/public-scope-confirmation-required-output.schema.json"
+      "path": "schemas/delivery-public-scope-confirmation-required-output.schema.json"
     },
     {
       "id": "public_output_blocked",
-      "path": "schemas/public-blocked-output.schema.json"
+      "path": "schemas/delivery-public-blocked-output.schema.json"
     }
   ],
   "validators": [
@@ -413,15 +413,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-reconcile-task-base-input-aggregate-2.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-reconcile-task-base-input-aggregate-2.0-delivery-1.0",
+        "path": "schemas/delivery-public-input.schema.json"
       },
       "profiles": [
         {
-          "id": "post_plan",
+          "id": "delivery_post_plan",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-post-plan-1.0",
-            "path": "schemas/public-post-plan-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-post-plan-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-post-plan-input.schema.json"
           },
           "example": {
             "id": "post_plan_input",
@@ -429,14 +429,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "post_plan"
+            "value": "delivery_post_plan"
           }
         },
         {
-          "id": "post_check",
+          "id": "delivery_post_check",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-post-check-1.0",
-            "path": "schemas/public-post-check-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-post-check-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-post-check-input.schema.json"
           },
           "example": {
             "id": "post_check_input",
@@ -444,14 +444,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "post_check"
+            "value": "delivery_post_check"
           }
         },
         {
-          "id": "post_commit",
+          "id": "delivery_post_commit",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-post-commit-1.0",
-            "path": "schemas/public-post-commit-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-post-commit-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-post-commit-input.schema.json"
           },
           "example": {
             "id": "post_commit_input",
@@ -459,14 +459,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "post_commit"
+            "value": "delivery_post_commit"
           }
         },
         {
-          "id": "post_branch_review",
+          "id": "delivery_post_branch_review",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-post-branch-review-1.0",
-            "path": "schemas/public-post-branch-review-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-post-branch-review-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-post-branch-review-input.schema.json"
           },
           "example": {
             "id": "post_branch_review_input",
@@ -474,14 +474,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "post_branch_review"
+            "value": "delivery_post_branch_review"
           }
         },
         {
-          "id": "post_publication",
+          "id": "delivery_post_publication",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-post-publication-1.0",
-            "path": "schemas/public-post-publication-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-post-publication-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-post-publication-input.schema.json"
           },
           "example": {
             "id": "post_publication_input",
@@ -489,14 +489,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "post_publication"
+            "value": "delivery_post_publication"
           }
         },
         {
-          "id": "finalizer_base_mismatch",
+          "id": "delivery_finalizer_base_mismatch",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-finalizer-base-mismatch-1.0",
-            "path": "schemas/public-finalizer-base-mismatch-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-finalizer-base-mismatch-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-finalizer-base-mismatch-input.schema.json"
           },
           "example": {
             "id": "finalizer_base_mismatch_input",
@@ -504,14 +504,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "finalizer_base_mismatch"
+            "value": "delivery_finalizer_base_mismatch"
           }
         },
         {
-          "id": "resolved_candidate",
+          "id": "delivery_resolved_candidate",
           "schema": {
-            "schema_id": "guru-reconcile-task-base-input-resolved-candidate-1.0",
-            "path": "schemas/public-resolved-candidate-input.schema.json"
+            "schema_id": "guru-reconcile-task-base-input-resolved-candidate-1.0-delivery-1.0",
+            "path": "schemas/delivery-public-resolved-candidate-input.schema.json"
           },
           "example": {
             "id": "resolved_candidate_input",
@@ -519,7 +519,7 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "resolved_candidate"
+            "value": "delivery_resolved_candidate"
           }
         }
       ]
@@ -529,12 +529,12 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "post_plan"
+        "profile_id": "delivery_post_plan"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-reconcile-task-base-invocation-error-1.0",
-        "path": "schemas/public-invocation-error.schema.json"
+        "schema_id": "guru-reconcile-task-base-invocation-error-1.0-delivery-1.0",
+        "path": "schemas/delivery-public-invocation-error.schema.json"
       },
       "error_example": {
         "id": "invalid_public_input",
@@ -551,8 +551,8 @@
       {
         "exit_id": "reconciled",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-reconciled-1.0",
-          "path": "schemas/public-reconciled-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-reconciled-1.0-delivery-1.0",
+          "path": "schemas/delivery-public-reconciled-output.schema.json"
         },
         "example": {
           "id": "reconciled_output",
@@ -565,8 +565,8 @@
       {
         "exit_id": "review_continuity_required",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-review-continuity-required-2.0",
-          "path": "schemas/public-review-continuity-required-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-review-continuity-required-2.0-delivery-1.0",
+          "path": "schemas/delivery-public-review-continuity-required-output.schema.json"
         },
         "example": {
           "id": "review_continuity_output",
@@ -579,8 +579,8 @@
       {
         "exit_id": "implementation_required",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-implementation-required-1.0",
-          "path": "schemas/public-implementation-required-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-implementation-required-1.0-delivery-1.0",
+          "path": "schemas/delivery-public-implementation-required-output.schema.json"
         },
         "example": {
           "id": "implementation_required_output",
@@ -593,8 +593,8 @@
       {
         "exit_id": "planning_stale",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-planning-stale-1.0",
-          "path": "schemas/public-planning-stale-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-planning-stale-1.0-delivery-1.0",
+          "path": "schemas/delivery-public-planning-stale-output.schema.json"
         },
         "example": {
           "id": "planning_stale_output",
@@ -607,8 +607,8 @@
       {
         "exit_id": "scope_confirmation_required",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-scope-confirmation-required-1.0",
-          "path": "schemas/public-scope-confirmation-required-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-scope-confirmation-required-1.0-delivery-1.0",
+          "path": "schemas/delivery-public-scope-confirmation-required-output.schema.json"
         },
         "example": {
           "id": "scope_confirmation_output",
@@ -621,8 +621,8 @@
       {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-output-blocked-1.0",
-          "path": "schemas/public-blocked-output.schema.json"
+          "schema_id": "guru-reconcile-task-base-output-blocked-1.0-delivery-1.0",
+          "path": "schemas/delivery-public-blocked-output.schema.json"
         },
         "example": {
           "id": "blocked_output",
@@ -643,8 +643,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-base-reconciliation-router-input-1.0",
-          "path": "consumers/workflow/production/base-reconciliation-router.schema.json"
+          "schema_id": "guru-consumer-guru-reconcile-task-base-reconciled-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/reconcile-task-base-reconciled.schema.json"
         }
       },
       {
@@ -658,7 +658,7 @@
           "kind": "skill_input_authoring_seed",
           "interface_path": "packages/guru-review-branch/interface.json",
           "input_kind": "structured_json",
-          "profile_id": "base_continuity",
+          "profile_id": "delivery_base_continuity",
           "seed_fields": [
             "task_ref",
             "task_head",
@@ -667,15 +667,18 @@
             "branch_review_commit",
             "candidate_tree_sha256",
             "relevant_paths",
-            "resume_target"
+            "resume_target",
+            "delivery_key"
           ],
           "authoring_fields": [
             "profile",
-            "mode"
+            "mode",
+            "review_intent",
+            "check_result_id"
           ],
           "authoring_example": {
-            "id": "base_continuity_authoring",
-            "path": "examples/public-base-continuity-authoring.json"
+            "id": "review_continuity_required_delivery_authoring",
+            "path": "examples/authoring-delivery-review-continuity-required-1.0.json"
           }
         }
       },
@@ -688,8 +691,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-base-reconciliation-implementation-input-1.0",
-          "path": "consumers/workflow/production/base-reconciliation-implementation.schema.json"
+          "schema_id": "guru-consumer-guru-reconcile-task-base-implementation_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/reconcile-task-base-implementation-required.schema.json"
         }
       },
       {
@@ -701,8 +704,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-base-reconciliation-planning-input-1.0",
-          "path": "consumers/workflow/production/base-reconciliation-planning.schema.json"
+          "schema_id": "guru-consumer-guru-reconcile-task-base-planning_stale-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/reconcile-task-base-planning-stale.schema.json"
         }
       },
       {
@@ -714,8 +717,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-base-reconciliation-scope-input-1.0",
-          "path": "consumers/workflow/production/base-reconciliation-scope.schema.json"
+          "schema_id": "guru-consumer-guru-reconcile-task-base-scope_confirmation_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/reconcile-task-base-scope-confirmation-required.schema.json"
         }
       },
       {
@@ -771,6 +774,10 @@
           {
             "source": "resume_target",
             "target": "resume_target"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
           }
         ]
       },
@@ -805,8 +812,8 @@
         "id": "base_reconciliation",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "guru-reconcile-task-base-private-result-2.0",
-          "path": "schemas/base-reconciliation.schema.json"
+          "schema_id": "guru-reconcile-task-base-private-result-2.0-delivery-1.0",
+          "path": "schemas/delivery-base-reconciliation.schema.json"
         },
         "persistence": "ignored_runtime"
       }

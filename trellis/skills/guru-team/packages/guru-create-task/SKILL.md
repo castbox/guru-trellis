@@ -40,18 +40,19 @@ changes before or during official creation, return `refresh_review` and review
 a new TaskRef; do not create a task under a different date. Read-only result
 recovery retains the original TaskRef across dates.
 
-Public input schema `guru-create-task-input-2.0` removes the retired task
-`creator` and `assignee` fields. Rereview a 1.0 request and omit those fields;
-the closed 2.0 schema rejects them before acquisition. The reviewed delivery
+Use the `delivery_task_creation` profile. Public input schema `guru-create-task-input-delivery-1.0` removes the retired task
+`creator` and `assignee` fields. Rereview an old request and omit those fields;
+the closed Delivery schema rejects them before acquisition. The reviewed delivery
 target remains call-local and is never added to official `task.json`. The
 official creator receives the slug body without its date prefix.
 
 Use `record-task-plan` for objective preconditions, `create-task` for the
-official Fixed Fork `task.py create --no-start` followed by TaskId/source
+official Fixed Fork `task.py create --schema-version 2.0 --no-start` followed by TaskId/source
 materialization and C4/C5 control-state establishment, then
-`check-task-creation-result`. The task remains `planning` until
-`guru-activate-task`. A context key binds via the official schema-2 session
-port; without one continue in explicit-task mode. Session failure after
+`check-task-creation-result`. Task retains overall scope and completion responsibility without a development
+status. `created` enters the current workflow and `guru-create-delivery` before
+any D1 Planning. A context key binds through the public schema-3 Task session
+with no selected Delivery; without one continue in explicit-task mode. Session failure after
 creation does not erase a durable task. If output was lost, use only
 `recover-created-task-result`; it rereads the task, branch binding and
 resource ownership without creating a second task or checkout. It reads the

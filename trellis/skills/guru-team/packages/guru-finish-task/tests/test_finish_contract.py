@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import types
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -28,16 +29,28 @@ def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True).stdout.strip()
 
 
-def current_task_metadata(task_id, generation, source, status="in_progress"):
-    return {
-        "id": task_id, "name": task_id, "lifecycle_generation": generation,
-        "source": source, "title": task_id, "description": "Reviewed task",
-        "status": status, "dev_type": None, "scope": None, "package": None,
-        "priority": "P2", "createdAt": "2026-09-20", "completedAt": None,
-        "base_branch": "main", "worktree_path": None, "commit": None,
-        "pr_url": None, "children": [], "parent": None,
-        "relatedFiles": [], "notes": "", "meta": {},
-    }
+def current_task_metadata(root, task_id, generation, source):
+    # Read actual schema-2 creation bytes from the fixed installed public CLI.
+    assert generation == 0
+    scripts = Path(os.environ["GURU_UPSTREAM_DELIVERY_SCRIPTS"])
+    shutil.copytree(scripts, root / ".trellis/scripts", dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    shutil.copy2(PACKAGE.parents[4] / "trellis/workflows/guru-team/workflow.md", root / ".trellis/workflow.md")
+    (root / ".trellis/.developer").write_text("finish-fixture\n")
+    with tempfile.TemporaryDirectory() as directory:
+        donor = Path(directory)
+        subprocess.run(["git", "init", "-qb", "main", str(donor)], check=True)
+        shutil.copytree(root / ".trellis/scripts", donor / ".trellis/scripts")
+        shutil.copy2(root / ".trellis/workflow.md", donor / ".trellis/workflow.md")
+        (donor / ".trellis/.developer").write_text("finish-fixture\n")
+        created = subprocess.run([sys.executable, str(donor / ".trellis/scripts/task.py"), "create", "Finish fixture",
+            "--slug", task_id, "--task-id", task_id, "--description", "Finish fixture",
+            "--schema-version", "2.0", "--source-json", json.dumps(source), "--base-branch", "main", "--no-start"],
+            cwd=donor, capture_output=True, text=True)
+        assert created.returncode == 0, created.stdout + created.stderr
+        path = next((donor / ".trellis/tasks").glob("*/task.json"))
+        value = json.loads(path.read_text())
+    return value
 
 
 def write_fake_gh(path):
@@ -141,12 +154,13 @@ def test_finish_outputs_project_into_cleanup_owned_profiles():
 @pytest.mark.parametrize("disposition", ["close", "already_closed_at_review"])
 def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutation(tmp_path, monkeypatch, disposition):
     public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    public["closure_result"]["lifecycle_generation"] = 0
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
     source = {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"}
-    (task / "task.json").write_text(json.dumps(current_task_metadata(public["closure_result"]["task_id"], 1, source)))
+    (task / "task.json").write_text(json.dumps(current_task_metadata(tmp_path, public["closure_result"]["task_id"], 0, source)))
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
     input_path.write_text(json.dumps(public))
@@ -166,11 +180,12 @@ def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutati
 
 def test_changed_source_role_refreshes_closure_before_finish_archive(tmp_path, monkeypatch):
     public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    public["closure_result"]["lifecycle_generation"] = 0
     semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps(current_task_metadata("example-task", 1,
+    (task / "task.json").write_text(json.dumps(current_task_metadata(tmp_path, "example-task", 0,
         {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "reference_only"})))
     input_path = tmp_path / "input.json"
     semantic_path = tmp_path / "semantic.json"
@@ -195,10 +210,11 @@ def test_finish_identity_changes_between_lifecycle_generations():
 
 def test_semantic_resume_finish_returns_complete_self_projection(tmp_path, monkeypatch):
     public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    public["closure_result"]["lifecycle_generation"] = 0
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
     task = tmp_path / ".trellis/tasks/example-task"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps(current_task_metadata("example-task", 1, {"kind": "no_issue"})))
+    (task / "task.json").write_text(json.dumps(current_task_metadata(tmp_path, "example-task", 0, {"kind": "no_issue"})))
     monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "no_mutation", "action_set": []})
     semantic = {
         "profile": "closure_completed",
@@ -225,7 +241,7 @@ def test_semantic_resume_finish_returns_complete_self_projection(tmp_path, monke
         "exit_id": "resume_finish",
         "task_id": public["closure_result"]["task_id"],
         "lifecycle_generation": public["closure_result"]["lifecycle_generation"],
-        "transaction_id": FINISH.finish_ref({"task_id": "example-task", "closure_result": public["closure_result"]}, 1),
+        "transaction_id": FINISH.finish_ref({"task_id": "example-task", "closure_result": public["closure_result"]}, 0),
         "result_id": public["closure_result"]["result_id"],
     }
     assert output == expected
@@ -362,16 +378,25 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     (old_archive / "legacy-finish-summary.json").write_text("{}\n")
     task = repo / ".trellis/tasks/demo"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps({
-        "id": "demo", "name": "demo", "lifecycle_generation": 0,
-        "source": {"kind": "no_issue"}, "title": "Demo", "description": "Completed task",
-        "status": "in_progress", "dev_type": None, "scope": None, "package": None,
-        "priority": "P2", "createdAt": "2026-09-19", "completedAt": None,
-        "base_branch": "main", "worktree_path": None, "commit": None, "pr_url": None,
-        "children": [], "parent": None, "relatedFiles": [], "notes": "", "meta": {},
-    }))
+    (task / "task.json").write_text(json.dumps(current_task_metadata(repo, "demo", 0, {"kind": "no_issue"})))
     for name in ("prd.md", "design.md", "implement.md"):
         (task / name).write_text("x\n")
+    from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+    projection = DeliveryProjection(repo, ".trellis/tasks/demo")
+    scope = authority_ref(task / "prd.md", repo)
+    projection.scope(scope)
+    owners = projection.declaration()["owners"]
+    key = {"task_id": "demo", "lifecycle_generation": 0}
+    completion = {"result_id": "completion:demo", "owner_id": owners["completion"],
+                  "evidence": [scope], "lifecycle_generation": 0, "accepted_scope": scope,
+                  "delivery_result_ids": [], "outcome": "completed"}
+    projection.apply({"api_version": "1.0", "operation": "complete_task", "key": key,
+                      "owner_role": "completion", "owner_id": owners["completion"], "result": completion})
+    closure = {"result_id": "closure:demo", "owner_id": owners["closure"], "evidence": [scope],
+               "lifecycle_generation": 0, "completion_result_id": "completion:demo",
+               "disposition": "no_mutation", "source_result": None}
+    projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
+                      "owner_role": "closure", "owner_id": owners["closure"], "result": closure})
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "initial")
     base_head = git(repo, "rev-parse", "HEAD")

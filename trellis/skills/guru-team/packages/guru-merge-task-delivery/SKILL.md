@@ -5,6 +5,8 @@ description: Merge one reviewed active-task Delivery PR through a semantic live 
 
 # Guru Merge Task Delivery
 
+Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+
 Use this Skill only after `guru-publish-task-delivery:ready_for_merge`. Read
 [references/contract.md](references/contract.md), preview the exact active task
 and live PR facts, then complete the six-dimension semantic review.
@@ -22,18 +24,19 @@ The reviewed merge body ends with exactly these trailers:
 
 ```text
 Guru-Task-Identity: <stable-task-id>
-Guru-Delivery-Schema: 1
+Guru-Delivery-Schema: 2
 Guru-Delivery-Head: <40-hex-reviewed-head>
+Guru-Delivery-Identity: <public-delivery-uuid>
+Guru-Task-Generation: <lifecycle-generation>
 ```
 
 The public invocation performs one pre-read, at most one expected-head
 `--merge` mutation, and one post-read. Repeating the same invocation after
 output loss reconstructs the same `delivered` result from live PR, commit,
 parent, base-ref, and trailer facts without repeating the mutation.
-Its declared `completion_seed` projects `task_artifact` and the complete
-`merge_result` to the current Completion `completion` profile. The Completion
-owner freshly authors the profile, mode, accepted scope identity and evidence
-slots before invoking its semantic review; Merge never decides task completion.
+Its terminal DTO carries Task locator and TaskKey only. The Completion owner
+reads current overall scope and every actual public Delivery fact, including
+history, before judging overall completion. Merge never decides Completion.
 
 The package also exposes the deterministic read-only command:
 
@@ -55,3 +58,19 @@ branch/worktree/runtime owned by another step.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

@@ -1,1 +1,7 @@
-{"profile":"manual_recovery","mode":"standalone","task_id":"example","lifecycle_generation":0,"continuation_id":"manual-recovery-example"}
+{
+  "profile": "delivery_manual_recovery",
+  "mode": "standalone",
+  "task_id": "example",
+  "lifecycle_generation": 0,
+  "continuation_id": "manual-recovery-example"
+}

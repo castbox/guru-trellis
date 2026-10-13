@@ -5,6 +5,14 @@ description: Persist Completion and Closure into one reviewed task archive and t
 
 # Guru Finish Task
 
+Before archive projection, verify current public Closure. Preserve the schema-2
+Task aggregate byte semantics: never write `status`, `completedAt`, `commit`, or
+`pr_url`. Finish alone owns archive summary and bookkeeping publication, with
+separate confirmations for its exact Git/GitHub mutations. Public Delivery
+facts and planning roots move with the Task; archive and terminal persistence
+do not erase them or pretend Cleanup succeeded.
+
+
 Finish accepts only the current Closure ResultRefDTO, resolves TaskRef from the
 stable TaskId, and reads the exact terminal action set through the shared
 read-only Closure result API. Before terminal mutation it compares the

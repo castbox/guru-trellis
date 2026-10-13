@@ -712,3 +712,50 @@ def test_handoff_stale_inventory_generation_and_moved_head_do_not_delete(tmp_pat
     assert invoke(tmp_path, root, public, confirmed=True)["reason_code"] == "branch_head_changed"
     assert git(root, "rev-parse", "codex/demo") != head
     assert store.read(TaskLifecycleKey("demo", 0)).resources[0].state == "cleanup_pending"
+
+
+def test_schema2_missing_ledger_cleanup_recovers_actual_closure_without_task_status(tmp_path):
+    import os, shutil
+    source = os.environ.get("TRELLIS_DELIVERY_API_COMMON")
+    if not source:
+        pytest.skip("Set the fixed reviewed public candidate common directory.")
+    flow_spec = importlib.util.spec_from_file_location("cleanup_schema2_flow", PACKAGE.parent / "guru-check-task/tests/test_delivery_flow.py")
+    flow_module = importlib.util.module_from_spec(flow_spec); flow_spec.loader.exec_module(flow_module)
+    flow = flow_module.DeliveryFlow(); flow.setUp()
+    try:
+        root, store, public, _checkout = missing_ledger_fixture(tmp_path)
+        git(root, "switch", "-q", "codex/demo")
+        shutil.copytree(source, root / ".trellis/scripts/common")
+        (root / ".trellis/workflow.md").write_bytes((flow.repo / ".trellis/workflow.md").read_bytes())
+        from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+        scope = authority_ref(root / "tracked", root)
+        record = flow.projection.read_record()
+        record.update(id="demo", name="demo", accepted_scope=scope, deliveries=[], completion_results=[], closure_results=[])
+        active_ref = ".trellis/tasks/current"
+        active = root / active_ref; active.mkdir(parents=True)
+        (active / "task.json").write_text(json.dumps(record))
+        projection = DeliveryProjection(root, active_ref)
+        key = {**flow.key, "task_id":"demo"}
+        projection.apply({"api_version":"1.0","operation":"create_delivery","key":key,"owner_role":"creation","owner_id":"guru-test-creation","scope_ref":{"authority":scope,"anchors":["withdrawn"]},"profile":"local_commit"})
+        projection.apply({"api_version":"1.0","operation":"stop","key":key,"owner_role":"planning","owner_id":"guru-test-planning","expected_phase":"planning","result":{"result_id":"stop:cleanup","owner_id":"guru-test-planning","reason":scope,"scope_decision":scope,"evidence":[scope]}})
+        task_key = {"task_id":"demo","lifecycle_generation":0}
+        projection.apply({"api_version":"1.0","operation":"complete_task","key":task_key,"owner_role":"completion","owner_id":"guru-test-completion","result":{"result_id":"complete:cleanup","owner_id":"guru-test-completion","evidence":[scope],"lifecycle_generation":0,"accepted_scope":scope,"delivery_result_ids":[],"outcome":"completed"}})
+        projection.apply({"api_version":"1.0","operation":"close_task","key":task_key,"owner_role":"closure","owner_id":"guru-test-closure","result":{"result_id":"close:cleanup","owner_id":"guru-test-closure","evidence":[scope],"lifecycle_generation":0,"completion_result_id":"complete:cleanup","disposition":"no_mutation","source_result":None}})
+        archive_ref = ".trellis/tasks/archive/2026-09/demo"
+        (root / archive_ref / "task.json").write_bytes((active / "task.json").read_bytes())
+        shutil.rmtree(active)
+        git(root, "add", ".trellis"); git(root, "commit", "-qm", "archive public Task Closure")
+        head = git(root, "rev-parse", "HEAD")
+        git(root, "switch", "-q", "main")
+        receipt_path = store.repository.common_dir / "guru-team/finish-results/demo/0-manual.json"
+        receipt = json.loads(receipt_path.read_text()); receipt.update(finish_head=head, target_head=head)
+        receipt_path.write_text(json.dumps(receipt))
+        public = selection(root, finish_result_id=receipt["finish_result_id"])
+        listed = invoke(tmp_path, root, {**public,"selected_candidate_ids":[]})
+        assert listed["exit_id"] == "manual_cleanup_required"
+        assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+        assert not git(root, "branch", "--list", "codex/demo")
+        assert invoke(tmp_path, root, public, confirmed=True)["exit_id"] == "cleaned"
+        assert store.read(TaskLifecycleKey("demo",0)) is None
+    finally:
+        flow.doCleanups()

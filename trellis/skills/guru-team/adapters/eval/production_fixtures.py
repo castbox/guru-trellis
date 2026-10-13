@@ -200,6 +200,7 @@ def production_phase2_input(
     route = None
     consumer = {
         "passed": {"kind": "skill", "id": "guru-create-task-commit"},
+        "resolved_reconciliation_passed": {"kind": "skill", "id": "guru-reconcile-task-base"},
         "implementation_required": {"kind": "workflow", "id": "guru-resume-implementation"},
         "planning_stale": {"kind": "workflow", "id": "guru-task-check-planning-router"},
         "blocked": {"kind": "stop", "id": "task-check-blocked"},
@@ -280,7 +281,7 @@ def production_phase2_input(
             "remaining_work": [],
             "independent_delivery_conditions": ["The current slice is independently deliverable."],
             "validation_boundaries": ["Production fixture scope only."],
-            "current_slice_status": "passed" if exit_id == "passed" else "blocked",
+            "current_slice_status": "passed" if exit_id in {"passed", "resolved_reconciliation_passed"} else "blocked",
             "remaining_work_status": "disclosed",
             "summary": "The current slice and remaining work were reviewed for this fixture.",
         },
@@ -301,7 +302,7 @@ def production_phase2_input(
         },
         "candidate_classifications": candidate_classifications,
         "semantic_review": {
-            "status": exit_id,
+            "status": "passed" if exit_id == "resolved_reconciliation_passed" else exit_id,
             "summary": f"The production Phase 2 owner selected {exit_id}.",
             "adequacy_dimensions": dimensions,
             "scope_decisions": scope_decisions,
@@ -430,44 +431,6 @@ def production_commit_for_review(
     if candidate_path.exists():
         raise ValueError("production Branch Review fixture retained its consumed candidate")
     return str(executed["commit_sha"]), str(candidate["git"]["base_ref"])
-
-def production_committed_reentry_invocation(
-    runtime: Any, fixture: Path, task: Path, checked: dict[str, Any],
-    public_input: dict[str, Any],
-) -> None:
-    """Stage clean reentry from actual Check and TaskCommit public outputs."""
-    packages = fixture / ".trellis/guru-team/skills/packages"
-    task_ref = task.relative_to(fixture).as_posix()
-
-    def invoke(skill: str, *arguments: str) -> dict[str, Any]:
-        process = subprocess.run(
-            [str(packages / skill / "scripts/invoke.sh"), *arguments, "--json"],
-            cwd=fixture, text=True, capture_output=True, check=False,
-        )
-        if process.returncode:
-            raise ValueError(process.stderr.strip() or process.stdout.strip())
-        return json.loads(process.stdout)
-
-    check_input = {"profile": "initial_check", "mode": "workflow", "task_ref": task_ref, "source_exit": "implementation_complete"}
-    check_path = fixture / OWNER_INPUT
-    runtime.write_json(check_path, check_input)
-    passed = invoke("guru-check-task", "--root", str(fixture), "--input", str(check_path), "--owner-result", checked["artifact_path"])
-    dirty_input = {"profile": "initial_commit", "mode": "workflow", "task_ref": passed["task_ref"], "source_exit": passed["exit_id"], "phase2_commit_anchor": passed["phase2_commit_anchor"]}
-    candidate_path, _candidate, _prepared = production_prepare_task_commit(
-        runtime, fixture, dirty_input,
-        production_task_commit_authoring(runtime, fixture, checked, "passed"),
-    )
-    committed = invoke("guru-create-task-commit", "--root", str(fixture), "--candidate-artifact", str(candidate_path))
-    if committed["branch_review_commit"] != run_git(fixture, "rev-parse", "HEAD") or run_git(fixture, "status", "--porcelain"):
-        raise ValueError("committed reentry fixture did not produce a clean exact TaskCommit candidate")
-    fresh = production_record_phase2(runtime, fixture, task, packages / "guru-check-task", "passed")
-    runtime.write_json(check_path, check_input)
-    passed = invoke("guru-check-task", "--root", str(fixture), "--input", str(check_path), "--owner-result", fresh["artifact_path"])
-    public_input.update(task_ref=passed["task_ref"], source_exit=passed["exit_id"], phase2_commit_anchor=passed["phase2_commit_anchor"])
-    runtime.write_json(fixture / OWNER_INVOCATION, {
-        "public_input": public_input,
-        "owner_result": {"status": "passed", "summary": "The fixture reviewed the exact current clean task range after fresh Phase2.", "evidence": ["Actual public TaskCommit candidate and fresh public Phase2 passed output."]},
-    })
 
 def production_review_candidate(
     exit_id: str,
@@ -677,6 +640,16 @@ def production_record_review(
     semantic_path.write_text(json.dumps({
         "candidate_classifications": candidate_classifications,
         "semantic_review": semantic,
+        "delivery_review": {
+            "task_scope": ["R1. Production eval"],
+            "delivery_slice": ["R1. Production eval"],
+            "remaining_work": [],
+            "independent_delivery_conditions": ["The current public wrapper slice has one bounded requirement."],
+            "validation_boundaries": ["Installed owner transport only; native semantic review and remote publication are unverified."],
+            "current_slice_status": "passed" if exit_id in {"passed", "continuity_passed"} else "blocked",
+            "remaining_work_status": "disclosed",
+            "summary": "The fixture's actual Task scope and selected Delivery plan cover the same bounded requirement.",
+        },
         "verification_evidence": {
             "reviewer": reviewer,
             "review_source": runtime.INDEPENDENT_REVIEW_SOURCE,
@@ -691,7 +664,7 @@ def production_record_review(
         },
     }) + "\n", encoding="utf-8")
     public_input["task_ref"] = task.relative_to(fixture).as_posix()
-    if public_input.get("profile") == "base_continuity":
+    if public_input.get("profile") in {"base_continuity", "delivery_base_continuity"}:
         prior_head = run_git(fixture, "rev-parse", f"{head}^")
         public_input.update({
             "task_head": head,
@@ -745,6 +718,7 @@ def production_record_review(
     return runtime.cmd_check_review_gate(argparse.Namespace(
         root=str(fixture),
         task=task.relative_to(fixture).as_posix(),
+        delivery_key=public_input.get("delivery_key"),
         allow_nonpass=True,
         expected_exit=exit_id,
     ))
@@ -1688,6 +1662,9 @@ def stage_production_owner_execution(
         return stage_archived_owner_execution(
             request, fixture, fixture_runtime_target, request_package, recipe, public_input_path,
         )
+    if skill_id in {"guru-approve-task-plan", "guru-check-task", "guru-create-task-commit", "guru-review-branch"}:
+        from adapters.eval.delivery_production import stage_delivery_production
+        return stage_delivery_production(request, fixture, fixture_runtime_target, request_package, recipe, public_input_path)
     runtime = (
         None
         if skill_id in {"guru-maintain-architecture-baseline", "guru-restore-archived-task"}
@@ -1829,10 +1806,6 @@ def stage_production_owner_execution(
         )
         owner_result_path = Path(checked["artifact_path"])
         if skill_id == "guru-create-task-commit":
-            if recipe == "commit-committed-reentry":
-                production_committed_reentry_invocation(runtime, fixture, task, checked, public_input)
-                runtime.write_json(fixture / OWNER_INPUT, public_input)
-                return package, fixture_runtime_target, production_environment
             public_input["phase2_commit_anchor"] = checked[
                 "phase2_capture_commit"
             ]

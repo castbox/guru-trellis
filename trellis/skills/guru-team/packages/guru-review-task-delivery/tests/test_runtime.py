@@ -14,70 +14,56 @@ GURU_ROOT = PACKAGE.parents[1]
 sys.path.insert(0, str(GURU_ROOT))
 sys.path.insert(0, str(PACKAGE / "runtime"))
 
-from invoke import run as invoke  # noqa: E402
 from runtime.io import CommandError  # noqa: E402
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository  # noqa: E402
 
 
-TASK_REF = ".trellis/tasks/09-18-435-active-task-delivery-loop"
+def invoke(package, command, argv):
+    result = subprocess.run(["bash", str(package / "scripts/invoke.sh"), *argv], capture_output=True, text=True)
+    if result.returncode:
+        error = json.loads(result.stdout or result.stderr)
+        raise CommandError(error.get("code", "stale_identity"), error.get("field_path", "input"), error.get("remediation", "Reread current facts."), result.returncode)
+    return json.loads(result.stdout)
+
+
+TASK_REF = ".trellis/tasks/flow-task"
 
 
 class DeliveryReviewRuntimeTest(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.repo = Path(self.tmp.name) / "repo"
-        self.inputs = Path(self.tmp.name) / "inputs"
-        self.inputs.mkdir()
-        subprocess.run(["git", "init", "-q", "-b", "main", str(self.repo)], check=True)
-        self.git("config", "user.name", "Test")
-        self.git("config", "user.email", "test@example.invalid")
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("readiness_flow", PACKAGE.parent / "guru-check-task/tests/test_delivery_flow.py")
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        self.flow = module.DeliveryFlow(); self.flow.setUp()
+        self.repo = self.flow.repo
+        self.inputs = self.flow.inputs
         self.git("remote", "add", "origin", "git@github.com:castbox/guru-trellis.git")
-        (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
-        (self.repo / "base.txt").write_text("base\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "base")
-        self.git("switch", "-qc", "codex/435-active-task-delivery-loop")
-        task = self.repo / TASK_REF
-        task.mkdir(parents=True)
-        (task / "task.json").write_text(
-            json.dumps(
-                {
-                    "id": "435-active-task-delivery-loop",
-                    "name": "435-active-task-delivery-loop",
-                    "lifecycle_generation": 0,
-                    "source": {"kind": "issue", "repo_ref": "castbox/guru-trellis",
-                               "number": 435, "disposition": "exact_source"},
-                    "title": "Delivery review fixture",
-                    "description": "One current independently deliverable slice.",
-                    "status": "in_progress",
-                    "dev_type": None,
-                    "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/435",
-                    "package": None,
-                    "priority": "P2",
-                    "createdAt": "2026-10-09",
-                    "completedAt": None,
-                    "base_branch": "main",
-                    "worktree_path": None,
-                    "commit": None,
-                    "pr_url": None,
-                    "children": [],
-                    "parent": None,
-                    "relatedFiles": [],
-                    "notes": "",
-                    "meta": {},
-                }
-            )
-        )
-        (self.repo / "delivery.txt").write_text("review package\n")
-        self.git("add", ".")
-        self.git("commit", "-qm", "delivery review candidate")
-        self.head = self.git("rev-parse", "HEAD")
+        task_file = self.repo / TASK_REF / "task.json"
+        record = json.loads(task_file.read_text())
+        record["source"] = {"kind":"issue","repo_ref":"castbox/guru-trellis","number":435,"disposition":"exact_source"}
+        task_file.write_text(json.dumps(record))
+        self.head = self.flow.head
         self.bindings = BranchBindingStore(inspect_repository(self.repo))
-        self.key = TaskLifecycleKey("435-active-task-delivery-loop", 0)
-        self.bindings.establish(self.key, "codex/435-active-task-delivery-loop")
+        self.key = TaskLifecycleKey("flow-task", 0)
+        self.reviewed = self.flow.full_review(self.flow.check())
 
     def tearDown(self):
-        self.tmp.cleanup()
+        self.flow.doCleanups()
+
+    def refresh_review(self):
+        # Metadata commits legitimately change the candidate anchor. Re-enter
+        # through the actual owner transition and fresh Check/full Review.
+        projection = self.flow.projection
+        from runtime.delivery_projection.gates import rework
+        from runtime.delivery_projection.adapter import authority_ref
+        current = projection.resolve(self.flow.key)
+        role = "readiness" if current["phase"] == "publishing" else "full_review"
+        rework(projection, self.flow.key, role, "implementation",
+               authority_ref(projection.planning_directory(self.flow.key) / "implement.md", self.repo),
+               ["check", "full_review", "readiness"])
+        self.flow.head = self.head
+        projection.begin_check(self.flow.key, projection.candidate(["app.txt"], head_ref=self.head, base_ref=self.git("rev-parse", "main")))
+        self.reviewed = self.flow.full_review(self.flow.check())
 
     def git(self, *args: str) -> str:
         return subprocess.run(
@@ -91,7 +77,9 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
 
     def public(self) -> dict:
         return {
-            "profile": "delivery_review",
+            "profile": "delivery_delivery_review",
+            "delivery_key": self.flow.key,
+            "full_review_result_id": self.reviewed["full_review_result_id"],
             "mode": "workflow",
             "task_ref": TASK_REF,
             "branch_review_commit": self.head,
@@ -159,14 +147,15 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         )
 
     def checkpoint(self) -> Path:
-        return self.repo / ".trellis/.runtime/guru-team/owner-checkpoints/09-18-435-active-task-delivery-loop/delivery-review-gate.json"
+        return self.repo / ".trellis/.runtime/guru-team/owner-checkpoints/flow-task/delivery-review-gate.json"
 
     def test_ready_projects_minimal_publish_seed_and_retires_checkpoint(self):
         output = self.invoke(self.semantic())
         self.assertEqual("ready", output["exit_id"])
         self.assertEqual(self.head, output["reviewed_head"])
         self.assertEqual("remaining", output["remaining_work_state"])
-        self.assertRegex(output["delivery_cycle_ref"], r"^delivery-cycle:v1:[0-9a-f]{64}$")
+        self.assertEqual(output["delivery_key"], self.flow.key)
+        self.assertTrue(output["readiness_result_id"].startswith("readiness:"))
         self.assertFalse(self.checkpoint().exists())
 
     def test_actual_nonempty_rejected_candidate_can_be_ready(self):
@@ -209,7 +198,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.assertEqual(lost_output, recovered)
         self.assertFalse(self.checkpoint().exists())
 
-        (self.repo / "delivery.txt").write_text("finding fixed in current slice\n")
+        (self.repo / "app.txt").write_text("finding fixed in current slice\n")
         self.git("commit", "-qam", "fix delivery candidate")
         with self.assertRaises(CommandError) as caught:
             self.invoke(self.semantic())
@@ -236,6 +225,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         }
         for exit_id, fields in expected.items():
             with self.subTest(exit_id=exit_id):
+                self.tearDown(); self.setUp()
                 output = self.invoke(self.semantic(exit_id))
                 self.assertEqual(exit_id, output["exit_id"])
                 self.assertTrue(fields.issubset(output))
@@ -263,6 +253,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.git("add", TASK_REF)
         self.git("commit", "-qm", "no issue task")
         self.head = self.git("rev-parse", "HEAD")
+        self.refresh_review()
         semantic = self.semantic()
         semantic["pr_payload"]["body"] = semantic["pr_payload"]["body"].replace("Refs #435", "")
         self.assertEqual(self.invoke(semantic)["exit_id"], "ready")
@@ -274,6 +265,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.git("add", TASK_REF)
         self.git("commit", "-qm", "structured issue source")
         self.head = self.git("rev-parse", "HEAD")
+        self.refresh_review()
         with self.assertRaises(CommandError) as caught:
             self.invoke(self.semantic())
         self.assertEqual(caught.exception.field_path, "pr_payload.body")
@@ -290,6 +282,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.git("add", TASK_REF)
         self.git("commit", "-qm", "cross repository source")
         self.head = self.git("rev-parse", "HEAD")
+        self.refresh_review()
         with self.assertRaises(CommandError) as caught:
             self.invoke(self.semantic())
         self.assertEqual(caught.exception.field_path, "pr_payload.body")
@@ -309,6 +302,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.git("add", TASK_REF)
         self.git("commit", "-qm", "case variant issue source")
         self.head = self.git("rev-parse", "HEAD")
+        self.refresh_review()
         self.assertEqual(self.invoke(self.semantic())["exit_id"], "ready")
 
     def test_missing_structured_source_is_not_a_current_lifecycle_candidate(self):
@@ -356,7 +350,7 @@ class DeliveryReviewRuntimeTest(unittest.TestCase):
         self.assertFalse(self.checkpoint().exists())
 
     def test_post_review_dirty_content_fails_closed(self):
-        (self.repo / "delivery.txt").write_text("drift\n")
+        (self.repo / "app.txt").write_text("drift\n")
         with self.assertRaises(CommandError) as raised:
             self.invoke(self.semantic())
         self.assertEqual("stale_identity", raised.exception.code)

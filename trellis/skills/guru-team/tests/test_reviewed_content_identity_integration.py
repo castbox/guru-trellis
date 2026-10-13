@@ -5,11 +5,14 @@ import os
 import subprocess
 import tempfile
 import unittest
+import sys
 from pathlib import Path
 
 
 SKILLS = Path(__file__).resolve().parents[1]
 REPO = SKILLS.parents[2]
+sys.path.insert(0, str(SKILLS))
+from runtime.io import project_intermediate_receipt
 PACKAGES = (
     "guru-review-branch",
     "guru-verify-extension-installation",
@@ -87,7 +90,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
         )
         payload = json.loads(process.stdout or process.stderr)
         self.assertEqual(0, process.returncode, (package, payload))
-        return payload
+        return project_intermediate_receipt(payload, SKILLS / "schemas")
 
     def all_identities(self, *, include_worktree: bool = False) -> dict[str, dict]:
         return {
@@ -124,7 +127,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             self.assertEqual(0, process.returncode, payload)
         else:
             self.assertNotEqual(0, process.returncode, payload)
-        return payload
+        return project_intermediate_receipt(payload, SKILLS / "schemas") if ok and name != "invoke.sh" else payload
 
     def public_input(self) -> dict:
         return {

@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 from runtime.io import project_intermediate_receipt
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
@@ -28,9 +29,10 @@ class RebindTaskBranchTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.git("init", "-q", "-b", "main")
+        install_common(self.root)
         task = self.root / ".trellis/tasks/demo"
         task.mkdir(parents=True)
-        (task / "task.json").write_text(json.dumps({"id": "demo", "status": "in_progress", "lifecycle_generation": 0}), encoding="utf-8")
+        (task / "task.json").write_text(json.dumps(public_task({"id": "demo", "name": "demo", "source": {"kind": "no_issue"}, "lifecycle_generation": 0})), encoding="utf-8")
         self.git("add", ".")
         self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture")
         self.head = self.git("rev-parse", "HEAD")
@@ -45,7 +47,7 @@ class RebindTaskBranchTests(unittest.TestCase):
         )
         self.request = {
             "route": "same_checkout_new_ref", "task_id": "demo", "task_ref": ".trellis/tasks/demo",
-            "lifecycle_generation": 0, "expected_status": "in_progress", "current_checkout": str(self.root),
+            "lifecycle_generation": 0, "current_checkout": str(self.root),
             "target_branch_name": "task/new", "selected_base_ref": "main", "reviewed_base_head": self.head,
         }
 
@@ -54,7 +56,7 @@ class RebindTaskBranchTests(unittest.TestCase):
 
     def test_rebind_and_recover_exact_plan_without_repeat(self) -> None:
         plan = MODULE.prepare(self.root, self.request)
-        payload = {"profile": "task_branch_rebind", "mode": "workflow", "action": "execute", "plan": plan}
+        payload = {"profile": "delivery_task_branch_rebind", "mode": "workflow", "action": "execute", "plan": plan}
         result = MODULE.invoke(self.root, payload)
         validate_json(result, PACKAGE / "schemas/public-output.schema.json", "output")
         self.assertEqual(result["exit_id"], "rebound", result)
@@ -86,7 +88,7 @@ class RebindTaskBranchTests(unittest.TestCase):
             return json.loads(process.stdout)
 
         prepared = project_intermediate_receipt(call("record-plan.sh", self.request), PACKAGE.parents[1] / "schemas")
-        payload = {"profile": "task_branch_rebind", "mode": "workflow", "action": "execute", "plan": prepared["plan"]}
+        payload = {"profile": "delivery_task_branch_rebind", "mode": "workflow", "action": "execute", "plan": prepared["plan"]}
         executed = project_intermediate_receipt(call("rebind.sh", payload), PACKAGE.parents[1] / "schemas")
         self.assertEqual(executed["exit_id"], "rebound")
         self.assertEqual(self.git("branch", "--show-current"), "task/new")

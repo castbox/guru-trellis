@@ -16,6 +16,8 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.delivery_projection.tests.upstream_fixture import scripts_source, public_task
+from runtime.delivery_projection.tests.test_installed_projection import DECLARATION
 from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
 
 
@@ -43,9 +45,10 @@ class CreateTaskTests(unittest.TestCase):
         self.git("init", "-q", "-b", "main")
         self.git("config", "user.name", "Test")
         self.git("config", "user.email", "test@example.invalid")
-        upstream = os.environ.get("TRELLIS_FIXED_FORK_SOURCE")
-        scripts = Path(upstream) / "packages/cli/src/templates/trellis/scripts" if upstream else SOURCE / ".trellis/scripts"
+        scripts = scripts_source()
         shutil.copytree(scripts, self.root / ".trellis/scripts")
+        (self.root / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        (self.root / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n"+json.dumps(DECLARATION)+"\n[/trellis-runtime-contract]\n")
         (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
         self.git("add", ".")
         self.git("commit", "-qm", "fixture")
@@ -57,7 +60,7 @@ class CreateTaskTests(unittest.TestCase):
         prefix = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%m-%d")
         self.ref = f".trellis/tasks/{prefix}-example-task"
         self.payload = {
-            "profile": "task_creation", "action": "create_task",
+            "profile": "delivery_task_creation", "action": "create_task",
             "creation": {
                 "task_id": "example-task", "task_ref": self.ref,
                 "source_profile": "standalone_request", "reviewed_source": {"kind": "no_issue"},
@@ -126,7 +129,8 @@ class CreateTaskTests(unittest.TestCase):
         })
         task = json.loads((self.root / self.ref / "task.json").read_text(encoding="utf-8"))
         self.assertEqual(task["source"], {"kind": "no_issue"})
-        self.assertEqual(task["status"], "planning")
+        self.assertEqual(task["schema_version"], "2.0")
+        self.assertNotIn("status", task)
         self.assertNotIn("delivery_target", task)
         self.assertNotIn("creator", task)
         self.assertNotIn("assignee", task)
@@ -273,8 +277,9 @@ class CreateTaskTests(unittest.TestCase):
 
             def resolve_task_identity(self, facts, task_id, lifecycle_generation):
                 refs = {"example-task": self.task_ref, "another-task": ".trellis/tasks/another-task"}
-                return SimpleNamespace(task_ref=refs[task_id])
+                return SimpleNamespace(task_ref=refs[task_id], workspace=self_fixture_root)
 
+        self_fixture_root = self.root
         port = SessionPort(self.ref)
         created = self.invoke_with_port(self.payload, port)
         recovery = {**self.payload, "action": "recover_created_task_result"}
@@ -285,6 +290,9 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(self.invoke_with_port(recovery, port), created)
         self.assertEqual(port.writes, 2)
 
+        other = self.root / ".trellis/tasks/another-task"
+        other.mkdir(parents=True)
+        (other / "task.json").write_text(json.dumps(public_task({"id": "another-task", "name": "another-task"})))
         self.assertEqual(bind_session(port, self.root, {"task_id": "another-task",
                                                        "lifecycle_generation": 0}).status, "session_bound")
         self.assertEqual(self.invoke_with_port(recovery, port),
@@ -293,8 +301,7 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(resolve_session(port, self.root).lifecycle.task_id, "another-task")
 
     def test_merged_fixed_fork_official_store_and_session_port(self) -> None:
-        if not os.environ.get("TRELLIS_FIXED_FORK_SOURCE"):
-            self.skipTest("Set TRELLIS_FIXED_FORK_SOURCE to the merged Fixed Fork checkout")
+        scripts_source()
         real_run = subprocess.run
         created = []
 
@@ -341,7 +348,7 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(recovered, created)
         self.assertEqual(metadata_path.read_bytes(), before)
         identity = public(PACKAGE.parent / "guru-establish-task-identity", {
-            "profile": "active_task", "mode": "standalone", "task_id": "example-task",
+            "profile": "delivery_active_task", "mode": "standalone", "task_id": "example-task",
             "task_ref": self.ref, "lifecycle_generation": 0,
         })
         self.assertEqual(identity["exit_id"], "identity_established")
@@ -392,12 +399,12 @@ class CreateTaskTests(unittest.TestCase):
         sibling_status = subprocess.check_output(["git", "status", "--porcelain"], cwd=path.parents[3])
         for skill, payload, expected in (
             ("guru-create-task", self.payload, "created"),
-            ("guru-ensure-task-checkout", {"profile": "active_task", "mode": "workflow",
+            ("guru-ensure-task-checkout", {"profile": "delivery_active_task", "mode": "workflow",
                 "task_id": "example-task", "lifecycle_generation": 0}, "checkout_resolved"),
-            ("guru-bind-task-session", {"profile": "resume_current_task", "mode": "standalone",
+            ("guru-bind-task-session", {"profile": "delivery_resume_current_task", "mode": "standalone",
                 "task_id": "example-task", "lifecycle_generation": 0,
                 "continuation_id": "fixture-resume"}, "session_resumed"),
-            ("guru-establish-task-identity", {"profile": "active_task", "mode": "standalone",
+            ("guru-establish-task-identity", {"profile": "delivery_active_task", "mode": "standalone",
                 "task_id": "example-task", "task_ref": self.ref,
                 "lifecycle_generation": 0}, "identity_established"),
             ("guru-create-task", {**self.payload, "action": "recover_created_task_result"}, "created"),
@@ -421,7 +428,7 @@ class CreateTaskTests(unittest.TestCase):
                 self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
                 self.assertEqual(result["status"], "ready")
                 completed, selected = self.public_call(PACKAGE.parent, "guru-establish-task-identity", {
-                    "profile": "active_task", "mode": "standalone", "task_id": "historical-task",
+                    "profile": "delivery_active_task", "mode": "standalone", "task_id": "historical-task",
                     "task_ref": ".trellis/tasks/09-23-old", "lifecycle_generation": 1,
                 }, root=path.parents[3])
                 self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
@@ -526,7 +533,7 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
         self.assertEqual(plan["status"], "ready")
         completed, selected = self.public_call(packages, "guru-establish-task-identity", {
-            "profile": "active_task", "mode": "standalone", "task_id": "historical-task",
+            "profile": "delivery_active_task", "mode": "standalone", "task_id": "historical-task",
             "task_ref": ".trellis/tasks/09-23-old", "lifecycle_generation": 1,
         }, root=path.parents[3])
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
@@ -535,9 +542,9 @@ class CreateTaskTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
         self.assertEqual(created["exit_id"], "created", created)
         for skill, data, expected in (
-            ("guru-ensure-task-checkout", {"profile": "active_task", "mode": "workflow", "task_id": "example-task", "lifecycle_generation": 0}, "checkout_resolved"),
-            ("guru-bind-task-session", {"profile": "resume_current_task", "mode": "standalone", "task_id": "example-task", "lifecycle_generation": 0, "continuation_id": "installed-resume"}, "session_resumed"),
-            ("guru-establish-task-identity", {"profile": "active_task", "mode": "standalone", "task_id": "example-task", "task_ref": self.ref, "lifecycle_generation": 0}, "identity_established"),
+            ("guru-ensure-task-checkout", {"profile": "delivery_active_task", "mode": "workflow", "task_id": "example-task", "lifecycle_generation": 0}, "checkout_resolved"),
+            ("guru-bind-task-session", {"profile": "delivery_resume_current_task", "mode": "standalone", "task_id": "example-task", "lifecycle_generation": 0, "continuation_id": "installed-resume"}, "session_resumed"),
+            ("guru-establish-task-identity", {"profile": "delivery_active_task", "mode": "standalone", "task_id": "example-task", "task_ref": self.ref, "lifecycle_generation": 0}, "identity_established"),
             ("guru-create-task", {**self.payload, "action": "recover_created_task_result"}, "created"),
         ):
             completed, result = self.public_call(packages, skill, data)

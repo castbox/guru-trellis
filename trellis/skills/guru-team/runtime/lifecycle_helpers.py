@@ -10,8 +10,9 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository, resolve_task_ref
-from task_lifecycle.git_facts import find_registration, is_ancestor
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository, resolve_task_ref
+from runtime.task_lifecycle.git_facts import find_registration, is_ancestor
 
 
 def _git(root: Path, *args: str) -> str:

@@ -580,7 +580,11 @@ class SharedRuntimeTests(unittest.TestCase):
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
         manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
-        self.assertEqual(len(active), 36)
+        self.assertEqual(len(active), 38)
+        active_ids = {row["id"] for row in active}
+        self.assertIn("guru-create-delivery", active_ids)
+        self.assertIn("guru-activate-delivery", active_ids)
+        self.assertNotIn("guru-activate-task", active_ids)
         self.assertEqual({row["id"] for row in active}, set(manifest["public_api"]["skill_contracts"]["active_skill_ids"]))
         for row in active:
             with self.subTest(skill=row["id"]):
@@ -709,27 +713,17 @@ class SharedRuntimeTests(unittest.TestCase):
                 SKILLS / "packages" / skill_id / "scripts/invoke.sh",
                 projection / "scripts/invoke.sh",
             )
-            task = repo / ".trellis/tasks/08-12-context"
-            task.mkdir(parents=True)
-            (task / "task.json").write_text(json.dumps({
-                "id": "08-12-context",
-                "status": "in_progress",
-                "base_branch": "main",
-                "lifecycle_generation": 0,
-                "name": "context", "title": "Context fixture",
-                "source": {"kind": "no_issue"}, "description": "Context fixture",
-                "dev_type": None, "scope": None, "package": None,
-                "priority": "P2", "createdAt": "2026-10-06", "completedAt": None,
-                "worktree_path": None, "commit": None, "pr_url": None,
-                "children": [], "parent": None, "relatedFiles": [], "notes": "", "meta": {},
-            }))
+            shutil.copy2(SKILLS.parents[1] / "workflows/guru-team/workflow.md", repo / ".trellis/workflow.md")
+            from adapters.eval.delivery_production import installed_task
+            task = installed_task(repo, "context-runtime-test", task_id="context")
+            task_ref = task.relative_to(repo).as_posix()
             subprocess.run(["git", "config", "user.name", "Kernel Test"], cwd=repo, check=True)
             subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)
             subprocess.run(["git", "add", "."], cwd=repo, check=True)
             subprocess.run(["git", "commit", "-q", "-m", "test: add installed runtime"], cwd=repo, check=True)
             from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
             BranchBindingStore(inspect_repository(repo)).establish(
-                TaskLifecycleKey("08-12-context", 0), "feat/context"
+                TaskLifecycleKey("context", 0), "feat/context"
             )
             subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"], cwd=repo, check=True)
             subprocess.run(["git", "branch", "main"], cwd=repo, check=True)
@@ -778,7 +772,7 @@ class SharedRuntimeTests(unittest.TestCase):
                 [
                     str(installed_root / "skills/packages" / skill_id / "scripts/record-context-discovery.sh"),
                     "--root", str(repo), "--invocation", "-",
-                    "--active-task", ".trellis/tasks/08-12-context",
+                    "--active-task", task_ref,
                 ],
                 cwd=outside, input=json.dumps(envelope), text=True,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
@@ -798,7 +792,7 @@ class SharedRuntimeTests(unittest.TestCase):
                     "--invocation",
                     str(invocation),
                     "--active-task",
-                    ".trellis/tasks/08-12-context",
+                    task_ref,
                 ],
                 cwd=outside,
                 text=True,
@@ -933,7 +927,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             owner_repository = target.parents[4]
             self.assertEqual(package.name, "guru-maintain-architecture-baseline")
             self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
-            self.assertFalse((owner_repository / ".trellis/.runtime").exists())
+            self.assertFalse((owner_repository / ".trellis/.runtime/guru-team/owner-checkpoints").exists())
             facts = json.loads(
                 (
                     owner_repository
@@ -945,7 +939,11 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 Path(path).name in {"prd.md", "implement.md", "task.json"}
                 for path in facts["required_reads"]
             ))
-            self.assertIn(".trellis/tasks/eval-task/design.md", facts["required_reads"])
+            public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+            design_locator = public["task_locator"] + "/" + public["planning_root"] + "/design.md"
+            self.assertIn(design_locator, facts["required_reads"])
+            self.assertNotIn(".trellis/tasks/eval-task/design.md", facts["required_reads"])
+            self.assertTrue((owner_repository / design_locator).is_file())
             for caller in ("transport.py", "import_pipeline.py", "query_summary.py"):
                 self.assertIn(caller, facts["required_reads"])
                 self.assertTrue((owner_repository / caller).is_file())
@@ -973,7 +971,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 self.assertNotIn("expected_exit", native_request)
                 self.assertNotIn("owner_result", json.dumps(native_request).lower())
                 self.assertIn("references/contract.md", context)
-                self.assertIn("schemas/semantic-result-planning-3.0.schema.json", context)
+                self.assertIn("schemas/semantic-result-delivery-1.0.schema.json", context)
                 owner_repository = Path(protocol["owner_repository"])
                 self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
 
@@ -982,14 +980,9 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 case_root = Path(protocol["model_root"]) / "evidence/case"
                 facts_path = repository / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
                 facts = json.loads(facts_path.read_text(encoding="utf-8"))
-                public_reads = [
-                    projection / "SKILL.md",
-                    projection / "references/contract.md",
-                    projection / "interface.json",
-                    projection / "schemas/semantic-result-planning-3.0.schema.json",
-                    projection / "schemas/public-input-aggregate-3.0.schema.json",
-                    projection / "schemas/public-input-impact-current-3.0.schema.json",
-                ]
+                from adapters.eval.architecture_authoring import public_contract_reads
+                public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+                public_reads = public_contract_reads(projection, public)
                 case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
                 owner_reads = [
                     facts_path,
@@ -1243,6 +1236,11 @@ class QualificationNativeIsolationTests(unittest.TestCase):
             "next-task-consumption",
             "missing-external-evidence",
             "repair-current-contract",
+            "whole-task-acceptance-current",
+            "delivery-task-impact-sync-identity",
+            "delivery-promotion-identity",
+            "delivery-repair-identity",
+            "delivery-bootstrap-foundation-identity",
         }
         with tempfile.TemporaryDirectory() as temporary:
             args = argparse.Namespace(

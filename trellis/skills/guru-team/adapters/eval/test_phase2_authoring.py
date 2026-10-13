@@ -57,7 +57,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                 )
                 repo = target.parents[4]
                 self.assertFalse((repo / ".trellis/.runtime/guru-team/evals/owner-result.json").exists())
-                self.assertFalse((repo / ".trellis/.runtime/guru-team/owner-checkpoints").exists())
+                self.assertFalse(any((repo / ".trellis/.runtime/guru-team/owner-checkpoints").glob("**/phase2-check.json")))
                 facts = json.loads((repo / phase2_authoring.FACTS).read_text())
                 self.assertNotIn("typed_exit", json.dumps(facts))
                 self.assertNotIn("expected_exit", json.dumps(facts))
@@ -74,10 +74,10 @@ class Phase2AuthoringTests(unittest.TestCase):
                     self.assertIn("test_singleton", evidence["stderr"])
                     self.assertIn("AssertionError", evidence["stderr"])
                 architecture = json.loads((repo / "docs/phase2-evidence/architecture-input.json").read_text())
-                validate_json(architecture, package.parent / phase2_authoring.ARCHITECTURE / "schemas/public-input-impact.schema.json", "input")
+                validate_json(architecture, package.parent / phase2_authoring.ARCHITECTURE / "schemas/public-input-delivery-task-impact-sync-1.0.schema.json", "input")
                 self.assertEqual(architecture["constitution"]["identity_kind"], "version")
                 qualifier = load_package_runtime_module(target, "guru-qualify-normal-scenario", "common")
-                paths = [f".trellis/tasks/current/{name}" for name in ("prd.md", "design.md", "implement.md")]
+                paths = [f"{architecture['task_locator']}/{architecture['planning_root']}/{name}" for name in ("prd.md", "design.md", "implement.md")]
                 self.assertEqual(facts["qualification_target"]["planning_identity"], qualifier.file_set_identity(repo, paths))
                 self.qualifier_roundtrips(repo, package, facts["qualification_target"], successful)
 
@@ -86,7 +86,7 @@ class Phase2AuthoringTests(unittest.TestCase):
         for skill in phase2_authoring.QUALIFIERS:
             public = {
                 "profile": "phase2_candidate_set", "mode": "workflow", "caller": "guru-check-task",
-                "target_locator": ".trellis/tasks/current", "target": target,
+                "target_locator": target["task_ref"], "target": target,
                 "candidate_refs": ["upper-bound"],
                 "candidate_locators": [{"candidate_ref": "upper-bound", "locators": ["path:interval.py", "path:test_interval.py"]}],
             }
@@ -331,7 +331,7 @@ class Phase2AuthoringTests(unittest.TestCase):
     def test_existing_routes_remain_post_owner(self):
         cases = json.loads((PACKAGE / "evals/evals.json").read_text())["evals"]
         existing = {item["expected_exit"] for item in cases if item.get("native_execution_mode", "post_owner") == "post_owner"}
-        self.assertEqual(existing, {"passed", "implementation_required", "planning_stale", "blocked"})
+        self.assertEqual(existing, {"passed", "resolved_reconciliation_passed", "delivery_stopped", "implementation_required", "planning_stale", "blocked"})
 
 
 if __name__ == "__main__":

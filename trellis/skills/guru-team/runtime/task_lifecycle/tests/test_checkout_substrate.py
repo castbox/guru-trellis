@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
 
 from runtime.task_lifecycle.checkout_acquisition import (
     CheckoutAcquisitionPlan,
@@ -41,18 +42,19 @@ class GitFixture:
         self.repo = root / name
         self.repo.mkdir()
         self.git("init", "-b", "main")
+        install_common(self.repo)
         self.git("config", "user.email", "tests@example.com")
         self.git("config", "user.name", "Checkout Tests")
         task = self.repo / TASK_REF
         task.mkdir(parents=True)
         (task / "task.json").write_text(
             json.dumps(
-                {
+                public_task({
                     "id": TASK_ID,
                     "name": task.name,
                     "status": "in_progress",
                     "lifecycle_generation": 0,
-                }
+                })
             ),
             encoding="utf-8",
         )
@@ -113,7 +115,7 @@ class CheckoutSubstrateTests(unittest.TestCase):
             task_ref=TASK_REF,
             lifecycle_generation=0,
             branch_ref=branch,
-            expected_status="in_progress",
+            expected_status="active",
             expected_head=head,
             forbidden_branch_refs=forbidden,
             task_artifact_expectation=artifact_expectation,
@@ -139,7 +141,7 @@ class CheckoutSubstrateTests(unittest.TestCase):
             task_ref=TASK_REF,
             lifecycle_generation=0,
             branch_ref=branch,
-            expected_status="in_progress",
+            expected_status="active",
             decision_head=head or self.fixture.head,
             transaction_id=transaction_id,
             result_id=result_id,

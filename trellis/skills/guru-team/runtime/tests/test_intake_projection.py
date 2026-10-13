@@ -12,6 +12,7 @@ from referencing import Registry, Resource
 from jsonschema import Draft202012Validator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from runtime.schema import validate_json
 from adapters.eval import eval_support, native_adapter
 from adapters.eval.intake_authoring import FACTS_PATH, INTAKE_SKILLS, validate_intake_trace
 
@@ -91,12 +92,12 @@ class IntakeProjectionTests(unittest.TestCase):
                     self.assertIn(str(projected / "schemas/review-invocation.schema.json"), inventory["skill_contract"])
                 wording_schema = json.loads((projection / "flow-packages" / INTAKE_SKILLS[3] /
                                              "schemas/review-invocation.schema.json").read_text())
-                Draft202012Validator(wording_schema).validate({
+                validate_json({
                     "profile": "change_request", "mode": "workflow", "owner_result": {},
                     "change_request": {"source_kind": "issue", "identity": fixture["source"]["url"],
                                        "title": fixture["source"]["title"], "body": fixture["source"]["body"],
                                        "updated_at": fixture["source"]["updated_at"]},
-                })
+                }, projection / "flow-packages" / INTAKE_SKILLS[3] / "schemas/review-invocation.schema.json", "projected_wording")
                 args = [sys.executable, "-B", protocol["helper_path"]]
                 for flag, field in (("trace", "trace_path"), ("request-sha256", "request_sha256"),
                         ("projection-root", "projection_root"), ("repository-root", "repository_projection_root"),
@@ -161,7 +162,7 @@ class IntakeProjectionTests(unittest.TestCase):
         for skill in INTAKE_SKILLS:
             package = SKILLS / "packages" / skill
             interface = json.loads((package / "interface.json").read_text())
-            assets = eval_support.intake_projection_assets(interface) | eval_support.public_projection_shared_assets(interface)
+            assets = eval_support.schema_projection_closure(package, eval_support.intake_projection_assets(interface)) | eval_support.public_projection_shared_assets(interface)
             for path in assets:
                 if path.suffix == ".json" and path != Path("interface.json"):
                     with self.subTest(skill=skill, schema=str(path)):
@@ -170,8 +171,11 @@ class IntakeProjectionTests(unittest.TestCase):
                         resource = Resource.from_contents(schema)
                         resolver = Registry().with_resource(schema["$id"], resource).resolver(schema["$id"])
                         for ref in references(schema):
-                            self.assertTrue(ref.startswith("#"), f"Unprojected schema dependency: {ref}")
-                            resolver.lookup(ref)
+                            if ref.startswith("#"):
+                                resolver.lookup(ref)
+                            else:
+                                dependency = path.parent / ref.split("#", 1)[0]
+                                self.assertIn(dependency, assets, f"Unprojected schema dependency: {ref}")
 
 
 if __name__ == "__main__":
