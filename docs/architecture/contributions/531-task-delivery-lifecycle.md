@@ -1,10 +1,9 @@
 # #531 Task 与 Delivery 生命周期解耦候选贡献
 
-状态：draft，尚未独立 committed Review 或 promotion。本文是任务候选说明，
-不授予 Architecture、Phase 2、Publication、联合验收或原会话恢复通过。
+状态：reviewed_promoted，已独立 committed Review，按 expected .86 晋升至 .87。本文只拥有本任务架构增量，不授予 promotion 新diff的Check/Review、Publication、Task Completion、Release或原会话恢复通过。
 候选 identity：architecture-contribution-531-task-delivery-lifecycle-v1。
 
-当前 authority：docs/architecture/README.md / current-main-0.6.17-guru.86 / active；
+本贡献准入 preimage：docs/architecture/README.md / current-main-0.6.17-guru.86（现为 superseded）；当前 authority 为 .87/active；
 constitution：docs/architecture/00-foundation/design-constitution.md /
 guru-trellis-design-constitution-v1 / current；项目 change-contract：
 guru-trellis-architecture-change-contract-v1，concern set v1。
@@ -37,12 +36,12 @@ rework、实施 begin_check、fresh Check 再接完整 Review。bounded continui
 base delta，不能制造 full_review 或 readiness。Publish/Merge 各自恢复其真实副作用
 并投影公共事实。Completion/Closure/Finish/Cleanup/Reactivate 继续分工。
 
-## 必要 ADR 候选
+## 必要 ADR
 
 531-delivery-authority-owner-exit-candidate-v1：公共 Delivery 执行状态只由上游拥有；
 Guru semantic gates 与私有发布事务各自仍有唯一 owner，退出原 Task 开发 writer。
 其取舍是旧安装在公共 D2 迁移就绪前继续固定旧完整安装，D1 仅受控新装集成。
-这不是新的共享 current ADR，不预分配编号、不关闭既有 GAP。
+该决定经原owner晋升为ADR-024；前驱决定及全部既有GAP状态保留。
 
 ## Required concerns
 
@@ -103,3 +102,5 @@ workspace.root已为project root，project_relative只供上游逆算Git top；G
 Task-local指任务专属owner而非Task物理目录；保留实际项目docs/contributions文件
 及内容身份，不为迁移复制镜像。当前148注册root全量切换会写并行安装，故主保留
 原完整legacy；受控dogfood验证与原安装实际迁移明确分开。
+
+晋升后的共享Architecture identity为current-main-0.6.17-guru.87/active；ADR-024拥有新决定，原.86由Git保留immutable历史。当前contribution identity保持v1，promotion新diff仍按原合同fresh gates。

@@ -1,6 +1,6 @@
 # #531 Traceability
 
-状态：draft，isolated contribution；shared current 尚未晋升。
+状态：reviewed_promoted，shared current为RDT .90 / Architecture .87；前驱引用保持历史身份。
 
 | Requirement / behavior | Design responsibility | Test / scenario |
 | --- | --- | --- |

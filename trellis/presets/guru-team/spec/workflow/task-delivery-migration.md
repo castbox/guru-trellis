@@ -5,9 +5,9 @@
 Task schema 2.0 / Delivery API 1.0。当前绑定：
 
 - 产品提交：`castbox/Trellis@1e40014023de53ddfd9368b3fb4d0a7a31e92293`，PR #36 已合入，build CI `38339653228` 成功。
-- CLI tar SHA-256：`185ed1db6865b72138bb10b6d799225721bf50fddfb370f84d8ec330558f472d`。
+- 当前已审查本地 mixed CLI tar SHA-256：`5aeeb81ca72508081b7dd94ddb7a19f69444714f78b3a38858d908196cc77916`；`185ed1db6865b72138bb10b6d799225721bf50fddfb370f84d8ec330558f472d` 为前驱CLI历史身份。
 - Core tar SHA-256：`45bbfee507ed4964649610f703a90ba01c5f5cea21fb95d0845f92ed45302967`。
-- 包版本 `0.7.0-castbox.3` 仅用于组合诊断，不能替代这些内容身份。
+- 包版本 `0.7.0-castbox.3` 仅用于组合诊断，不能替代这些内容身份。当前mixed CLI包含已审查schema/binding修订；它不是正式source-lock，PR36成功事实也不证明后继PR38 CI或Release通过。
 
 本地 source snapshot fingerprint `17ea37fbfcfe81a7e2c43f223cacdeee6ebd4c90cd28fff74c143a75bebd1a50`
 独立于产品提交和 tar；未初始化 gitlink 的 manifest 记录不能冒充 committed tree identity。

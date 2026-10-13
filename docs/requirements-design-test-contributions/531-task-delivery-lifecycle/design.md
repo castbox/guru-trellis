@@ -1,6 +1,6 @@
 # #531 设计责任增量
 
-状态：draft；继承 RDT .89、Architecture .86，不自授 reviewed/promoted。
+状态：reviewed_promoted，RDT .90继承immutable .89，Architecture .87；以下历史准入与candidate说明保持原身份。
 公共模型和转换引用上游固定 candidate 的 delivery-contract；Guru 不复制 schema。
 
 | Responsibility | 唯一 owner 与边界 |
@@ -20,7 +20,7 @@
 
 最终绑定见manifest及managed task-delivery-migration合同。fresh templates、完整session拓扑、archived两factsprospective转换、tracked安装增量独立Git处置分别由原owner消费；既有业务提交不重复，future规划路径不预提交，五blob桥接仅服务TaskCommit。安装新HEAD freshCheck之后首次完整Review，不能由路径映射制造clean。
 
-上游产品 1e400140 / CLI 185e 候选补修继承 worktree 副本的公共合法处置。
+上游产品1e400140、当前mixed CLI5aeeb/Core45bb承接worktree副本公共合法处置；185e是前驱，不作为当前mixed安装绑定。
 Upgrade 只盘点和透传原 branch_bindings raw snapshot、全部 eligible roots 与
 common/local sessions；公共 executor 独占组判定和唯一 active authority。合法 defer
 peer 的 Task/五规划/modes 与 binding 保持，不新增 Guru 私有迁移资产。旧候选

@@ -1,6 +1,6 @@
 # #531 需求增量
 
-状态：draft，未晋升 shared current。来源是 [Issue #531](https://github.com/castbox/guru-trellis/issues/531)
+状态：reviewed_promoted，当前RDT .90 / Architecture .87；以下前驱引用保留原准入身份。来源是 [Issue #531](https://github.com/castbox/guru-trellis/issues/531)
 当前 accepted scope；继承 RDT current-main-0.6.17-guru.89 / active，
 Architecture current-main-0.6.17-guru.86 / active。
 

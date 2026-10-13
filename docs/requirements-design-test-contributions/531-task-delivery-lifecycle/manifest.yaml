@@ -1,11 +1,11 @@
 task_id: 531-task-delivery-lifecycle
 source: https://github.com/castbox/guru-trellis/issues/531
-status: draft
+status: reviewed_promoted
 strategy: delta_first
 preimage: current-main-0.6.17-guru.89
 architecture:
   locator: docs/architecture/README.md
-  version: current-main-0.6.17-guru.86
+  version: current-main-0.6.17-guru.87
   status: active
 upstream:
   repository: castbox/Trellis
@@ -24,3 +24,4 @@ documents:
   design: design.md
   test: test.md
   traceability: traceability.md
+promoted_rdt: current-main-0.6.17-guru.90

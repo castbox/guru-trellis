@@ -1,6 +1,6 @@
 # #531 验证与未验证边界
 
-状态：本地实施候选的 draft；未通过完整 Phase 2，未完成联合验收。
+状态：已完成当前本地mixed候选的实现、正式主Check与首次独立完整Review、受控installed联合定向验证；已晋升RDT .90/Architecture .87，晋升新diff门禁和本Task交付/整体收尾另行执行。以下各段是带原候选身份的历史事实，不以旧段中的待办覆盖末段当前结果。
 本文件独占实际结果，规划文件保留当时准入快照。
 首轮历史 candidate：ce36314b1ef5b44230883af9c1139a6244c13155 / API 1.0 / schema 2.0。
 下表至“安装与恢复证据边界”均保留首轮实际结果，不重标为当前 077 验证。
@@ -545,3 +545,11 @@ locator/version选择，保留实际安装合同、current owner与历史#454锁
 #434 activation 14PASS/1SKIP、workflow prose18PASS，合计32PASS/1SKIP；不将本轮
 失败抹掉。SKIP对应需专门source或
 native工具链的现有测试入口，非本Issue完整Release矩阵证明。
+
+## 当前候选最终门禁与补验
+
+主候选4e6407cd由原TaskCommit精确提交，提交前独立Architecture与完整九维Check正式passed，首次独立完整Review范围origin/main@bebf1993...4e6407cd正式passed。1009 no-renames路径与默认rename显示1005路径是同一完整写集。该结论不代替promotion新增diff的fresh Check/提交/不同reviewer完整Review。
+
+冻结25个受影响package加projection共26组：Architecture旧prose断言已修正并完整32PASS，其余25组rc0；运行前后candidate文件无变化。Upgrade真实CLI补验20PASS、installed entry locator2PASS、legacy fixed-source只读proof1PASS、discovery18PASS、五种source Completion/Closure5PASS；保留原失败及SKIP，不把补验写成一次全suite绿色。旧断点、真实远端样本与当前24项installed链分别保持原身份；matching mixed CLI5aeeb/Core45bb与API1/Task2/Plan2的Guru受控joint定向验收已完成。
+
+正式upstream PR38仍OPEN/build FAILURE，不声称source-locked release；上游原生证据归上游owner。主legacy安装未切换，原业务树/既有样本只读，原业务会话实际恢复未执行。完整Release矩阵、候选远端immutable marketplace与业务部署均未验证。
