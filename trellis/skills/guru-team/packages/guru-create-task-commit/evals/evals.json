@@ -5,6 +5,22 @@
   "skill_name": "guru-create-task-commit",
   "evals": [
     {
+      "id": "committed-reentry",
+      "prompt": "Complete the current TaskCommit semantic gate for a clean existing candidate after fresh Phase2. Invoke the sole public wrapper with the staged committed_reentry stdin envelope and return its existing committed DTO. Never prepare an empty stage set or create a commit.",
+      "expected_exit": "committed",
+      "expected_output": "The formal wrapper returns the current existing committed candidate without changing Git.",
+      "input_profile_id": "committed_reentry",
+      "assertions": {
+        "deterministic": [
+          {"id": "expected-route", "kind": "json_path", "pointer": "/exit_id", "operation": "equals", "expected": "committed"},
+          {"id": "public-only", "kind": "trace", "invariant": "public_invocation_only"},
+          {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+          {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+        ]
+      },
+      "files": ["evals/files/committed-reentry-input.json", "evals/files/committed-reentry-facts.json"]
+    },
+    {
       "id": "committed-initial",
       "prompt": "Complete the initial_commit semantic owner round and invoke guru-create-task-commit through its public wrapper; return the checker-derived committed route.",
       "expected_exit": "committed",

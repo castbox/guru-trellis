@@ -366,3 +366,13 @@ Return exactly one of:
 - `blocked`: stable reason/remediation only.
 
 Unknown, multiple, stale, unmapped or consumer-mismatched results fail closed.
+
+## TaskCommit clean candidate consumption
+
+The unchanged committed DTO may originate from TaskCommit exact execution or
+its committed_reentry verification of an existing reconciled candidate. Both
+enter the original post_commit guard then fresh Architecture and independent
+full review of the complete selected-base...HEAD. A candidate with no prior
+full review uses initial_review. Do not read Phase 2
+checkpoints or replace this first full review with continuity. Finding-fix and
+fresh-final intent remain selected by the existing recovery caller.

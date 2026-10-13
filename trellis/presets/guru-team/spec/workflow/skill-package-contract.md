@@ -2213,3 +2213,14 @@ to the clear router and current Planning via thin Wording/readiness relay.
 Create Task created remains identity-only. No source matrix, final disposition,
 full text, history, authorization, task.json source model or future Author
 registration enters that handoff.
+
+## Clean Committed TaskCommit Re-entry
+
+The existing `guru-create-task-commit` owns both dirty exact commits and
+read-only verification of current committed candidates. The additive
+`committed_reentry` profile uses its declared mutually exclusive public invoke
+signature and preserves all existing inputs and typed exits. Its canonical
+package contract owns the semantic gate, live checks, and Phase 2 consumption;
+platform entries only load that owner. Reapply the matching complete preset
+when adopting this profile; old installations do not gain it from workflow
+text alone.

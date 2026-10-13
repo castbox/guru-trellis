@@ -1,10 +1,12 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.85`；状态：`active`；predecessor：`current-main-0.6.17-guru.84`；source baseline：[#292 唯一 Planning writer contribution](./contributions/292-unique-planning-author.md) + immutable `.84` authority（Git 历史）。#305 的 EVO-001..007 仍为独立 target；精确 revision 由包含本 authority 的 Git identity 绑定。
+版本：`current-main-0.6.17-guru.86`；状态：`active`；predecessor：`current-main-0.6.17-guru.85`；source baseline：[#530 已提交候选接续 contribution](./contributions/530-clean-committed-reentry.md) + immutable `.85` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.85` 是唯一 active；`.84` 及更早为 immutable superseded history。当前增量为 ARCH-CUR-058 / ARCH-DOM-041 / ARCH-INT-044 与 ADR-022/023；继承全部有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。当前 registry 为37 packages/169 exits/110 commands，business workflow为35 mandatory invokes/163 exits。历史 `.84` 的 #521 增量为 ARCH-CUR-057 / ARCH-DOM-040 / ARCH-INT-043 / EVD-060 与 ADR-021，其 registry36/164/109、business34/158 只绑定该轮。晋升新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
+版本历史：`current-main-0.6.17-guru.86` 是唯一 active；`.85` 及更早为 immutable superseded history。当前增量 ARCH-CUR-059 / ARCH-DOM-042 / ARCH-INT-045 由原 TaskCommit owner 承接 clean committed candidate，无新 Skill、exit 或 state store；没有必要 ADR。晋升差异仍须 fresh Phase2/TaskCommit/独立完整 BranchReview，知识晋升不证明软件发布。
+
+历史 `.85`：当时增量为 ARCH-CUR-058 / ARCH-DOM-041 / ARCH-INT-044 与 ADR-022/023；继承全部有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。当时 registry 为37 packages/169 exits/110 commands，business workflow为35 mandatory invokes/163 exits。历史 `.84` 的 #521 增量为 ARCH-CUR-057 / ARCH-DOM-040 / ARCH-INT-043 / EVD-060 与 ADR-021，其 registry36/164/109、business34/158 只绑定该轮。晋升新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
 
 `.62` 的 C4 provenance 还明确绑定同一变更范围内的 Finalizer 首次 publication recovery guard：无 predecessor transaction 时只接受 absent、exact reviewed HEAD 或 strict historical ancestor remote，并把 exact `pre_push_remote_head` 写入 replacement transaction，再在任何远端 mutation 前复核同一 remote identity。该 guard 复用既有 Finalizer authority（`REQ-048` / `DES-046` / `TST-032`），不新增 lifecycle owner、public DTO 或生产 activation；执行级回归位于 `guru-finalize-task/tests/test_provenance.py`。
 

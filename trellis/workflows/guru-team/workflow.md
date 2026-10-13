@@ -1047,8 +1047,11 @@ Reconcile durable specs and the approved Docs SSOT Plan.
 
 #### 3.4 Task commit
 
-Invoke guru-create-task-commit through its original public entry: run
-`prepare-task-commit` once, obtain the exact dialogue-local commit confirmation,
+Invoke guru-create-task-commit through its original public entry. Its owner
+selects dirty exact commit or the read-only `committed_reentry` profile from
+current Phase 2 and Git facts. Both return the existing `committed` identity;
+only the package owns candidate checks and Phase 2 consumption.
+For dirty increments run `prepare-task-commit` once, obtain the exact dialogue-local commit confirmation,
 then run `invoke-guru-create-task-commit` once through `scripts/invoke.sh` with
 the returned candidate locator. Older argument shapes select the command's
 compatibility branch; message-check, create, and other component commands remain

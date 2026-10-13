@@ -1,0 +1,29 @@
+{
+  "id": "issue-530-clean-committed-reentry",
+  "name": "530-clean-committed-reentry",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 530,
+    "disposition": "exact_source"
+  },
+  "title": "修复 post_commit Reconcile 后已提交候选的 Phase 2→Branch Review 接续",
+  "description": "承接 live guru-trellis #530；修复 clean 已提交候选正式接续首次完整 Branch Review。",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "仅修复 #530 的正常 clean committed reentry，保留 dirty/finding-fix/stale/base evolution 与 fresh Phase2/首次完整独立 BranchReview；同步 canonical 合同、受管投影及风险匹配验证。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-13",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

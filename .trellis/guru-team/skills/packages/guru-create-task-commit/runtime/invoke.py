@@ -44,8 +44,13 @@ def _run_compatibility_projection(package_root:Path,root_value:str|None,invocati
  if not isinstance(result,dict):raise CommandError("invalid_arguments","invocation.result","Provide executor result.")
  return _project(package_root,e,result)
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--candidate-artifact");p.add_argument("--invocation");a=parse(p,argv)
- if a.candidate_artifact and a.invocation:raise CommandError("conflicting_arguments","arguments","Use --candidate-artifact for the Happy Path or --invocation for compatibility, not both.")
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--candidate-artifact");p.add_argument("--invocation");p.add_argument("--committed-reentry");a=parse(p,argv)
+ supplied=[value is not None for value in (a.candidate_artifact,a.invocation,a.committed_reentry)]
+ if sum(supplied)>1:raise CommandError("conflicting_arguments","arguments","Use exactly one of --candidate-artifact, --committed-reentry -, or compatibility --invocation.")
+ if a.committed_reentry is not None:
+  from committed_reentry import run as verify_committed
+  result=verify_committed(package_root,a.root,a.committed_reentry)
+  return result if result.get("exit_id")=="committed" else _project(package_root,{},result)
  if a.candidate_artifact:return _run_happy_path(package_root,a.root,a.candidate_artifact)
  if a.invocation:return _run_compatibility_projection(package_root,a.root,a.invocation)
- raise CommandError("invalid_arguments","arguments","Provide --candidate-artifact for the Happy Path or --invocation for compatibility.")
+ raise CommandError("invalid_arguments","arguments","Provide --candidate-artifact, --committed-reentry -, or compatibility --invocation.")

@@ -1,0 +1,18 @@
+schema_version: "1.0"
+task_ref: "issue-530-clean-committed-reentry"
+task_locator: ".trellis/tasks/10-12-530-clean-committed-reentry"
+task_id: "issue-530-clean-committed-reentry"
+lifecycle_generation: 0
+issue_ref: "https://github.com/castbox/guru-trellis/issues/530"
+source_version: "current-main-0.6.17-guru.88"
+expected_current_version: "current-main-0.6.17-guru.88"
+status: "promoted"
+promoted_version: "current-main-0.6.17-guru.89"
+authority_scope: "versioned_current"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.86"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/530-clean-committed-reentry.md"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false
