@@ -1,6 +1,6 @@
 # #553 Design/Contract追踪
 
-状态：candidate。行为细节由[原Reconcile合同](../../../trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md)独占；此文只拥有职责与双向trace，不作为第二step-local合同。
+状态：reviewed_promoted；RDT .94/active，Architecture .89/active 保持。行为细节由[原Reconcile合同](../../../trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md)独占；此文只拥有职责与双向trace，不作为第二step-local合同。
 
 | Design / contract | 归属和直接consumer |
 | --- | --- |

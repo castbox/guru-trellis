@@ -42,3 +42,7 @@ source dogfood drift命令实际失败于`.claude/commands/guru/finish-work.md`�
 静态验证PASS：marketplace index JSON、44个shell语法、270个Python编译、Task context validate及diff whitespace。Task context validate提示部分大文件注入会截断，语义owner另行直接读取当前完整文件，未以截断注入代替审查。
 
 backend #148、CMS Issue #1、业务仓upgrade/cleanup、原业务会话恢复、完整多平台/Release矩阵均未执行。fixture提供的规划/owner结果只证明transport；独立Architecture、真实semanticCheck/Review/readiness以及发布结果各由原owner分别判断。
+
+## 知识晋升边界
+
+原RDT owner在首次完整 committed Review 后将三层authority从.93同升.94，旧版本文件保持immutable，Architecture .89继续继承；manifest与trace指向同一唯一增量。已执行的产品/installed/native事实适用于未变化的产品机制，晋升只更新文档导航和状态；该新差异必须fresh Phase2、TaskCommit和不同reviewer完整BranchReview，不由知识晋升声明软件Release、业务恢复或Task Closure。

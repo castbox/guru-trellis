@@ -1,6 +1,6 @@
 # #553 实施前基线整合增量
 
-来源：[Issue #553](https://github.com/castbox/guru-trellis/issues/553)，当前accepted验收1-7。前驱R531的Task/Delivery身份与R530的实施后接续责任保持。状态：candidate；未晋升shared current。
+来源：[Issue #553](https://github.com/castbox/guru-trellis/issues/553)，当前accepted验收1-7。前驱R531的Task/Delivery身份与R530的实施后接续责任保持。状态：reviewed_promoted；RDT .94/active，继承不可变 .93。晋升差额仍须 fresh 原 gates。
 
 | Requirement / behavior | 必须观察的行为 |
 | --- | --- |

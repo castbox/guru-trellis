@@ -1,6 +1,6 @@
 # #553 双向追踪
 
-状态：candidate；preimage RDT .93/active，继承Architecture .89/active；delta_first。唯一实际结果与未验证边界位于[Test](./test.md)。
+状态：reviewed_promoted；RDT .94/active（preimage .93），继承Architecture .89/active；delta_first。首次独立完整 committed Review 后由原RDT owner晋升，新增差异重走原 gates。唯一实际结果与未验证边界位于[Test](./test.md)。
 
 | Requirement / behavior | Design/contract | Test | Source AC |
 | --- | --- | --- | --- |
