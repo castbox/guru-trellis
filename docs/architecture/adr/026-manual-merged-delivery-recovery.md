@@ -1,6 +1,6 @@
-# ADR-026 candidate：手动合并事实由原 Merge 归属
+# ADR-026：手动合并事实由原 Merge 归属
 
-状态：proposed，Task-owned #557 candidate；补充ADR-024。尚未独立完整committed Review或shared promotion，不是current实现证据。
+状态：accepted；补充 ADR-024。首次独立完整 committed Review 范围 ccf67ff157dc006f236870049dda9cba0fafa73f...6bba4880362a2e0ff31b535809e4895b7fa1a84d；由原 Architecture owner 随 .90 晋升。新增文档差额仍须 fresh gates。
 
 公开Task/Delivery模型是唯一身份authority。普通用户合并已有正式Delivery PR是正常外部事实，不保证Guru merge message、trailers、pre-merge gate或receipt存在。只以这些生成副产物识别结果，会丢失实际已发布/合入的正式Delivery。
 
@@ -10,4 +10,4 @@
 
 不采用通用importer、新Skill、私有ledger、消息重写/重复merge/emptyDelivery，或用恢复自动完成Task。query2明确读取public事实；既有schema1/2及query1原历史职责和matching旧安装退出由原migration owners维护，不混旧checkpoint和新DTO。
 
-实现/验证/兼容及remaining boundaries由#557唯一RDT贡献与Test承接。源旧完整carrier与新完整matching安装分别报告；不授权业务采用、backend现场恢复、软件Release或完整矩阵。shared ADR导航/current记录只在正式独立Review后由原promotion owner更新。
+实现/验证/兼容及remaining boundaries由#557唯一RDT贡献与Test承接。源旧完整carrier与新完整matching安装分别报告；不授权业务采用、backend现场恢复、软件Release或完整矩阵。当前责任与晋升依据见[已晋升贡献](../contributions/557-manual-merged-delivery-recovery.md)。

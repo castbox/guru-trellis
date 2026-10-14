@@ -1,11 +1,11 @@
 # #557 Requirements 增量
 
-状态：candidate；继承 current-main-0.6.17-guru.95 与 Architecture .89。
+状态：reviewed_promoted；RDT .96 继承 immutable .95 与 Architecture .90。
 规范来源是 [#557](https://github.com/castbox/guru-trellis/issues/557) 的目标、
 合并事实/验证责任与验收1..9；没有额外 scope。
 task-local R557-01..09 对应
-[当前 PRD](../../../.trellis/tasks/10-15-557-manual-merged-delivery-recovery/prd.md)，
-来源承诺唯一处置由同目录 design.md 拥有。
+[规划来源快照](https://github.com/castbox/guru-trellis/blob/6bba4880362a2e0ff31b535809e4895b7fa1a84d/.trellis/tasks/10-15-557-manual-merged-delivery-recovery/prd.md)，
+来源承诺处置保留在同一提交的 task design 快照，当前产品责任由本贡献 design.md 与 canonical 合同承接。
 
 | Behavior identity | Source | Responsibility |
 | --- | --- | --- |

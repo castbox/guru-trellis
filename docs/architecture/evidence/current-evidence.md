@@ -589,3 +589,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-061：#548 原 Task 创建与恢复独立审查
 
 首次完整 committed range 为 `origin/main@901d4f5d3b153725b7bf928427dc8663f4c0a5f2...25ae20319fae2047747da70e3be5167bb39d9a27`。Architecture 与 Branch Review 分别通过原正式入口；[已晋升贡献](../contributions/548-creation-recovery.md)承接 expected .88→.89，[唯一 Test](../../requirements-design-test-contributions/548-creation-recovery/test.md)拥有具体执行层级、首次失败及未验证边界。新晋升差额须 fresh Phase2/commit/完整独立 Review；历史 EVD 不改写，知识晋升不代表软件或业务发布。
+
+## EVD-062：#557 手动合入事实的已审贡献
+
+首次完整独立 committed range 为 `ccf67ff157dc006f236870049dda9cba0fafa73f...6bba4880362a2e0ff31b535809e4895b7fa1a84d`；Architecture/RDT 原 owners 基于该已审贡献维护 successor，新增文档差额仍须 fresh gates。架构关系由[贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 定义，实际软件/安装/真实 PR563 观察及未验证边界只由[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有；不证明 source Delivery、Task Closure、旧业务恢复或 Release。

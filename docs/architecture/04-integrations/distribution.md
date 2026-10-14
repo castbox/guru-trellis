@@ -216,3 +216,5 @@ Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级�
 `ARCH-INT-047`（#547）：retain_open 由 matching Closure/Finish、输入/snapshot schema 及原 marketplace/preset 声明平台投影成套采用，不能把新 action 交给旧 consumer。受控新候选的 installed public chain、reapply/drift/sidecar 结果仅由[唯一 Test](../../requirements-design-test-contributions/547-retain-source-open/test.md)拥有；当前 app 完整旧安装与原 CMS 采用/恢复保持未验证，官方远端 init、真实 upgrade 与完整 Release matrix 分列边界。无新 fallback、安装 writer 或软件轴变化。
 
 `ARCH-INT-048`（#548）：此增量须 matching canonical/preset 成套采用；主完整 legacy 安装保留，原业务迁移不由本任务执行。受控安装、native Planning 与 fixture Activation 分层由[唯一 Test](../../requirements-design-test-contributions/548-creation-recovery/test.md)拥有；不证明原 CMS、软件 Release 或完整矩阵。
+
+`ARCH-INT-049`（#557）：manual recovery profile、显式 query2、原 Completion 合同与 workflow/preset/声明平台成套采用，最低组合与 query1 消费者退出见[贡献](../contributions/557-manual-merged-delivery-recovery.md)及 canonical MIGRATION-557；[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)区分 matching installed 与旧完整 source carrier。没有软件轴或旧业务安装切换。

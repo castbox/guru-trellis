@@ -139,3 +139,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结 retain/close 动作，Finish 只核验冻结结果并归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
 
 `ARCH-DOM-045`（#548）：官方 model/session/C4 仍拥有公共事实，Creation 独占其 pending 生命周期，Author 仅调用 retirement 端口；各规划 gate 原 owner 不变。明确选择与 Creation 自动恢复分属原操作边界，详见[已晋升贡献](../contributions/548-creation-recovery.md)。
+
+`ARCH-DOM-046`（#557）：原 Merge 独占手动终态的归属与 public record_delivery 投影；history 只读既有公共事实，原 Completion 保留 actual content/authority/CI 与整个 Task 证据判断。无新 owner、writer、importer 或 ledger，详见[贡献](../contributions/557-manual-merged-delivery-recovery.md)。

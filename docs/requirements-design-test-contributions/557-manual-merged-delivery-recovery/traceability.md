@@ -1,6 +1,6 @@
 # #557 双向 Trace
 
-状态：candidate。来源承诺matrix只由task design拥有，实际结果只由test.md拥有。
+状态：reviewed_promoted；RDT .96 / Architecture .90。来源承诺 matrix 保留于 design.md 所链的不可变 task design；当前行为只由 canonical 合同定义，实际结果只由 test.md 拥有。
 
 | Requirement / behavior | Design | Test strategy and cases |
 | --- | --- | --- |

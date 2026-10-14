@@ -55,3 +55,5 @@
 `ADR-024`（accepted）：公共Delivery拥有所有开发阶段与Planning；Guru语义门禁和私有发布事务独立，Task整体责任保持。正文见 [`024-task-delivery-public-authority.md`](./024-task-delivery-public-authority.md)。只替代ADR-022的Task规划/Task首次或resume激活片段、ADR-015/016中依赖Task开发status的执行路由；身份、generation、整体收尾与恢复责任继续继承。
 
 `ADR-025`（accepted）：exact_source 来源资格与本次 retain_open/close 处置分离；Closure 仍独占动作，Finish 校验每项所需状态，aggregate 与 exact source fact 分开。正文见 [`025-retain-source-open-disposition.md`](./025-retain-source-open-disposition.md)；ADR-013/024 的原 owners 与公共模型职责保持。
+
+| `ADR-026` | accepted | 原 Merge 归属真实手动合入事实，public writer 不变；原 Completion 保留实际候选/CI/整体证据判断，显式 query2 只读已记录事实 |

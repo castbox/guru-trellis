@@ -11,7 +11,7 @@
 | T557-05 recovery/history | 基线推进、head branch删除、当前HEAD不同、record后projection失败和stdout重入、query2只读恢复通过。query1仍无此无trailers事实；原schema1/2/bookkeeping回归另列。 |
 | T557-06 old paths | 最终 Merge package 39 tests全部通过、无skip：新增9项及原 expected-head/trailers、schema1/2 history、私有历史迁移与原正式输出恢复。 |
 | T557-07 installed/distribution | matching clean完整安装与两项 installed公开wrapper组件回归通过（query2历史/Completion不同CI出口）；当前canonical reapply完成，触及bytes一致。installed validator通过：38 packages/114 commands，Claude/Codex/Cursor选定投影、0 conflict/sidecar/removal。这些仍是组件与分发证据，前序语义/provider为fixture。 |
-| T557-08 static/docs | source validator38 packages/114 commands通过；官方context validate通过（大spec截断告警已直接读）；5个触及Python文件语法通过、全部低于3000行，最大495行；git diff --check通过。RDT调和与正式Check另由原owner执行；shared authority/promotion尚未发生。 |
+| T557-08 static/docs | source validator38 packages/114 commands通过；官方context validate通过（大spec截断告警已直接读）；5个触及Python文件语法通过、全部低于3000行，最大495行；git diff --check通过。RDT调和与正式Check另由原owner执行；知识晋升与软件交付是独立事实，须遵从各原owner。 |
 
 ## 首次失败与证据层
 
@@ -95,6 +95,6 @@ Core tar45bbfee507ed4964649610f703a90ba01c5f5cea21fb95d0845f92ed45302967；
 远端marketplace采用证明，也不是正式released source-lock。
 
 旧source dogfood采用、原backend #149/PR #526恢复、业务验收、完整多平台/Release矩阵
-均未由上述证据证明。验证资源Finish/归档及cleanup未执行；Source #557仍须自身
-完整Check、committed Review、所需promotion及正式交付/Completion/Closure，不能由
-验证Task的completed代替。
+均未由上述证据证明。验证资源Finish/归档及cleanup未执行；Source #557 的知识晋升新增
+差额必须重进当前完整Check、committed Review，正式交付/Completion/Closure仍由各原
+owner判断，不能由验证Task的completed或知识晋升代替。
