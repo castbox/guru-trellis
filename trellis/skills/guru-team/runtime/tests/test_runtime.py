@@ -48,6 +48,14 @@ def bootstrap_runtime(repo: Path, runtime_assets: Path = ROOT) -> dict[str, obje
     return json.loads(result.stdout)
 
 
+def copy_runtime_assets(destination: Path) -> None:
+    shutil.copytree(ROOT, destination)
+    for name in ("packages", "schemas"):
+        target = destination.parent / name
+        if not target.exists():
+            shutil.copytree(SKILLS / name, target)
+
+
 def copy_active_runtime(repo: Path) -> None:
     bootstrap_runtime(repo)
 
@@ -249,7 +257,7 @@ class SharedRuntimeTests(unittest.TestCase):
             repo = Path(tmp) / "repo"
             assets = Path(tmp) / "assets"
             repo.mkdir()
-            shutil.copytree(ROOT, assets)
+            copy_runtime_assets(assets)
             first = managed.bootstrap(repo, assets, Path(sys.executable))
             active_path = managed.active_pointer_path(repo)
             before = active_path.read_bytes()
@@ -417,8 +425,8 @@ class SharedRuntimeTests(unittest.TestCase):
             first_assets = root / "assets-a"
             second_assets = root / "assets-b"
             repo.mkdir()
-            shutil.copytree(ROOT, first_assets)
-            shutil.copytree(ROOT, second_assets)
+            copy_runtime_assets(first_assets)
+            copy_runtime_assets(second_assets)
             with (second_assets / "requirements.lock").open("a", encoding="utf-8") as handle:
                 handle.write("\n# second checkout identity\n")
             subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)

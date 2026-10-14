@@ -59,6 +59,17 @@ before installer staging. A non-current ownership contract fails closed.
 
 ## Managed Assets
 
+Initialization and explicit apply/reapply default to current PATH `python3`;
+`--python` overrides that selection, and an invalid selection stops without
+fallback. Controlled managed maintenance callers explicitly retain their own
+interpreter. CPython3 has no minor allowlist: actual locked installation and
+runtime capability decide success. Patch version and interpreter path remain
+outside identity. Before replacing any cache target, including same-identity
+repair, bootstrap runs the real schema-bound public wrapper in a disposable
+view of the matching package assets. Failure preserves the previous environment
+and pointer. This runtime check and complete staged installation validation
+are separate required checks.
+
 Before staging managed assets, preset apply prepares an immutable Python runtime
 under the current OS user's Guru Team cache. It activates only after staged
 source/installed validation succeeds. Activation writes a repository-private

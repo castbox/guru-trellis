@@ -220,3 +220,21 @@ Git/publication/install/cleanup action keep their own independent boundaries.
 Install/update/reapply the canonical workflow and Skill projections together;
 old current-checkout editing is directly replaced, not a fallback mode. Source
 checks do not prove target installation or native Agent continuation.
+
+## 受管 Python 的显式更新
+
+初始化及显式 preset apply/reapply 默认选择执行时 PATH 的 `python3`，可用
+`--python /path/to/python3` 覆盖；不传时直接运行 installer 也使用 PATH 选择。
+从完整 Guru 源仓执行：
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo /path/to/target-repository
+trellis/presets/guru-team/scripts/bash/apply.sh --repo /path/to/target-repository --python /path/to/python3
+```
+
+CPython 3 不受 minor 白名单限制；相同有效 identity 复用，minor 变化选择对应 cache，
+patch/path 本身不强制重建。依赖、真实公开 wrapper 的 Draft 2020-12 schema 检查和
+staged 安装验证通过后才激活；失败保留原 active/环境。日常 Skill 继续使用 managed
+venv，不自动跟随 Homebrew 或回退全局依赖，不自动清理旧 cache。
+可执行 identity 命令、解释器优先级及失败修复见
+[preset 使用与排障](../../presets/guru-team/README.md#显式更新受管-python)。
