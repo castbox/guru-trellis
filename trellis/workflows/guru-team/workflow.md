@@ -725,6 +725,17 @@ carrier only. An adjacent checked DTO enters its declared consumer; absent/lost
 output returns to its original producer. Public phase is an availability clue,
 never a Planning, Check, full Review, readiness or Completion pass.
 
+Before resuming the phase table, reread the exact explicitly selected Delivery
+and its existing public Publication PR. If that PR is actually MERGED and the
+Delivery fact is missing, invoke original `guru-merge-task-delivery` with
+`delivery_merged_recovery` before any mechanical Publish, readiness or pre-merge
+gate refresh. That owner resolves the association and ordinary mismatches;
+missing or ambiguous relations stop there without recreating an identity or
+old gate. An exact existing Delivery fact uses the same owner's read-only
+recovery when its output was lost. Its `delivered` goes only to original
+Completion. A new chat still needs its exact binding or deliberate selection;
+PR or Task inventory never selects the Task or Delivery.
+
 | Public current query / phase | Unique owner family |
 | --- | --- |
 | `no_current_task` | Use the Guru caller no-Task route above; preserve task-free and independent manual operations. |
@@ -751,6 +762,7 @@ never a Planning, Check, full Review, readiness or Completion pass.
 | Branch Review missing/stale | Fresh committed full-diff Architecture and `guru-review-branch`; Phase 2 or bounded continuity cannot replace first full Review. |
 | Branch Review `passed` | Pair guard then `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
 | Publish/Merge success output or public projection lost | Original transaction reads actual PR/HEAD/merge and retries the same public fact; no repeated remote side effect. |
+| Exact selected Delivery's existing Publication PR is manually MERGED | Original Merge `delivery_merged_recovery`, then only its verified `delivered` enters original Completion; no pre-merge gate reconstruction. |
 | Same-Delivery findings/plan/base/readiness changes | Original affected owner judges dependency-scoped invalidation and invokes lawful earliest-owner rework. Commit and historical remote facts remain facts. |
 | Whole accepted-scope change | `guru-clarify-requirements`, then affected Delivery owner; independent goals follow scope judgment rather than silently expanding this Task. |
 | Whole withdrawal/supersession of undelivered slice | Scope decision then current phase owner public stop/release; no empty implementation or false delivery; PR/resources keep their own owner boundaries. |
@@ -1344,6 +1356,18 @@ residue to make a manual success look like Guru completion. An operation failure
 is only that operation's
 failure, not automatic Guru re-entry. Returning to Guru lifecycle still requires
 its original current entry preconditions and declared routes.
+
+An already manually MERGED, formally published Delivery may enter the original
+`guru-merge-task-delivery:delivery_merged_recovery` profile using its exact
+existing public Task/Delivery/Publication relation. Load that Skill's complete
+profile; do not reconstruct a pre-merge gate or mechanically rerun readiness.
+This subsequent original-owner invocation, rather than the manual operation,
+can emit `delivered` to original Task-wide Completion. Its `merge_blocked`
+retains the original Merge stop. Across turns/chats use current explicit
+identity/session/checkout owners; branch names or inventory never select a
+replacement Task/Delivery. Existing Guru mutation and completion routes stay
+unchanged. Step-local attribution, CI/content impact and recording belong only
+to Merge; whole-scope adequacy belongs only to Completion.
 
 ### Workspace and task boundary
 

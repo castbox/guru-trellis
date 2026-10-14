@@ -5,6 +5,14 @@ description: Merge one reviewed active-task Delivery PR through a semantic live 
 
 # Guru Merge Task Delivery
 
+For an already manually MERGED, published Delivery, select
+`delivery_merged_recovery` and read its closed profile in
+`references/contract.md#manual-merged-recovery`. Perform that terminal-fact
+review before the same public invocation. It records only the actual public
+Delivery fact, calls no merge, needs no old gate or trailers, and returns to
+original Completion. Never apply the pre-merge checks/confirmation to this
+already occurred fact. Both modes use the same entry and review.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
@@ -48,10 +56,14 @@ The package also exposes the deterministic read-only command:
 scripts/discover-task-deliveries.sh --input <delivery-history-query.json>
 ```
 
-It reconstructs all matching historical Delivery facts from the target-base
+Query 1.0 reconstructs all matching historical Delivery facts from the target-base
 first-parent merge history and exact GitHub PR/merge identity. It ignores
 merges without Delivery trailers and is independent of PR body text, deleted
 head branches, and the task's current branch or worktree binding.
+Query 2.0 adds the exact `task_ref` and reads that public Task's already recorded
+manual facts, cross-checking real PR/commit/head/base and legal trailer history.
+It never imports a PR or writes Task history. See MIGRATION-557 in the managed
+task-delivery migration contract for the matching package/workflow boundary.
 
 `merge_blocked`, `implementation_required`, and `review_refresh_required` do
 not request merge confirmation and perform no remote mutation. Fail closed on

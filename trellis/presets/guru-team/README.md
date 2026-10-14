@@ -1,5 +1,9 @@
 # Guru Team Preset
 
+已发布 Delivery 的普通手动合并由原 Merge 的 terminal-only profile 恢复，
+随后原 Completion 审查真实内容与验证证据；采用边界见
+[MIGRATION-557](MIGRATION-557.md)。仅 source 验证不证明旧安装已经切换。
+
 The [shared interaction contract](./spec/workflow/workflow-contract.md#interaction-budget) is loaded at
 `.trellis/spec/workflow/workflow-contract.md#interaction-budget` by the workflow,
 interactive Skill owners and platform entries. Source/projection checks prove

@@ -1,6 +1,10 @@
 # #531 Task / Delivery 集成与切换
 
 本文件是 Guru 私有合同迁移的支持边界，不是公共 Delivery 模型的第二定义。
+手动合并结果新增入口与显式 history query2 的成套采用由
+canonical `trellis/presets/guru-team/MIGRATION-557.md` 拥有；安装副本通过
+[公共源定位](https://github.com/castbox/guru-trellis/blob/main/trellis/presets/guru-team/MIGRATION-557.md)
+读取该唯一合同，既有公共模型与旧完整安装边界保持。
 公共合同来自明确的上游安装候选 `.trellis/delivery-contract.md`，
 Task schema 2.0 / Delivery API 1.0。当前绑定：
 

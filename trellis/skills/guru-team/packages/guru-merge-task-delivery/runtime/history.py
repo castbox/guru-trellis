@@ -12,6 +12,8 @@ from urllib.parse import quote
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.delivery_projection.adapter import DeliveryProjection
+from runtime.task_lifecycle import LifecycleContractError
 
 
 TRAILER_KEYS = (
@@ -46,7 +48,7 @@ def load_query(root: Path, package_root: Path, value: str) -> dict[str, Any]:
         query = json.loads(raw)
     except (OSError, json.JSONDecodeError) as exc:
         raise CommandError("invalid_arguments", "input", "Provide one valid JSON object.") from exc
-    validate_json(query, package_root / "schemas/delivery-history-query.schema.json", "input")
+    validate_json(query, package_root / "schemas/delivery-history-query-aggregate.schema.json", "input")
     return query
 
 
@@ -356,15 +358,51 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
             3,
         )
 
+    recorded = {}
+    if query["schema_version"] == "2.0":
+        from manual_recovery import commit_candidate
+        try:
+            projection = DeliveryProjection(root, query["task_ref"])
+            record = projection.read_record()
+            if record["id"] != query["task_identity"]:
+                raise CommandError("stale_identity", "history.task_identity", "Read this exact public Task history.", 3)
+            for delivery in record["deliveries"]:
+                fact = delivery["delivery_result"]
+                if (fact is None or fact["profile"] != "pull_request"
+                        or fact["repo_ref"].casefold() != query["repo_ref"].casefold()
+                        or fact["target_ref"] != query["base_ref"]):
+                    continue
+                merge = fact["merge_commit"]
+                if merge in recorded:
+                    raise CommandError("stale_identity", "history.delivery_identity", "Require one public Delivery per immutable merge.", 3)
+                if fact["candidate"]["head_ref"] != fact["reviewed_head"]:
+                    raise CommandError("stale_identity", "history.candidate", "Read the actual recorded candidate head.", 3)
+                if commit_candidate(projection, fact, fact["reviewed_head"]) != fact["candidate"]:
+                    raise CommandError("stale_identity", "history.candidate", "Read the immutable recorded candidate bytes and modes.", 3)
+                recorded[merge] = {"fact": fact, "key": {"task_id": record["id"],
+                    "lifecycle_generation": delivery["lifecycle_generation"], "delivery_id": delivery["id"]}}
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
     shas = git(root, "rev-list", "--first-parent", "--merges", "--reverse", local_base_head)
+    if set(recorded) - set(shas.splitlines()):
+        raise CommandError("stale_identity", "history.base_ref", "Recorded Delivery merge is absent from the current target-base first-parent history.", 3)
     deliveries: list[dict[str, Any]] = []
     seen_heads: set[str] = set()
     seen_prs: set[int] = set()
     for sha in shas.splitlines():
         commit = commit_facts(root, sha)
         trailers = parse_delivery_trailers(commit["message"], query["task_identity"])
+        public_fact = recorded.get(sha)
         if trailers is None:
-            continue
+            if public_fact is None:
+                continue
+            trailers = {"task_identity": query["task_identity"],
+                        "reviewed_head": public_fact["fact"]["reviewed_head"], "delivery_key": public_fact["key"]}
+        elif public_fact is not None:
+            if (trailers["reviewed_head"] != public_fact["fact"]["reviewed_head"]
+                    or trailers.get("delivery_key", public_fact["key"]) != public_fact["key"]):
+                raise CommandError("stale_identity", "history.delivery_identity", "Cross-check public fact and legal trailer history before deduplication.", 3)
+            trailers["delivery_key"] = public_fact["key"]
         reviewed_head = trailers["reviewed_head"]
         if commit["parents"][1] != reviewed_head:
             raise CommandError(
@@ -381,6 +419,8 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
             merge_sha=sha,
             reviewed_head=reviewed_head,
         )
+        if public_fact is not None and pr_number != public_fact["fact"]["pr_number"]:
+            raise CommandError("stale_identity", "history.pr_number", "Read the PR belonging to the recorded public result.", 3)
         if reviewed_head in seen_heads or pr_number in seen_prs:
             raise CommandError(
                 "stale_identity",
@@ -400,7 +440,7 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
         })
 
     result = {
-        "schema_version": "2.0" if any("delivery_key" in row for row in deliveries) else "1.0",
+        "schema_version": "2.0" if query["schema_version"] == "2.0" or any("delivery_key" in row for row in deliveries) else "1.0",
         "status": "discovered",
         "task_identity": query["task_identity"],
         "repo_ref": query["repo_ref"],

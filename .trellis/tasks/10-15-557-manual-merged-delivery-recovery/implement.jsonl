@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "全局phase/mandatorySkill、typed consumer及副作用边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共profile/output和私有state的直接consumer约束"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性executor/validator与semantic owner分离"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "本Issue定向验证与真实层级，不扩Release矩阵"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md", "reason": "原Merge恢复、历史与expected-head职责"}
+{"file": "trellis/skills/guru-team/runtime/delivery_projection/adapter.py", "reason": "只调用安装目标公共API1，不复制模型"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "projectcheck/九concern与原promotion owner"}

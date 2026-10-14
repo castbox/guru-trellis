@@ -1,5 +1,73 @@
 ## Public Delivery integration 1.0
 
+### Manual MERGED recovery
+
+`delivery_merged_recovery` is a terminal-only semantic profile of this original
+owner. Its input is mode, TaskRef, public DeliveryKey, repo and PR number. The
+actual existing public Publication is required; no old handoff, pre-merge
+review, executor receipt, authorization or trailers are reconstructed. This
+profile calls no remote merge and owns no new ledger or public model.
+
+Read the exact public Task/generation/Delivery and unique Publication relation,
+authenticated repository/PR/base/head/mergedAt/merge commit, two parents and
+current target-base first-parent ancestry. Missing association, multiple
+Publications for that PR, wrong selection or ordinary mismatch returns
+`merge_blocked` with its specific gap. An unmerged PR stays here without a
+mutation. Only ordinary two-parent merge commits are supported; squash/rebase
+returns `unsupported_manual_merge_method`. Deleted head branches, advancing
+base and a different current HEAD do not invalidate immutable attribution.
+The executor may fetch missing exact commit objects from the selected repo;
+it never changes branches, working files or remote refs.
+
+Before invoking, the AI independently reviews attribution, actual content and
+authority, verification truth and the original Completion boundary. Inspect
+the complete PR and Publication-to-actual delta, including paths absent from
+candidate.paths. Review actual CI/reviews: green, pending, cancelled, missing
+and failed all remain observable facts. No status mandates a rerun merely to
+record MERGED; no failure becomes pass. Author the separate call-local
+`manual-merged-review-1.0` result binding key, Publication result, actual
+repo/PR/head/merge/target, observed checks, content-impact judgment and affected
+original owners. Its AI gate concerns truthful recovery, never current
+readiness or Task completion. It is not persisted. A blocked AI gate stays
+with Merge; a stale factual observation requires fresh same-owner review.
+
+Invoke the same `scripts/invoke.sh --input ... --review-input ...`. The
+validator checks those exact facts after the AI judgment and uses installed
+`candidate_content_ref` on temporary immutable Git bytes/modes/deletions.
+Read the full unfiltered delta separately; a paths hash is not a complete PR
+impact review. Record actual head/candidate through public
+`record_delivery(historical_success=true)` only. Upstream wire `reviewed_head`
+names that candidate head; it does not establish a semantic review pass.
+Original Publication and gate candidates remain unchanged.
+
+Already recorded exact facts recover the same `delivered` DTO read-only,
+including record/projection/output loss. A different existing result is never
+overwritten. Archived exact facts are readable; missing archived facts retain
+the prospective Plan2 migration prerequisite, without reopen/private writes.
+No authorization or review checkpoint is created. `delivered` goes only to
+original Completion, which rereads full current scope, actual content/authority
+impact and scope-required evidence. Same/equivalent content may reuse only
+still-applicable results; changed content returns through affected original
+owners. Missing necessary evidence, actual remaining work and changed
+authority retain their original incomplete/revision routes. A reliable merge
+record neither suppresses a business defect nor completes the whole Task.
+
+### Public recorded history query 2.0
+
+`discover-task-deliveries` query2 adds TaskRef to the stable Task/repo/base
+query. Read only existing public pull-request Delivery facts via the installed
+Task2 parser, verify immutable candidate bytes, actual PR/head/merge/two
+parents and fresh target-base first-parent order, then deduplicate with legal
+schema1/2 trailers. Public/trailer identity mismatch stops; a recorded merge
+absent from that base cannot be silently omitted. General bookkeeping has
+neither a public Delivery fact nor lawful trailers and is excluded.
+This command never creates/imports a Task or Delivery and writes nothing.
+Completion directly reads the public aggregate; it need not rediscover a fact
+from a commit message first. Query1 remains trailer-only for its existing
+legacy/migration/standalone callers; new manual-fact consumers select query2
+explicitly. Existing expected-head/Guru schema1/schema2 paths keep their
+original contracts. MIGRATION-557 defines the complete matching adoption.
+
 ### Bounded private historical merge migration
 
 The original Merge owner reviews the exact schema-1 gate/cycle and actual
@@ -97,8 +165,9 @@ the identical stored stop result and releases selection without another stop.
 
 ## Preserved semantic and transaction duties
 
-The duties below apply to the current Delivery input and output contracts.
-Historical data is read only by its named history or migration owner.
+The pre-merge duties below apply to `delivery_ready_for_merge` and its expected-head
+transaction. Terminal-only `delivery_merged_recovery` follows its separate entry
+above; historical data is read only by its named recovery or migration owner.
 
 # Contract
 
@@ -106,7 +175,9 @@ Historical data is read only by its named history or migration owner.
 
 `guru-merge-task-delivery` is the sole owner of Delivery merge readiness,
 confirmation, expected-head mutation, merge-message trailers, and terminal
-recovery. It consumes only the reviewed publication handoff plus live facts.
+recovery. For a new merge it consumes the reviewed publication handoff plus live
+facts; manual MERGED recovery consumes the existing public Publication relation
+and its own current terminal-fact review.
 It does not own Delivery Review, publication, task completion, Issue closure,
 archive, Finish, Reactivate, or cleanup.
 
@@ -123,7 +194,7 @@ checkout, full semantic Merge review and the exact dialogue-local action.
 Historical MERGED recovery reads the actual PR, parents, base ancestry and
 trailers before projection; it does not require current HEAD or gate pass.
 
-## Semantic Gate
+## Semantic Gate: delivery_ready_for_merge
 
 The AI reviews exactly six dimensions: `active_task`, `pr_identity`,
 `checks_and_reviews`, `mergeability`, `repository_policy`, and
@@ -138,11 +209,11 @@ The AI reviews exactly six dimensions: `active_task`, `pr_identity`,
 - `review_refresh_required`: current Delivery review authority is stale and
   carries a concrete `reason_code`.
 
-Only `delivered` reaches the independent confirmation boundary. The private
+Only this profile's `delivered` route reaches the new-merge confirmation boundary. The private
 gate stores current facts, semantic results, exact message bytes,
 `pre_merge_base_head`, and an action digest. It never stores authorization.
 
-## Mutation And Recovery
+## Expected-head Mutation And Recovery
 
 The executor calls exactly:
 
@@ -172,7 +243,7 @@ retained gate is checked when present. If the gate was already retired, parent
 matches. Unknown or ambiguous terminal state fails closed and never triggers a
 second merge.
 
-## Delivery History Discovery
+## Delivery History Discovery: query 1.0
 
 `discover-task-deliveries` is a deterministic, read-only package command. Its
 closed query contains only the stable task identity, repository, and target

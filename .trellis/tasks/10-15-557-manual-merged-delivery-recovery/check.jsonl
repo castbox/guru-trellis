@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "完整scope与每项测试价值/未验证边界"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "架构必要性和唯一owner约束"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "独立phase2/branch before-after与projectcheck"}
+{"file": ".trellis/tasks/10-15-557-manual-merged-delivery-recovery/prd.md", "reason": "完整R557 accepted scope"}
+{"file": ".trellis/tasks/10-15-557-manual-merged-delivery-recovery/design.md", "reason": "D557与来源规范性承诺唯一处置"}
+{"file": ".trellis/tasks/10-15-557-manual-merged-delivery-recovery/implement.md", "reason": "唯一DeliveryPolicy/DocsSSOT与验证顺序"}
+{"file": ".trellis/tasks/10-15-557-manual-merged-delivery-recovery/architecture-contribution.md", "reason": "候选归属改变与promotion前置"}
