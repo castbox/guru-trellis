@@ -1,0 +1,15 @@
+task_id: 547-retain-source-open
+source: https://github.com/castbox/guru-trellis/issues/547
+status: reviewed_promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.90
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.87
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+promoted_rdt: current-main-0.6.17-guru.91

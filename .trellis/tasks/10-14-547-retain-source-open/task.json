@@ -1,0 +1,29 @@
+{
+  "id": "547-retain-source-open",
+  "name": "547-retain-source-open",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 547,
+    "disposition": "exact_source"
+  },
+  "title": "#547 修复 exact_source 保留 OPEN 的 Closure/Finish 接续",
+  "description": "按 live #547 分离来源关系、accepted scope 完成和源 Issue 本次关闭处置；保留既有路径与正常恢复、公共 API兼容并完成定向投影验证。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "issue-547",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-14",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

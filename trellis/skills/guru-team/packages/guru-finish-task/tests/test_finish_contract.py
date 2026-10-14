@@ -86,9 +86,14 @@ elif args[:2] == ['pr', 'merge']:
     subprocess.run(['git', '-C', str(repo), 'push', 'origin', merged + ':refs/heads/main'], check=True, capture_output=True)
     state['pr'].update({'state': 'MERGED', 'mergedAt': '2026-09-19T00:00:00Z', 'mergeCommit': {'oid': merged}})
     state_path.write_text(json.dumps(state))
+elif args[:2] == ['issue', 'view']:
+    print(json.dumps({'number': int(args[2]), 'state': state['issue_state']}) if '--jq' not in args else state['issue_state'])
+elif args[:2] == ['issue', 'close']:
+    state['issue_state'] = 'CLOSED'
+    state_path.write_text(json.dumps(state))
 else:
     raise SystemExit('unsupported fake gh invocation: ' + repr(args))
-"""
+""".replace("#!/usr/bin/env python3", "#!" + sys.executable)
     )
     path.chmod(0o755)
 
@@ -104,7 +109,7 @@ def test_contract_assets():
 
 
 @pytest.mark.parametrize("disposition,required", [
-    ("close", True), ("already_closed_at_review", True), ("no_close_authority", False),
+    ("close", True), ("already_closed_at_review", True), ("retain_open", False), ("no_close_authority", False),
 ])
 def test_closure_snapshot_requires_exact_terminal_result_and_disposition(tmp_path, monkeypatch, disposition, required):
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
@@ -151,8 +156,8 @@ def test_finish_outputs_project_into_cleanup_owned_profiles():
         validate_json({**authored, **projected}, cleanup / "schemas/public-input.schema.json", exit_id)
 
 
-@pytest.mark.parametrize("disposition", ["close", "already_closed_at_review"])
-def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutation(tmp_path, monkeypatch, disposition):
+@pytest.mark.parametrize("disposition", ["close", "already_closed_at_review", "retain_open"])
+def test_changed_required_issue_state_refreshes_closure_before_terminal_mutation(tmp_path, monkeypatch, disposition):
     public = json.loads((PACKAGE / "examples/public-input.json").read_text())
     public["closure_result"]["lifecycle_generation"] = 0
     subprocess.run(["git", "init", "-q", "-b", "main", str(tmp_path)], check=True)
@@ -166,8 +171,8 @@ def test_reopened_required_closed_issue_refreshes_closure_before_terminal_mutati
     input_path.write_text(json.dumps(public))
     semantic_path.write_text(json.dumps(semantic))
     row = {"issue_ref": {"repo_ref": "example/repo", "issue_number": 7}, "disposition": disposition}
-    monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "closed", "action_set": [row], "source": source})
-    monkeypatch.setattr(FINISH, "gh_json", lambda *_args: {"number": 7, "state": "OPEN"})
+    monkeypatch.setattr(FINISH, "read_closure_snapshot", lambda *_args: {"result_ref": public["closure_result"], "terminal": "no_mutation" if disposition == "retain_open" else "closed", "action_set": [row], "source": source})
+    monkeypatch.setattr(FINISH, "gh_json", lambda *_args: {"number": 7, "state": "CLOSED" if disposition == "retain_open" else "OPEN"})
     monkeypatch.setattr(FINISH, "project_archive", lambda *_args: pytest.fail("archive mutation attempted"))
     monkeypatch.setattr(FINISH.ResourceLedgerStore, "seal_for_finish", lambda *_args, **_kwargs: pytest.fail("ledger mutation attempted"))
 
@@ -362,7 +367,8 @@ def test_merge_rechecks_expected_base_before_github_mutation(tmp_path, monkeypat
 
 
 @pytest.mark.parametrize("missing_ownership", [False, True])
-def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, monkeypatch, missing_ownership):
+@pytest.mark.parametrize("retained_source", [False, True])
+def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, monkeypatch, missing_ownership, retained_source):
     repo = tmp_path / "repo"
     remote = tmp_path / "remote.git"
     repo.mkdir()
@@ -378,7 +384,25 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     (old_archive / "legacy-finish-summary.json").write_text("{}\n")
     task = repo / ".trellis/tasks/demo"
     task.mkdir(parents=True)
-    (task / "task.json").write_text(json.dumps(current_task_metadata(repo, "demo", 0, {"kind": "no_issue"})))
+    source = {"kind": "issue", "repo_ref": "example/repo", "number": 7, "disposition": "exact_source"} if retained_source else {"kind": "no_issue"}
+    (task / "task.json").write_text(json.dumps(current_task_metadata(repo, "demo", 0, source)))
+    wrapper_root = ROOT
+    if retained_source:
+        # Real matching preset installation; the engineering checkout's complete
+        # legacy installation is never reapplied or changed by this fixture.
+        (repo / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        caller = tmp_path / "installer-source"
+        shutil.copytree(ROOT / "runtime", caller / "trellis/skills/guru-team/runtime",
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        applied = subprocess.run(["bash", str(ROOT.parents[2] / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                                 cwd=caller, text=True, capture_output=True)
+        assert applied.returncode == 0, applied.stdout + applied.stderr
+        assert json.loads(applied.stdout)["skill_installed_validation"]["returncode"] == 0
+        wrapper_root = repo / ".trellis/guru-team/skills"
+        # The upstream API supports a local-commit workflow profile. Declare it
+        # only in this controlled fixture; production Guru stays pull_request.
+        workflow = repo / ".trellis/workflow.md"
+        workflow.write_text(workflow.read_text().replace('"profiles": ["pull_request"]', '"profiles": ["local_commit", "pull_request"]'))
     for name in ("prd.md", "design.md", "implement.md"):
         (task / name).write_text("x\n")
     from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
@@ -387,16 +411,36 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     projection.scope(scope)
     owners = projection.declaration()["owners"]
     key = {"task_id": "demo", "lifecycle_generation": 0}
+    delivery_key = {**key, "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"}
+    if retained_source:
+        # Accepted scope and history come from the actual public owners.
+        (task / "prd.md").write_text("Document delivery; real integration initially included.\n")
+        scope = authority_ref(task / "prd.md", repo); projection.scope(scope)
+        projection.apply({"api_version": "1.0", "operation": "create_delivery", "key": delivery_key,
+                          "owner_role": "creation", "owner_id": owners["creation"],
+                          "scope_ref": {"authority": scope, "anchors": ["document"]}, "profile": "local_commit"})
+        plan = projection.planning_directory(delivery_key); plan.mkdir(parents=True, exist_ok=True)
+        for name in ("prd.md", "design.md", "implement.md"):
+            (plan / name).write_text("Document delivery. Real integration / product #59 joint acceptance unverified.\n")
+        from runtime.delivery_projection.gates import record_gate
+        result = {"result_id": "planning:demo", "owner_role": "planning", "owner_id": owners["planning"],
+                  "outcome": "accepted", "scope_ref": projection.resolve(delivery_key)["scope_ref"],
+                  "plan_ref": authority_ref(plan / "implement.md", repo), "candidate": None,
+                  "predecessor_result_id": None, "obligations": [], "evidence": [scope]}
+        projection.apply({"api_version": "1.0", "operation": "record_gate", "key": delivery_key,
+                          "owner_role": "planning", "owner_id": owners["planning"], "expected_phase": "planning", "result": result})
     completion = {"result_id": "completion:demo", "owner_id": owners["completion"],
                   "evidence": [scope], "lifecycle_generation": 0, "accepted_scope": scope,
                   "delivery_result_ids": [], "outcome": "completed"}
-    projection.apply({"api_version": "1.0", "operation": "complete_task", "key": key,
-                      "owner_role": "completion", "owner_id": owners["completion"], "result": completion})
+    if not retained_source:
+        projection.apply({"api_version": "1.0", "operation": "complete_task", "key": key,
+                          "owner_role": "completion", "owner_id": owners["completion"], "result": completion})
     closure = {"result_id": "closure:demo", "owner_id": owners["closure"], "evidence": [scope],
                "lifecycle_generation": 0, "completion_result_id": "completion:demo",
                "disposition": "no_mutation", "source_result": None}
-    projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
-                      "owner_role": "closure", "owner_id": owners["closure"], "result": closure})
+    if not retained_source:
+        projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
+                          "owner_role": "closure", "owner_id": owners["closure"], "result": closure})
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "initial")
     base_head = git(repo, "rev-parse", "HEAD")
@@ -443,42 +487,106 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
         if name in {"PATH", "FAKE_GH_STATE", "FAKE_GH_LOG", "FAKE_REPO_PATH", "FAKE_REMOTE_PATH"}:
             monkeypatch.setenv(name, value)
     closure_path = store.repository.common_dir / "guru-team/closure/demo/0.json"
-    closure_path.parent.mkdir(parents=True)
-    closure_path.write_text(json.dumps({"ref": {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo", "transaction_id": "closure:demo"},
-                                        "frozen": {"source": {"kind": "no_issue"}, "action_set": []}, "verified": [], "terminal": "no_mutation"}))
+    if retained_source:
+        Path(env["FAKE_GH_STATE"]).write_text(json.dumps({"issue_state": "OPEN"}))
+        def owner_wrapper(skill, value, review, *flags):
+            inp = tmp_path / (skill + "-input.json"); inp.write_text(json.dumps(value))
+            sem = tmp_path / (skill + "-semantic.json"); sem.write_text(json.dumps(review))
+            result = subprocess.run(["bash", str(wrapper_root / "packages" / skill / "scripts/invoke.sh"),
+                "--root", str(repo), "--input", str(inp), "--semantic-result", str(sem), *flags],
+                env=env, text=True, capture_output=True)
+            assert result.returncode == 0, result.stdout + result.stderr
+            out = json.loads(result.stdout); return out.get("result", out)
+        candidate = projection.candidate([str((task / 'prd.md').relative_to(repo))], head_ref=base_head, base_ref=base_head)
+        projection.begin_check(delivery_key, candidate)
+        for role, outcome in (("check", "passed"), ("full_review", "passed"), ("readiness", "ready")):
+            record_gate(projection, delivery_key, role, role + ":demo", outcome, [scope], [])
+        projection.apply({"api_version": "1.0", "operation": "record_delivery", "key": delivery_key,
+                          "owner_role": "delivery", "owner_id": owners["delivery"], "expected_phase": "publishing",
+                          "result": {"result_id": "delivery:demo", "owner_id": owners["delivery"], "evidence": [scope],
+                                     "profile": "local_commit", "candidate": candidate, "commit": base_head}})
+        # Normal task-scope revision preserves identity, source and Delivery history.
+        (task / "prd.md").write_text("Document delivery complete. Real integration / product #59 joint acceptance remains on source Issue, outside current Task scope.\n")
+        scope = authority_ref(task / "prd.md", repo); projection.scope(scope)
+        task_key = {"task_id": "demo", "lifecycle_generation": 0}
+        completion_input = {"profile": "delivery_completion", "mode": "workflow", "task_ref": ".trellis/tasks/demo", "task_key": task_key}
+        completion_owner = {"profile": "delivery_completion", "mode": "workflow", "reviewed_task_key": task_key,
+                            "reviewed_scope": scope, "reviewed_delivery_result_ids": ["delivery:demo"], "evidence": [scope],
+                            "remaining_work_refs": ["integration:evidence"], "result_id": "completion:demo",
+                            "route": {"typed_exit": "evidence_pending", "reason": {"reason_code": "evidence_missing", "reason_refs": ["integration:evidence"]}}}
+        assert owner_wrapper("guru-review-task-completion", completion_input, completion_owner)["exit_id"] == "evidence_pending"
+        assert projection.read_record()["completion_results"] == []
+        completion_owner.update(remaining_work_refs=[], route={"typed_exit": "completed"})
+        completed = owner_wrapper("guru-review-task-completion", completion_input, completion_owner)
+        actions = [{"issue_ref": {"repo_ref": "example/repo", "issue_number": 7}, "disposition": "retain_open"}]
+        closure_input = {"profile": "completion_approved", "source_exit": "completed", "mode": "workflow",
+                         "completion_result": completed["result_ref"], "source": source,
+                         "accepted_scope_identity": scope["revision"], "delivery_target": {"repo_ref": "example/repo", "branch_ref": "main"},
+                         "binding_ref": {**task_key, "binding_revision": 0}, "content_head": base_head,
+                         "evidence_slots": {"completion": completed["result_ref"]["result_id"]}, "action_set": actions}
+        closure_owner = {"profile": "completion_approved", "mode": "workflow", "reviewed_action_set": actions, "route": {"typed_exit": "apply"}}
+        closed = owner_wrapper("guru-complete-task-closure", closure_input, closure_owner)
+        assert closed["exit_id"] == "no_mutation"
+        assert owner_wrapper("guru-complete-task-closure", closure_input, closure_owner) == closed
+        public["closure_result"] = closed["result_ref"]; input_path.write_text(json.dumps(public))
+        before_archive = projection.read_record()
+    else:
+        closure_path.parent.mkdir(parents=True)
+        closure_path.write_text(json.dumps({"ref": {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo", "transaction_id": "closure:demo"},
+                                            "frozen": {"source": source, "action_set": []}, "verified": [], "terminal": "no_mutation"}))
     def invoke(*flags):
+        if retained_source:
+            return owner_wrapper("guru-finish-task", public, semantic, *flags)
         return FINISH.run(PACKAGE, {}, ["--root", str(repo), "--input", str(input_path), "--semantic-result", str(semantic_path), *flags])
-    resume = {"exit_id": "resume_finish", "task_id": "demo", "lifecycle_generation": 0, "transaction_id": FINISH.finish_ref({"task_id": "demo", "closure_result": public["closure_result"]}, 0), "result_id": "closure:demo"}
+    resume = {"exit_id": "resume_finish", "task_id": "demo", "lifecycle_generation": 0, "transaction_id": FINISH.finish_ref({"task_id": "demo", "closure_result": public["closure_result"]}, 0), "result_id": public["closure_result"]["result_id"]}
 
     assert invoke() == resume
     assert task.exists()
     original_body = semantic["bookkeeping"]["commit_body"]
     semantic["bookkeeping"]["commit_body"] += "\n\nCloses #7"
     semantic_path.write_text(json.dumps(semantic))
-    with pytest.raises(CommandError) as caught:
+    with pytest.raises((CommandError, AssertionError)) as caught:
         invoke("--confirmed-finish")
-    assert caught.value.field_path == "semantic_result.bookkeeping"
+    if retained_source:
+        assert "semantic_result.bookkeeping" in str(caught.value)
+    else:
+        assert caught.value.field_path == "semantic_result.bookkeeping"
     assert task.exists()
     semantic["bookkeeping"]["commit_body"] = original_body
     semantic_path.write_text(json.dumps(semantic))
     projected = invoke("--confirmed-finish")
     assert projected == resume and not task.exists() and (repo / archive_ref).is_dir()
     assert "archive_dir" not in json.loads((repo / archive_ref / "task.json").read_text())
+    if retained_source:
+        assert json.loads((repo / archive_ref / "task.json").read_text()) == before_archive
+        assert before_archive["source"] == source and before_archive["lifecycle_generation"] == 0
+        assert before_archive["deliveries"][0]["delivery_result"]["result_id"] == "delivery:demo"
+        assert "outside current Task scope" in (repo / archive_ref / "prd.md").read_text()
+        assert "unverified" in (repo / archive_ref / "deliveries" / delivery_key["delivery_id"] / "design.md").read_text()
     assert invoke() == resume
     published = invoke("--confirmed-bookkeeping-publish")
     assert published == resume
     original_merge_body = semantic["bookkeeping"]["merge_body"]
     semantic["bookkeeping"]["merge_body"] += "\n\nGuru-Delivery-Head: " + "a" * 40
     semantic_path.write_text(json.dumps(semantic))
-    with pytest.raises(CommandError) as caught:
+    with pytest.raises((CommandError, AssertionError)) as caught:
         invoke("--confirmed-bookkeeping-merge")
-    assert caught.value.field_path == "semantic_result.bookkeeping"
+    if retained_source:
+        assert "semantic_result.bookkeeping" in str(caught.value)
+    else:
+        assert caught.value.field_path == "semantic_result.bookkeeping"
     assert not any(row[:2] == ["pr", "merge"] for row in map(json.loads, (tmp_path / "gh.log").read_text().splitlines()))
     semantic["bookkeeping"]["merge_body"] = original_merge_body
     semantic_path.write_text(json.dumps(semantic))
     if missing_ownership:
         store.path_for(key).unlink()
     finished = invoke("--confirmed-bookkeeping-merge")
+    assert invoke() == finished
+    if retained_source:
+        assert json.loads(Path(env["FAKE_GH_STATE"]).read_text())["issue_state"] == "OPEN"
+        calls = [json.loads(line)[:2] for line in Path(env["FAKE_GH_LOG"]).read_text().splitlines()]
+        assert ["issue", "close"] not in calls
+        assert calls.count(["pr", "create"]) == calls.count(["pr", "merge"]) == 1
     if missing_ownership:
         assert finished == {"exit_id": "manual_cleanup_required", "task_id": "demo",
                             "lifecycle_generation": 0, "finish_result_id": resume["transaction_id"],

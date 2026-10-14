@@ -82,7 +82,7 @@ def read_closure_snapshot(root: Path, package_root: Path, result: dict) -> dict:
         raise CommandError("stale_identity", "closure_result", "Read the exact terminal Closure result.", 3)
     actions = snapshot["action_set"]
     identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
-    if len(identities) != len(set(identities)) or (snapshot["terminal"] == "closed") != any(row["disposition"] != "no_close_authority" for row in actions):
+    if len(identities) != len(set(identities)) or (snapshot["terminal"] == "closed") != any(row["disposition"] in {"close", "already_closed_at_review"} for row in actions):
         raise CommandError("stale_identity", "closure_result_snapshot", "Read one consistent terminal Closure action set.", 3)
     return snapshot
 
@@ -104,7 +104,8 @@ def closure_current(actions: list[dict]) -> bool:
             continue
         issue_ref = action["issue_ref"]
         issue = gh_json(issue_ref["repo_ref"], "issue", "view", str(issue_ref["issue_number"]), "--json", "number,state")
-        if not isinstance(issue, dict) or issue.get("number") != issue_ref["issue_number"] or str(issue.get("state")).upper() != "CLOSED":
+        required_state = "OPEN" if action["disposition"] == "retain_open" else "CLOSED"
+        if not isinstance(issue, dict) or issue.get("number") != issue_ref["issue_number"] or str(issue.get("state")).upper() != required_state:
             return False
     return True
 
