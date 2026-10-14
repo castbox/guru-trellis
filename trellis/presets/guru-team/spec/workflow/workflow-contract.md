@@ -675,7 +675,10 @@ returns the earliest affected owner. Only `completed` enters Closure.
 
 `guru-complete-task-closure` owns the source Issue disposition after Completion.
 No-Issue, reference-only, follow-up and parent-only relationships produce
-`no_mutation`. Closing one exact source Issue is a separate confirmed provider
+`no_mutation`. An exact-source relation may also produce reviewed `retain_open`
+with a no-mutation result; the step-owned disposition and matching consumer
+contract live in `guru-complete-task-closure` and `guru-finish-task`.
+Closing one exact source Issue is a separate confirmed provider
 mutation with same-transaction recovery and post-read verification. Delivery
 and bookkeeping PRs contain no Issue-closing keyword.
 

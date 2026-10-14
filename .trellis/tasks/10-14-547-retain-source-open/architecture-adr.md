@@ -1,0 +1,9 @@
+# #547 ADR 增量候选：exact_source 的关闭资格不决定本次动作
+
+状态：`reviewed_candidate`；扩展ADR-013与ADR-024，不替代其owner、identity或公共模型决定。Shared ADR编号与current successor由原Architecture promotion owner按live authority确定。
+
+Context：同一Task的正常scope修订保留exact_source，但源Issue仍承担scope外责任；当前Closure强制close条件导致合法completed无法Finish。
+
+Decision：exact_source仅表达来源关系和可审查关闭的资格。Closure语义owner根据源与Task当前责任选择close、already_closed_at_review或retain_open；no_close_authority继续服务无关闭资格的关系。retain_open要求OPEN、不调用close，使用原no_mutation ResultRef。Finish只消费冻结结果，retain动作要求OPEN，关闭动作要求CLOSED；漂移交回Closure。多Issueaggregate terminal与exact source公共状态分开投影。
+
+Consequences：增量枚举与snapshot消费者成套迁移，既有字段/exits/原动作意义保留；完整旧安装仍走它自己的已固定包，原业务恢复不是受控证据。原private事务和共享reader继续拥有恢复，无新ledger、public字段、授权存储或并行writer。constitution无例外，GAP状态不改变。独立提交审查、原owner promotion和fresh后续门禁先于publication/finish eligibility。

@@ -68,6 +68,32 @@ Publish/Merge 真实成功而公共投影失败时，原事务 owner 核验同 P
 
 ## 退出与整体收尾
 
+### #547 Closure 保留 OPEN 的增量合同
+
+Closure input `guru-complete-task-closure-input-2.0` 与 Finish snapshot
+`guru-finish-task-closure-result-snapshot-2.0` 在原 action disposition 中增补
+`retain_open`。字段、既有枚举、ResultRef/TransactionRef 和 typed exits 不变。
+`exact_source` 是来源关系与关闭资格，不是本次必须关闭的决定。Task scope
+经原 owner 正常修订并完整完成后，Closure 审查源剩余责任，选择 retain_open，
+冻结同一 source/generation，观察 OPEN、零 close；Finish 消费同一 frozen action
+set，重验 retain=OPEN、close/already_closed=CLOSED，并保留 scope/历史/未验证边界。
+状态漂移回原 Closure owner，语义 blocked 在 identity/uniqueness 后、执行资格前返回。
+
+本增量直接演进受控 producer/consumer：使用新枚举前必须成套安装匹配 Closure
+package、Finish package、schema 和声明平台投影。旧 consumer 不理解新枚举；
+不能单独更新 Closure 然后把新事务交给旧 Finish。没有新枚举的既有输入和事务
+仍按原动作恢复；含 retain_open 的事务由该匹配新组合恢复，不降级解释。
+不添加 reader fallback、第二公共模型或 authorization 字段。
+
+aggregate closed 表示集合含 close/already_closed 动作；公共 Task2 source_closed
+只由 exact source 的动作决定。源 retain、另一 Issue close 时 aggregate closed，
+公共源结果为 no_mutation/source_result=null，不能从另一个 Issue 推出源 CLOSED。
+公共上游 Task2/API1 原合同和最小 Closure-to-Finish ResultRef 不变。
+
+受控新 schema-2 安装与未迁移完整旧安装仍遵守前述支持表。本增量的源/投影测试
+不自动升级实际旧安装，也不证明原 CMS Task 恢复；真实采用由原 Upgrade/业务
+owner 完成公共与私有迁移后运行正式收尾。当前 app 旧模型继续固定整套运行包。
+
 部分 scope 修订在同 Delivery 返工；全范围撤回由 scope owner 判断后由当前阶段 owner
 停止并释放选择，保留 Task、commit、PR 与身份。PR 关闭和资源清理各走原副作用边界。
 全部已知 Delivery 交付也不能推出 Task completed；Completion 还须判断未分配 scope

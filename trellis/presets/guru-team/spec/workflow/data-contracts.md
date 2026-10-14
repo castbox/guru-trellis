@@ -2072,8 +2072,9 @@ Closure alone freezes and converges the exact Issue action set; external change
 returns to semantic review. Its ResultRefDTO/TransactionRefDTO handoff contains
 no provider snapshot or user authorization.
 
-Finish consumes current Closure, rereads required-closed Issues before terminal
-mutation, and verifies the lifecycle-only bookkeeping merge and archive
+Finish consumes current Closure, rereads each action's required OPEN or CLOSED
+state before terminal mutation (the action contract belongs to the Closure and
+Finish Skills), and verifies the lifecycle-only bookkeeping merge and archive
 post-state. It seals current-generation resources against the PR head, while
 the separate target merge SHA proves archive persistence; after sealing it
 retires that generation's TaskBranchBinding. Finish never deletes resources.

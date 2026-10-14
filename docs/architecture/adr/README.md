@@ -53,3 +53,5 @@
 `ADR-023`（accepted）：活动 Clarify scope_ready 先判断后交原 clear-router 薄投影，由同一 Author 写作；旧成功结果 fresh 重入。正文见 [`023-scope-ready-before-planning.md`](./023-scope-ready-before-planning.md)。
 
 `ADR-024`（accepted）：公共Delivery拥有所有开发阶段与Planning；Guru语义门禁和私有发布事务独立，Task整体责任保持。正文见 [`024-task-delivery-public-authority.md`](./024-task-delivery-public-authority.md)。只替代ADR-022的Task规划/Task首次或resume激活片段、ADR-015/016中依赖Task开发status的执行路由；身份、generation、整体收尾与恢复责任继续继承。
+
+`ADR-025`（accepted）：exact_source 来源资格与本次 retain_open/close 处置分离；Closure 仍独占动作，Finish 校验每项所需状态，aggregate 与 exact source fact 分开。正文见 [`025-retain-source-open-disposition.md`](./025-retain-source-open-disposition.md)；ADR-013/024 的原 owners 与公共模型职责保持。

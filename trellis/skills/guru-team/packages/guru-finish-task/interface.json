@@ -170,7 +170,7 @@
         "id": "task-finish-blocked"
       }
     },
-    {"id": "closure_refresh_required", "evidence": "required-closed Issue reopened before terminal mutation", "consumer": {"kind": "workflow", "id": "task-closure-refresh-router"}},
+    {"id": "closure_refresh_required", "evidence": "frozen source or required OPEN/CLOSED Issue state changed before terminal mutation", "consumer": {"kind": "workflow", "id": "task-closure-refresh-router"}},
     {"id": "manual_cleanup_required", "evidence": "terminal archive persisted but resource ledger is missing", "consumer": {"kind": "skill", "id": "guru-cleanup-task-resources"}}
   ],
   "reentry": {

@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公开I/O逐出口和匹配consumer迁移边界"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性executor/validator/recorder及managed runtime"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围及测试观察价值"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "whole scope与实现/原业务效果的诚实边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与无额外compatibility parser"}
+{"file": ".trellis/spec/workflow/architecture-baseline.md", "reason": "任务隔离贡献和原owner promotion"}
+{"file": ".trellis/spec/workflow/requirements-design-test-ssot.md", "reason": "delta-first与final Phase2之前reconciliation"}

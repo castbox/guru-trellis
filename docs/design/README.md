@@ -1,6 +1,10 @@
 # Design SSOT
 
-唯一current RDT authority为`current-main-0.6.17-guru.90/active`；[本版入口](./versions/current-main-0.6.17-guru.90/design-main.md)完整继承immutable `.89`，承接[#531唯一增量](../requirements-design-test-contributions/531-task-delivery-lifecycle/traceability.md)。Architecture继承`.87/active`；历史段落保持其原身份。promotion新diff须fresh gates，不证明软件发布或原业务恢复。
+唯一current RDT authority为`current-main-0.6.17-guru.92/active`；[本版入口](./versions/current-main-0.6.17-guru.92/design-main.md)完整继承immutable `.91` 的 #547 增量。本版仅同步 Architecture `.88/active` 的[已晋升贡献](../architecture/contributions/547-retain-source-open.md)；[唯一Test](../requirements-design-test-contributions/547-retain-source-open/test.md)继续拥有验证边界。晋升差额仍须 fresh Phase2/TaskCommit/独立完整 Review。
+
+历史 `.91` authority：唯一current RDT authority为`current-main-0.6.17-guru.91/active`；[本版入口](./versions/current-main-0.6.17-guru.91/design-main.md)完整继承immutable `.90`，承接[#547唯一增量](../requirements-design-test-contributions/547-retain-source-open/traceability.md)。Architecture继承`.87/active`；[唯一Test](../requirements-design-test-contributions/547-retain-source-open/test.md)记录验证边界。fresh后续gates不由文档晋升替代。
+
+历史 `.90` authority：当时 RDT authority为`current-main-0.6.17-guru.90/active`；[本版入口](./versions/current-main-0.6.17-guru.90/design-main.md)完整继承immutable `.89`，承接[#531唯一增量](../requirements-design-test-contributions/531-task-delivery-lifecycle/traceability.md)。Architecture继承`.87/active`；历史段落保持其原身份。promotion新diff须fresh gates，不证明软件发布或原业务恢复。
 
 历史 `.89` RDT authority 当时是 `current-main-0.6.17-guru.89` / `active`；[本版入口](./versions/current-main-0.6.17-guru.89/design-main.md)完整继承 immutable `.88`，承接 [#530 增量 trace](../requirements-design-test-contributions/530-clean-committed-reentry/traceability.md)。Architecture 继承 `.86/active`。[唯一Test](../requirements-design-test-contributions/530-clean-committed-reentry/test.md)拥有实际验证及未验证边界；晋升差异须 fresh Phase2、TaskCommit 与不同 reviewer 完整 BranchReview，知识晋升不代表软件发布。
 
@@ -14,7 +18,9 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.90` | [本版入口](./versions/current-main-0.6.17-guru.90/design-main.md) |
+| `active` | `current-main-0.6.17-guru.92` | [本版入口](./versions/current-main-0.6.17-guru.92/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.91` | [本版入口](./versions/current-main-0.6.17-guru.91/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.90` | [本版入口](./versions/current-main-0.6.17-guru.90/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.89` | [本版入口](./versions/current-main-0.6.17-guru.89/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.88` | [不可变前驱](./versions/current-main-0.6.17-guru.88/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.87` | [不可变前驱](./versions/current-main-0.6.17-guru.87/design-main.md) |

@@ -30,7 +30,7 @@ def fake_gh(tmp_path):
     bin_dir.mkdir(exist_ok=True)
     script = bin_dir / "gh"
     script.write_text(
-        "#!/usr/bin/env python3\n"
+        "#!" + sys.executable + "\n"
         "import json, os, pathlib, sys\n"
         "args = sys.argv[1:]\n"
         "log = pathlib.Path(os.environ['GH_LOG'])\n"
@@ -51,7 +51,7 @@ def fake_gh(tmp_path):
     return env, state, tmp_path / "gh.log"
 
 
-def invoke(tmp_path, public, semantic, env, confirmed=False):
+def invoke(tmp_path, public, semantic, env, confirmed=False, wrapper=False):
     if not (tmp_path / ".git").exists():
         subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     # Create from the exact installed public writer; no legacy model stand-in.
@@ -101,6 +101,8 @@ def invoke(tmp_path, public, semantic, env, confirmed=False):
     review.write_text(json.dumps(semantic))
     argv = [sys.executable, str(PACKAGE / "runtime/invoke.py"), "--root", str(tmp_path),
             "--input", str(inp), "--semantic-result", str(review)]
+    if wrapper:
+        argv[:2] = ["bash", str(PACKAGE / "scripts/invoke.sh")]
     if confirmed:
         argv.append("--confirmed-close")
     return subprocess.run(argv, text=True, capture_output=True, env=env)
@@ -126,6 +128,9 @@ def test_contract_assets():
         validate_json(value, PACKAGE / "schemas/public-output.schema.json", output["exit_id"])
     finish = next(item for item in interface["public_contracts"]["consumer_inputs"] if item["id"] == "finish")
     assert finish["contract"]["seed_fields"] == ["closure_result"]
+    for name, schema in (("retain-open-input.json", "public-input.schema.json"),
+                         ("retain-open-semantic.json", "semantic-result.schema.json")):
+        validate_json(json.loads((PACKAGE / "examples" / name).read_text()), PACKAGE / "schemas" / schema, name)
 
 
 def test_no_issue_no_mutation_never_calls_provider(tmp_path):
@@ -328,6 +333,89 @@ def test_partial_action_set_recovers_only_unfinished_issue(tmp_path):
     assert json.loads(resumed.stdout)["exit_id"] == "closed"
     assert log.read_text().count("issue close 436") == 1
     assert log.read_text().count("issue close 437") == 2
+
+
+@pytest.mark.parametrize("mode", ["workflow", "standalone"])
+def test_retain_open_public_wrapper_and_output_loss_recovery(tmp_path, mode):
+    public, semantic = fixture()
+    public["mode"] = semantic["mode"] = mode
+    public["action_set"][0]["disposition"] = "retain_open"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, state, log = fake_gh(tmp_path)
+    first = invoke(tmp_path, public, semantic, env, wrapper=True)
+    assert first.returncode == 0, first.stdout + first.stderr
+    output = json.loads(first.stdout)
+    assert output["exit_id"] == "no_mutation"
+    recovered = invoke(tmp_path, public, semantic, env, wrapper=True)
+    assert json.loads(recovered.stdout) == output
+    assert "issue close" not in log.read_text()
+    assert json.loads(state.read_text())["castbox/guru-trellis#436"] == "OPEN"
+    snapshot = read_terminal_closure_result(inspect_repository(tmp_path), output["result_ref"])
+    assert snapshot["terminal"] == "no_mutation"
+    assert snapshot["action_set"] == public["action_set"]
+    record = json.loads(next((tmp_path / ".trellis/tasks").glob("*/task.json")).read_text())
+    assert record["source"] == public["source"]
+    assert len(record["closure_results"]) == 1
+    assert record["closure_results"][0]["disposition"] == "no_mutation"
+    assert record["closure_results"][0]["source_result"] is None
+
+
+def test_semantic_blocked_reason_precedes_executable_source_eligibility(tmp_path):
+    public, semantic = fixture()
+    public["action_set"][0]["disposition"] = "no_close_authority"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    reason = {"reason_code": "source_responsibility_unresolved", "reason_refs": ["issue:436"]}
+    semantic["route"] = {"typed_exit": "blocked", "reason": reason}
+    env, _, log = fake_gh(tmp_path)
+    result = invoke(tmp_path, public, semantic, env, wrapper=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout) == {"exit_id": "blocked", "reason": reason}
+    assert not log.exists()
+    path = inspect_repository(tmp_path).common_dir / "guru-team/closure/example-task/0.json"
+    assert not path.exists()
+
+
+@pytest.mark.parametrize("source_disposition", ["retain_open", "close"])
+def test_mixed_action_aggregate_does_not_replace_exact_source_fact(tmp_path, source_disposition):
+    public, semantic = fixture()
+    public["action_set"][0]["disposition"] = source_disposition
+    public["action_set"].append({"issue_ref": {"repo_ref": "castbox/guru-trellis", "issue_number": 437}, "disposition": "close"})
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, state, log = fake_gh(tmp_path)
+    result = invoke(tmp_path, public, semantic, env, confirmed=True, wrapper=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = json.loads(result.stdout)
+    assert output["exit_id"] == "closed"
+    snapshot = read_terminal_closure_result(inspect_repository(tmp_path), output["result_ref"])
+    assert snapshot["terminal"] == "closed" and snapshot["action_set"] == public["action_set"]
+    record = json.loads(next((tmp_path / ".trellis/tasks").glob("*/task.json")).read_text())
+    closure = record["closure_results"][0]
+    source_closed = source_disposition == "close"
+    assert closure["disposition"] == ("source_closed" if source_closed else "no_mutation")
+    assert closure["source_result"] == ({"locator": "https://github.com/castbox/guru-trellis/issues/436", "revision": "CLOSED"} if source_closed else None)
+    assert json.loads(state.read_text())["castbox/guru-trellis#436"] == ("CLOSED" if source_closed else "OPEN")
+    assert log.read_text().count("issue close 436") == int(source_closed)
+    assert log.read_text().count("issue close 437") == 1
+
+
+def test_retained_issue_external_close_returns_to_original_disposition_owner(tmp_path):
+    public, semantic = fixture()
+    public["action_set"][0]["disposition"] = "retain_open"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    env, state, log = fake_gh(tmp_path)
+    assert invoke(tmp_path, public, semantic, env, wrapper=True).returncode == 0
+    states = json.loads(state.read_text()); states["castbox/guru-trellis#436"] = "CLOSED"
+    state.write_text(json.dumps(states))
+    conflict = invoke(tmp_path, public, semantic, env, wrapper=True)
+    output = json.loads(conflict.stdout)
+    assert output["exit_id"] == "external_change_conflict"
+    assert output["reason"]["reason_code"] == "required_open_issue_closed"
+    public.update(source_exit="external_change_conflict", transaction_ref=output["transaction_ref"])
+    public["action_set"][0]["disposition"] = "already_closed_at_review"
+    semantic["reviewed_action_set"] = copy.deepcopy(public["action_set"])
+    reentered = invoke(tmp_path, public, semantic, env, wrapper=True)
+    assert json.loads(reentered.stdout)["exit_id"] == "closed"
+    assert "issue close" not in log.read_text()
 
 
 @pytest.mark.parametrize("field", ["source", "completion_result", "binding_ref", "action_set"])

@@ -135,3 +135,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-042`（#530）：原 TaskCommit 单写 dirty exact commit 或 clean committed candidate 的当前事实核验及原 DTO 投影；Check 单写 Phase2 内容算法与证据，Reconcile 单写 integration commit，BranchReview 单写完整/continuity review，workflow 只路由。BranchReview 不读取 producer 私有 checkpoint；Architecture/RDT shared-current 仍由原 promotion owners 串行更新，不能由 clean 状态代替 gate。
 
 `ARCH-DOM-043`（#531）：上游拥有Task/Delivery公共模型、identity/selection/session与确定性转换；Guru只拥有整体scope判断、每Delivery唯一Author/Wording/Architecture/Approval及Check/TaskCommit/fullReview/readiness语义门禁。Publish/Merge各自的私有事务恢复真实副作用后投影公共事实，history不产生current gate pass。Completion/Closure/Finish/Cleanup/Reactivate原owner保持；无Delivery时整体需求、证据或收尾合法，不造空Delivery。ADR-024明确旧Task开发writer及激活分叉退出；旧安装迁移仍须公共Plan2与Guru私有owners各自就绪，不产生双authority。
+
+`ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结 retain/close 动作，Finish 只核验冻结结果并归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
