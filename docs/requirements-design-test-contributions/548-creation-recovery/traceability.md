@@ -1,6 +1,6 @@
 # #548 双向追踪
 
-状态：reconciled_candidate；RDT preimage .92、Architecture .88；delta_first。唯一结果在Test，shared promotion由原owners在完整committed Review后处理。
+状态：reviewed_promoted；RDT .93/active（preimage .92）、Architecture .89/active（preimage .88）；delta_first。首次完整 committed Review 后由原 owners 晋升；唯一结果在 Test，新晋升差额重新进入原 gates。
 
 | Requirement / behavior | Design | Test | Source AC |
 | --- | --- | --- | --- |

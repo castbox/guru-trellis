@@ -8,4 +8,4 @@
 | D548-04 | 原Upgrade owner/public Plan2：真实旧writer记录、完整inventory、逐记录defer及保留；没有HEAD identity不制造pass |
 | D548-05 | 原canonical preset/platform projections及定向验证；主完整legacy与成套current样本分开 |
 
-详细步骤由各canonical Skill独占。没有新public DTO、writer、selection store、兼容reader或恢复框架。来源设计处置只在Task design矩阵；Architecture before/after在[专属贡献](../../../.trellis/tasks/10-14-548-creation-recovery/architecture-contribution.md)，本文件只拥有RDT职责映射。
+详细步骤由各canonical Skill独占。没有新public DTO、writer、selection store、兼容reader或恢复框架。来源设计处置由[不可变历史规划设计](https://github.com/castbox/guru-trellis/blob/25ae20319fae2047747da70e3be5167bb39d9a27/.trellis/tasks/10-14-548-creation-recovery/design.md)保留；当前 Architecture before/after在[已晋升共享贡献](../../architecture/contributions/548-creation-recovery.md)，本文件只拥有RDT职责映射。
