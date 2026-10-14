@@ -109,4 +109,19 @@ class ContractTest(unittest.TestCase):
         for command in json.loads((PACKAGE/'commands.json').read_text())['commands']:
             with self.subTest(command=command['id']): self.assertEqual(0,main(PACKAGE,[command['id'],'--help']))
 
+    def test_resolved_private_requests_keep_post_plan_boundary(self):
+        request=json.loads((PACKAGE/'examples/reconciliation-request.json').read_text())
+        request.update(profile='delivery_post_plan',resume_target='delivery_activation')
+        request.pop('branch_review_commit',None)
+        resolved={'stage0_tree':'a'*40,'integration_paths':['docs/requirements.md']}
+        request['resolved_candidate']=resolved
+        schema=PACKAGE/'schemas/delivery-reconciliation-request.schema.json'
+        self.assertEqual([],validate(schema,request))
+        self.assertTrue(validate(schema,{**request,'profile':'delivery_post_check','resume_target':'task_commit'}))
+        self.assertTrue(validate(schema,{**request,'resolved_candidate':{'stage0_tree':'a'*40}}))
+        self.assertTrue(validate(schema,{**request,'resolved_candidate':{**resolved,'integration_paths':[]}}))
+        preview={'task_head':'b'*40,'new_base_head':'c'*40,'validation_commands':[],
+                 'resolved_candidate':resolved}
+        self.assertEqual([],validate(PACKAGE/'schemas/delivery-candidate-request.schema.json',preview))
+
 if __name__=='__main__': unittest.main()

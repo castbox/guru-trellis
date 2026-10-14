@@ -30,6 +30,29 @@
           "maxLength": 4096
         }
       }
+    },
+    "resolved_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage0_tree",
+        "integration_paths"
+      ],
+      "properties": {
+        "stage0_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "integration_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
 from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
 from runtime.io import CommandError
+from resolved import commit_tree, require_merge_state, tree_index, validate_integration_paths, verify_commit
 
 def _managed_validation_command(command: list[str]) -> list[str]:
     launcher = Path(command[0]).name.casefold()
@@ -37,9 +38,20 @@ def candidate(package_root: Path, argv: list[str]) -> dict:
     with tempfile.TemporaryDirectory(prefix="guru-base-candidate-") as td:
         worktree=Path(td)/"worktree"; added=False
         try:
+            resolved=request.get("resolved_candidate")
+            if resolved:
+                if resolve_commit(repo,"HEAD","HEAD") != task:
+                    raise CommandError("stale_identity","task_head","Use the current pre-reconciliation HEAD.",3)
+                require_merge_state(repo,base)
+                with tree_index(repo,resolved["stage0_tree"]) as index:
+                    validate_integration_paths(repo,task,resolved["stage0_tree"],resolved["integration_paths"],index,live_index=True)
             subprocess.run(["git","worktree","add","--detach",str(worktree),base],cwd=repo,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE); added=True
-            merge=subprocess.run(["git","merge","--no-commit","--no-ff",task],cwd=worktree,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            merge_failed = merge.returncode != 0
+            if resolved:
+                subprocess.run(["git","read-tree","--reset","-u",resolved["stage0_tree"]],cwd=worktree,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                merge_failed=False
+            else:
+                merge=subprocess.run(["git","merge","--no-commit","--no-ff",task],cwd=worktree,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                merge_failed = merge.returncode != 0
             if merge_failed:
                 conflicts=subprocess.run(["git","diff","--name-only","--diff-filter=U"],cwd=worktree,text=True,stdout=subprocess.PIPE,check=True).stdout.splitlines()
             else:
@@ -61,7 +73,8 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
     old_base=resolve_commit(repo,request["old_base_head"],"old_base_head")
     new_base=resolve_commit(repo,request["new_base_head"],"new_base_head")
     selected=resolve_commit(repo,request["selected_base_ref"],"selected_base_ref")
-    if resolve_commit(repo,"HEAD","HEAD") != prior or selected != new_base:
+    resolved=request.get("resolved_candidate")
+    if (not resolved and resolve_commit(repo,"HEAD","HEAD") != prior) or selected != new_base:
         raise CommandError("stale_identity","expected_head","Rebuild and reconfirm the exact reconciliation request.",3)
     if request["profile"] in PRE_REVIEW_PROFILES:
         if old_base != merge_base(repo,prior,new_base):
@@ -75,6 +88,22 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
             raise CommandError("stale_identity","branch_review_commit","Use the prior full-review commit for this task history.",3)
     if is_ancestor(repo,new_base,prior):
         raise CommandError("stale_identity","new_base_head","The current task HEAD already contains this base.",3)
+    if resolved:
+        tree=resolved["stage0_tree"]
+        head=resolve_commit(repo,"HEAD","HEAD")
+        with tree_index(repo,tree) as index:
+            if index_tree_digest(repo,index_file=index) != request["candidate_tree_sha256"]:
+                raise CommandError("stale_identity","candidate_tree_sha256","Use the reviewed integration tree digest.",3)
+            validate_integration_paths(repo,prior,tree,resolved["integration_paths"],index,live_index=False)
+            if head != prior:
+                verify_commit(repo,head,[prior,new_base],tree,request["commit_message"],request["candidate_tree_sha256"],recovery=True)
+                reconciled=head
+            else:
+                require_merge_state(repo,new_base)
+                validate_integration_paths(repo,prior,tree,resolved["integration_paths"],index,live_index=True)
+                reconciled=commit_tree(repo,[prior,new_base],tree,request["commit_message"],request["candidate_tree_sha256"],index=index)
+        result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
+        validate_json(result,package_root/"schemas/delivery-reconciliation-result.schema.json","result"); return result
     dirty=bool(git(repo,"status","--porcelain=v1","--untracked-files=normal"))
     if dirty and request["profile"] not in PRE_REVIEW_PROFILES:
         require_clean_worktree(repo)
@@ -127,22 +156,6 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
     if review is not None: result["branch_review_commit"]=review
     validate_json(result,package_root/"schemas/delivery-reconciliation-result.schema.json","result"); return result
 
-def _git_path(repo: Path, name: str) -> Path:
-    path=Path(git(repo, "rev-parse", "--git-path", name))
-    return path if path.is_absolute() else repo/path
-
-def _other_sequencer(repo: Path) -> str | None:
-    for name in ("CHERRY_PICK_HEAD", "REVERT_HEAD", "REBASE_HEAD", "BISECT_LOG", "sequencer", "rebase-merge", "rebase-apply"):
-        if _git_path(repo, name).exists():
-            return name
-    return None
-
-def _commit_facts(repo: Path, commit: str) -> tuple[list[str], str, str]:
-    parents=git(repo,"show","-s","--format=%P",commit).split()
-    tree=git(repo,"show","-s","--format=%T",commit)
-    message=git(repo,"show","-s","--format=%B",commit).rstrip("\n")
-    return parents,tree,message
-
 def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
     parser=argparse.ArgumentParser(add_help=False); parser.add_argument("--root"); parser.add_argument("--input",required=True)
     args=parse(parser,argv); repo=repo_root(args.root); request=read_json(repo,package_root,args.input,"input")
@@ -159,26 +172,11 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
     head=resolve_commit(repo,"HEAD","HEAD")
     if head != phase2:
         require_clean_worktree(repo)
-        if _git_path(repo,"MERGE_HEAD").exists() or _other_sequencer(repo):
-            raise CommandError("stale_identity","repository.operation","Recovery requires a terminal clean Git state.",3)
-        parents,tree,message=_commit_facts(repo,head)
-        if parents != request["parent_order"] or tree != request["stage0_tree"] or message != request["commit_message"]:
-            raise CommandError("stale_identity","reconciled_task_head","Recover only the exact reviewed reconciliation commit.",3)
+        verify_commit(repo,head,request["parent_order"],request["stage0_tree"],request["commit_message"],request["index_tree_sha256"],recovery=True)
         status="recovered"
         reconciled=head
     else:
-        other=_other_sequencer(repo)
-        if other:
-            raise CommandError("stale_identity","repository.operation",f"Finish or abort the other Git operation: {other}.",3)
-        merge_path=_git_path(repo,"MERGE_HEAD")
-        if not merge_path.is_file() or merge_path.is_symlink():
-            raise CommandError("stale_identity","merge_head","Use the active reviewed merge operation.",3)
-        merge_heads=[line.strip() for line in merge_path.read_text().splitlines() if line.strip()]
-        if merge_heads != [new]:
-            raise CommandError("stale_identity","merge_head","Bind exactly one reviewed MERGE_HEAD.",3)
-        unresolved=git(repo,"diff","--name-only","--diff-filter=U")
-        if unresolved:
-            raise CommandError("stale_identity","repository.index","Resolve every conflict before reconciliation.",3)
+        require_merge_state(repo,new)
         if subprocess.run(["git","diff","--quiet"],cwd=repo).returncode:
             raise CommandError("stale_identity","worktree","Stage every resolved change before reconciliation.",3)
         untracked=git(repo,"ls-files","--others","--exclude-standard")
@@ -187,13 +185,7 @@ def resolved_reconcile(package_root: Path, argv: list[str]) -> dict:
         tree=git(repo,"write-tree")
         if tree != request["stage0_tree"] or index_tree_digest(repo) != request["index_tree_sha256"]:
             raise CommandError("stale_identity","stage0_tree","Use the exact Phase 2 reviewed stage-0 tree and index digest.",3)
-        commit=subprocess.run(["git","commit","-m",request["commit_message"]],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        if commit.returncode:
-            raise CommandError("reconciliation_failed","commit",commit.stderr.strip() or "The resolved reconciliation commit failed.",3)
-        reconciled=resolve_commit(repo,"HEAD","HEAD")
-        parents,committed_tree,message=_commit_facts(repo,reconciled)
-        if parents != request["parent_order"] or committed_tree != request["stage0_tree"] or message != request["commit_message"]:
-            raise CommandError("reconciliation_failed","reconciled_task_head","The created commit differs from the reviewed parents, tree, or message.",3)
+        reconciled=commit_tree(repo,request["parent_order"],request["stage0_tree"],request["commit_message"],request["index_tree_sha256"])
         require_clean_worktree(repo)
         status="committed"
     result={"schema_version":"1.0","status":status,"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"phase2_commit_anchor":phase2,"old_base_head":old,"new_base_head":new,"merge_head":new,"stage0_tree":request["stage0_tree"],"index_tree_sha256":request["index_tree_sha256"],"parent_order":request["parent_order"],"commit_message":request["commit_message"],"reconciled_task_head":reconciled}

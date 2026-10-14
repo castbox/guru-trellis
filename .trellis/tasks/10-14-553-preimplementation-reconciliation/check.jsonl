@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围和测试实际缺陷检测"}
+{"file": "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py", "reason": "保留实施后resolved和无冲突回归"}

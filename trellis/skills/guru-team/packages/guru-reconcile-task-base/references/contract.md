@@ -148,7 +148,58 @@ selected exit, minimal consumer fields, and local digest. It is deleted after a
 successful same-owner public invocation; stale state is removed before a fresh
 review rather than chained.
 
-## Conflict-Resolved Candidate
+## Pre-Implementation Resolved Baseline
+
+The two private candidate/reconciliation requests add the closed optional
+`resolved_candidate` object with exactly `stage0_tree` and `integration_paths`.
+Omitting it retains the ordinary clean-merge algorithm. Persistent consumption
+is restricted to `delivery_post_plan` with `resume_target=delivery_activation`;
+it creates no new public input, exit, checkpoint, or downstream gate.
+
+This owner reads the current live source, approved planning and exact base
+delta for the same Task generation and Delivery, resolves the genuine document
+conflict, and selects the integration paths. In a temporary index, build the
+stage-0 candidate from the resolved live index and restore every unselected
+entry to the prior task HEAD. Path selection, preservation of both authorities,
+planning applicability, resolution sufficiency and validation choice remain AI
+judgments. The real index/worktree are never rewritten by candidate building.
+
+`execute-base-candidate` verifies current HEAD, one active selected-base
+`MERGE_HEAD`, zero unmerged entries, no other sequencer, and the reviewed
+candidate path set. Every prior-HEAD-to-candidate change must be selected;
+selected live index mode/oid/stage entries must equal the candidate, and
+selected paths must have no unstaged changes. It loads that exact tree into a
+temporary detached checkout, runs the AI-supplied argv-array baseline checks,
+returns the original candidate facts using `index_tree_digest`, and removes
+the checkout. Baseline validation proves integration and planning applicability;
+unimplemented business scope is not a prerequisite and receives no Check pass.
+
+After the baseline semantic gate, display the exact Task/Delivery, branch,
+prior HEAD, live operation pair, `MERGE_HEAD`, selected paths, tree/digest,
+message, parent order `[prior_task_head,new_base_head]` and zero remote effects.
+Only current-dialogue confirmation permits the persistent Git invocation.
+No authorization is present in a request, schema, result or checkpoint.
+
+`execute-base-reconciliation` rechecks the branch-bound Task/Delivery, selected
+ref and unique old merge base, active merge facts and candidate equality. It
+loads the reviewed tree into a temporary `GIT_INDEX_FILE` and uses ordinary
+`git commit`. The real index, unrelated staged/unstaged/untracked content and
+parallel pending planning remain intact; no stash or reset occurs. Commit
+readback verifies exact parents, tree, message, digest and terminal merge state.
+The original receipt then enters record/check/invoke and returns `reconciled`
+to the original Activation owner for the same Task generation and Delivery.
+
+If stdout is lost, the same request may recover only the current HEAD with
+those exact parents/tree/message/digest, the same selected base/old pair and a
+terminal Git operation state. Unrelated pending changes remain allowed. The
+receipt identifies the existing commit; recovery never commits or amends.
+Ordinary HEAD/base/tree/index changes, unresolved conflicts or changed reviewed
+paths stop without altering the existing state and require this owner's fresh
+read/re-entry. Actual authority/planning changes follow its existing semantic
+exits. This route does not call business Check, Task Commit, Branch Review or
+readiness; those owners run after implementation.
+
+## Post-Implementation Conflict-Resolved Candidate
 
 The `delivery_resolved_candidate` profile is entered only from
 `guru-check-task:resolved_reconciliation_passed`. Its public input binds the

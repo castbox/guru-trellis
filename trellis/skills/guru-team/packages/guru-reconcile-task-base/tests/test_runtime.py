@@ -687,4 +687,217 @@ class RuntimeTest(unittest.TestCase):
         self.assertIn(self.task_id,first.parent.parent.name)
         self.assertIn(self.task_id,second.parent.parent.name)
 
+    def preimplementation_candidate(self, *, pending=True):
+        resolved = self.resolved_merge()
+        self.head = resolved['phase2_commit_anchor']
+        self.new = resolved['new_base_head']
+        tree = resolved['stage0_tree']
+        if pending:
+            (self.repo / 'task.txt').write_text('pending staged plan\n')
+            self.git('add', 'task.txt')
+            (self.repo / 'task.txt').write_text('pending unstaged plan\n')
+            (self.repo / 'notes.txt').write_text('pending untracked notes\n')
+        request = {'profile': 'delivery_post_plan', 'task_ref': self.task_ref,
+                   'delivery_key': self.delivery_key, 'branch': 'feature',
+                   'prior_task_head': self.head, 'selected_base_ref': 'main',
+                   'old_base_head': self.old, 'new_base_head': self.new,
+                   'resume_target': 'delivery_activation',
+                   'candidate_tree_sha256': resolved['index_tree_sha256'],
+                   'commit_message': 'chore(base): reconcile approved planning baseline',
+                   'resolved_candidate': {'stage0_tree': tree,
+                                          'integration_paths': ['base.txt', 'conflict.txt']}}
+        return request
+
+    def preserved_pending_state(self):
+        return ((self.repo / '.git/index').read_bytes(),
+                self.git('show', ':task.txt'),
+                (self.repo / 'task.txt').read_bytes(),
+                (self.repo / 'notes.txt').read_bytes(),
+                self.git('stash', 'list'))
+
+    def test_post_plan_resolved_preview_commit_and_recovery_preserve_pending(self):
+        request = self.preimplementation_candidate()
+        before = self.preserved_pending_state()
+        marker = self.inputs / 'resolved-validation.json'
+        command = [sys.executable, '-c',
+                   'import json; from pathlib import Path; import sys; '
+                   'Path(sys.argv[1]).write_text(json.dumps({p:Path(p).read_text() '
+                   'for p in ("base.txt","conflict.txt","task.txt")}))', str(marker)]
+        preview = {'task_head': self.head, 'new_base_head': self.new,
+                   'resolved_candidate': request['resolved_candidate'],
+                   'validation_commands': [command]}
+        result = execute.candidate(PACKAGE, ['--root', str(self.repo), '--request',
+                                            str(self.write('resolved-preview.json', preview))])
+        self.assertEqual('clean', result['merge_status'])
+        self.assertEqual(request['candidate_tree_sha256'], result['candidate_tree_sha256'])
+        self.assertEqual([{'argv': command, 'exit_code': 0}], result['validations'])
+        self.assertEqual({'base.txt': 'new\n', 'conflict.txt': 'resolved\n', 'task.txt': 'task\n'},
+                         json.loads(marker.read_text()))
+        self.assertEqual(before, self.preserved_pending_state())
+        self.assertEqual(self.new, self.git('rev-parse', 'MERGE_HEAD'))
+        self.assertNotIn('guru-base-candidate-', self.git('worktree', 'list'))
+        path = self.write('post-plan-resolved-request.json', request)
+        first = execute.reconcile(PACKAGE, ['--root', str(self.repo), '--request', str(path)])
+        commit = first['reconciled_task_head']
+        self.assertEqual([self.head, self.new], self.git('show', '-s', '--format=%P', commit).split())
+        self.assertEqual(request['resolved_candidate']['stage0_tree'], self.git('rev-parse', 'HEAD^{tree}'))
+        self.assertEqual('task', self.git('show', 'HEAD:task.txt'))
+        self.assertFalse((self.repo / '.git/MERGE_HEAD').exists())
+        self.assertEqual(before, self.preserved_pending_state())
+        count = self.git('rev-list', '--count', 'HEAD')
+        second = execute.reconcile(PACKAGE, ['--root', str(self.repo), '--request', str(path)])
+        self.assertEqual(first, second)
+        self.assertEqual(count, self.git('rev-list', '--count', 'HEAD'))
+        self.assertEqual(before, self.preserved_pending_state())
+
+    def test_post_plan_resolved_normal_changes_stop_and_preserve_state(self):
+        for case in ('unresolved', 'unstaged', 'index', 'mode', 'candidate_paths',
+                     'candidate_digest', 'selected_base', 'head', 'sequencer'):
+            with self.subTest(case=case):
+                request = self.preimplementation_candidate()
+                if case == 'unresolved':
+                    self.git('checkout', '-m', '--', 'conflict.txt')
+                    self.assertTrue(self.git('ls-files', '--unmerged'))
+                elif case == 'unstaged':
+                    (self.repo / 'conflict.txt').write_text('next unstaged resolution\n')
+                elif case == 'index':
+                    (self.repo / 'conflict.txt').write_text('next staged resolution\n')
+                    self.git('add', 'conflict.txt')
+                elif case == 'mode':
+                    self.git('update-index', '--chmod=+x', 'conflict.txt')
+                elif case == 'candidate_paths':
+                    # A normal candidate builder accidentally included the pending plan.
+                    request['resolved_candidate']['stage0_tree'] = self.git('write-tree')
+                    request['candidate_tree_sha256'] = index_tree_digest(self.repo)
+                elif case == 'candidate_digest':
+                    # Candidate preview happened before the AI selected another resolution.
+                    (self.repo / 'conflict.txt').write_text('next reviewed resolution\n')
+                    self.git('add', 'conflict.txt')
+                    request['resolved_candidate']['stage0_tree'] = self.git('write-tree')
+                elif case == 'selected_base':
+                    self.git('update-ref', 'refs/heads/main', self.old)
+                elif case == 'head':
+                    execute.reconcile(PACKAGE, ['--root', str(self.repo), '--request',
+                                               str(self.write('before-head-change.json', request))])
+                    self.git('commit', '--allow-empty', '-qm', 'normal task head advance')
+                else:
+                    (self.repo / '.git/sequencer').mkdir()
+                before = (self.candidate_state(), self.preserved_pending_state(),
+                          (self.repo / 'conflict.txt').read_bytes(),
+                          (self.repo / '.git/MERGE_HEAD').read_bytes()
+                          if (self.repo / '.git/MERGE_HEAD').exists() else None)
+                with self.assertRaises(CommandError):
+                    execute.reconcile(PACKAGE, ['--root', str(self.repo), '--request',
+                                               str(self.write(case + '-post-plan.json', request))])
+                after = (self.candidate_state(), self.preserved_pending_state(),
+                         (self.repo / 'conflict.txt').read_bytes(),
+                         (self.repo / '.git/MERGE_HEAD').read_bytes()
+                         if (self.repo / '.git/MERGE_HEAD').exists() else None)
+                self.assertEqual(before, after)
+                self.tmp.cleanup()
+                self.setUp()
+
+    def test_post_plan_resolved_tree_preserves_selected_add_delete_and_mode(self):
+        request = self.preimplementation_candidate()
+        self.git('rm', '-f', 'base.txt')
+        script = self.repo / 'baseline.sh'
+        script.write_text('#!/bin/sh\nexit 0\n'); script.chmod(0o755)
+        self.git('add', 'baseline.sh')
+        self.git('update-index', '--chmod=+x', 'baseline.sh')
+        with tempfile.TemporaryDirectory() as directory:
+            index = Path(directory) / 'candidate-index'
+            env = {**os.environ, 'GIT_INDEX_FILE': str(index)}
+            subprocess.run(['git', 'read-tree', self.git('write-tree')], cwd=self.repo,
+                           env=env, check=True)
+            # Candidate construction restores the unselected pending plan in a temporary index.
+            subprocess.run(['git', 'update-index', '--cacheinfo', '100644',
+                            self.git('rev-parse', 'HEAD:task.txt'), 'task.txt'],
+                           cwd=self.repo, env=env, check=True)
+            request['resolved_candidate'] = {
+                'stage0_tree': subprocess.run(['git', 'write-tree'], cwd=self.repo, env=env,
+                    text=True, stdout=subprocess.PIPE, check=True).stdout.strip(),
+                'integration_paths': ['base.txt', 'conflict.txt', 'baseline.sh']}
+            request['candidate_tree_sha256'] = index_tree_digest(self.repo, index_file=index)
+        before = self.preserved_pending_state()
+        result = execute.reconcile(PACKAGE, ['--root', str(self.repo), '--request',
+                                           str(self.write('add-delete-mode.json', request))])
+        self.assertEqual(request['resolved_candidate']['stage0_tree'],
+                         self.git('rev-parse', result['reconciled_task_head'] + '^{tree}'))
+        self.assertEqual('', self.git('ls-tree', 'HEAD', 'base.txt'))
+        self.assertTrue(self.git('ls-tree', 'HEAD', 'baseline.sh').startswith('100755 blob '))
+        self.assertEqual(before, self.preserved_pending_state())
+
+    def public_wrapper(self, package, script, *argv):
+        process = subprocess.run(['bash', str(package / 'scripts' / script), '--root',
+                                  str(self.repo), *argv, '--json'], cwd=SKILLS.parents[2],
+                                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.assertEqual(0, process.returncode, process.stdout + process.stderr)
+        value = json.loads(process.stdout)
+        return value['result'] if value.get('formal_exit') is False else value
+
+    def test_post_plan_public_transport_resumes_same_delivery_without_business_check(self):
+        # Fixture semantic inputs prove owner transport only, never an AI/Phase 2 pass.
+        activation = SKILLS / 'packages/guru-activate-delivery'
+        projection = DeliveryProjection(self.repo, self.task_ref)
+        directory = projection.planning_directory(self.delivery_key)
+        for name in ('prd.md', 'design.md', 'implement.md'):
+            (directory / name).write_text('当前已批准但业务尚未实施的规划\n')
+        owner = self.write('activation-semantic-fixture.json', {
+            'typed_exit': 'delivery_started', 'reason': 'Transport fixture after plan acceptance.'})
+        projection.select(self.delivery_key)
+        entries = [{'path': (directory / name).relative_to(self.repo.resolve()).as_posix(),
+                    'content_sha256': hashlib.sha256((directory / name).read_bytes()).hexdigest()}
+                   for name in ('prd.md', 'design.md', 'implement.md')]
+        entries.sort(key=lambda entry: entry['path'])
+        planning_id = 'planning:' + hashlib.sha256(json.dumps(
+            entries, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+        activation_input = {'profile': 'delivery_activation', 'mode': 'workflow',
+                            'task_ref': self.task_ref, 'delivery_key': self.delivery_key,
+                            'planning_result_id': planning_id,
+                            'action': 'activate'}
+        activated = self.public_wrapper(activation, 'invoke.sh', '--input',
+                                        str(self.write('activation-input.json', activation_input)),
+                                        '--owner-result', str(owner))
+        self.assertEqual('delivery_started', activated['exit_id'], activated)
+        request = self.preimplementation_candidate()
+        public = self.public('delivery_post_plan'); public['selected_base_ref'] = 'main'
+        public_path = self.write('post-plan-public-input.json', public)
+        guarded = self.public_wrapper(PACKAGE, 'guard-task-base-pair.sh', '--input', str(public_path))
+        self.assertEqual('new_pair', guarded['status'])
+        preview = self.public_wrapper(PACKAGE, 'execute-base-candidate.sh', '--request',
+                    str(self.write('post-plan-public-preview.json', {
+                        'task_head': self.head, 'new_base_head': self.new,
+                        'resolved_candidate': request['resolved_candidate'],
+                        'validation_commands': [['git', 'diff', '--quiet']]})))
+        self.assertEqual(request['candidate_tree_sha256'], preview['candidate_tree_sha256'])
+        self.assertEqual(0, preview['validations'][0]['exit_code'])
+        receipt = self.public_wrapper(PACKAGE, 'execute-base-reconciliation.sh', '--request',
+                                     str(self.write('post-plan-public-request.json', request)))
+        recorded = self.public_wrapper(PACKAGE, 'record-base-reconciliation.sh',
+                    '--skill-input', str(public_path), '--semantic-review-file',
+                    str(self.write('post-plan-semantic-fixture.json', self.gate(request['candidate_tree_sha256']))),
+                    '--typed-exit', 'reconciled', '--reconciliation-result',
+                    str(self.write('post-plan-public-receipt.json', receipt)))
+        checked = self.public_wrapper(PACKAGE, 'check-base-reconciliation.sh', '--input',
+                                     str(self.write('post-plan-public-owner.json', recorded)),
+                                     '--expected-exit', 'reconciled')
+        self.assertEqual('ok', checked['status'])
+        output = self.public_wrapper(PACKAGE, 'invoke.sh', '--invocation',
+                    str(self.write('post-plan-public-invocation.json',
+                                   {'public_input': public, 'owner_result': recorded})))
+        self.assertEqual('delivery_activation', output['resume_target'])
+        self.assertEqual(self.delivery_key, output['delivery_key'])
+        self.assertEqual(self.task_ref, output['task_ref'])
+        self.assertEqual(receipt['reconciled_task_head'], output['task_head'])
+        activation_input['action'] = 'recover_activation'
+        recovered = self.public_wrapper(activation, 'invoke.sh', '--input',
+                    str(self.write('post-plan-activation-recovery.json', activation_input)),
+                    '--owner-result', str(owner))
+        self.assertEqual(activated, recovered)
+        delivery = projection.resolve(self.delivery_key)
+        self.assertEqual('implementing', delivery['phase'])
+        self.assertIsNone(delivery['results']['check'])
+        self.assertEqual(activated['planning_accepted_result_id'], delivery['results']['planning']['result_id'])
+        self.assertEqual(1, len(json.loads((self.task_dir / 'task.json').read_text())['deliveries']))
+
 if __name__=='__main__': unittest.main()

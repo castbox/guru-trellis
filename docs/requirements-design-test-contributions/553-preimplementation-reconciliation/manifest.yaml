@@ -1,0 +1,14 @@
+task_id: 553-preimplementation-reconciliation
+source: https://github.com/castbox/guru-trellis/issues/553
+status: candidate
+strategy: delta_first
+preimage: current-main-0.6.17-guru.93
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.89
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
