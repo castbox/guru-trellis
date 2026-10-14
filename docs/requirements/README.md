@@ -1,6 +1,8 @@
 # Requirements SSOT
 
-唯一current RDT authority为`current-main-0.6.17-guru.92/active`；[本版入口](./versions/current-main-0.6.17-guru.92/requirement-main.md)完整继承immutable `.91` 的 #547 增量。本版仅同步 Architecture `.88/active` 的[已晋升贡献](../architecture/contributions/547-retain-source-open.md)；[唯一Test](../requirements-design-test-contributions/547-retain-source-open/test.md)继续拥有验证边界。晋升差额仍须 fresh Phase2/TaskCommit/独立完整 Review。
+唯一 current RDT authority 为 `current-main-0.6.17-guru.93/active`；[本版入口](./versions/current-main-0.6.17-guru.93/requirement-main.md)完整继承 immutable `.92`，承接 [#548 唯一增量](../requirements-design-test-contributions/548-creation-recovery/traceability.md)并继承 Architecture `.89/active`。实际结果与未验证边界由[唯一 Test](../requirements-design-test-contributions/548-creation-recovery/test.md)拥有，晋升新差额重走原 gates。
+
+历史 `.92` authority：唯一current RDT authority为`current-main-0.6.17-guru.92/active`；[本版入口](./versions/current-main-0.6.17-guru.92/requirement-main.md)完整继承immutable `.91` 的 #547 增量。本版仅同步 Architecture `.88/active` 的[已晋升贡献](../architecture/contributions/547-retain-source-open.md)；[唯一Test](../requirements-design-test-contributions/547-retain-source-open/test.md)继续拥有验证边界。晋升差额仍须 fresh Phase2/TaskCommit/独立完整 Review。
 
 历史 `.91` authority：唯一current RDT authority为`current-main-0.6.17-guru.91/active`；[本版入口](./versions/current-main-0.6.17-guru.91/requirement-main.md)完整继承immutable `.90`，承接[#547唯一增量](../requirements-design-test-contributions/547-retain-source-open/traceability.md)。Architecture继承`.87/active`；[唯一Test](../requirements-design-test-contributions/547-retain-source-open/test.md)记录验证边界。fresh后续gates不由文档晋升替代。
 
@@ -14,7 +16,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.92` | [本版入口](./versions/current-main-0.6.17-guru.92/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.93` | [本版入口](./versions/current-main-0.6.17-guru.93/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.92` | [本版入口](./versions/current-main-0.6.17-guru.92/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.91` | [本版入口](./versions/current-main-0.6.17-guru.91/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.90` | [本版入口](./versions/current-main-0.6.17-guru.90/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.89` | [本版入口](./versions/current-main-0.6.17-guru.89/requirement-main.md) |

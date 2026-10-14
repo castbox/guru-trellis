@@ -10,13 +10,7 @@ from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.errors import LifecycleContractError
-
-
-def checkpoint(root: Path, task_ref: str, continuation_id: str) -> Path:
-    # The token identifies this owner's one pending create/select interval.
-    import hashlib
-    token = hashlib.sha256(continuation_id.encode()).hexdigest()
-    return root / ".trellis/.runtime/guru-team/delivery-creation" / Path(task_ref).name / (token + ".json")
+from creation_result import checkpoint
 
 
 def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
@@ -84,9 +78,11 @@ def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
                              "scope_ref": public["scope_ref"], "profile": public["delivery_profile"]}
                 # Validate first with the upstream parser. Store only recovery inputs.
                 projection._call(projection.api.delivery_operations.parse_operation, operation)
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(json.dumps(operation, ensure_ascii=False, indent=2) + "\n")
             if operation is not None:
+                projection.selection_preflight(operation["key"])
+                if not path.is_file():
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(json.dumps(operation, ensure_ascii=False, indent=2) + "\n")
                 projection.apply(operation)
                 key = operation["key"]
                 delivery = projection.resolve(key)
@@ -95,7 +91,7 @@ def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
             raise LifecycleContractError("delivery_selection_required", "session", "Recover the same Creation selection before Planning.")
         output = {"exit_id": expected, "delivery_key": key, "task_ref": public["task_ref"], "planning_root": delivery["planning_root"]}
         validate_json(output, package / ("schemas/public-" + expected + "-output.schema.json"), "stdout")
-        if path is not None and path.is_file():
+        if path is not None and path.is_file() and projection.has_context():
             path.unlink()
         return output
     except LifecycleContractError as exc:

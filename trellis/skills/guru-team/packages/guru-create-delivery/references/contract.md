@@ -8,13 +8,15 @@
 
 `delivery_creation` 输入明确 TaskKey、task_ref、scope_ref、交付 profile、一次 continuation_id 与 create/recover_creation 动作。公共 scope_ref/profile 直接交上游 parser，不复制其 schema。创建时一次分配 UUID，然后在同 owner ignored checkpoint 写入该公共 operation 的最小恢复输入，再调用公共 create_delivery/select。它只创建 Delivery 及上游自己的 planning_root，不创建 Task、branch 或 worktree。
 
-`delivery_selection` 输入明确 DeliveryKey 与 task_ref。AI 判断原切片适用并读取现状，再调用公共 select。Selection 只选择执行身份，不产生 Planning pass、不改变公共阶段，也不要求新工作树。
+`delivery_selection` 输入明确 DeliveryKey 与 task_ref。AI 判断原切片适用并读取现状，真实不同current选择在本owner解决后，有 context 时保留官方 select 的明确切换语义。创建/原创建恢复遇到不同合法current或stale/error先停止，不能静默覆盖或先创建另一个空 Delivery。无 context 时原 projection 校验明确 key、当前 generation、C4 注册 checkout 与官方公共 record/profile/applicability，只返回调用期身份，不写 session。Selection 不产生 Planning pass、不改变公共阶段，也不要求新工作树。
 
 创建新切片的 scope 判断、选择分歧与真实资源变化在 AI Gate 内解决。已授权同范围工作及正常恢复自动继续，不持久化用户确认或过程。
 
 ## 恢复与退出
 
-创建成功但 selection/输出未完成时，从本 owner checkpoint 使用原 UUID 继续；不可从 inventory 唯一项猜身份。create/select 与输出校验全部完成后删除 checkpoint。此后输出丢失，recover_creation 只能从当前公共 session 的明确 selection 恢复，同 Task generation、scope_ref、profile 必须相符；缺少这项事实不能新分配 UUID，也不能推导之前的切片判断。
+创建成功但 selection/输出未完成时，从本 owner checkpoint 使用原 UUID 继续；不可从 inventory 唯一项猜身份。有 context 的 create/select 与输出校验完成后删除 checkpoint；此后 recover_creation 只从当前公共 session 明确 selection 恢复，同 Task generation、scope_ref、profile 必须相符。
+
+无 context 时 `created` 返回相同最小 key/root，原 pending operation 保留供同 continuation 的输出丢失恢复。成功 initial Author 消费其 requirements_ready 后调用本 owner 的 `runtime/creation_result.py:retire_creation_result`，只传 task_ref/key；本端口复核官方当前关系、phase/scope/profile/原operation后退休匹配输入。Author 不读 private 格式，不保留消费或授权记录。缺原pending及适用明确selection时 recover_creation 停止；consumer完成后的接续使用实际public key，不能重新分配 UUID 或推导旧切片判断。
 
 整个切片撤回先进入 Clarify；由实际当前阶段 owner 使用公共合法 stop 接口，保留 commit/PR/history 并自动 release selection。关闭 PR 与清理资源有其独立 owner/必要确认。Creation 不把停止当交付，不替 Task Completion 判断全部完成。
 

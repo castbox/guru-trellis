@@ -55,7 +55,7 @@ def planning_directory(repo,td,key):
  from runtime.delivery_projection.adapter import DeliveryProjection
  from runtime.task_lifecycle.errors import LifecycleContractError
  try:
-  projection=DeliveryProjection(repo,rel(repo,td));delivery=projection.resolve(key);current=projection.current()
+  projection=DeliveryProjection(repo,rel(repo,td));delivery=projection.resolve(key);current=projection.current(key)
   if (current.get("kind")!="current" or current.get("key")!=key or delivery["phase"]!="planning"
       or key["lifecycle_generation"]!=projection.read_record()["lifecycle_generation"]
       or delivery["scope_ref"]["authority"]!=projection.read_record()["accepted_scope"]):

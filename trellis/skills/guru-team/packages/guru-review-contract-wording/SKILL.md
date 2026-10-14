@@ -85,7 +85,10 @@ Approval or replay a prewrite Architecture result.
 For Delivery documents explicitly use delivery_planning_artifacts and the
 opaque public DeliveryKey. Resolve its task_ref/planning_root through the installed
 API and scan/review all three current files. Never review Task-root documents as
-a surrogate. Current change_request and explicit_paths retain their existing
+a surrogate. With no official context key, its explicit DeliveryKey resolves
+through the original projection's current-generation/C4/public-record checks;
+with context, require the matching official current selection and preserve
+missing/stale/conflict stops. Current change_request and explicit_paths retain their existing
 contracts. The old planning_artifacts activity profile is retired; no Task
 status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
 their selected router. Recorder/checker envelope carries key/task_ref and the

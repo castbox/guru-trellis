@@ -1,0 +1,29 @@
+{
+  "id": "548-creation-recovery",
+  "name": "548-creation-recovery",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 548,
+    "disposition": "exact_source"
+  },
+  "title": "#548 验证 Task 创建与原任务恢复",
+  "description": "按当前supported组合验证正式创建到D1激活、原结果/新会话恢复及旧untracked逐记录处置；仅复现缺口修产品",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "#548 AC1-7",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-14",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

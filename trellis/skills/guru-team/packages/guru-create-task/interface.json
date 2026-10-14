@@ -195,7 +195,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_delivery_chain.py"
   ],
   "platform_destinations": [
     "shared",

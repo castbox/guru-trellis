@@ -13,7 +13,12 @@ Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
 Use this Skill after the current planning wording review has passed and before
-Delivery activation. Load [references/contract.md](references/contract.md) before
+Activation. No official context key means this profile's explicit DeliveryKey
+is validated by the original projection against current generation, C4 and
+public record; an available context still requires its exact official current
+selection. Missing/stale/conflicting session facts never use explicit fallback.
+Use the resulting Delivery planning_root for this approval.
+Load [references/contract.md](references/contract.md) before
 acting.
 
 Before judging planned validation, read and apply

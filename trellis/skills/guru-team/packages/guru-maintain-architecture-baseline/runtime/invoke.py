@@ -560,7 +560,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             if public["planning_root"] != delivery["planning_root"]:
                 raise CommandError("stale_identity", "planning_root", "Read the exact public Delivery planning_root.", 3)
             if planning:
-                current = projection.current()
+                current = projection.current(public["delivery_key"])
                 if (current.get("kind") != "current" or current.get("key") != public["delivery_key"]
                         or delivery["phase"] != "planning"
                         or public["delivery_key"]["lifecycle_generation"] != projection.read_record()["lifecycle_generation"]

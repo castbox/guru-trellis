@@ -1,0 +1,15 @@
+task_id: 548-creation-recovery
+source: https://github.com/castbox/guru-trellis/issues/548
+status: reviewed_promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.92
+promoted_version: current-main-0.6.17-guru.93
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.89
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md

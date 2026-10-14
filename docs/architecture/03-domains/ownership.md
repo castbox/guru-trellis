@@ -137,3 +137,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-043`（#531）：上游拥有Task/Delivery公共模型、identity/selection/session与确定性转换；Guru只拥有整体scope判断、每Delivery唯一Author/Wording/Architecture/Approval及Check/TaskCommit/fullReview/readiness语义门禁。Publish/Merge各自的私有事务恢复真实副作用后投影公共事实，history不产生current gate pass。Completion/Closure/Finish/Cleanup/Reactivate原owner保持；无Delivery时整体需求、证据或收尾合法，不造空Delivery。ADR-024明确旧Task开发writer及激活分叉退出；旧安装迁移仍须公共Plan2与Guru私有owners各自就绪，不产生双authority。
 
 `ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结 retain/close 动作，Finish 只核验冻结结果并归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
+
+`ARCH-DOM-045`（#548）：官方 model/session/C4 仍拥有公共事实，Creation 独占其 pending 生命周期，Author 仅调用 retirement 端口；各规划 gate 原 owner 不变。明确选择与 Creation 自动恢复分属原操作边界，详见[已晋升贡献](../contributions/548-creation-recovery.md)。

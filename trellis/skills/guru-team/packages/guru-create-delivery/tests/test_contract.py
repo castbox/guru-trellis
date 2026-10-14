@@ -1,5 +1,4 @@
 import json
-import os
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -63,8 +62,10 @@ class CreationTests(unittest.TestCase):
         self.assertFalse(pending.is_file())
 
     def test_existing_public_delivery_retains_original_pending_and_profile(self):
-        # A normal selection interruption leaves a real created identity.
-        with patch.dict(os.environ, {}, clear=True):
+        # An ordinary official session write interruption leaves a real
+        # created identity. Context absence now has its own valid explicit route.
+        with patch.object(self.fixture.projection.api.delivery_session, 'select_delivery',
+                          side_effect=OSError('ordinary session write interruption')):
             self.assertEqual(self.invoke()["exit_id"], "blocked")
         pending = self.module.checkpoint(self.fixture.root, self.fixture.task_ref, "d1")
         before = pending.read_bytes()
@@ -75,7 +76,8 @@ class CreationTests(unittest.TestCase):
         self.assertEqual(self.invoke({**self.public, "action": "recover_creation"})["exit_id"], "created")
 
     def test_selection_missing_after_create_recovers_original_uuid(self):
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.object(self.fixture.projection.api.delivery_session, 'select_delivery',
+                          side_effect=OSError('ordinary session write interruption')):
             failed = self.invoke()
         self.assertEqual(failed["exit_id"], "blocked")
         records = self.fixture.projection.read_record()["deliveries"]
