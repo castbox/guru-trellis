@@ -1,0 +1,12 @@
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/AGENTS.md
+/docs/
+/.trellis/*
+!/.trellis/tasks/
+/.trellis/tasks/*
+!/.trellis/tasks/10-15-557-manual-merge-validation/
+# Guru Team local runtime cache
+.trellis/.runtime/
