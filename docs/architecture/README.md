@@ -1,10 +1,12 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.87`；状态：`active`；predecessor：`current-main-0.6.17-guru.86`；source baseline：[#531 Task/Delivery contribution](./contributions/531-task-delivery-lifecycle.md) + immutable `.86` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
+版本：`current-main-0.6.17-guru.88`；状态：`active`；predecessor：`current-main-0.6.17-guru.87`；source baseline：[#547 Closure disposition contribution](./contributions/547-retain-source-open.md) + immutable `.87` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.87` 是唯一 active；`.86` 及更早为 immutable superseded history（Git历史）。当前增量 ARCH-CUR-060 / ARCH-DOM-043 / ARCH-INT-046 与 ADR-024 承接已独立审查的 #531 contribution。公共 Task/Delivery authority 归上游；Guru 保留语义门禁与私有发布事务，所有 Delivery 含 D1 独立 Planning。旧安装成套迁移前保留原完整版本。晋升差异仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview；知识晋升不证明软件发布或原业务恢复。历史 `.86` 的 #530 原TaskCommit clean接续决定与已审查事实继续继承。
+版本历史：`current-main-0.6.17-guru.88` 是唯一 active；`.87` 及更早为 immutable superseded history（Git 历史）。当前增量 ARCH-CUR-061 / ARCH-DOM-044 / ARCH-INT-047 与 [ADR-025](./adr/025-retain-source-open-disposition.md) 承接已独立审查的 #547 contribution。Completion、Closure、Finish 与 Cleanup 原 owners 保持；[唯一 Test](../requirements-design-test-contributions/547-retain-source-open/test.md)拥有验证及未验证边界。晋升新 diff 仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview，不证明 Delivery、Task Completion、软件发布或原 CMS 恢复。
+
+历史 `.87`：当时增量 ARCH-CUR-060 / ARCH-DOM-043 / ARCH-INT-046 与 ADR-024 承接已独立审查的 #531 contribution。公共 Task/Delivery authority 归上游；Guru 保留语义门禁与私有发布事务，所有 Delivery 含 D1 独立 Planning。旧安装成套迁移前保留原完整版本。历史 `.86` 的 #530 原TaskCommit clean接续决定与已审查事实继续继承。
 
 历史 `.85`：当时增量为 ARCH-CUR-058 / ARCH-DOM-041 / ARCH-INT-044 与 ADR-022/023；继承全部有效决定、owners 与 GAP lifecycle，包括 closed ARCH-GAP-012。当时 registry 为37 packages/169 exits/110 commands，business workflow为35 mandatory invokes/163 exits。历史 `.84` 的 #521 增量为 ARCH-CUR-057 / ARCH-DOM-040 / ARCH-INT-043 / EVD-060 与 ADR-021，其 registry36/164/109、business34/158 只绑定该轮。晋升新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；软件四轴和 Release 状态不变。
 
