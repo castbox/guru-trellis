@@ -5,6 +5,10 @@ description: Maintain a repository Architecture Baseline through semantic bootst
 
 # Guru Maintain Architecture Baseline
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. This Skill is the reusable Architecture Baseline
 owner for repository `bootstrap_foundation`, `promotion`, `repair`, and
 whole-Task `task_impact_sync(stage=acceptance_finish)`, plus the corresponding

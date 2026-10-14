@@ -5,6 +5,10 @@ description: Persist Completion and Closure into one reviewed task archive and t
 
 # Guru Finish Task
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Before archive projection, verify current public Closure. Preserve the schema-2
 Task aggregate byte semantics: never write `status`, `completedAt`, `commit`, or
 `pr_url`. Finish alone owns archive summary and bookkeeping publication, with

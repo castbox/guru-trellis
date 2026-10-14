@@ -500,6 +500,34 @@ authority, or one fully displayed side-effect set. Use `确认继续` for one cu
 unique, unambiguous plan and accept any clear affirmative reply. Never require
 the user to repeat a SHA, digest, ref, or prescribed sentence.
 
+Ordinary chat is the default channel for confirmations, real choices and
+necessary clarification. Honor an expressed preference for prompt interaction.
+The availability of a structured question tool is not a requirement to use it.
+Use a structured question only when the user requests that channel or a higher
+platform constraint requires it, and only for uses allowed by that tool. An
+unanswered question, a preselected option or elapsed waiting time is not an
+answer or authorization.
+
+Interpret clear natural-language replies against the current question and its
+fully displayed plan. When the current conversation already requests or
+confirms the exact action under its owner's contract, consume it through that
+owner's execution and validation path; do not switch channels to require a
+button, identity restatement or another confirmation of the same action.
+
+Text and button answers belong to the question and plan they answer. A late or
+repeated answer to an action already confirmed or completed does not execute it
+again and does not authorize a subsequent independent action. Resolve that
+relationship in the current dialogue, using the original question and current
+execution facts; do not rebind an old answer to a newer pending question. Avoid
+leaving both a chat question and an optional structured question pending for the
+same choice. Do not create an authorization record or question-state store.
+
+Agent-authored questions are distinct from mandatory platform permission,
+sandbox or external-action approvals. When the platform requires approval,
+explain its source and corresponding action and follow that requirement. This
+contract does not remove or bypass platform approvals; their appearance alone
+is not evidence of an extra Agent-authored confirmation question.
+
 Automatically consume mapped typed exits, stale/re-entry/reprepare routes, and
 recorder/validator steps. Do not simulate a human approval chain and do not
 persist authorization state, text, refs, digests, or process.

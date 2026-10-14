@@ -5,6 +5,10 @@ description: Clarify initial requirements, active-task scope changes, or explici
 
 # Guru Clarify Requirements
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 The current executing AI is this Skill's semantic owner. Read the complete
 contract and perform its review yourself before authoring the current owner
 result and calling record, check, and invoke. `owner_not_yet_executed` is an

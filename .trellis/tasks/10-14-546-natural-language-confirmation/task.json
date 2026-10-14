@@ -1,0 +1,29 @@
+{
+  "id": "546-natural-language-confirmation",
+  "name": "546-natural-language-confirmation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 546,
+    "disposition": "exact_source"
+  },
+  "title": "统一跨平台自然语言确认合同，避免结构化对话框与重复确认",
+  "description": "落实 Issue #546 的普通聊天优先、自然语言确认、迟到与重复答案承接及平台强制审批边界。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "在 canonical 公共 Markdown 交互合同及阶段引用、声明支持的平台投影落实 #546；同步同版本投影并执行定向验证，保留 #531 安装迁移边界和现有授权边界，不新增授权持久化机制，实际客户端未验证项独立报告。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-14",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

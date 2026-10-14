@@ -6,6 +6,10 @@ description: "Run the Guru Team reviewed Delivery, Completion, Closure and Finis
 <!-- guru-team-overlay: v1 -->
 # Guru Finish Work
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+confirmation, choice or clarification; the invoked Skill owns the exact action
+and its confirmation boundary.
+
 On an automatic context/route failure or an explicit independent manual request,
 read `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub
 Operations). That global owner defines the boundary; this entry adds no recovery

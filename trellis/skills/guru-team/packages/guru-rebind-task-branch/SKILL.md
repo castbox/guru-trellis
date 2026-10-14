@@ -5,6 +5,10 @@ description: Rebind one active task branch at a reviewed clean and base-containe
 
 # Rebind Task Branch
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Review the exact active task, current branch and ownership, target branch,
 clean checkout and selected base. Record one call-local plan. Rebind only if
 the current HEAD is contained in the reviewed target base; no uncommitted or

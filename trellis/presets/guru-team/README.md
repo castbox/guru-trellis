@@ -1,5 +1,12 @@
 # Guru Team Preset
 
+The [shared interaction contract](./spec/workflow/workflow-contract.md#interaction-budget) is loaded at
+`.trellis/spec/workflow/workflow-contract.md#interaction-budget` by the workflow,
+interactive Skill owners and platform entries. Source/projection checks prove
+contract distribution, not actual client interaction. Existing installations
+receive it through a compatible complete migration; source edits do not update
+an older installed runtime.
+
 Intermediate command stdout follows the shared
 [receipt contract](./spec/workflow/companion-scripts.md#intermediate-command-stdout-10).
 Reapply the complete matching preset and migrate controlled callers as described

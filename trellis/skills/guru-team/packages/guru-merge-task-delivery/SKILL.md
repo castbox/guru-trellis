@@ -5,6 +5,10 @@ description: Merge one reviewed active-task Delivery PR through a semantic live 
 
 # Guru Merge Task Delivery
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Use this Skill only after `guru-publish-task-delivery:ready_for_merge`. Read

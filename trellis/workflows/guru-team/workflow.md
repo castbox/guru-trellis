@@ -13,6 +13,10 @@ Missing projection or migration evidence fails closed before application.
 
 ## Global Workflow Contract
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` for the
+shared interaction contract before confirmation, choice or clarification.
+Step-local Skills retain their action plans and confirmation boundaries.
+
 This marketplace workflow is the global Guru Team route. It owns only:
 
 - tool-free initial request classification;
@@ -1465,6 +1469,9 @@ after Finish. Do not require a fixed table, and do not expose JSON gates, checkp
 reports, payloads, or digests as standard handoff artifacts.
 
 ### Interaction and side effects
+
+Load `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+applying these boundaries; it owns the shared interaction semantics.
 
 - Ask only for missing intent, a material scope or plan choice, new external authority, or one fully displayed side-effect set.
 - For one current, unique, unambiguous side-effect plan, prompt only 确认继续 and accept any clear affirmative reply.

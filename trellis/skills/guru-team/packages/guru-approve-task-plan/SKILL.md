@@ -5,6 +5,10 @@ description: Approve current Delivery planning through one AI-owned semantic rev
 
 # Guru Approve Task Plan
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 

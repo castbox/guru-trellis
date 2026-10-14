@@ -3,6 +3,10 @@ name: guru-upgrade-installation
 description: Upgrade a supported Guru 0.6.x or 0.7.0 family installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.
 ---
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Load this standalone semantic Skill from the complete target canonical source
 checkout before asking an old installation to validate current runtime state.
 Read [the owned contract](references/contract.md), [Delivery migration](references/delivery-migration.md), and the selected public input

@@ -5,6 +5,10 @@ description: Publish one reviewed active-task Delivery through a semantic gate a
 
 # Guru Publish Task Delivery
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Use only after `guru-review-task-delivery:ready`. Read

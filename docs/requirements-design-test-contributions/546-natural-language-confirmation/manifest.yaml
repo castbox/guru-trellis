@@ -1,0 +1,15 @@
+schema_version: "1.0"
+task_ref: "546-natural-language-confirmation"
+task_id: "546-natural-language-confirmation"
+lifecycle_generation: 0
+issue_ref: "https://github.com/castbox/guru-trellis/issues/546"
+source_version: "current-main-0.6.17-guru.90"
+expected_current_version: "current-main-0.6.17-guru.90"
+status: "draft"
+authority_scope: "isolated_contribution"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.87"
+  status: "active"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false
