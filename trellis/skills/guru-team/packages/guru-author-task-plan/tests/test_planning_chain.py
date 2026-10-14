@@ -47,11 +47,11 @@ class PlanningChainTest(unittest.TestCase):
         response = json.loads(process.stdout)
         return response.get('result', response)
 
-    def author(self, public, output):
+    def author(self, public, output, expected=0):
         path = self.root / 'author-public.json'
         path.write_text(json.dumps(public))
         return self.command(PACKAGE.name, 'invoke-guru-author-task-plan', ['--input', str(path), '--owner-result', '-'],
-            {'public_input': public, 'output': output, 'ai_review_gate': {'status': 'passed', 'summary': 'Local fixture transport; semantic adequacy reviewed separately.'}})
+            {'public_input': public, 'output': output, 'ai_review_gate': {'status': 'passed', 'summary': 'Local fixture transport; semantic adequacy reviewed separately.'}}, expected=expected)
 
     def docs(self):
         for name in ('prd.md', 'design.md', 'implement.md'):
@@ -110,6 +110,20 @@ class PlanningChainTest(unittest.TestCase):
         return self.command(package.name,'invoke-guru-review-contract-wording',['--root',str(self.root),'--invocation','-'],
             {'public_input':public,'owner_result':record,'validation_receipt':checked['validation_receipt']})
 
+    def approve(self, final, revision_actions=None):
+        package=PACKAGE.parent/'guru-approve-task-plan'
+        seed=json.loads((package/'examples/planning-approval-delivery.json').read_text())
+        authored={k:seed[k] for k in ('mode','authority_refs','delivery_policy','docs_ssot_plan','semantic_review','typed_exit','consumer','reason')}
+        if revision_actions:
+            authored.update(typed_exit='revision_required',consumer={'kind':'workflow','id':'guru-task-plan-approval-revision-router'})
+            authored['semantic_review'].update(status='revision_required',revision_actions=revision_actions)
+        self.command(package.name,'record-planning-approval',['--task',self.ref,'--delivery-key',json.dumps(self.key),'--input','-'],authored)
+        checked=self.command(package.name,'check-planning-approval',['--task',self.ref,'--delivery-key',json.dumps(self.key)])
+        public=json.loads((package/'examples/public-delivery-initial-review-input-2.0.json').read_text())
+        public.update(task_ref=self.ref,delivery_key=self.key,architecture_assessment={k:final[k] for k in ('planning_purpose','freshness_identity','baseline_identity','constitution_identity','constitution_status','impact_kind','promotion_state')})
+        file=self.root/'approval-public.json';file.write_text(json.dumps(public))
+        return self.command(package.name,'invoke-guru-approve-task-plan',['--input',str(file),'--owner-result',checked['artifact_path']])
+
     def test_first_schema2_task_scope_only_acceptance_then_creation(self):
         from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
         from runtime.task_lifecycle.identity import resolve_task_id
@@ -130,6 +144,9 @@ class PlanningChainTest(unittest.TestCase):
         key=TaskLifecycleKey('scope-first-task',0)
         BranchBindingStore(repo).establish(key,'scope-first')
         ResourceLedgerStore(repo).establish_current(key,binding_revision=0,branch_name='scope-first',branch_ownership='caller_owned',worktree_ownership='not_applicable')
+        # This fixture deliberately switches to a second Task. Establish that
+        # official route before Creation; it must not overwrite the first route.
+        projection._call(projection.api.delivery_session.set_active_task, str(self.task), self.root)
         (self.task/'prd.md').write_text('Whole Task requirements and overall acceptance.\n')
         selection=[{'locator':'docs/source.md','section':'Requirements','authority_kind':'requirement'}]
         public={'profile':'task_scope_requirements','mode':'workflow','task_ref':self.ref,'source_selection':selection,'revision_refs':['docs/source.md#Requirements']}
@@ -171,18 +188,8 @@ class PlanningChainTest(unittest.TestCase):
         self.assertEqual(self.wording()['exit_id'],'pass')
         final=self.architecture()
         self.assertEqual(final['planning_purpose'],'final_plan')
-        package=PACKAGE.parent/'guru-approve-task-plan'
-        seed=json.loads((package/'examples/planning-approval-delivery.json').read_text())
-        authored={k:seed[k] for k in ('mode','authority_refs','delivery_policy','docs_ssot_plan','semantic_review','typed_exit','consumer','reason')}
-        authored.update(typed_exit='revision_required',consumer={'kind':'workflow','id':'guru-task-plan-approval-revision-router'})
-        authored['semantic_review'].update(status='revision_required',revision_actions=['Specify actual current validation boundary.'])
-        self.command(package.name,'record-planning-approval',['--task',self.ref,'--delivery-key',json.dumps(self.key),'--input','-'],authored)
-        checked=self.command(package.name,'check-planning-approval',['--task',self.ref,'--delivery-key',json.dumps(self.key)])
-        public=json.loads((package/'examples/public-delivery-initial-review-input-2.0.json').read_text())
-        public.update(task_ref=self.ref,delivery_key=self.key,architecture_assessment={k:final[k] for k in ('planning_purpose','freshness_identity','baseline_identity','constitution_identity','constitution_status','impact_kind','promotion_state')})
-        file=self.root/'approval-public.json';file.write_text(json.dumps(public))
-        revision=self.command(package.name,'invoke-guru-approve-task-plan',['--input',str(file),'--owner-result',checked['artifact_path']])
-        self.assertEqual(revision['revision_actions'],authored['semantic_review']['revision_actions'])
+        revision=self.approve(final, ['Specify actual current validation boundary.'])
+        self.assertEqual(revision['revision_actions'],['Specify actual current validation boundary.'])
         self.author({'profile':'delivery_approval_revision','mode':'workflow',**{k:revision[k] for k in ('task_ref','delivery_key','revision_actions')}},planned)
         self.assertEqual(self.fixture.projection.resolve(self.key)['phase'],'planning')
 

@@ -47,6 +47,13 @@ read the Task's overall scope separately. All three documents and two JSONL
 files belong to that Delivery. D2 never overwrites D1's plan. Delivered/stopped
 or historical keys are read as facts, not accepted as current Author entries.
 The current stage owner performs legal rework to planning before writing here.
+When the official context resolver has no key, pass this profile's explicit
+DeliveryKey to the original projection for current-generation/C4/public-record
+validation; no session selection is required or written. With context, retain
+official current-selection matching, including missing/stale/conflicting stops.
+After a successful delivery_initial_review requirements_ready, invoke Creation's
+retire_creation_result port with task_ref/key. Only that producer validates and
+retires its matching pending operation; Author never reads its private input.
 
 | Profile | Actual producer and positive behavior |
 | --- | --- |

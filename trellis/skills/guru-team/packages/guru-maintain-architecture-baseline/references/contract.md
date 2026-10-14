@@ -395,6 +395,11 @@ Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
 semantic owner result binds both fields and its exact public input. Independent
 assessment, required concerns, contribution, ADR, project checks and promotion
+retain their contracts. Planning uses the profile's existing explicit key when
+the official context resolver has none, validated through the original
+projection's current-generation/C4/public-record checks. Available context
+still requires matching official selection; missing/stale/conflict does not
+enable fallback. Independent review and the original stage responsibilities
 remain under this original Architecture owner and contract. No second judgment
 or public Planning writer is added. Whole-task acceptance_finish may have no
 current Delivery and retains task_impact_sync; other development invocations

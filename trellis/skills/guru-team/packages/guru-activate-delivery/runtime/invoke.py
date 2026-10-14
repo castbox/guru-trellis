@@ -47,7 +47,7 @@ def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
         projection = DeliveryProjection(root, public["task_ref"])
         key = public["delivery_key"]
         delivery = projection.resolve(key)
-        current = projection.current()
+        current = projection.current(key)
         if current.get("kind") != "current" or current.get("key") != key:
             raise LifecycleContractError("delivery_selection_required", "delivery_key", "Bind the exact public current Delivery before Activation.")
         directory = projection.planning_directory(key)

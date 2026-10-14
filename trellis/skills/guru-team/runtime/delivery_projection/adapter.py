@@ -93,14 +93,59 @@ class DeliveryProjection:
     def declaration(self) -> dict:
         return self._call(self.api.runtime_contract.read_runtime_contract, self.root / ".trellis/workflow.md")
 
-    def current(self) -> dict:
+    def has_context(self) -> bool:
+        return self._call(self.api.delivery_session.resolve_context_key) is not None
+
+    def _require_explicit_task(self, key: dict) -> None:
+        from ..task_lifecycle.active_checkout import resolve_active_task_checkout
+
+        checkout = resolve_active_task_checkout(self.root, self.task_ref)
+        if (key["task_id"], key["lifecycle_generation"]) != (
+            checkout.artifact.task_id, checkout.artifact.lifecycle_generation,
+        ):
+            raise LifecycleContractError("stale_lifecycle_generation", "delivery_key", "Use this Task's current generation and registered checkout.")
+
+    def _explicit_current(self, key: dict) -> dict:
+        self._require_explicit_task(key)
+        delivery = self.resolve(key)
+        if delivery["profile"] not in self.declaration()["profiles"]:
+            raise LifecycleContractError("unsupported_delivery_profile", "delivery_key", "Use a profile supported by the current workflow.")
+        return {"kind": "terminal_delivery" if delivery["phase"] in {"delivered", "stopped"} else "current",
+                "key": key, "delivery": delivery, "gate_applicability": self.gate_applicability(key)}
+
+    def current(self, key: dict | None = None) -> dict:
+        # An explicit invocation has no session to read. Never use this branch
+        # to repair missing/stale selection when a context actually exists.
+        if key is not None and not self.has_context():
+            return self._explicit_current(key)
         return self._call(self.api.delivery_session.get_current_delivery, self.root)
+
+    def selection_preflight(self, key: dict) -> None:
+        """Check existing session facts before creating/selecting another key."""
+        if not self.has_context():
+            self._require_explicit_task(key)
+            return
+        current = self.current()
+        if current.get("kind") == "error":
+            raise LifecycleContractError(current["code"], "session", current["message"])
+        selected = current.get("key")
+        if selected is not None and (
+            {name: selected[name] for name in ("task_id", "lifecycle_generation")}
+            != {name: key[name] for name in ("task_id", "lifecycle_generation")}
+            or current["kind"] in {"current", "terminal_delivery"} and selected != key
+        ):
+            raise LifecycleContractError("delivery_selection_conflict", "session", "Resolve the existing explicit current route through its original owner before selecting another Delivery.")
 
     def apply(self, operation: dict) -> dict:
         return self._call(self.api.delivery_store.apply_to_store, self.task_dir, self.root, operation)
 
     def select(self, key: dict) -> dict:
         self.resolve(key)
+        if not self.has_context():
+            current = self._explicit_current(key)
+            if current["kind"] == "terminal_delivery":
+                raise LifecycleContractError("terminal_delivery", "delivery_key", "Select a nonterminal current Delivery.")
+            return current
         return self._call(self.api.delivery_session.select_delivery, self.task_dir, self.root, self.root, key["delivery_id"])
 
     def release(self, key: dict) -> int:

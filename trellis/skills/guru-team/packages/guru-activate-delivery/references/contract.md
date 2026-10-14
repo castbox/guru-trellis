@@ -8,6 +8,8 @@
 
 AI 审查当前 owner/source、切片与整体约束、session/checkout 和基线连续性。完整计划经过当前 workflow 的人类可读展示及当次接受后才能记录公共 Planning。此前 creation 确认不等于接受未来计划；当前对话已接受同范围计划不重复询问。无授权字段、接受时间/来源/摘要或过程进入任何 DTO/checkpoint/evidence。
 
+官方 resolver 无 context key 时，使用原输入明确 DeliveryKey 经原 projection 的 current generation/C4/公共record校验；不要求或写入不适用的session。具备key时必须匹配官方current，missing/stale/其它current不进入fallback。其余Planning freshness与合法公共转换条件保持。
+
 调用 `delivery_activation(action=activate)`，确定性 validator 核验三份文档的局部 freshness 与明确 selection。只有本 Skill 占用公共 `planning` role；在公共 planning 阶段调用 `record_gate`，生成独立 `planning-accepted:<UUID>` result_id，绑定实际 scope_ref、plan_ref、文档 evidence，candidate/predecessor 为公共 role 的空值。公共 store 拥有阶段和合法转换；本 Skill 不维护第二状态机。
 
 Guru freshness token 不写 GateResult.result_id、不成为 evidence 或跨阶段 authority。公共 receipt 的原 result_id 以 `planning_accepted_result_id` 交实施；Check predecessor 消费此公共结果。

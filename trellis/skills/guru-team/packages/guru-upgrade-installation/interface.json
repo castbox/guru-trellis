@@ -245,7 +245,8 @@
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_delivery_upgrade.py"
+    "tests/test_delivery_upgrade.py",
+    "tests/test_untracked_legacy.py"
   ],
   "platform_destinations": [
     "shared",

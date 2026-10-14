@@ -55,7 +55,7 @@ def scope(repo,profile,task=None,paths=None,change=None,delivery_key=None):
   from runtime.delivery_projection.adapter import DeliveryProjection
   from runtime.task_lifecycle.errors import LifecycleContractError
   try:
-   projection=DeliveryProjection(repo,str(task));delivery=projection.resolve(delivery_key);current=projection.current()
+   projection=DeliveryProjection(repo,str(task));delivery=projection.resolve(delivery_key);current=projection.current(delivery_key)
    if (current.get("kind")!="current" or current.get("key")!=delivery_key or delivery["phase"]!="planning"
        or delivery_key["lifecycle_generation"]!=projection.read_record()["lifecycle_generation"]
        or delivery["scope_ref"]["authority"]!=projection.read_record()["accepted_scope"]):

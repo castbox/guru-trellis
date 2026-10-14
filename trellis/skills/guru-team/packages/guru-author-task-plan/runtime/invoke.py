@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 from pathlib import Path
 
@@ -78,7 +79,7 @@ def execute(package_root: Path, root: Path, public: dict, owner: dict) -> dict:
             projection = DeliveryProjection(root, public["task_ref"])
             key = public["delivery_key"]
             delivery = projection.resolve(key)
-            current = projection.current()
+            current = projection.current(key)
             if (key["lifecycle_generation"] != projection.read_record()["lifecycle_generation"]
                     or current.get("kind") != "current" or current.get("key") != key
                     or delivery["phase"] != "planning"
@@ -110,6 +111,14 @@ def execute(package_root: Path, root: Path, public: dict, owner: dict) -> dict:
                             raise CommandError("schema_mismatch", name, "Use official task.py add-context entries.")
     suffix = "" if exit_id == "scope_requirements_ready" else "-2.0"
     validate_json(output, package_root / "schemas" / f"public-{exit_id.replace('_', '-')}-output{suffix}.schema.json", "stdout")
+    if profile == "delivery_initial_review" and exit_id == "requirements_ready":
+        port = package_root.parent / "guru-create-delivery/runtime/creation_result.py"
+        spec = importlib.util.spec_from_file_location("guru_author_creation_result_owner", port)
+        if spec is None or spec.loader is None:
+            raise CommandError("schema_mismatch", "creation_result_owner", "Restore the complete compatible Guru preset.")
+        producer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(producer)
+        producer.retire_creation_result(root, task_ref=public["task_ref"], delivery_key=public["delivery_key"])
     return output
 
 
