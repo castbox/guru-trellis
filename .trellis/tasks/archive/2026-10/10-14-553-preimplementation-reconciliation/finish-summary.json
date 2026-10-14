@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-14T15:38:00Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-14-553-preimplementation-reconciliation",
+    "title": "修复实施前基线冲突整合与恢复执行",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-14-553-preimplementation-reconciliation",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/553-preimplementation-reconciliation",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "修复实施前基线冲突整合与恢复执行",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation",
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/design.md",
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/implement.md",
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/prd.md",
+          ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#553"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/553-preimplementation-reconciliation"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation",
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/design.md",
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/implement.md",
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/prd.md",
+        ".trellis/tasks/archive/2026-10/10-14-553-preimplementation-reconciliation/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复实施前基线冲突整合与恢复执行；#553；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
