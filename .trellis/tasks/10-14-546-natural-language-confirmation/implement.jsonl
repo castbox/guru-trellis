@@ -1,0 +1,2 @@
+{"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "唯一公共交互合同及既有副作用边界"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "canonical路由与显式安装迁移边界"}

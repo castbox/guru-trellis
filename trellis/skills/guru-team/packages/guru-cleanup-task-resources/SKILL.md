@@ -5,6 +5,10 @@ description: Clean sealed Guru-owned resources or explicitly selected manual and
 
 # Guru Cleanup Task Resources
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Current Task archive verification uses stable identity/generation and actual
 public Closure together with committed Finish summary/target ancestry, never
 Task development status. Keep exact sealed/manual resource selection and

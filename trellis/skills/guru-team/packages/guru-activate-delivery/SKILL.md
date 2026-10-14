@@ -5,6 +5,10 @@ description: Activate the accepted current Delivery plan through the public Plan
 
 # Delivery owner
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. Load [the complete contract](references/contract.md).
 Read the current authority, public Task/Delivery query and exact session before
 positive behavior and AI Review Gate. Obtain dialogue input only for real scope

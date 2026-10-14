@@ -5,6 +5,10 @@ description: Apply the exact source Issue disposition after Completion approval 
 
 # Guru Complete Task Closure
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Before any Closure transaction, reread the exact public Completion result for
 the current Task generation and accepted scope. Keep source-disposition and
 frozen action-set review/confirmation/remote recovery unchanged. After actual

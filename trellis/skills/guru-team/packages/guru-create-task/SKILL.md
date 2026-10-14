@@ -5,6 +5,10 @@ description: Create an independently reviewed Trellis task in the exact acquired
 
 # Create Task
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. Consume only `guru-review-change-request:ready`
 with `target.kind=existing_issue | standalone_request`, after the current
 Intake and Sync decision. Never create or select a GitHub Issue here. For an

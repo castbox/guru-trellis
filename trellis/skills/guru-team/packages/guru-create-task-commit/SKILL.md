@@ -5,6 +5,10 @@ description: Create a reviewed Trellis task work commit after Phase 2, including
 
 # Create Task Commit
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Use this skill for creating a task commit, committing Phase 2 changes,

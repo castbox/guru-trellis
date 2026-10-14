@@ -5,6 +5,10 @@ description: Establish or recover one current task branch binding from live vali
 
 # Establish Task Branch Binding
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Load for an active task with missing branch binding or ownership. Review the
 TaskId, generation, current task artifact and live candidate set. A unique
 registered candidate is established automatically; zero or multiple valid
