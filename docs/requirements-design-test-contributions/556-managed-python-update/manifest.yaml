@@ -1,8 +1,9 @@
 task_id: 556-managed-python-update
 source: https://github.com/castbox/guru-trellis/issues/556
-status: reviewed_delta
+status: reviewed_promoted
 strategy: delta_first
 preimage: current-main-0.6.17-guru.94
+promoted_version: current-main-0.6.17-guru.95
 architecture:
   locator: docs/architecture/README.md
   version: current-main-0.6.17-guru.89

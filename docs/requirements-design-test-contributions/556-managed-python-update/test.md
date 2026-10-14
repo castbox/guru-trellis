@@ -1,6 +1,6 @@
 # #556 唯一 Test 与证据边界
 
-状态：reviewed_delta；实现与聚焦验证完成，完整语义 Check/Review 仍由各原 owner 独立判断。本文件独占实际结果、first failure、fixture 与未验证边界。
+状态：reviewed_promoted；实现与聚焦验证完成，当前晋升差额的完整语义 Check/Review 仍由各原 owner 独立判断。本文件独占实际结果、first failure、fixture 与未验证边界。
 
 | Test | 必须观察的对象 | 当前结果 |
 | --- | --- | --- |
@@ -44,3 +44,7 @@
 ## 未验证边界
 
 完整 Python-minor、多平台 clean/existing/update/Release 矩阵、业务仓升级/生产运行、系统 Python/Homebrew 改动与软件 Release 均未执行。源码工程完整旧 dogfood 不做半升级；其 ordinary reapply/migration-required 与既有 drift 必须按实际结果记录，不能冒充新模型 parity 通过。公开 wrapper 能力 fixture 证明真实 schema runtime 路径，不代表真实任务的 AI semantic gate。
+
+## 知识晋升边界
+
+原 RDT owner 将已独立审查的隔离贡献纳入三层 `.95/active`，完整继承 immutable `.94`，Architecture `.89` 不变。新差额只更新版本入口、导航和贡献状态；需求、设计与测试继续由本贡献单写。既有产品机制、依赖和安装资产未变，原实际执行事实仍按当前依赖适用性判断；文档晋升不能替代 fresh Phase2、TaskCommit 和不同 reviewer 完整 BranchReview，也不表示软件发布、业务升级或 Closure。

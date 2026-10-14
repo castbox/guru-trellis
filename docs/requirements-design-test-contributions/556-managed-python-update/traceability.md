@@ -1,6 +1,6 @@
 # #556 双向追踪
 
-状态：reviewed_delta；delta_first；前像 RDT `.94/active`，继承 Architecture `.89/active`。唯一需求正文见 [requirements](./requirements.md)，职责见 [design](./design.md)，实际结果与边界见 [test](./test.md)。首次完整 committed 独立 Review 后由原 RDT owner 判断必要 promotion；新差异重新进入原 gates。
+状态：reviewed_promoted；delta_first；RDT `.95/active`（preimage `.94`），继承 Architecture `.89/active`。唯一需求正文见 [requirements](./requirements.md)，职责见 [design](./design.md)，实际结果与边界见 [test](./test.md)。本贡献由原 RDT owner 晋升共享三层导航；晋升差异重新进入 fresh Phase2、TaskCommit 和不同 reviewer 完整 BranchReview。
 
 | Requirement / behavior | Design / contract | Test | Source |
 | --- | --- | --- | --- |

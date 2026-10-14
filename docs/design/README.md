@@ -1,6 +1,8 @@
 # Design SSOT
 
-唯一 current RDT authority 为 `current-main-0.6.17-guru.94/active`；[本版入口](./versions/current-main-0.6.17-guru.94/design-main.md)完整继承 immutable `.93`，承接 [#553 唯一增量](../requirements-design-test-contributions/553-preimplementation-reconciliation/traceability.md)，继承 Architecture `.89/active`。行为正文与实际结果由专属文档单写，[唯一 Test](../requirements-design-test-contributions/553-preimplementation-reconciliation/test.md)保留已验证层与旧 dogfood/业务/Release 边界；晋升新差额重新进入原 gates。
+唯一 current RDT authority 为 `current-main-0.6.17-guru.95/active`；[本版入口](./versions/current-main-0.6.17-guru.95/design-main.md)完整继承 immutable `.94`，承接 [#556 唯一增量](../requirements-design-test-contributions/556-managed-python-update/traceability.md)，继承 Architecture `.89/active`。需求、设计和实际验证分别由增量专属文档单写；[唯一 Test](../requirements-design-test-contributions/556-managed-python-update/test.md)保留真实安装、fixture、旧 dogfood 和未验证矩阵边界。晋升新差额重新进入原 gates，不代表软件发布或业务升级。
+
+历史 `.94` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.94/active`；[本版入口](./versions/current-main-0.6.17-guru.94/design-main.md)完整继承 immutable `.93`，承接 [#553 唯一增量](../requirements-design-test-contributions/553-preimplementation-reconciliation/traceability.md)，继承 Architecture `.89/active`。行为正文与实际结果由专属文档单写，[唯一 Test](../requirements-design-test-contributions/553-preimplementation-reconciliation/test.md)保留已验证层与旧 dogfood/业务/Release 边界；晋升新差额重新进入原 gates。
 
 历史 `.93` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.93/active`；[本版入口](./versions/current-main-0.6.17-guru.93/design-main.md)完整继承 immutable `.92`，承接 [#548 唯一增量](../requirements-design-test-contributions/548-creation-recovery/traceability.md)并继承 Architecture `.89/active`。实际结果与未验证边界由[唯一 Test](../requirements-design-test-contributions/548-creation-recovery/test.md)拥有，晋升新差额重走原 gates。
 
@@ -22,7 +24,8 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.94` | [本版入口](./versions/current-main-0.6.17-guru.94/design-main.md) |
+| `active` | `current-main-0.6.17-guru.95` | [本版入口](./versions/current-main-0.6.17-guru.95/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.94` | [本版入口](./versions/current-main-0.6.17-guru.94/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.93` | [本版入口](./versions/current-main-0.6.17-guru.93/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.92` | [本版入口](./versions/current-main-0.6.17-guru.92/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.91` | [本版入口](./versions/current-main-0.6.17-guru.91/design-main.md) |

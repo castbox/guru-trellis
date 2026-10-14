@@ -1,6 +1,6 @@
 # #556 受管 Python 更新需求增量
 
-唯一来源：[Issue #556](https://github.com/castbox/guru-trellis/issues/556) 当前正文；无评论增量。本贡献以 RDT `.94/active` 为前像，继承 Architecture `.89/active`；尚未晋升共享 current authority。
+唯一来源：[Issue #556](https://github.com/castbox/guru-trellis/issues/556) 当前正文；无评论增量。本贡献以 RDT `.94/active` 为前像，继承 Architecture `.89/active`；状态：reviewed_promoted；已纳入 RDT `.95/active`，原 `.94` 保持不可变前驱。
 
 | Requirement / behavior | 可观察行为 |
 | --- | --- |
