@@ -1355,6 +1355,17 @@ preserve stale hard-coded counts after package activation.
 
 ## Managed Python Runtime Gate
 
+Default-selection coverage must distinguish the current PATH `python3` from
+the installer interpreter and prove explicit `--python` takes precedence.
+Missing, non-executable, non-Python3 and implementation-mismatched selections
+must stop with safe actionable diagnostics. A real previously unenumerated
+CPython3 minor may prove identity admission; simulated minor selection and
+patch/path stability prove only identity behavior, never wheel compatibility.
+Dependency-install and real public-wrapper failures must preserve prior pointer
+bytes and the existing environment, including damaged same-identity repair.
+The disposable wrapper view must exercise matching public schema-bound assets
+before candidate replacement; a capability probe alone is insufficient.
+
 Runtime changes require package/runtime unit tests for stable identity, same-id
 reuse, lock drift, damaged managed runtime repair, candidate failure preserving
 the active pointer, resolver failure JSON, pinned dependency versions, and real

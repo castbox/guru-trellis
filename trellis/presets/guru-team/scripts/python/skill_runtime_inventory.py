@@ -4,6 +4,7 @@ from pathlib import Path
 SKILL_RUNTIME_KERNEL_PATHS = (
     Path("__init__.py"),
     Path("bootstrap.py"),
+    Path("bootstrap_check.py"),
     Path("command.py"),
     Path("compat.py"),
     Path("discovery.py"),

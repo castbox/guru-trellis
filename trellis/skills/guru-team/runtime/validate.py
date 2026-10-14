@@ -17,6 +17,7 @@ APPROVED_KERNEL_FILES = {
     "__init__.py",
     "command.py",
     "bootstrap.py",
+    "bootstrap_check.py",
     "compat.py",
     "discovery.py",
     "eval_runner.py",

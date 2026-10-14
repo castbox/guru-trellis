@@ -321,21 +321,21 @@
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-a07083764602",
+      "id": "helper-python_subprocess_second_hop-c6817a317dd6",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "a07083764602e746f233ca534a0cc626f4e3e323430d277f615dd6c963ca55de",
+      "anchor_sha256": "c6817a317dd656fc0a84c6072d13828cadd4b87f8ee60c40e5e18663b07e1784",
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-3128cca1edd8",
+      "id": "helper-python_subprocess_second_hop-df9a9f3a11ea",
       "owner": "trellis/presets/guru-team/scripts/python/verify_installed_parallel_finish.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "3128cca1edd85f09019164eaab9e0e831fa1e7a64a1082969e82f014c470586e",
+      "anchor_sha256": "df9a9f3a11eac5f41318c0776ed5eed1cbd2b8f12e5f00d11bb5b4fe21583d9d",
       "ordinal": 1
     },
     {
@@ -393,12 +393,12 @@
       "ordinal": 1
     },
     {
-      "id": "helper-python_subprocess_second_hop-a8560bde9c87",
+      "id": "helper-python_subprocess_second_hop-8189704701dd",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "python_subprocess_second_hop",
       "classification": "installed_managed",
       "expected_launcher": "sys.executable",
-      "anchor_sha256": "a8560bde9c87a2325e87bcf529fb6da1d8985e19c18b6be4575f67c8f8aab394",
+      "anchor_sha256": "8189704701dd75705d085533ae26b7e2352931d0592c6a6634ad7fcc2bc53d2c",
       "ordinal": 1
     },
     {

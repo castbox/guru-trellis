@@ -459,7 +459,7 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, plan: di
                 preserve_customizations(target, source, module, adapter)
                 result = module.install_assets(source / "trellis/workflows/guru-team", target / ".trellis/guru-team",
                                                target, set(selected["selected_platforms"]),
-                                               migration_preserved_paths=preserved_companions(target, module, adapter))
+                                               migration_preserved_paths=preserved_companions(target, module, adapter), python=sys.executable)
                 if (result["skill_packages"]["status"] != "ok" or result["overlays"]["status"] != "ok"
                         or result["skill_installed_validation"].get("returncode") != 0):
                     raise MigrationError("Current preset has unresolved managed edits or sidecars")

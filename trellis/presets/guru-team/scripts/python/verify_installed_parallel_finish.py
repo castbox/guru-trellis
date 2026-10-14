@@ -209,6 +209,8 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
             (
                 sys.executable,
                 str(apply_script),
+                "--python",
+                sys.executable,
                 "--repo",
                 str(source),
                 "--platform",
@@ -233,6 +235,8 @@ def prepare_clean_installed_repository(installed_repo: Path, work_root: Path) ->
             (
                 sys.executable,
                 str(apply_script),
+                "--python",
+                sys.executable,
                 "--repo",
                 str(source),
                 "--json",

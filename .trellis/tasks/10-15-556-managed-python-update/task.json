@@ -1,0 +1,29 @@
+{
+  "id": "556-managed-python-update",
+  "name": "556-managed-python-update",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 556,
+    "disposition": "exact_source"
+  },
+  "title": "#556 完善默认 python3 与受管环境更新",
+  "description": "按 live #556 完成默认解释器选择、Python3 minor 策略、identity cache 与验证后激活及失败保护。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "castbox/guru-trellis#556",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-15",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

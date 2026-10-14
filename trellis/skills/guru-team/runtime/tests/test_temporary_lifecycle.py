@@ -11,6 +11,7 @@ class TemporaryLifecycleTests(unittest.TestCase):
         self.assertEqual(
             [item.prefix for item in __import__("runtime.temporary_lifecycle", fromlist=["INVENTORY"]).INVENTORY],
             [
+                "guru-python-runtime-check-",
                 "guru-install-upgrade-core-",
                 "guru-team-preset-stage-",
                 "guru-trellis-install.",

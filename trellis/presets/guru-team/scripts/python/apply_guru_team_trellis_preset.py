@@ -33,6 +33,7 @@ from guru_platform_inventory import (
 from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
 from delivery_installation import require_delivery_installation, diagnose_delivery_installation
+from managed_python_runtime import ensure_managed_python_runtime, raise_managed_runtime_error
 
 
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
@@ -437,72 +438,6 @@ def run_upstream_ownership_validator(guru_root: Path) -> dict[str, Any]:
             f"{code} {path}"
         )
     return payload
-
-
-def ensure_managed_python_runtime(
-    repo: Path,
-    guru_root: Path,
-    *,
-    activate: bool = False,
-) -> dict[str, Any]:
-    runtime_assets = guru_root / "trellis/skills/guru-team/runtime"
-    bootstrap = runtime_assets / "bootstrap.py"
-    if not bootstrap.is_file() or bootstrap.is_symlink():
-        raise_managed_runtime_error()
-    command = [
-            sys.executable,
-            str(bootstrap),
-            "--repo",
-            str(repo),
-            "--runtime-assets",
-            str(runtime_assets),
-            "--python",
-            sys.executable,
-            "--json",
-        ]
-    if not activate:
-        command.append("--no-activate")
-    proc = subprocess.run(
-        command,
-        cwd=repo,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    raw = proc.stdout.strip() or proc.stderr.strip()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        payload = {
-            "code": "runtime_dependency_missing",
-            "field_path": "runtime",
-            "dependency": "python-runtime",
-            "runtime_identity": None,
-            "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
-        }
-        raise SystemExit(json.dumps(payload, sort_keys=True)) from None
-    if proc.returncode != 0 or payload.get("status") != "ok":
-        error = {
-            "code": str(payload.get("code") or "runtime_dependency_missing"),
-            "field_path": str(payload.get("field_path") or "runtime"),
-            "dependency": str(payload.get("dependency") or "python-runtime"),
-            "runtime_identity": payload.get("runtime_identity"),
-            "remediation": str(payload.get("remediation") or "trellis/presets/guru-team/scripts/bash/apply.sh --repo ."),
-        }
-        raise SystemExit(json.dumps(error, sort_keys=True))
-    return payload
-
-
-def raise_managed_runtime_error(runtime_identity: str | None = None) -> None:
-    payload = {
-        "code": "runtime_dependency_missing",
-        "field_path": "runtime",
-        "dependency": "python-runtime",
-        "runtime_identity": runtime_identity,
-        "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
-    }
-    raise SystemExit(json.dumps(payload, sort_keys=True))
 
 
 def is_mutable_ref(ref: str | None, exact_tag: str | None) -> bool | None:
@@ -2456,6 +2391,7 @@ def install_assets(
     platforms: set[str] | None = None,
     *,
     migration_preserved_paths: set[str] | None = None,
+    python: str = "python3",
 ) -> dict[str, Any]:
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
@@ -2464,7 +2400,7 @@ def install_assets(
     delivery_support = require_delivery_installation(guru_root, Path(os.path.abspath(repo)))
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     repo = Path(os.path.abspath(repo))
-    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False)
+    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False, python=python)
     managed_python = Path(str(python_runtime.get("interpreter") or ""))
     if not managed_python.is_file() or not os.access(managed_python, os.X_OK):
         raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
@@ -2577,7 +2513,7 @@ def install_assets(
             prune_empty_unselected_skill_projections(
                 repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
             )
-            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True)
+            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True, python=python)
             if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
                 raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
         else:
@@ -2907,6 +2843,7 @@ def main() -> int:
     supported_platforms, default_platforms = platform_capability_sets(manifest)
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
+    parser.add_argument("--python", default="python3", help="Interpreter command or path; defaults to current PATH python3. Explicit selection never falls back.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--version", action="store_true", help="Print the Guru Team extension version from the canonical manifest and exit.")
     parser.add_argument(
@@ -2929,7 +2866,7 @@ def main() -> int:
     )
     src = guru_root / "trellis/workflows/guru-team"
     dst = repo / ".trellis/guru-team"
-    result = install_assets(src, dst, repo, platforms)
+    result = install_assets(src, dst, repo, platforms, python=args.python)
 
     payload: dict[str, Any] = {
         "status": (

@@ -172,6 +172,12 @@ repositories. Keep them portable:
 - Bootstrap, resolver validation, ownership validation, and the preset installer
   use only the Python standard library so they can run before managed dependencies
   exist.
+- Initialization and explicit apply/reapply select the current PATH `python3`
+  unless `--python` names an explicit interpreter. Selection errors do not fall
+  back. CPython/Python3 admission has no minor-version allowlist; locked
+  dependency installation and actual runtime checks establish capability.
+  Controlled managed callers that must retain their interpreter pass it
+  explicitly to the installer/bootstrap.
 - Public Guru Team commands run only through the OS-user-scoped immutable managed
   Python cache selected by `runtime/resolve-python.sh`. A repository-private
   default pointer lives below Git common-dir; a linked checkout may own a
@@ -248,13 +254,20 @@ repositories. Keep them portable:
   system. Source owner staging invokes
   `apply_guru_team_trellis_preset.py` with `sys.executable`; routing through
   `apply.sh` would create an unowned PATH-Python second hop and is forbidden.
+  It also passes `--python sys.executable` so explicit maintenance retains its
+  managed interpreter while ordinary apply keeps the PATH default.
 - Runtime identity binds the runtime API, lock digest, Python implementation and
   minor version, OS, architecture, Python ABI/platform tag, and venv layout. A
-  matching identity is reused only after
-  metadata and Draft 2020-12 capability validation.
-- Candidate construction and dependency installation finish before active
-  pointer replacement. Failure preserves the prior active runtime; unknown
-  provenance at an identity path fails closed.
+  matching identity is reused only after metadata, Draft 2020-12 capability,
+  and real schema-bound public-wrapper validation. Patch version and
+  interpreter path are excluded from identity.
+- Candidate construction, locked dependency installation, capability probe and
+  public-wrapper runtime check finish before replacing an existing cache
+  environment or active pointer. The wrapper check uses a disposable view with
+  its own pointer/cache locator and matching package assets. Failure preserves
+  both the prior pointer and prior environment, including same-identity repair;
+  unknown provenance at an identity path fails closed. This check does not
+  replace the preset's complete staged-graph validation or a task semantic gate.
 - Shell out to `git` and `gh` through helper functions such as `run()` and
   `run_stdout()`.
 - Use `pathlib.Path` for filesystem paths.

@@ -14,6 +14,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    from .bootstrap_check import check_public_wrapper
+except ImportError:
+    from bootstrap_check import check_public_wrapper
+
 REPAIR_COMMAND = "trellis/presets/guru-team/scripts/bash/apply.sh --repo ."
 
 
@@ -25,11 +30,13 @@ class BootstrapError(RuntimeError):
         code: str = "runtime_dependency_missing",
         dependency: str = "python-runtime",
         runtime_identity: str | None = None,
+        remediation: str = REPAIR_COMMAND,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.dependency = dependency
         self.runtime_identity = runtime_identity
+        self.remediation = remediation
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -46,7 +53,21 @@ def canonical_json(payload: dict[str, Any]) -> bytes:
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
+def select_python(value: str | Path = "python3") -> Path:
+    raw = str(value)
+    selected = shutil.which(raw)
+    if selected is None:
+        raise BootstrapError(
+            "selected interpreter is unavailable or not executable",
+            code="interpreter_unavailable",
+            remediation="Make python3 executable on PATH or rerun apply.sh --repo . --python /path/to/python3.",
+        )
+    # Preserve the venv launch path; resolving its final symlink loses isolation.
+    return Path(os.path.abspath(selected))
+
+
 def runtime_identity(assets: Path, python: Path) -> tuple[str, dict[str, Any]]:
+    python = select_python(python)
     manifest = read_json(assets / "python-runtime.json")
     lock_digest = hashlib.sha256((assets / str(manifest["lock_file"])).read_bytes()).hexdigest()
     proc = subprocess.run(
@@ -58,21 +79,24 @@ def runtime_identity(assets: Path, python: Path) -> tuple[str, dict[str, Any]]:
                 "print(json.dumps({'implementation':platform.python_implementation(),"
                 "'major':sys.version_info[0],'minor':sys.version_info[1],"
                 "'os_name':platform.system() or sys.platform,'machine':platform.machine(),"
-                "'abi_tag':sys.implementation.cache_tag or '',"
+                "'abi_tag':getattr(getattr(sys,'implementation',None),'cache_tag','') or '',"
                 "'platform_tag':sysconfig.get_platform()}))"
             ),
         ],
         text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if proc.returncode != 0:
-        raise BootstrapError("selected Python interpreter is not executable")
-    python_info = json.loads(proc.stdout)
-    current = f"{python_info['major']}.{python_info['minor']}"
-    if (
-        python_info["implementation"] != manifest["python"]["implementation"]
-        or current not in manifest["python"]["supported_minor_versions"]
-    ):
-        raise BootstrapError("selected Python interpreter is incompatible")
+        raise BootstrapError("selected interpreter cannot report Python identity", code="interpreter_unavailable", remediation="Run python3 --version; rerun apply.sh --repo . --python /path/to/python3.")
+    try:
+        python_info = json.loads(proc.stdout)
+    except (ValueError, TypeError) as exc:
+        raise BootstrapError("selected interpreter cannot report Python identity", code="interpreter_unavailable") from exc
+    if python_info.get("major") != manifest["python"]["major"]:
+        raise BootstrapError("selected interpreter must be Python 3", code="python3_required",
+                             remediation="Select Python 3: apply.sh --repo . --python /path/to/python3.")
+    if python_info.get("implementation") != manifest["python"]["implementation"]:
+        raise BootstrapError("selected Python implementation is unsupported", code="python_implementation_unsupported",
+                             remediation="Select CPython 3: apply.sh --repo . --python /path/to/python3.")
     identity = {
         "runtime_api_version": manifest["runtime_api_version"],
         "venv_layout_version": manifest["venv_layout_version"],
@@ -292,6 +316,7 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         if state == "unknown":
             raise BootstrapError("target runtime identity exists without valid managed provenance")
         if state == "reusable":
+            run_public_wrapper(assets, runtime_id, target)
             if activate:
                 write_active(repo, runtime_id)
             return {
@@ -312,10 +337,10 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         create = subprocess.run([str(python), "-m", "venv", str(venv_dir)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         managed_python = venv_python(venv_dir)
         if create.returncode != 0 or not managed_python.is_file():
-            raise BootstrapError("Python venv or pip bootstrap failed")
+            raise BootstrapError("Python venv or pip bootstrap failed", code="venv_bootstrap_failed", remediation="Check selected Python 3 venv/ensurepip support; rerun apply.sh --repo . --python /path/to/python3.")
         pip = subprocess.run([str(managed_python), "-m", "pip", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         if pip.returncode != 0:
-            raise BootstrapError("Python venv or pip bootstrap failed")
+            raise BootstrapError("Python venv or pip bootstrap failed", code="venv_bootstrap_failed", remediation="Check selected Python 3 venv/ensurepip support; rerun apply.sh --repo . --python /path/to/python3.")
         manifest = read_json(assets / "python-runtime.json")
         environment = os.environ.copy()
         for key in ("PIP_INDEX_URL", "PIP_EXTRA_INDEX_URL", "VIRTUAL_ENV", "PYTHONPATH", "PYTHONHOME"):
@@ -328,10 +353,11 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
             "-r", str(assets / str(manifest["lock_file"])),
         ], env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         if install.returncode != 0:
-            raise BootstrapError("hash-locked dependency installation failed")
+            raise BootstrapError("hash-locked dependency installation failed", code="dependency_install_failed", remediation="Check PyPI access and locked wheel availability for the selected interpreter; retry apply.sh --repo . or select --python /path/to/python3. Do not edit the lock or manifest.")
         probe = run_probe(managed_python, assets)
         metadata = {"schema_version": "1.0", "runtime_id": runtime_id, "identity": identity, "dependencies": probe["dependencies"]}
         (candidate / "metadata.json").write_bytes(json.dumps(metadata, indent=2, sort_keys=True).encode("utf-8") + b"\n")
+        run_public_wrapper(assets, runtime_id, candidate)
         (candidate / ".guru-team-candidate").unlink()
         if repair_target:
             backup = runtime_root / f".{runtime_id}.repair-backup-{os.getpid()}"
@@ -358,11 +384,23 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         raise
 
 
+def run_public_wrapper(assets: Path, runtime_id: str, target: Path) -> None:
+    try:
+        check_public_wrapper(assets, runtime_id, target)
+    except Exception as exc:
+        raise BootstrapError(
+            "managed public wrapper Draft 2020-12 schema check failed",
+            code="managed_runtime_check_failed", runtime_identity=runtime_id,
+            dependency="jsonschema",
+            remediation="Restore the complete matching Guru Team source/preset and retry apply.sh --repo .; check the selected interpreter with --python /path/to/python3. The previous environment and active pointer are preserved.",
+        ) from exc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--runtime-assets", type=Path, required=True)
-    parser.add_argument("--python", type=Path, default=Path(sys.executable))
+    parser.add_argument("--python", default="python3", help="Interpreter command or path; defaults to current PATH python3.")
     parser.add_argument("--print-identity", action="store_true")
     parser.add_argument("--validate-active")
     parser.add_argument("--resolve-active", action="store_true")
@@ -386,7 +424,7 @@ def main() -> int:
         if modes > 1:
             raise BootstrapError("select exactly one runtime operation")
         if args.print_identity:
-            print(runtime_identity(args.runtime_assets.resolve(), args.python.resolve())[0])
+            print(runtime_identity(args.runtime_assets.resolve(), select_python(args.python))[0])
             return 0
         if args.print_active_pointer:
             print(active_pointer_path(args.repo.resolve()))
@@ -412,11 +450,11 @@ def main() -> int:
                     raise BootstrapError("managed runtime command is missing")
                 os.execv(result["interpreter"], [result["interpreter"], *command])
         else:
-            runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), args.python.resolve())
+            runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), select_python(args.python))
             result = bootstrap(
                 args.repo.resolve(),
                 args.runtime_assets.resolve(),
-                args.python.resolve(),
+                select_python(args.python),
                 activate=not args.no_activate,
             )
     except Exception as exc:
@@ -425,7 +463,7 @@ def main() -> int:
             "field_path": "runtime",
             "dependency": exc.dependency if isinstance(exc, BootstrapError) else "python-runtime",
             "runtime_identity": exc.runtime_identity if isinstance(exc, BootstrapError) and exc.runtime_identity is not None else runtime_id,
-            "remediation": REPAIR_COMMAND,
+            "remediation": exc.remediation if isinstance(exc, BootstrapError) else REPAIR_COMMAND,
         }
         print(
             json.dumps(payload, sort_keys=True),

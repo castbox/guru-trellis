@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "聚焦验证、测试价值与managed runtime gate"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "admission、依赖、wrapper与真实证据层次"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "identity cache、失败保护和installed投影"}
+{"file": "docs/requirements-design-test-contributions/553-preimplementation-reconciliation/test.md", "reason": "完整旧dogfood工程载体与current独立安装的已知边界"}
+{"file": "docs/requirements-design-test-contributions/556-managed-python-update/traceability.md", "reason": "本次R556到D556和T556的唯一追踪与Docs状态"}
+{"file": "docs/requirements-design-test-contributions/556-managed-python-update/test.md", "reason": "本次实际验证、first failure、fixture与未验证边界唯一来源"}

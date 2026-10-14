@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "受管runtime、staged apply与安装ownership合同"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "不得修改上游路径和完整current安装边界"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性脚本和managed Python边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与3000行拆分约束"}
