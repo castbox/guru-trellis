@@ -315,3 +315,5 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 `ARCH-CUR-061`（#547）：Closure 在原 action set 增补 retain_open，保留 exact_source 身份与当前 scope，观察 OPEN 而不 close；Finish 消费原 snapshot 校验每个动作的 OPEN/CLOSED。aggregate terminal 与公共 exact source fact 分开，原 refs/exits、恢复及 Completion/Cleanup gates 不变。[贡献](../contributions/547-retain-source-open.md)与 ADR-025 承接决定，[唯一 Test](../../requirements-design-test-contributions/547-retain-source-open/test.md)拥有受控匹配安装/调用链证据及真实外部未验证边界。晋升新 diff gates pending，软件四轴和 GAP 状态不变。
 
 `ARCH-CUR-062`（#548）：原 DeliveryProjection 承接无 context 的明确 DeliveryKey，只用原 C4 与官方公共事实；有 context 保持官方 current/select。原 Creation 保留恢复输入至匹配 Author 消费后由 producer 退休，原 UUID/Task/gen/Planning 保留；详细行为与唯一证据见[已晋升贡献](../contributions/548-creation-recovery.md)。
+
+`ARCH-CUR-063`（#557 reviewed source）：已发布正式 Delivery 的普通手动合入事实由原 Merge 承接，actual candidate 与旧 gate/Publication 分离，整体 scope 与证据仍归原 Completion；[已晋升贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 拥有责任决定，[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有实际观察及边界。

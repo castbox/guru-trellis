@@ -46,19 +46,19 @@
     {
       "id": "publication_handoff",
       "evidence": "Publish ready_for_merge DTO",
-      "binding": "Delivery key, exact Publication result, repository, PR, reviewed head and actual PR-body revision",
+      "binding": "Delivery key, exact Publication result, repository, PR, reviewed head and actual PR-body revision; manual recovery reads unique existing public Publication by exact Task/Delivery/repo/PR",
       "freshness": "compared with the first live PR read"
     },
     {
       "id": "live_merge_readiness",
       "evidence": "Ready/Open PR, checks, reviews, mergeability, base ref and repository policy",
-      "binding": "one same-repository merge-commit candidate",
+      "binding": "one same-repository merge-commit candidate; new-mutation only, manual MERGED recovery preserves real checks without demanding green",
       "freshness": "reread at the mutation boundary"
     },
     {
       "id": "merge_message",
       "evidence": "AI-reviewed subject, body and exact Delivery trailers",
-      "binding": "stable Task and Delivery identities, schema 2, generation and reviewed head for new merges; original schema-1 bytes only for bounded historical recovery",
+      "binding": "stable Task and Delivery identities, schema 2, generation and reviewed head for new merges; original schema-1 bytes only for bounded historical recovery; manual recovery requires actual two-parent identity and target ancestry, no message/gate",
       "freshness": "stored only in the current owner-private gate"
     },
     {
@@ -147,6 +147,18 @@
     {
       "id": "public_delivery_scope_revised_output_1_0",
       "path": "examples/public-delivery-scope-revised-output-1.0.json"
+    },
+    {
+      "id": "public_delivery_merged_recovery_input_1_0",
+      "path": "examples/public-delivery-merged-recovery-input-1.0.json"
+    },
+    {
+      "id": "manual_merged_review_1_0",
+      "path": "examples/manual-merged-review-1.0.json"
+    },
+    {
+      "id": "delivery_history_query_2_0",
+      "path": "examples/delivery-history-query-2.0.json"
     }
   ],
   "schemas": [
@@ -269,6 +281,26 @@
     {
       "id": "delivery_scope_revision_review_1_0",
       "path": "schemas/delivery-scope-revision-review-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_merged_recovery_input_1_0",
+      "path": "schemas/public-delivery-merged-recovery-input-1.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_2_0",
+      "path": "schemas/public-input-delivery-2.0.schema.json"
+    },
+    {
+      "id": "manual_merged_review_1_0",
+      "path": "schemas/manual-merged-review-1.0.schema.json"
+    },
+    {
+      "id": "delivery_history_query_2_0",
+      "path": "schemas/delivery-history-query-2.0.schema.json"
+    },
+    {
+      "id": "delivery_history_query_aggregate",
+      "path": "schemas/delivery-history-query-aggregate.schema.json"
     }
   ],
   "validators": [
@@ -373,7 +405,8 @@
   "tests": [
     "tests/test_contract.py",
     "tests/test_runtime.py",
-    "tests/test_history.py"
+    "tests/test_history.py",
+    "tests/test_manual_recovery.py"
   ],
   "platform_destinations": [
     "shared",
@@ -404,8 +437,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-merge-task-delivery-input-delivery-aggregate-1.0",
-        "path": "schemas/public-input-delivery-1.0.schema.json"
+        "schema_id": "guru-merge-task-delivery-input-delivery-aggregate-2.0",
+        "path": "schemas/public-input-delivery-2.0.schema.json"
       },
       "profiles": [
         {
@@ -451,6 +484,21 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_scope_revision"
+          }
+        },
+        {
+          "id": "delivery_merged_recovery",
+          "schema": {
+            "schema_id": "guru-merge-task-delivery-input-delivery-merged-recovery-1.0",
+            "path": "schemas/public-delivery-merged-recovery-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_merged_recovery_input",
+            "path": "examples/public-delivery-merged-recovery-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_merged_recovery"
           }
         }
       ]

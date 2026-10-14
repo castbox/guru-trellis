@@ -1,5 +1,10 @@
 # Guru Team Workflow
 
+已有正式 Delivery 经用户普通手动合并后，可按原 Merge 的
+`delivery_merged_recovery` 恢复实际公共事实，再接原 Completion。
+支持方式、实际内容/CI职责与完整安装采用见
+[MIGRATION-557](../../presets/guru-team/MIGRATION-557.md)及 Merge step-local contract。
+
 The [shared interaction contract](../../presets/guru-team/spec/workflow/workflow-contract.md#interaction-budget) is loaded at
 `.trellis/spec/workflow/workflow-contract.md#interaction-budget` by the workflow,
 interactive Skill owners and platform entries. Source/projection checks prove

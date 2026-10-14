@@ -31,11 +31,27 @@ class DeliveryFlow(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
+        template = os.environ.get("GURU_DELIVERY_TEST_INSTALLATION")
+        if template:
+            shutil.copytree(template, self.repo, dirs_exist_ok=True,
+                            ignore=shutil.ignore_patterns(".git", "__pycache__"))
+            self.installed_skills_root = self.repo / ".trellis/guru-team/skills"
         self.git("init", "-q", "-b", "main")
         self.git("config", "user.name", "Local Test")
         self.git("config", "user.email", "test@example.invalid")
+        if template:
+            # Reapply the complete preset in this new Git context. A copied
+            # installation has no Git-common-dir Python pointer of its own.
+            source_root = SKILLS.parents[2]
+            applied = subprocess.run(["bash", str(source_root / "trellis/presets/guru-team/scripts/bash/apply.sh"),
+                            "--repo", str(self.repo), "--platform", "codex", "--json"],
+                           cwd=source_root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            summary = json.loads(applied.stdout) if applied.stdout.strip().startswith("{") else {"error": applied.stderr[-1000:]}
+            self.assertEqual(0, applied.returncode, {"status": summary.get("status"),
+                "conflicts": {k: summary.get(k, {}).get("conflicts") for k in ("skill_packages", "overlays")},
+                "sidecars": {k: summary.get(k, {}).get("sidecars") for k in ("skill_packages", "overlays")}})
         common = self.repo / ".trellis/scripts/common"
-        shutil.copytree(source, common, ignore=shutil.ignore_patterns("__pycache__"))
+        shutil.copytree(source, common, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__"))
         self.key = {"task_id": "flow-task", "lifecycle_generation": 0,
                     "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"}
         self.task_ref = ".trellis/tasks/flow-task"
@@ -45,7 +61,11 @@ class DeliveryFlow(unittest.TestCase):
                   ("task_scope", "creation", "planning", "implementation", "check", "full_review", "readiness", "publication", "delivery", "completion", "closure")}
         owners["implementation"] = "guru-delivery-implementation-projection"
         declaration = {"task_schema": "2.0", "delivery_api": "1.0", "profiles": ["local_commit", "pull_request"], "owners": owners}
-        (self.repo / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n" + json.dumps(declaration) + "\n[/trellis-runtime-contract]\n")
+        if template:
+            from runtime.delivery_projection.adapter import upstream_modules
+            owners = upstream_modules(self.repo).runtime_contract.read_runtime_contract(self.repo / ".trellis/workflow.md")["owners"]
+        else:
+            (self.repo / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n" + json.dumps(declaration) + "\n[/trellis-runtime-contract]\n")
         (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
         (self.repo / "requirements.md").write_text("R1: keep clean candidate and review it.\n")
         (self.repo / "app.txt").write_text("old\n")
@@ -63,7 +83,7 @@ class DeliveryFlow(unittest.TestCase):
         self.projection = DeliveryProjection(self.repo, self.task_ref)
         self.projection.apply({"api_version": "1.0", "operation": "create_delivery", "key": self.key,
             "owner_role": "creation", "owner_id": owners["creation"],
-            "scope_ref": {"authority": record["accepted_scope"], "anchors": ["R1"]}, "profile": "local_commit"})
+            "scope_ref": {"authority": record["accepted_scope"], "anchors": ["R1"]}, "profile": getattr(self, "delivery_profile", "local_commit")})
         plan = self.projection.planning_directory(self.key)
         plan.mkdir(parents=True, exist_ok=True)
         for name in ("prd.md", "design.md", "implement.md"):
@@ -94,7 +114,7 @@ class DeliveryFlow(unittest.TestCase):
         return str(path)
 
     def wrapper(self, skill, name, *args, success=True):
-        package = SKILLS / "packages" / skill
+        package = getattr(self, "installed_skills_root", SKILLS) / "packages" / skill
         result = subprocess.run(["bash", str(package / "scripts" / name), "--root", str(self.repo), *map(str, args)],
                                 capture_output=True, text=True)
         value = json.loads(result.stdout or result.stderr)

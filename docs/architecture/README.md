@@ -1,10 +1,14 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.89`；状态：`active`；predecessor：`current-main-0.6.17-guru.88`；source baseline：[已晋升 #548 贡献](./contributions/548-creation-recovery.md) + immutable `.88` authority（Git 历史）。既有 owners、constitution、ADR 与 GAP lifecycle、软件四轴保持。
+版本：`current-main-0.6.17-guru.90`；状态：`active`；predecessor：`current-main-0.6.17-guru.89`；source baseline：[已晋升 #557 贡献](./contributions/557-manual-merged-delivery-recovery.md) + immutable `.89` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+
+当前增量 ARCH-CUR-063 / ARCH-DOM-046 / ARCH-INT-049 与 ADR-026 承接已独立审查的 #557；[唯一 Test](../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有 source、matching installed、真实 GitHub 链和旧安装/业务/Release 边界。promotion 新差额必须重新进入 Phase 2、Task Commit 与独立完整 Branch Review。
+
+历史 `.89`：当时版本：`current-main-0.6.17-guru.89`；状态：`active`；predecessor：`current-main-0.6.17-guru.88`；source baseline：[已晋升 #548 贡献](./contributions/548-creation-recovery.md) + immutable `.88` authority（Git 历史）。既有 owners、constitution、ADR 与 GAP lifecycle、软件四轴保持。
 
 本目录是唯一 Architecture Baseline authority。分区不可互换：FOUNDATION 是横向约束，CURRENT 只放证据证明的实现，TARGET 是已接受方向，GAP 是显式差距，PLAN 是已记录但未自动授权的执行顺序，ADR 是历史决策，EVIDENCE 只支撑判断。
 
-版本历史：`current-main-0.6.17-guru.89` 是唯一 active；`.88` 及更早是 immutable superseded history（Git 历史）。当前增量 ARCH-CUR-062 / ARCH-DOM-045 / ARCH-INT-048 承接已独立审查 #548；[唯一 Test](../requirements-design-test-contributions/548-creation-recovery/test.md)拥有验证和未验证边界。晋升新 diff 须 fresh Phase2、TaskCommit、不同 reviewer 完整 BranchReview，不证明 Delivery、Task Completion 或软件发布。
+历史 `.89` 记录：当时 `current-main-0.6.17-guru.89` 是唯一 active；`.88` 及更早是 immutable superseded history（Git 历史）。当前增量 ARCH-CUR-062 / ARCH-DOM-045 / ARCH-INT-048 承接已独立审查 #548；[唯一 Test](../requirements-design-test-contributions/548-creation-recovery/test.md)拥有验证和未验证边界。晋升新 diff 须 fresh Phase2、TaskCommit、不同 reviewer 完整 BranchReview，不证明 Delivery、Task Completion 或软件发布。
 
 历史 `.88`：版本：`current-main-0.6.17-guru.88`；状态：`active`；predecessor：`current-main-0.6.17-guru.87`；source baseline：[#547 Closure disposition contribution](./contributions/547-retain-source-open.md) + immutable `.87` authority（Git 历史）。#305 EVO-001..007、现有 owners、GAP lifecycle、constitution 与软件四轴保持。
 

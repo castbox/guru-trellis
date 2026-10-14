@@ -1,0 +1,29 @@
+{
+  "id": "557-manual-merged-delivery-recovery",
+  "name": "557-manual-merged-delivery-recovery",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 557,
+    "disposition": "exact_source"
+  },
+  "title": "#557 支持手动合并 Delivery 的正式结果恢复",
+  "description": "基于 live #557 与当前公共 Delivery 关联恢复真实用户合并，保留 CI/验证责任并接续原 Completion。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "castbox/guru-trellis#557",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-15",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

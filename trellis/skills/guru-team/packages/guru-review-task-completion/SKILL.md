@@ -22,6 +22,22 @@ the identical result; do not synthesize another result or require an empty
 Delivery. `completed` emits the existing minimum ResultRef to Closure; other
 continuation exits emit `task_ref`, `task_key`, and the concrete ReasonDTO.
 
+For a manual merge recorded by original Merge, read the actual DeliveryFact
+candidate/head and original Publication separately. Upstream `reviewed_head`
+in the terminal fact identifies actual content; it is not a new Check/Review
+pass. Compare the full published-to-actual and PR delta, including paths beyond
+the original candidate, current accepted authority, actual CI/reviews and
+scope-required evidence. Old gate applicability against the original candidate
+alone cannot establish that the actual head was reviewed. Reuse still-applicable
+same/equivalent evidence; changed content returns through affected original
+owners. Required evidence gaps select `evidence_pending`, actual unfinished
+work selects its applicable remaining/revision route, and changed authority
+selects `requirements_revision_required`. Non-required CI does not add scope.
+Pending/cancelled/missing/failed remains its real state even when MERGED is
+reliable. Never demand another merge, invent pass, or infer `completed` from
+the recovered fact. Public aggregate facts remain readable without trailers;
+history discovery is not a Completion prerequisite.
+
 Consume the actual current Architecture
 `task_impact_sync(stage=acceptance_finish)` result before completion. That
 owner applies its Downstream eligibility entry to still-applicable independent
