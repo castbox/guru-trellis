@@ -1,0 +1,165 @@
+{
+  "schema_version": "2.0",
+  "id": "557-manual-merge-validation",
+  "name": "557-manual-merge-validation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "验证 #557 普通手动合并后的正式结果接续",
+  "description": "在完整matching安装中正式交付可读取JSON夹具，实际GitHub普通merge后由原Merge承接并交原Completion。",
+  "dev_type": null,
+  "scope": "添加 validation/manual-merge-557.json，正式创建/规划/Check/独立Review/Publish；真实普通merge无Guru trailers/gate，核对immutable content、原Merge恢复、query2历史和原Completion。CI不新增要求，缺项按真实scope判断；不关闭外部Issue。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-15",
+  "base_branch": "codex/557-validation-base",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+    "revision": "sha256:8ac83e5ce88a2fc864f699bfc89cdc3efdc0794a2314328cf5e82eeaaab2c0b8"
+  },
+  "deliveries": [
+    {
+      "id": "aaac7ead-8b99-4674-aff0-a463fe2280cf",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+          "revision": "sha256:8ac83e5ce88a2fc864f699bfc89cdc3efdc0794a2314328cf5e82eeaaab2c0b8"
+        },
+        "anchors": [
+          "V557-01",
+          "V557-02",
+          "V557-03"
+        ]
+      },
+      "planning_root": "deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+        "revision": "sha256:170dad47c4cabcc1fb6fdaf3ecd74bfd66fd559a28fb5a7ae02066a83c4d8a67"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:3ebfd4e10bbfd87e49a6931c9f93e1c1fd0ceb3e3b6f3369d53009320935e31a",
+        "paths": [
+          ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/check.jsonl",
+          ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+          ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.jsonl",
+          ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.md",
+          ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/prd.md",
+          ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+          "validation/manual-merge-557.json"
+        ],
+        "head_ref": "a426a6e3e814d6d3be43cc1ba33102c069796fbe",
+        "base_ref": "a426a6e3e814d6d3be43cc1ba33102c069796fbe"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:56d287a3-267e-48d4-af26-90289c092d66",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+              "revision": "sha256:8ac83e5ce88a2fc864f699bfc89cdc3efdc0794a2314328cf5e82eeaaab2c0b8"
+            },
+            "anchors": [
+              "V557-01",
+              "V557-02",
+              "V557-03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+            "revision": "sha256:170dad47c4cabcc1fb6fdaf3ecd74bfd66fd559a28fb5a7ae02066a83c4d8a67"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/prd.md",
+              "revision": "sha256:1c4e2e8f1551923664d40a26cd63c0ef6a2b3bd1c3b419c9d0fb16c783ac5c06"
+            },
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+              "revision": "sha256:170dad47c4cabcc1fb6fdaf3ecd74bfd66fd559a28fb5a7ae02066a83c4d8a67"
+            },
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.md",
+              "revision": "sha256:987a29321df299b8d1c04951fbd4517b7915c7f05e61f377412243e3bd6c0a18"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:2818e2ace4cda18615714b0025d6fa68308c65f72f824e7e8619399af926b40e",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+              "revision": "sha256:8ac83e5ce88a2fc864f699bfc89cdc3efdc0794a2314328cf5e82eeaaab2c0b8"
+            },
+            "anchors": [
+              "V557-01",
+              "V557-02",
+              "V557-03"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+            "revision": "sha256:170dad47c4cabcc1fb6fdaf3ecd74bfd66fd559a28fb5a7ae02066a83c4d8a67"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:3ebfd4e10bbfd87e49a6931c9f93e1c1fd0ceb3e3b6f3369d53009320935e31a",
+            "paths": [
+              ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/check.jsonl",
+              ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+              ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.jsonl",
+              ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.md",
+              ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/prd.md",
+              ".trellis/tasks/10-15-557-manual-merge-validation/prd.md",
+              "validation/manual-merge-557.json"
+            ],
+            "head_ref": "a426a6e3e814d6d3be43cc1ba33102c069796fbe",
+            "base_ref": "a426a6e3e814d6d3be43cc1ba33102c069796fbe"
+          },
+          "predecessor_result_id": "planning-accepted:56d287a3-267e-48d4-af26-90289c092d66",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/prd.md",
+              "revision": "sha256:1c4e2e8f1551923664d40a26cd63c0ef6a2b3bd1c3b419c9d0fb16c783ac5c06"
+            },
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/design.md",
+              "revision": "sha256:170dad47c4cabcc1fb6fdaf3ecd74bfd66fd559a28fb5a7ae02066a83c4d8a67"
+            },
+            {
+              "locator": ".trellis/tasks/10-15-557-manual-merge-validation/deliveries/aaac7ead-8b99-4674-aff0-a463fe2280cf/implement.md",
+              "revision": "sha256:987a29321df299b8d1c04951fbd4517b7915c7f05e61f377412243e3bd6c0a18"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

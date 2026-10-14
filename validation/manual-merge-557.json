@@ -1,0 +1,12 @@
+{
+  "scenario": "manual-merged-delivery-recovery",
+  "version": 1,
+  "task": "557-manual-merge-validation",
+  "expected_delivery_fact": "delivered",
+  "completion_owner": "guru-review-task-completion",
+  "completion_requires": [
+    "actual_merged_content",
+    "current_accepted_scope",
+    "scope_required_evidence"
+  ]
+}
