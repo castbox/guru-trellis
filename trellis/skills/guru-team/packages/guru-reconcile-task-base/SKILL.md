@@ -32,6 +32,23 @@ expected-head-bound local merge commit before recording `reconciled`.
 to fresh Phase 2 so that checks and Task Commit are rebuilt against the new
 committed integration HEAD.
 
+For a genuine document conflict before implementation, this same
+`delivery_post_plan` owner resolves and reviews the baseline integration. Select
+the exact `integration_paths` and build a `stage0_tree` containing only that
+integration, restoring all other entries to the prior HEAD in a temporary
+index. Keep the real index and pending planning/implementation files intact.
+Pass the closed `resolved_candidate={stage0_tree,integration_paths}` to both
+`execute-base-candidate` and `execute-base-reconciliation`. Choose explicit
+argv-array baseline validations for the temporary candidate and judge whether
+both authorities, current planning and the resolution remain applicable.
+This baseline gate cannot assert business Check, Task Commit, full review or
+readiness, and does not require the unimplemented business scope to pass Check.
+The confirmation display additionally binds the active `MERGE_HEAD`, exact
+paths, tree/digest and parent order `[prior_task_head,new_base_head]`. The
+executor preserves unrelated staged, unstaged and untracked content; same-request
+terminal recovery returns the existing commit. Record/check/invoke return the
+original `reconciled` exit to Activation for the same Task generation and Delivery.
+
 Only `delivery_post_branch_review`, `delivery_post_publication`, and
 `delivery_finalizer_base_mismatch` may return `review_continuity_required` when the
 prior full review remains valid but the compatible candidate needs a new
@@ -63,7 +80,8 @@ semantic result is `scope_confirmation_required`; never persist that
 confirmation. Missing, stale, ambiguous, non-ancestor, or unmapped evidence
 fails closed.
 
-For the conflict-resolved path, run the resolved executor and then
+For the post-implementation `delivery_resolved_candidate` profile supplied by
+the Check owner, run the resolved executor and then
 `project-resolved-full-review`. That deterministic package command emits the
 complete existing `guru-review-branch:branch_review` input directly; it is not
 an additional Reconcile typed exit and never enters Task Commit or bounded

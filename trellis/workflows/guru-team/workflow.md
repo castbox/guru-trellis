@@ -1016,6 +1016,11 @@ the active-task pair guard with
 `resume_target=delivery_activation`. An unchanged pair resumes activation; a
 current pair consumes and routes its recorded exact typed output; a new pair
 invokes guru-reconcile-task-base and follows only its declared exit.
+Before implementation starts, a document conflict remains with that same
+`delivery_post_plan` Reconcile owner for resolved baseline validation and its
+exact local integration commit. Its checked `reconciled` exit resumes the same
+Delivery activation without requiring the unimplemented business Check or
+entering the post-implementation resolved-Check/full-review route.
 After the checked pair route resolves, invoke `guru-activate-delivery` for the
 same public DeliveryKey. D1, D2 and same-Delivery replanning use this same owner.
 Consume only its declared output; original-owner recovery restores an actual

@@ -97,6 +97,29 @@
           "format": "uuid"
         }
       }
+    },
+    "resolved_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage0_tree",
+        "integration_paths"
+      ],
+      "properties": {
+        "stage0_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "integration_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
   },
   "allOf": [
@@ -125,6 +148,23 @@
           "required": [
             "branch_review_commit"
           ]
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resolved_candidate"
+        ]
+      },
+      "then": {
+        "properties": {
+          "profile": {
+            "const": "delivery_post_plan"
+          },
+          "resume_target": {
+            "const": "delivery_activation"
+          }
         }
       }
     }

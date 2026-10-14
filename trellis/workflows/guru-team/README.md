@@ -30,6 +30,12 @@ Every Delivery has its own Planning and stable public identity before Author;
 `guru-activate-delivery` is the Planning transition owner for D1 and successors.
 The Task has overall scope/completion responsibility and no development-status router.
 
+Before implementation, an approved plan's resolved document conflict is owned
+by [Reconcile](../../skills/guru-team/packages/guru-reconcile-task-base/references/contract.md#pre-implementation-resolved-baseline).
+Its baseline integration returns the same Task generation and Delivery to
+Activation; business Check follows implementation. The post-implementation
+resolved-Check/full-review path remains separately owned.
+
 The `guru-team` canonical workflow is the global AI routing contract. The
 canonical source is `workflow.md`; an installed `.trellis/workflow.md` is a
 managed projection, not a second owner. Read the active Skill's `SKILL.md` and
