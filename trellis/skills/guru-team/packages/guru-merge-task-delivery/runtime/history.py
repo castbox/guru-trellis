@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from argparse import Namespace
 from pathlib import Path
 from typing import Any
@@ -59,6 +61,7 @@ def git(root: Path, *args: str) -> str:
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        env={**os.environ, "GIT_NO_LAZY_FETCH": "1"},
     )
     if proc.returncode:
         raise CommandError(
@@ -70,24 +73,88 @@ def git(root: Path, *args: str) -> str:
     return proc.stdout.strip()
 
 
-def resolve_base(root: Path, base_ref: str) -> tuple[str, str]:
-    candidates = (f"refs/remotes/origin/{base_ref}", f"refs/heads/{base_ref}")
-    for candidate in candidates:
+def first_parent_history(root: Path, commit: str) -> list[list[str]]:
+    """Require the real root, not Git's successful stop at a shallow boundary."""
+    git(root, "cat-file", "-e", commit + "^{commit}")
+    rows = [line.split() for line in git(root, "rev-list", "--first-parent", "--parents", commit).splitlines()]
+    shallow_path = Path(git(root, "rev-parse", "--git-path", "shallow"))
+    if not shallow_path.is_absolute():
+        shallow_path = root / shallow_path
+    shallow = set(shallow_path.read_text().splitlines()) if shallow_path.is_file() else set()
+    if not rows or rows[0][0] != commit or any(row[0] in shallow for row in rows) or len(rows[-1]) != 1:
+        raise CommandError("stale_identity", "history.completeness", "Prepare the complete fixed-cutoff first-parent history and retry this query.", 3)
+    return rows
+
+
+class HistoryContext:
+    """Call-local Git preparation; never fetch into the caller's common-dir."""
+
+    def __init__(self, root: Path, repo_ref: str, cutoff: str):
+        self.root = root
+        self.repo_ref = repo_ref
+        self.cutoff = cutoff
+        self.temporary = None
+        self.fetched: set[str] = set()
+        self.required: list[str] = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        if self.temporary is not None:
+            self.temporary.cleanup()
+
+    def fetch(self, commit: str) -> None:
+        if self.temporary is None:
+            self.temporary = tempfile.TemporaryDirectory(prefix="guru-delivery-history-")
+            self.root = Path(self.temporary.name)
+            git(self.root, "init", "--bare")
+        if commit in self.fetched:
+            return
+        self.fetched.add(commit)
         proc = subprocess.run(
-            ["git", "rev-parse", "--verify", f"{candidate}^{{commit}}"],
-            cwd=root,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            ["git", "fetch", "--no-write-fetch-head", "--no-tags", "--no-recurse-submodules",
+             "--no-auto-maintenance", "https://github.com/" + self.repo_ref + ".git", commit],
+            cwd=self.root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
-        if proc.returncode == 0:
-            return candidate, proc.stdout.strip()
-    raise CommandError(
-        "stale_identity",
-        "input.base_ref",
-        "Fetch or restore the exact target-base ref before Delivery discovery.",
-        3,
-    )
+        if proc.returncode:
+            error = proc.stderr.casefold()
+            if any(token in error for token in ("authentication", "401", "could not read username")):
+                reason = "Git authentication failed"
+            elif any(token in error for token in ("permission denied", "403", "access denied")):
+                reason = "Git permission denied"
+            elif any(token in error for token in ("could not resolve", "failed to connect", "timed out", "network")):
+                reason = "Git network unavailable"
+            elif any(token in error for token in ("not our ref", "couldn't find remote ref", "does not appear to be a git repository")):
+                reason = "Required repository or immutable commit unavailable"
+            else:
+                reason = "Git object transfer failed"
+            raise CommandError("stale_identity", "history.preparation", reason + "; restore access to the selected immutable history and retry this query.", 3)
+
+    def prepare(self, commit: str, reader):
+        if commit not in self.required:
+            self.required.append(commit)
+        try:
+            return reader(self.root)
+        except CommandError:
+            # A caller may have the commit but not its parents, trees or blobs.
+            # Switch once to a complete isolated context, then verify again.
+            for target in self.required:
+                self.fetch(target)
+            return reader(self.root)
+
+    def history(self, commit: str) -> list[list[str]]:
+        return self.prepare(commit, lambda root: first_parent_history(root, commit))
+
+    def candidate(self, head: str, paths: list[str]) -> None:
+        def readable(root):
+            git(root, "cat-file", "-e", head + "^{commit}")
+            for locator in paths:
+                row = git(root, "ls-tree", head, "--", locator)
+                if row:
+                    blob = row.split("\t", 1)[0].split()[2]
+                    git(root, "cat-file", "-e", blob)
+        self.prepare(head, readable)
 
 
 def _github_error(proc: subprocess.CompletedProcess[str], operation: str) -> CommandError:
@@ -321,7 +388,6 @@ def validate_pr(
 
 
 def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str, Any]:
-    ref_name, local_base_head = resolve_base(root, query["base_ref"])
     require_gh(root)
     raw_repo = gh_value(root, ["api", f"repos/{query['repo_ref']}"], "repository")
     if (
@@ -350,13 +416,8 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
             "github.base_ref",
             "Reread the exact target-base ref.",
         ) from exc
-    if remote_base_head != local_base_head:
-        raise CommandError(
-            "stale_identity",
-            "history.base_ref",
-            f"Refresh {ref_name} to the current remote target-base head.",
-            3,
-        )
+    if not HEX40.fullmatch(remote_base_head):
+        raise CommandError("github_response_incomplete", "github.base_ref", "Read one full immutable target-base commit SHA.")
 
     recorded = {}
     if query["schema_version"] == "2.0":
@@ -377,77 +438,97 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
                     raise CommandError("stale_identity", "history.delivery_identity", "Require one public Delivery per immutable merge.", 3)
                 if fact["candidate"]["head_ref"] != fact["reviewed_head"]:
                     raise CommandError("stale_identity", "history.candidate", "Read the actual recorded candidate head.", 3)
-                if commit_candidate(projection, fact, fact["reviewed_head"]) != fact["candidate"]:
-                    raise CommandError("stale_identity", "history.candidate", "Read the immutable recorded candidate bytes and modes.", 3)
                 recorded[merge] = {"fact": fact, "key": {"task_id": record["id"],
                     "lifecycle_generation": delivery["lifecycle_generation"], "delivery_id": delivery["id"]}}
         except LifecycleContractError as exc:
             raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
-    shas = git(root, "rev-list", "--first-parent", "--merges", "--reverse", local_base_head)
-    if set(recorded) - set(shas.splitlines()):
-        raise CommandError("stale_identity", "history.base_ref", "Recorded Delivery merge is absent from the current target-base first-parent history.", 3)
-    deliveries: list[dict[str, Any]] = []
-    seen_heads: set[str] = set()
-    seen_prs: set[int] = set()
-    for sha in shas.splitlines():
-        commit = commit_facts(root, sha)
-        trailers = parse_delivery_trailers(commit["message"], query["task_identity"])
-        public_fact = recorded.get(sha)
-        if trailers is None:
-            if public_fact is None:
+    with HistoryContext(root, query["repo_ref"], remote_base_head) as context:
+        rows = context.history(remote_base_head)
+        shas = [row[0] for row in reversed(rows) if len(row) > 2]
+        outside = [sha for sha in recorded if sha not in shas]
+        outside_history = {sha: {row[0] for row in context.history(sha)} for sha in outside}
+        for public_fact in recorded.values():
+            fact = public_fact["fact"]
+            context.candidate(fact["reviewed_head"], fact["candidate"]["paths"])
+            try:
+                actual_candidate = commit_candidate(projection, fact, fact["reviewed_head"], git_root=context.root)
+            except LifecycleContractError as exc:
+                raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+            if actual_candidate != fact["candidate"]:
+                raise CommandError("stale_identity", "history.candidate", "Read the immutable recorded candidate bytes and modes.", 3)
+        deliveries: list[dict[str, Any]] = []
+        seen_heads: set[str] = set()
+        seen_prs: set[int] = set()
+        for sha in shas + outside:
+            message = git(context.root, "show", "-s", "--format=%B", sha)
+            trailers = parse_delivery_trailers(message, query["task_identity"])
+            public_fact = recorded.get(sha)
+            if trailers is None:
+                if public_fact is None:
+                    continue
+                if any(line.startswith("Guru-Task-Identity:") for line in message.splitlines()):
+                    raise CommandError("stale_identity", "history.delivery_identity", "Cross-check the recorded Task with the merge's actual Task trailers.", 3)
+                trailers = {"task_identity": query["task_identity"],
+                            "reviewed_head": public_fact["fact"]["reviewed_head"], "delivery_key": public_fact["key"]}
+            elif public_fact is not None:
+                if (trailers["reviewed_head"] != public_fact["fact"]["reviewed_head"]
+                        or trailers.get("delivery_key", public_fact["key"]) != public_fact["key"]):
+                    raise CommandError("stale_identity", "history.delivery_identity", "Cross-check public fact and legal trailer history before deduplication.", 3)
+                trailers["delivery_key"] = public_fact["key"]
+            reviewed_head = trailers["reviewed_head"]
+            context.prepare(reviewed_head, lambda source: git(source, "cat-file", "-e", reviewed_head + "^{commit}"))
+            commit = commit_facts(context.root, sha)
+            if commit["parents"][1] != reviewed_head:
+                raise CommandError(
+                    "stale_identity",
+                    "history.merge_commit.parents",
+                    "Require parent 2 to equal the reviewed Delivery head.",
+                    3,
+                )
+            raw_pr = associated_pr(root, query["repo_ref"], sha)
+            pr_number = validate_pr(
+                raw_pr,
+                repo_ref=query["repo_ref"],
+                base_ref=query["base_ref"],
+                merge_sha=sha,
+                reviewed_head=reviewed_head,
+            )
+            if public_fact is not None and pr_number != public_fact["fact"]["pr_number"]:
+                raise CommandError("stale_identity", "history.pr_number", "Read the PR belonging to the recorded public result.", 3)
+            if reviewed_head in seen_heads or pr_number in seen_prs:
+                raise CommandError(
+                    "stale_identity",
+                    "history.delivery_identity",
+                    "Require one unique reviewed head, PR and merge commit per Delivery.",
+                    3,
+                )
+            seen_heads.add(reviewed_head)
+            seen_prs.add(pr_number)
+            if sha in outside:
+                # Only a verified recorded Delivery on the same first-parent line
+                # after B1 may be excluded. Its existence never changes this cutoff.
+                if sha == remote_base_head or remote_base_head not in outside_history[sha]:
+                    raise CommandError("stale_identity", "history.base_ref", "Recorded Delivery is neither covered by the cutoff nor a verified first-parent successor.", 3)
                 continue
-            trailers = {"task_identity": query["task_identity"],
-                        "reviewed_head": public_fact["fact"]["reviewed_head"], "delivery_key": public_fact["key"]}
-        elif public_fact is not None:
-            if (trailers["reviewed_head"] != public_fact["fact"]["reviewed_head"]
-                    or trailers.get("delivery_key", public_fact["key"]) != public_fact["key"]):
-                raise CommandError("stale_identity", "history.delivery_identity", "Cross-check public fact and legal trailer history before deduplication.", 3)
-            trailers["delivery_key"] = public_fact["key"]
-        reviewed_head = trailers["reviewed_head"]
-        if commit["parents"][1] != reviewed_head:
-            raise CommandError(
-                "stale_identity",
-                "history.merge_commit.parents",
-                "Require parent 2 to equal the reviewed Delivery head.",
-                3,
-            )
-        raw_pr = associated_pr(root, query["repo_ref"], sha)
-        pr_number = validate_pr(
-            raw_pr,
-            repo_ref=query["repo_ref"],
-            base_ref=query["base_ref"],
-            merge_sha=sha,
-            reviewed_head=reviewed_head,
-        )
-        if public_fact is not None and pr_number != public_fact["fact"]["pr_number"]:
-            raise CommandError("stale_identity", "history.pr_number", "Read the PR belonging to the recorded public result.", 3)
-        if reviewed_head in seen_heads or pr_number in seen_prs:
-            raise CommandError(
-                "stale_identity",
-                "history.delivery_identity",
-                "Require one unique reviewed head, PR and merge commit per Delivery.",
-                3,
-            )
-        seen_heads.add(reviewed_head)
-        seen_prs.add(pr_number)
-        deliveries.append({
-            "task_identity": query["task_identity"],
-            "reviewed_head": reviewed_head,
-            "pr_number": pr_number,
-            "merge_commit_sha": sha,
-            "base_ref": query["base_ref"],
-            **({"delivery_key": trailers["delivery_key"]} if "delivery_key" in trailers else {}),
-        })
+            deliveries.append({
+                "task_identity": query["task_identity"],
+                "reviewed_head": reviewed_head,
+                "pr_number": pr_number,
+                "merge_commit_sha": sha,
+                "base_ref": query["base_ref"],
+                **({"delivery_key": trailers["delivery_key"]} if "delivery_key" in trailers else {}),
+            })
 
     result = {
-        "schema_version": "2.0" if query["schema_version"] == "2.0" or any("delivery_key" in row for row in deliveries) else "1.0",
+        "schema_version": "3.0",
         "status": "discovered",
         "task_identity": query["task_identity"],
         "repo_ref": query["repo_ref"],
         "base_ref": query["base_ref"],
+        "cutoff_commit": remote_base_head,
         "deliveries": deliveries,
     }
-    validate_json(result, package_root / ("schemas/delivery-history-result-2.0.schema.json" if result["schema_version"] == "2.0" else "schemas/delivery-history-result.schema.json"), "stdout")
+    validate_json(result, package_root / "schemas/delivery-history-result-3.0.schema.json", "stdout")
     return result
 
 

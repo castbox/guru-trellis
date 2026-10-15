@@ -50,7 +50,8 @@ Its terminal DTO carries Task locator and TaskKey only. The Completion owner
 reads current overall scope and every actual public Delivery fact, including
 history, before judging overall completion. Merge never decides Completion.
 
-The package also exposes the deterministic read-only command:
+The package also exposes the deterministic history command (business facts
+remain read-only; temporary Git data is written):
 
 ```bash
 scripts/discover-task-deliveries.sh --input <delivery-history-query.json>
@@ -62,8 +63,26 @@ merges without Delivery trailers and is independent of PR body text, deleted
 head branches, and the task's current branch or worktree binding.
 Query 2.0 adds the exact `task_ref` and reads that public Task's already recorded
 manual facts, cross-checking real PR/commit/head/base and legal trailer history.
-It never imports a PR or writes Task history. See MIGRATION-557 in the managed
-task-delivery migration contract for the matching package/workflow boundary.
+It never imports a PR or writes Task history. Both inputs return result 3.0,
+with explicit `task_identity`, `repo_ref`, `base_ref`, `cutoff_commit` and
+`deliveries`. The original query owner reads the remote cutoff B1 once,
+reuses complete local history or prepares missing immutable objects in a
+call-local bare Git context, and verifies that same cutoff without chasing B2.
+It does not write caller/peer HEAD, index, workfiles, shared objects/shallow,
+refs, FETCH_HEAD, tags, or remote resources. Actual writes are temporary Git
+initialization/config/objects/pack and existing candidate file snapshots;
+both are removed on exit. Preparation/permission/network, incomplete history
+and attribution failures are errors, never an empty success or a request to
+fetch manually. A complete scan with no matching facts may return empty.
+
+Consumers use only the public result and their query identity. Unrelated B2
+advancement permits direct consumption of B1; a known same-Task new Delivery or
+changed required evidence calls this original owner again for missing facts,
+without replaying delivered business gates. A lost result reenters this owner
+with the known query identity and returns a newly explicit cutoff; it cannot
+recover an unobserved old B1 from private state. Query success is not Completion.
+See MIGRATION-569 for the synchronized result/consumer migration and
+MIGRATION-557 for existing public recorded-fact semantics.
 
 `merge_blocked`, `implementation_required`, and `review_refresh_required` do
 not request merge confirmation and perform no remote mutation. Fail closed on

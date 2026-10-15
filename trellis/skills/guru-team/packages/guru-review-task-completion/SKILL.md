@@ -119,7 +119,15 @@ history result proves only its explicit cutoff; later unrelated Task or
 bookkeeping commits do not require a requery, integration or business gate
 refresh. If this Task has a new Delivery or changed required evidence, obtain
 only missing facts and rejudge affected Completion conclusions. Never use the
-old cutoff to claim current completeness. History-query preparation/cutoff
-production is independently owned by #569; this owner neither implements it
-nor makes it an implementation/closure prerequisite. No remote SHA equality
-qualifies Completion.
+old cutoff to claim current completeness. When history is actually needed,
+call the original Merge `discover-task-deliveries` owner with query1 (historical
+trailer-only callers) or query2 (public recorded facts). Consume its result3.0
+`task_identity`, `repo_ref`, `base_ref`, `cutoff_commit` and `deliveries` with
+the explicit query context; no producer-private state is needed. Preparation
+belongs to that owner and never requires a caller fetch or Task integration.
+On lost output, reenter the original query and read its newly explicit cutoff;
+do not infer an unobserved former cutoff. Obtain a bounded new result only for
+known missing same-Task facts/evidence, then rejudge affected conclusions. No
+remote SHA equality qualifies Completion, and history is not a new mandatory
+prerequisite when public Task facts already suffice. Adopt the matching
+result/consumer combination described in MIGRATION-569.

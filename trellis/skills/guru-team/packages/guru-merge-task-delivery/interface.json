@@ -183,6 +183,10 @@
     {
       "id": "unverified_legacy_history_output",
       "path": "examples/unverified_legacy_history-output-1.0.json"
+    },
+    {
+      "id": "delivery_history_result_v3",
+      "path": "examples/delivery-history-result-3.0.json"
     }
   ],
   "schemas": [
@@ -377,6 +381,10 @@
     {
       "id": "delivery_merge_gate_2_0",
       "path": "schemas/delivery-merge-gate-2.0.schema.json"
+    },
+    {
+      "id": "delivery_history_result_v3",
+      "path": "schemas/delivery-history-result-3.0.schema.json"
     }
   ],
   "validators": [
@@ -402,7 +410,7 @@
       "id": "delivery_history_discoverer",
       "command": "scripts/discover-task-deliveries.sh",
       "runtime_command": "discover-task-deliveries",
-      "objective_scope": "Read target-base merge history and reconstruct exact task Delivery facts from schema-1 trailers plus GitHub PR and merge identity without reading PR bodies or current task branches"
+      "objective_scope": "Prepare and verify complete first-parent history at one immutable remote cutoff; reconstruct query1 trailers and query2 public Delivery facts, writing only call-local temporary Git/snapshot data, then return result3.0 with explicit cutoff."
     },
     {
       "id": "merge_executor",
@@ -513,7 +521,9 @@
     "tests/test_runtime.py",
     "tests/test_history.py",
     "tests/test_manual_recovery.py",
-    "tests/test_legacy_maintenance.py"
+    "tests/test_legacy_maintenance.py",
+    "tests/test_history_cutoff.py",
+    "tests/test_history_public.py"
   ],
   "platform_destinations": [
     "shared",

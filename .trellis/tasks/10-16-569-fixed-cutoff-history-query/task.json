@@ -1,0 +1,29 @@
+{
+  "id": "569-fixed-cutoff-history-query",
+  "name": "569-fixed-cutoff-history-query",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 569,
+    "disposition": "exact_source"
+  },
+  "title": "修复交付历史查询的数据准备与固定截点接续",
+  "description": "按 live #569 完成原历史查询 owner 的有界 Git 对象准备、query1/query2 固定截点及原 Completion/独立恢复消费者的最小适配与完整验收。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/569",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-16",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}
