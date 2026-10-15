@@ -2,9 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前图及 #435 增量以 `ARCH-CUR-032` 为准；current release-facing 四轴继承
-`ARCH-CUR-029`。保留条目中带旧 Issue/版本身份的计数和验证只描述其历史范围，
-不覆盖 `.55` 的 current identity，也不充当本次重新执行的验证。
+当前 `.92` 的固定内容与实际整合增量以 `ARCH-CUR-065` 为准，完整 active inventory 由 live registry/Interfaces 定义。保留条目中带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取，不作为本轮重新执行的证据。软件四轴继续继承当前 authority，本次知识晋升不修改发布身份。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -306,6 +304,8 @@ Wording/Approval、Delivery policy gap/Completion next independent delivery 的�
 
 ## ARCH-CUR-059：已提交候选的正式接续（.86）
 
+本节保留 #530 当时的原路径。selected-base ancestry、默认 post_check/post_commit guard 与仅 base 前进即回 fresh Phase2 的要求已由 ARCH-CUR-065 / ADR-028 替代；dirty 精确提交、clean 同一已提交候选恢复及首次独立完整审查的职责继续有效。ARCH-CUR-036/032 中相同的默认祖先/追赶片段也按此 successor 读取。
+
 原 TaskCommit owner 在既有 public invoke 中增加互斥 `committed_reentry` 输入，先执行自己的 semantic gate，再复用原 Check checker 校验当前 Phase2；从 live TaskId/generation/registered checkout、clean HEAD/index、无 active Git operation、selected-base ancestor/非空 range 与 committed task metadata 承接已有候选。正式输出仍是原 `task_ref/base_ref/branch_review_commit`，成功只消费原 Phase2 checkpoint。
 
 post_commit Reconcile → fresh Phase2 → unchanged post_check → clean committed identity → 原 post_commit guard → fresh Branch Architecture → 首次完整独立 BranchReview 继续由原 owners 执行。dirty 候选仍使用原非空 exact_stage_paths 提交；base 再演进和 stale 经原恢复路径重建，不复用旧 commit。没有空提交、相同内容提交、第二内容算法、candidate/receipt/store 或 tracked 推进文件。[职责来源](../contributions/530-clean-committed-reentry.md)与[唯一测试结果](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)分别承接架构和实际验证层次。
@@ -319,3 +319,11 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 `ARCH-CUR-063`（#557 reviewed source）：已发布正式 Delivery 的普通手动合入事实由原 Merge 承接，actual candidate 与旧 gate/Publication 分离，整体 scope 与证据仍归原 Completion；[已晋升贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 拥有责任决定，[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有实际观察及边界。
 
 `ARCH-CUR-064`（#566 reviewed source）：单 checkout tools 与所选 legacy Task 维护独立，旧完整 Plan2 与普通 current-only 保持；目标 native/下一实际 owner 与业务完成分离。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。
+
+## ARCH-CUR-065：固定内容对象与实际阻塞整合（.92）
+
+#567 沿原 Task/Delivery 和阶段 owners 分离开发基线、固定完整内容候选与 PR target。实际实现 HEAD 可以演进；每次 Check/full_review 仍绑定本人真实审查的当前候选。后续 Delivery 从真实已交付事实确定范围，保留完整差额而不重复前序交付。默认 mandatory pair guard、无消费者同步状态及 latest-target 祖先资格退出；仅 behind、共享 ref 或无关整体 CURRENT 前进不构成重做门禁的理由。
+
+实际冲突、具体集成失败、原 Merge 已确认的既有服务端更新要求、明确依赖/需求或主动同步仍由原 Reconcile/阶段 owner 处理。整合操作固定目标，普通/resolved/committed/continuity/同操作恢复保持；必要差额及依赖由原 Check/full_review owner 实际判断并记录新结果，不用旧 pass 换标签。Merge 继续验证实际资格、expected task HEAD、真实 merge identity/parents/reachability；Completion 核验全部 scope 与真实 Delivery，Finish 保留精确 bookkeeping 事务与终态恢复。
+
+阶段适用 authority 由原语义 owner 选择；shared-current promotion 自身保持写前 expected-current。责任与窄 supersession 由[贡献](../contributions/567-fixed-development-baseline.md)和 [ADR-028](../adr/028-fixed-content-baseline.md)定义，机制由[唯一 Design](../../requirements-design-test-contributions/567-fixed-development-baseline/design.md)单写。实际验证与未覆盖边界仅由[唯一 Test](../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)拥有。本文不证明 author checkout 已迁移、真实 GitHub 策略效果、业务采用或软件发布。

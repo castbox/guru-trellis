@@ -1,0 +1,5 @@
+# #567 requirement-main
+
+版本：`current-main-0.6.17-guru.98`；状态：`active`；predecessor：`current-main-0.6.17-guru.97`。继承[不可变前驱](../current-main-0.6.17-guru.97/requirement-main.md)的其余有效合同；本次由 [#567 traceability](../../../requirements-design-test-contributions/567-fixed-development-baseline/traceability.md)连接 BEH567-01..07 / DES567-01..07 / CON567-01 / T567-01..08。默认追赶、latest-target祖先资格、目标SHA全等及无关整体CURRENT前进即stale的冲突片段由本增量替代；原真实内容、事务、语义判断和整体完成责任保留。需求、设计与实际结果仍由同根专属文档单写，本入口不复制行为。
+
+Architecture继承 `current-main-0.6.17-guru.92/active`、[已晋升贡献](../../../architecture/contributions/567-fixed-development-baseline.md)与 [ADR-028](../../../architecture/adr/028-fixed-content-baseline.md)。constitution、GAP lifecycle与软件四轴保持。[唯一Test](../../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)区分runtime、完整matching安装、实际AI/public-owner链与本地GitHub模拟，保留首次失败/修复和继承红测。真实GitHub策略/副作用、远端marketplace、业务采用、author旧graph迁移与完整Release矩阵未验证。当前晋升新差额仍须fresh Phase2/TaskCommit/不同reviewer独立完整Review，不能代替Publication、Completion或Closure。

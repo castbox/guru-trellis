@@ -1,11 +1,12 @@
 task_id: 567-fixed-development-baseline
 source: https://github.com/castbox/guru-trellis/issues/567
-status: candidate
+status: reviewed_promoted
+promoted_version: current-main-0.6.17-guru.98
 strategy: delta_first
 preimage: current-main-0.6.17-guru.97
 architecture:
   locator: docs/architecture/README.md
-  version: current-main-0.6.17-guru.91
+  version: current-main-0.6.17-guru.92
   status: active
 documents:
   requirements: requirements.md

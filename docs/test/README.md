@@ -1,6 +1,8 @@
 # Test Strategy / Test Plan SSOT
 
-唯一 current RDT authority 为 `current-main-0.6.17-guru.97/active`；[本版入口](./versions/current-main-0.6.17-guru.97/test-strategy.md)完整继承 immutable `.96`，承接 [#566 唯一增量](../requirements-design-test-contributions/566-single-checkout-upgrade/traceability.md)，继承 Architecture `.91/active`。行为与实际结果由专属文档单写；[唯一 Test](../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)保持正式来源、业务采用和 Release 的未验证边界。晋升新差额须 fresh gates，不代表软件交付或业务完成。
+唯一 current RDT authority 为 `current-main-0.6.17-guru.98/active`；[本版入口](./versions/current-main-0.6.17-guru.98/test-strategy.md)继承 immutable `.97` 的其余有效合同，并由 [#567 唯一增量](../requirements-design-test-contributions/567-fixed-development-baseline/traceability.md)替代冲突的默认追赶/祖先/整体 stale 片段，继承 Architecture `.92/active` 与 ADR-028。行为、机制和实际结果分别由专属文档单写；[唯一 Test](../requirements-design-test-contributions/567-fixed-development-baseline/test.md)保留首次失败/修复、历史红测及外部/业务/Release边界。本次晋升新差额须 fresh gates，不代表软件交付或整体完成。
+
+历史 `.97` authority：当时 RDT authority 为 `current-main-0.6.17-guru.97/active`；[本版入口](./versions/current-main-0.6.17-guru.97/test-strategy.md)完整继承 immutable `.96`，承接 [#566 唯一增量](../requirements-design-test-contributions/566-single-checkout-upgrade/traceability.md)，继承 Architecture `.91/active`。行为与实际结果由专属文档单写；[唯一 Test](../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)保持正式来源、业务采用和 Release 的未验证边界。晋升新差额须 fresh gates，不代表软件交付或业务完成。
 
 历史 `.96` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.96/active`；[本版入口](./versions/current-main-0.6.17-guru.96/test-strategy.md)完整继承 immutable `.95`，承接 [#557 唯一增量](../requirements-design-test-contributions/557-manual-merged-delivery-recovery/traceability.md)，继承 Architecture `.90/active`。需求、设计和实际结果分别由专属文档单写；[唯一 Test](../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)保持 source、matching installed、真实 GitHub 与旧安装/业务/Release 边界。晋升新差额须 fresh gates，不代表软件交付或业务采用。
 
@@ -26,7 +28,8 @@
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.97` | [本版入口](./versions/current-main-0.6.17-guru.97/test-strategy.md) |
+| `active` | `current-main-0.6.17-guru.98` | [本版入口](./versions/current-main-0.6.17-guru.98/test-strategy.md) |
+| `superseded` | `current-main-0.6.17-guru.97` | [本版入口](./versions/current-main-0.6.17-guru.97/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.96` | [本版入口](./versions/current-main-0.6.17-guru.96/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.95` | [本版入口](./versions/current-main-0.6.17-guru.95/test-strategy.md) |
 | `superseded` | `current-main-0.6.17-guru.94` | [本版入口](./versions/current-main-0.6.17-guru.94/test-strategy.md) |

@@ -1,6 +1,6 @@
 # 固定开发基线
 
-来源：castbox/guru-trellis #567。以下是本次贡献候选；shared-current promotion 前不替换全局 authority。
+来源：castbox/guru-trellis #567。本增量已按 expected RDT `.97` 晋升至 `.98`，继承 Architecture `.92/active` 与 ADR-028；默认追赶相关旧片段按本增量替代，其余有效合同继续继承。
 
 | ID | 行为 |
 | --- | --- |

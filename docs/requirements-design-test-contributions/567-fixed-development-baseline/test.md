@@ -1,6 +1,6 @@
 # 验证记录
 
-这是 #567 当前实现候选的验证记录。Package/runtime、真实 Git/公共 API、实际 AI owner 执行和本地 GitHub 模拟分层陈述；不代表真实 GitHub 发布、最终验收、共享知识 promotion 或 Release Gate 已完成。
+这是 #567 当前实现候选的验证记录。Package/runtime、真实 Git/公共 API、实际 AI owner 执行和本地 GitHub 模拟分层陈述；不代表真实 GitHub 发布、最终验收或 Release Gate 已完成。共享知识晋升文档差额另须 fresh gates。
 
 ## 定向验证
 
@@ -11,9 +11,9 @@
 | T567-03 | TaskCommit42项通过，含 committed reentry9项：当前 Check 固定B、完整范围、dirty精确事务/hooks、已提交候选保留、结果丢失恢复及首次完整 Review 义务。 |
 | T567-04 | Merge最终全套45项通过；补齐当前gate2.0 schema注册后 contract10项再次通过。覆盖仅behind/目标推进、实际blocker、私有1→2投影、historical migration与同操作恢复；fixture的server facts不冒充live策略。 |
 | T567-05 | Finish contract60项及新增private2→3迁移1项通过：expected-head bookkeeping、Closure/source变化、固定事务与target推进后的可达性恢复。Completion21项pytest通过。 |
-| T567-06 | 最终 canonical source validator通过：40 active packages、124 commands、111 package tests。受控 source＋installed 自身apply/reapply、installed/activation validator通过：Claude/Codex/Cursor＋shared、9420 managed files、0 conflicts/sidecars/private tests。最终drift通过；完整canonical字节/权限复核及native get_context continuation通过。采用README已声明的local workflow sample，不声称远端marketplace安装证明。 |
+| T567-06 | 最终 canonical source validator通过：40 active packages、124 commands、当时111个test目录文件（非测试执行数）。受控 source＋installed 自身apply/reapply、installed/activation validator通过：Claude/Codex/Cursor＋shared、9420 managed files、0 conflicts/sidecars/private tests。最终drift通过；完整canonical字节/权限复核及native get_context continuation通过。采用README已声明的local workflow sample，不声称远端marketplace安装证明。 |
 | T567-07 | 实际 AI 双Delivery owner链完成到原Finish success，详见下文。原真实Reconcile41和Merge45提供实际阻塞/恢复的确定性回归；不把fixture预写pass称作AI语义执行。 |
-| T567-08 | Main fresh独立Phase2 Architecture正式baseline_current / architecture_impact / target_native / reviewed_candidate；原RDT正式ssot_current。贡献仍为task-owned candidate，未promotion。主Task的正式Check、真实工作提交和独立committed Review各以其原owner实际结果为准。 |
+| T567-08 | Main fresh独立Phase2 Architecture正式baseline_current / architecture_impact / target_native / reviewed_candidate；原RDT正式ssot_current。该记录描述实现时的task-owned候选。修复后完整独立committed Review及本次共享知识晋升差额见下文；后续门禁以各原owner实际结果为准。 |
 
 另有 Readiness21、Publish26、active fixture composition2、scope revision3项通过。BranchReview最终44项通过，首次独立审查检出的中间失败与修复见下文。变更Python解析、package shell语法、task context和ownership validator通过；ownership覆盖22平台descriptor、43 managed claims、22 overlays。未执行完整多平台安装矩阵。
 
@@ -43,7 +43,13 @@ F2/F3均由原normal/mechanism/root公开入口实际取得 `qualified_current` 
 | Check无bytecode全套 | 53通过、54 subtests；1项 `legacy_controls_retired` exit-list旧断言失败。该test和interface均与base字节相同，属继承边界，未修复、未称全绿。 |
 | doc-only受影响contract | Activation6、Author2、Architecture32、RDT9通过。Approval修复后19通过/2失败：旧installed eval runner拒绝base已存在的kernel文件，以及与base相同的legacy extra-exit旧断言。实际test/interface/kernel文件均与base相同；不扩范围调整旧运行图或历史断言。 |
 
-此前runtime子集未覆盖F2/F3的contract消费者，本轮因真实失败补齐相关完整/contract检查。当前修复只有package-private测试与唯一Test，不改变managed安装payload；既有matching安装/reapply/drift证据只承接其未变依赖，不声称本轮重新安装或所有canonical测试字节重新比对。共享Architecture/RDT仍未晋升。
+此前runtime子集未覆盖F2/F3的contract消费者，本轮因真实失败补齐相关完整/contract检查。当前修复只有package-private测试与唯一Test，不改变managed安装payload；既有matching安装/reapply/drift证据只承接其未变依赖，不声称本轮重新安装或所有canonical测试字节重新比对。该轮实现检查时共享Architecture/RDT尚未晋升；本次晋升差额见下文。
+
+## 修复后的完整 Review 与知识晋升差额
+
+F2/F3修复已通过fresh Phase2 Architecture、原Check与原TaskCommit，本地三文件提交为 `f2538d822dbede7ea34dc29bdad9a0f828130dad`。原finding owner瞬时核验F2/F3关闭，保留原introduced `62e7ef1` 与真实 `62e7ef1→bc5bb426→f2538d8` 祖先链；F1先前已关闭。不同fresh reviewer独立审查完整 `3b165daef0001bd9816c0bf3bbe928bcb59de390..f2538d822dbede7ea34dc29bdad9a0f828130dad` 的113路径，先取得原Architecture正式current，再经原BranchReview recorder、checker与public invoke取得 `passed`；没有把原失败、Check或closure换标签作为完整Review通过。本轮reviewer还亲自重跑source validator、controlled installed validator和drift，核对87个变更managed依赖及2669个完整非测试产品文件的字节/权限一致；未把package-private测试文件称作已重装。
+
+本次原owners按expected Architecture `.91` / RDT `.97` 晋升到 `.92` / `.98`，ADR-028只承接已审贡献。当前晋升新文档差额仍须fresh Phase2、TaskCommit和不同reviewer独立完整Review；本节不将promotion前的结果当作后续gates通过，也不证明Delivery、Completion或Release。
 
 ## 实际 AI owner链与真实 Git
 
@@ -84,4 +90,4 @@ phase2_authoring在author旧安装下原9项中8项通过，1项source/installed
 
 曾检查“旧constructor符号base在恢复时漂移”候选。实际运行HEAD旧constructor与当前公共begin_check时，原store先拒绝`candidate_mismatch: base must be an exact commit`，未写入该候选；原normal-scenario正式返回`rejected_not_reproduced`。没有据此增加防御实现、负例测试或finding。
 
-未验证真实GitHub mutation/服务端更新策略、远端marketplace exact candidate、业务仓采用、开发checkout迁移和完整多平台Release矩阵。以上只声明各实际观察层，不声明生产效果或Release Gate通过；本地实现及F1修复commit已完成，真实主仓push/PR/merge/tag/Release和共享Architecture/RDT promotion均未执行。
+未验证真实GitHub mutation/服务端更新策略、远端marketplace exact candidate、业务仓采用、开发checkout迁移和完整多平台Release矩阵。以上只声明各实际观察层，不声明生产效果或Release Gate通过；本地实现及修复commit已完成；本次Architecture `.91→.92` / RDT `.97→.98` 晋升只承接已审贡献，其新增文档差额尚须fresh Phase2、TaskCommit和不同reviewer完整BranchReview。真实主仓push/PR/merge/tag/Release未执行。

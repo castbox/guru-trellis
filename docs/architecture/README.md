@@ -1,8 +1,12 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.91`；状态：`active`；predecessor：`current-main-0.6.17-guru.90`；source baseline：[已晋升 #566 贡献](./contributions/566-single-checkout-upgrade.md) + immutable `.90` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+版本：`current-main-0.6.17-guru.92`；状态：`active`；predecessor：`current-main-0.6.17-guru.91`；source baseline：[已晋升 #567 贡献](./contributions/567-fixed-development-baseline.md) + immutable `.91` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
 
-当前增量 ARCH-CUR-064 / ARCH-DOM-047 / ARCH-INT-050 与 ADR-027 承接已独立审查的 #566；[唯一 Test](../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)拥有实际证明与未验证边界。promotion 新差额必须重新进入 Phase2、TaskCommit 与独立完整 BranchReview。
+当前增量 ARCH-CUR-065 / ARCH-DOM-048 / ARCH-INT-051 与 [ADR-028](./adr/028-fixed-content-baseline.md) 承接已独立完整审查的 #567。ADR-028 只替代已定位的旧默认追赶、祖先资格及无关整体版本前进即 stale 的冲突片段；原语义 owners、真实内容/事务一致性与 shared-current 写前 expected-current 保持。[唯一 Test](../requirements-design-test-contributions/567-fixed-development-baseline/test.md)拥有实际结果、首次失败/修复和未验证边界；本次晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的独立完整 BranchReview。
+
+历史 `.91`：版本：`current-main-0.6.17-guru.91`；状态：`active`；predecessor：`current-main-0.6.17-guru.90`；source baseline：[已晋升 #566 贡献](./contributions/566-single-checkout-upgrade.md) + immutable `.90` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+
+历史 `.91` 增量 ARCH-CUR-064 / ARCH-DOM-047 / ARCH-INT-050 与 ADR-027 承接已独立审查的 #566；[唯一 Test](../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)拥有实际证明与未验证边界。promotion 新差额必须重新进入 Phase2、TaskCommit 与独立完整 BranchReview。
 
 历史 `.90`：版本：`current-main-0.6.17-guru.90`；状态：`active`；predecessor：`current-main-0.6.17-guru.89`；source baseline：[已晋升 #557 贡献](./contributions/557-manual-merged-delivery-recovery.md) + immutable `.89` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
 
