@@ -1,0 +1,29 @@
+{
+  "id": "566-single-checkout-upgrade",
+  "name": "566-single-checkout-upgrade",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 566,
+    "disposition": "exact_source"
+  },
+  "title": "#566 单 checkout 工具升级与旧任务迁移解耦",
+  "description": "仅更新用户指定或按有序基线推断的 checkout，保留旧任务及其他 worktree；实现独立工具升级与明确恢复诊断。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/566",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-15",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

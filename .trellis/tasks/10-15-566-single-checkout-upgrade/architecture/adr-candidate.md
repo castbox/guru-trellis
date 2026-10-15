@@ -1,0 +1,15 @@
+# #566 ADR candidate：独立维护入口与原owner承接
+
+状态：task-owned proposed；不修改ADR-017/018/024或shared CURRENT。依赖current-main-0.6.17-guru.90。
+
+原decision：旧格式只在source-loaded完整Plan2升级边界解释；正常installed/lifecyclecurrent-only。新增decision：在该边界旁提供真正独立的tools与selectedlegacyTask维护闭环，公共模型/operation继续归Trellis，Guru只拥有语义、私有状态和工具资产；原交付owner以只读显式旧事实输入核验历史，不从currentready或旧status推导成功。
+
+选择：legacy_boundary_convergence。primary/linked工具更新都使用原managedPythonowner提供的目标checkoutlocaloverride，commonfallback和peers不变；普通preset/fullupgrade默认合同保持。该隔离承担当前单target必要性，不是通用策略引擎。
+
+不采用：绕过oldpreflight、伪写版本/declaration、减小Plan2inventory、复制公共converter、临时外部脚本替代目标native、正常Finish强制制造历史完成、通过更新peerpointer“保留”共享default。未知/不支持状态精确诊断而非当前authority。
+
+兼容退出：当前受支持旧数据由原owner逐Task转换或历史保留；无permanentdualread。旧完整Plan2仍有明确现存consumer且API不改义；legacy-onlyprofile在真实consumer退出后由明确后续migration删除，不能自动猜测仓库已无历史。
+
+验证：见implement P4和原RDT唯一Test的未来actual结果；重点targetnative/nextowner、peerbytes/runtime、rawarchive与carrier屏障、install→convert→toolsrollback。正式source、业务验收、发布和资源清理独立。
+
+晋升条件：currentfinalArchitecture、Task完整实现/证据、首次committed全diff独立Review与原Architectureownerexpected-currentpromotion；晋升新diff重新验证。当前没有批准或发布结论。

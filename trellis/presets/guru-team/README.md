@@ -277,3 +277,9 @@ fixture 只证明传输/运行能力，不代表用户业务语义判断。安�
 
 未枚举 minor 的 identity admission 成功并不证明其 wheel/依赖兼容。这里的聚焦检查不替代
 Python minor、多平台、Upgrade/Release 或业务仓升级验证；旧安装仍须遵守已有迁移边界。
+
+## 单 checkout 工具升级与独立旧任务维护（#566 候选）
+
+`guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
+
+正式source lock尚不包含上游#40本地维护候选，source_locked执行须在写入前阻塞；local_candidate仅供隔离开发，不代表正式发布或业务恢复。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](MIGRATION-566.md)。

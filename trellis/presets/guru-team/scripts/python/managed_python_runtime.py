@@ -17,6 +17,7 @@ def ensure_managed_python_runtime(
     *,
     activate: bool = False,
     python: str = "python3",
+    checkout_local: bool = False,
 ) -> dict[str, Any]:
     runtime_assets = guru_root / "trellis/skills/guru-team/runtime"
     bootstrap = runtime_assets / "bootstrap.py"
@@ -36,6 +37,8 @@ def ensure_managed_python_runtime(
             selected,
             "--json",
         ]
+    if checkout_local:
+        command.append("--checkout-local")
     if not activate:
         command.append("--no-activate")
     proc = subprocess.run(

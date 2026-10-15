@@ -2224,3 +2224,7 @@ package contract owns the semantic gate, live checks, and Phase 2 consumption;
 platform entries only load that owner. Reapply the matching complete preset
 when adopting this profile; old installations do not gain it from workflow
 text alone.
+
+## Independent single-checkout maintenance
+
+#566 adds standalone/source-loaded `guru-upgrade-tools` and `guru-maintain-legacy-task`, with profile-specific inputs, minimal exit DTOs and exact same-owner recovery refs. Original Publish/Merge/Finish own their closed legacy fact/control profiles; their thin consumer routes return only to selected maintenance. Ordinary current profiles and independent full Plan2 preserve their input semantics. Matching API, source qualification, fixed preimages and target-native validation are package-owned; no copied discovery directory claims portability. See `trellis/presets/guru-team/MIGRATION-566.md`.

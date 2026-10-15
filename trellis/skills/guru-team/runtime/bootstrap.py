@@ -173,7 +173,10 @@ def repository_git_dirs(repo: Path) -> tuple[Path | None, Path | None]:
     return git_dir, common_dir
 
 
-def repository_state_root(repo: Path, *, for_write: bool = False) -> Path:
+def repository_state_root(repo: Path, *, for_write: bool = False, checkout_local: bool = False) -> Path:
+    local = repo / ".trellis/.runtime/guru-team/python"
+    if checkout_local or (local / "active.json").exists() or (local / "active.json").is_symlink():
+        return local
     git_dir, common_dir = repository_git_dirs(repo)
     if git_dir is not None and common_dir is not None:
         common_root = common_dir / "guru-team/python"
@@ -190,8 +193,8 @@ def runtime_target(runtime_id: str) -> Path:
     return user_cache_root() / runtime_id
 
 
-def active_pointer_path(repo: Path, *, for_write: bool = False) -> Path:
-    return repository_state_root(repo, for_write=for_write) / "active.json"
+def active_pointer_path(repo: Path, *, for_write: bool = False, checkout_local: bool = False) -> Path:
+    return repository_state_root(repo, for_write=for_write, checkout_local=checkout_local) / "active.json"
 
 
 def run_probe(python: Path, assets: Path) -> dict[str, Any]:
@@ -233,8 +236,8 @@ def existing_state(target: Path, runtime_id: str, identity: dict[str, Any], asse
     return "reusable"
 
 
-def write_active(repo: Path, runtime_id: str) -> None:
-    runtime_root = repository_state_root(repo, for_write=True)
+def write_active(repo: Path, runtime_id: str, *, checkout_local: bool = False) -> None:
+    runtime_root = repository_state_root(repo, for_write=True, checkout_local=checkout_local)
     runtime_root.mkdir(parents=True, exist_ok=True)
     pointer = {
         "schema_version": "2.0",
@@ -305,7 +308,7 @@ def validate_active(repo: Path, assets: Path, runtime_id: str | None = None) -> 
     return resolve_runtime(assets, active_id)
 
 
-def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> dict[str, Any]:
+def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True, *, checkout_local: bool = False) -> dict[str, Any]:
     runtime_root = user_cache_root()
     runtime_root.mkdir(parents=True, exist_ok=True)
     runtime_id, identity = runtime_identity(assets, python)
@@ -318,7 +321,7 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         if state == "reusable":
             run_public_wrapper(assets, runtime_id, target)
             if activate:
-                write_active(repo, runtime_id)
+                write_active(repo, runtime_id, checkout_local=checkout_local)
             return {
                 "status": "ok",
                 "action": "reused",
@@ -371,7 +374,7 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True) -> 
         else:
             candidate.replace(target)
         if activate:
-            write_active(repo, runtime_id)
+            write_active(repo, runtime_id, checkout_local=checkout_local)
         return {
             "status": "ok",
             "action": "repaired" if repair_target else "installed",
@@ -408,6 +411,7 @@ def main() -> int:
     parser.add_argument("--exec-active", action="store_true")
     parser.add_argument("--print-active-pointer", action="store_true")
     parser.add_argument("--no-activate", action="store_true")
+    parser.add_argument("--checkout-local", action="store_true", help="Activate only this checkout tools pointer.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -427,7 +431,7 @@ def main() -> int:
             print(runtime_identity(args.runtime_assets.resolve(), select_python(args.python))[0])
             return 0
         if args.print_active_pointer:
-            print(active_pointer_path(args.repo.resolve()))
+            print(active_pointer_path(args.repo.resolve(), checkout_local=args.checkout_local))
             return 0
         if args.validate_active:
             runtime_id = args.validate_active
@@ -456,6 +460,7 @@ def main() -> int:
                 args.runtime_assets.resolve(),
                 select_python(args.python),
                 activate=not args.no_activate,
+                checkout_local=args.checkout_local,
             )
     except Exception as exc:
         payload = {

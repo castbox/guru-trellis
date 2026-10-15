@@ -193,7 +193,7 @@ def _read_identity(repo_root: Path, task_ref: str) -> TaskArtifactIdentity:
         return TaskArtifactIdentity(record["id"], ref, record["lifecycle_generation"], "archived" if archived else "active")
     legacy = archived or _known_legacy_active_metadata(data) or _current_task_metadata(data, archived=archived)
     if not legacy:
-        raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
+        raise LifecycleContractError("unsupported_legacy_task", ref, "The task metadata does not match the current upstream schema. Load guru-maintain-legacy-task from a complete matching new source and select this exact task checkout for conversion or historical closeout; the old target parser is not a prerequisite. Full-installation Plan2 remains a separate guru-upgrade-installation choice.")
     return TaskArtifactIdentity(
         normalize_task_id(data.get("id"), field_path=f"{ref}/task.json.id"),
         ref,
@@ -305,7 +305,7 @@ def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | 
         )
     selected = _read_identity(repo_root.resolve(), ref)
     if selected.legacy:
-        raise LifecycleContractError("unsupported_legacy_task", ref, "Old records reserve identity but are not lifecycle candidates. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
+        raise LifecycleContractError("unsupported_legacy_task", ref, "Old records reserve identity but are not lifecycle candidates. Load guru-maintain-legacy-task from a complete matching new source and select this exact task checkout for conversion or historical closeout; the old target parser is not a prerequisite. Full-installation Plan2 remains a separate guru-upgrade-installation choice.")
     return selected
 
 
@@ -318,7 +318,7 @@ def task_resource_state(repo_root: Path | str, metadata: dict[str, Any]) -> str:
         except ValueError as exc:
             raise LifecycleContractError(getattr(exc, "code", "invalid_task_metadata"), "task.json", "Resolve the public Task record before resource operations.") from exc
         return "active"
-    raise LifecycleContractError("unsupported_task_schema", "task.json", "Use the public Task schema-2 installation. Old records reserve identity and require reviewed upstream migration; status is not an execution authority.")
+    raise LifecycleContractError("unsupported_task_schema", "task.json", "Use the public Task schema-2 installation. Old records reserve identity and status is not execution authority. Load guru-maintain-legacy-task from a complete matching new source with the exact task checkout; full-installation Plan2 remains a separate guru-upgrade-installation choice.")
 
 
 def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
@@ -333,7 +333,7 @@ def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
         raise LifecycleContractError("invalid_task_identity", "task_id", "Use the exact TaskId spelling.")
     selected = _read_identity(repo_root.resolve(), matches[0][1])
     if selected.legacy:
-        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old records reserve identity but are not lifecycle candidates. Use guru-upgrade-installation for reviewed per-record migration or manual disposition.")
+        raise LifecycleContractError("unsupported_legacy_task", selected.task_ref, "Old records reserve identity but are not lifecycle candidates. Load guru-maintain-legacy-task from a complete matching new source and select this exact task checkout for conversion or historical closeout; the old target parser is not a prerequisite. Full-installation Plan2 remains a separate guru-upgrade-installation choice.")
     return selected
 
 
@@ -424,7 +424,7 @@ def discover_archived_issue_candidate(
             "Review the exact source Issue and archive Git identity before Reactivate.",
         )
     if any(row.legacy for row in identities if row.task_ref == matches[0].task_ref):
-        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old archives are read-only diagnostics, not Reactivate candidates.")
+        raise LifecycleContractError("unsupported_legacy_task", matches[0].task_ref, "Old archives are read-only diagnostics, not Reactivate candidates. Load guru-maintain-legacy-task from a complete matching new source for selected-task maintenance; full-installation Plan2 remains a separate guru-upgrade-installation choice.")
     return matches[0]
 
 

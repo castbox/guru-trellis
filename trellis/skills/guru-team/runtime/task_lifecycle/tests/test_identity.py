@@ -196,6 +196,8 @@ class IdentityTests(unittest.TestCase):
                     self.assertEqual(caught.exception.code, "unsupported_legacy_task")
                     self.assertEqual(caught.exception.field_path, ref)
                     self.assertIn("guru-upgrade-installation", caught.exception.remediation)
+                    self.assertIn("guru-maintain-legacy-task", caught.exception.remediation)
+                    self.assertIn("complete matching new source", caught.exception.remediation)
                 # Full inventory remains a migration consumer with the original classifier.
                 with self.assertRaises(LifecycleContractError):
                     task_inventory(self.repo)

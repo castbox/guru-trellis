@@ -52,7 +52,7 @@ class ContractTests(unittest.TestCase):
     def test_interface_is_delivery_only(self) -> None:
         interface = self.interface()
         self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual([item["id"] for item in interface["external_exits"]], ["ready_for_merge", "review_stale", "resume_publication", "reprepare_required", "blocked", "delivery_stopped", "delivery_scope_revised"])
+        self.assertEqual([item["id"] for item in interface["external_exits"]], ["ready_for_merge", "review_stale", "resume_publication", "reprepare_required", "blocked", "delivery_stopped", "delivery_scope_revised", "legacy_controls_retired", "verified_legacy_history", "unverified_legacy_history"])
         self.assertEqual(interface["public_contracts"]["private_artifacts"][0]["persistence"], "ignored_runtime")
         exit_ids = {item["id"] for item in interface["external_exits"]}
         self.assertTrue(exit_ids.isdisjoint({"completed", "archived", "issue_closed", "cleanup"}))
@@ -71,6 +71,8 @@ class ContractTests(unittest.TestCase):
                 continue
             with self.subTest(consumer=consumer["id"]):
                 target_path = PACKAGE / contract["path"]
+                if not target_path.is_file():
+                    target_path = PACKAGE.parents[1] / contract["path"]
                 self.assertTrue(target_path.is_file(), target_path)
                 schema = self.load(target_path)
                 jsonschema.Draft202012Validator.check_schema(schema)

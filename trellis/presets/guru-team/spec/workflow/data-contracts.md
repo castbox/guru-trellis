@@ -2111,3 +2111,7 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
+
+## Bounded maintenance state
+
+Public models and operations remain Trellis maintenance API authority. Guru private recovery contains only original affected asset/pointer/control preimages, fixed public operation refs and unfinished same-operation facts; it never stores authorization or re-creates backup anchors during resume. The original owners consume preserved raw source after active-tree removal. Tools rollback checks public tools/data compatibility before restoring either Guru or public half; later Task conversion never expands the earlier tools backup.

@@ -2134,3 +2134,7 @@ Phase 2 `passed` anchor. Its output remains the existing `committed` DTO:
 Branch Review consume an explicit thin projection of that current identity;
 no producer-private checkpoint is a Branch Review input. Step-local checks and
 checkpoint consumption belong to the canonical TaskCommit contract.
+
+## Bounded maintenance state
+
+Public models and operations remain Trellis maintenance API authority. Guru private recovery contains only original affected asset/pointer/control preimages, fixed public operation refs and unfinished same-operation facts; it never stores authorization or re-creates backup anchors during resume. The original owners consume preserved raw source after active-tree removal. Tools rollback checks public tools/data compatibility before restoring either Guru or public half; later Task conversion never expands the earlier tools backup.

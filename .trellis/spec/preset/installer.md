@@ -870,3 +870,7 @@ Ordinary reapply preserves these local paths, emits canonical `.new` for
 reconciliation, and never chmods a conflicting custom shell file. Runtime
 Skill/overlay compatibility still uses the current interface contract. Legacy
 `config.yml` claims never authorize retirement of materialized user settings.
+
+## Tools-only target runtime isolation
+
+The standalone tools owner calls the original installer with explicit checkout-local Python activation. Its resolver reads `.trellis/.runtime/guru-team/python/active.json` before the prior Gitdir/common fallback for both primary and linked checkouts. When that override already exists, ordinary activation updates the same effective local pointer; full upgrade also includes the distinct effective pointer in its original backup and restore set. Without an override, the prior Gitdir/common activation remains unchanged. The tools owner verifies peer pointer bytes and actual runtime resolution, preserved Task/session/private controls, managed asset conflicts and real target native/reapply results. Whole-.trellis storage aliases that share peer tool bytes are blocked before mutation.

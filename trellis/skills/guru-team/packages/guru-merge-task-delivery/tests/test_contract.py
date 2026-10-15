@@ -129,10 +129,12 @@ class ContractTest(unittest.TestCase):
             item["consumer_input_id"]: item
             for item in interface["public_contracts"]["projections"]
         }
-        self.assertEqual(set(consumers), {"merge_blocked_stop_input", "implementation_router_input", "scope_revised_input"})
+        self.assertEqual(set(consumers), {"merge_blocked_stop_input", "implementation_router_input", "scope_revised_input", "legacy_controls_retired_input", "verified_legacy_history_input", "unverified_legacy_history_input"})
         for consumer_id, consumer in consumers.items():
             with self.subTest(consumer=consumer_id):
                 schema_path = PACKAGE / consumer["contract"]["path"]
+                if not schema_path.is_file():
+                    schema_path = PACKAGE.parents[1] / consumer["contract"]["path"]
                 self.assertTrue(schema_path.is_file(), consumer["contract"]["path"])
                 self.assertFalse(schema_path.is_symlink(), consumer["contract"]["path"])
                 projection = projections[consumer_id]
@@ -182,7 +184,7 @@ class ContractTest(unittest.TestCase):
             "preview-task-delivery-merge", "record-task-delivery-merge",
             "check-task-delivery-merge", "execute-task-delivery-merge",
         "invoke-guru-merge-task-delivery", "discover-task-deliveries",
-        "migrate-task-delivery-merge",
+        "migrate-task-delivery-merge", "legacy-maintenance-guru-merge-task-delivery",
         })
         discovery = next(
             item for item in commands if item["id"] == "discover-task-deliveries"

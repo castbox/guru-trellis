@@ -302,7 +302,7 @@ class PublicationCheckoutTests(unittest.TestCase):
             with self.assertRaises(OWNER.WorkflowError) as raised:
                 OWNER.plan_from_input(self.repo, self.public)
         self.assertEqual("task_identity_stale", raised.exception.code)
-        self.assertIn("migration", str(raised.exception))
+        self.assertIn("guru-maintain-legacy-task", str(raised.exception))
         provider.assert_not_called()
 
     def test_missing_or_wrong_branch_binding_maps_to_reprepare(self) -> None:

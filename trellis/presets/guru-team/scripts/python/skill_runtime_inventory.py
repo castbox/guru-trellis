@@ -3,6 +3,7 @@ from pathlib import Path
 
 SKILL_RUNTIME_KERNEL_PATHS = (
     Path("__init__.py"),
+    Path("base_selection.py"),
     Path("bootstrap.py"),
     Path("bootstrap_check.py"),
     Path("command.py"),
@@ -12,6 +13,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("installed.py"),
     Path("io.py"),
     Path("lifecycle_helpers.py"),
+    Path("maintenance_transport.py"),
     Path("launch.sh"),
     Path("probe.py"),
     Path("python-runtime.json"),

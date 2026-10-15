@@ -418,7 +418,7 @@ class BaseSyncPackageContractTests(unittest.TestCase):
             common = self.load_common()
             records = common._registered_worktrees(root)
             records[0] = {**records[0], "HEAD": "0" * 40}
-            with mock.patch.object(common, "_registered_worktrees", return_value=records):
+            with mock.patch("runtime.base_selection._registered_worktrees", return_value=records):
                 with self.assertRaisesRegex(Exception, "branch, HEAD, and local ref identity do not match"):
                     common.authority_checkout(root, "main")
 

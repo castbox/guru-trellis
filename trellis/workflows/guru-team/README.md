@@ -243,3 +243,9 @@ staged 安装验证通过后才激活；失败保留原 active/环境。日常 S
 venv，不自动跟随 Homebrew 或回退全局依赖，不自动清理旧 cache。
 可执行 identity 命令、解释器优先级及失败修复见
 [preset 使用与排障](../../presets/guru-team/README.md#显式更新受管-python)。
+
+## 单 checkout 工具升级与独立旧任务维护（#566 候选）
+
+`guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
+
+正式source lock尚不包含上游#40本地维护候选，source_locked执行须在写入前阻塞；local_candidate仅供隔离开发，不代表正式发布或业务恢复。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](../../presets/guru-team/MIGRATION-566.md)。

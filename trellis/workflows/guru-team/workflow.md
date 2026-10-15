@@ -41,6 +41,18 @@ discovery is optional convenience; it never replaces a mandatory marker.
 
 ## Guru Team Gate
 
+An explicit single-checkout tools request enters standalone `guru-upgrade-tools`;
+an explicit selected legacy Task conversion or historical-retention request
+enters standalone `guru-maintain-legacy-task`. Load either from the complete
+matching reviewed source before the target old dispatcher, Identity, session
+continuation or Reconcile. Consume only its declared exits. These are separate
+maintenance operations, outside business Intake; missing formal maintenance API
+is a before-write prerequisite, never an implicit fallback to full migration.
+Their Skill contracts own target selection, source qualification, exact write
+sets, real confirmations, native verification and recovery. Ordinary current
+Task readers remain strict; a historical archive exit stops without business
+Completion, Closure, Finish, resource cleanup or a synthetic current pass.
+
 An explicit old-installation upgrade request enters standalone
 `guru-upgrade-installation` from the reviewed target source package before
 current installed-runtime preflight. It is outside business-task Intake.
@@ -1562,3 +1574,29 @@ cleared gate results; it does not manufacture approval or repeat first Activatio
 Withdrawal keeps original stop/release entries. Delivered/history-only slices
 keep historical facts and are not silently reworked; unmet current obligations
 use explicit Creation or whole Completion according to the original judgment.
+
+### Selected legacy maintenance owner exits
+
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-publish-task-delivery-legacy-controls-retired"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"verified_legacy_history","consumer":{"kind":"workflow","id":"legacy-maintenance-publish-task-delivery-verified-legacy-history"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"unverified_legacy_history","consumer":{"kind":"workflow","id":"legacy-maintenance-publish-task-delivery-unverified-legacy-history"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-merge-task-delivery-legacy-controls-retired"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"verified_legacy_history","consumer":{"kind":"workflow","id":"legacy-maintenance-merge-task-delivery-verified-legacy-history"}} -->
+<!-- guru-skill-exit: {"skill":"guru-merge-task-delivery","exit":"unverified_legacy_history","consumer":{"kind":"workflow","id":"legacy-maintenance-merge-task-delivery-unverified-legacy-history"}} -->
+<!-- guru-skill-exit: {"skill":"guru-finish-task","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-finish-task-legacy-controls-retired"}} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-publish-task-delivery-legacy-controls-retired"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-publish-task-delivery-verified-legacy-history"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-publish-task-delivery-unverified-legacy-history"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-merge-task-delivery-legacy-controls-retired"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-merge-task-delivery-verified-legacy-history"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-merge-task-delivery-unverified-legacy-history"} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-finish-task-legacy-controls-retired"} -->
+
+These original-owner legacy exits return only to the explicit selected maintenance call. Controls-retired advances that call’s next original owner; verified history supplies only its minimal projection facts; unverified history preserves the evidence gap in its raw source/note and returns to the maintenance semantic owner. They never enter ordinary publication, merge, Completion or Finish. Their complete profile behavior remains package-owned.
+
+<!-- guru-skill-exit: {"skill":"guru-approve-task-plan","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-approve-task-plan-legacy-controls-retired"}} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-approve-task-plan-legacy-controls-retired"} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-check-task-legacy-controls-retired"}} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-check-task-legacy-controls-retired"} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"legacy_controls_retired","consumer":{"kind":"workflow","id":"legacy-maintenance-review-branch-legacy-controls-retired"}} -->
+<!-- guru-workflow-target: {"id":"legacy-maintenance-review-branch-legacy-controls-retired"} -->

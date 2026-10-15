@@ -711,3 +711,7 @@ candidate. Its current `committed` result enters the unchanged `post_commit`
 pair guard. A new pair returns through Reconcile and fresh Phase 2; an unchanged
 pair enters fresh Branch Architecture and independent full Branch Review.
 Candidate selection and verification belong only to TaskCommit's package.
+
+## Independent maintenance routing
+
+Explicit tools-only and selected legacy Task maintenance load their standalone source packages before old target preflight; they do not enter standard Intake or infer a task from inventory. The original history/control owner exits return through their unique thin selected-maintenance consumers. Only verified target-native current continuation resumes the original lifecycle owner. History-retention stops without Completion/Closure/Finish. Full Plan2 and ordinary current-only remain separate contracts.
