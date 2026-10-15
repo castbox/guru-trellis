@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前 `.92` 的固定内容与实际整合增量以 `ARCH-CUR-065` 为准，完整 active inventory 由 live registry/Interfaces 定义。保留条目中带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取，不作为本轮重新执行的证据。软件四轴继续继承当前 authority，本次知识晋升不修改发布身份。
+当前 `.93` 的固定截点历史查询增量以 `ARCH-CUR-066` 为准；`.92` 的固定内容与实际整合继续由 `ARCH-CUR-065` 承接，完整 active inventory 由 live registry/Interfaces 定义。保留条目中带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取，不作为本轮重新执行的证据。软件四轴继续继承当前 authority，本次知识晋升不修改发布身份。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -327,3 +327,5 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 实际冲突、具体集成失败、原 Merge 已确认的既有服务端更新要求、明确依赖/需求或主动同步仍由原 Reconcile/阶段 owner 处理。整合操作固定目标，普通/resolved/committed/continuity/同操作恢复保持；必要差额及依赖由原 Check/full_review owner 实际判断并记录新结果，不用旧 pass 换标签。Merge 继续验证实际资格、expected task HEAD、真实 merge identity/parents/reachability；Completion 核验全部 scope 与真实 Delivery，Finish 保留精确 bookkeeping 事务与终态恢复。
 
 阶段适用 authority 由原语义 owner 选择；shared-current promotion 自身保持写前 expected-current。责任与窄 supersession 由[贡献](../contributions/567-fixed-development-baseline.md)和 [ADR-028](../adr/028-fixed-content-baseline.md)定义，机制由[唯一 Design](../../requirements-design-test-contributions/567-fixed-development-baseline/design.md)单写。实际验证与未覆盖边界仅由[唯一 Test](../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)拥有。本文不证明 author checkout 已迁移、真实 GitHub 策略效果、业务采用或软件发布。
+
+`ARCH-CUR-066`（#569 reviewed source）：原history owner自动准备一次B1所需完整历史；result3.0显式cutoff，原AI consumer独占适用性及有界补证。责任、迁移和边界由[已晋升贡献](../contributions/569-fixed-cutoff-history-query.md)、唯一Design/Test承接；无新owner、store或ADR，知识晋升不表示软件发布。

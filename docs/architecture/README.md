@@ -1,6 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.92`；状态：`active`；predecessor：`current-main-0.6.17-guru.91`；source baseline：[已晋升 #567 贡献](./contributions/567-fixed-development-baseline.md) + immutable `.91` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+版本：`current-main-0.6.17-guru.93`；状态：`active`；predecessor：`current-main-0.6.17-guru.92`；source baseline：[已晋升 #569 贡献](./contributions/569-fixed-cutoff-history-query.md) + immutable `.92` authority（Git 历史）。constitution、ADR-026/028、GAP lifecycle、原 owners 与软件四轴保持。
+
+当前增量 ARCH-CUR-066 / ARCH-DOM-049 / ARCH-INT-052 承接已独立完整审查的 #569。原 history owner 自动准备固定截点所需历史，原 AI consumer 判断适用性；没有新 owner、缓存或 ADR。[唯一 Test](../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)拥有实际结果与未验证边界；本次晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的独立完整 BranchReview。
+
+历史 `.92`：版本：`current-main-0.6.17-guru.92`；状态：`active`；predecessor：`current-main-0.6.17-guru.91`；source baseline：[已晋升 #567 贡献](./contributions/567-fixed-development-baseline.md) + immutable `.91` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
 
 当前增量 ARCH-CUR-065 / ARCH-DOM-048 / ARCH-INT-051 与 [ADR-028](./adr/028-fixed-content-baseline.md) 承接已独立完整审查的 #567。ADR-028 只替代已定位的旧默认追赶、祖先资格及无关整体版本前进即 stale 的冲突片段；原语义 owners、真实内容/事务一致性与 shared-current 写前 expected-current 保持。[唯一 Test](../requirements-design-test-contributions/567-fixed-development-baseline/test.md)拥有实际结果、首次失败/修复和未验证边界；本次晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的独立完整 BranchReview。
 

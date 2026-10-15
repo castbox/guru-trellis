@@ -57,11 +57,17 @@ record neither suppresses a business defect nor completes the whole Task.
 `discover-task-deliveries` query2 adds TaskRef to the stable Task/repo/base
 query. Read only existing public pull-request Delivery facts via the installed
 Task2 parser, verify immutable candidate bytes, actual PR/head/merge/two
-parents and fresh target-base first-parent order, then deduplicate with legal
+parents and fixed-cutoff first-parent order, then deduplicate with legal
 schema1/2 trailers. Public/trailer identity mismatch stops; a recorded merge
-absent from that base cannot be silently omitted. General bookkeeping has
+absent from the cutoff cannot be silently omitted: first validate the actual
+PR, merge, parents, head and candidate. Exclude it only if its complete
+first-parent chain contains B1 and it is a genuine successor after B1.
+Unrelated ancestry, incomplete or inconsistent facts fail specifically.
+This attribution check never changes the cutoff or scans that successor for
+additional Deliveries. General bookkeeping has
 neither a public Delivery fact nor lawful trailers and is excluded.
-This command never creates/imports a Task or Delivery and writes nothing.
+This command never creates/imports or writes Task/Delivery facts. Its actual
+temporary Git and candidate-snapshot writes are defined below.
 Completion directly reads the public aggregate; it need not rediscover a fact
 from a commit message first. Query1 remains trailer-only for its existing
 legacy/migration/standalone callers; new manual-fact consumers select query2
@@ -249,9 +255,9 @@ second merge.
 
 ## Delivery History Discovery: query 1.0
 
-`discover-task-deliveries` is a deterministic, read-only package command. Its
+`discover-task-deliveries` is a deterministic package command. Its
 closed query contains only the stable task identity, repository, and target
-base. It scans the fresh target-base first-parent merge history, ignores merge
+base. It scans the fixed target-base cutoff's complete first-parent history, ignores merge
 commits without Delivery trailers, and reads exact schema-1 or schema-2 trailer
 block for every matching task Delivery.
 
@@ -263,6 +269,44 @@ creation branch, or ledger. Duplicate or drifted task/head/PR/merge identity
 fails closed. Deleting an old head branch or changing the current active
 binding therefore does not change historical Delivery identity, while a
 bookkeeping merge without the trailers is excluded.
+
+### Fixed cutoff, Git preparation and result 3.0
+
+The original owner authenticates and reads the selected repo/base remote commit
+B1 once. It reuses caller data only when the full first-parent history to the
+real root and required merge/head/candidate objects are readable. A reachable
+shallow boundary is incomplete even when rev-list succeeds. Missing data is
+prepared in a call-local temporary bare Git directory from the selected repo,
+using immutable SHA fetches without destination refs and with
+`--no-write-fetch-head --no-tags --no-recurse-submodules --no-auto-maintenance`.
+Only B1 and the finite immutable targets needed for selected public facts are
+prepared, each at most once. Every scan and candidate verification uses that
+actual Git context. There is no fetch into caller/shared objects or shallow
+metadata, ref update, checkout change, merge/rebase, sync commit or Reconcile.
+
+The command is `git_write`: initialization metadata/config/objects/pack and
+existing candidate temporary snapshots are real writes, removed on success or
+failure. Business/Task/Delivery facts, caller and peer HEAD/index/workfiles,
+shared refs/objects/shallow/FETCH_HEAD/tags and remote resources stay unchanged.
+Failed preparation, incomplete history or invalid identity returns a concrete
+error; the recovery is this query after restoring transport/data access, not a
+new business gate or an empty result. No moving-base comparison restarts B1.
+
+Both query1 and query2 now return `delivery-history-result-3.0` with only
+schema_version/status/task_identity/repo_ref/base_ref/cutoff_commit/deliveries.
+The cutoff is the actual full B1 SHA. Query1 remains trailer-only, query2 keeps
+public-record/trailer fusion and deduplication. Result1/2 schemas remain
+historical validation assets, never current output fallback. MIGRATION-569
+owns the synchronized controlled-consumer adoption.
+
+The original Completion/independent/recovery consumer checks public
+repo/base/task/cutoff against its query and current evidence needs, without
+producer-private state. Unrelated B2 is directly compatible. Known same-Task
+new Delivery or required-evidence changes cause a bounded new query for missing
+facts and only affected conclusions, without replaying old business gates.
+Lost stdout reenters this producer using explicit query identity; the new
+operation returns its own observed cutoff rather than reconstructing lost B1.
+History remains optional where Completion already has sufficient public facts.
 
 ## Typed Outputs
 

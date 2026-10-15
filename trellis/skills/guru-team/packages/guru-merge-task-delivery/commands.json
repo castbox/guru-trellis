@@ -168,7 +168,7 @@
           "flag": "--root",
           "required": false,
           "kind": "string",
-          "description": "Repository root containing the target-base history.",
+          "description": "Caller root; Git writes are limited to call-local temporary history/snapshot data, with no caller/shared ref or object writes.",
           "repeatable": false,
           "conflicts": []
         },
@@ -197,13 +197,12 @@
         "github_response_incomplete",
         "internal_error"
       ],
-      "side_effect": "github_read",
+      "side_effect": "git_write",
       "schema_bindings": [
         "schemas/delivery-history-query.schema.json",
-        "schemas/delivery-history-result.schema.json",
         "schemas/delivery-history-query-aggregate.schema.json",
         "schemas/delivery-history-query-2.0.schema.json",
-        "schemas/delivery-history-result-2.0.schema.json"
+        "schemas/delivery-history-result-3.0.schema.json"
       ],
       "validator_id": "delivery_history_discoverer",
       "runtime_role": "check"

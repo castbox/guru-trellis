@@ -1,7 +1,7 @@
 # PLAN
 
 既有行的版本与 gate 状态保留对应 Issue 当时的记录，不作为当前调用的完成或执行依据。
-当前知识提升条目为 #567；后续动作仍需各 owner 读取 live authority，并判断其阶段适用性。
+当前知识提升条目为 #569；后续动作仍需各 owner 读取 live authority，并判断其阶段适用性。
 
 | 顺序 | Issue | 已知目的 | 状态语义 |
 | --- | --- | --- | --- |
@@ -23,5 +23,7 @@
 | current #434 lifecycle activation | #434 | 七个 E434 package 与 child current interfaces 组合，激活 Delivery/Completion/Closure/Finish/Cleanup/Reactivate 图；旧图一次性退出 | `.66 -> .67` reviewed contribution/ADR-016；targeted source/installed、图、平台投影与本地 clean sample 为本任务 gate，完整多平台 Release matrix/业务仓生产验证仍归专门 owner |
 | post-stable refactor | #249 -> #250 -> #292 -> #293 -> #261 -> #248 -> #252 -> #267 | Phase/owner 解耦、Intake、Planning、Publication、Acceptance/Finish、cleanup 与最终重构版 Release | TARGET/PLAN 候选参考；不作为重构前 Release 的前置、owner 或验收范围；#247 已作为 `.50` current predecessor完成独立 Architecture scope，不表示后续 #305 target 已实现 |
 | current fixed content and required integration | #567 | 原 owner 固定内容候选与适用 authority，默认零 Reconcile；实际阻塞仍有固定操作、差额审查与正常恢复 | expected Architecture `.91→.92` / RDT `.97→.98`，ADR-028；首次独立完整 committed Review 后由原 owners 晋升，本次新差额仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 Review。外部/业务/Release 边界由唯一 Test 记录 |
+
+| current fixed-cutoff delivery history | #569 | 原history自动准备固定B1所需对象，原AI consumer判断适用性及有界补证 | expected Architecture `.92→.93` / RDT `.98→.99`；首次独立完整committed Review后晋升，新差额仍须fresh gates，外部/业务/Release边界见唯一Test |
 
 PLAN 记录依赖与 owner，不证明 outcome，也不改变各 Issue 的 live authority。

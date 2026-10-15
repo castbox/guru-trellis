@@ -1,5 +1,9 @@
 # Guru Team Workflow
 
+原 Merge history owner 在一次固定远端截点内自动准备/核验历史，query1/query2
+统一返回显式cutoff的result3.0。Completion/独立/恢复caller的直接消费与同步迁移见
+[MIGRATION-569](../../presets/guru-team/MIGRATION-569.md)及原step-local合同。
+
 已有正式 Delivery 经用户普通手动合并后，可按原 Merge 的
 `delivery_merged_recovery` 恢复实际公共事实，再接原 Completion。
 支持方式、实际内容/CI职责与完整安装采用见

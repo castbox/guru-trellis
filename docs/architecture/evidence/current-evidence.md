@@ -601,3 +601,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-064：#567 固定内容与实际整合的已审贡献
 
 首次通过的独立完整 committed range 为 `origin/main@3b165daef0001bd9816c0bf3bbe928bcb59de390...f2538d822dbede7ea34dc29bdad9a0f828130dad`，113路径；原 Architecture 与 BranchReview 分别完成正式入口。先前 BR567-F1/F2/F3 与修复由[唯一 Test](../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)记录，未将失败或单项closure算作完整Review通过。原 owners 按 expected Architecture .91 / RDT .97 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/567-fixed-development-baseline.md)与 ADR-028 拥有责任/决策，Test拥有实际运行和未验证边界；本条不复制 suite/trace，不改写历史 EVD，不表示真实 GitHub、业务、Release 或 Task Closure 已完成。
+
+## EVD-065：#569 固定截点查询的已审贡献
+
+首次独立完整committed range为 `5391d187ae587d978b81d3af073bbaf87abb8a05...36203b09442683b4a9a53e3ed2328d8e968c2e1c`，27路径；原Architecture与BranchReview分别完成正式入口。原owners按expected Architecture .92 / RDT .98维护successor，新差额仍须fresh gates。[贡献](../contributions/569-fixed-cutoff-history-query.md)拥有责任与晋升关系，[唯一Test](../../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)拥有实际验证和边界；本条不复制结果、不改写历史证据，不表示真实source Delivery、Completion或软件发布。

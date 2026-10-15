@@ -42,6 +42,7 @@ class ContractTest(unittest.TestCase):
         pairs = {
             "delivery-history-query.schema.json": "delivery-history-query.json",
             "delivery-history-result.schema.json": "delivery-history-result.json",
+            "delivery-history-result-3.0.schema.json": "delivery-history-result-3.0.json",
             "public-ready-for-merge-input.schema.json": "public-ready-for-merge-input.json",
             "semantic-review.schema.json": "semantic-review.json",
             "public-delivered-output.schema.json": "public-delivered-output.json",
@@ -192,7 +193,7 @@ class ContractTest(unittest.TestCase):
         discovery = next(
             item for item in commands if item["id"] == "discover-task-deliveries"
         )
-        self.assertEqual(discovery["side_effect"], "github_read")
+        self.assertEqual(discovery["side_effect"], "git_write")
         public = next(item for item in commands if item["id"] == "invoke-guru-merge-task-delivery")
         self.assertEqual(public["side_effect"], "github_write")
         source = (PACKAGE / "runtime/owner.py").read_text()

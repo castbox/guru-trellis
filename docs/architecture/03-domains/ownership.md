@@ -145,3 +145,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-047`（#566）：公共模型/模板/转换/恢复仍由 Trellis 单写；Guru 两个 semantic 维护闭环、原资产/私有控制/runtime owners 分工，Reconcile 与 Completion 保留业务职责。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。
 
 `ARCH-DOM-048`（#567）：原 Author/implementation owner 拥有内容范围选择，shared DeliveryProjection 只投影已有公共事实；原阶段 owner 判断 authority/证据适用性，Check/full_review 分别实际审查当前候选。Reconcile 只拥有必要的固定目标整合与原恢复能力；Merge 判断真实合并资格并执行 expected-head 事务，Completion/Finish 各自承接整体事实和 bookkeeping。Architecture/RDT 原 promotion owners 独占 shared-current 写入，expected-current 不成为全部在途任务的开发资格。无新增 coordinator、store、writer 或审批链。详细机制与旧 consumer 退出由[贡献](../contributions/567-fixed-development-baseline.md)、ADR-028 与唯一 Design 承接。
+
+`ARCH-DOM-049`（#569）：原Merge history拥有固定截点事实及临时Git准备，public Task parser只读，原Completion/独立/恢复AI拥有适用性、补证与后续route；原manual recovery共用候选hash、默认上下文保持。Architecture/RDT原promotion owners仍单写shared-current；无第二历史authority。详见[贡献](../contributions/569-fixed-cutoff-history-query.md)。

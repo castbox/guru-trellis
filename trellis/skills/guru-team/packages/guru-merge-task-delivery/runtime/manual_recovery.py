@@ -54,20 +54,21 @@ def ensure_commit(root, repo_ref, sha):
             raise CommandError("stale_identity", "repository.commit", "Fetch the exact selected PR/merge commit before recovery.", 3)
 
 
-def commit_candidate(projection, publication, actual_head):
+def commit_candidate(projection, publication, actual_head, *, git_root=None):
     """Use the installed public hash over immutable bytes/modes/deletions."""
     candidate = publication["candidate"]
     paths = candidate["paths"]
+    source = projection.root if git_root is None else git_root
     with tempfile.TemporaryDirectory(prefix="guru-manual-delivery-snapshot-") as temporary:
         snapshot = Path(temporary)
         for locator in paths:
-            row = git(projection.root, "ls-tree", actual_head, "--", locator)
+            row = git(source, "ls-tree", actual_head, "--", locator)
             if not row:
                 continue
             mode, kind, blob = row.split("\t", 1)[0].split()
             if kind != "blob" or mode not in {"100644", "100755"}:
                 raise CommandError("stale_identity", "candidate.paths", "Use the file/mode candidate supported by the installed public API.", 3)
-            data = subprocess.run(["git", "cat-file", "blob", blob], cwd=projection.root,
+            data = subprocess.run(["git", "cat-file", "blob", blob], cwd=source,
                                   check=True, stdout=subprocess.PIPE).stdout
             file = snapshot / locator
             file.parent.mkdir(parents=True, exist_ok=True)

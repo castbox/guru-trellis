@@ -1,0 +1,9 @@
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/history.py", "reason": "原查询owner、固定截点与query1/query2事实路径"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/contract.md", "reason": "原Merge/history归属、公开输出与只读定义"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py", "reason": "immutable candidate在真实Git context验证"}
+{"file": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md", "reason": "原Completion公开cutoff适用性与有界补取责任"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性I/O与AI判断边界、managed Python及receipt合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "accepted scope验证层、测试价值和Release矩阵边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进、无consumer旧路径退出与代码复杂度"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern、阶段适用authority与promotion门禁"}
+{"file": ".trellis/tasks/10-16-569-fixed-cutoff-history-query/architecture-contribution.md", "reason": "本Task隔离before/after、owner与兼容退出"}

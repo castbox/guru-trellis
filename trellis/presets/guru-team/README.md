@@ -1,5 +1,9 @@
 # Guru Team Preset
 
+历史查询由原 Merge owner 自动准备固定截点所需对象；query1/query2统一返回
+含 `cutoff_commit` 的result3.0。实际临时Git写入、原consumer及完整成套采用见
+[MIGRATION-569](MIGRATION-569.md)。源码变更不等于旧安装或开发Task已迁移。
+
 已发布 Delivery 的普通手动合并由原 Merge 的 terminal-only profile 恢复，
 随后原 Completion 审查真实内容与验证证据；采用边界见
 [MIGRATION-557](MIGRATION-557.md)。仅 source 验证不证明旧安装已经切换。
