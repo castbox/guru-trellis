@@ -131,6 +131,30 @@
     {
       "id": "public_delivery_scope_revised_output_1_0",
       "path": "examples/public-delivery-scope-revised-output-1.0.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "examples/legacy_control_inspection-input-1.0.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "examples/legacy_control_retirement-input-1.0.json"
+    },
+    {
+      "id": "legacy_history_verification_input",
+      "path": "examples/legacy_history_verification-input-1.0.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "examples/legacy_controls_retired-output-1.0.json"
+    },
+    {
+      "id": "verified_legacy_history_output",
+      "path": "examples/verified_legacy_history-output-1.0.json"
+    },
+    {
+      "id": "unverified_legacy_history_output",
+      "path": "examples/unverified_legacy_history-output-1.0.json"
     }
   ],
   "schemas": [
@@ -261,6 +285,50 @@
     {
       "id": "delivery_scope_revision_review_1_0",
       "path": "schemas/delivery-scope-revision-review-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "schemas/legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_history_verification_input",
+      "path": "schemas/legacy_history_verification-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+    },
+    {
+      "id": "verified_legacy_history_output",
+      "path": "schemas/verified_legacy_history-output-1.0.schema.json"
+    },
+    {
+      "id": "unverified_legacy_history_output",
+      "path": "schemas/unverified_legacy_history-output-1.0.schema.json"
+    },
+    {
+      "id": "legacy_maintenance_input",
+      "path": "schemas/legacy-maintenance-input-1.0.schema.json"
+    },
+    {
+      "id": "private_legacy_recovery",
+      "path": "schemas/private-legacy-recovery-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_freeze_input",
+      "path": "schemas/legacy_control_freeze-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_check_input",
+      "path": "schemas/legacy_control_restore_check-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_input",
+      "path": "schemas/legacy_control_restore-input-1.0.schema.json"
     }
   ],
   "validators": [
@@ -299,6 +367,12 @@
       "command": "scripts/migrate-delivery-transaction.sh",
       "runtime_command": "migrate-task-delivery-publication",
       "objective_scope": "Same-cycle private publication transaction migration; historical facts never become current readiness."
+    },
+    {
+      "id": "legacy_maintenance",
+      "command": "scripts/legacy-maintenance.sh",
+      "runtime_command": "legacy-maintenance-guru-publish-task-delivery",
+      "objective_scope": "Exact legacy original-owner facts, attribution and fixed preimage retirement; no current lifecycle or publication/merge/Finish action."
     }
   ],
   "external_exits": [
@@ -357,6 +431,30 @@
         "kind": "workflow",
         "id": "guru-delivery-scope-revised-router"
       }
+    },
+    {
+      "id": "legacy_controls_retired",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired"
+      }
+    },
+    {
+      "id": "verified_legacy_history",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-verified-legacy-history"
+      }
+    },
+    {
+      "id": "unverified_legacy_history",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history"
+      }
     }
   ],
   "reentry": {
@@ -366,7 +464,8 @@
   },
   "tests": [
     "tests/test_contract.py",
-    "tests/test_transaction.py"
+    "tests/test_transaction.py",
+    "tests/test_legacy_maintenance.py"
   ],
   "platform_destinations": [
     "shared",
@@ -474,6 +573,36 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_scope_revision"
+          }
+        },
+        {
+          "id": "legacy_control_retirement",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-legacy_control_retirement-1.0",
+            "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_control_retirement_input",
+            "path": "examples/legacy_control_retirement-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_control_retirement"
+          }
+        },
+        {
+          "id": "legacy_history_verification",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-legacy_history_verification-1.0",
+            "path": "schemas/legacy_history_verification-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_history_verification_input",
+            "path": "examples/legacy_history_verification-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_history_verification"
           }
         }
       ]
@@ -600,6 +729,48 @@
         },
         "consumer_use_ids": [
           "project_delivery_scope_revised"
+        ]
+      },
+      {
+        "exit_id": "legacy_controls_retired",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-legacy_controls_retired-1.0",
+          "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "legacy_controls_retired_output",
+          "path": "examples/legacy_controls_retired-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_legacy_controls_retired"
+        ]
+      },
+      {
+        "exit_id": "verified_legacy_history",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-verified_legacy_history-1.0",
+          "path": "schemas/verified_legacy_history-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "verified_legacy_history_output",
+          "path": "examples/verified_legacy_history-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_verified_legacy_history"
+        ]
+      },
+      {
+        "exit_id": "unverified_legacy_history",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-unverified_legacy_history-1.0",
+          "path": "schemas/unverified_legacy_history-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "unverified_legacy_history_output",
+          "path": "examples/unverified_legacy_history-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_unverified_legacy_history"
         ]
       }
     ],
@@ -767,6 +938,45 @@
           "schema_id": "guru-consumer-guru-publish-task-delivery-scope-revised-1.0",
           "path": "consumers/workflow/delivery-1.0/publish-task-delivery-scope-revised.schema.json"
         }
+      },
+      {
+        "id": "legacy_controls_retired_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-legacy-controls-retired.schema.json"
+        }
+      },
+      {
+        "id": "verified_legacy_history_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-verified-legacy-history"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-verified-legacy-history-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-verified-legacy-history.schema.json"
+        }
+      },
+      {
+        "id": "unverified_legacy_history_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-unverified-legacy-history.schema.json"
+        }
       }
     ],
     "projections": [
@@ -893,6 +1103,24 @@
         "exit_id": "delivery_scope_revised",
         "consumer_input_id": "scope_revised_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_legacy_controls_retired",
+        "exit_id": "legacy_controls_retired",
+        "consumer_input_id": "legacy_controls_retired_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_verified_legacy_history",
+        "exit_id": "verified_legacy_history",
+        "consumer_input_id": "verified_legacy_history_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_unverified_legacy_history",
+        "exit_id": "unverified_legacy_history",
+        "consumer_input_id": "unverified_legacy_history_input",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
@@ -911,6 +1139,15 @@
         "schema": {
           "schema_id": "guru-publish-task-delivery-gate-1.0",
           "path": "schemas/publication-gate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "private_legacy_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-private-legacy-recovery-1.0",
+          "path": "schemas/private-legacy-recovery-1.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

@@ -2153,3 +2153,7 @@ to the clear router and current Planning via thin Wording/readiness relay.
 Create Task created remains identity-only. No source matrix, final disposition,
 full text, history, authorization, task.json source model or future Author
 registration enters that handoff.
+
+## Independent single-checkout maintenance
+
+#566 adds standalone/source-loaded `guru-upgrade-tools` and `guru-maintain-legacy-task`, with profile-specific inputs, minimal exit DTOs and exact same-owner recovery refs. Original Publish/Merge/Finish own their closed legacy fact/control profiles; their thin consumer routes return only to selected maintenance. Ordinary current profiles and independent full Plan2 preserve their input semantics. Matching API, source qualification, fixed preimages and target-native validation are package-owned; no copied discovery directory claims portability. See `trellis/presets/guru-team/MIGRATION-566.md`.

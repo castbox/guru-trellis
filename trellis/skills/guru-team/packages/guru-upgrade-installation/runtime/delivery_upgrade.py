@@ -277,7 +277,9 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
         if not item["path"].startswith(("trellis/", "guru-team/")):
             raise MigrationError("Controls must be original Trellis/Guru private paths")
         target_paths.add(str(relative_file(directory, item["path"])))
+    from runtime.bootstrap import active_pointer_path
     for target in roots(plan).values():
+        target_paths.add(str(active_pointer_path(target, for_write=True)))
         for argument in ("--git-common-dir", "--absolute-git-dir"):
             directory = Path(git(target, "rev-parse", argument))
             if not directory.is_absolute():

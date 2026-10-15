@@ -165,3 +165,5 @@ freshness current. Reread the identified baseline and constitution and judge
 impact/promotion eligibility yourself; do not synthesize an assessment from
 phase or files. The deterministic wrapper checks identity/freshness, while
 Approval remains the original semantic gate and never writes public Planning.
+
+For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.

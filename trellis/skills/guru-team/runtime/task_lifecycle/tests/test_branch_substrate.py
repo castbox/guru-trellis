@@ -381,6 +381,48 @@ class BranchSubstrateTests(unittest.TestCase):
             3,
         )
 
+    def test_public_establishment_after_selected_conversion_preserves_uncommitted_task(self) -> None:
+        import importlib.util
+        from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+        task_path = self.fixture.repo / TASK_REF / "task.json"
+        converted = task_path.read_bytes()
+        # The predecessor HEAD remains an old Task while public conversion has
+        # materialized the current Task2 and its public branch binding.
+        task_path.write_text(json.dumps({"id": TASK_ID, "name": task_path.parent.name,
+                                         "lifecycle_generation": GENERATION, "status": "in_progress"}))
+        self.fixture.git("add", TASK_REF + "/task.json")
+        self.fixture.git("commit", "-m", "predecessor task")
+        predecessor_head = self.fixture.head
+        task_path.write_bytes(converted)
+        binding = self.store.establish(self.key, "main", binding_revision=1)
+        ownership = ResourceLedgerStore(self.repository)
+        self.assertIsNone(ownership.read_current(self.key))
+        package = Path(__file__).resolve().parents[3] / "packages/guru-establish-task-branch-binding"
+        spec = importlib.util.spec_from_file_location("c4_converted_public_owner", package / "runtime/invoke.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        result = module.invoke(self.fixture.repo, {"profile": "delivery_active_task", "mode": "standalone",
+            "action": "establish", "task_id": TASK_ID, "lifecycle_generation": GENERATION, "task_ref": TASK_REF})
+        self.assertEqual(result, {"exit_id": "binding_established", "task_id": TASK_ID, "lifecycle_generation": GENERATION})
+        self.assertEqual(ownership.read_current(self.key).binding_revision, 1)
+        self.assertEqual(self.store.read(self.key), binding)
+        self.assertEqual(self.fixture.head, predecessor_head)
+        self.assertEqual(task_path.read_bytes(), converted)
+        self.assertIn("task.json", self.fixture.git("status", "--porcelain"))
+
+    def test_bound_checkout_invalid_working_task_does_not_fall_back_to_committed_task(self) -> None:
+        self.store.establish(self.key, "main", binding_revision=1)
+        task_path = self.fixture.repo / TASK_REF / "task.json"
+        metadata = json.loads(task_path.read_text())
+        metadata["lifecycle_generation"] = GENERATION + 1
+        task_path.write_text(json.dumps(metadata))
+        result = resolve_establishment(self.repository, self.store, self.ownership,
+                                      key=self.key, task_ref=TASK_REF, expected_status="active")
+        self.assertEqual(result.kind, "selection_required")
+        self.assertEqual(result.reason_code, "zero_validated_candidates")
+        self.assertEqual(result.candidates[0].reason_code, "task_artifact_mismatch")
+        self.assertIsNone(self.ownership.read_current(self.key))
+
     def test_establishment_binding_only_restores_ownership_revision(self) -> None:
         self.store.establish(
             self.key,

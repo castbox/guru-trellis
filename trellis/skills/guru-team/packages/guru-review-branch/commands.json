@@ -244,6 +244,43 @@
       ],
       "validator_id": "reviewed_content_identity",
       "runtime_role": "check"
+    },
+    {
+      "id": "legacy-maintenance-guru-review-branch",
+      "owner": "guru-review-branch",
+      "entrypoint": "runtime/recover.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Explicit legacy target.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Separate original-owner legacy input.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "schema_mismatch",
+        "invalid_arguments",
+        "invalid_json",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/legacy-maintenance-input-1.0.schema.json"
+      ],
+      "validator_id": "legacy_maintenance",
+      "runtime_role": "recover"
     }
   ]
 }

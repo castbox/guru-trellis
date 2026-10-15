@@ -752,3 +752,7 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
+
+## Independent maintenance routing
+
+Explicit tools-only and selected legacy Task maintenance load their standalone source packages before old target preflight; they do not enter standard Intake or infer a task from inventory. The original history/control owner exits return through their unique thin selected-maintenance consumers. Only verified target-native current continuation resumes the original lifecycle owner. History-retention stops without Completion/Closure/Finish. Full Plan2 and ordinary current-only remain separate contracts.

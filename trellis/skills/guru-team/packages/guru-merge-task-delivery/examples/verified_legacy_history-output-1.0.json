@@ -1,0 +1,8 @@
+{
+  "exit_id": "verified_legacy_history",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "facts": []
+}

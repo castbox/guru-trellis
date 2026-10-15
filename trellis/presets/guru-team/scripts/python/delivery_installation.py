@@ -138,3 +138,27 @@ def require_delivery_installation(source: Path, target: Path) -> dict:
     if result["status"] == "blocked":
         raise SystemExit(json.dumps(result, ensure_ascii=False))
     return result
+
+
+def require_tools_maintenance_installation(target: Path, maintenance: dict) -> dict:
+    """Validate one applied public tools operation without parsing old Task data.
+
+    This is an explicit tools-only prerequisite. Ordinary installation keeps its
+    complete current Task inventory preflight above.
+    """
+    from runtime.maintenance_transport import call
+    plan = maintenance["plan"]
+    if plan.get("kind") != "tools_install" or Path(plan.get("target_root", "")).resolve() != target.resolve():
+        raise SystemExit("tools maintenance prerequisite must select the exact target checkout")
+    source = maintenance["source"]
+    preview = call(source, "previewMaintenance", plan)
+    result = call(source, "recoverMaintenance", {"recovery_ref": maintenance["recovery_ref"]})
+    if (preview.get("operation_id") != plan.get("operation_id")
+            or result.get("operation_id") != plan.get("operation_id")
+            or result.get("kind") != "tools_install" or result.get("status") != "applied"):
+        raise SystemExit("the same public tools operation must be actually applied before Guru tools projection")
+    missing = installed_capabilities(target / ".trellis/scripts/common", target / ".trellis/workflow.md", [])
+    if missing:
+        raise SystemExit(json.dumps({"code": "unsupported_delivery_api", "missing_capabilities": missing}))
+    return {"status": "supported_candidate", "delivery_api": "1.0", "task_schema": "2.0",
+            "maintenance_operation_id": result["operation_id"], "task_inventory": "preserved_unparsed"}

@@ -46,6 +46,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         public = envelope["public_input"]
     else:
         public = load(repo, package_root, args.input, "input")
+    if public.get("profile") == "legacy_control_retirement":
+        from legacy_maintenance import invoke_retirement
+        return invoke_retirement(package_root, public, repo)
     if public.get("profile") == "delivery_scope_revision":
         from runtime.delivery_projection.scope_revision import revise
         return revise(repo, package_root, public, load(repo, package_root, args.owner_result, "owner_result"), owner_role="full_review", expected_phase="reviewing")

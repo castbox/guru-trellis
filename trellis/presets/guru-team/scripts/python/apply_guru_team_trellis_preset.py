@@ -32,7 +32,7 @@ from guru_platform_inventory import (
 )
 from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
-from delivery_installation import require_delivery_installation, diagnose_delivery_installation
+from delivery_installation import require_delivery_installation, diagnose_delivery_installation, require_tools_maintenance_installation
 from managed_python_runtime import ensure_managed_python_runtime, raise_managed_runtime_error
 
 
@@ -1864,7 +1864,9 @@ def remove_stale_overlay_path(
     ), sidecar_relative
 
 
-def language_guidance_targets(repo: Path) -> list[Path]:
+def language_guidance_targets(repo: Path, *, tools_only: bool = False) -> list[Path]:
+    if tools_only:
+        return []
     targets: set[Path] = set()
     spec_root = repo / ".trellis/spec"
     if spec_root.is_dir():
@@ -1877,12 +1879,12 @@ def language_guidance_targets(repo: Path) -> list[Path]:
     return sorted(targets)
 
 
-def normalize_business_doc_language_guidance(repo: Path) -> dict[str, Any]:
+def normalize_business_doc_language_guidance(repo: Path, *, tools_only: bool = False) -> dict[str, Any]:
     checked_paths: list[str] = []
     updated_paths: list[dict[str, Any]] = []
     replacement_count = 0
 
-    for path in language_guidance_targets(repo):
+    for path in language_guidance_targets(repo, tools_only=tools_only):
         rel_path = path.relative_to(repo).as_posix()
         checked_paths.append(rel_path)
         try:
@@ -1978,6 +1980,7 @@ def managed_transaction_paths(
     platforms: set[str],
     previous_manifest: dict[str, Any] | None,
     source_projections: dict[Path, Path] | None = None,
+    *, tools_only: bool = False,
 ) -> set[Path]:
     """Return the bounded file inventory used by the staging transaction.
 
@@ -2006,7 +2009,7 @@ def managed_transaction_paths(
     # the transaction to arbitrary repository documentation.
     paths.update(
         lexical_repo_relative(repo, path)
-        for path in language_guidance_targets(repo)
+        for path in language_guidance_targets(repo, tools_only=tools_only)
     )
     return {path for path in paths if not transaction_path_ignored(path)}
 
@@ -2392,15 +2395,23 @@ def install_assets(
     *,
     migration_preserved_paths: set[str] | None = None,
     python: str = "python3",
+    checkout_local: bool = False,
+    tools_only: bool = False,
+    tools_maintenance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not src.is_dir():
         raise SystemExit(f"Missing source directory: {src}")
 
     guru_root = guru_root_from_script()
-    delivery_support = require_delivery_installation(guru_root, Path(os.path.abspath(repo)))
+    if tools_only:
+        if tools_maintenance is None:
+            raise SystemExit("tools-only projection requires the actual applied public tools operation")
+        delivery_support = require_tools_maintenance_installation(Path(os.path.abspath(repo)), tools_maintenance)
+    else:
+        delivery_support = require_delivery_installation(guru_root, Path(os.path.abspath(repo)))
     upstream_ownership_validation = run_upstream_ownership_validator(guru_root)
     repo = Path(os.path.abspath(repo))
-    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False, python=python)
+    python_runtime = ensure_managed_python_runtime(repo, guru_root, activate=False, python=python, **({"checkout_local": True} if checkout_local else {}))
     managed_python = Path(str(python_runtime.get("interpreter") or ""))
     if not managed_python.is_file() or not os.access(managed_python, os.X_OK):
         raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
@@ -2423,6 +2434,7 @@ def install_assets(
             platforms or set(DEFAULT_DOGFOOD_PLATFORMS),
             previous_manifest,
             source_projections,
+            tools_only=tools_only,
         )
         preflight = preflight_managed_transaction(
             temporary_root,
@@ -2441,6 +2453,7 @@ def install_assets(
             upstream_ownership_validation=upstream_ownership_validation,
             managed_python=managed_python,
             migration_preserved_paths=migration_preserved_paths or set(),
+            tools_only=tools_only,
         )
         result["python_runtime"] = python_runtime
         result["delivery_support"] = delivery_support
@@ -2513,7 +2526,7 @@ def install_assets(
             prune_empty_unselected_skill_projections(
                 repo, platforms or set(DEFAULT_DOGFOOD_PLATFORMS)
             )
-            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True, python=python)
+            activated_runtime = ensure_managed_python_runtime(repo, guru_root, activate=True, python=python, **({"checkout_local": True} if checkout_local else {}))
             if activated_runtime.get("runtime_identity") != python_runtime.get("runtime_identity"):
                 raise_managed_runtime_error(str(python_runtime.get("runtime_identity") or "") or None)
         else:
@@ -2531,6 +2544,7 @@ def _install_assets_in_place(
     upstream_ownership_validation: dict[str, Any],
     managed_python: Path,
     migration_preserved_paths: set[str] | None = None,
+    tools_only: bool = False,
 ) -> dict[str, Any]:
     guru_root = guru_root_from_script()
     previous_manifest = load_previous_installed_manifest(dst)
@@ -2616,7 +2630,7 @@ def _install_assets_in_place(
     agents_principles = ensure_agents_ai_first_principles(repo)
     codex_dispatch = ensure_codex_dispatch_mode(repo)
     runtime_gitignore = ensure_runtime_gitignore(repo)
-    language_guidance = normalize_business_doc_language_guidance(repo)
+    language_guidance = normalize_business_doc_language_guidance(repo, tools_only=tools_only)
 
     result = {
         "installed": installed,

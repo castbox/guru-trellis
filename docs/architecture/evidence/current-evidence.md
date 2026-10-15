@@ -593,3 +593,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-062：#557 手动合入事实的已审贡献
 
 首次完整独立 committed range 为 `ccf67ff157dc006f236870049dda9cba0fafa73f...6bba4880362a2e0ff31b535809e4895b7fa1a84d`；Architecture/RDT 原 owners 基于该已审贡献维护 successor，新增文档差额仍须 fresh gates。架构关系由[贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 定义，实际软件/安装/真实 PR563 观察及未验证边界只由[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有；不证明 source Delivery、Task Closure、旧业务恢复或 Release。
+
+## EVD-063：#566 独立维护的已审贡献
+
+首次完整独立 committed range 为 `3e8b281c93894cd3df4e704901bda63ca2885f23...95bcf24334f9a4d25df3f9175af9d00b58d86915`；原 owners 按 expected Architecture .90 / RDT .96 维护 successor，新增差额仍须 fresh gates。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。

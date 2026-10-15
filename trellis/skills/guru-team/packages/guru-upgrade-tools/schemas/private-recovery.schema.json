@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-tools-private-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "root",
+    "source",
+    "source_ref",
+    "public",
+    "plan",
+    "phase",
+    "old_version",
+    "old_managed",
+    "preimages",
+    "baseline",
+    "controls",
+    "upstream_ref",
+    "peer_pointers",
+    "source_token"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "public": {
+      "type": "object"
+    },
+    "plan": {
+      "$ref": "private-plan.schema.json"
+    },
+    "phase": {
+      "enum": [
+        "public",
+        "guru",
+        "preset",
+        "complete",
+        "rolled_back"
+      ]
+    },
+    "old_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "old_managed": {
+      "type": "array"
+    },
+    "preimages": {
+      "type": "object"
+    },
+    "baseline": {
+      "type": "object"
+    },
+    "controls": {
+      "type": "object"
+    },
+    "upstream_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "peer_pointers": {
+      "type": "object"
+    },
+    "failure": {
+      "type": "string"
+    },
+    "source_token": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

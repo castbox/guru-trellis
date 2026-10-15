@@ -230,3 +230,5 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.

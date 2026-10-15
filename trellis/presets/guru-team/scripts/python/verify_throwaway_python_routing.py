@@ -40,6 +40,9 @@ def launch_path(path: str | Path) -> Path:
 
 
 def repository_state_root(repo: Path) -> Path:
+    local = repo / ".trellis/.runtime/guru-team/python"
+    if (local / "active.json").exists() or (local / "active.json").is_symlink():
+        return local
     marker = repo / ".git"
     if marker.is_dir():
         return marker.resolve() / "guru-team/python"

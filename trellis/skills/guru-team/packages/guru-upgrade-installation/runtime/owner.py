@@ -189,6 +189,10 @@ def controls(root: Path, plan: dict) -> dict[str, Path]:
     common = Path(git(root, "rev-parse", "--path-format=absolute", "--git-common-dir"))
     local = Path(git(root, "rev-parse", "--absolute-git-dir"))
     result = {"python_common": common / "guru-team/python/active.json", "python_checkout": local / "guru-team/python/active.json"}
+    from runtime.bootstrap import active_pointer_path
+    effective = active_pointer_path(root, for_write=True)
+    if effective.resolve() not in {path.resolve() for path in result.values()}:
+        result["python_effective"] = effective
     for row in plan.get("controls", []):
         base = {"common": common, "checkout": local}[row["location"]]
         if not row["path"].startswith(("trellis/", "guru-team/")):

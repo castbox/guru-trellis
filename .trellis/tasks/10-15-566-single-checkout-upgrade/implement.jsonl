@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "新增公共Skill/profile/exit和最小I/O合同"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "source-loaded standalone与current流程唯一consumer"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性executor/validator与真实stdout边界"}
+{"file": ".trellis/spec/workflow/data-contracts.md", "reason": "公共model、私有state和版本/恢复合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证ownership与真实native测试"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "真实原Plan2consumer和有界legacy退出"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "工具/转换/续接/业务完成分层"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "真实安装、sharedpointer与目标隔离"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "公共/Guru受管资产唯一ownership"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "canonical/dogfood/声明平台同步"}
+{"file": ".trellis/spec/architecture/baseline-usage.md", "reason": "currentbaseline/constitution及projectcheck入口"}
+{"file": ".trellis/spec/docs/requirements-design-test-ssot.md", "reason": "delta_first及Phase2前reconciliation"}

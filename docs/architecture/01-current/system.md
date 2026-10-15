@@ -317,3 +317,5 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 `ARCH-CUR-062`（#548）：原 DeliveryProjection 承接无 context 的明确 DeliveryKey，只用原 C4 与官方公共事实；有 context 保持官方 current/select。原 Creation 保留恢复输入至匹配 Author 消费后由 producer 退休，原 UUID/Task/gen/Planning 保留；详细行为与唯一证据见[已晋升贡献](../contributions/548-creation-recovery.md)。
 
 `ARCH-CUR-063`（#557 reviewed source）：已发布正式 Delivery 的普通手动合入事实由原 Merge 承接，actual candidate 与旧 gate/Publication 分离，整体 scope 与证据仍归原 Completion；[已晋升贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 拥有责任决定，[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有实际观察及边界。
+
+`ARCH-CUR-064`（#566 reviewed source）：单 checkout tools 与所选 legacy Task 维护独立，旧完整 Plan2 与普通 current-only 保持；目标 native/下一实际 owner 与业务完成分离。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。

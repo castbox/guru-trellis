@@ -16,6 +16,7 @@ from .schema import validate_json
 APPROVED_KERNEL_FILES = {
     "__init__.py",
     "command.py",
+    "base_selection.py",
     "bootstrap.py",
     "bootstrap_check.py",
     "compat.py",
@@ -24,6 +25,7 @@ APPROVED_KERNEL_FILES = {
     "installed.py",
     "io.py",
     "lifecycle_helpers.py",
+    "maintenance_transport.py",
     "launch.sh",
     "probe.py",
     "python-runtime.json",

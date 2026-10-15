@@ -9,7 +9,11 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  a=parse(p,argv);repo=root(package_root,a.root)
  if a.invocation:
   envelope=load(repo,package_root,a.invocation,"invocation");public=envelope.get("public_input");owner=envelope.get("owner_result")
- else:public=load(repo,package_root,a.input,"input");owner=load(repo,package_root,a.owner_result,"owner_result")
+ else:public=load(repo,package_root,a.input,"input");owner=None
+ if isinstance(public,dict) and public.get("profile")=="legacy_control_retirement":
+  from legacy_maintenance import invoke_retirement
+  return invoke_retirement(package_root,public,repo)
+ if not a.invocation:owner=load(repo,package_root,a.owner_result,"owner_result")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and checked owner result.")
  profiles={"delivery_initial_review","delivery_revision_reentry","delivery_clarification_reentry"}
  if public.get("profile") not in profiles:raise CommandError("schema_mismatch","profile","Use one current Delivery Planning profile.")
