@@ -249,3 +249,12 @@ venv，不自动跟随 Homebrew 或回退全局依赖，不自动清理旧 cache
 `guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
 
 正式source lock尚不包含上游#40本地维护候选，source_locked执行须在写入前阻塞；local_candidate仅供隔离开发，不代表正式发布或业务恢复。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](../../presets/guru-team/MIGRATION-566.md)。
+
+## 固定开发基线
+
+Task 开发基线、Delivery 完整内容范围与 PR target 分开承接。各阶段默认不追赶
+最新 base；无实际阻塞可零 Reconcile 完成交付与收尾。真实冲突、必需检查集成
+失败、Merge 已观察的既有服务端更新要求、明确依赖或主动同步，仍由原 owner
+处理固定一次整合目标和必要差额。D2 消费真实已交付事实；Completion 核验全部
+scope。合同退役与正常在途恢复见 preset 的 MIGRATION-567.md；不得单独更新
+workflow/Skill 混入旧安装 graph。

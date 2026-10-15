@@ -2,7 +2,7 @@
   "profile": "delivery_branch_review",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/current",
-  "base_ref": "origin/main",
+  "base_ref": "1111111111111111111111111111111111111111",
   "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "review_intent": "initial_review",
   "delivery_key": {

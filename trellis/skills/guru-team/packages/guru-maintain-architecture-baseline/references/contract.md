@@ -417,3 +417,17 @@ repair retain their existing profiles and never infer a Delivery from private st
 `guru-architecture-baseline-sync-router`. It uses only the closed DTO shape and
 sync_kind to project the exact Task or Delivery promotion/repair/impact entry
 to this same owner. It performs no second semantic assessment and infers no identity.
+
+## Stage-applicable Architecture authority
+
+For task impact and downstream eligibility, current means the authority
+applicable to this stage’s actual requirement/plan/candidate. Select and read
+that version through its immutable version page or Git history and retain its
+identity in existing references. A shared CURRENT/navigation/archive/tool
+version advance alone neither replaces it nor requires contribution update,
+new assessment or synchronization. Explicit rules applying to this Task,
+invalidated assumptions or changed scope/dependencies/solution retain the
+original assessment/revision routes. Complete an in-flight assessment on its
+fixed design or candidate even when a shared remote-tracking ref advances.
+Promotion still rereads live CURRENT and validates its own expected-current
+write boundary; it never grants or requires Task branch synchronization.

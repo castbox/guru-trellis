@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "Global ordering, semantic owners and side effects"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Public I/O, direct consumers and migration"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Direct convergence and old-path exit"}
+{"file": ".trellis/spec/preset/overlay-guidelines.md", "reason": "Canonical distribution and platform projections"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "Current product candidate and migration boundary"}

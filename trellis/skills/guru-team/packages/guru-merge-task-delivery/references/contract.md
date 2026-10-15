@@ -211,7 +211,9 @@ The AI reviews exactly six dimensions: `active_task`, `pr_identity`,
 
 Only this profile's `delivered` route reaches the new-merge confirmation boundary. The private
 gate stores current facts, semantic results, exact message bytes,
-`pre_merge_base_head`, and an action digest. It never stores authorization.
+an action digest bound to the target branch name, and actual observed facts.
+The current private gate is 2.0; the original 1.0 gate's base observation is
+validated only for its same-owner migration (MIGRATION-567). It never stores authorization.
 
 ## Expected-head Mutation And Recovery
 
@@ -228,7 +230,9 @@ attempt. A successful post-read requires:
 
 - PR state `MERGED` and one merge commit SHA;
 - commit subject/body equal the reviewed bytes;
-- parents exactly `[pre_merge_base_head, expected_head_sha]`;
+- exactly two actual parents, with second parent `expected_head_sha`; the
+  first parent is the target actually used by GitHub, which may have advanced
+  since the pre-merge observation;
 - remote target base ref equals the merge commit immediately after mutation,
   or, on read-only output-loss recovery after a normal base advance, the exact
   merge commit is proven an ancestor of current base HEAD by GitHub compare;
@@ -287,3 +291,18 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Target advancement and real server blockers
+
+Separate current reviewed content, actual GitHub merge eligibility and target
+ancestry. Behind alone is not a blocker. Consume this original flow’s actual
+mergeability/checks and confirmed existing server update requirement; do not
+add Ruleset/branch-protection queries. A real server refusal requiring update
+returns the same Delivery/PR through original bounded integration owners.
+
+The reviewed action binds repo/PR/expected head/target name/method/message, not
+an earlier target SHA. Recheck current concrete blockers and material PR/task/
+payload/policy facts at mutation. Ordinary target advancement does not alone
+repeat semantic gates. Terminal readback verifies actual two merge parents,
+exact reviewed head, message, merge identity and reachability from current
+target; its first parent is the real server result, not an old observed SHA.

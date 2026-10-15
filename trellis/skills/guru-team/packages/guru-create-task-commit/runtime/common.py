@@ -138,7 +138,7 @@ def build_candidate(package_root,repo,public,authoring):
   if source:exact.add(source)
  review=authoring.get("ai_review")
  if not isinstance(review,dict) or review.get("status") not in {"passed","revision-required","blocked"} or not isinstance(review.get("evidence"),list) or not review["evidence"]:raise CommandError("schema_mismatch","ai_review","Provide the completed AI review.")
- base=str(task.get("base_branch") or "main");base_ref=f"origin/{base}" if git(repo,"rev-parse","--verify",f"origin/{base}",check=False).returncode==0 else base
+ base=str(task.get("base_branch") or "main");base_ref=selected["candidate"]["base_ref"]
  candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":checkout.artifact.task_id,"path":public["task_ref"],"status":"in_progress","branch":checkout.branch_name},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),"phase2_commit_anchor":public["phase2_commit_anchor"]},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
  if delivery_profile:
   candidate.update(delivery_key=public["delivery_key"],check_result_id=public["check_result_id"],schema_version="delivery-1.0")

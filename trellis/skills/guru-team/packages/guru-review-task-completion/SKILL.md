@@ -111,3 +111,15 @@ Completion, Closure, Finish archive persistence and Cleanup are distinct facts.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Bounded history consumption
+
+Read all current Task/generation scope and actual Delivery/evidence facts. A
+history result proves only its explicit cutoff; later unrelated Task or
+bookkeeping commits do not require a requery, integration or business gate
+refresh. If this Task has a new Delivery or changed required evidence, obtain
+only missing facts and rejudge affected Completion conclusions. Never use the
+old cutoff to claim current completeness. History-query preparation/cutoff
+production is independently owned by #569; this owner neither implements it
+nor makes it an implementation/closure prerequisite. No remote SHA equality
+qualifies Completion.

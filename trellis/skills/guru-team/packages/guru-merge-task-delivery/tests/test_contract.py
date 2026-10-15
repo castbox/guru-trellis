@@ -65,6 +65,9 @@ class ContractTest(unittest.TestCase):
         spec.loader.exec_module(owner)
         gate = json.loads((PACKAGE / "examples/private-merge-gate.json").read_text())
         owner.validate_gate(PACKAGE, gate)
+        current = owner.build_gate(gate["public_input"], gate["pre_merge_facts"], gate["semantic_review"])
+        owner.validate_gate(PACKAGE, current)
+        owner.validate_json(current, PACKAGE / "schemas/merge-gate-2.0.schema.json", "gate")
 
     def test_outputs_keep_delivery_completion_boundary(self) -> None:
         delivered = json.loads((PACKAGE / "examples/public-output-delivery-delivered-1.0.json").read_text())

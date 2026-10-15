@@ -41,7 +41,6 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         any(result[key] != value for key, value in expected.items())
         or resolve_commit(repo, "HEAD", "HEAD") != result["reconciled_task_head"]
         or authoring["mode"] != public["mode"]
-        or authoring["base_ref"] != public["selected_base_ref"]
     ):
         raise CommandError("stale_identity", "result", "Use the exact current resolved reconciliation result and Branch Review authoring.", 3)
     projection = DeliveryProjection(repo, public["task_ref"])

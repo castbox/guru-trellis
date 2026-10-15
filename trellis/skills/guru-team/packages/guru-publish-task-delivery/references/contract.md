@@ -154,3 +154,11 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Fixed content publication
+
+Publish the actual current readiness candidate and exact reviewed PR payload.
+Target-branch advancement alone is not stale readiness and adds no pair guard,
+Task synchronization or semantic-impact gate. Preserve expected Task/remote
+HEAD, payload and same-PR transaction/recovery checks. Real content/authority
+changes return to their original owners.

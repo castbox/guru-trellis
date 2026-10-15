@@ -68,7 +68,7 @@
       "side_effect": "repo_write",
       "schema_bindings": [
         "schemas/public-input.schema.json",
-        "schemas/semantic-result.schema.json",
+        "schemas/semantic-result-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "public_invocation",

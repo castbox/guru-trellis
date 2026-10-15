@@ -127,7 +127,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             output.update(branch_review_commit=owner["review_commit"], full_review_result_id=result_id)
         elif exit_id == "implementation_required":
             output.update(branch_review_commit=owner["review_commit"], finding_refs=[row["finding_ref"] for row in owner["semantic_review"]["qualified_findings"] if row["status"] == "open"])
-            rework(projection, public["delivery_key"], "full_review", "implementation", authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo), ["check", "full_review", "readiness"])
+            rework(projection, public["delivery_key"], "full_review", "implementation", authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo), ["readiness"])
         elif exit_id == "scope_confirmation_required":
             output["proposal_refs"] = [row["proposal_ref"] for row in owner["semantic_review"]["scope_proposals"]]
         elif exit_id == "continuity_passed":

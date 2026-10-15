@@ -410,3 +410,24 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Fixed candidate and bounded content re-entry
+
+Implementation constructs candidate.base_ref/head_ref from fixed B and actual
+current HEAD, using `content_base` and `candidate` in the existing projection,
+then invokes public begin_check. The complete B..HEAD diff and actual selected
+dirty increments are covered, even after normal implementation/commit changes
+the Planning H0. While this stage runs, its candidate and applicable authority
+remain fixed; a shared fetch or unrelated CURRENT advance cannot interrupt it.
+
+For a real integration/content transition the current stage owner uses public
+rework to implementation, retaining old Check/full_review as historical facts
+and clearing readiness. Implementation begins the actual new candidate;
+upstream candidate/predecessor applicability makes old gates non-applicable.
+Read the retained old Check and actual delta/dependencies, judge complete
+current coverage and which prior evidence still applies, then record this
+owner’s real new Check. Do required missing validation, not unconditional
+complete replay. A necessary TaskCommit with unchanged reviewed bytes still
+requires actual commit/candidate applicability judgment, not a second commit.
+Real scope/solution changes return to the earliest affected original owner.
+Lost output recovers only the actual same-candidate result.

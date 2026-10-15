@@ -268,7 +268,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     projection = DeliveryProjection(fixture, task_ref)
     candidate_paths = sorted({*files, 'interval.py'})
     projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
-        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=run_git(fixture, 'rev-parse', 'origin/main')))
+        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'], observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
     write_json(evidence / 'check-public-input.json', public)
     write_json(evidence / "architecture-input.json", architecture_input)
     required = sorted([

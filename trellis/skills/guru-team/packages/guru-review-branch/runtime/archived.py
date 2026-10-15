@@ -51,7 +51,7 @@ def gh(repo, repository, *args):
         stale("github", "GitHub returned incomplete JSON for the bound repository.")
 
 
-def facts(package_root, repo, public):
+def facts(package_root, repo, public, *, fixed_base=None):
     task_dir = task(repo, public["task_ref"])
     task_ref = rel(repo, task_dir)
     if not re.fullmatch(r"\.trellis/tasks/archive/\d{4}-\d{2}/[^/]+", task_ref):
@@ -105,9 +105,16 @@ def facts(package_root, repo, public):
     base_ref = next((ref for ref in (f"refs/remotes/origin/{base}", f"refs/heads/{base}") if git(repo, "rev-parse", "--verify", ref, check=False)), None)
     if not base_ref:
         stale("base_ref", "Selected base must already exist locally; archived review never fetches.")
-    base_head = git(repo, "rev-parse", f"{base_ref}^{{commit}}")
-    if not ancestor(repo, base_head, head):
-        stale("base_ref", "Selected base must precede the archived review HEAD.")
+    if fixed_base is None and schema2:
+        candidate = projection.resolve(public["delivery_key"])["candidate"]
+        fixed_base = candidate["base_ref"] if candidate is not None else None
+    if fixed_base is None:
+        bases = git(repo, "merge-base", "--all", head, base_ref).splitlines()
+        if len(bases) != 1:
+            stale("base_ref", "Select an unambiguous archived content range through its original owner.")
+        fixed_base = bases[0]
+    base_head = git(repo, "rev-parse", f"{fixed_base}^{{commit}}")
+    base_ref = base_head
     try:
         auth = subprocess.run(["gh", "auth", "status"], cwd=repo, capture_output=True)
     except OSError:
@@ -118,8 +125,8 @@ def facts(package_root, repo, public):
     if not isinstance(policy, dict) or str(policy.get("full_name", "")).lower() != repository.lower():
         stale("repository", "GitHub repository identity is incomplete.")
     live_base = gh(repo, repository, "api", f"repos/{repository}/git/ref/heads/{quote(base, safe='')}")
-    if not isinstance(live_base, dict) or live_base.get("ref") != f"refs/heads/{base}" or not isinstance(live_base.get("object"), dict) or live_base["object"].get("sha") != base_head or live_base["object"].get("type") != "commit":
-        stale("reviewed_base_head", "Local selected base and live GitHub base differ; start a fresh review after base synchronization by its owner.")
+    if not isinstance(live_base, dict) or live_base.get("ref") != f"refs/heads/{base}" or not isinstance(live_base.get("object"), dict) or live_base["object"].get("type") != "commit":
+        stale("repository", "Read the actual target branch identity; target advancement does not change the archived content range.")
     prs = gh(repo, repository, "pr", "list", "--repo", repository, "--head", branch, "--base", base, "--state", "open", "--json", "number,url,state,isDraft,headRefName,baseRefName,headRefOid,headRepository,isCrossRepository,title,body")
     if not isinstance(prs, list) or len(prs) != 1:
         stale("pull_request", "Require one exact existing Open Ready PR; never select a replacement.")

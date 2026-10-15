@@ -74,7 +74,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         for text in (skill, contract):
             normalized = " ".join(text.split())
             self.assertIn("independent reviewer identity", normalized)
-            self.assertIn("exact committed `origin/<base>...HEAD` range", normalized)
+            self.assertIn("exact committed `base_oid..head_oid` range", normalized)
             self.assertIn("final finding summary", normalized)
             self.assertIn("dialogue", normalized)
             self.assertIn("public wrapper return `passed`", normalized)
@@ -541,38 +541,19 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertEqual("stale_identity", stale["code"])
         self.assertTrue(gate.is_file())
 
-    def test_advanced_base_ref_fails_check_and_invoke_without_retirement(self):
+    def test_shared_ref_advance_preserves_fixed_review(self):
         self.git("update-ref", "refs/remotes/origin/main", self.base)
         public = self.public()
-        public["base_ref"] = "origin/main"
         self.record(public)
-        gate = self.checkpoint()
-
         base_tree = self.git("rev-parse", f"{self.base}^{{tree}}")
-        advanced_base = self.git(
-            "commit-tree", base_tree, "-p", self.base, "-m", "advance base ref"
-        )
-        self.git("update-ref", "refs/remotes/origin/main", advanced_base)
+        advanced = self.git("commit-tree", base_tree, "-p", self.base, "-m", "independent advance")
+        self.git("update-ref", "refs/remotes/origin/main", advanced)
+        checked = self.run_wrapper("check-review-gate.sh", "--task", TASK_REF)
+        self.assertEqual("passed", checked["typed_exit"])
+        output = self.run_wrapper("invoke.sh", "--task", TASK_REF, "--input", self.inputs / "public.json")
+        self.assertEqual("passed", output["exit_id"])
         self.assertEqual(self.head, self.git("rev-parse", "HEAD"))
-
-        checked = self.run_wrapper(
-            "check-review-gate.sh", "--task", TASK_REF, ok=False
-        )
-        self.assertEqual("stale_identity", checked["code"])
-        self.assertEqual("base_ref", checked["field_path"])
-        self.assertTrue(gate.is_file())
-
-        invoked = self.run_wrapper(
-            "invoke.sh",
-            "--task",
-            TASK_REF,
-            "--input",
-            self.inputs / "public.json",
-            ok=False,
-        )
-        self.assertEqual("stale_identity", invoked["code"])
-        self.assertEqual("base_ref", invoked["field_path"])
-        self.assertTrue(gate.is_file())
+        self.assertFalse(self.checkpoint().exists())
 
     def test_symlink_checkpoint_and_ancestor_fail_closed(self):
         public = self.public()
@@ -814,11 +795,11 @@ class BranchReviewContractTest(unittest.TestCase):
         self.assertNotIn("mapping", json.dumps(boundary).lower())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-review-branch-input-delivery-aggregate-1.0",
+            "guru-review-branch-input-legacy-index-1.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
-            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision"],
+            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement"],
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
@@ -835,6 +816,7 @@ class BranchReviewContractTest(unittest.TestCase):
                 "archived_review_passed",
                 "delivery_stopped",
                 "delivery_scope_revised",
+                "legacy_controls_retired",
             ],
             [output["exit_id"] for output in public["outputs"]],
         )

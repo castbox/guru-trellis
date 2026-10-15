@@ -46,7 +46,7 @@ class CommittedReentryTest(unittest.TestCase):
         spec.loader.exec_module(common)
         owner = json.loads((package / 'examples/phase2-check.json').read_text())
         owner.update(mode=mode, task_ref=self.task_ref, phase2_capture_commit=self.fixture.head,
-                     reviewed_content_sha256=common.content_identity(self.repo), reviewed_paths=['app.txt'], candidate_classifications=[])
+                     reviewed_content_sha256=common.content_identity(self.repo), reviewed_paths=self.projection.resolve(self.key)['candidate']['paths'], candidate_classifications=[])
         public = {'profile':'delivery_initial_check','mode':mode,'task_ref':self.task_ref,'delivery_key':self.key,
                   'source_exit':'implementation_complete','planning_accepted_result_id':'planning:flow'}
         return self.call('guru-check-task','invoke.sh','--input',self.write('check.json',public),'--owner-result',self.write('check-owner.json',owner))
@@ -57,7 +57,7 @@ class CommittedReentryTest(unittest.TestCase):
         delivery = self.projection.resolve(self.key)
         role = 'full_review' if delivery['phase'] == 'reviewing' else 'check'
         rework(self.projection,self.key,role,'implementation',authority_ref(self.repo/'requirements.md',self.repo),['check','full_review','readiness'])
-        self.projection.begin_check(self.key,self.projection.candidate(['app.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=self.git('rev-parse','main')))
+        self.projection.begin_check(self.key,self.projection.candidate(['app.txt'],head_ref=self.git('rev-parse','HEAD'),base_ref=self.projection.content_base(self.key)))
 
     def reentry(self, passed, status='passed', ok=True, mode='workflow', extra=()):
         public={'profile':'delivery_committed_reentry','mode':mode,'task_ref':self.task_ref,'delivery_key':self.key,'check_result_id':passed['check_result_id']}
@@ -73,10 +73,6 @@ class CommittedReentryTest(unittest.TestCase):
         public={'profile':'delivery_initial_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'passed','check_result_id':passed['check_result_id']}
         return self.call(PACKAGE.name,'prepare-task-commit.sh','--input',self.write('dirty-input.json',public),'--candidate-json',self.write('dirty-owner.json',authoring),ok=ok)
 
-    def guard(self, profile):
-        public={'profile':'delivery_'+profile,'mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'task_head':self.git('rev-parse','HEAD'),
-                'selected_base_ref':'main','resume_target':'branch_review' if profile=='post_commit' else 'task_commit'}
-        return self.call('guru-reconcile-task-base','guard-task-base-pair.sh','--input',self.write('guard.json',public))
 
     def reconcile(self):
         # Ordinary base integration needs tracked current public metadata.
@@ -86,11 +82,10 @@ class CommittedReentryTest(unittest.TestCase):
         self.git('switch','main'); (self.repo/'base-only.txt').write_text('evolved base\n')
         self.git('add','base-only.txt'); self.git('commit','-qm','advance base')
         new_base=self.git('rev-parse','HEAD'); self.git('switch','feat/flow')
-        self.assertEqual('new_pair',self.guard('post_commit')['status'])
         skill='guru-reconcile-task-base'
         candidate=self.call(skill,'execute-base-candidate.sh','--request',self.write('candidate.json',{'task_head':prior,'new_base_head':new_base,'validation_commands':[]}))
-        public={'profile':'delivery_post_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'task_head':prior,'selected_base_ref':'main','resume_target':'branch_review'}
-        request={'profile':public['profile'],'task_ref':self.task_ref,'delivery_key':self.key,'branch':'feat/flow','prior_task_head':prior,'selected_base_ref':'main',
+        public={'profile':'delivery_post_commit','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'task_head':prior,'selected_base_ref':new_base,'resume_target':'branch_review'}
+        request={'profile':public['profile'],'task_ref':self.task_ref,'delivery_key':self.key,'branch':'feat/flow','prior_task_head':prior,'selected_base_ref':new_base,
                  'old_base_head':old_base,'new_base_head':new_base,'resume_target':'branch_review','candidate_tree_sha256':candidate['candidate_tree_sha256'],'commit_message':'chore(base): 整合临时基线'}
         result=self.call(skill,'execute-base-reconciliation.sh','--request',self.write('reconcile.json',request))
         gate={'authority_impact':'unchanged','task_content_impact':'unchanged','integration_impact':'compatible','reviewed_scope':['authority','planning','delta'],
@@ -150,7 +145,6 @@ class CommittedReentryTest(unittest.TestCase):
 
     def test_real_reconcile_fresh_check_and_first_full_review(self):
         self.phase2(); self.reconcile(); passed=self.phase2()
-        self.assertEqual('unchanged',self.guard('post_check')['status'])
         # No manufactured empty commit: metadata-only dirty does not suffice.
         failed=self.prepare(passed,ok=False)
         self.assertEqual('schema_mismatch',failed['code']); self.assertIn('exact_stage_paths',failed['field_path'])
@@ -158,7 +152,6 @@ class CommittedReentryTest(unittest.TestCase):
         hook.write_text(f"#!/bin/sh\ntouch '{marker}'\nexit 1\n"); hook.chmod(0o755)
         before=self.snapshot(); output=self.reentry(passed)
         self.assertEqual(before,self.snapshot()); self.assertFalse(marker.exists())
-        self.assertEqual('committed',output['exit_id']); self.assertEqual('unchanged',self.guard('post_commit')['status'])
         self.assertIsNone(self.projection.resolve(self.key)['results']['full_review'])
         architecture = self.architecture(output)
         self.assertEqual('baseline_current',architecture['exit_id'])
@@ -207,9 +200,9 @@ class CommittedReentryTest(unittest.TestCase):
         self.assertEqual('base_branch',rejected['field_path'])
         self.assertEqual(before,self.snapshot())
 
-    def test_no_task_range_rejects_without_mutation(self):
+    def test_target_reaches_head_preserves_fixed_content_range(self):
         passed=self.phase2(); self.git('branch','-f','main','HEAD')
-        before=self.snapshot(); self.assertEqual('stale_identity',self.reentry(passed,ok=False)['code']); self.assertEqual(before,self.snapshot())
+        before=self.snapshot(); self.assertEqual('committed',self.reentry(passed)['exit_id']); self.assertEqual(before,self.snapshot())
 
     def test_nonpass_conflicting_arguments_and_real_merge(self):
         passed=self.phase2(); before=self.snapshot()

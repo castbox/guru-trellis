@@ -144,3 +144,15 @@ outputs fresh re-enter their producers; historical commits/PR/merge facts
 remain facts. Byte-equivalent Plan2 path migration does not force a new commit.
 Ordinary implementation repair/evidence completion stays with its existing
 Phase 2/Completion owner unless actual planning authority changed.
+
+## Fixed Delivery range
+
+Select the development baseline, Delivery content range and PR target separately.
+Use the existing `DeliveryProjection.content_base(key, development_base=...,
+observed_target=...)` fact projection: recover the same Delivery candidate
+first; otherwise use the unique greatest actual prior delivered head ancestral
+to current HEAD, then the explicitly selected development baseline or unique
+merge base of one observed target commit. Missing/incomparable facts return
+to this owner; range selection never fetches or integrates. Record B and its
+source in the existing Delivery design. Planning H0 is an observation, not the
+final implementation head. Do not repeat D1 in D2 or add a Task baseline field.

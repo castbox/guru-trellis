@@ -82,3 +82,14 @@ Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
 
 For explicit selected legacy maintenance, load the legacy section in `references/legacy-maintenance.md` and use `scripts/legacy-maintenance.sh`; ordinary current invocation remains unchanged.
+
+## Fixed bookkeeping candidate
+
+Finish consumes actual Completion/Closure and preserves their Delivery facts.
+It does not require the Task branch to include the latest target, recheck
+delivered development gates or compare target SHA with an earlier snapshot.
+The current semantic bookkeeping input is 2.0 and private transaction 3.0;
+expected_base_head is retired. Exact files, parent/commit, PR payload, expected
+bookkeeping head and same-operation recovery remain required. Verify the real
+bookkeeping merge is reachable from current target and archive state exists;
+subsequent unrelated target commits do not invalidate success.

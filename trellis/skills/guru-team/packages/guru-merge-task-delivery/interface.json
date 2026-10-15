@@ -369,6 +369,14 @@
     {
       "id": "legacy_control_restore_input",
       "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "merge_gate_2_0",
+      "path": "schemas/merge-gate-2.0.schema.json"
+    },
+    {
+      "id": "delivery_merge_gate_2_0",
+      "path": "schemas/delivery-merge-gate-2.0.schema.json"
     }
   ],
   "validators": [
@@ -1066,6 +1074,24 @@
         "schema": {
           "schema_id": "guru-merge-task-delivery-private-legacy-recovery-1.0",
           "path": "schemas/private-legacy-recovery-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "merge_gate_2_0",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-private-gate-2.0",
+          "path": "schemas/merge-gate-2.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_merge_gate_2_0",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-merge-task-delivery-private-gate-delivery-2.0",
+          "path": "schemas/delivery-merge-gate-2.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

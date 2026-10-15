@@ -1529,25 +1529,23 @@ re-entry fail closed with stable reprepare remediation.
 
 ## Task Base Reconciliation Commands
 
-The `guru-reconcile-task-base` package owns one deterministic pair guard,
+The `guru-reconcile-task-base` package owns the actual-integration
 temporary-candidate executor, semantic-result recorder, result checker, and its
 dispatcher-only public invocation wrapper. Their stable command ids and
 schemas are declared by that package's current `commands.json` and
 `interface.json`; workflow and platform entries discover them instead of
 importing package runtime.
 
-The pair guard reads live Git refs and exact owner-private pair state. It may
-return only objective `unchanged`, `current_pair`, `new_pair`, or
-`blocked` facts. It does not fetch or fast-forward the selected base and does
-not decide semantic impact, route sufficiency, findings, pass, stale, or block.
-For an unchanged pair it performs no GitHub/Docs/history read, semantic
-invocation, artifact write, or interaction.
+The default pair guard command and schemas are retired by MIGRATION-567.
+Actual integration requests pin selected_base_ref to a complete target commit
+OID. Executors/recorders validate that operation, never a later moving ref.
+Same-operation terminal readback recovers the existing commit without mutation.
 
 The candidate executor accepts a closed structured request, creates an
 ephemeral integration candidate in a controlled temporary directory or
 detached worktree, runs only the declared Git/build/test operations, and
 cleans it after owner completion. It must reject arbitrary shell text as route
-authority. For pre-review profiles it never mutates the task branch. For a
+authority. The candidate executor never mutates the task branch. For a
 post-review `review_continuity_required` result, a separate package-private
 reconciliation executor may run only after the semantic owner has displayed
 the exact task branch, expected task/base HEADs, candidate tree, merge/commit

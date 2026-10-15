@@ -213,13 +213,13 @@ class ArchivedReviewTest(unittest.TestCase):
                 self.assertEqual("stale_identity", self.check(ok=False)["code"])
                 self.assertTrue(self.checkpoint().exists())
 
-    def test_live_or_local_base_advance_invalidates_review(self):
+    def test_live_and_local_base_advance_preserves_fixed_review(self):
         self.record()
         self.provider_base = self.head
         self.provider_files()
-        self.assertEqual("reviewed_base_head", self.check(ok=False)["field_path"])
+        self.assertEqual("archived_review_passed", self.check()["typed_exit"])
         self.git("update-ref", "refs/remotes/origin/main", self.head)
-        self.assertEqual("archived_review", self.check(ok=False)["field_path"])
+        self.assertEqual("archived_review_passed", self.check()["typed_exit"])
 
     def test_dirty_archived_metadata_is_not_excluded(self):
         self.record()

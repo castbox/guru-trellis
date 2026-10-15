@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -47,7 +48,7 @@ def objective_blockers(pr: dict[str, Any], policy: dict[str, bool]) -> list[str]
             blockers.append("pr_is_draft")
         if pr["mergeable"] != "MERGEABLE":
             blockers.append("pr_not_mergeable")
-        if pr["merge_state_status"] in {"BEHIND", "BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
+        if pr["merge_state_status"] in {"BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
             blockers.append("merge_state_not_ready")
         states = {_check_state(item) for item in pr["checks"] if isinstance(item, dict)}
         if "failed" in states:
@@ -397,7 +398,7 @@ def action_sha(public: dict[str, Any], facts: dict[str, Any], review: dict[str, 
         "repo_ref": public["repo_ref"],
         "pr_number": public["pr_number"],
         "expected_head_sha": public["expected_head_sha"],
-        "pre_merge_base_head": facts["base_ref"]["head_sha"],
+        "target_ref": facts["base_ref"]["name"],
         "merge_method": route.get("merge_method"),
         "merge_message": route.get("merge_message"),
     })
@@ -411,35 +412,36 @@ def gate_path(root: Path, public: dict[str, Any]) -> Path:
 
 def build_gate(public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any]) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "skill_id": "guru-merge-task-delivery",
         "public_input": public,
         "semantic_review": review,
         "pre_merge_facts": facts,
-        "pre_merge_base_head": facts["base_ref"]["head_sha"],
         "action_sha256": action_sha(public, facts, review),
     }
 
 
 def validate_gate(package_root: Path, gate: dict[str, Any]) -> None:
-    if set(gate) != {
-        "schema_version", "skill_id", "public_input", "semantic_review",
-        "pre_merge_facts", "pre_merge_base_head", "action_sha256",
-    }:
+    version = gate.get("schema_version")
+    fields = {"schema_version", "skill_id", "public_input", "semantic_review", "pre_merge_facts", "action_sha256"}
+    if version == "1.0":
+        fields.add("pre_merge_base_head")
+    if set(gate) != fields or version not in {"1.0", "2.0"} or gate.get("skill_id") != "guru-merge-task-delivery":
         raise CommandError("schema_mismatch", "gate", "Use the closed package-owned merge gate.")
-    if gate.get("schema_version") != "1.0" or gate.get("skill_id") != "guru-merge-task-delivery":
-        raise CommandError("schema_mismatch", "gate.identity", "Use the current package-owned merge gate.")
-    public = gate.get("public_input")
-    review = gate.get("semantic_review")
-    facts = gate.get("pre_merge_facts")
-    if not isinstance(public, dict) or not isinstance(review, dict) or not isinstance(facts, dict):
+    public, review, facts = (gate.get(name) for name in ("public_input", "semantic_review", "pre_merge_facts"))
+    if not all(isinstance(value, dict) for value in (public, review, facts)):
         raise CommandError("schema_mismatch", "gate", "Use the closed package-owned merge gate.")
     validate_public(package_root, public)
     validate_review(package_root, review)
     validate_json(facts, package_root / ("schemas/delivery-live-facts-1.0.schema.json" if "delivery_key" in public else "schemas/live-facts.schema.json"), "gate.pre_merge_facts")
-    if gate.get("pre_merge_base_head") != facts["base_ref"]["head_sha"]:
-        raise CommandError("schema_mismatch", "gate.pre_merge_base_head", "Bind the gate to the observed base head.")
-    if gate.get("action_sha256") != action_sha(public, facts, review):
+    action = action_sha(public, facts, review)
+    if version == "1.0":
+        if gate["pre_merge_base_head"] != facts["base_ref"]["head_sha"]:
+            raise CommandError("schema_mismatch", "gate.pre_merge_base_head", "Read the original observed base head.")
+        action = digest({"repo_ref": public["repo_ref"], "pr_number": public["pr_number"],
+                         "expected_head_sha": public["expected_head_sha"], "pre_merge_base_head": gate["pre_merge_base_head"],
+                         "merge_method": review["route"].get("merge_method"), "merge_message": review["route"].get("merge_message")})
+    if gate.get("action_sha256") != action:
         raise CommandError("schema_mismatch", "gate.action_sha256", "Bind the gate to the exact reviewed action.")
 
 
@@ -460,6 +462,8 @@ def load_gate(package_root: Path, root: Path, public: dict[str, Any], value: str
     validate_gate(package_root, gate)
     if gate["public_input"] != public:
         raise CommandError("stale_identity", "gate.public_input", "Record a gate for the exact current handoff.", 3)
+    if gate["schema_version"] == "1.0":
+        gate = build_gate(public, gate["pre_merge_facts"], gate["semantic_review"])
     return path, gate
 
 
@@ -507,7 +511,7 @@ def archived_fact_gap():
     return CommandError("stale_identity", "delivery_result", "The archived public record lacks the exact historical Delivery fact. Supply the original Merge owner's reviewed result in the prospective Plan2 target record; the installed store permits only archived history reads or formal reopen, not historical writes.", 3)
 
 
-def terminal_output(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], pre_base: str, *, historical_schema1: bool = False, record: bool = True) -> dict[str, Any]:
+def terminal_output(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], *, historical_schema1: bool = False, record: bool = True) -> dict[str, Any]:
     message_public = public
     if historical_schema1:
         if facts["pr"]["state"] != "MERGED":
@@ -521,8 +525,8 @@ def terminal_output(package_root: Path, root: Path, public: dict[str, Any], fact
     expected_message = message["subject"] + "\n\n" + message["body"]
     if commit["message"] != expected_message:
         raise CommandError("stale_identity", "github.merge_commit.message", "The merge commit message differs from the reviewed exact bytes.", 3)
-    if commit["parents"] != [pre_base, public["expected_head_sha"]]:
-        raise CommandError("stale_identity", "github.merge_commit.parents", "The merge commit parents do not carry the reviewed base and head.", 3)
+    if len(commit["parents"]) != 2 or commit["parents"][1] != public["expected_head_sha"]:
+        raise CommandError("stale_identity", "github.merge_commit.parents", "The actual merge commit must carry the exact reviewed head as its second parent.", 3)
     base_head = facts["base_ref"]["head_sha"]
     if base_head != commit["sha"]:
         comparison = gh_json(
@@ -619,9 +623,19 @@ def cmd_record(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
 
 def _check_gate_current(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any]) -> None:
     if gate["semantic_review"]["route"]["typed_exit"] == "delivered" and facts["pr"]["state"] == "MERGED":
-        terminal_output(package_root, root, public, facts, gate["semantic_review"], gate["pre_merge_base_head"])
+        terminal_output(package_root, root, public, facts, gate["semantic_review"])
         return
-    if facts["facts_sha256"] != gate["pre_merge_facts"]["facts_sha256"]:
+    def candidate_facts(value):
+        selected = copy.deepcopy(value)
+        selected.pop("facts_sha256", None)
+        selected["base_ref"].pop("head_sha", None)
+        # Current mergeability and blockers are validated below. A target
+        # advance may change these observations without changing the candidate.
+        selected["pr"].pop("mergeable", None)
+        selected["pr"].pop("merge_state_status", None)
+        selected.pop("objective_blockers", None)
+        return selected
+    if candidate_facts(facts) != candidate_facts(gate["pre_merge_facts"]):
         raise CommandError("stale_identity", "gate.pre_merge_facts", "Repeat the semantic review for current live facts.", 3)
     if action_sha(public, facts, gate["semantic_review"]) != gate["action_sha256"]:
         raise CommandError("stale_identity", "gate.action_sha256", "Repeat the exact merge confirmation plan.", 3)
@@ -648,17 +662,17 @@ def _execute_with_gate(package_root: Path, root: Path, public: dict[str, Any], p
             target = "implementation" if output["exit_id"] == "implementation_required" else "readiness"
             reason = {"locator": "merge-review:" + gate["action_sha256"], "revision": review["route"]["typed_exit"]}
             rework(projection, public["delivery_key"], "delivery", target, reason,
-                   ["check", "full_review", "readiness"] if target == "implementation" else ["readiness"])
+                   ["readiness"])
         retire_gate(path)
         return output
     if facts["pr"]["state"] == "MERGED":
-        output = terminal_output(package_root, root, public, facts, review, gate["pre_merge_base_head"])
+        output = terminal_output(package_root, root, public, facts, review)
         retire_gate(path)
         return output
     body_path = path.with_suffix(".body")
     run_merge(root, public, review, body_path)
     post = live_facts(root, package_root, public)
-    output = terminal_output(package_root, root, public, post, review, gate["pre_merge_base_head"])
+    output = terminal_output(package_root, root, public, post, review)
     retire_gate(path)
     return output
 
@@ -695,7 +709,7 @@ def cmd_invoke(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
         commit = facts["merge_commit"]
         if not isinstance(commit, dict) or len(commit["parents"]) != 2:
             raise CommandError("stale_identity", "github.merge_commit.parents", "Reread the exact terminal merge commit.", 3)
-        return terminal_output(package_root, root, public, facts, review, commit["parents"][0])
+        return terminal_output(package_root, root, public, facts, review)
     gate = build_gate(public, facts, review)
     path = write_gate(package_root, root, gate)
     return _execute_with_gate(package_root, root, public, path, gate, facts)

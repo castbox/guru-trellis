@@ -143,6 +143,8 @@ def merge_base(repo: Path, left: str, right: str) -> str:
 def operation_pair(repo: Path, public: dict[str, Any]) -> tuple[str, str, str]:
     task_head = resolve_commit(repo, public["task_head"], "task_head")
     new_base = resolve_commit(repo, public["selected_base_ref"], "selected_base_ref")
+    if public["selected_base_ref"] != new_base:
+        raise CommandError("stale_identity", "selected_base_ref", "Supply this integration operation's fixed target OID; do not follow a moving ref.", 3)
     if public["profile"] in PRE_REVIEW_PROFILES:
         return task_head, merge_base(repo, task_head, new_base), new_base
     old_base = resolve_commit(repo, public["old_base_head"], "old_base_head")

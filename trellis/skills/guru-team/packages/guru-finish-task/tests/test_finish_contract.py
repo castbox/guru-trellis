@@ -341,29 +341,21 @@ def test_bookkeeping_payload_rejects_delivery_trailers(trailer, field):
     assert caught.value.field_path == "semantic_result.bookkeeping"
 
 
-def test_merge_rechecks_expected_base_before_github_mutation(tmp_path, monkeypatch):
-    expected_base_head = "1" * 40
-    transaction = {
-        "pr_number": 7,
-        "commit": "2" * 40,
-        "expected_base_head": expected_base_head,
-    }
-    bookkeeping = {
-        "repo_ref": "example/repo",
-        "base_branch": "main",
-        "merge_subject": "chore(merge): persist finish",
-        "merge_body": "Refs #7",
-    }
+def test_merge_allows_unrelated_target_advance(tmp_path, monkeypatch):
+    transaction = {"pr_number": 7, "commit": "2" * 40}
+    bookkeeping = {"repo_ref": "example/repo", "base_branch": "main",
+                   "merge_subject": "chore(merge): persist finish", "merge_body": "Refs #7"}
     mutations = []
-    monkeypatch.setattr(FINISH, "exact_pr", lambda *_args: {"state": "OPEN"})
-    monkeypatch.setattr(FINISH, "current_remote_head", lambda *_args: "3" * 40)
+    reads = iter([{"state": "OPEN"}, {"state": "MERGED", "mergedAt": "now", "mergeCommit": {"oid": "4" * 40}}])
+    monkeypatch.setattr(FINISH, "exact_pr", lambda *_args: next(reads))
+    monkeypatch.setattr(FINISH, "verify_target", lambda *_args: "5" * 40)
+    monkeypatch.setattr(FINISH, "git", lambda *_args, **_kwargs: type("Result", (), {"returncode": 0})())
     monkeypatch.setattr(FINISH, "gh", lambda *_args: mutations.append(_args))
-
-    with pytest.raises(CommandError) as caught:
-        FINISH.merge(tmp_path, {"task_ref": ".trellis/tasks/demo"}, bookkeeping, transaction, tmp_path / "transaction.json", PACKAGE)
-
-    assert caught.value.field_path == "bookkeeping.expected_base_head"
-    assert mutations == []
+    monkeypatch.setattr(FINISH, "write_transaction", lambda *_args: None)
+    result = FINISH.merge(tmp_path, {"task_ref": ".trellis/tasks/demo"}, bookkeeping, transaction, tmp_path / "transaction.json", PACKAGE)
+    assert result["stage"] == "success" and result["target_head"] == "5" * 40
+    assert len(mutations) == 1
+    assert "--match-head-commit" in mutations[0]
 
 
 @pytest.mark.parametrize("missing_ownership", [False, True])
@@ -462,7 +454,6 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
         "bookkeeping": {
             "repo_ref": "example/repo",
             "base_branch": "main",
-            "expected_base_head": base_head,
             "head_branch": "codex/demo",
             "archive_ref": archive_ref,
             "commit_subject": "chore(trellis): persist demo finish",
@@ -782,3 +773,22 @@ def test_finish_archive_keeps_active_task_when_official_session_method_is_missin
     assert caught.value.code == "official_session_unavailable"
     assert task_dir.is_dir() and session.is_file()
     assert not (repo / archive_ref).exists()
+
+
+def test_original_private_transaction_projects_same_operation_without_base_field(tmp_path):
+    public = {"task_ref": ".trellis/tasks/demo", "task_id": "demo",
+              "closure_result": {"result_id": "closure:demo"}}
+    bookkeeping = {"repo_ref": "example/repo", "base_branch": "main", "head_branch": "codex/demo"}
+    transaction = {"schema_version": "2.0", "stage": "committed",
+                   "task_ref": public["task_ref"], "task_id": "demo", "closure_result_id": "closure:demo",
+                   "finish_ref": FINISH.finish_ref(public, 0), "lifecycle_generation": 0,
+                   **bookkeeping, "expected_base_head": "1" * 40,
+                   "archive_ref": ".trellis/tasks/archive/2026-10/demo",
+                   "parent_head": "2" * 40, "commit": "3" * 40}
+    path = tmp_path / "transaction.json"
+    path.write_text(json.dumps(transaction))
+    projected = FINISH.read_transaction(path, public, bookkeeping, PACKAGE, 0)
+    assert projected == {key: value for key, value in transaction.items() if key not in {"schema_version", "expected_base_head"}} | {"schema_version": "3.0"}
+    assert json.loads(path.read_text()) == transaction
+    FINISH.write_transaction(path, projected, PACKAGE)
+    assert FINISH.read_transaction(path, public, bookkeeping, PACKAGE, 0) == projected

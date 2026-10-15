@@ -54,11 +54,10 @@ def clean_candidate(projection, public):
     base = record["base_branch"]
     if not isinstance(base, str) or not base:
         raise CommandError("stale_identity", "base_branch", "Resolve the task selected base before Task Commit.", 3)
-    base_ref = f"origin/{base}" if git(repo, "rev-parse", "--verify", f"origin/{base}", check=False).returncode == 0 else base
-    base_head = git(repo, "rev-parse", base_ref).stdout.strip()
-    if (base_head == head or git(repo, "merge-base", "--is-ancestor", base_head, head, check=False).returncode
-            or not git(repo, "diff", "--name-only", f"{base_ref}...HEAD").stdout.strip()):
-        raise CommandError("stale_identity", "base_ref", "Resolve current base continuity before formal Review.", 3)
+    base_ref = delivery["candidate"]["base_ref"]
+    if (base_ref is None or projection.commit(base_ref) != base_ref
+            or not git(repo, "diff", "--name-only", base_ref, head).stdout.strip()):
+        raise CommandError("stale_identity", "base_ref", "Use the current Check's fixed, nonempty complete content range.", 3)
     committed = git(repo, "show", f"HEAD:{public['task_ref']}/task.json", check=False)
     try:
         metadata = json.loads(committed.stdout)

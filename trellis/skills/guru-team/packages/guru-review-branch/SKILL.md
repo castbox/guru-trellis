@@ -41,15 +41,17 @@ Task locator, public Delivery key, content HEAD and live PR payload snapshot.
 It requires actual current-generation Completion/Closure and committed archive
 summary/Delivery plans. It consumes no current Check and writes no active gate.
 
-Resolve the task's already-existing selected-base ref and live GitHub base to
-the same commit B before reviewing. Do not fetch, synchronize, or update refs.
+Resolve the selected Delivery's actual fixed content base B before reviewing;
+for a legacy/stopped candidate without that anchor, the original range owner
+selects the unique merge base once and pins it in this owner's checkpoint.
+Live GitHub target identity is separate. Do not fetch, synchronize, or update refs.
 The global workflow owns the fresh Architecture
 `delivery_task_impact_sync(stage=branch_review)` invocation with
-`source_exit=review_refresh_required` over exact B...A. Consume only its
+`source_exit=review_refresh_required` over exact B..A. Consume only its
 read-only accepted result; missing evidence, blocked, or a result requiring
 promotion/repair stops, never enters a writable consumer.
 
-Independently review the full current B...A diff, live requirement authority,
+Independently review the full current B..A diff, live requirement authority,
 archived planning and current test evidence. Neither the prior review nor a
 PR snapshot is a semantic pass. This profile overrides ordinary finding-fix
 and scope routes: content findings, scope insufficiency and missing authority
@@ -64,7 +66,7 @@ checkpoint. Both exits retire the owner checkpoint after validated projection.
 The success output carries only task_ref, A, the exact title/body snapshot,
 delivery_key and reviewed_base_head B. In the current graph this archived-review result
 stops for pinned-old or manual disposition; it does not feed Delivery Review.
-Stale A/B/PR payload, non-Ready
+Changed A/content-B/PR payload, non-Ready
 state, dirty archive or mismatched archive Task/summary identity fail closed without repair.
 
 ## Ordinary Reviews
@@ -92,7 +94,7 @@ justify additions. Every touched non-generated code file at or above 3000
 lines requires a mechanical-split or small-decoupling conclusion; untouched
 historical large files are not imported into scope.
 Immediately before dispatch, tell the user in the current dialogue the
-independent reviewer identity, the exact committed `origin/<base>...HEAD`
+independent reviewer identity, the exact committed `base_oid..head_oid`
 range, and the review target. Immediately after return, show the final finding
 summary and the semantic owner's conclusion. Keep the reviewer transcript and
 these lifecycle notices dialogue-local; do not persist them in a gate, DTO,
@@ -148,7 +150,7 @@ unfinished-agent replacement performs closure as an internal transient
 judgment. It retains `introduced_head`, binds the fixing `fix_head`, and
 produces a later `closure_head` plus concrete closure evidence. The AI workflow
 then automatically dispatches a distinct fresh reviewer over the complete
-current `origin/<base>...HEAD` range.
+current `base_oid..head_oid` range.
 
 Closure emits no public exit and writes no artifact. Only the distinct
 `fresh_final_review` may reach the recorder and pass. After its AI Review Gate

@@ -43,13 +43,13 @@
       "id": "task_identity",
       "evidence": "public task ref, task-content HEAD and live Git",
       "binding": "exact active task worktree and current HEAD",
-      "freshness": "reread before guard, record and check"
+      "freshness": "reread before record, check and exact mutation"
     },
     {
       "id": "base_pair",
-      "evidence": "selected base ref; pre-review live merge-base derivation or post-review adjacent old/new commit ids",
+      "evidence": "fixed integration target commit OID and operation-scoped old/new pair",
       "binding": "one operation-scoped cumulative base delta",
-      "freshness": "selected base observed once and pre-review merge base re-derived live"
+      "freshness": "same fixed target throughout execution and recovery"
     },
     {
       "id": "caller_continuity",
@@ -211,10 +211,6 @@
       "path": "schemas/delivery-public-input.schema.json"
     },
     {
-      "id": "pair_guard_result",
-      "path": "schemas/delivery-pair-guard-result.schema.json"
-    },
-    {
       "id": "candidate_request",
       "path": "schemas/delivery-candidate-request.schema.json"
     },
@@ -276,12 +272,6 @@
     }
   ],
   "validators": [
-    {
-      "id": "pair_guard",
-      "command": "scripts/guard-task-base-pair.sh",
-      "runtime_command": "guard-task-base-pair",
-      "objective_scope": "Observe one selected base ref and classify objective pair state without semantic routing"
-    },
     {
       "id": "candidate_executor",
       "command": "scripts/execute-base-candidate.sh",

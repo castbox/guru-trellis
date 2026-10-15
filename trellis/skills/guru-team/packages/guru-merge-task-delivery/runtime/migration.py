@@ -40,7 +40,7 @@ def recover(package, root, public):
     facts = live_facts(root, package, public, historical_only=True)
     if facts["pr"]["state"] != "MERGED":
         raise CommandError("stale_identity", "github.pr.state", "Historical recovery cannot authorize a new merge; review the current candidate.", 3)
-    return terminal_output(package, root, public, facts, original["semantic_review"], original["pre_merge_base_head"], historical_schema1=True)
+    return terminal_output(package, root, public, facts, original["semantic_review"], historical_schema1=True)
 
 
 def run(package, command, argv):
@@ -81,13 +81,13 @@ def run(package, command, argv):
     if args.preview:
         from owner import delivery_fact
         from runtime.delivery_projection.adapter import DeliveryProjection
-        terminal_output(package, root, current, facts, original["semantic_review"], original["pre_merge_base_head"], historical_schema1=True, record=False)
+        terminal_output(package, root, current, facts, original["semantic_review"], historical_schema1=True, record=False)
         projection = DeliveryProjection(root, current["task_ref"])
         writes = [path.relative_to(root).as_posix()]
         if projection.resolve(current["delivery_key"])["delivery_result"] != delivery_fact(projection, current, facts):
             writes.append(current["task_ref"] + "/task.json")
         return {"status": "preview", "write_paths": writes}
-    terminal_output(package, root, current, facts, original["semantic_review"], original["pre_merge_base_head"], historical_schema1=True)
+    terminal_output(package, root, current, facts, original["semantic_review"], historical_schema1=True)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(association, ensure_ascii=False, indent=2) + "\n")
     return {"status": "historical_delivery_recorded", "delivery_key": current["delivery_key"], "result_id": "delivery:" + facts["merge_commit"]["sha"], "source_binding": path.relative_to(root).as_posix()}
