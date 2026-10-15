@@ -15,7 +15,15 @@
 | T567-07 | 实际 AI 双Delivery owner链完成到原Finish success，详见下文。原真实Reconcile41和Merge45提供实际阻塞/恢复的确定性回归；不把fixture预写pass称作AI语义执行。 |
 | T567-08 | Main fresh独立Phase2 Architecture正式baseline_current / architecture_impact / target_native / reviewed_candidate；原RDT正式ssot_current。贡献仍为task-owned candidate，未promotion。主Task的正式Check、真实工作提交和独立committed Review各以其原owner实际结果为准。 |
 
-另有 BranchReview44、Readiness21、Publish26、active fixture composition2、scope revision3项通过。变更Python解析、package shell语法、task context和ownership validator通过；ownership覆盖22平台descriptor、43 managed claims、22 overlays。未执行完整多平台安装矩阵。
+另有 Readiness21、Publish26、active fixture composition2、scope revision3项通过。BranchReview最终44项通过，首次独立审查检出的中间失败与修复见下文。变更Python解析、package shell语法、task context和ownership validator通过；ownership覆盖22平台descriptor、43 managed claims、22 overlays。未执行完整多平台安装矩阵。
+
+## 主 Task 提交与 BR567-F1 修复
+
+原 installed Check 正式通过后，原 TaskCommit 已创建本地实现提交 `62e7ef1baf3af263af0922b3e8baf0d89d862ae9`，完整范围为 `3b165daef0001bd9816c0bf3bbe928bcb59de390..62e7ef1baf3af263af0922b3e8baf0d89d862ae9`，共111路径。fresh独立 reviewer 先完成该完整范围的 Architecture，正式返回 `baseline_current / architecture_impact / target_native / reviewed_candidate`；随后实际 BranchReview 返回 `implementation_required`，唯一 finding 为 `BR567-F1 / P2`，没有把前序 Check 或 Architecture 当作完整 Review 通过。
+
+该 reviewer 重跑 BranchReview 全套时为43通过、1失败：`test_workflow_closes_delivery_completion_finish_and_promotion_architecture_routes` 仍逐字要求本轮已移除的无条件 stale/sync 政策及旧 promotion 原句。此前44项绿色日志不覆盖这次最终文案，不能作为当前全套通过证明。normal/mechanism资格均实际返回 `qualified_current`，root为 `not_incident_applicable`，属本轮测试消费者迁移遗漏。修复仅删除这两条废弃逐字断言，保留现有阶段、owner、promoted与执行顺序检查；没有冻结另一组新文案或改产品行为。修复后亲自重跑同一完整套件44/44通过。修复差额仍须 fresh Check、TaskCommit及独立完整 committed Review，未声称这些后续门禁已完成。
+
+首次 canonical source validator记录40 active packages/124 commands/111 package test files；独立复跑时计数197，差异来自validator统计本地编译缓存文件。该计数不是测试执行数或语义充分性；两次source验证均通过，未把缓存计数差异列为产品finding或扩大修复。
 
 ## 实际 AI owner链与真实 Git
 
@@ -56,4 +64,4 @@ phase2_authoring在author旧安装下原9项中8项通过，1项source/installed
 
 曾检查“旧constructor符号base在恢复时漂移”候选。实际运行HEAD旧constructor与当前公共begin_check时，原store先拒绝`candidate_mismatch: base must be an exact commit`，未写入该候选；原normal-scenario正式返回`rejected_not_reproduced`。没有据此增加防御实现、负例测试或finding。
 
-未验证真实GitHub mutation/服务端更新策略、远端marketplace exact candidate、业务仓采用、开发checkout迁移和完整多平台Release矩阵。以上只声明各实际观察层，不声明生产效果或Release Gate通过；真实主仓commit/push/PR/merge/tag/Release和共享Architecture/RDT promotion均未执行。
+未验证真实GitHub mutation/服务端更新策略、远端marketplace exact candidate、业务仓采用、开发checkout迁移和完整多平台Release矩阵。以上只声明各实际观察层，不声明生产效果或Release Gate通过；本地实现commit已完成，真实主仓push/PR/merge/tag/Release和共享Architecture/RDT promotion均未执行。

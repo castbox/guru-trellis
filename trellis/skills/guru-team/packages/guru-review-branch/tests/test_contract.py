@@ -757,8 +757,6 @@ class BranchReviewContractTest(unittest.TestCase):
             "reviewed_promoted",
             "current `no_change` proof",
             "promotion-created shared-current diff returns to fresh Phase 2",
-            "baseline, constitution, contribution, expected-current, or stage identity always returns `sync_required`",
-            "`sync_required(sync_kind=promotion_required)` enters that owner's declared serialized promotion route",
             "does not absorb Delivery publication, whole-task Completion",
         ):
             self.assertIn(phrase, normalized)
