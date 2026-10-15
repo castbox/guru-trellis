@@ -11,4 +11,4 @@
 | R569-09 / BEH569-09、R569-10 / BEH569-10 | CON569-02 | T569-01、02、03、07 | 原Merge→query→Completion及恢复公开入口 |
 | R569-11 / BEH569-11 | D569-01、CON569-02 | T569-06、07 | matching安装、apply/reapply、投影bytes/modes/drift |
 
-test.md每个T569行反向引用上述设计与需求；无孤立需求、设计或测试。现有RDT .98中#557/#567的有效职责保持，其关于#569尚未实现的数据准备边界由此增量承接，不隐式改其它阶段或发布authority。Architecture contribution仍位于本Task目录，尚未晋升shared current。
+test.md每个T569行反向引用上述设计与需求；无孤立需求、设计或测试。现有RDT .98中#557/#567的有效职责保持，其关于#569尚未实现的数据准备边界由此增量承接，不隐式改其它阶段或发布authority。首次独立完整committed Review后由原owners晋升为RDT .99 / Architecture .93；[长期Architecture贡献](../../architecture/contributions/569-fixed-cutoff-history-query.md)引用immutable reviewed Task候选。晋升新差额仍须fresh gates。
