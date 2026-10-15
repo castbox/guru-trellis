@@ -1,6 +1,6 @@
 # #566 Requirements 增量
 
-来源为 [Issue #566](https://github.com/castbox/guru-trellis/issues/566)，配对公共能力归 [Trellis #40](https://github.com/castbox/Trellis/issues/40)。本贡献承接 RDT `.96/active`，尚未晋升；既有完整 Plan2 与普通 current-only 合同保留。
+来源为 [Issue #566](https://github.com/castbox/guru-trellis/issues/566)，配对公共能力归 [Trellis #40](https://github.com/castbox/Trellis/issues/40)。本贡献按 expected RDT `.96/active` 晋升至 `.97/active`；既有完整 Plan2 与普通 current-only 合同保留。
 
 | Identity | 当前行为承诺 |
 | --- | --- |

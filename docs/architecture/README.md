@@ -1,8 +1,12 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.90`；状态：`active`；predecessor：`current-main-0.6.17-guru.89`；source baseline：[已晋升 #557 贡献](./contributions/557-manual-merged-delivery-recovery.md) + immutable `.89` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+版本：`current-main-0.6.17-guru.91`；状态：`active`；predecessor：`current-main-0.6.17-guru.90`；source baseline：[已晋升 #566 贡献](./contributions/566-single-checkout-upgrade.md) + immutable `.90` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
 
-当前增量 ARCH-CUR-063 / ARCH-DOM-046 / ARCH-INT-049 与 ADR-026 承接已独立审查的 #557；[唯一 Test](../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有 source、matching installed、真实 GitHub 链和旧安装/业务/Release 边界。promotion 新差额必须重新进入 Phase 2、Task Commit 与独立完整 Branch Review。
+当前增量 ARCH-CUR-064 / ARCH-DOM-047 / ARCH-INT-050 与 ADR-027 承接已独立审查的 #566；[唯一 Test](../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)拥有实际证明与未验证边界。promotion 新差额必须重新进入 Phase2、TaskCommit 与独立完整 BranchReview。
+
+历史 `.90`：版本：`current-main-0.6.17-guru.90`；状态：`active`；predecessor：`current-main-0.6.17-guru.89`；source baseline：[已晋升 #557 贡献](./contributions/557-manual-merged-delivery-recovery.md) + immutable `.89` authority（Git 历史）。既有 constitution、GAP lifecycle、软件四轴与业务采用责任保持。
+
+历史 `.90` 增量 ARCH-CUR-063 / ARCH-DOM-046 / ARCH-INT-049 与 ADR-026 承接已独立审查的 #557；[唯一 Test](../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有 source、matching installed、真实 GitHub 链和旧安装/业务/Release 边界。promotion 新差额必须重新进入 Phase 2、Task Commit 与独立完整 Branch Review。
 
 历史 `.89`：当时版本：`current-main-0.6.17-guru.89`；状态：`active`；predecessor：`current-main-0.6.17-guru.88`；source baseline：[已晋升 #548 贡献](./contributions/548-creation-recovery.md) + immutable `.88` authority（Git 历史）。既有 owners、constitution、ADR 与 GAP lifecycle、软件四轴保持。
 

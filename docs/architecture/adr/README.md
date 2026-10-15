@@ -57,3 +57,5 @@
 `ADR-025`（accepted）：exact_source 来源资格与本次 retain_open/close 处置分离；Closure 仍独占动作，Finish 校验每项所需状态，aggregate 与 exact source fact 分开。正文见 [`025-retain-source-open-disposition.md`](./025-retain-source-open-disposition.md)；ADR-013/024 的原 owners 与公共模型职责保持。
 
 | `ADR-026` | accepted | 原 Merge 归属真实手动合入事实，public writer 不变；原 Completion 保留实际候选/CI/整体证据判断，显式 query2 只读已记录事实 |
+
+`ADR-027`（accepted）：独立单 checkout tools/selected legacy Task 维护；公共模型与恢复归 Trellis，原 owners 承接私有控制/runtime/业务职责，旧 Plan2 与 current-only 保持。正文见 [`027-independent-install-maintenance.md`](./027-independent-install-maintenance.md)。

@@ -90,3 +90,9 @@ C4修复后原branch owner对已有公共绑定、live registered branch匹配�
 保留原始失败：第一次使用旧native初始化成功但产生旧bootstrap，原apply正确返回migration_required；改用正式native-delivery-v1，未手改Task/.version/declaration。fresh source自身首装因无installed manifest在ownership写前失败，改由完整来源原installer生成manifest后再自有reapply。一次直接执行validate.py相对import错误，改用原installer使用的模块入口后通过，不是产品finding或通过证据。仅首个受控样本路径内重建正确初始化，不扩张Release矩阵。
 
 因此A5的真实受控dogfood证据已补齐。当前开发Task及其旧installed graph、其他worktrees、224条旧记录和业务仓均未采用候选；该保留符合canonical Candidate migration boundary，不再被提升为当前Check阻塞。三份spec之外没有运行时代码变化：已有原生工具/任务/历史待验收/回退结果按未变的实际代码、工具链、匹配依赖和执行入口保持适用，不把旧operation重锚为新source，最终安装分发差额由本节的新冻结样本证明。
+
+## 首次 committed Review 与文档晋升
+
+原 Check 已完成真实 Phase2，exact commit `95bcf24334f9a4d25df3f9175af9d00b58d86915` 后工作树干净。独立 Architecture 对 `origin/main@3e8b281c93894cd3df4e704901bda63ca2885f23...95bcf24334f9a4d25df3f9175af9d00b58d86915` 实际返回 baseline_current / reviewed_candidate；同一合规 reviewer 随后完成独立完整 Branch Review，原 recorder、checker 与 public invocation 正式返回 passed，无实际候选或 P0–P3 finding。亲自运行 source/installed、matching legacy maintenance 5项、原 owner 23项、Sync15项、tools9项（另1共享写入 skip）、tools-only installer2项；实际历史归档、两类 task_resumed、CMS4 installed Completion=evidence_pending 和 incompatible_restore 原日志均已读取。未重放共享安装。
+
+随后 post_branch_review pair guard 实际 unchanged；publication Architecture eligibility 实际返回 sync_required / promotion_required，未进入 Delivery readiness。原 owners 按 expected RDT `.96` / Architecture `.90` 维护 successor `.97` / `.91` 与 durable contribution / ADR-027。该晋升只承接已审查责任、trace 与实际证据，不改变代码、正式 source lock、旧 author runtime 或业务数据；新差额必须重新 Phase2、TaskCommit、独立完整 BranchReview，当前尚不宣称这些后续 gates 完成。
