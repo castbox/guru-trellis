@@ -179,6 +179,40 @@ class RuntimeTest(unittest.TestCase):
         mutation.assert_not_called()
         self.assertFalse(OWNER.gate_path(self.root, self.public).exists())
 
+    def test_target_advance_and_behind_preserve_candidate_but_real_blocker_stops(self):
+        pre = self.facts(merged=False)
+        gate = OWNER.build_gate(self.public, pre, self.review)
+        advanced = self.facts(merged=False)
+        advanced['base_ref']['head_sha'] = '5' * 40
+        advanced['pr']['merge_state_status'] = 'BEHIND'
+        advanced['objective_blockers'] = OWNER.objective_blockers(advanced['pr'], advanced['repository_policy'])
+        self.assertEqual([], advanced['objective_blockers'])
+        OWNER._check_gate_current(PACKAGE, self.root, self.public, advanced, gate)
+        terminal = self.facts(merged=True)
+        terminal['merge_commit']['parents'][0] = '5' * 40
+        OWNER.terminal_output(PACKAGE, self.root, self.public, terminal, self.review)
+        advanced['pr']['merge_state_status'] = 'BLOCKED'
+        advanced['objective_blockers'] = OWNER.objective_blockers(advanced['pr'], advanced['repository_policy'])
+        with self.assertRaises(OWNER.CommandError) as blocked:
+            OWNER._check_gate_current(PACKAGE, self.root, self.public, advanced, gate)
+        self.assertEqual('merge_precondition_failed', blocked.exception.code)
+
+    def test_original_private_gate_is_validated_then_projected_for_same_owner(self):
+        pre = self.facts(merged=False)
+        gate = OWNER.build_gate(self.public, pre, self.review)
+        gate['schema_version'] = '1.0'
+        gate['pre_merge_base_head'] = pre['base_ref']['head_sha']
+        gate['action_sha256'] = OWNER.digest({'repo_ref': self.public['repo_ref'],
+            'pr_number': self.public['pr_number'], 'expected_head_sha': self.public['expected_head_sha'],
+            'pre_merge_base_head': pre['base_ref']['head_sha'],
+            'merge_method': self.review['route']['merge_method'], 'merge_message': self.review['route']['merge_message']})
+        OWNER.write_gate(PACKAGE, self.root, gate)
+        _, current = OWNER.load_gate(PACKAGE, self.root, self.public)
+        self.assertEqual('2.0', current['schema_version'])
+        self.assertNotIn('pre_merge_base_head', current)
+        self.assertEqual(gate['semantic_review'], current['semantic_review'])
+        self.assertEqual(gate['pre_merge_facts'], current['pre_merge_facts'])
+
     def test_nonmerge_routes_never_mutate_and_keep_closed_dtos(self) -> None:
         facts = self.facts(merged=False)
         cases = [

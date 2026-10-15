@@ -23,13 +23,14 @@ upstream migration/default-cutover qualification.
 
 All current commit profiles bind `delivery_key` and `check_result_id`.
 `delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
-non-metadata clean candidate, nonempty full base-to-HEAD diff and base ancestry.
+non-metadata clean candidate and nonempty full fixed base-to-HEAD diff. Latest
+target ancestry is not a qualification condition.
 The public Task record must name a nonempty selected `base_branch`; missing base
 returns `stale_identity/base_branch` to its original base/binding owner. This
 clean path never inherits the dirty preparation path's default `main`.
 Current public Check identity, applicability and candidate verification remain
-required after base reconciliation. Its consumer performs post-commit pair
-guard, fresh Delivery Architecture and the first full independent Branch Review;
+required after base reconciliation. Its consumer obtains fresh applicable
+Delivery Architecture and the first full independent Branch Review;
 Check and bounded continuity cannot replace that first Review. If clean stdout
 is lost, the same owner rereads the unchanged public Check/candidate and returns
 the same committed DTO. It keeps the public Check fact and creates no additional
@@ -248,3 +249,13 @@ implementation and a full Phase 2 rerun before a fresh private candidate.
 The original TaskCommit AI owner reviews actual committed blobs, each original reference target, and the exact Plan2 artifact writes before selecting `markdown_relative_links_v1`. The deterministic function `runtime/migration.py:project_planning_links` is shared by that write preparation and source equivalence validation. It supports UTF-8 inline Markdown links/images with plain or angle-bracket destinations and optional quoted titles; only relative destinations without spaces, escapes or parentheses are rebased to the same existing file from the new public planning root. Query/fragment and all other bytes are preserved. External schemes, absolute paths, fragment-only links, fenced/inline code and JSONL are unchanged. Reference definitions or unsupported inline syntax return to this original migration/Author owner; missing targets require restoration or semantic revision. No Markdown normalization, public origin field, Planning private bridge reader or second state authority is introduced.
 
 Clean validation recomputes projected bytes from original Git blobs and current public planning_root, including modes and ancestry. Direct HEAD paths always remain strict, regardless of association mode. A genuine content change uses the dirty path. Existing absent-mode associations cannot be relabeled; prepare a fresh execution copy/Plan2 and review its real mapping. The optional field is an explicit additive private 1.0 schema extension; old readers reject this mode until the matching package is installed, while existing absent-mode inputs retain their prior semantics.
+
+## Fixed content baseline
+
+Both dirty commit and clean re-entry consume the current Check candidate’s
+exact base OID. The Task base_branch remains the PR target name; origin/base
+is not reread to select content or require ancestry. A clean candidate needs
+its complete nonempty fixed base..HEAD diff and all original identity, plan,
+content, staging/hook and recovery facts. Necessary commits evolve actual HEAD
+through the original candidate/Check owners; clean retained content makes no
+extra commit. Remote-ref advancement alone never changes this transaction.

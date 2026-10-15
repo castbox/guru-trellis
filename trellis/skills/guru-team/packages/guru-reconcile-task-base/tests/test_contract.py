@@ -21,7 +21,7 @@ class ContractTest(unittest.TestCase):
         interface=json.loads((PACKAGE/'interface.json').read_text()); commands=json.loads((PACKAGE/'commands.json').read_text()); catalog=json.loads((PACKAGE/'errors/catalog.json').read_text())
         self.assertEqual([],validate(SKILLS/'schemas/skill-interface-1.4.schema.json',interface)); self.assertEqual([],validate(SKILLS/'schemas/skill-commands-1.1.schema.json',commands)); self.assertEqual([],validate(SKILLS/'schemas/skill-error-catalog.schema.json',catalog))
         self.assertEqual([],validate(SKILLS/'schemas/skill-evals.schema.json',json.loads((PACKAGE/'evals/evals.json').read_text())))
-        self.assertEqual(6,len(interface['external_exits'])); self.assertEqual(8,len(commands['commands']))
+        self.assertEqual(6,len(interface['external_exits']))
         eval_ids={item['id'] for item in json.loads((PACKAGE/'evals/evals.json').read_text())['evals']}
         self.assertIn('unrelated-base-delta-reconciled',eval_ids)
         self.assertIn('post-check-reconciled-reenters-phase2',eval_ids)

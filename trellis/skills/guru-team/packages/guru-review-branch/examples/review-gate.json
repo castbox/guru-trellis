@@ -10,7 +10,7 @@
   "review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "reviewed_content_algorithm": "guru-reviewed-content-1.0",
   "reviewed_content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-  "base_ref": "origin/main",
+  "base_ref": "1111111111111111111111111111111111111111",
   "base_head": "dddddddddddddddddddddddddddddddddddddddd",
   "integration_pair": null,
   "delivery_review": {
@@ -50,7 +50,7 @@
     "reviewer": "independent-reviewer",
     "review_source": "independent-agent",
     "evidence": [
-      "Reviewed the complete origin/main...HEAD diff and current validation evidence."
+      "Reviewed the complete fixed base_oid..head_oid diff and current validation evidence."
     ]
   },
   "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"

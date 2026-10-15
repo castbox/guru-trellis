@@ -130,10 +130,11 @@ delta refreshes only the directly dependent owner identity. A requirement,
 scope, authority, design, acceptance, behavior, or verification change routes
 through the affected semantic owner.
 
-Architecture baseline, constitution, project change-contract, task scope, or
-impact-result drift is a semantic dependency change rather than equivalent
-formatting. It requires a fresh Architecture Planning result before this owner
-can reconsider approval. The Architecture result remains live stage evidence;
+An actual task-applicable semantic change to Architecture, constitution,
+project change-contract, task scope or impact conclusions requires the affected
+owner's fresh Architecture Planning result before reconsidering approval.
+Unrelated CURRENT/version/navigation advancement does not replace the stage's
+explicit applicable authority and is not such a semantic change. The Architecture result remains live stage evidence;
 it is not added to this Skill's public DTO or compact checkpoint.
 
 ## Causal planning dependency
@@ -283,3 +284,14 @@ still checks adequate current authority/contribution and full planning scope.
 The older Delivery1.0 input without that actual final producer is retained as
 a validation asset and fails closed at current invocation. Lost output refreshes
 final Architecture after Wording, not an inferred approval from public phase.
+
+## Applicable authority and fixed candidate
+
+Review the versions actually applicable to this Task/Delivery and current plan.
+An unrelated CURRENT, navigation, archive, non-dependency code or tool-version
+advance is not a Planning dependency change. Explicitly applicable rules, user
+requirements, invalidated assumptions and actual scope/dependency/solution
+changes still refresh their original owners. Consume the actual adjacent
+final_plan for this design; no latest-base or pair qualification precedes
+Approval or Activation. Check the complete range mechanism, actual head
+evolution and same-Delivery recovery; no historical pass supplies approval.

@@ -487,14 +487,14 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-bind-task-session-manual-recovery-router | Recheck the restored binding and current task boundary before phase routing. |
 | guru-current-phase-router | Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning invokes Author delivery_initial_review for the exact selected key with fresh original source selection; no-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
-| phase-1-delivery-activation | Present the current Delivery approved plan, apply the current pair guard, then invoke `guru-activate-delivery`. |
+| phase-1-delivery-activation | Present the current Delivery approved plan, then invoke `guru-activate-delivery` after its dialogue boundary. |
 | guru-delivery-planning-author-router | Consume Creation's actual task_ref/delivery_key/planning_root into Author delivery_initial_review with adjacent source_selection and mode. The Author resolves that public planning_root; lost source selection returns to original Clarify. |
 | guru-delivery-selection-router | Read the exact TaskKey inventory for a real selection; obtain an explicit DeliveryKey before invoking Creation selection. Never infer identity from a sole inventory row. |
 | guru-delivery-activation-planning-router | Return the selected Delivery to its current Planning owner, refresh affected evidence, then invoke Delivery Approval. |
 | guru-delivery-scope-revised-router | Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from delivery_scope_revised; add fixed profile=delivery_active_task_scope_change; explicitly invoke guru-author-task-plan. This is same-slice rework, never a Planning approval. |
 | guru-delivery-started-router | Consume the actual public Planning result for same-Delivery implementation. |
-| guru-base-reconciliation-router | Consume the checked current pair and resume its closed `resume_target`. |
-| guru-base-continuity-passed-router | Consume bounded continuity for the exact pair, reread actual public Check/full_review applicability, and resume the closed target only when both are current for the reconciled candidate. Missing/stale Check re-enters the existing legal rework/begin_check/Check/clean TaskCommit path; missing/stale full_review invokes independent complete Branch Review. Only the actual full Review result seeds Delivery Review. Bounded continuity never manufactures that result. |
+| guru-base-reconciliation-router | Consume the fixed integration result and resume its closed target through the original candidate/Check/Review applicability owners. |
+| guru-base-continuity-passed-router | Return the bounded result to the original Check/Branch Review applicability owners; only their real current candidate-bound results resume the closed target. Continuity is not a full Review gate. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
@@ -515,8 +515,8 @@ The graph declares every workflow and stop consumer from the active package inte
 
 `guru-publish-task-delivery` owns the current PR and its output-loss recovery;
 `guru-merge-task-delivery` owns one expected-head merge and emits only a Delivery
-result. A stale review returns to Delivery Review, a base evolution returns
-through Reconcile/continuity, and a task-content finding returns to Phase 2.
+result. A materially stale review returns to its original owner; actual integration blockers enter
+Reconcile/continuity, and task-content findings return to their affected owner.
 Neither PR state nor merge status is a Completion approval.
 
 Every stop target returns the owning Skill result and safe remediation, then
@@ -569,12 +569,12 @@ independent committed full-diff Branch Review before any downstream stage. A
 missing result stops that stage. `baseline_incomplete` enters bootstrap/repair;
 `architecture_conflict` or `contract_incomplete` returns to Planning/repair;
 `fitness_regression` returns to implementation/check; and `blocked` stops.
-Stale baseline, constitution, contribution, expected-current, or stage identity
-always returns `sync_required` to the Architecture owner.
-`sync_required(sync_kind=promotion_required)` enters that owner's declared
-serialized promotion route; baseline/constitution advance or other stale
-authority is repaired or resynchronized by that owner and the affected stage
-is rerun.
+A stale identity for the explicitly stage-applicable baseline, constitution,
+contribution or candidate returns `sync_required` to the Architecture owner.
+Unrelated overall CURRENT/version/ref advancement does not change that
+applicability. `sync_required(sync_kind=promotion_required)` enters the original
+serialized promotion route; only a real affected dependency is reconsidered.
+Promotion's own expected-current write mismatch remains local to promotion.
 
 Delivery Review rejects missing or stale Architecture evidence, every conflict,
 incomplete contract, fitness regression, and `promotion_state=reviewed_candidate`.
@@ -765,14 +765,14 @@ PR or Task inventory never selects the Task or Delivery.
 | Task creation output lost | `guru-create-task` exact read-only recovery; no new Issue/Task/branch/worktree. |
 | Delivery creation/select output lost | `guru-create-delivery` same-operation recovery with explicit public selection or its own retained create input, never sole inventory guessing. |
 | Planning incomplete, approval missing/stale | Same Delivery Author/Wording/Architecture/Approval; D2 never overwrites D1's planning_root. |
-| Current approval awaits acceptance | `phase-1-delivery-activation` presents current artifacts and invokes new Activation after its dialogue boundary and pair guard. |
+| Current approval awaits acceptance | `phase-1-delivery-activation` presents current artifacts and invokes new Activation after its dialogue boundary. |
 | Activation result lost | Original `guru-activate-delivery` recovers the actual recorded result for the same key; no Task-status transition or new Delivery. |
 | Check result lost | `guru-check-task` validates its own current evidence or performs fresh semantic Check; no pass from phase or files. |
-| Check `passed` | Current pair guard, then `guru-create-task-commit` for necessary dirty content or clean committed candidate. |
+| Check `passed` | Invoke `guru-create-task-commit` for necessary dirty content or clean committed candidate. |
 | TaskCommit output lost | Same commit owner recovers exact candidate; no duplicate/empty/amended commit to restore stdout. |
 | TaskCommit `committed` | Candidate continuity router: affected HEAD returns through Reviewing rework, implementation begin_check and applicable Check; unchanged clean candidate enters independent full Review directly. |
 | Branch Review missing/stale | Fresh committed full-diff Architecture and `guru-review-branch`; Phase 2 or bounded continuity cannot replace first full Review. |
-| Branch Review `passed` | Pair guard then `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
+| Branch Review `passed` | Invoke `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
 | Publish/Merge success output or public projection lost | Original transaction reads actual PR/HEAD/merge and retries the same public fact; no repeated remote side effect. |
 | Exact selected Delivery's existing Publication PR is manually MERGED | Original Merge `delivery_merged_recovery`, then only its verified `delivered` enters original Completion; no pre-merge gate reconstruction. |
 | Same-Delivery findings/plan/base/readiness changes | Original affected owner judges dependency-scoped invalidation and invokes lawful earliest-owner rework. Commit and historical remote facts remain facts. |
@@ -967,7 +967,7 @@ Creation → Author delivery_initial_review → requirements_ready → Architect
 delivery_task_impact_sync candidate_assessment → Author delivery_solution_planning
 → plan_ready → Wording delivery_planning_artifacts → Architecture
 delivery_task_impact_sync final_plan → adjacent Delivery Approval → current
-presentation/acceptance/pair guard → Delivery activation.
+presentation/acceptance → Delivery activation.
 
 The current Architecture router dispatches by purpose, never by a guessed
 stage or prior prose. Candidate current cannot reach Approval; final current
@@ -1035,22 +1035,13 @@ wording, time, source, reference, digest, or approval state in tracked files,
 ignored runtime, checkpoints, gates, handoffs, archives, schemas, or public
 DTOs, and no recorder or validator parses the reply.
 
-Only after the applicable dialogue boundary is satisfied does approved reach
-the active-task pair guard with
-`resume_target=delivery_activation`. An unchanged pair resumes activation; a
-current pair consumes and routes its recorded exact typed output; a new pair
-invokes guru-reconcile-task-base and follows only its declared exit.
-Before implementation starts, a document conflict remains with that same
-`delivery_post_plan` Reconcile owner for resolved baseline validation and its
-exact local integration commit. Its checked `reconciled` exit resumes the same
-Delivery activation without requiring the unimplemented business Check or
-entering the post-implementation resolved-Check/full-review route.
-After the checked pair route resolves, invoke `guru-activate-delivery` for the
-same public DeliveryKey. D1, D2 and same-Delivery replanning use this same owner.
-Consume only its declared output; original-owner recovery restores an actual
-completed transition without another Task activation or new identity.
-Revision and scope exits return only to their declared consumers.
-
+After the applicable dialogue boundary, invoke `guru-activate-delivery` directly
+for the same public DeliveryKey. D1, D2 and same-Delivery replanning use this
+same owner. An actual pre-implementation document conflict uses the original
+`delivery_post_plan` Reconcile owner and resumes the same Activation after
+resolved-baseline validation; unimplemented business Check is not a prerequisite.
+Consume only declared outputs and original-owner recovery. Revision and scope
+exits return only to their declared consumers.
 
 For `guru-clarify-requirements:clear` in either Delivery scope profile, consume
 `scope_action` explicitly. `no_change` resumes the original current owner;
@@ -1152,12 +1143,9 @@ its fresh current route invokes guru-check-task; failed/unverified mandatory
 checks, conflict, incompleteness, stale identity, or fitness regression follow
 their Architecture routes and cannot become a Phase 2 pass.
 
-Guru-check-task's passed exit first enters the active-task pair guard with
-`resume_target=task_commit`. Only `unchanged` resumes directly to
-guru-create-task-commit. A compatible `new_pair` must be integrated by the
-confirmed expected-head Reconcile executor and its checked `reconciled` output
-returns to fresh Phase 2; it cannot reuse the pre-integration check. Task or
-planning findings return through their declared workflow targets.
+Guru-check-task's passed exit directly invokes `guru-create-task-commit`.
+Actual task/planning findings retain their declared owner routes. Remote-base
+advancement alone adds no invocation or re-entry.
 
 ## Phase 3: Finish
 
@@ -1187,11 +1175,9 @@ implementation performs `begin_check` for the exact committed candidate, and
 applicability judgment. Its `passed` returns through the clean committed-reentry
 TaskCommit path, with no second commit, before first complete Branch Review.
 An unchanged clean candidate keeps its current Check and proceeds directly.
-Only the resulting current committed DTO enters the active-task pair guard with `resume_target=branch_review` before Branch Review.
-Only `unchanged` resumes directly to Branch Review. A compatible `new_pair` is
-integrated as one confirmed expected-head local merge commit and returns to
-fresh Phase 2; the pre-integration Task Commit result is not Branch Review
-evidence.
+The resulting current committed DTO enters Branch Review directly. Real
+content changes use the original Check/Review applicability owners; a moving
+PR target is not a candidate-content change.
 
 #### 3.5 Branch review
 
@@ -1200,7 +1186,7 @@ delete, replace, merge, and compatibility-impacting ranges, including both
 subtraction dimensions. It does not read Phase 2 evidence; the workflow only
 routes its declared result.
 
-After the task-commit pair guard resolves, mandatory invoke
+For the first complete committed candidate, mandatory invoke
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`.
 The Architecture owner independently recomputes applicable checks and
 before/after satisfaction over the complete committed base-to-HEAD diff; it
@@ -1208,37 +1194,22 @@ cannot reuse Phase 2. Only its fresh current route invokes guru-review-branch,
 which performs its own independent complete-range semantic review and likewise
 cannot use Phase 2 as Branch Review proof.
 Before dispatch, the current dialogue names the independent reviewer identity,
-the exact committed `origin/<base>...HEAD` range, and the review target. On
+the exact fixed committed `base_oid..head_oid` range, and the review target. On
 return, it immediately reports the finding summary and semantic owner
 conclusion. That conclusion remains provisional: only after the official
 checker and the public wrapper both return `passed` for the same current
 identity may the caller declare that Branch Review passed. Normal `passed` has
-exactly one next consumer: it enters the pair guard with
-`resume_target=publication_review`; the target resumes Delivery Review, and no
+exactly one next consumer: it enters Delivery Review directly, and no
 Finish, archive, or journal route may intervene.
-The `base_continuity` profile binds the prior complete Branch Review commit
-separately from the current committed reconciliation HEAD. It reviews only the
-reconciliation-selected base delta, conflict resolution, resulting tree, and
-affected validation; it never represents itself as a new complete Branch
-Review. Its distinct `continuity_passed` exit projects the current
-continuity-reviewed reconciliation commit as `branch_review_commit` to the
-existing continuity router and preserves prior task-content review as private
-evidence. The router rereads actual public Check and full_review applicability.
-Reconciliation that changed the candidate requires the existing legal rework,
-implementation begin_check, fresh Check and clean TaskCommit re-entry first.
-If full_review is missing/stale, invoke the independent complete Branch Review;
-its actual `passed` result, not bounded continuity, seeds Delivery Review.
-Only a still-current actual full_review may resume the original closed target
-without repeating that complete Review. This profile accepts
-Reconcile outputs from `post_branch_review` and `post_publication` (the current
-Delivery Review boundary retains that profile id). The legacy
-`finalizer_base_mismatch` profile does not create a Finalizer production route.
-`post_plan`, `post_check`, and `post_commit` must never enter bounded continuity
-or use it as the first complete Branch Review.
+The original Branch Review owner retains bounded continuity for an actual
+integration operation. Its contract owns prior complete review reuse, review
+of real integration delta and affected dependencies, public result applicability
+and recovery. Continuity alone never substitutes for a public full_review result
+or the first independent complete Review. Follow its actual exit.
 
 #### 3.6 Delivery review and publication
 
-After Branch Review and the pair guard, mandatory invoke
+After Branch Review, mandatory invoke
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=publication)`.
 Only fresh `baseline_current` with `promotion_state=no_change` or
 `reviewed_promoted` enters `guru-review-task-delivery`. The semantic owner
@@ -1255,10 +1226,6 @@ the task or closes its source Issue. Only its current `ready_for_merge` enters
 remains mandatory. Merge output loss is recovered against the same PR and
 merge identity. A task-work finding returns directly to the active
 implementation owner; there is no archived-task restore step.
-The Delivery Review pair guard retains profile `post_publication` but uses
-`resume_target=delivery_publication`: unchanged and bounded-continuity routes
-both resume the current `guru-publish-task-delivery` successor, never the
-retired Finalizer.
 
 #### 3.7 Completion, Closure and Finish
 
@@ -1401,56 +1368,48 @@ to Merge; whole-scope adequacy belongs only to Completion.
 - Downstream phases consume public DTOs and live facts, never an upstream
   package artifact.
 
-### Active-task base evolution
+### Fixed Delivery content-range construction
 
-At plan approval, Phase 2 pass, task commit, Branch Review pass, and Delivery
-Review ready, invoke the package-local deterministic
-pair guard before continuing. The guard observes the selected base ref once and
-returns only objective unchanged/current/new/blocked pair state. Unchanged or
-already-current pairs require no new semantic invocation, GitHub/Docs/history
-reads, or interaction. `unchanged` resumes the closed `resume_target` directly;
-`current_pair` consumes and routes the recorded exact typed output, then deletes
-its one-use checkpoint. It must never resume from the guard's `resume_target`
-alone because that would discard a previously recorded non-`reconciled` exit.
-Only a new pair invokes guru-reconcile-task-base.
+The original Author/implementation owner selects fixed content base B from
+actual Delivery facts and the explicit planning baseline. Call
+DeliveryProjection.content_base(DeliveryKey, development_base=<selected B>,
+observed_target=<one observed OID only if B is not yet selected>). D2 consumes
+actual prior delivery_result heads; same-Delivery recovery keeps its own B.
+Construct candidate(paths, base_ref=B, head_ref=<actual HEAD OID>) and invoke
+begin_check. Include complete B..HEAD committed paths and the actual task dirty
+increment. Planning's observed H0 does not freeze later implementation HEAD.
+Never pass origin/<base> as a mutable stage range or replace B with an
+integration target. These calls compute facts; the original owner still judges
+scope, applicable authority and evidence sufficiency.
 
-The semantic owner reads live authority and current task/base facts, follows
-the installed semantic-retrieval SSOT, and returns exactly one declared exit.
-The base pair is an integration clock independent from the live authority and
-task-content clock. A base advance alone does not make planning or task content
-stale. For `post_plan`, `post_check`, and `post_commit`, the guard derives the
-operation pair from the unique live merge base and selected base HEAD; callers
-do not provide old/new base SHAs. When the exact candidate is compatible, the
-owner first displays and executes one confirmed expected-head local merge
-commit. `post_plan` then resumes `delivery_activation`; `post_check` and
-`post_commit` return to fresh Phase 2 so all downstream evidence is rebuilt
-against the committed integration HEAD.
-After complete Branch Review or Delivery Review, the
-same compatible result may return `reconciled` only when the candidate preserves
-the current reviewed-content identity. If task content remains unchanged but
-the candidate needs a new reviewed-content identity, the owner returns
-`review_continuity_required`; the current route uses the post-review profiles
-and cannot replace the first complete Branch Review. The retained
-`finalizer_base_mismatch` profile is not a current Finalizer entry. After the AI
-judgment it displays the exact task branch, expected task/base HEADs, candidate
-tree, commit scope, and zero remote
-effects, obtains confirmation for that mutation, and invokes its deterministic
-expected-head executor to create exactly one persistent local reconciliation
-commit. The executor must prove clean branch-bound state, expected ancestry, and
-candidate-tree equality before the result can enter `base_continuity`.
-`planning_stale` requires an actual live authority or approved-planning-
-assumption change with exact reason refs.
-The workflow routers validate only the minimal pair/route DTO and never repeat
-impact classification, candidate construction, validation selection, or review.
-Mapped implementation, planning, scope, bounded-continuity, resume, and blocked
-routes remain automatic and owner-specific.
+### Fixed content and actual integration
+
+Development baseline, each Delivery content candidate and PR target are distinct.
+Normal stage exits go directly to their declared consumer, without pair guards,
+ancestry qualification, temporary integration or synchronization commits.
+An owner completes its in-flight fixed candidate despite a shared fetch.
+
+Invoke `guru-reconcile-task-base` only for actual merge conflict, concrete
+required-check integration failure, the original merge owner’s confirmed existing
+server update requirement, explicit dependency/requirement incorporation, or
+user-requested synchronization. Its contract owns fixed-operation target
+selection, ordinary/resolved execution, bounded validation and recovery.
+Behind or a different target SHA alone is not a trigger.
+
+Original candidate/Check/Review owners handle actual content evolution and
+necessary affected re-entry, retaining same-Delivery identity and valid prior
+evidence. No coordinator, bypass, default semantic-impact review, Ruleset query
+or unconditional full-chain replay is introduced. The existing `phase2` target
+on actual Reconcile resumes the implementation/candidate owner for that bounded
+operation; it does not replay complete Phase 2.
 
 ### Architecture Baseline
 
 The mandatory `guru-maintain-architecture-baseline` owner is the only semantic
 owner of Architecture impact, project-check applicability, contribution/ADR,
 promotion, and Architecture typed routes. Standard-task consumers reread live
-project authority and use only one fresh stage result. They never copy design
+stage-applicable project authority and use only its current stage result;
+unrelated latest CURRENT/version advancement does not replace that authority. They never copy design
 constitution prose, project rules, or Architecture private state.
 
 Planning assesses a real candidate before Author solution writing, then final
@@ -1459,8 +1418,9 @@ invalidates it. Phase 2 performs the first candidate before/after judgment, and
 Branch Review independently recomputes over the committed full diff. Delivery
 Review and Completion/Finish accept only current `no_change` or fully
 `reviewed_promoted` state. Shared current changes only by serialized promotion
-against expected current identity; a baseline advance returns `sync_required`,
-and a promotion diff repeats Phase 2 and Branch Review before downstream reuse.
+against that write operation's expected-current identity; a mismatch returns
+`sync_required` for promotion. A real promotion diff repeats its affected Check
+and committed Review before downstream reuse.
 
 ### Requirements, Design, and Test SSOT
 
@@ -1469,7 +1429,8 @@ The mandatory `guru-maintain-requirements-design-test-ssot` owner runs
 `task_impact_sync` for an approved task delta, `promotion` for a reviewed
 isolated contribution, and `repair` for a bounded authority defect. Planning,
 Phase 2 Check, Branch Review, Delivery Review, Completion, and Finish consume only
-its public routes and reread the live Requirements, Design, and Test authority;
+its public routes and reread the stage-applicable Requirements, Design, and
+Test authority; unrelated CURRENT advancement does not force a rewrite;
 they never read package-private owner state. Architecture inheritance uses only
 the public Architecture Baseline locator/version/status.
 

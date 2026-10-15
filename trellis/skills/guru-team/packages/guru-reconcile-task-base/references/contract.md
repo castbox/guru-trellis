@@ -1,30 +1,18 @@
 # `guru-reconcile-task-base` Contract
 
-## Entry And Pair Guard
+## Actual integration entry
 
-The semantic Skill has six caller-owned input profiles: `delivery_post_plan`,
-`delivery_post_check`, `delivery_post_commit`, `delivery_post_branch_review`, `delivery_post_publication`, and
-`delivery_finalizer_base_mismatch`. Each carries one exact active-task identity,
-selected base ref, task HEAD, and a closed `resume_target`. The three
-pre-review profiles do not accept caller-supplied old/new base SHAs: the guard
-resolves the selected base and derives the old base from the unique live merge
-base of task HEAD and selected base. The three post-review profiles carry the
-adjacent old/new pair plus their minimum caller-owned full-review identity.
-There is no optional continuity bag.
+Only the original stage owner invokes this Skill for actual merge conflict,
+concrete required-check integration failure, this original merge flow’s
+confirmed existing server update requirement, explicit dependency/requirement
+incorporation, or user-requested synchronization. Behind/base SHA alone never
+triggers it. guard-task-base-pair and its default edges are retired.
 
-Before semantic invocation, `guard-task-base-pair` performs one live resolution
-of the selected base ref. For a pre-review profile it treats the selected base
-being an ancestor of task HEAD as `unchanged`; otherwise it emits the
-operation-scoped `(live merge base, selected base HEAD)` pair. For a
-post-review profile it validates the caller-bound adjacent pair. It returns
-only `unchanged`, `current_pair`, `new_pair`, or `blocked`. It checks identity
-and ancestry, but never judges
-authority, task-content impact, integration impact, relevant paths, validation
-sufficiency, findings, or route. `unchanged` creates no checkpoint. A matching
-owner-private result makes `current_pair` return its already validated exact
-typed output and delete the checkpoint as the deterministic one-use consumer.
-It never replaces that output with an unconditional `resume_target`; only
-`unchanged` resumes the caller target directly.
+Retain the six Delivery profiles and resolved-candidate entry. Select one fixed
+target OID before invocation and supply it as selected_base_ref; every candidate,
+executor, recorder/checker and recovery uses that same object. Pre-review
+old-base computation reads only that fixed pair’s unique merge base; it does
+not observe a moving remote ref. Content baseline B remains separate.
 
 ## Common causal authority impact
 
@@ -62,15 +50,15 @@ caller's closed `resume_target`. If authority and task content remain unchanged
 and the exact candidate is compatible, `delivery_post_plan`, `delivery_post_check`, and
 `delivery_post_commit` create one checked local reconciliation merge commit before
 returning `reconciled`. `delivery_post_plan` preserves `delivery_activation`; `delivery_post_check`
-and `delivery_post_commit` both route to fresh Phase 2. The three post-review profiles
+and `delivery_post_commit` both route to bounded candidate/Check applicability re-entry. The three post-review profiles
 also return `reconciled` when the candidate preserves the reviewed-content
 identity. When that identity must advance, only those three profiles may return
 `review_continuity_required`. Bounded continuity does not itself require a new
 full Branch Review or provide a public gate pass. Its workflow consumer rereads
 public Check and full-review applicability for the reconciled candidate:
-missing/stale Check reenters the existing rework, begin-check, Check and clean
-TaskCommit path; missing/stale full review reenters independent complete Branch
-Review. `planning_stale` is valid only when current live
+missing/stale Check reenters the original bounded candidate/Check owner;
+missing/stale full review returns to the original Branch Review owner to judge
+prior complete coverage plus actual integration delta. `planning_stale` is valid only when current live
 authority or an approved planning assumption has actually changed; it carries
 exact reason refs for that change.
 
@@ -128,7 +116,7 @@ and is not included in any request, result, checkpoint, or DTO.
 
 `execute-base-reconciliation` is package-private. It requires a uniquely
 branch-bound task worktree at the exact prior task HEAD and binds the
-selected ref to the exact new base. For pre-review profiles it re-derives the
+fixed selected OID to the exact operation target. For pre-review profiles it re-derives the
 old base from the live merge base. For post-review profiles it validates the
 adjacent old-base ancestry and prior full-review ancestry. It creates one local
 `--no-ff` merge commit and verifies exact parent order, result ancestry,
@@ -233,7 +221,10 @@ Reconcile external exit; bounded base continuity is not used for this path.
 
 - `reconciled`: the workflow router receives task/current-base identity and the
   checked resume target. `delivery_post_plan` preserves Delivery activation; `delivery_post_check`
-  and `delivery_post_commit` route to fresh Phase 2; post-review profiles preserve their
+  and `delivery_post_commit` retain the `phase2` transport discriminator for
+  bounded implementation/Check reentry over the actual delta and affected
+  dependencies; it never means unconditional replay or another commit.
+  Post-review profiles preserve their
   closed target when no bounded continuity review is needed.
 - `review_continuity_required`: Branch Review receives the exact old/new pair,
   prior full-review commit, current reconciled task HEAD, candidate tree token,
@@ -255,9 +246,8 @@ fail closed.
 ## Compatibility
 
 The continuity output and private result are direct current-only 2.0 contracts.
-Older continuity output/private checkpoints are stale and are not dual-read,
-migrated, or wrapped. Legacy active-task
-base anchors may form one initial pair; absent anchors require a complete
-bounded reconciliation. The package never reads another Skill's private
+Older continuity output/private checkpoints require original-owner fresh review,
+not a fabricated DTO. Missing content/authority facts return to their original
+producer without forcing an unnecessary Reconcile. The package never reads another Skill's private
 checkpoint, restores the retired shared compatibility dispatcher, rewrites
 tracked task artifacts, or creates a remote ref or commit.

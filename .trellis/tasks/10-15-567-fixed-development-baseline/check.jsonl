@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "Validation value and ownership"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "Independent code/docs subtraction review"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "Project architecture concerns and actual checks"}
+{"file": ".trellis/spec/workflow/semantic-retrieval.md", "reason": "Evidence coverage and normal scenarios"}

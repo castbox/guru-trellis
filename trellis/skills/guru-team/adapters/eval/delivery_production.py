@@ -174,7 +174,7 @@ def check(runtime, fixture, task, projection, key, planning_id, exit_id, *, form
     from adapters.eval.production_fixtures import production_phase2_input
     paths = ['src/production-eval.txt']
     candidate = projection.candidate(paths, kind='git', head_ref=run_git(fixture, 'rev-parse', 'HEAD'),
-                                     base_ref=base_head or run_git(fixture, 'rev-parse', 'origin/main'))
+                                     base_ref=projection.content_base(key, development_base=base_head, observed_target=run_git(fixture, 'rev-parse', 'origin/main')))
     if projection.resolve(key)['phase'] == 'reviewing':
         projection.apply({'api_version': '1.0', 'operation': 'rework', 'key': key,
                           'owner_role': 'full_review', 'owner_id': projection.declaration()['owners']['full_review'],
@@ -183,7 +183,7 @@ def check(runtime, fixture, task, projection, key, planning_id, exit_id, *, form
                           'affected_results': ['check', 'full_review', 'readiness']})
     projection.begin_check(key, candidate)
     package = fixture / '.trellis/guru-team/skills/packages/guru-check-task'
-    path = production_phase2_input(runtime, fixture, task, package, exit_id)
+    path = production_phase2_input(runtime, fixture, task, package, exit_id, candidate_base=candidate['base_ref'])
     recorded = wrapper(fixture, 'guru-check-task', 'record-phase2-check.sh', ['--task', task.relative_to(fixture).as_posix(), '--input', str(path)])
     checked = wrapper(fixture, 'guru-check-task', 'check-phase2-check.sh', ['--task', task.relative_to(fixture).as_posix()])
     public = {'profile': 'delivery_initial_check', 'mode': 'workflow', 'task_ref': task.relative_to(fixture).as_posix(),
@@ -304,7 +304,7 @@ def stage_delivery_production(request, fixture, target, request_package, recipe,
                     _, checked, _ = check(runtime, fixture, task, projection, key, planning_id, 'passed', formal=True,
                                           base_head=continuity_base)
                     public['check_result_id'] = checked['check_result_id']
-                    production_record_review(runtime, fixture, task, public, recipe)
+                    production_record_review(runtime, fixture, task, public, recipe, candidate_base=projection.resolve(key)['candidate']['base_ref'])
                     write(fixture / OWNER_INPUT, public)
         return package, target, {'TRELLIS_CONTEXT_ID': context_id}
     finally:

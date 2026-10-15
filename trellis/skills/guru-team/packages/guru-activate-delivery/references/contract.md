@@ -51,3 +51,12 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Fixed-plan activation
+
+Consume the actual current approved Delivery plan directly after its dialogue
+boundary. There is no pair guard or latest-target ancestry qualification.
+Only a real source/scope/plan change refreshes affected Planning. Ordinary
+remote-ref, unrelated CURRENT or installed-tool advancement does not change
+this plan or its selected stage-applicable authority. An actual resolved
+pre-implementation integration resumes this same owner and DeliveryKey.

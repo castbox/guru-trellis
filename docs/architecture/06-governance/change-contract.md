@@ -6,7 +6,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 | Concern | Required current meaning |
 | --- | --- |
-| `authority-binding` | Planning 绑定 `guru-maintain-architecture-baseline:planning:3.0` 与明确的 `candidate_assessment` 或 `final_plan`；非 Planning 与 maintenance 绑定 `guru-maintain-architecture-baseline:2.0`；同时绑定 current baseline 与本 change-contract identity |
+| `authority-binding` | Planning 绑定 `guru-maintain-architecture-baseline:planning:3.0` 与明确的 `candidate_assessment` 或 `final_plan`；非 Planning 与 maintenance 绑定 `guru-maintain-architecture-baseline:2.0`；同时绑定明确阶段适用的 baseline 与本 change-contract identity |
 | `constitution-binding` | 绑定 current constitution locator、status、version/content identity 与实际命中的原则 refs |
 | `boundary-and-decision` | 记录 requirement/behavior authority、current/target boundary、decision/GAP refs 与唯一 change path |
 | `owner-and-single-writer` | 明确 current/target semantic owner、task writer 与 shared-current promotion single-writer |
@@ -17,6 +17,12 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 | `review-and-promotion` | 绑定 contribution、必要 ADR、independent committed range、expected current 与 promotion state |
 
 每项必须显式判定 `applicable|not_applicable` 并给出理由；architecture impact 不得以空值代替判断。范围、风险、authority、持久化、SDK、外部、owner 或架构边界扩大时，旧结果 stale 并重新进入 Architecture owner。
+
+## Stage-applicable authority（ADR-028）
+
+每次读取 live authority 后，原语义 owner 判断本阶段实际适用的基线、规则与候选；无关整体 CURRENT、安装版本或共享 ref 前进不自动使在途结论 stale。真实 scope、规划假设、实现、依赖或明确立即适用规则改变时仍回对应原 owner，旧快照不能遮蔽这些变化。内容候选与 integration target 分离；不以 latest-target ancestry 代替完整内容审查或当前 PR 资格。
+
+shared-current promotion 自身仍绑定写前 expected-current；错配只由原 promotion owner 按实际差额处理。已经发生的 promotion 新 diff 仍重新经过 Phase2/TaskCommit/独立完整 BranchReview。九 concern、descriptor identity、check id/version 与 result contract 保持；ADR-005 中的普遍 CURRENT-advance stale 片段按 ADR-028 的窄 successor 解释，不创建第二 authority 或新增检查协议。
 
 ## Constitution applicability consumption
 
@@ -42,7 +48,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 - rule refs：`ARCH-GOV-006..009`；decision refs：`ADR-005`、`ADR-009`；gap refs：`ARCH-GAP-006`、`ARCH-GAP-008`。
 - result contract：`guru-project-architecture-check-result-2.0`；freshness source 是当前 task candidate 或 exact committed range。
 
-稳定失败路由为：缺适用 contract/constitution/check facts -> `contract_incomplete`；与 current authority 冲突 -> `architecture_conflict`；新增或恶化偏移、owner 扩张、无退出双写或 closed GAP 重现 -> `fitness_regression`；baseline、constitution、contribution 或 expected-current stale -> `sync_required`。AI 根据 applicability 与 task 真实依赖决定 `blocking`，runtime 只验证 descriptor/result 一一绑定、locator、freshness 与 route consistency。
+稳定失败路由为：缺适用 contract/constitution/check facts -> `contract_incomplete`；与 current authority 冲突 -> `architecture_conflict`；新增或恶化偏移、owner 扩张、无退出双写或 closed GAP 重现 -> `fitness_regression`；明确阶段适用的 baseline、constitution、contribution/candidate stale，或本次 promotion 写前 expected-current 错配 -> `sync_required`；无关整体版本/ref 推进不构成此路由。AI 根据 applicability 与 task 真实依赖决定 `blocking`，runtime 只验证 descriptor/result 一一绑定、locator、freshness 与 route consistency。
 
 ## Current Planning boundary
 

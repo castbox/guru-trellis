@@ -356,29 +356,6 @@ def install_canonical_workflow(repo: Path) -> None:
 
 
 class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
-    def test_current_pair_consumes_recorded_output_before_checkpoint_retirement(self) -> None:
-        source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
-        text = source.read_text(encoding="utf-8")
-        self.assertIn(
-            "`current_pair` consumes and routes the recorded exact typed output, then deletes\n"
-            "its one-use checkpoint.",
-            text,
-        )
-        self.assertIn(
-            "It must never resume from the guard's `resume_target`\n"
-            "alone because that would discard a previously recorded non-`reconciled` exit.",
-            text,
-        )
-        self.assertNotIn(
-            "Unchanged or\nalready-current pairs resume the closed `resume_target`",
-            text,
-        )
-        self.assertNotIn("An unchanged/current pair resumes activation", text)
-        self.assertIn(
-            "An unchanged pair resumes activation; a\n"
-            "current pair consumes and routes its recorded exact typed output",
-            text,
-        )
 
     def test_installed_workflow_is_exact_canonical_projection(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -2165,7 +2142,6 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
         self.assertIn("check-extension-verification", public_api["companion_scripts"])
         self.assertIn("invoke-extension-verification", public_api["companion_scripts"])
         for command_id in (
-            "guard-task-base-pair",
             "execute-base-candidate",
             "record-base-reconciliation",
             "check-base-reconciliation",
@@ -2323,6 +2299,8 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
             "private_artifact_schema_ids"
         ]
         self.assertIn("guru-merge-task-delivery-private-gate-1.0", private_artifact_schema_ids)
+        self.assertIn("guru-merge-task-delivery-private-gate-2.0", private_artifact_schema_ids)
+        self.assertIn("guru-merge-task-delivery-private-gate-delivery-2.0", private_artifact_schema_ids)
         self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
         typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
         architecture_output_schema_ids = {

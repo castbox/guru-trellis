@@ -168,14 +168,15 @@ def production_record_planning(
 
 def production_phase2_input(
     runtime: Any, fixture: Path, task: Path, package: Path, exit_id: str,
+    *, candidate_base: str | None = None,
 ) -> Path:
     del package
     task_payload = runtime.read_json(task / "task.json")
-    base_ref = runtime.diff_base_ref(
-        fixture,
-        str(task_payload.get("base_branch") or "main"),
+    base_ref = candidate_base or runtime.diff_base_ref(
+        fixture, str(task_payload.get("base_branch") or "main"),
     )
-    implementation_paths = set(runtime.changed_files(fixture, f"{base_ref}...HEAD"))
+    revision = f"{base_ref}..HEAD" if candidate_base else f"{base_ref}...HEAD"
+    implementation_paths = set(runtime.changed_files(fixture, revision))
     implementation_paths.update(
         path
         for path in runtime.git_status_paths(fixture)
@@ -581,6 +582,7 @@ def production_record_review(
     task: Path,
     public_input: dict[str, Any],
     recipe: str,
+    *, candidate_base: str | None = None,
 ) -> dict[str, Any]:
     exit_id = recipe.removeprefix("review-")
     if exit_id == "continuity-passed":
@@ -677,7 +679,7 @@ def production_record_review(
         })
     else:
         public_input.update({
-            "base_ref": runtime.diff_base_ref(fixture, "main"),
+            "base_ref": candidate_base or runtime.diff_base_ref(fixture, "main"),
             "branch_review_commit": head,
             "review_intent": (
                 "fresh_final_review"

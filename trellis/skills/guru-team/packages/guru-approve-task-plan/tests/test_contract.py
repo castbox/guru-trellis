@@ -365,7 +365,14 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         )
         for phrase in required:
             self.assertIn(phrase, normalized)
-        self.assertLess(normalized.index("show clickable links to `prd.md`"), normalized.index("resume_target=delivery_activation"))
+        activation = " ".join(
+            workflow.split("#### 1.5 Delivery activation", 1)[1]
+            .split("### Phase 2", 1)[0].split()
+        )
+        self.assertLess(
+            activation.index("show clickable links to `prd.md`"),
+            activation.index("invoke `guru-activate-delivery` directly"),
+        )
 
         markers = [
             json.loads(raw)

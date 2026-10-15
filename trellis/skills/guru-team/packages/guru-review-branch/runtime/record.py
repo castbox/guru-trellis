@@ -89,6 +89,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("schema_mismatch", "typed_exit", "Archived pass requires its dedicated profile.")
         base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
+    if profile == "branch_review":
+        if base_ref != base_head:
+            raise CommandError("stale_identity", "base_ref", "Supply the fixed content-base OID from the current Check/TaskCommit.", 3)
     if original_profile.startswith("delivery_") and profile != "archived_review":
         from runtime.delivery_projection.adapter import DeliveryProjection
         from runtime.task_lifecycle.active_checkout import resolve_active_task_checkout
@@ -97,12 +100,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             resolve_active_task_checkout(repo, task_ref)
         except LifecycleContractError as exc:
             raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
-        DeliveryProjection(repo, task_ref).require_current_check(
-            public["delivery_key"], public["check_result_id"], head_ref=head, base_ref=base_head)
-    if profile == "branch_review" and not ancestor(repo, base_head, head):
-        raise CommandError(
-            "stale_identity", "base_ref", "Review base must precede current task content.", 3
-        )
+        projection = DeliveryProjection(repo, task_ref)
+        check_base = projection.resolve(public["delivery_key"])["candidate"]["base_ref"] if profile == "base_continuity" else base_head
+        projection.require_current_check(
+            public["delivery_key"], public["check_result_id"], head_ref=head, base_ref=check_base)
     if profile == "base_continuity":
         checks = (
             (public["task_head"] == head, "task_head", "Review current reconciled HEAD."),

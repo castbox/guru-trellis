@@ -53,6 +53,6 @@ def invoke(package, repo, public, semantic):
         planning = exit_id == "planning_revision_required"
         rework(projection, public["delivery_key"], "readiness", "planning" if planning else "implementation",
                authority_ref(projection.planning_directory(public["delivery_key"]) / ("prd.md" if planning else "implement.md"), repo),
-               ["planning", "check", "full_review", "readiness"] if planning else ["check", "full_review", "readiness"])
+               ["planning", "check", "full_review", "readiness"] if planning else ["readiness"])
     validate_json(output, package / "schemas" / ("public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json"), "stdout")
     return output

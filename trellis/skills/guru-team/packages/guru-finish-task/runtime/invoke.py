@@ -162,7 +162,7 @@ def persist_cleanup_fallback(root: Path, package_root: Path, key: TaskLifecycleK
 
 
 def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
-    validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
+    validate_json(payload, package_root / "schemas/finish-transaction-3.0.schema.json", "finish_transaction")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
@@ -174,7 +174,11 @@ def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: 
         payload = json.loads(path.read_text())
     except json.JSONDecodeError as exc:
         raise CommandError("stale_identity", "finish_transaction", "Discard the invalid private Finish transaction before retry.", 3) from exc
-    validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
+    if payload.get("schema_version") == "2.0":
+        validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
+        payload.pop("expected_base_head", None)
+        payload["schema_version"] = "3.0"
+    validate_json(payload, package_root / "schemas/finish-transaction-3.0.schema.json", "finish_transaction")
     expected = {"task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
     if any(payload.get(key) != value for key, value in expected.items()):
         raise CommandError("stale_identity", "finish_transaction", "The private Finish transaction belongs to another identity.", 3)
@@ -331,14 +335,10 @@ def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, .
         raise CommandError("stale_identity", "bookkeeping.head_branch", "Run Finish only in the reviewed task worktree and branch.", 3)
     if bookkeeping["head_branch"] == bookkeeping["base_branch"]:
         raise CommandError("stale_identity", "bookkeeping.head_branch", "Bookkeeping must not commit directly on the target base branch.", 3)
-    if current_remote_head(root, bookkeeping["base_branch"]) != bookkeeping["expected_base_head"]:
-        raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The target baseline changed before bookkeeping publication.", 3)
     if transaction is None:
         reviewed_changed_paths(root, allowlist)
         parent_head = git(root, "rev-parse", "HEAD").stdout.strip()
-        if git(root, "merge-base", "--is-ancestor", parent_head, bookkeeping["expected_base_head"], check=False).returncode:
-            raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The business branch is not contained in the reviewed target baseline.", 3)
-        transaction = {"schema_version": "2.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "expected_base_head": bookkeeping["expected_base_head"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
+        transaction = {"schema_version": "3.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
         write_transaction(transaction_file, transaction, package_root)
     parent_head = transaction["parent_head"]
     if transaction["stage"] == "publish_prepared":
@@ -396,15 +396,13 @@ def verify_target(root: Path, transaction: dict, public: dict) -> str:
 def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transaction_file: Path, package_root: Path) -> dict:
     pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
     if str(pr["state"]).upper() != "MERGED":
-        if current_remote_head(root, bookkeeping["base_branch"]) != transaction["expected_base_head"]:
-            raise CommandError("stale_identity", "bookkeeping.expected_base_head", "The target baseline changed before bookkeeping merge.", 3)
         gh(bookkeeping["repo_ref"], "pr", "merge", str(transaction["pr_number"]), "--merge", "--match-head-commit", transaction["commit"], "--subject", bookkeeping["merge_subject"], "--body", bookkeeping["merge_body"])
         pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
     if str(pr["state"]).upper() != "MERGED" or not pr.get("mergedAt") or not isinstance(pr.get("mergeCommit"), dict) or not pr["mergeCommit"].get("oid"):
         raise CommandError("stale_identity", "bookkeeping.pr", "The bookkeeping PR is not terminally merged.", 3)
     target_head = verify_target(root, transaction, public)
-    if target_head != pr["mergeCommit"]["oid"]:
-        raise CommandError("stale_identity", "bookkeeping.target", "The target branch no longer points at the verified bookkeeping merge.", 3)
+    if git(root, "merge-base", "--is-ancestor", pr["mergeCommit"]["oid"], target_head, check=False).returncode:
+        raise CommandError("stale_identity", "bookkeeping.target", "The verified bookkeeping merge is absent from the current target history.", 3)
     transaction.update({"stage": "success", "target_head": target_head})
     write_transaction(transaction_file, transaction, package_root)
     return transaction
@@ -452,7 +450,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     supplied = load(root, package_root, args.input, "input")
     semantic = load(root, package_root, args.semantic_result, "semantic_result")
     validate_json(supplied, package_root / "schemas/public-input.schema.json", "input")
-    validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
+    validate_json(semantic, package_root / "schemas/semantic-result-2.0.schema.json", "semantic_result")
     if supplied["profile"] != semantic["profile"] or supplied["mode"] != semantic["mode"]:
         raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
     result = closure_result_for_input(supplied)
@@ -501,8 +499,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if transaction.get("stage") != "success":
         return resume(public, "bookkeeping_verification_required", "Recover and verify the same bookkeeping transaction.")
     target_head = verify_target(root, transaction, public)
-    if target_head != transaction["target_head"]:
-        raise CommandError("stale_identity", "bookkeeping.target", "The verified target baseline changed after Finish success.", 3)
+    if git(root, "merge-base", "--is-ancestor", transaction["target_head"], target_head, check=False).returncode:
+        raise CommandError("stale_identity", "bookkeeping.target", "The completed Finish result is absent from the current target history.", 3)
     store = ResourceLedgerStore(inspect_repository(root))
     key = TaskLifecycleKey(public["task_id"], generation)
     branches = BranchBindingStore(store.repository)

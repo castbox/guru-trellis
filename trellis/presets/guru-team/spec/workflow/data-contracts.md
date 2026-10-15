@@ -1873,20 +1873,20 @@ Active-task validity has three independent clocks:
 - integration binds build, test, and review readiness for one exact
   `(task_head, base_head)` candidate.
 
-A new integration pair does not invalidate the other two clocks. A task-content
-HEAD change creates a new pair and prevents reuse of older integration
-readiness. Multiple base advances between stable boundaries collapse into one
-`old_base...new_base` delta. Non-ancestor base history, a missing anchor, or
-ambiguous task/base identity fails closed rather than synthesizing continuity.
+Unrelated target advancement does not invalidate authority or content results.
+Each stage uses fixed content-base/head OIDs and its explicitly applicable
+authority. Actual implementation changes require a new candidate under the
+same B; old public gates may remain historical but are not applicable to it.
+The original owners judge prior evidence plus actual delta and affected
+dependencies before recording real current results. Integration targets are
+operation-scoped OIDs and never replace B.
 
-The pair guard may read one ignored owner checkpoint containing only the exact
-task/base pair, selected exit, `resume_target`, and minimum validation identity
-needed by the next consumer. It is neither a public handoff nor durable audit
-evidence. The consumer deletes it after successful projection; incomplete
-same-owner recovery or replacement is the only reason to retain it. Git and
-GitHub facts, semantic scans, candidate directories, full findings, validation
-logs, authorization, and cross-chain hash bundles never enter public output or
-tracked task artifacts.
+There is no default pair-guard checkpoint. An explicitly needed Reconcile
+retains only its same-operation owner-private result until its unique consumer
+finishes; incomplete same-owner recovery is the only reason to retain it.
+Authorization, full review histories and cross-chain hash bundles are never
+public output or tracked evidence. See MIGRATION-567 for retired assets and
+normal in-flight recovery.
 
 For a post-review candidate whose shared reviewed-content identity changes while
 task content and authority remain unchanged, the current-only reconcile result

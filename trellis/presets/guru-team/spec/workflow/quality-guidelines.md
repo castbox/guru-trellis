@@ -1318,30 +1318,27 @@ and received current-dialogue confirmation. A
 `planning_stale` result must identify an actual live authority or approved
 planning-assumption change; observing a newer base is not sufficient evidence.
 
-One shared stateful integration fixture passes actual producer stdout through
-the pair guard, semantic owner, router, and target consumer at every eligible
-boundary. It proves an unchanged pair causes zero semantic invocation,
-GitHub/Docs/history scan, artifact write, and interaction; multiple base
-advances form one accumulated delta; a current pair result is consumed at most
-once; and a task-content HEAD change prevents reuse. Performance assertions
-derive counts from the event log and live workflow markers rather than case
-labels or duplicated literal tables.
+Public owner-chain validation passes actual producer stdout directly to its
+unique consumer across isolated peer advances. It proves zero automatic
+Reconcile/sync commits/base-triggered regressions; a registered peer fetch
+cannot interrupt in-flight fixed Check/Review. D1-to-D2 uses actual delivered
+facts, excludes D1 and recovers D2's own range. Completion covers all scope;
+bounded history consumers supplement missing task facts without requiring
+unrelated target requery. Deterministic fixture authoring, actual AI owner
+execution, installed/native projection and live service effects are distinct
+evidence levels and must be reported separately.
 
-Bounded continuity tests prove the existing task semantic review is not replayed
-when task content is unchanged. They bind the prior complete review commit and
-current committed reconciliation HEAD independently, verify the reconciliation
-commit has both required ancestors and the reviewed candidate tree, and prove
-that `continuity_passed` supplies the current HEAD to Delivery Review without
-claiming a second complete Branch Review. A required task or authority change
-still performs fresh implementation, Phase 2, commit, and Branch Review.
-One real cross-Skill Git regression must cover a post-review base-mismatch
-seed, reconcile continuity route, confirmed persistent local reconciliation
-commit, bounded continuity, and Delivery Review `ready`; its negative path
-must prove that an unreviewed base merge remains stale. Reconcile and Delivery
-Review tests keep base reconciliation distinct from stale Delivery review and
-must not accept a base-only bypass. Historical #132/#161 replays remain
-diagnostic; they cannot use old HEADs, digests or fabricated state as current
-authority.
+Actual-integration regressions retain ordinary conflicts, pre-implementation
+resolved baseline, post-implementation resolved candidate, precise staging and
+hooks, committed reentry, bounded continuity and same-operation recovery. An
+operation pins its target even if the ref advances. The original Check/Review
+owners judge prior evidence plus the actual delta and affected dependencies;
+new gates bind the real candidate/predecessor, and continuity alone never
+supplies a full_review. Missing prior complete Review requires the first full
+Review. No unconditional full replay or empty/same-content commit is allowed.
+Tests distinguish merely behind from an actually observed existing server
+update requirement and retain true merge/check blocking. Historical replays
+are diagnostic and cannot fabricate current authority.
 
 Distribution acceptance covers canonical and installed specs, package/runtime
 inventory, complete descriptor-bound canonical projections, exact

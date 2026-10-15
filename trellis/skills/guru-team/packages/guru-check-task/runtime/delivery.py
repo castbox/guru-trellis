@@ -83,7 +83,7 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         output["finding_refs"] = [row["id"] for row in owner["semantic_review"]["findings"] if row["status"] == "open"]
         rework(projection, public["delivery_key"], "check", "implementation",
                authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo),
-               ["check", "full_review", "readiness"])
+               ["readiness"])
     elif exit_id == "planning_stale":
         output.update(planning_route=owner["route"], proposal_refs=[row["id"] for row in owner["semantic_review"]["scope_decisions"]])
         rework(projection, public["delivery_key"], "check", "planning",

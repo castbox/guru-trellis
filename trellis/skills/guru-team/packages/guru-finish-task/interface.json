@@ -132,7 +132,7 @@
     },
     {
       "id": "semantic_result",
-      "path": "schemas/semantic-result.schema.json"
+      "path": "schemas/semantic-result-2.0.schema.json"
     },
     {
       "id": "public_output",
@@ -140,7 +140,7 @@
     },
     {
       "id": "finish_transaction",
-      "path": "schemas/finish-transaction.schema.json"
+      "path": "schemas/finish-transaction-3.0.schema.json"
     },
     {
       "id": "closure_result_snapshot",
@@ -197,6 +197,14 @@
     {
       "id": "legacy_control_restore_input",
       "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_semantic_result_1",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "legacy_finish_transaction_2",
+      "path": "schemas/finish-transaction.schema.json"
     }
   ],
   "validators": [
@@ -693,8 +701,8 @@
         "id": "finish_transaction",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "guru-finish-task-transaction-2.0",
-          "path": "schemas/finish-transaction.schema.json"
+          "schema_id": "guru-finish-task-transaction-3.0",
+          "path": "schemas/finish-transaction-3.0.schema.json"
         },
         "persistence": "ignored_runtime"
       },

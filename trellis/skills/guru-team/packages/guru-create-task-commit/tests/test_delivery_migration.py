@@ -120,7 +120,7 @@ class SourceMigrationTests(unittest.TestCase):
         semantic = {key: fixture[key] for key in ("candidate_classifications", "semantic_review", "verification_evidence", "delivery_review")}
         semantic["candidate_classifications"] = []
         semantic["semantic_review"]["qualified_findings"] = []
-        public = {"profile": "delivery_branch_review", "mode": "workflow", "task_ref": self.task_ref, "delivery_key": self.key, "check_result_id": self.public["check_result_id"], "base_ref": "main", "branch_review_commit": self.head, "review_intent": "initial_review"}
+        public = {"profile": "delivery_branch_review", "mode": "workflow", "task_ref": self.task_ref, "delivery_key": self.key, "check_result_id": self.public["check_result_id"], "base_ref": self.projection.content_base(self.key), "branch_review_commit": self.head, "review_intent": "initial_review"}
         self.wrapper(package.name, "review-branch.sh", "--task", self.task_ref, "--skill-input", self.write("branch.json", public), "--semantic-review-file", self.write("branch-review.json", semantic), "--typed-exit", "passed")
         reviewed = self.wrapper(package.name, "invoke.sh", "--input", self.write("branch.json", public))
         self.assertEqual("passed", reviewed["exit_id"])

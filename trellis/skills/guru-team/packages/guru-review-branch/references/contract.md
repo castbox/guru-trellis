@@ -195,7 +195,7 @@ archived review read-only. Qualified current-scope defects and evidence gaps
 use the profile's existing finding or blocked routes and existing gate fields.
 
 Perform one independent semantic review of the complete current
-`origin/<base>...HEAD` range. For a nonempty actual candidate set, invoke
+`base_oid..head_oid` range. For a nonempty actual candidate set, invoke
 `guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
 severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
@@ -227,11 +227,14 @@ current-slice defect, or a slice that depends on the remaining work already
 being complete prevents `passed`. This compact semantic evidence remains in
 the private gate and does not expand the existing `passed` DTO.
 
-A resolved-tree reconciliation that returned through fresh Phase 2 requires
-this complete full-range review after Reconcile creates or recovers the exact
-merge commit. The `base_continuity` profile cannot replace that review: bounded
-base continuity is not used for a conflict-resolved tree containing task
-adaptations.
+After resolved reconciliation, the current Check must bind the actual merged
+candidate and retained content base. With no prior complete Review, perform
+the first independent full-range review. With a genuine prior full_review,
+read its actual reviewed HEAD and evidence, independently review the resolution
+delta and affected dependencies, and judge coverage of the complete B..Hi.
+Record this owner's actual new full_review against the new Check predecessor;
+a continuity DTO or tree equality alone cannot substitute for that judgment.
+Do not replay unrelated validations or manufacture a second Task Commit.
 
 For delete, replace, merge, or compatibility-impacting ranges, independently
 recompute `code_subtraction` and `docs_ssot_subtraction` using the durable
@@ -244,7 +247,7 @@ safety or compatibility statement.
 
 The review lifecycle is visible in the current dialogue. Immediately before
 dispatch, the caller presents the independent reviewer identity, exact
-committed `origin/<base>...HEAD` range, and review target. Immediately after
+committed `base_oid..head_oid` range, and review target. Immediately after
 return, it presents the final finding summary and the semantic owner's
 conclusion. These notices and the reviewer transcript are transient dialogue
 context only; they do not enter the gate, public DTO, private checkpoint, or a
@@ -422,3 +425,24 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Fixed complete range and local integration coverage
+
+Review the exact current candidate base/head OIDs, complete two-dot diff and
+necessary affected dependencies. PR-target ancestry/latest SHA is not entry or
+recording eligibility. A shared fetch cannot change the in-flight object. The
+first complete independent Branch Review remains mandatory.
+
+After real integration, the original current stage uses legal public rework
+to implementation with only readiness cleared; retain the actual prior public
+full_review as historical evidence. Implementation begin_check binds B..Hi,
+Check writes its actual new result, and this owner reads the retained prior
+full_review, its reviewed Hr/evidence, new Check and real Hr..Hi delta. Judge
+whether prior complete coverage plus reviewed delta/affected dependencies
+covers all current B..Hi. Only after this actual judgment may the existing
+full_review record_gate write a new result bound to current candidate and Check
+predecessor, then emit passed. Missing/insufficient prior coverage requires the
+actual complete review. Do not relabel old pass or continuity_passed, infer
+coverage from tree equality, or mechanically replay unrelated work. The
+base_continuity capability remains a bounded assessment, not a substitute for
+this public gate. Recover only a truly recorded current result.

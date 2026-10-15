@@ -3,7 +3,7 @@
   "task_ref": ".trellis/tasks/current",
   "branch": "feat/current",
   "prior_task_head": "1111111111111111111111111111111111111111",
-  "selected_base_ref": "origin/main",
+  "selected_base_ref": "3333333333333333333333333333333333333333",
   "old_base_head": "2222222222222222222222222222222222222222",
   "new_base_head": "3333333333333333333333333333333333333333",
   "resume_target": "branch_review",

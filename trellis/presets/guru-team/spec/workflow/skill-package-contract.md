@@ -2157,3 +2157,17 @@ registration enters that handoff.
 ## Independent single-checkout maintenance
 
 #566 adds standalone/source-loaded `guru-upgrade-tools` and `guru-maintain-legacy-task`, with profile-specific inputs, minimal exit DTOs and exact same-owner recovery refs. Original Publish/Merge/Finish own their closed legacy fact/control profiles; their thin consumer routes return only to selected maintenance. Ordinary current profiles and independent full Plan2 preserve their input semantics. Matching API, source qualification, fixed preimages and target-native validation are package-owned; no copied discovery directory claims portability. See `trellis/presets/guru-team/MIGRATION-566.md`.
+
+## Fixed Candidate Consumer Contract
+
+Each Delivery stage consumes the fixed complete content range selected by the
+original owner; PR target branch identity is distinct. The existing candidate
+base_ref/head_ref carry complete commit OIDs. Their actual applicability and
+same-operation recovery do not depend on latest remote-tracking refs or overall
+CURRENT versions. D2 uses real preceding Delivery facts and never repeats D1.
+Original semantic owners retain responsibility for true applicable authority
+changes, actual candidate evolution and bounded integration evidence. Default
+pair guard command/results are retired under MIGRATION-567, without replacing
+them with a new gate or public DTO. Finish private transaction v3 removes the
+unused expected_base_head; its same-owner v2 conversion preserves operation,
+commit, payload and recovery rather than restarting or synchronizing.

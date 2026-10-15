@@ -1,7 +1,7 @@
 {
   "profile": "delivery_branch_review",
   "mode": "workflow",
-  "base_ref": "origin/main",
+  "base_ref": "1111111111111111111111111111111111111111",
   "review_intent": "initial_review",
   "check_result_id": "check-result:current-delivery"
 }

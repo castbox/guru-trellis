@@ -341,7 +341,7 @@ unique Author writes their public planning_root. D2 never replaces D1 artifacts.
 Wording, Architecture and Approval retain separate judgments over that exact plan.
 Only current approved output enters `phase-1-delivery-activation`, which presents
 the complete plan and invokes `guru-activate-delivery` after the current dialogue
-boundary and base pair guard. No Task planning/in_progress writer remains.
+boundary. No base-pair observation is required. No Task planning/in_progress writer remains.
 Same-Delivery rework uses the same owner rather than first/subsequent activation.
 The exact profiles and output-loss recovery are step-local package contracts.
 Questions, revision requests, partial choices and ambiguous replies remain
@@ -381,7 +381,7 @@ recorder/checker commands, or private evidence shape.
 
 Mandatory invoke `guru-create-task-commit`, then independently review the
 complete committed base-to-HEAD diff with `guru-review-branch`. A checked
-`passed` enters the active-task pair guard and Delivery Review. The Delivery
+`passed` enters Delivery Review directly. The Delivery
 Review owner checks one independently deliverable slice and authors the exact
 Chinese PR title/body with `Refs` only, including when the target is the
 default branch. It discloses remaining task work and unverified boundaries;
@@ -612,40 +612,44 @@ manifest-selected discovery roots, three-platform dogfood drift, managed hashes,
 `.new`/`.bak`, current ownership/installed-manifest validation, executable
 modes, README commands, and a recursive zero-sidecar scan.
 
-## Active-Task Base Evolution Boundaries
+## Fixed Development Baseline And Actual Integration
 
-Every stable active-task boundary observes the selected base through the single
-`guru-reconcile-task-base` pair guard before continuing. The guarded
-boundaries are plan approval before activation, Phase 2 pass before Task
-Commit, Task Commit before Branch Review, Branch Review before Delivery Review,
-and Delivery Review readiness before Delivery Publish.
+Development baseline, Delivery content range and PR target are separate facts.
+The implementation owner retains the selected Delivery content base B, binds
+actual implementation HEAD H and full B..H paths through begin_check. D2 derives
+B from actual preceding delivery_result heads; same-Delivery recovery uses its
+own candidate. No fetch, integration candidate or synchronization is required
+to obtain a range. The Task's complete accepted scope remains Completion's duty.
 
-The workflow owns one closed `resume_target` table, mandatory invocation of the
-semantic owner for a new pair, and one `guru-base-reconciliation-router`.
-An unchanged pair resumes the original target without semantic invocation.
-The six semantic exits route uniquely: `reconciled` resumes the guarded target,
-`review_continuity_required` first completes its confirmed expected-head local
-reconciliation commit and then invokes the bounded Branch Review profile,
-`implementation_required` returns to implementation and a fresh Phase 2
-check, `planning_stale` returns to Planning,
-`scope_confirmation_required` invokes requirement clarification, and
-`blocked` stops fail closed. Mapped routes do not create a generic
-confirmation boundary.
+Planning, Activation, Check, TaskCommit, BranchReview, DeliveryReview/Publish,
+Completion and Finish have no default pair guard/Reconcile edge. The current
+owner invokes guru-reconcile-task-base only for an actual conflict, a concrete
+required-check integration failure, an existing server-required update already
+observed by Merge, an explicit dependency/requirement or user-requested sync.
+Behind/latest target SHA alone does not qualify. No Ruleset query gate is added.
 
-Base identity is integration evidence, not authority or task-content
-freshness. A base-only change cannot by itself invalidate Planning, Phase 2,
-Branch Review, or Delivery Review. For post-Branch Review and post-Delivery
-Review profiles, a compatible candidate that changes the shared
-reviewed-content identity uses `review_continuity_required`: after semantic
-judgment and an exact current-dialogue Git confirmation, the reconcile owner
-creates one persistent local reconciliation commit bound to expected task/base
-HEADs and the reviewed candidate tree. Bounded continuity separately binds the
-prior complete review commit and that current commit, then projects the current
-commit as Delivery Review's reviewed-content anchor. The retained
-`post_publication` and `finalizer_base_mismatch` profile IDs are historical
-compatibility identifiers: the former serves the current post-Delivery Review
-boundary, while the latter creates no Finalizer production route. A base-only
-change is not a Delivery Review content-staleness finding.
+An actual operation pins its integration target OID separately from content B.
+Its six declared exits retain their unique consumers. The phase2 resume target
+means bounded reentry through implementation and Check for the actual delta
+and affected dependencies. A real prior Check/full_review remains historical;
+new candidate applicability rejects it until the original owners actually judge
+coverage and record new results. Prior complete Review plus independently
+reviewed resolution delta may cover B..Hi; missing complete Review still
+requires the first full Review. Do not relabel continuity, manufacture gates,
+repeat unrelated tests, or create another empty/same-content TaskCommit.
+
+In-flight stages retain explicit applicable authority and fixed candidates.
+Unrelated CURRENT/navigation/archive/remote-ref advancement cannot replace
+these objects. Actual task-applicable authority, scope, dependency or solution
+changes return to their original semantic owner. Shared-current promotion
+still validates its own expected-current write boundary.
+
+Merge observes actual GitHub eligibility/checks and uses expected task HEAD;
+terminal verification uses actual parents/message/merge identity and current
+target reachability. Finish preserves the same exact bookkeeping transaction
+across unrelated target advances. Completion consumes bounded historical facts
+only for their stated coverage, supplements missing task Delivery facts, and
+rejudges affected conclusions. #569 alone owns history-query preparation.
 
 ## Public Entry And Recovery Routing
 

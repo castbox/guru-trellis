@@ -10,6 +10,7 @@ import hashlib
 import importlib
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -159,6 +160,14 @@ class DeliveryProjection:
                            "owner_role": "task_scope", "owner_id": self.declaration()["owners"]["task_scope"], "authority": authority})
 
     def begin_check(self, key: dict, candidate: dict) -> dict:
+        previous = self.resolve(key)["candidate"]
+        if candidate["kind"] == "git":
+            base = self.commit(candidate["base_ref"])
+            head = self.commit(candidate["head_ref"])
+            if base != candidate["base_ref"] or head != candidate["head_ref"]:
+                raise LifecycleContractError("candidate_not_pinned", "candidate", "Construct this stage's candidate with complete commit OIDs.")
+            if previous is not None and previous["base_ref"] is not None and base != self.commit(previous["base_ref"]):
+                raise LifecycleContractError("candidate_base_changed", "candidate.base_ref", "Retain this Delivery's fixed content baseline; an integration target is a separate object.")
         return self.apply({"api_version": "1.0", "operation": "begin_check", "key": key,
                            "owner_role": "implementation", "owner_id": self.declaration()["owners"]["implementation"],
                            "expected_phase": "implementing", "candidate": candidate})
@@ -196,7 +205,58 @@ class DeliveryProjection:
         self.release(key)
         return {"task_id": key["task_id"], "lifecycle_generation": key["lifecycle_generation"]}
 
+    def commit(self, value: str | None) -> str:
+        if not value:
+            raise LifecycleContractError("candidate_commit_missing", "candidate", "Supply the owner-selected actual commit.")
+        result = subprocess.run(["git", "rev-parse", "--verify", value + "^{commit}"], cwd=self.root, capture_output=True, text=True)
+        if result.returncode:
+            raise LifecycleContractError("candidate_commit_missing", "candidate", "Make the selected commit available locally; do not synchronize the Task branch to obtain it.")
+        return result.stdout.strip()
+
+    def content_base(self, key: dict, *, development_base: str | None = None, observed_target: str | None = None) -> str:
+        """Compute the original owner's selected range from existing public facts.
+
+        No ref update, semantic applicability decision, or additional state is
+        owned here. An existing candidate wins during same-Delivery recovery.
+        """
+        delivery = self.resolve(key)
+        if delivery["candidate"] is not None and delivery["candidate"]["base_ref"] is not None:
+            return self.commit(delivery["candidate"]["base_ref"])
+        record = self.read_record()
+        head = self.commit("HEAD")
+        prior = []
+        for row in record["deliveries"]:
+            if row["id"] == key["delivery_id"]:
+                break
+            if row["lifecycle_generation"] == key["lifecycle_generation"] and row["delivery_result"] is not None:
+                fact = row["delivery_result"]
+                prior.append(self.commit(fact.get("reviewed_head", fact["candidate"]["head_ref"])))
+        def ancestor(older, newer):
+            return subprocess.run(["git", "merge-base", "--is-ancestor", older, newer], cwd=self.root, capture_output=True).returncode == 0
+        if prior:
+            eligible = {value for value in prior if ancestor(value, head)}
+            greatest = [value for value in eligible if all(ancestor(other, value) for other in eligible)]
+            if len(greatest) != 1:
+                raise LifecycleContractError("candidate_history_incomplete", "delivery_result", "Return missing or incomparable delivered heads to the original scope/range owner.")
+            return greatest[0]
+        if development_base is not None:
+            return self.commit(development_base)
+        target = self.commit(observed_target)
+        result = subprocess.run(["git", "merge-base", "--all", head, target], cwd=self.root, capture_output=True, text=True)
+        bases = result.stdout.splitlines()
+        if result.returncode or len(bases) != 1:
+            raise LifecycleContractError("candidate_history_incomplete", "candidate.base_ref", "Select an explicit development baseline through the original owner.")
+        return bases[0]
+
     def candidate(self, paths: list[str], *, kind: str = "git", head_ref: str | None = None, base_ref: str | None = None) -> dict:
+        if kind == "git":
+            head_ref = self.commit(head_ref) if head_ref is not None else None
+            base_ref = self.commit(base_ref) if base_ref is not None else None
+            if head_ref is not None and base_ref is not None:
+                from ..reviewed_content import reviewed_content_metadata_path
+                result = subprocess.run(["git", "diff", "--name-only", "-z", base_ref, head_ref], cwd=self.root, capture_output=True, check=True)
+                committed = [path for path in result.stdout.decode("utf-8").split("\0") if path and not reviewed_content_metadata_path(path)]
+                paths = sorted(set(paths) | set(committed))
         return {"kind": kind, "content_ref": self._call(self.api.delivery_store.candidate_content_ref, self.root, paths, kind),
                 "paths": paths, "head_ref": head_ref, "base_ref": base_ref}
 

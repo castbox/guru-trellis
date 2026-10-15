@@ -597,3 +597,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-063：#566 独立维护的已审贡献
 
 首次完整独立 committed range 为 `3e8b281c93894cd3df4e704901bda63ca2885f23...95bcf24334f9a4d25df3f9175af9d00b58d86915`；原 owners 按 expected Architecture .90 / RDT .96 维护 successor，新增差额仍须 fresh gates。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。
+
+## EVD-064：#567 固定内容与实际整合的已审贡献
+
+首次通过的独立完整 committed range 为 `origin/main@3b165daef0001bd9816c0bf3bbe928bcb59de390...f2538d822dbede7ea34dc29bdad9a0f828130dad`，113路径；原 Architecture 与 BranchReview 分别完成正式入口。先前 BR567-F1/F2/F3 与修复由[唯一 Test](../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)记录，未将失败或单项closure算作完整Review通过。原 owners 按 expected Architecture .91 / RDT .97 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/567-fixed-development-baseline.md)与 ADR-028 拥有责任/决策，Test拥有实际运行和未验证边界；本条不复制 suite/trace，不改写历史 EVD，不表示真实 GitHub、业务、Release 或 Task Closure 已完成。

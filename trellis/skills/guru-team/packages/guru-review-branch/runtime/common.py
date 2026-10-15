@@ -454,7 +454,7 @@ def validate_gate(package_root, repo, value, expected_exit=None):
         }
         if "delivery_key" in value:
             archived_input["delivery_key"] = value["delivery_key"]
-        current_facts = facts(package_root, repo, archived_input)
+        current_facts = facts(package_root, repo, archived_input, fixed_base=value["base_head"])
         if any(value.get(key) != item for key, item in current_facts.items()):
             raise CommandError("stale_identity", "archived_review", "Run a fresh review for the current base and PR identity.", 3)
     classifications = value.get("candidate_classifications")
@@ -509,15 +509,8 @@ def validate_gate(package_root, repo, value, expected_exit=None):
         raise CommandError(
             "stale_identity", "base_ref", "Run a fresh review for the current base.", 3
         )
-    if value["profile"] == "branch_review" and not ancestor(
-        repo, value["base_head"], value["review_commit"]
-    ):
-        raise CommandError(
-            "stale_identity",
-            "base_head",
-            "Recorded base must precede reviewed task content.",
-            3,
-        )
+    if value["profile"] == "branch_review" and value["base_ref"] != value["base_head"]:
+        raise CommandError("stale_identity", "base_ref", "Bind Review to the fixed content-base OID.", 3)
     pair = value.get("integration_pair")
     if pair is not None:
         if not ancestor(repo, pair["old_base_head"], pair["new_base_head"]):

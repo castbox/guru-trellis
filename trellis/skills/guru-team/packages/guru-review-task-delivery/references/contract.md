@@ -230,3 +230,12 @@ same Delivery Author active_task_scope_change. A retry after lost output reads
 matching public scope, planning phase and cleared results; it returns the same
 minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
+
+## Content review versus PR target
+
+Read current candidate-bound full_review and applicable stage authority.
+A different target SHA, behind status or unrelated CURRENT change does not
+invalidate them or require synchronization/re-signing. Review actual payload,
+current independently deliverable scope and evidence. Actual implementation
+re-entry retains prior Check/full_review as historical facts while clearing
+readiness; new candidate applicability and original owner review decide reuse.
