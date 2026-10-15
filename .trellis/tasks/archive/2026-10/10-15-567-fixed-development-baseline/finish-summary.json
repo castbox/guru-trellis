@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-15T18:34:35Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-15-567-fixed-development-baseline",
+    "title": "取消并行任务持续追赶基线的默认义务",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-15-567-fixed-development-baseline",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/567-fixed-development-baseline",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "取消并行任务持续追赶基线的默认义务",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline",
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/design.md",
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/implement.md",
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/prd.md",
+          ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#567"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/567-fixed-development-baseline"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline",
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/design.md",
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/implement.md",
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/prd.md",
+        ".trellis/tasks/archive/2026-10/10-15-567-fixed-development-baseline/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "取消并行任务持续追赶基线的默认义务；#567；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
