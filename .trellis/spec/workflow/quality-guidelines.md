@@ -189,6 +189,28 @@ preset-reapply, ownership, drift, sidecar, and executable-mode checks required
 by its accepted scope. It does not expand into the complete multi-platform
 Throwaway installer matrix; that unrun matrix is reported explicitly.
 
+## Delivery API candidate validation (#531)
+
+Validate against the exact reviewed upstream candidate/API and the same Guru
+candidate, using the actual installed public modules and declared owner wrappers.
+D1 integration and D2 legacy cutover have different prerequisites; a refusal
+before application is a preserved-install diagnostic, never migration success.
+Follow [MIGRATION-531.md](task-delivery-migration.md) and the issue-owned Test evidence.
+
+A fresh public Check writes lifecycle metadata in task.json. Judge clean committed
+re-entry on the actual business candidate and committed stable Task identity/source
+plus per-Delivery Planning, not byte equality of current gate slots to HEAD.
+Fresh applicable Check and first independent complete-range Review remain required.
+No empty/repeated commit or broad exclusion of Planning/business content is allowed.
+
+Validate canonical, dogfood, representative installed/native, declared platform
+projection and reapply/drift. Cover same-Delivery rework/exit, multi-Delivery,
+transaction output-loss/history, Task-only Completion/closeout and the three legacy
+#149/#444/#155 shapes. Missing upstream migration blocks its dependent old-install
+scenarios only. Local contract tests, real GitHub success, joint acceptance and
+original business recovery are different evidence layers. Full Release matrix
+ownership remains unchanged.
+
 ## Required Checks
 
 ### Official Source-Repository Dogfood Projection
@@ -278,8 +300,8 @@ edges, private artifact ids, examples, the 160-case/5-invocation production
 control, and eval case bindings. Versioned v2/v3/v4 files are immutable legacy
 assets and are not alternate current selectors, input projectors, or fixtures.
 Then validate the current package closure
-at 37 active Skills, 169 external exits, and 110 commands, while the integrated business
-workflow projection is 35 invokes and 163 exits. Derive workflow and stop target
+at 38 active Skills, 187 external exits, and 114 commands, while the integrated business
+workflow projection is 36 invokes and 180 exits. Derive workflow and stop target
 cardinalities from the current registry and Interface declarations. The older
 32/142/102 and 22/98 counts are pinned-old, not alternate current selectors.
 Negative tests cover missing, extra,
@@ -623,7 +645,7 @@ same-transaction recovery without a business Delivery or Issue close effect.
 Historical transactional finish tests injected failure at prepare, reviewed-content
 push, verifier, draft create/reuse, final projection, archive move, archive
 commit, archive push, remote/PR HEAD check, and draft-to-ready. Every case also
-asserts that no separate pre-draft metadata commit/push occurs, plus active/archive locator and task status,
+asserts that no separate pre-draft metadata commit/push occurs, plus active/archive locator and public Task/Delivery identity,
 PR none/draft/ready state, local/remote/PR HEAD, dirty and staged path sets, and
 the one legal next transition. Include regressions for the 2026-07-03
 post-archive identity failure, 2026-07-04 dry-run/archive drift, and issue #100
@@ -865,8 +887,8 @@ Python or shell.
   and recursive zero `.new`/`.bak` scans.
 + A normal public invocation trace proves no eval corpus/descriptor/evidence or
   private runtime source enters ordinary Skill context.
-+ Branch Review tests cover all three profiles (`branch_review`, `base_continuity`,
-  and read-only `archived_review`), workflow and standalone modes, and all six
++ Branch Review tests cover all three profiles (`delivery_branch_review`, `delivery_base_continuity`,
+  and read-only historical `archived_review`), workflow and standalone modes, and all six
   exits, including `continuity_passed` and `archived_review_passed`, alongside
   finding-fix and fresh-final intent, qualification-before-severity, and
   planned-publication missing-Skill failure.
@@ -876,8 +898,8 @@ Python or shell.
   closure finding, reused final reviewer, unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and representative local throwaway
-  validation prove the 37-Skill/169-exit/110-command current package closure
-  and the integrated business graph at 35 invokes and 163 exits. Derive target
+  validation prove the 38-Skill/187-exit/114-command current package closure
+  and the integrated business graph at 36 invokes and 180 exits. Derive target
   cardinalities from the current registry and Interface declarations. The older
   32/142/102 and 22/98 counts are pinned-old, not current acceptance. Update
   and preset reapply must reproduce the current closure with zero unresolved
@@ -1127,10 +1149,10 @@ Shared, Codex, Claude, and Cursor consume byte-identical
 canonical corpus bytes; every semantic case executes the real public wrapper,
 and actual exit selects the schema before grader comparison.
 
-Source/installed/platform/representative local clean checks assert 37 active Skills,
-169 package exits, and 110 commands, exactly one selected `production-current-v5`
-four-Skill/15-exit current manifest, and business workflow markers of 35 invokes
-and 163 exits. Workflow/stop targets are derived from the current registry and
+Source/installed/platform/representative local clean checks assert 38 active Skills,
+187 package exits, and 114 commands, exactly one selected `production-current-v5`
+four-Skill/15-exit current manifest, and business workflow markers of 36 invokes
+and 180 exits. Workflow/stop targets are derived from the current registry and
 Interface graph, not predecessor fixed counts. Full multi-platform Release matrix
 belongs to the dedicated gate; remote marketplace installation is unused.
 
@@ -1287,7 +1309,7 @@ The exact old/new base pair is an integration clock independent from the live
 authority and task-content clock. A base-only unrelated or semantically
 compatible advance with unchanged Issue authority and approved planning
 assumptions must preserve the original `resume_target`, including
-`task_activation` after Planning. Pre-review profiles return `reconciled`.
+`delivery_activation` after Delivery Planning. Pre-review profiles return `reconciled`.
 Post-review profiles return `reconciled` only when the reviewed-content identity
 is unchanged; otherwise they return `review_continuity_required` and may create
 one persistent local reconciliation commit only after the semantic owner has
@@ -1296,30 +1318,27 @@ and received current-dialogue confirmation. A
 `planning_stale` result must identify an actual live authority or approved
 planning-assumption change; observing a newer base is not sufficient evidence.
 
-One shared stateful integration fixture passes actual producer stdout through
-the pair guard, semantic owner, router, and target consumer at every eligible
-boundary. It proves an unchanged pair causes zero semantic invocation,
-GitHub/Docs/history scan, artifact write, and interaction; multiple base
-advances form one accumulated delta; a current pair result is consumed at most
-once; and a task-content HEAD change prevents reuse. Performance assertions
-derive counts from the event log and live workflow markers rather than case
-labels or duplicated literal tables.
+Public owner-chain validation passes actual producer stdout directly to its
+unique consumer across isolated peer advances. It proves zero automatic
+Reconcile/sync commits/base-triggered regressions; a registered peer fetch
+cannot interrupt in-flight fixed Check/Review. D1-to-D2 uses actual delivered
+facts, excludes D1 and recovers D2's own range. Completion covers all scope;
+bounded history consumers supplement missing task facts without requiring
+unrelated target requery. Deterministic fixture authoring, actual AI owner
+execution, installed/native projection and live service effects are distinct
+evidence levels and must be reported separately.
 
-Bounded continuity tests prove the existing task semantic review is not replayed
-when task content is unchanged. They bind the prior complete review commit and
-current committed reconciliation HEAD independently, verify the reconciliation
-commit has both required ancestors and the reviewed candidate tree, and prove
-that `continuity_passed` supplies the current HEAD to Delivery Review without
-claiming a second complete Branch Review. A required task or authority change
-still performs fresh implementation, Phase 2, commit, and Branch Review.
-One real cross-Skill Git regression must cover a post-review base-mismatch
-seed, reconcile continuity route, confirmed persistent local reconciliation
-commit, bounded continuity, and Delivery Review `ready`; its negative path
-must prove that an unreviewed base merge remains stale. Reconcile and Delivery
-Review tests keep base reconciliation distinct from stale Delivery review and
-must not accept a base-only bypass. Historical #132/#161 replays remain
-diagnostic; they cannot use old HEADs, digests or fabricated state as current
-authority.
+Actual-integration regressions retain ordinary conflicts, pre-implementation
+resolved baseline, post-implementation resolved candidate, precise staging and
+hooks, committed reentry, bounded continuity and same-operation recovery. An
+operation pins its target even if the ref advances. The original Check/Review
+owners judge prior evidence plus the actual delta and affected dependencies;
+new gates bind the real candidate/predecessor, and continuity alone never
+supplies a full_review. Missing prior complete Review requires the first full
+Review. No unconditional full replay or empty/same-content commit is allowed.
+Tests distinguish merely behind from an actually observed existing server
+update requirement and retain true merge/check blocking. Historical replays
+are diagnostic and cannot fabricate current authority.
 
 Distribution acceptance covers canonical and installed specs, package/runtime
 inventory, complete descriptor-bound canonical projections, exact
@@ -1332,6 +1351,17 @@ registry, interfaces, and workflow markers; documentation and tests must not
 preserve stale hard-coded counts after package activation.
 
 ## Managed Python Runtime Gate
+
+Default-selection coverage must distinguish the current PATH `python3` from
+the installer interpreter and prove explicit `--python` takes precedence.
+Missing, non-executable, non-Python3 and implementation-mismatched selections
+must stop with safe actionable diagnostics. A real previously unenumerated
+CPython3 minor may prove identity admission; simulated minor selection and
+patch/path stability prove only identity behavior, never wheel compatibility.
+Dependency-install and real public-wrapper failures must preserve prior pointer
+bytes and the existing environment, including damaged same-identity repair.
+The disposable wrapper view must exercise matching public schema-bound assets
+before candidate replacement; a capability probe alone is insufficient.
 
 Runtime changes require package/runtime unit tests for stable identity, same-id
 reuse, lock drift, damaged managed runtime repair, candidate failure preserving

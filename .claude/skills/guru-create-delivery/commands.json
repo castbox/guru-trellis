@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.1",
+  "package_id": "guru-create-delivery",
+  "commands": [
+    {
+      "id": "invoke-guru-create-delivery",
+      "owner": "guru-create-delivery",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Resolved task checkout.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Current public route input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "json",
+          "description": "Completed same-owner semantic result; no authorization data.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_typed_exit",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/public-created-output.schema.json",
+        "schemas/public-scope-revision-required-output.schema.json",
+        "schemas/public-selection-required-output.schema.json",
+        "schemas/public-blocked-output.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}

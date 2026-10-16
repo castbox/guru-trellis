@@ -20,16 +20,22 @@ resource ownership, task artifact locator, and lifecycle transitions have
 separate owners. A missing context key yields `explicit_task_mode` with the
 TaskLifecycleDTO and no session write.
 
-- `resume_current_task` requires the existing session pointer to resolve to
+- `delivery_resume_current_task` requires the existing session pointer to resolve to
   the exact current lifecycle; it performs no write.
-- `rebind_missing_session` restores a missing pointer for the selected lifecycle.
-- `switch_task` validates both the bound source and the selected target before
+- `delivery_rebind_missing_session` restores a missing pointer for the selected lifecycle.
+- `delivery_switch_task` validates both the bound source and the selected target before
   replacing only this session's pointer. A -> B -> A is supported.
-- `reactivate_rebind` accepts a pointer for the same TaskId at an older
+- `delivery_reactivate_rebind` accepts a pointer for the same TaskId at an older
   generation or a missing pointer in a new session; the target generation must
   fresh-resolve.
-- `manual_recovery` repairs only a missing/stale schema-2 pointer for the
+- `delivery_manual_recovery` repairs only a missing/stale public schema-3 pointer for the
   explicitly selected task, never task/workspace mappings.
+
+Bind/resume validates the installed public Task schema-2 record. Task binding
+never clears an existing same-Task Delivery selection. A new binding has no
+selected Delivery; only `guru-create-delivery` or the explicit Delivery selection
+owner selects execution. Old profiles and schema-2 session records require
+upstream migration and are rejected by this candidate.
 
 All five success exits carry `TaskLifecycleDTO + resume_target` to their retained
 workflow routers. `explicit_task_mode` carries TaskLifecycleDTO to

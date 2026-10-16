@@ -1,1 +1,11 @@
-{"profile":"same_plan_resume","mode":"workflow","task_ref":".trellis/tasks/09-18-435-active-task-delivery-loop","transaction_ref":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"}
+{
+  "profile": "delivery_same_plan_resume",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "transaction_ref": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "delivery_key": {
+    "task_id": "09-18-435-active-task-delivery-loop",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  }
+}

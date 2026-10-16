@@ -309,7 +309,8 @@ independent review before shared baseline promotion.
         if result["exit_id"] == "upgraded":
             self.assertIn("formal_fork_source_lock", result["unverified"])
             self.assert_live_installed()
-            self.assertEqual(result["installed_version"], "0.7.0-guru.3")
+            canonical = json.loads((REPO / "trellis/guru-team-extension.json").read_text())
+            self.assertEqual(result["installed_version"], canonical["version"])
             self.assertEqual((self.root / ".trellis/.version").read_text().strip(), "0.7.0-castbox.3")
             self.assertIn("Preserve this user-owned paragraph.\n", (self.root / "AGENTS.md").read_text())
             self.assert_configuration_preserved()

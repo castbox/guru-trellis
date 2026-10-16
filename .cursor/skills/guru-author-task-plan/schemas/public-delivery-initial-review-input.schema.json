@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-input-delivery-initial-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "source_selection",
+    "delivery_key"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_initial_review"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_selection": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locator",
+          "section",
+          "authority_kind"
+        ],
+        "properties": {
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority_kind": {
+            "enum": [
+              "requirement",
+              "design_constraint",
+              "advisory"
+            ]
+          }
+        }
+      }
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; only the installed public parser validates identity and relationship."
+    }
+  }
+}

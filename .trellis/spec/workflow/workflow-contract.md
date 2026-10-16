@@ -22,12 +22,12 @@ journal/index, session recording, or legacy agent traces.
 
 The global workflow owns only:
 
-- phase order and the current-task status router;
+- phase order and the public Task/Delivery availability router;
 - one mandatory invocation marker per active stable `guru-*` Skill id;
 - every declared typed exit and its single consumer;
 - workflow targets, fail-closed stops, and automatic mapped re-entry;
 - tool-free initial request classification;
-- workspace/task boundary selection and task activation;
+- workspace/task boundary selection and Delivery activation;
 - Docs SSOT and post-Completion external-work-item Closure integration points;
 - human-readable artifact presentation;
 - the user interaction and external side-effect boundaries.
@@ -43,6 +43,20 @@ The active registry, package `interface.json`, independent per-exit output
 schemas, consumer input contracts, and `public_contracts.projections[]` are the
 only public I/O graph authority. Workflow prose must never infer a route from a
 private checkpoint, digest, recorder result, example, or runtime implementation.
+
+## Native Reference And Guru Route Ownership
+
+Upstream bundled `trellis-meta` references are provider-owned and are not
+preset overlay targets. They describe generic Trellis facilities; older
+candidate references can still name retired Guru Task activation. For a Guru
+Team operation, load the installed `.trellis/workflow.md`, current package
+registry and this contract before selecting a route. Generic Task start or a
+historical bundled reference cannot supply Planning approval or activation.
+The current workflow selects `guru-create-delivery` and
+`guru-activate-delivery`; public model and transition details remain solely in
+upstream `.trellis/delivery-contract.md`. Do not patch bundled references or
+introduce a substitute model to reconcile an old route. Report provider
+reference drift separately from verified Guru platform-entry behavior.
 
 ## GitHub Platform I/O
 
@@ -69,8 +83,8 @@ dialogue-local and is never persisted.
 
 ## Integrated Public Graph
 
-The current source registry has 37 active packages, 169 package exits, and 110
-commands. The business-task workflow declares 35 mandatory invocations and 163
+The current source registry has 38 active packages, 187 package exits, and 114
+commands. The business-task workflow declares 36 mandatory invocations and 180
 external exits; `guru-verify-extension-installation` and
 `guru-upgrade-installation` are standalone-only. These
 counts are checks against the live registry and workflow markers, not an
@@ -79,8 +93,8 @@ alternative routing authority.
 The production spine is `guru-sync-base` -> context/clarification/wording/
 change-request review -> `guru-create-issue` for a proposed draft (then fresh
 Intake) or `guru-create-task` for an existing Issue/standalone request ->
-identity/binding/checkout/session resolution -> Planning and `guru-activate-task`
--> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
+identity/binding/checkout/session resolution -> Task scope -> `guru-create-delivery`
+-> per-Delivery Planning and `guru-activate-delivery` -> Phase 2 check -> Task Commit -> independent Branch Review -> Delivery Review
 -> Delivery Publish -> Delivery Merge -> whole-task Completion -> source Issue
 Closure -> Finish -> Cleanup. Incomplete Completion retains the same active
 TaskId and routes to the earliest affected owner or next Delivery slice.
@@ -191,10 +205,13 @@ complete committed diff and never reuses Phase 2 as review proof.
 
 Every fresh `baseline_current` binds `constitution_status=current`, an existing
 regular project-owned constitution locator, and its exact source profile. Only
-`source_profile=task_impact_sync` may resume the matching stage.
-`source_profile=bootstrap_foundation|repair` reruns
-`task_impact_sync(stage=<affected-stage>)` before that stage can resume.
-`source_profile=promotion` always re-enters fresh Phase 2, Task Commit, and
+`source_profile=delivery_task_impact_sync` may resume a Delivery stage with its
+same DeliveryKey and planning root; Task-only acceptance/finish uses
+`source_profile=task_impact_sync`. `delivery_bootstrap_foundation|delivery_repair`
+reruns `delivery_task_impact_sync(stage=<affected-stage>)` with that same key and
+root. Task-only `bootstrap_foundation|repair` reruns the matching
+`task_impact_sync` call. `source_profile=delivery_promotion|promotion` always
+re-enters fresh Phase 2, Task Commit, and
 independent committed full-diff Branch Review before Delivery Review or
 Completion/Finish reruns. Missing or stale Architecture evidence,
 `architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
@@ -258,7 +275,7 @@ owners' selection, recovery, confirmation, executor, or checker behavior.
 
 The pre-selection identity check is scoped to the current workspace and the
 requested Issue, not the repository-wide active-task inventory. Unrelated
-`in_progress` tasks, including tasks owned by the same user, do not prevent
+active Tasks, including Tasks owned by the same user, do not prevent
 `guru-select-workflow-mode` and do not justify asking the user to select an
 unrelated task or use task-free. A checkout path or old mapping is not a task
 binding. Validate the exact TaskId/generation and resolve an unfinished task
@@ -298,33 +315,45 @@ primary recovery, clean acquisition, Sync and Cleanup retain their owners.
 
 ### Phase 1 — Planning
 
+The #531 source candidate directly evolves the delivered #292 Author contract:
+one scope-only profile writes Task root requirements, while eight Delivery
+profiles write the public planning_root. Matching package Interfaces and thin
+projections must be reviewed and installed together. Existing development Tasks
+keep their complete installed runtime; source import is not runtime cutover.
+
+
 The canonical workflow delegates planning business writing to mandatory
-`guru-author-task-plan`, including the three planning documents and official
-planning JSONL. Its `requirements_ready` enters the original Architecture
+`guru-author-task-plan`. Its scope_requirements_ready enters original Clarify
+task_scope_requirements_acceptance for actual scope publication; pre-publication
+scope_ready returns to scope-only Author writing. Accepted scope then routes to
+explicit Delivery Creation, affected rework/exit, or Completion by current
+obligations. No Task solution-planning state or automatic empty Delivery exists.
+The same Author's Delivery profiles own their three planning documents and
+official planning JSONL. Their `requirements_ready` enters the original Architecture
 owner's planning `candidate_assessment`; that current result returns to Author
 for solution writing. Author `plan_ready` enters Wording, whose planning pass
 enters Architecture `final_plan`; only that current result enters adjacent
 Approval. The packages own their local contracts, including source-design
 disposition, Delivery Policy and Docs SSOT Plan. Automatically consume each
-declared typed exit. Only
-`approved` reaches `phase-1-task-activation`. That target first presents the
-three planning links, semantic conclusion, key choices, alternatives,
-trade-offs, and unverified boundaries, then owns the dialogue-local review
-pause before `guru-activate-task` activates a planning task or resumes an
-in-progress replan. The same approved consumer selects `activate` or
-`resume_execution` from live lifecycle after the current pair guard. Only first
-activation changes status; active resumption preserves identity, branch,
-checkout and `in_progress`. Questions, revision
-requests, partial choices, and ambiguous replies remain paused. Material plan
-changes re-enter the earliest affected Author/dependency and repeat current
-Wording, final Architecture and Approval before a new presentation; an older
-reply and any Phase 0 confirmation are not reusable. Explicit autonomous
-execution may omit only the ordinary unchanged-plan pause; scope, authority,
-material design, or risk changes still pause.
+declared typed exit. Task scope is distinct from the per-Delivery plan. The first and subsequent
+Delivery are created/selected through `guru-create-delivery` before the existing
+unique Author writes their public planning_root. D2 never replaces D1 artifacts.
+Wording, Architecture and Approval retain separate judgments over that exact plan.
+Only current approved output enters `phase-1-delivery-activation`, which presents
+the complete plan and invokes `guru-activate-delivery` after the current dialogue
+boundary. No base-pair observation is required. No Task planning/in_progress writer remains.
+Same-Delivery rework uses the same owner rather than first/subsequent activation.
+The exact profiles and output-loss recovery are step-local package contracts.
+Questions, revision requests, partial choices and ambiguous replies remain
+paused. Material plan changes re-enter the earliest affected Author/dependency
+and repeat current Wording, final Architecture and Approval before presentation.
+Explicit autonomous execution omits only the ordinary unchanged-plan pause;
+scope, authority, material design or risk changes retain their existing boundary.
 
-Planning owner private checkpoints are not workflow authority. The approved DTO
-is sufficient for the activation consumer; later phases must not reopen or
-delete an upstream owner's private state.
+Read the canonical [#531 migration boundary](task-delivery-migration.md)
+for old schema/DTO retirement and cutover; current phase or files never prove
+semantic approval. No recorder stores dialogue acceptance. No earlier creation
+or old plan confirmation accepts materially changed planning.
 
 ### Phase 2 — Implementation and check
 
@@ -352,7 +381,7 @@ recorder/checker commands, or private evidence shape.
 
 Mandatory invoke `guru-create-task-commit`, then independently review the
 complete committed base-to-HEAD diff with `guru-review-branch`. A checked
-`passed` enters the active-task pair guard and Delivery Review. The Delivery
+`passed` enters Delivery Review directly. The Delivery
 Review owner checks one independently deliverable slice and authors the exact
 Chinese PR title/body with `Refs` only, including when the target is the
 default branch. It discloses remaining task work and unverified boundaries;
@@ -387,16 +416,11 @@ never invokes package-private closeout scripts directly.
 
 ### Active-task continuation authority
 
-For an exact current task, the active workflow's single non-empty
-`[trellis-continuation]` block is the only detailed continuation authority.
-`task.json.status`, Phase Index text, `[workflow-state:*]` breadcrumbs, platform
-entries, hooks, prior conversation text, and private checkpoint names provide
-facts or broad lifecycle guidance only. They must not maintain another route
-table or infer a semantic pass. `planning` and `planning-inline` share one Phase
-1 matrix; `in_progress` and `in_progress-inline` share one Phase 2-to-Completion
-matrix; `completed` resumes the current Finish or Cleanup consumer; invalid identity or an
-unsupported task state stops at `invalid-task-state`. Without an exact current
-task, continuation never selects a replacement from project inventory.
+For an exact current Task, the active workflow's sole non-empty
+`[trellis-continuation]` owns routing. Resolve current public Delivery selection,
+phase and evidence through the installed upstream contract, independently of
+Task identity/resource bindings. No inventory guessing, Task-status route,
+private checkpoint route table or competing native gate is allowed.
 
 Continuation first distinguishes a current adjacent public DTO from lost
 output. A still-current adjacent DTO goes directly through its Interface-
@@ -406,23 +430,18 @@ recovery or rematerialization, while a semantic result is rerun fresh by its
 semantic owner. Missing checkpoints, clean Git state, commit messages, task
 status, old summaries, and earlier confirmation are never substitutes.
 
-The Phase 1 matrix routes current created and C3/C4/C5-resolved planning tasks
-to Author using fresh original source selection, including incomplete or stale
-planning documents. Lost selection returns to original Clarify/context; a
-legitimate branch rebind does not replay initial creation. It preserves the
-current owner and purpose for planning wording, both Planning Architecture
-calls, plan approval,
-dialogue-local plan acceptance, and activation. `guru-activate-task` performs
-the status-only transition once after current approval and confirmation; lost
-output is recovered through `recover_activation` for that same first operation.
-An active replan uses `resume_execution`, and only its completed lost result
-uses `recover_execution`. The single continuation block handles pending replan
-approval/presentation before ordinary Phase 2 continuation. Semantic output
-loss returns to the original producer; unavailable dialogue acceptance is
-obtained again, never stored. The execution owner's short-lived completed
-result is retired after a current Check passed projection. Existing later-stage
-continuation never restarts activation merely because that result is absent.
-None of these paths persists confirmation or writes legacy branch metadata.
+Planning preserves the original Author, source selection and both
+purpose-bound Architecture producers. Incomplete plans and lost source selection
+return to their original producer; a legitimate branch rebind never replays
+initial creation. Wording and final_plan precede fresh Approval.
+Adjacent current public DTOs use their Interface projection. Missing outputs
+return to their original semantic or transaction producer. Commit/publication/
+merge facts survive affected gate rework; their existence does not prove pass.
+No-current Delivery legitimately supports scope revision, an explicit first/next
+slice, Completion evidence/validation or closeout. It never uniformly creates
+an empty slice. D1 and D2 follow the same owners. Ordinary method checks do not
+write formal phases. The public runtime declaration supplies unique writers;
+platform entries and breadcrumbs only load the sole continuation.
 
 When task creation succeeded but its `created` output was lost, return to
 `guru-create-task` read-only result recovery for the exact TaskId/generation.
@@ -481,6 +500,34 @@ authority, or one fully displayed side-effect set. Use `确认继续` for one cu
 unique, unambiguous plan and accept any clear affirmative reply. Never require
 the user to repeat a SHA, digest, ref, or prescribed sentence.
 
+Ordinary chat is the default channel for confirmations, real choices and
+necessary clarification. Honor an expressed preference for prompt interaction.
+The availability of a structured question tool is not a requirement to use it.
+Use a structured question only when the user requests that channel or a higher
+platform constraint requires it, and only for uses allowed by that tool. An
+unanswered question, a preselected option or elapsed waiting time is not an
+answer or authorization.
+
+Interpret clear natural-language replies against the current question and its
+fully displayed plan. When the current conversation already requests or
+confirms the exact action under its owner's contract, consume it through that
+owner's execution and validation path; do not switch channels to require a
+button, identity restatement or another confirmation of the same action.
+
+Text and button answers belong to the question and plan they answer. A late or
+repeated answer to an action already confirmed or completed does not execute it
+again and does not authorize a subsequent independent action. Resolve that
+relationship in the current dialogue, using the original question and current
+execution facts; do not rebind an old answer to a newer pending question. Avoid
+leaving both a chat question and an optional structured question pending for the
+same choice. Do not create an authorization record or question-state store.
+
+Agent-authored questions are distinct from mandatory platform permission,
+sandbox or external-action approvals. When the platform requires approval,
+explain its source and corresponding action and follow that requirement. This
+contract does not remove or bypass platform approvals; their appearance alone
+is not evidence of an extra Agent-authored confirmation question.
+
 Automatically consume mapped typed exits, stale/re-entry/reprepare routes, and
 recorder/validator steps. Do not simulate a human approval chain and do not
 persist authorization state, text, refs, digests, or process.
@@ -491,7 +538,7 @@ when not already exactly requested, Delivery push/PR, Delivery merge,
 post-Completion source Issue closure when applicable, Finish archive and
 bookkeeping, and Cleanup. Each owner displays its current exact action and
 obtains confirmation where required by its contract; an earlier confirmation
-does not authorize a later action. Task activation after accepted Planning,
+does not authorize a later action. Delivery activation after accepted Planning,
 implementation, Phase 2 check, Branch Review, mapped exits and read-only
 recovery add no second routine confirmation. Branch classification, protection,
 sharing, ownership and PR state are facts, not operation authority.
@@ -565,40 +612,44 @@ manifest-selected discovery roots, three-platform dogfood drift, managed hashes,
 `.new`/`.bak`, current ownership/installed-manifest validation, executable
 modes, README commands, and a recursive zero-sidecar scan.
 
-## Active-Task Base Evolution Boundaries
+## Fixed Development Baseline And Actual Integration
 
-Every stable active-task boundary observes the selected base through the single
-`guru-reconcile-task-base` pair guard before continuing. The guarded
-boundaries are plan approval before activation, Phase 2 pass before Task
-Commit, Task Commit before Branch Review, Branch Review before Delivery Review,
-and Delivery Review readiness before Delivery Publish.
+Development baseline, Delivery content range and PR target are separate facts.
+The implementation owner retains the selected Delivery content base B, binds
+actual implementation HEAD H and full B..H paths through begin_check. D2 derives
+B from actual preceding delivery_result heads; same-Delivery recovery uses its
+own candidate. No fetch, integration candidate or synchronization is required
+to obtain a range. The Task's complete accepted scope remains Completion's duty.
 
-The workflow owns one closed `resume_target` table, mandatory invocation of the
-semantic owner for a new pair, and one `guru-base-reconciliation-router`.
-An unchanged pair resumes the original target without semantic invocation.
-The six semantic exits route uniquely: `reconciled` resumes the guarded target,
-`review_continuity_required` first completes its confirmed expected-head local
-reconciliation commit and then invokes the bounded Branch Review profile,
-`implementation_required` returns to implementation and a fresh Phase 2
-check, `planning_stale` returns to Planning,
-`scope_confirmation_required` invokes requirement clarification, and
-`blocked` stops fail closed. Mapped routes do not create a generic
-confirmation boundary.
+Planning, Activation, Check, TaskCommit, BranchReview, DeliveryReview/Publish,
+Completion and Finish have no default pair guard/Reconcile edge. The current
+owner invokes guru-reconcile-task-base only for an actual conflict, a concrete
+required-check integration failure, an existing server-required update already
+observed by Merge, an explicit dependency/requirement or user-requested sync.
+Behind/latest target SHA alone does not qualify. No Ruleset query gate is added.
 
-Base identity is integration evidence, not authority or task-content
-freshness. A base-only change cannot by itself invalidate Planning, Phase 2,
-Branch Review, or Delivery Review. For post-Branch Review and post-Delivery
-Review profiles, a compatible candidate that changes the shared
-reviewed-content identity uses `review_continuity_required`: after semantic
-judgment and an exact current-dialogue Git confirmation, the reconcile owner
-creates one persistent local reconciliation commit bound to expected task/base
-HEADs and the reviewed candidate tree. Bounded continuity separately binds the
-prior complete review commit and that current commit, then projects the current
-commit as Delivery Review's reviewed-content anchor. The retained
-`post_publication` and `finalizer_base_mismatch` profile IDs are historical
-compatibility identifiers: the former serves the current post-Delivery Review
-boundary, while the latter creates no Finalizer production route. A base-only
-change is not a Delivery Review content-staleness finding.
+An actual operation pins its integration target OID separately from content B.
+Its six declared exits retain their unique consumers. The phase2 resume target
+means bounded reentry through implementation and Check for the actual delta
+and affected dependencies. A real prior Check/full_review remains historical;
+new candidate applicability rejects it until the original owners actually judge
+coverage and record new results. Prior complete Review plus independently
+reviewed resolution delta may cover B..Hi; missing complete Review still
+requires the first full Review. Do not relabel continuity, manufacture gates,
+repeat unrelated tests, or create another empty/same-content TaskCommit.
+
+In-flight stages retain explicit applicable authority and fixed candidates.
+Unrelated CURRENT/navigation/archive/remote-ref advancement cannot replace
+these objects. Actual task-applicable authority, scope, dependency or solution
+changes return to their original semantic owner. Shared-current promotion
+still validates its own expected-current write boundary.
+
+Merge observes actual GitHub eligibility/checks and uses expected task HEAD;
+terminal verification uses actual parents/message/merge identity and current
+target reachability. Finish preserves the same exact bookkeeping transaction
+across unrelated target advances. Completion consumes bounded historical facts
+only for their stated coverage, supplements missing task Delivery facts, and
+rejudges affected conclusions. #569 alone owns history-query preparation.
 
 ## Public Entry And Recovery Routing
 
@@ -628,7 +679,10 @@ returns the earliest affected owner. Only `completed` enters Closure.
 
 `guru-complete-task-closure` owns the source Issue disposition after Completion.
 No-Issue, reference-only, follow-up and parent-only relationships produce
-`no_mutation`. Closing one exact source Issue is a separate confirmed provider
+`no_mutation`. An exact-source relation may also produce reviewed `retain_open`
+with a no-mutation result; the step-owned disposition and matching consumer
+contract live in `guru-complete-task-closure` and `guru-finish-task`.
+Closing one exact source Issue is a separate confirmed provider
 mutation with same-transaction recovery and post-read verification. Delivery
 and bookkeeping PRs contain no Issue-closing keyword.
 
@@ -702,15 +756,6 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
-
-## Clean Committed TaskCommit Re-entry
-
-Fresh Phase 2 `passed` and an unchanged `post_check` pair guard enter the
-existing TaskCommit owner, including when Reconcile has already committed the
-candidate. Its current `committed` result enters the unchanged `post_commit`
-pair guard. A new pair returns through Reconcile and fresh Phase 2; an unchanged
-pair enters fresh Branch Architecture and independent full Branch Review.
-Candidate selection and verification belong only to TaskCommit's package.
 
 ## Independent maintenance routing
 

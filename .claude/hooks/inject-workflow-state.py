@@ -187,6 +187,13 @@ def get_active_task(
     data = task.raw
 
     task_id = data.get("id") or task_dir.name
+    if data.get("schema_version") == "2.0":
+        from common.delivery_session import get_current_delivery  # type: ignore[import-not-found]
+        query = get_current_delivery(active.invocation_root, input_data, _detect_platform(input_data))
+        if query["kind"] == "error":
+            return f"{task_id}: {query['code']}: {query['message']}", "task_error", active.source
+        phase = query["delivery"]["phase"] if query["kind"] in ("current", "terminal_delivery") else query["kind"]
+        return task_id, phase, active.source
     status = data.get("status", "")
     if not isinstance(status, str) or not status:
         return task_dir.name, "task_error", active.source

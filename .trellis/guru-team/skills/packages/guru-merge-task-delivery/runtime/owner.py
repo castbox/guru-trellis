@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -14,6 +15,8 @@ from urllib.parse import quote
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.delivery_projection.adapter import DeliveryProjection
+from runtime.delivery_projection.gates import rework
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 
 
@@ -45,7 +48,7 @@ def objective_blockers(pr: dict[str, Any], policy: dict[str, bool]) -> list[str]
             blockers.append("pr_is_draft")
         if pr["mergeable"] != "MERGEABLE":
             blockers.append("pr_not_mergeable")
-        if pr["merge_state_status"] in {"BEHIND", "BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
+        if pr["merge_state_status"] in {"BLOCKED", "DIRTY", "DRAFT", "UNKNOWN"}:
             blockers.append("merge_state_not_ready")
         states = {_check_state(item) for item in pr["checks"] if isinstance(item, dict)}
         if "failed" in states:
@@ -151,7 +154,7 @@ def gh_json(root: Path, args: list[str], operation: str) -> dict[str, Any]:
 
 
 def validate_public(package_root: Path, value: dict[str, Any]) -> None:
-    validate_json(value, package_root / "schemas/public-ready-for-merge-input.schema.json", "input")
+    validate_json(value, package_root / ("schemas/public-delivery-ready-for-merge-input-1.0.schema.json" if value.get("profile") == "delivery_ready_for_merge" else "schemas/public-ready-for-merge-input.schema.json"), "input")
 
 
 def validate_review(package_root: Path, value: dict[str, Any]) -> None:
@@ -163,7 +166,7 @@ def validate_review(package_root: Path, value: dict[str, Any]) -> None:
         )
 
 
-def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
+def task_facts(root: Path, public: dict[str, Any], *, historical: bool = False) -> dict[str, Any]:
     task_root = (root / ".trellis/tasks").resolve()
     path = (root / public["task_ref"]).resolve()
     try:
@@ -179,13 +182,26 @@ def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.") from exc
     if not isinstance(task, dict):
         raise CommandError("invalid_arguments", "task", "Repair the current task.json.")
+    if historical and "delivery_key" in public:
+        # Actual terminal facts do not depend on an active branch, checkout or
+        # current HEAD. The installed parser still owns identity/relationship.
+        try:
+            projection = DeliveryProjection(root, public["task_ref"])
+            projection.resolve(public["delivery_key"])
+            record = projection.read_record()
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+        return {"task_ref": public["task_ref"], "stable_task_id": record["id"],
+                "lifecycle_generation": public["delivery_key"]["lifecycle_generation"]}
     try:
         checkout = resolve_active_task_checkout(root, public["task_ref"])
     except LifecycleContractError as exc:
         raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
     branch = checkout.branch_name
     head = git(root, "rev-parse", "HEAD")
-    if task.get("status") != "in_progress":
+    if "delivery_key" in public:
+        DeliveryProjection(root, public["task_ref"]).resolve(public["delivery_key"])
+    elif task.get("status") != "in_progress":
         raise CommandError("stale_identity", "task.status", "Use the current active task.", 3)
     stable_id = task.get("id")
     if stable_id != checkout.artifact.task_id:
@@ -197,7 +213,7 @@ def task_facts(root: Path, public: dict[str, Any]) -> dict[str, Any]:
         "task_ref": public["task_ref"],
         "stable_task_id": stable_id,
         "lifecycle_generation": checkout.artifact.lifecycle_generation,
-        "status": task["status"],
+        **({} if "delivery_key" in public else {"status": task["status"]}),
         "branch": branch,
         "base_branch": base_branch,
         "head_sha": head,
@@ -218,9 +234,8 @@ def _check_state(item: dict[str, Any]) -> str:
     return "pending"
 
 
-def live_facts(root: Path, package_root: Path, public: dict[str, Any]) -> dict[str, Any]:
+def live_facts(root: Path, package_root: Path, public: dict[str, Any], *, historical_only: bool = False) -> dict[str, Any]:
     validate_public(package_root, public)
-    task = task_facts(root, public)
     require_gh(root)
     fields = (
         "number,url,state,isDraft,headRefOid,headRefName,baseRefName,mergeable,"
@@ -255,14 +270,31 @@ def live_facts(root: Path, package_root: Path, public: dict[str, Any]) -> dict[s
         ) from exc
     if pr["number"] != public["pr_number"]:
         raise CommandError("stale_identity", "github.pr.number", "Rebuild the publication handoff.", 3)
-    if pr["head_sha"] != public["expected_head_sha"] or task["head_sha"] != public["expected_head_sha"]:
+    historical = "delivery_key" in public and (historical_only or pr["state"] == "MERGED")
+    task = task_facts(root, public, historical=historical)
+    if historical:
+        task.update(branch=pr["head_branch"], base_branch=pr["base_branch"], head_sha=pr["head_sha"])
+    if pr["head_sha"] != public["expected_head_sha"] or (pr["state"] != "MERGED" and task["head_sha"] != public["expected_head_sha"]):
         raise CommandError("stale_identity", "github.pr.head", "Rebuild review and publication from the current task HEAD.", 3)
-    if pr["head_branch"] != task["branch"] or pr["base_branch"] != task["base_branch"]:
+    if not historical and pr["state"] != "MERGED" and (pr["head_branch"] != task["branch"] or pr["base_branch"] != task["base_branch"]):
         raise CommandError("stale_identity", "github.pr.branches", "Rebuild publication for the active task's current head and base branches.", 3)
     if hashlib.sha256(pr["body"].encode("utf-8")).hexdigest() != public["publication_body_sha256"]:
         raise CommandError("stale_identity", "publication_body_sha256", "Re-enter Delivery Review and Publish for the current PR body.", 3)
     if CLOSING_KEYWORD.search(pr["body"]):
         raise CommandError("merge_precondition_failed", "github.pr.body", "Use a Refs-only Delivery PR body without closing keywords.")
+
+    if "delivery_key" in public:
+        projection = DeliveryProjection(root, public["task_ref"])
+        delivery = projection.resolve(public["delivery_key"])
+        publication = delivery["publication_result"]
+        if (publication is None or publication["result_id"] != public["publication_result_id"]
+                or publication["repo_ref"] != public["repo_ref"] or publication["pr_number"] != public["pr_number"]
+                or publication["reviewed_head"] != public["expected_head_sha"] or publication["target_ref"] != pr["base_branch"]):
+            raise CommandError("stale_identity", "publication_result_id", "Read the exact Publication fact for this PR candidate.", 3)
+        if pr["state"] != "MERGED" and not historical_only:
+            if (projection.gate_applicability(public["delivery_key"])["readiness"]["kind"] != "applicable"
+                    or delivery["candidate"] != publication["candidate"]):
+                raise CommandError("stale_identity", "readiness", "Refresh Readiness and Publication for the current candidate.", 3)
 
     raw_policy = gh_json(root, ["api", f"repos/{public['repo_ref']}"], "repository policy")
     if str(raw_policy.get("full_name") or public["repo_ref"]).casefold() != public["repo_ref"].casefold():
@@ -313,16 +345,14 @@ def live_facts(root: Path, package_root: Path, public: dict[str, Any]) -> dict[s
         "objective_blockers": objective_blockers(pr, policy),
     }
     facts["facts_sha256"] = digest(facts)
-    validate_json(facts, package_root / "schemas/live-facts.schema.json", "live_facts")
+    validate_json(facts, package_root / ("schemas/delivery-live-facts-1.0.schema.json" if "delivery_key" in public else "schemas/live-facts.schema.json"), "live_facts")
     return facts
 
 
-def expected_trailers(task_id: str, head: str) -> list[str]:
-    return [
-        f"Guru-Task-Identity: {task_id}",
-        "Guru-Delivery-Schema: 1",
-        f"Guru-Delivery-Head: {head}",
-    ]
+def expected_trailers(task_id: str, head: str, key: dict | None = None) -> list[str]:
+    return [f"Guru-Task-Identity: {task_id}", "Guru-Delivery-Schema: " + ("2" if key else "1"),
+            f"Guru-Delivery-Head: {head}", *([f"Guru-Delivery-Identity: {key['delivery_id']}",
+            f"Guru-Task-Generation: {key['lifecycle_generation']}"] if key else [])]
 
 
 def validate_message(public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any]) -> None:
@@ -334,13 +364,13 @@ def validate_message(public: dict[str, Any], facts: dict[str, Any], review: dict
     if "\r" in body or body.endswith("\n") or CLOSING_KEYWORD.search(subject) or CLOSING_KEYWORD.search(body):
         raise CommandError("schema_mismatch", "review_input.route.merge_message", "Use exact LF-only Refs-neutral subject/body bytes without a trailing newline.")
     lines = body.split("\n")
-    trailers = expected_trailers(facts["task"]["stable_task_id"], public["expected_head_sha"])
-    if len(lines) < 5 or lines[-4] != "" or lines[-3:] != trailers:
+    trailers = expected_trailers(facts["task"]["stable_task_id"], public["expected_head_sha"], public.get("delivery_key"))
+    if len(lines) < len(trailers)+2 or lines[-len(trailers)-1] != "" or lines[-len(trailers):] != trailers:
         raise CommandError("schema_mismatch", "review_input.route.merge_message.body", "End the body with one blank line and the exact three Delivery trailers.")
-    for key in TRAILER_KEYS:
+    for key in (*TRAILER_KEYS, *(("Guru-Delivery-Identity", "Guru-Task-Generation") if "delivery_key" in public else ())):
         if sum(line.startswith(key + ":") for line in lines) != 1:
             raise CommandError("schema_mismatch", "review_input.route.merge_message.body", "Include each Delivery trailer exactly once.")
-    if not any(line.strip() for line in lines[:-4]):
+    if not any(line.strip() for line in lines[:-len(trailers)-1]):
         raise CommandError("schema_mismatch", "review_input.route.merge_message.body", "Provide a concrete reviewed merge body before the trailers.")
 
 
@@ -368,50 +398,50 @@ def action_sha(public: dict[str, Any], facts: dict[str, Any], review: dict[str, 
         "repo_ref": public["repo_ref"],
         "pr_number": public["pr_number"],
         "expected_head_sha": public["expected_head_sha"],
-        "pre_merge_base_head": facts["base_ref"]["head_sha"],
+        "target_ref": facts["base_ref"]["name"],
         "merge_method": route.get("merge_method"),
         "merge_message": route.get("merge_message"),
     })
 
 
 def gate_path(root: Path, public: dict[str, Any]) -> Path:
-    key = hashlib.sha256(
-        f"{public['task_ref']}\0{public['delivery_cycle_ref']}\0{public['repo_ref']}\0{public['pr_number']}".encode()
-    ).hexdigest()[:24]
+    identity = public["delivery_key"] if "delivery_key" in public else public["delivery_cycle_ref"]
+    key = digest({"task_ref": public["task_ref"], "delivery": identity, "repo_ref": public["repo_ref"], "pr_number": public["pr_number"]})[:24]
     return root / ".trellis/.runtime/guru-team/merge-task-delivery" / f"{key}.json"
 
 
 def build_gate(public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any]) -> dict[str, Any]:
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "skill_id": "guru-merge-task-delivery",
         "public_input": public,
         "semantic_review": review,
         "pre_merge_facts": facts,
-        "pre_merge_base_head": facts["base_ref"]["head_sha"],
         "action_sha256": action_sha(public, facts, review),
     }
 
 
 def validate_gate(package_root: Path, gate: dict[str, Any]) -> None:
-    if set(gate) != {
-        "schema_version", "skill_id", "public_input", "semantic_review",
-        "pre_merge_facts", "pre_merge_base_head", "action_sha256",
-    }:
+    version = gate.get("schema_version")
+    fields = {"schema_version", "skill_id", "public_input", "semantic_review", "pre_merge_facts", "action_sha256"}
+    if version == "1.0":
+        fields.add("pre_merge_base_head")
+    if set(gate) != fields or version not in {"1.0", "2.0"} or gate.get("skill_id") != "guru-merge-task-delivery":
         raise CommandError("schema_mismatch", "gate", "Use the closed package-owned merge gate.")
-    if gate.get("schema_version") != "1.0" or gate.get("skill_id") != "guru-merge-task-delivery":
-        raise CommandError("schema_mismatch", "gate.identity", "Use the current package-owned merge gate.")
-    public = gate.get("public_input")
-    review = gate.get("semantic_review")
-    facts = gate.get("pre_merge_facts")
-    if not isinstance(public, dict) or not isinstance(review, dict) or not isinstance(facts, dict):
+    public, review, facts = (gate.get(name) for name in ("public_input", "semantic_review", "pre_merge_facts"))
+    if not all(isinstance(value, dict) for value in (public, review, facts)):
         raise CommandError("schema_mismatch", "gate", "Use the closed package-owned merge gate.")
     validate_public(package_root, public)
     validate_review(package_root, review)
-    validate_json(facts, package_root / "schemas/live-facts.schema.json", "gate.pre_merge_facts")
-    if gate.get("pre_merge_base_head") != facts["base_ref"]["head_sha"]:
-        raise CommandError("schema_mismatch", "gate.pre_merge_base_head", "Bind the gate to the observed base head.")
-    if gate.get("action_sha256") != action_sha(public, facts, review):
+    validate_json(facts, package_root / ("schemas/delivery-live-facts-1.0.schema.json" if "delivery_key" in public else "schemas/live-facts.schema.json"), "gate.pre_merge_facts")
+    action = action_sha(public, facts, review)
+    if version == "1.0":
+        if gate["pre_merge_base_head"] != facts["base_ref"]["head_sha"]:
+            raise CommandError("schema_mismatch", "gate.pre_merge_base_head", "Read the original observed base head.")
+        action = digest({"repo_ref": public["repo_ref"], "pr_number": public["pr_number"],
+                         "expected_head_sha": public["expected_head_sha"], "pre_merge_base_head": gate["pre_merge_base_head"],
+                         "merge_method": review["route"].get("merge_method"), "merge_message": review["route"].get("merge_message")})
+    if gate.get("action_sha256") != action:
         raise CommandError("schema_mismatch", "gate.action_sha256", "Bind the gate to the exact reviewed action.")
 
 
@@ -432,6 +462,8 @@ def load_gate(package_root: Path, root: Path, public: dict[str, Any], value: str
     validate_gate(package_root, gate)
     if gate["public_input"] != public:
         raise CommandError("stale_identity", "gate.public_input", "Record a gate for the exact current handoff.", 3)
+    if gate["schema_version"] == "1.0":
+        gate = build_gate(public, gate["pre_merge_facts"], gate["semantic_review"])
     return path, gate
 
 
@@ -457,12 +489,35 @@ def project_nonmerge(package_root: Path, public: dict[str, Any], review: dict[st
         schema = "public-review-refresh-required-output.schema.json"
     else:
         raise CommandError("schema_mismatch", "review_input.route", "Select one declared non-merge route.")
+    if "delivery_key" in public:
+        if exit_id != "merge_blocked":
+            output["delivery_key"] = public["delivery_key"]
+        schema = "public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json"
     validate_json(output, package_root / f"schemas/{schema}", "stdout")
     return output
 
 
-def terminal_output(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], pre_base: str) -> dict[str, Any]:
-    validate_route(public, facts, review)
+def delivery_fact(projection, public, facts):
+    publication = projection.resolve(public["delivery_key"])["publication_result"]
+    commit = facts["merge_commit"]
+    return {"result_id": "delivery:" + commit["sha"], "owner_id": projection.declaration()["owners"]["delivery"],
+            "evidence": [{"locator": f"https://github.com/{public['repo_ref']}/pull/{public['pr_number']}", "revision": commit["sha"]}],
+            "profile": "pull_request", "candidate": publication["candidate"],
+            "repo_ref": public["repo_ref"], "pr_number": public["pr_number"],
+            "reviewed_head": public["expected_head_sha"], "merge_commit": commit["sha"], "target_ref": facts["pr"]["base_branch"]}
+
+
+def archived_fact_gap():
+    return CommandError("stale_identity", "delivery_result", "The archived public record lacks the exact historical Delivery fact. Supply the original Merge owner's reviewed result in the prospective Plan2 target record; the installed store permits only archived history reads or formal reopen, not historical writes.", 3)
+
+
+def terminal_output(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], review: dict[str, Any], *, historical_schema1: bool = False, record: bool = True) -> dict[str, Any]:
+    message_public = public
+    if historical_schema1:
+        if facts["pr"]["state"] != "MERGED":
+            raise CommandError("stale_identity", "github.pr.state", "Historical schema-1 recovery cannot execute a merge.", 3)
+        message_public = {key: value for key, value in public.items() if key != "delivery_key"}
+    validate_route(message_public, facts, review)
     pr, commit = facts["pr"], facts["merge_commit"]
     if pr["state"] != "MERGED" or not isinstance(commit, dict) or pr["merge_commit_sha"] != commit["sha"]:
         raise CommandError("stale_identity", "github.terminal", "Reread the exact merged PR and merge commit.", 3)
@@ -470,8 +525,8 @@ def terminal_output(package_root: Path, root: Path, public: dict[str, Any], fact
     expected_message = message["subject"] + "\n\n" + message["body"]
     if commit["message"] != expected_message:
         raise CommandError("stale_identity", "github.merge_commit.message", "The merge commit message differs from the reviewed exact bytes.", 3)
-    if commit["parents"] != [pre_base, public["expected_head_sha"]]:
-        raise CommandError("stale_identity", "github.merge_commit.parents", "The merge commit parents do not carry the reviewed base and head.", 3)
+    if len(commit["parents"]) != 2 or commit["parents"][1] != public["expected_head_sha"]:
+        raise CommandError("stale_identity", "github.merge_commit.parents", "The actual merge commit must carry the exact reviewed head as its second parent.", 3)
     base_head = facts["base_ref"]["head_sha"]
     if base_head != commit["sha"]:
         comparison = gh_json(
@@ -486,7 +541,29 @@ def terminal_output(package_root: Path, root: Path, public: dict[str, Any], fact
                 or not isinstance(comparison.get("head_commit"), dict)
                 or comparison["head_commit"].get("sha") != base_head):
             raise CommandError("stale_identity", "github.base_ref", "The target base no longer descends from the reviewed merge commit.", 3)
-    validate_message(public, facts, review)
+    validate_message(message_public, facts, review)
+    if "delivery_key" in public:
+        projection = DeliveryProjection(root, public["task_ref"])
+        delivery = projection.resolve(public["delivery_key"])
+        fact = delivery_fact(projection, public, facts)
+        if projection.task_dir.resolve().is_relative_to((root / ".trellis/tasks/archive").resolve()) and delivery["delivery_result"] != fact:
+            raise archived_fact_gap()
+        # Archived stores admit explicit history reads, not new writes. An
+        # already recorded exact fact therefore recovers output by reading it;
+        # a missing fact still goes through the public store and its rules.
+        if record and delivery["delivery_result"] != fact:
+            try:
+                projection.apply({"api_version": "1.0", "operation": "record_delivery", "key": public["delivery_key"],
+                                  "owner_role": "delivery", "owner_id": fact["owner_id"],
+                                  "expected_phase": delivery["phase"], "result": fact, "historical_success": True})
+            except LifecycleContractError as exc:
+                if exc.code == "archived_task":
+                    raise archived_fact_gap() from exc
+                raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+        output = {"exit_id": "delivered", "task_ref": public["task_ref"],
+                  "task_key": {"task_id": public["delivery_key"]["task_id"], "lifecycle_generation": public["delivery_key"]["lifecycle_generation"]}}
+        validate_json(output, package_root / "schemas/public-output-delivery-delivered-1.0.schema.json", "stdout")
+        return output
     task_artifact = {
         "task_id": facts["task"]["stable_task_id"],
         "task_ref": public["task_ref"],
@@ -546,9 +623,19 @@ def cmd_record(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
 
 def _check_gate_current(package_root: Path, root: Path, public: dict[str, Any], facts: dict[str, Any], gate: dict[str, Any]) -> None:
     if gate["semantic_review"]["route"]["typed_exit"] == "delivered" and facts["pr"]["state"] == "MERGED":
-        terminal_output(package_root, root, public, facts, gate["semantic_review"], gate["pre_merge_base_head"])
+        terminal_output(package_root, root, public, facts, gate["semantic_review"])
         return
-    if facts["facts_sha256"] != gate["pre_merge_facts"]["facts_sha256"]:
+    def candidate_facts(value):
+        selected = copy.deepcopy(value)
+        selected.pop("facts_sha256", None)
+        selected["base_ref"].pop("head_sha", None)
+        # Current mergeability and blockers are validated below. A target
+        # advance may change these observations without changing the candidate.
+        selected["pr"].pop("mergeable", None)
+        selected["pr"].pop("merge_state_status", None)
+        selected.pop("objective_blockers", None)
+        return selected
+    if candidate_facts(facts) != candidate_facts(gate["pre_merge_facts"]):
         raise CommandError("stale_identity", "gate.pre_merge_facts", "Repeat the semantic review for current live facts.", 3)
     if action_sha(public, facts, gate["semantic_review"]) != gate["action_sha256"]:
         raise CommandError("stale_identity", "gate.action_sha256", "Repeat the exact merge confirmation plan.", 3)
@@ -570,16 +657,22 @@ def _execute_with_gate(package_root: Path, root: Path, public: dict[str, Any], p
     _check_gate_current(package_root, root, public, facts, gate)
     if review["route"]["typed_exit"] != "delivered":
         output = project_nonmerge(package_root, public, review)
+        if "delivery_key" in public and output["exit_id"] in {"implementation_required", "review_refresh_required"}:
+            projection = DeliveryProjection(root, public["task_ref"])
+            target = "implementation" if output["exit_id"] == "implementation_required" else "readiness"
+            reason = {"locator": "merge-review:" + gate["action_sha256"], "revision": review["route"]["typed_exit"]}
+            rework(projection, public["delivery_key"], "delivery", target, reason,
+                   ["readiness"])
         retire_gate(path)
         return output
     if facts["pr"]["state"] == "MERGED":
-        output = terminal_output(package_root, root, public, facts, review, gate["pre_merge_base_head"])
+        output = terminal_output(package_root, root, public, facts, review)
         retire_gate(path)
         return output
     body_path = path.with_suffix(".body")
     run_merge(root, public, review, body_path)
     post = live_facts(root, package_root, public)
-    output = terminal_output(package_root, root, public, post, review, gate["pre_merge_base_head"])
+    output = terminal_output(package_root, root, public, post, review)
     retire_gate(path)
     return output
 
@@ -599,6 +692,11 @@ def cmd_invoke(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
     review = load_json(root, package_root, args.review_input, "review_input")
     validate_public(package_root, public)
     validate_review(package_root, review)
+    if "delivery_key" in public:
+        from migration import recover
+        recovered = recover(package_root, root, public)
+        if recovered is not None:
+            return recovered
     facts = live_facts(root, package_root, public)
     validate_route(public, facts, review)
     path = gate_path(root, public)
@@ -611,7 +709,7 @@ def cmd_invoke(package_root: Path, args: argparse.Namespace) -> dict[str, Any]:
         commit = facts["merge_commit"]
         if not isinstance(commit, dict) or len(commit["parents"]) != 2:
             raise CommandError("stale_identity", "github.merge_commit.parents", "Reread the exact terminal merge commit.", 3)
-        return terminal_output(package_root, root, public, facts, review, commit["parents"][0])
+        return terminal_output(package_root, root, public, facts, review)
     gate = build_gate(public, facts, review)
     path = write_gate(package_root, root, gate)
     return _execute_with_gate(package_root, root, public, path, gate, facts)

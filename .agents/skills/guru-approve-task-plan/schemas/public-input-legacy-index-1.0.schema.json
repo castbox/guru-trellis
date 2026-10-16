@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-approve-task-plan-input-legacy-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-input-delivery-index-2.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_retirement-input-1.0.schema.json"
+    }
+  ]
+}

@@ -218,7 +218,6 @@ def active_task(repo,value):
  except LifecycleContractError as exc:raise CommandError("stale_identity",exc.field_path,exc.remediation,3) from exc
  try:task=json.loads((p/"task.json").read_text())
  except Exception as exc:raise CommandError("invalid_json","active_task","Provide a valid active task.json.") from exc
- if task.get("status") not in {"planning","in_progress"}:raise CommandError("stale_identity","active_task","Use the current planning or in-progress task branch.",3)
  return p,task
 def recovery_path(repo,task_dir):return repo/".trellis/.runtime/guru-team/owner-checkpoints"/task_dir.name/"change-context-recovery.json"
 def consume_recovery(path):

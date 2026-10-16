@@ -1,7 +1,12 @@
 {
-  "profile": "archived_review",
+  "profile": "delivery_archived_review",
   "mode": "workflow",
   "task_ref": ".trellis/tasks/archive/2026-09/09-16-example",
   "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "pr_payload_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  "pr_payload_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "delivery_key": {
+    "task_id": "delivery-example",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  }
 }

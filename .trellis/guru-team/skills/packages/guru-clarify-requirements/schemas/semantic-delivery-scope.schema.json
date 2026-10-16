@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-semantic-delivery-scope-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typed_exit",
+        "reason",
+        "authority",
+        "scope_action"
+      ],
+      "properties": {
+        "typed_exit": {
+          "const": "clear"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "object",
+          "description": "Opaque installed upstream API 1.0 object."
+        },
+        "scope_action": {
+          "enum": [
+            "revised",
+            "withdrawal_required",
+            "no_change"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typed_exit",
+        "reason"
+      ],
+      "properties": {
+        "typed_exit": {
+          "const": "blocked"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}

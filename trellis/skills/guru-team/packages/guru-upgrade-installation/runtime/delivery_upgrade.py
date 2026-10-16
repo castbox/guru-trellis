@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import shutil
+import sys
 import uuid
 from pathlib import Path
 
@@ -485,7 +486,8 @@ def resume(package: Path, root: Path, recovery: Path, checkpoint: dict, plan: di
 
 
 def upgraded(checkpoint: dict, recovery: Path) -> dict:
-    return {"exit_id": "upgraded", "installed_version": "0.7.0-guru.3", "recovery_ref": recovery.name,
+    from owner import TARGET_GURU
+    return {"exit_id": "upgraded", "installed_version": TARGET_GURU, "recovery_ref": recovery.name,
             "unverified": [] if checkpoint["plan"]["dependency_mode"] == "source_locked" else ["formal_fork_source_lock"]}
 
 

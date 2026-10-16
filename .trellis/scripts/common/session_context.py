@@ -24,7 +24,7 @@ from .path_boundary import ProjectPathError, is_project_path
 from .config import get_git_packages
 from .git import run_git
 from .packages_context import get_packages_section
-from .tasks import iter_active_tasks, load_task, children_progress
+from .tasks import iter_active_tasks, load_task, children_progress, get_all_statuses, task_lifecycle_summary, task_inventory_label, task_inventory_summary
 from .paths import (
     DIR_SPEC,
     DIR_TASKS,
@@ -526,7 +526,7 @@ def get_context_json(repo_root: Path | None = None) -> dict:
         {
             "dir": t.dir_name,
             "name": t.name,
-            "status": t.status,
+            **task_inventory_summary(t),
             "children": list(t.children),
             "parent": t.parent,
         }
@@ -567,6 +567,15 @@ def get_context_json(repo_root: Path | None = None) -> dict:
         result["stale"] = active.stale
     if active.task_workspace_root and active.task_workspace_root != repo_root.resolve():
         result["taskGit"] = _collect_root_git_info(active.task_workspace_root)
+    if active.resolved_task_path and active.task_workspace_root:
+        current = load_task(active.resolved_task_path, active.task_workspace_root)
+        if current and current.raw.get("schema_version") == "2.0":
+            from .delivery_session import get_current_delivery
+            projection = result["currentTask"]
+            assert projection is not None
+            projection["key"] = {"task_id": current.raw["id"], "lifecycle_generation": current.raw["lifecycle_generation"]}
+            projection["lifecycle"] = task_lifecycle_summary(current.raw)
+            result["currentDelivery"] = get_current_delivery(repo_root)
 
     if pkg_git_info:
         result["packageGit"] = pkg_git_info
@@ -634,7 +643,12 @@ def get_context_text(repo_root: Path | None = None) -> str:
         ct = load_task(current_task_dir, active.task_workspace_root)
         if ct:
             lines.append(f"Name: {ct.name}")
-            lines.append(f"Status: {ct.status}")
+            if ct.raw.get("schema_version") == "2.0":
+                from .delivery_session import get_current_delivery
+                lines.append("Task schema: 2.0 (whole accepted scope)")
+                lines.append("Delivery selection: " + json.dumps(get_current_delivery(repo_root), ensure_ascii=False))
+            else:
+                lines.append(f"Status: {ct.status}")
             lines.append(f"Created: {ct.raw.get('createdAt', 'unknown')}")
             if ct.description:
                 lines.append(f"Description: {ct.description}")
@@ -655,14 +669,14 @@ def get_context_text(repo_root: Path | None = None) -> str:
 
     # Collect all task data for hierarchy display
     all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir, repo_root)}
-    all_statuses = {name: t.status for name, t in all_tasks.items()}
+    all_statuses = get_all_statuses(tasks_dir, repo_root)
 
     def _print_task_tree(name: str, indent: int = 0) -> None:
         nonlocal task_count
         t = all_tasks[name]
-        progress = children_progress(t.children, all_statuses)
+        progress = children_progress(t.children, all_statuses, allow_missing_legacy=t.raw.get("schema_version") != "2.0")
         prefix = "  " * indent
-        lines.append(f"{prefix}- {name}/ ({t.status}){progress}")
+        lines.append(f"{prefix}- {name}/ ({task_inventory_label(t)}){progress}")
         task_count += 1
         for child in t.children:
             if child in all_tasks:

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-tools-private-prepare-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "upstream_source",
+    "selected_platforms",
+    "guru_decisions",
+    "tools_input"
+  ],
+  "properties": {
+    "upstream_source": {
+      "type": "object"
+    },
+    "selected_platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "guru_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "action",
+          "expected_sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "action": {
+            "enum": [
+              "replace",
+              "preserve"
+            ]
+          },
+          "expected_sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "tools_input": {
+      "type": "object"
+    }
+  }
+}

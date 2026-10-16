@@ -259,7 +259,8 @@ def require_missing_terminal(store: ResourceLedgerStore, package_root: Path,
         task = json.loads(task_bytes) if task_bytes is not None else None
         if (summary_bytes is None or not isinstance(task, dict) or task.get("id") != key.task_id
                 or task.get("lifecycle_generation", 0) != key.lifecycle_generation
-                or task.get("status") != "completed"):
+                or (task.get("schema_version") != "2.0" and task.get("status") != "completed")
+                or (task.get("schema_version") == "2.0" and not any(r["lifecycle_generation"] == key.lifecycle_generation for r in task.get("closure_results", [])))):
             raise ValueError("target archive is absent or mismatched")
     except (OSError, json.JSONDecodeError, CommandError, LifecycleContractError, ValueError) as exc:
         raise LifecycleContractError("manual_finish_result_stale", "finish_result_id", "Recover a valid terminal Finish result.") from exc

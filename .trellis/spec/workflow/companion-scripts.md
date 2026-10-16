@@ -1,5 +1,12 @@
 # Companion Scripts
 
+#531 candidate projection code calls the installed upstream Delivery API only;
+public schema/status authority is not reproduced in Guru. See
+[MIGRATION-531.md](task-delivery-migration.md) for current I/O and cutover.
+Scope and implementation modules execute owner inputs without semantic route
+judgment or persistence. Original publication/merge transactions retain their
+private recovery responsibility; receipts never establish semantic pass.
+
 ## GitHub CLI Adapter
 
 Each owning Skill package contains its deterministic GitHub adapter. Package
@@ -165,6 +172,12 @@ repositories. Keep them portable:
 - Bootstrap, resolver validation, ownership validation, and the preset installer
   use only the Python standard library so they can run before managed dependencies
   exist.
+- Initialization and explicit apply/reapply select the current PATH `python3`
+  unless `--python` names an explicit interpreter. Selection errors do not fall
+  back. CPython/Python3 admission has no minor-version allowlist; locked
+  dependency installation and actual runtime checks establish capability.
+  Controlled managed callers that must retain their interpreter pass it
+  explicitly to the installer/bootstrap.
 - Public Guru Team commands run only through the OS-user-scoped immutable managed
   Python cache selected by `runtime/resolve-python.sh`. A repository-private
   default pointer lives below Git common-dir; a linked checkout may own a
@@ -241,13 +254,20 @@ repositories. Keep them portable:
   system. Source owner staging invokes
   `apply_guru_team_trellis_preset.py` with `sys.executable`; routing through
   `apply.sh` would create an unowned PATH-Python second hop and is forbidden.
+  It also passes `--python sys.executable` so explicit maintenance retains its
+  managed interpreter while ordinary apply keeps the PATH default.
 - Runtime identity binds the runtime API, lock digest, Python implementation and
   minor version, OS, architecture, Python ABI/platform tag, and venv layout. A
-  matching identity is reused only after
-  metadata and Draft 2020-12 capability validation.
-- Candidate construction and dependency installation finish before active
-  pointer replacement. Failure preserves the prior active runtime; unknown
-  provenance at an identity path fails closed.
+  matching identity is reused only after metadata, Draft 2020-12 capability,
+  and real schema-bound public-wrapper validation. Patch version and
+  interpreter path are excluded from identity.
+- Candidate construction, locked dependency installation, capability probe and
+  public-wrapper runtime check finish before replacing an existing cache
+  environment or active pointer. The wrapper check uses a disposable view with
+  its own pointer/cache locator and matching package assets. Failure preserves
+  both the prior pointer and prior environment, including same-identity repair;
+  unknown provenance at an identity path fails closed. This check does not
+  replace the preset's complete staged-graph validation or a task semantic gate.
 - Shell out to `git` and `gh` through helper functions such as `run()` and
   `run_stdout()`.
 - Use `pathlib.Path` for filesystem paths.
@@ -1509,25 +1529,23 @@ re-entry fail closed with stable reprepare remediation.
 
 ## Task Base Reconciliation Commands
 
-The `guru-reconcile-task-base` package owns one deterministic pair guard,
+The `guru-reconcile-task-base` package owns the actual-integration
 temporary-candidate executor, semantic-result recorder, result checker, and its
 dispatcher-only public invocation wrapper. Their stable command ids and
 schemas are declared by that package's current `commands.json` and
 `interface.json`; workflow and platform entries discover them instead of
 importing package runtime.
 
-The pair guard reads live Git refs and exact owner-private pair state. It may
-return only objective `unchanged`, `current_pair`, `new_pair`, or
-`blocked` facts. It does not fetch or fast-forward the selected base and does
-not decide semantic impact, route sufficiency, findings, pass, stale, or block.
-For an unchanged pair it performs no GitHub/Docs/history read, semantic
-invocation, artifact write, or interaction.
+The default pair guard command and schemas are retired by MIGRATION-567.
+Actual integration requests pin selected_base_ref to a complete target commit
+OID. Executors/recorders validate that operation, never a later moving ref.
+Same-operation terminal readback recovers the existing commit without mutation.
 
 The candidate executor accepts a closed structured request, creates an
 ephemeral integration candidate in a controlled temporary directory or
 detached worktree, runs only the declared Git/build/test operations, and
 cleans it after owner completion. It must reject arbitrary shell text as route
-authority. For pre-review profiles it never mutates the task branch. For a
+authority. The candidate executor never mutates the task branch. For a
 post-review `review_continuity_required` result, a separate package-private
 reconciliation executor may run only after the semantic owner has displayed
 the exact task branch, expected task/base HEADs, candidate tree, merge/commit

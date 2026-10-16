@@ -68,8 +68,8 @@ Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
 
 
-For planning_artifacts, pass routes through the existing pass router to
-Architecture task_impact_sync planning 3.0 final_plan on Wording-current design,
+For delivery_planning_artifacts, pass routes through the existing pass router to
+Architecture delivery_task_impact_sync purpose-bound final_plan on Wording-current design,
 then adjacent Approval. content_changed goes through the original change
 router with the selected content_changed 2.0 planning DTO: `task_ref` and
 `change_refs` projected by this owner from the checked task scope and completed
@@ -79,3 +79,17 @@ equivalent wording from changed design facts and re-enters the earliest
 affected dependency. Wording remains the controlled rewrite owner, never the
 business planner or approval owner. Do not route a planning pass directly to
 Approval or replay a prewrite Architecture result.
+
+## Delivery Planning input
+
+For Delivery documents explicitly use delivery_planning_artifacts and the
+opaque public DeliveryKey. Resolve its task_ref/planning_root through the installed
+API and scan/review all three current files. Never review Task-root documents as
+a surrogate. With no official context key, its explicit DeliveryKey resolves
+through the original projection's current-generation/C4/public-record checks;
+with context, require the matching official current selection and preserve
+missing/stale/conflict stops. Current change_request and explicit_paths retain their existing
+contracts. The old planning_artifacts activity profile is retired; no Task
+status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
+their selected router. Recorder/checker envelope carries key/task_ref and the
+same scope; the public DTO never carries the scan or private digest bundle.

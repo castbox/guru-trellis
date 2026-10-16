@@ -1,0 +1,15 @@
+{
+  "profile": "delivery_review_ready",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "\u4ea4\u4ed8\uff1a\u5efa\u7acb Active Task Delivery Publish owner",
+  "pr_body": "## \u53d8\u66f4\u6458\u8981\n\n- \u53d1\u5e03\u4e00\u4e2a\u5df2\u5ba1\u67e5 Delivery\u3002\n\n## Remaining Work\n\n- \u540e\u7eed\u5de5\u4f5c\u4fdd\u6301 active\u3002\n\nRefs #435\n",
+  "remaining_work_state": "remaining",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "readiness_result_id": "readiness:example"
+}

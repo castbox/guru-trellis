@@ -616,39 +616,24 @@ old task records make them unsupported current candidates; their TaskIds remain
 reserved against reuse. Exact source clues may locate an old archive only for
 a read-only rejection diagnostic, never for lifecycle recovery.
 
-### Active-task continuation data boundary
+### Task / Delivery continuation data boundary
 
-The continuation block is Markdown workflow authority, not a persisted data
-model. No global lifecycle state store, continuation checkpoint, route-classification
-artifact, authorization record, or cross-Skill result digest is added. Exact
-task identity comes from `task.json.id` and generation, with branch association
-and execution location resolved from the current binding and live Git facts;
-`task.json.status` remains only a coarse lifecycle fact.
+The public Task/Delivery model, schema and operations belong to the installed
+upstream Delivery API. Guru references that authority and transports opaque keys;
+it does not reproduce the schema, persist a second phase or add a ledger.
+Guru branch/resource facts remain Task-level identity, not Delivery identity.
 
-An adjacent current public DTO remains call-local and is consumed directly by
-its unique Interface-declared consumer. If output is lost, only the producer may
-rematerialize it from producer-owned current facts. Phase 2 reuses the existing
-schema-5.0 `phase2-check.json` retained for Task Commit: the existing checker
-revalidates it and the existing public invoker projects
-`task_ref + phase2_commit_anchor`. This does not define a new Phase 2 input
-profile or recovery artifact. Task Commit continues to use its existing
-private candidate and `recovery_resume` transaction facts for same-commit
-stdout loss.
+Each current input profile and exit has an independent versioned Guru schema.
+Public outputs contain only their unique consumer's key/result/candidate seed.
+The original private transaction owns recovery. Public receipt records do not
+replace semantic judgment; historical_success establishes facts, not gate pass.
+Planning freshness and public accepted-result identity remain different tokens.
 
-Workflow-owned activation accepts `initial` or `recovery` at invocation time.
-`initial` requires the current approved DTO, current planning/live facts, the
-current exact pair, and dialogue-local confirmation before the official status
-transition. `recovery` accepts only the same exact task already current as
-`in_progress` and rematerializes the activation success without a second
-mutation. The mode and confirmation are not stored in `task.json`, runtime
-mappings, owner checkpoints, public DTOs, schemas, or archives.
-
-Branch Review and Delivery Review public outputs remain call-local. Their
-successful
-private checkpoints retire after output validation; a later missing DTO causes
-a fresh semantic run and never causes a data reconstruction. Old conversation
-text, commit messages, clean state, PR text, task status, or checkpoint absence
-is not result evidence.
+The workflow's sole continuation reads exact current selection, public phase and
+applicable evidence; no-current Delivery is a valid whole-Task path. Legacy DTOs
+are not relabeled: use the [migration contract](task-delivery-migration.md) and the
+original owner. Public Task metadata gate writes are excluded lifecycle facts,
+not business candidate changes; per-Delivery Planning remains reviewed content.
 
 ## Finish Summary (Shared Schema; Historical Finalizer Writer Below)
 
@@ -787,7 +772,7 @@ semantic approval, public handoff, or whole-chain authority. After the checked
 typed output passes its schema, the same producer wrapper deletes the checkpoint.
 The activation workflow consumes only the DTO plus current planning/live facts,
 then separately presents the plan and owns the dialogue-local review pause.
-Task activation and Phase 2 never read or delete this private state. The checkpoint does not retain
+Delivery Activation and Check never read or delete this private state. The checkpoint does not retain
 per-file hashes, sizes, mtimes, repository snapshots, scan history, reviewer
 metadata, raw reports, assignments, liveness, authorization, authorization
 wording, or authorization digests.
@@ -799,7 +784,7 @@ may omit only the ordinary unchanged-plan pause and is likewise not persisted.
 
 The closed exits are:
 
-- `approved` -> `workflow:phase-1-task-activation`, with every dimension true
+- `approved` -> `workflow:phase-1-delivery-activation`, with every dimension true
   and no finding, revision action, scope proposal, or blocker;
 - `revision_required` -> `workflow:guru-task-plan-approval-revision-router`,
   projecting one or more task-local revision_actions to Author approval_revision;
@@ -1069,7 +1054,7 @@ into Phase 2.
 
 ## Task Commit Candidate
 
-Each dirty exact-commit `guru-create-task-commit` invocation owns one temporary candidate under
+Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
 increasing id. Current schema `guru-task-commit-candidate-5.0` binds only task
@@ -1768,28 +1753,21 @@ completed execution; it does not claim a new grade-to-transcript byte digest.
 
 ## Branch Review Data Boundary
 
-Branch Review aggregate public input schema 5.0 includes three independent
-profiles. The read-only `archived_review` schema 1.0 has only a pinned-old
-Publication consumer, not a #434 graph successor. The original
-`branch_review` schema 2.0 profile contains workflow/standalone
-mode, task/base/`branch_review_commit` identity, and one of
-`initial_review|fresh_final_review`. The current-only `base_continuity` schema
-2.0 profile separately binds the prior complete `branch_review_commit` and the
-current committed reconciled `task_head` to one bounded old-base/new-base
-candidate and the `base_continuity` intent. The complete Interface's public
-outputs are the six minimal DTOs, including `archived_review_passed`,
-defined by the Skill package contract. `review_ref`, finding refs, proposal
-refs, and continuity identity are opaque consumer identities, not embedded
-artifact bodies.
+Current Delivery Branch Review uses the selected independent Delivery input
+schema, exact candidate and public Check predecessor. This predecessor is an
+applicability fact, not independent review proof. Complete Review independently
+judges the committed full diff; bounded continuity still requires its prior
+complete Review. The read-only archived review remains a historical disposition
+profile and never writes a current Delivery gate.
 
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
-artifact and automatically dispatches a distinct fresh reviewer. Current gate
-schema 7.0 accepts the intent allowed by the selected current profile and, for
-continuity, records the prior complete review commit separately from the current
-`review_commit`. Aggregate input schema 3.0 and gate schema 6.0 or older remain
-legacy stale inventory, not current runtime authority; any non-7.0 gate fails
-closed.
+artifact and automatically dispatches a distinct fresh reviewer. The selected current private gate accepts the intent allowed by its
+profile and, for continuity, records the prior complete review commit separately
+from the current `review_commit`. The delivered #532/#535 gate 7.0 remains the
+private consumer for that evidence. Historical input/gate schemas remain stale
+inventory and are never substituted for the selected Delivery input or a
+current gate.
 
 Only `review-gate.json` is written for a new review. Its terminal-only
 `candidate_classifications` set is empty when the complete selected-profile
@@ -1807,6 +1785,13 @@ exactly one of `qualified_finding`, `scope_proposal`,
 `introduced_head`, `fix_head`, `closure_head`, and closure evidence. `scope_proposal` uses
 no severity and never selects an implementation route. Every semantic
 disposition row binds one candidate from the same gate.
+Each current typed output has exactly one consumer declared by Interface. The
+upstream full_review result is the only public gate slot; producer-private
+same-operation recovery is retired after its checked output is consumed. Neither
+public phase, historical result nor a recovered stdout creates current pass.
+The same current owner returns scope or implementation findings through the
+explicit workflow routers. Existing qualification-before-severity and
+normal-scenario witness contracts remain unchanged.
 
 ## Historical Publication Readiness Gate (Pinned-Old-Only)
 
@@ -1888,20 +1873,20 @@ Active-task validity has three independent clocks:
 - integration binds build, test, and review readiness for one exact
   `(task_head, base_head)` candidate.
 
-A new integration pair does not invalidate the other two clocks. A task-content
-HEAD change creates a new pair and prevents reuse of older integration
-readiness. Multiple base advances between stable boundaries collapse into one
-`old_base...new_base` delta. Non-ancestor base history, a missing anchor, or
-ambiguous task/base identity fails closed rather than synthesizing continuity.
+Unrelated target advancement does not invalidate authority or content results.
+Each stage uses fixed content-base/head OIDs and its explicitly applicable
+authority. Actual implementation changes require a new candidate under the
+same B; old public gates may remain historical but are not applicable to it.
+The original owners judge prior evidence plus actual delta and affected
+dependencies before recording real current results. Integration targets are
+operation-scoped OIDs and never replace B.
 
-The pair guard may read one ignored owner checkpoint containing only the exact
-task/base pair, selected exit, `resume_target`, and minimum validation identity
-needed by the next consumer. It is neither a public handoff nor durable audit
-evidence. The consumer deletes it after successful projection; incomplete
-same-owner recovery or replacement is the only reason to retain it. Git and
-GitHub facts, semantic scans, candidate directories, full findings, validation
-logs, authorization, and cross-chain hash bundles never enter public output or
-tracked task artifacts.
+There is no default pair-guard checkpoint. An explicitly needed Reconcile
+retains only its same-operation owner-private result until its unique consumer
+finishes; incomplete same-owner recovery is the only reason to retain it.
+Authorization, full review histories and cross-chain hash bundles are never
+public output or tracked evidence. See MIGRATION-567 for retired assets and
+normal in-flight recovery.
 
 For a post-review candidate whose shared reviewed-content identity changes while
 task content and authority remain unchanged, the current-only reconcile result
@@ -2087,8 +2072,9 @@ Closure alone freezes and converges the exact Issue action set; external change
 returns to semantic review. Its ResultRefDTO/TransactionRefDTO handoff contains
 no provider snapshot or user authorization.
 
-Finish consumes current Closure, rereads required-closed Issues before terminal
-mutation, and verifies the lifecycle-only bookkeeping merge and archive
+Finish consumes current Closure, rereads each action's required OPEN or CLOSED
+state before terminal mutation (the action contract belongs to the Closure and
+Finish Skills), and verifies the lifecycle-only bookkeeping merge and archive
 post-state. It seals current-generation resources against the PR head, while
 the separate target merge SHA proves archive persistence; after sealing it
 retires that generation's TaskBranchBinding. Finish never deletes resources.
@@ -2125,15 +2111,6 @@ Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
 old successful active results require fresh original Clarify, while other
 profiles keep their contracts. This migration does not imply native semantic,
 fixture resume, full installer-matrix or release qualification.
-
-## Clean Committed TaskCommit Re-entry
-
-TaskCommit's additive `committed_reentry` input profile consumes the adjacent
-Phase 2 `passed` anchor. Its output remains the existing `committed` DTO:
-`task_ref`, `base_ref`, and `branch_review_commit`. The next pair guard and
-Branch Review consume an explicit thin projection of that current identity;
-no producer-private checkpoint is a Branch Review input. Step-local checks and
-checkpoint consumption belong to the canonical TaskCommit contract.
 
 ## Bounded maintenance state
 

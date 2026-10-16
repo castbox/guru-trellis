@@ -1,0 +1,14 @@
+{
+  "exit_id": "ready_for_merge",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 435,
+  "expected_head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "publication_body_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "publication_result_id": "publication:example"
+}

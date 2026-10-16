@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-private-delivery-recovery-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "root",
+    "source",
+    "fork",
+    "plan",
+    "phase",
+    "core_completed",
+    "owner_index",
+    "preset_index",
+    "old_managed",
+    "old_installation",
+    "preimages",
+    "business_before",
+    "baseline"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "phase": {
+      "enum": [
+        "core",
+        "owners",
+        "guru",
+        "preset",
+        "complete"
+      ]
+    },
+    "core_completed": {
+      "type": "boolean"
+    },
+    "owner_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "preset_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "root": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "fork": {
+      "type": "string"
+    },
+    "plan": {
+      "$ref": "private-delivery-plan.schema.json"
+    },
+    "old_managed": {
+      "type": "object"
+    },
+    "old_installation": {
+      "type": "object"
+    },
+    "preimages": {
+      "type": "object"
+    },
+    "business_before": {
+      "type": "object"
+    },
+    "baseline": {
+      "type": "object"
+    },
+    "failure": {
+      "type": "object"
+    }
+  }
+}

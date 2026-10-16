@@ -5,6 +5,10 @@ description: Select standard Guru Team intake or a bounded task-free route throu
 
 # Guru Select Workflow Mode
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Run this Skill for every change-intent request that has not already entered an
 active-task route. Requirements clarification, proposed-feature design, and
 change planning remain change intent when the user defers file writes or

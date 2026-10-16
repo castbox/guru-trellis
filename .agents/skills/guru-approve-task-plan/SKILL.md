@@ -1,15 +1,24 @@
 ---
 name: guru-approve-task-plan
-description: Approve current task planning through one AI-owned semantic review, compact private evidence, and four minimal typed exits.
+description: Approve current Delivery planning through one AI-owned semantic review, compact private evidence, and four minimal typed exits.
 ---
 
 # Guru Approve Task Plan
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
 Use this Skill after the current planning wording review has passed and before
-task activation. Load [references/contract.md](references/contract.md) before
+Activation. No official context key means this profile's explicit DeliveryKey
+is validated by the original projection against current generation, C4 and
+public record; an available context still requires its exact official current
+selection. Missing/stale/conflicting session facts never use explicit fallback.
+Use the resulting Delivery planning_root for this approval.
+Load [references/contract.md](references/contract.md) before
 acting.
 
 Before judging planned validation, read and apply
@@ -40,7 +49,7 @@ every touched non-generated code file as a mandatory mechanical-split or small-
 decoupling review trigger.
 
 Before that review may return `approved`, consume a fresh
-`guru-maintain-architecture-baseline:task_impact_sync(stage=planning, planning_purpose=final_plan, schema_version=3.0)`
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=planning, planning_purpose=final_plan)`
 `baseline_current` result from the adjacent upstream invocation and reread its project-owned Architecture Baseline,
 design-constitution authority, and Architecture change-contract authority.
 That current result proves the contract-selected Architecture AI owner already
@@ -71,8 +80,8 @@ replaces only the task-introduced mechanism and returns here for fresh
 qualification; it never becomes scope clarification.
 
 The checked `approved` exit establishes semantic adequacy only. Its stable
-consumer is the workflow target `phase-1-task-activation`, which separately
-presents the current plan and owns the dialogue-local review pause before task
+consumer is the workflow target `phase-1-delivery-activation`, which separately
+presents the current plan and owns the dialogue-local review pause before Delivery
 activation. This Skill neither satisfies, evaluates, records, nor persists that
 workflow-owned acceptance. Within this Skill, interact only when unresolved
 scope or a material plan choice requires current dialogue input. Never write
@@ -80,11 +89,11 @@ authorization, its wording, time, source, reference, or digest into an input,
 checkpoint, gate, handoff, archive, schema, or public DTO. Mapped exits and
 same-scope re-entry continue automatically.
 
-After the semantic result exists, record and validate only the compact 4.0
+After the semantic result exists, record and validate only the compact delivery-1.0
 owner-private projection. Its composite planning-content token serves the
 adjacent freshness checker; the checked `approved` exit projects it as the
 minimal `planning_result_id` consumed by Activation. The token is not semantic
-or workflow authority, and Activation must not recompute it from current files.
+or workflow authority, and Activation must not treat a recomputed token as semantic approval.
 Return exactly one of `approved`,
 `revision_required`, `clarify_scope`, or `blocked`. The public input only routes
 the owner entry; it never supplies findings, approval status, or a preselected
@@ -131,5 +140,30 @@ original eight dimensions and qualification owners. Approval never writes
 business planning. revision_required 2.0 projects actual revision_actions to
 its workflow router, which invokes Author approval_revision; afterwards refresh
 the earliest affected gates and re-enter Approval with its current input.
-The private checkpoint migrates to 4.0, and the old revision self-writer edge is
+The Delivery checkpoint preserves the 4.0 semantic constraints, and the old revision self-writer edge is
 retired by MIGRATION-292. Approved/Activation identity semantics stay unchanged.
+
+## Delivery Planning boundary (schema 2.0 installation)
+
+The public input carries an explicit opaque DeliveryKey, including D1. Resolve
+all three documents through the installed public planning_root; Task-root
+prd.md remains whole-task accepted scope and is not this Delivery's plan.
+The same key covers active replanning and partial scope revision. Full withdrawal
+returns through Clarify and the original current stage's legal stop owner.
+Author responsibilities remain with the existing unique Author; #292's delivered
+unique Author remains the sole business writer; Delivery identity is a thin projection.
+Approval never calls public record_gate. Only adjacent Activation consumes the
+Guru planning_result_id; the independent public planning_accepted_result_id is
+written by guru-activate-delivery. The checkpoint is keyed by Delivery and
+retired by this same owner on output, never read by another owner.
+The prior Task planning/activation inputs require the pinned complete old
+installation. No activity fallback or Task status mutation exists in this graph.
+
+Current Delivery input 2.0 consumes only the actual adjacent final_plan output
+through architecture_assessment. Its purpose must be final_plan and its design
+freshness current. Reread the identified baseline and constitution and judge
+impact/promotion eligibility yourself; do not synthesize an assessment from
+phase or files. The deterministic wrapper checks identity/freshness, while
+Approval remains the original semantic gate and never writes public Planning.
+
+For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.

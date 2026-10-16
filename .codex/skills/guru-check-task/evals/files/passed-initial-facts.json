@@ -5,7 +5,12 @@
     "checker_required": true
   },
   "semantic_retrieval_fixture": {
-    "concept_family": ["workspace mapping", "handoff map", "workspace_ref", "reviewed_content_sha256"],
+    "concept_family": [
+      "workspace mapping",
+      "handoff map",
+      "workspace_ref",
+      "reviewed_content_sha256"
+    ],
     "evidence": [
       "Current code names the mechanism workspace mapping.",
       "Historical fixtures use the legacy alias handoff map.",

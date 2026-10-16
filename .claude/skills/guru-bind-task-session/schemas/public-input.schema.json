@@ -1,19 +1,90 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-bind-task-session-input-2.0",
-  "type": "object", "additionalProperties": false,
-  "required": ["profile", "mode", "task_id", "lifecycle_generation", "continuation_id"],
+  "$id": "guru-bind-task-session-input-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_id",
+    "lifecycle_generation",
+    "continuation_id"
+  ],
   "properties": {
-    "profile": {"enum": ["resume_current_task", "rebind_missing_session", "switch_task", "reactivate_rebind", "manual_recovery"]},
-    "mode": {"enum": ["workflow", "standalone"]},
-    "task_id": {"$ref": "#/$defs/taskId"},
-    "lifecycle_generation": {"type": "integer", "minimum": 0},
-    "continuation_id": {"type": "string", "minLength": 1},
-    "current_task_id": {"$ref": "#/$defs/taskId"},
-    "current_lifecycle_generation": {"type": "integer", "minimum": 0}
+    "profile": {
+      "enum": [
+        "delivery_resume_current_task",
+        "delivery_rebind_missing_session",
+        "delivery_switch_task",
+        "delivery_reactivate_rebind",
+        "delivery_manual_recovery"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_id": {
+      "$ref": "#/$defs/taskId"
+    },
+    "lifecycle_generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "current_task_id": {
+      "$ref": "#/$defs/taskId"
+    },
+    "current_lifecycle_generation": {
+      "type": "integer",
+      "minimum": 0
+    }
   },
-  "$defs": {"taskId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}},
-  "allOf": [{"if": {"properties": {"profile": {"const": "switch_task"}}, "required": ["profile"]},
-    "then": {"required": ["current_task_id", "current_lifecycle_generation"]},
-    "else": {"not": {"anyOf": [{"required": ["current_task_id"]}, {"required": ["current_lifecycle_generation"]}]}}}]
+  "$defs": {
+    "taskId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "const": "delivery_switch_task"
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "required": [
+          "current_task_id",
+          "current_lifecycle_generation"
+        ]
+      },
+      "else": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "current_task_id"
+              ]
+            },
+            {
+              "required": [
+                "current_lifecycle_generation"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
 }

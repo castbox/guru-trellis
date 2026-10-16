@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-completion-input-delivery-reactivation-validation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "task_key",
+    "reactivation_anchor"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_reactivation_validation"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_key": {
+      "type": "object"
+    },
+    "reactivation_anchor": {
+      "type": "object"
+    }
+  }
+}

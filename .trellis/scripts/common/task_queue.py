@@ -16,16 +16,17 @@ from .paths import (
     get_repo_root,
     get_tasks_dir,
 )
-from .tasks import iter_active_tasks
+from .tasks import iter_active_tasks, matches_task_inventory, task_inventory_summary, validate_inventory_filters
+from .types import TaskInfo
 
 
 # =============================================================================
 # Internal helper
 # =============================================================================
 
-def _task_to_dict(t) -> dict:
+def _task_to_dict(t: TaskInfo) -> dict:
     """Convert TaskInfo to the dict format callers expect."""
-    return {
+    result = {
         "priority": t.priority,
         "id": t.raw.get("id", ""),
         "title": t.title,
@@ -34,6 +35,10 @@ def _task_to_dict(t) -> dict:
         "children": list(t.children),
         "parent": t.parent,
     }
+    if t.inventory is not None or t.history_only:
+        result.pop("status")
+        result.update(task_inventory_summary(t))
+    return result
 
 
 # =============================================================================
@@ -60,15 +65,27 @@ def list_tasks_by_status(
     results = []
 
     for t in iter_active_tasks(tasks_dir, repo_root):
-        if filter_status and t.status != filter_status:
+        if not matches_task_inventory(t, status=filter_status):
             continue
         results.append(_task_to_dict(t))
 
     return results
 
 
+def list_task_inventory(repo_root: Path | None = None, *,
+                        completion: str | None = None, phase: str | None = None) -> list[dict]:
+    """Read Task acceptance and slice inventory with explicit v2 filters."""
+    validate_inventory_filters(completion, phase)
+    root = repo_root if repo_root is not None else get_repo_root()
+    return [_task_to_dict(task) for task in iter_active_tasks(get_tasks_dir(root), root)
+            if matches_task_inventory(task, completion=completion, phase=phase)]
+
+
 def list_pending_tasks(repo_root: Path | None = None) -> list[dict]:
-    """List pending tasks.
+    """List incomplete v2 Tasks and legacy planning Tasks.
+
+    This is whole-Task inventory, not an implementation queue or a selector.
+    Missing acceptance or Delivery selection does not authorize execution.
 
     Args:
         repo_root: Repository root path. Defaults to auto-detected.
@@ -76,7 +93,10 @@ def list_pending_tasks(repo_root: Path | None = None) -> list[dict]:
     Returns:
         List of task info dicts.
     """
-    return list_tasks_by_status("planning", repo_root)
+    root = repo_root if repo_root is not None else get_repo_root()
+    return [_task_to_dict(task) for task in iter_active_tasks(get_tasks_dir(root), root)
+            if (task.inventory is not None and task.inventory.completion_result_id is None)
+            or (not task.history_only and task.inventory is None and task.status == "planning")]
 
 
 def get_task_stats(repo_root: Path | None = None) -> dict[str, int]:
@@ -124,4 +144,5 @@ if __name__ == "__main__":
     print()
     print("Pending tasks:")
     for task in list_pending_tasks():
-        print(f"  {task['priority']}|{task['id']}|{task['title']}|{task['status']}")
+        label = f"completion={task['completion_result_id'] or 'none'}" if task.get("schema_version") == "2.0" else task["status"]
+        print(f"  {task['priority']}|{task['id']}|{task['title']}|{label}")

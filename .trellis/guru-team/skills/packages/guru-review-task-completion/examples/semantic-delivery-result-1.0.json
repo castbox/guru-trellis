@@ -1,0 +1,26 @@
+{
+  "profile": "delivery_completion",
+  "mode": "workflow",
+  "reviewed_task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  },
+  "reviewed_scope": {
+    "locator": ".trellis/tasks/example/prd.md",
+    "revision": "scope:example"
+  },
+  "reviewed_delivery_result_ids": [
+    "delivery:example"
+  ],
+  "evidence": [
+    {
+      "locator": "validation:current",
+      "revision": "passed:example"
+    }
+  ],
+  "remaining_work_refs": [],
+  "result_id": "completion:example",
+  "route": {
+    "typed_exit": "completed"
+  }
+}

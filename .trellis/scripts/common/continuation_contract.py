@@ -29,7 +29,8 @@ def extract_continuation_contract(workflow_path: Path) -> str:
     Marker lines are recognized after trimming surrounding line whitespace.
     The body keeps its original line order and line endings. This function is
     structural only: it does not inspect task state or interpret workflow
-    semantics.
+    semantics. A separate runtime declaration may appear outside this block;
+    its validation belongs to the runtime-contract reader.
     """
     try:
         with workflow_path.open("r", encoding="utf-8", newline="") as stream:
@@ -66,6 +67,11 @@ def extract_continuation_contract(workflow_path: Path) -> str:
                 raise ContinuationContractError("empty_body", workflow_path)
             extracted = body
             in_block = False
+            continue
+
+        if not in_block and marker in {
+            "[trellis-runtime-contract]", "[/trellis-runtime-contract]"
+        }:
             continue
 
         if _CONTINUATION_MARKER_RE.fullmatch(

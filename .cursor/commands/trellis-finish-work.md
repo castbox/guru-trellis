@@ -1,5 +1,33 @@
 # Finish Work
 
+## Active workflow ownership
+
+Before formal work, load the validated Task workspace workflow with:
+
+```bash
+python3 .trellis/scripts/get_context.py --mode runtime-contract
+python3 .trellis/scripts/get_context.py --mode continuation
+```
+
+A declared Delivery contract owns all formal routing. Stop on malformed or
+unsupported contracts. If the role owner differs from this Skill, hand off to
+that declared owner and stop; do not run a parallel native gate. Read
+`.trellis/delivery-contract.md` and the exact current Delivery query before
+recording results. `missing_runtime_contract` means the existing legacy workflow has no declaration;
+retain the legacy behavior below in that case. Task-free work creates no formal lifecycle result.
+
+## Delivery closeout profile
+
+With a Delivery contract, defer to its declared closure owner. Consume an actual
+current-generation whole Task Completion result, then assess source disposition.
+Default is no_mutation. Issue closure requires separate authorization and live
+outcome. Record close_task through the declared owner, archive only the selected
+completed Task if authorized, and treat cleanup as a separate action. Archive
+never records completion; failed cleanup preserves it. Never demand a synthetic
+commit for manual/Git-free delivery. Return here only after trellis-complete-task
+has assessed all accepted scope, unallocated work and evidence. Stop after this
+profile; the legacy archive instructions below do not apply.
+
 Wrap up the current session: archive the active task (and any other completed-but-unarchived tasks the user wants to clean up). Code commits are NOT done here — those happen in workflow Phase 3.4 before you invoke this command.
 
 ## Step 1: Survey current state

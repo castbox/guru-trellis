@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-contract-wording-output-content-changed-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "legacy-nonplanning-content-changed-output.schema.json"
+    },
+    {
+      "$ref": "public-delivery-content-changed-output.schema.json"
+    }
+  ]
+}

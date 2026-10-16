@@ -1,9 +1,11 @@
 ---
 name: guru-check-task
-description: Check the complete current task through one AI-owned semantic round, compact private evidence, and four minimal typed exits.
+description: Check the complete current task through one AI-owned semantic round, compact private evidence, and explicit Delivery-scoped typed exits.
 ---
 
 # Guru Check Task
+
+Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
@@ -68,7 +70,7 @@ mechanical split or small decoupling refactor. Untouched historical large files
 are outside this task's scope.
 
 Before this semantic round can pass, consume a fresh
-`guru-maintain-architecture-baseline:task_impact_sync(stage=phase2)` result.
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=phase2)` result.
 Reread the current Architecture Baseline, design constitution, task-local
 Architecture change contract, and every applicable project Architecture check.
 Phase 2 performs the first semantic before/after satisfaction judgment for the
@@ -100,23 +102,12 @@ scope, risk, owner, state authority, persistence, SDK lifecycle, external
 integration, or another architecture boundary immediately invalidates the
 Planning-stage Architecture result. Stop before the expanded edit or test and
 mandatory invoke
-`guru-maintain-architecture-baseline:task_impact_sync(stage=implementation_discovery)`;
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=implementation_discovery)`;
 only its fresh current route may resume implementation.
 
-The public input only routes initial, finding-fix, or planning re-entry. It does
-not author evidence conclusions, findings, the AI gate, or an exit. After the AI
-semantic result exists, record and validate only the compact 5.0 owner-private
-projection. Its one composite worktree-content token serves only the adjacent
-freshness checker; it is not semantic or workflow authority. Once the original
-checker validates the current `passed` producer result and the public output
-passes its schema, call the execution-result owner's retirement helper for this
-task. That owner validates and retires only its matching completed result;
-missing or stale execution results do not add a Check gate, and nonpassed or
-stale Check results retain execution recovery state. Do not read the execution
-owner's private checkpoint or infer semantic pass from its existence.
-Return exactly one
-of `passed`, `implementation_required`,
-`planning_stale`, or `blocked`.
+Current Delivery input only routes the selected formal Check. Retain the full
+semantic judgment and return exactly one declared exit. Record the public
+Check only after that judgment; TaskCommit consumes its actual result ID.
 
 On re-entry, complete the current semantic round and follow the contract's
 dependency-scoped validation steps. Recompute the applicable check set; reuse
@@ -146,3 +137,21 @@ or use qualification as completion. Actual scope changes use existing routes.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.
+
+For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.

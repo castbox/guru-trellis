@@ -1,0 +1,16 @@
+{
+  "profile": "delivery_evidence_refresh",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  },
+  "source_exit": "evidence_pending",
+  "reason": {
+    "reason_code": "validation_pending",
+    "reason_refs": [
+      "validation:current"
+    ]
+  }
+}

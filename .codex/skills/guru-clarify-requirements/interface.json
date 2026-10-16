@@ -135,6 +135,46 @@
     {
       "id": "public_output_scope_ready_example",
       "path": "examples/public-scope-ready-output-1.0.json"
+    },
+    {
+      "id": "delivery_active_task_scope_change_input",
+      "path": "examples/public-delivery-active-task-scope-change-input.json"
+    },
+    {
+      "id": "delivery_task_scope_revision_input",
+      "path": "examples/public-delivery-task-scope-revision-input.json"
+    },
+    {
+      "id": "eval_blocked_input",
+      "path": "examples/eval-blocked-input.json"
+    },
+    {
+      "id": "eval_clear_input",
+      "path": "examples/eval-clear-input.json"
+    },
+    {
+      "id": "eval_needs_context_input",
+      "path": "examples/eval-needs-context-input.json"
+    },
+    {
+      "id": "eval_new_task_input",
+      "path": "examples/eval-new-task-input.json"
+    },
+    {
+      "id": "eval_refresh_context_input",
+      "path": "examples/eval-refresh-context-input.json"
+    },
+    {
+      "id": "eval_retarget_context_input",
+      "path": "examples/eval-retarget-context-input.json"
+    },
+    {
+      "id": "public_scope_ready_output_2_0",
+      "path": "examples/public-scope-ready-output-2.0.json"
+    },
+    {
+      "id": "public_task_scope_requirements_acceptance_input",
+      "path": "examples/public-task-scope-requirements-acceptance-input.json"
     }
   ],
   "schemas": [
@@ -205,6 +245,50 @@
     {
       "id": "public_output_scope_ready",
       "path": "schemas/public-scope-ready-output-1.0.schema.json"
+    },
+    {
+      "id": "delivery_active_task_scope_change_input",
+      "path": "schemas/public-delivery-active-task-scope-change-input.schema.json"
+    },
+    {
+      "id": "delivery_active_task_scope_change_clear_output",
+      "path": "schemas/public-delivery-active-task-scope-change-clear-output.schema.json"
+    },
+    {
+      "id": "delivery_task_scope_revision_input",
+      "path": "schemas/public-delivery-task-scope-revision-input.schema.json"
+    },
+    {
+      "id": "delivery_task_scope_revision_clear_output",
+      "path": "schemas/public-delivery-task-scope-revision-clear-output.schema.json"
+    },
+    {
+      "id": "delivery_public_input_index",
+      "path": "schemas/public-input-delivery-index.schema.json"
+    },
+    {
+      "id": "delivery_clear_output_index",
+      "path": "schemas/public-clear-output-delivery-index.schema.json"
+    },
+    {
+      "id": "semantic_delivery_scope",
+      "path": "schemas/semantic-delivery-scope.schema.json"
+    },
+    {
+      "id": "public_input_delivery_index_2_0",
+      "path": "schemas/public-input-delivery-index-2.0.schema.json"
+    },
+    {
+      "id": "public_scope_ready_output_2_0",
+      "path": "schemas/public-scope-ready-output-2.0.schema.json"
+    },
+    {
+      "id": "public_task_scope_requirements_acceptance_input",
+      "path": "schemas/public-task-scope-requirements-acceptance-input.schema.json"
+    },
+    {
+      "id": "semantic_scope_continuation_2_0",
+      "path": "schemas/semantic-scope-continuation-2.0.schema.json"
     }
   ],
   "validators": [
@@ -322,8 +406,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-clarify-requirements-input-aggregate-3.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-clarify-requirements-input-delivery-index-2.0",
+        "path": "schemas/public-input-delivery-index-2.0.schema.json"
       },
       "profiles": [
         {
@@ -354,21 +438,6 @@
           "discriminator": {
             "field": "profile",
             "value": "reviewed_plan_intake"
-          }
-        },
-        {
-          "id": "active_task_scope_change",
-          "schema": {
-            "schema_id": "guru-stage0-clarify-requirements-input-active-task-scope-change-2.0",
-            "path": "schemas/public-active-task-scope-change-input.schema.json"
-          },
-          "example": {
-            "id": "active_task_scope_change_input",
-            "path": "examples/public-active-task-scope-change-input.json"
-          },
-          "discriminator": {
-            "field": "profile",
-            "value": "active_task_scope_change"
           }
         },
         {
@@ -415,6 +484,51 @@
             "field": "profile",
             "value": "solution_mechanism_scope_confirmation"
           }
+        },
+        {
+          "id": "delivery_active_task_scope_change",
+          "schema": {
+            "schema_id": "guru-clarify-requirements-input-delivery-active-task-scope-change-1.0",
+            "path": "schemas/public-delivery-active-task-scope-change-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_active_task_scope_change_input",
+            "path": "examples/public-delivery-active-task-scope-change-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_active_task_scope_change"
+          }
+        },
+        {
+          "id": "delivery_task_scope_revision",
+          "schema": {
+            "schema_id": "guru-clarify-requirements-input-delivery-task-scope-revision-1.0",
+            "path": "schemas/public-delivery-task-scope-revision-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_task_scope_revision_input",
+            "path": "examples/public-delivery-task-scope-revision-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_task_scope_revision"
+          }
+        },
+        {
+          "id": "task_scope_requirements_acceptance",
+          "schema": {
+            "schema_id": "guru-clarify-requirements-input-task-scope-requirements-acceptance-1.0",
+            "path": "schemas/public-task-scope-requirements-acceptance-input.schema.json"
+          },
+          "example": {
+            "id": "task_scope_requirements_acceptance_input",
+            "path": "examples/public-task-scope-requirements-acceptance-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "task_scope_requirements_acceptance"
+          }
         }
       ]
     },
@@ -454,8 +568,8 @@
       {
         "exit_id": "clear",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-clear-3.0",
-          "path": "schemas/public-clear-output-3.0.schema.json"
+          "schema_id": "guru-clarify-requirements-output-clear-delivery-index-1.0",
+          "path": "schemas/public-clear-output-delivery-index.schema.json"
         },
         "example": {
           "id": "clear_output",
@@ -468,12 +582,12 @@
       {
         "exit_id": "scope_ready",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-scope-ready-1.0",
-          "path": "schemas/public-scope-ready-output-1.0.schema.json"
+          "schema_id": "guru-clarify-requirements-output-scope-ready-2.0",
+          "path": "schemas/public-scope-ready-output-2.0.schema.json"
         },
         "example": {
           "id": "scope_ready_output",
-          "path": "examples/public-scope-ready-output-1.0.json"
+          "path": "examples/public-scope-ready-output-2.0.json"
         },
         "consumer_use_ids": [
           "project_scope_ready"
@@ -560,8 +674,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-clarify-requirements-workflow-clear-input-2.0",
-          "path": "consumers/workflow/stage0/clarify-requirements-clear.schema.json"
+          "schema_id": "guru-consumer-guru-clarify-requirements-clear-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/clarify-requirements-clear.schema.json"
         },
         "transition": {
           "source_field": "transition",
@@ -579,8 +693,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-clarify-requirements-workflow-scope-ready-input-1.0",
-          "path": "consumers/workflow/stage0/clarify-requirements-scope-ready-1.0.schema.json"
+          "schema_id": "guru-clarify-requirements-consumer-scope-ready-2.0",
+          "path": "consumers/workflow/scope-ready-2.0.schema.json"
         }
       },
       {
@@ -695,6 +809,10 @@
           {
             "source": "source_selection",
             "target": "source_selection"
+          },
+          {
+            "source": "transition",
+            "target": "transition"
           }
         ]
       },

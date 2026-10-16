@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-private-migration-input-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_ref",
+        "delivery_cycle_ref",
+        "delivery_key",
+        "profile",
+        "candidate"
+      ],
+      "properties": {
+        "transaction_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "delivery_cycle_ref": {
+          "type": "string",
+          "pattern": "^delivery-cycle:v1:[0-9a-f]{64}$"
+        },
+        "delivery_key": {
+          "type": "object"
+        },
+        "profile": {
+          "const": "historical_publication_migration"
+        },
+        "candidate": {
+          "type": "object"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_ref",
+        "delivery_cycle_ref",
+        "delivery_key",
+        "profile",
+        "current_input"
+      ],
+      "properties": {
+        "transaction_ref": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "delivery_cycle_ref": {
+          "type": "string",
+          "pattern": "^delivery-cycle:v1:[0-9a-f]{64}$"
+        },
+        "delivery_key": {
+          "type": "object"
+        },
+        "profile": {
+          "const": "inflight_publication_migration"
+        },
+        "current_input": {
+          "$ref": "public-delivery-review-ready-input-1.0.schema.json"
+        }
+      }
+    }
+  ]
+}

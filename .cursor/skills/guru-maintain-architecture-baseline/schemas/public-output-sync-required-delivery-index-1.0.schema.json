@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-sync-required-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-sync-required-output.schema.json"
+    },
+    {
+      "$ref": "public-output-delivery-sync-required-1.0.schema.json"
+    }
+  ]
+}

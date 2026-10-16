@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-legacy-task-private-legacy-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "public_plan",
+    "controls",
+    "history_note",
+    "retired_owners",
+    "upstream_recovery_ref",
+    "phase"
+  ],
+  "properties": {
+    "public_input": {
+      "type": "object"
+    },
+    "public_plan": {
+      "type": "object"
+    },
+    "controls": {
+      "type": "object"
+    },
+    "history_note": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retired_owners": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "upstream_recovery_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner_recovery_refs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "terminal_output": {
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$id": "guru-review-branch-output-legacy_controls_retired-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "key",
+    "owner_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "legacy_controls_retired"
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "owner_id": {
+      "const": "guru-review-branch"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

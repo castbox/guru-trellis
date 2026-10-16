@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reconcile-task-base-output-reconciled-1.0-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "task_head",
+    "new_base_head",
+    "resume_target",
+    "delivery_key"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "reconciled"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "task_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "new_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "resume_target": {
+      "enum": [
+        "delivery_activation",
+        "phase2",
+        "publication_review",
+        "delivery_publication",
+        "finalization_resume"
+      ]
+    },
+    "delivery_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "delivery_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  }
+}

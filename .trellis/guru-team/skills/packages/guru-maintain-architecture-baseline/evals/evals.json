@@ -31,7 +31,7 @@
       "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
       "expected_exit": "baseline_current",
       "expected_output": "The no-impact scenario returns baseline_current.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/no-impact-facts.json"
@@ -56,7 +56,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -100,7 +100,7 @@
       "prompt": "A new capability follows the target boundary and one writer without introducing a legacy authority.",
       "expected_exit": "baseline_current",
       "expected_output": "The target-native scenario returns baseline_current.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-architecture-input.json",
         "evals/files/target-native-facts.json"
@@ -122,7 +122,7 @@
       "prompt": "A feature touches a legacy boundary and records bounded convergence, remaining debt, compatibility exit, and forbidden parallel scope.",
       "expected_exit": "baseline_current",
       "expected_output": "The legacy-boundary-convergence scenario returns baseline_current.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-architecture-input.json",
         "evals/files/legacy-boundary-convergence-facts.json"
@@ -144,7 +144,7 @@
       "prompt": "A behavior-preserving refactor slice has one writer, bounded migration, observation, rollback, and deletion condition.",
       "expected_exit": "baseline_current",
       "expected_output": "The dedicated-refactor-slice scenario returns baseline_current.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-architecture-input.json",
         "evals/files/dedicated-refactor-slice-facts.json"
@@ -166,7 +166,7 @@
       "prompt": "Implementation discovery expands persistence or owner scope and the old planning contract must be redone.",
       "expected_exit": "contract_incomplete",
       "expected_output": "The scope-expansion scenario returns contract_incomplete.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-scope-expansion-input.json",
         "evals/files/scope-expansion-facts.json"
@@ -188,7 +188,7 @@
       "prompt": "The candidate introduces a second authority or reopens a closed GAP.",
       "expected_exit": "fitness_regression",
       "expected_output": "The fitness-regression scenario returns fitness_regression.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-architecture-input.json",
         "evals/files/fitness-regression-facts.json"
@@ -232,7 +232,7 @@
       "prompt": "Implementation passes, but the design constitution remains authority_status=pending_reviewed_promotion and the required reviewed contribution/promotion is incomplete; return sync_required(promotion_required), never baseline_current.",
       "expected_exit": "sync_required",
       "expected_output": "The unpromoted-contribution scenario returns sync_required(promotion_required).",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-unpromoted-input.json",
         "evals/files/unpromoted-contribution-facts.json"
@@ -254,7 +254,7 @@
       "prompt": "A new task consumes only the promoted current identity and current GAP and owner state.",
       "expected_exit": "baseline_current",
       "expected_output": "The next-task-consumption scenario returns baseline_current.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/next-task-consumption-facts.json"
@@ -276,7 +276,7 @@
       "prompt": "Applicable external evidence is unavailable and remains unverified.",
       "expected_exit": "contract_incomplete",
       "expected_output": "The missing-external-evidence scenario returns contract_incomplete.",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-architecture-input.json",
         "evals/files/missing-external-evidence-facts.json"
@@ -323,7 +323,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/implementation-discovery-independent-native-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -370,7 +370,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/phase2-independent-native-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -417,7 +417,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/branch-review-independent-native-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -464,7 +464,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -516,7 +516,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -568,7 +568,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -625,7 +625,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -677,7 +677,7 @@
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
-      "input_profile_id": "task_impact_sync",
+      "input_profile_id": "delivery_task_impact_sync",
       "files": [
         "evals/files/impact-current-input.json",
         "evals/files/planning-semantic-authoring-facts.json"
@@ -717,6 +717,116 @@
             "id": "minimal-constraint-facts",
             "criterion": "The reviewer identifies the absent provider response/lifecycle capability facts needed to assess the proposed default selector, requests only those facts through an existing incomplete/blocked route, and preserves uncertainty rather than inferring compatibility from the endpoint name or reading task narratives.",
             "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-task-impact-sync-identity",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/delivery-task-impact-sync-identity-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-promotion-identity",
+      "prompt": "Another task promoted a new current identity before this task could promote.",
+      "expected_exit": "sync_required",
+      "expected_output": "The parallel-stale scenario returns sync_required.",
+      "input_profile_id": "delivery_promotion",
+      "files": [
+        "evals/files/delivery-promotion-identity-input.json",
+        "evals/files/parallel-stale-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-repair-identity",
+      "prompt": "A reviewed repair restores the missing project Architecture check descriptor while preserving the active baseline and current constitution authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The repair scenario returns baseline_current after restoring the declared contract evidence.",
+      "input_profile_id": "delivery_repair",
+      "files": [
+        "evals/files/delivery-repair-identity-input.json",
+        "evals/files/repair-current-contract-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-bootstrap-foundation-identity",
+      "prompt": "A reviewed foundation bootstrap activates one successor Architecture Baseline at the canonical locator without introducing a second authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The foundation bootstrap scenario returns baseline_current for the declared successor identity.",
+      "input_profile_id": "delivery_bootstrap_foundation",
+      "files": [
+        "evals/files/delivery-bootstrap-foundation-identity-input.json",
+        "evals/files/bootstrap-foundation-current-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "whole-task-acceptance-current",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/whole-task-acceptance-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
           }
         ]
       }

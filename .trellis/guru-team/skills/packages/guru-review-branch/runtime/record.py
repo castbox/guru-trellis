@@ -49,7 +49,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     public = load(repo, package_root, args.skill_input, "skill_input")
     auth = load(repo, package_root, args.semantic_review_file, "semantic_review_file")
     head = git(repo, "rev-parse", "HEAD")
-    profile = public.get("profile")
+    import json
+    metadata_path = task_dir / "task.json"
+    metadata = json.loads(metadata_path.read_text()) if metadata_path.is_file() else {}
+    original_profile = public.get("profile")
+    if metadata.get("schema_version") == "2.0" and not str(original_profile).startswith("delivery_"):
+        raise CommandError("schema_mismatch", "input.profile", "Use a Delivery review input; old Task review profiles are diagnostic-only.")
+    profile = original_profile.removeprefix("delivery_")
     schema = {
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
@@ -59,6 +65,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "schema_mismatch", "input.profile", "Use one declared Branch Review profile."
         )
+    if original_profile.startswith("delivery_"):
+        schema = "public-" + original_profile.replace("_", "-") + "-input-1.0.schema.json"
     validate_json(public, package_root / "schemas" / schema, "skill_input")
     task_ref = rel(repo, task_dir)
     if public["task_ref"] != task_ref:
@@ -81,10 +89,21 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("schema_mismatch", "typed_exit", "Archived pass requires its dedicated profile.")
         base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
-    if profile == "branch_review" and not ancestor(repo, base_head, head):
-        raise CommandError(
-            "stale_identity", "base_ref", "Review base must precede current task content.", 3
-        )
+    if profile == "branch_review":
+        if base_ref != base_head:
+            raise CommandError("stale_identity", "base_ref", "Supply the fixed content-base OID from the current Check/TaskCommit.", 3)
+    if original_profile.startswith("delivery_") and profile != "archived_review":
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        from runtime.task_lifecycle.active_checkout import resolve_active_task_checkout
+        from runtime.task_lifecycle.errors import LifecycleContractError
+        try:
+            resolve_active_task_checkout(repo, task_ref)
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
+        projection = DeliveryProjection(repo, task_ref)
+        check_base = projection.resolve(public["delivery_key"])["candidate"]["base_ref"] if profile == "base_continuity" else base_head
+        projection.require_current_check(
+            public["delivery_key"], public["check_result_id"], head_ref=head, base_ref=check_base)
     if profile == "base_continuity":
         checks = (
             (public["task_head"] == head, "task_head", "Review current reconciled HEAD."),
@@ -212,6 +231,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if archived_facts:
         value.update(archived_facts)
         value["pr_payload_snapshot_sha256"] = public["pr_payload_snapshot_sha256"]
+    if original_profile.startswith("delivery_"):
+        value["delivery_key"] = public["delivery_key"]
+        if profile != "archived_review":
+            value["check_result_id"] = public["check_result_id"]
     value["facts_sha256"] = digest(
         {
             key: copy.deepcopy(item)

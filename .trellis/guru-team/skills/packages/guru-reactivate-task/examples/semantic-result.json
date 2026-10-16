@@ -1,1 +1,32 @@
-{"profile":"reactivate_completed_task","mode":"workflow","archived_lifecycle":{"task_id":"example-task","lifecycle_generation":0},"route":"session_binding_recovery_required","reason_refs":["new accepted work"],"selected_base_ref":"refs/heads/main","reviewed_base_head":"1111111111111111111111111111111111111111","session_outcome":"recovery_required","acquisition":{"task_id":"example-task","task_ref":".trellis/tasks/example-task","lifecycle_generation":1,"route":"provision_linked_worktree","branch_ref":"refs/heads/codex/example-reactivated","decision_head":"1111111111111111111111111111111111111111","task_artifact_expectation":"absent","provision_disposition":"new_branch","target_path":"/tmp/example-worktrees/example-reactivated","transaction_id":"reactivate:example-task:1","result_id":"reactivated:example-task:1"}}
+{
+  "profile": "delivery_reactivate_completed_task",
+  "mode": "workflow",
+  "archived_lifecycle": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0
+  },
+  "route": "session_binding_recovery_required",
+  "reason_refs": [
+    "new accepted work"
+  ],
+  "selected_base_ref": "refs/heads/main",
+  "reviewed_base_head": "1111111111111111111111111111111111111111",
+  "session_outcome": "recovery_required",
+  "acquisition": {
+    "task_id": "example-task",
+    "task_ref": ".trellis/tasks/example-task",
+    "lifecycle_generation": 1,
+    "route": "provision_linked_worktree",
+    "branch_ref": "refs/heads/codex/example-reactivated",
+    "decision_head": "1111111111111111111111111111111111111111",
+    "task_artifact_expectation": "absent",
+    "provision_disposition": "new_branch",
+    "target_path": "/tmp/example-worktrees/example-reactivated",
+    "transaction_id": "reactivate:example-task:1",
+    "result_id": "reactivated:example-task:1"
+  },
+  "authority": {
+    "locator": "docs/requirements/README.md",
+    "revision": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

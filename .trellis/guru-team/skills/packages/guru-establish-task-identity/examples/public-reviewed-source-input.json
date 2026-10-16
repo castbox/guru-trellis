@@ -1,1 +1,10 @@
-{"profile":"active_task","mode":"standalone","task_id":"demo","task_ref":".trellis/tasks/demo","lifecycle_generation":0,"reviewed_source":{"kind":"no_issue"}}
+{
+  "profile": "delivery_active_task",
+  "mode": "standalone",
+  "task_id": "demo",
+  "task_ref": ".trellis/tasks/demo",
+  "lifecycle_generation": 0,
+  "reviewed_source": {
+    "kind": "no_issue"
+  }
+}

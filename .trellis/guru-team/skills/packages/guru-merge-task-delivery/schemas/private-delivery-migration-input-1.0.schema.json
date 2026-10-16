@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-delivery-private-migration-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "legacy_gate",
+    "delivery_cycle_ref",
+    "current_input"
+  ],
+  "properties": {
+    "profile": {
+      "const": "historical_merge_migration"
+    },
+    "legacy_gate": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_cycle_ref": {
+      "type": "string",
+      "pattern": "^delivery-cycle:v1:[0-9a-f]{64}$"
+    },
+    "current_input": {
+      "$ref": "public-delivery-ready-for-merge-input-1.0.schema.json"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example",
+  "delivery_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "source_selection": [],
+  "revision_refs": [
+    "R1"
+  ],
+  "exit_id": "delivery_scope_revised"
+}

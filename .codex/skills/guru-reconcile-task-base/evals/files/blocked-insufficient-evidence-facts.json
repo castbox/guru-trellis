@@ -1,1 +1,12 @@
-{"scenario":"Applicable evidence is insufficient for a unique semantic reconciliation route.","owner_staging":{"recipe":"base-blocked"},"public_invocation":{"arguments":["--invocation","-"]}}
+{
+  "scenario": "Applicable evidence is insufficient for a unique semantic reconciliation route.",
+  "owner_staging": {
+    "recipe": "base-blocked"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

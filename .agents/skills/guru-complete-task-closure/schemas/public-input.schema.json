@@ -37,6 +37,6 @@
     "action": {"type": "object", "additionalProperties": false, "required": ["issue_ref", "disposition"],
       "properties": {"issue_ref": {"type": "object", "additionalProperties": false, "required": ["repo_ref", "issue_number"],
          "properties": {"repo_ref": {"$ref": "#/$defs/repo"}, "issue_number": {"type": "integer", "minimum": 1}}},
-        "disposition": {"enum": ["close", "already_closed_at_review", "no_close_authority"]}}}
+        "disposition": {"enum": ["close", "already_closed_at_review", "retain_open", "no_close_authority"]}}}
   }
 }

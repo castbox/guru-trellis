@@ -5,13 +5,39 @@ description: Persist Completion and Closure into one reviewed task archive and t
 
 # Guru Finish Task
 
+`judgment_mode=semantic`: review current Closure and terminal bookkeeping,
+complete the AI Review Gate, confirm each actual mutation boundary in the
+current dialogue, then invoke the executor/validator and return one typed exit.
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
+Before archive projection, verify current public Closure. Preserve the schema-2
+Task aggregate byte semantics: never write `status`, `completedAt`, `commit`, or
+`pr_url`. Finish alone owns archive summary and bookkeeping publication, with
+separate confirmations for its exact Git/GitHub mutations. Public Delivery
+facts and planning roots move with the Task; archive and terminal persistence
+do not erase them or pretend Cleanup succeeded.
+
+
 Finish accepts only the current Closure ResultRefDTO, resolves TaskRef from the
 stable TaskId, and reads the exact terminal action set through the shared
 read-only Closure result API. Before terminal mutation it compares the
-Closure-frozen source with the current task source and rereads every
-required-closed Issue; drift returns
+Closure-frozen source with the current task source and rereads each frozen
+action: `retain_open` requires OPEN; `close` and `already_closed_at_review`
+require CLOSED; `no_close_authority` retains its no-close-state requirement.
+The aggregate terminal is `closed` only when the set contains a closing action;
+it never means every Issue or the exact source must be CLOSED. Drift returns
 `closure_refresh_required` for Closure's semantic re-entry. A bookkeeping
 merge is not a business Delivery and never closes an Issue.
+Finish never chooses a new disposition or closes/reopens a retained source.
+Archive current planning and Delivery history with their accepted scope and
+unverified integration boundaries; source OPEN does not invalidate a current
+retain result or prove whole-task Completion. Normal output-loss recovery uses
+the same archive/bookkeeping transaction, without repeating successful mutations.
+Use the matching Closure/Finish package set for the additive action; old complete
+installations retain their separate migration boundary in task-delivery-migration.
 For a noncanonical legacy task still lacking `task.json.source`, the exact
 Closure-frozen non-exact source is used until the already-required archive
 metadata write materializes it; a short Issue scope never grants close authority.
@@ -54,3 +80,16 @@ terminal mutation instead of accepting an unbound caller action list.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+For explicit selected legacy maintenance, load the legacy section in `references/legacy-maintenance.md` and use `scripts/legacy-maintenance.sh`; ordinary current invocation remains unchanged.
+
+## Fixed bookkeeping candidate
+
+Finish consumes actual Completion/Closure and preserves their Delivery facts.
+It does not require the Task branch to include the latest target, recheck
+delivered development gates or compare target SHA with an earlier snapshot.
+The current semantic bookkeeping input is 2.0 and private transaction 3.0;
+expected_base_head is retired. Exact files, parent/commit, PR payload, expected
+bookkeeping head and same-operation recovery remain required. Verify the real
+bookkeeping merge is reachable from current target and archive state exists;
+subsequent unrelated target commits do not invalidate success.

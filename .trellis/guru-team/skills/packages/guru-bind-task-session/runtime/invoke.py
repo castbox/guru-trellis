@@ -17,7 +17,7 @@ from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycl
 from runtime.task_lifecycle.checkout_resolution import CheckoutRequest, validate_candidate
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import discover_worktree_facts, inspect_repository
-from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.identity import resolve_task_id, task_resource_state
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.schema import validate_dto
 from runtime.task_lifecycle.session_adapter import bind_session, resolve_session
@@ -43,7 +43,7 @@ def official_port(root: Path) -> Any:
     """Load the installed Fixed Fork API, never an alternate session store."""
     init = root / ".trellis/scripts/common/__init__.py"
     if not init.is_file():
-        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
     package_name = "guru_bind_target_common_" + hashlib.sha256(str(init.resolve()).encode()).hexdigest()[:16]
     spec = importlib.util.spec_from_file_location(
         package_name, init, submodule_search_locations=[str(init.parent)]
@@ -59,9 +59,9 @@ def official_port(root: Path) -> Any:
         "write_record", "resolve_task_identity",
     )
     if not all(callable(getattr(store, name, None)) for name in required):
-        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
     if not callable(getattr(module, "resolve_context_key", None)):
-        raise CommandError("stale_identity", "official_session", "Install the Fixed Fork schema-2 session API.", 3)
+        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
     return SimpleNamespace(resolve_context_key=module.resolve_context_key, **{
         name: getattr(store, name) for name in required
     })
@@ -85,13 +85,9 @@ def _record(official: Any, root: Path) -> tuple[str, Any | None]:
     if not official.record_exists(path):
         return "missing", None
     record = official.read_record(path, root, facts)
-    if record.data != {
-        "schema_version": 2,
-        "task_id": record.task_id,
-        "lifecycle_generation": record.lifecycle_generation,
-    }:
-        raise ValueError("invalid_session_record")
-    return "present", record
+    if record.data.get("schema_version") == 3:
+        return "present", record  # the installed public session reader validated schema-3
+    raise ValueError("unsupported_legacy_session_record")
 
 
 class _CurrentCheckoutPort:
@@ -153,12 +149,12 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> 
             "Resolve the exact task artifact and workspace through the Fixed Fork resolver.",
         )
     try:
-        status = json.loads((task_path / "task.json").read_text(encoding="utf-8"))["status"]
+        status = task_resource_state(workspace, json.loads((task_path / "task.json").read_text(encoding="utf-8")))
     except (OSError, ValueError, KeyError) as exc:
         raise LifecycleContractError(
             "session_task_resolution_invalid", "task.status", "Read the current task status.",
         ) from exc
-    if not isinstance(status, str) or status not in {"planning", "in_progress"}:
+    if status != "active":
         raise LifecycleContractError(
             "session_task_status_invalid", "task.status", "Bind an active task lifecycle.",
         )
@@ -187,7 +183,7 @@ def execute(root: Path, input_value: str, owner_value: str, *, official: Any | N
     for field in ("profile", "mode", "task_id", "lifecycle_generation", "continuation_id"):
         if owner[field] != public[field]:
             return _blocked(package, "stale_semantic_result", field)
-    profile = public["profile"]
+    profile = public["profile"].removeprefix("delivery_")
     if owner["route"] != PROFILE_ROUTES[profile]:
         return _blocked(package, "route_mismatch", "owner_result.route")
     for field in ("current_task_id", "current_lifecycle_generation"):

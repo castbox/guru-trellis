@@ -73,8 +73,8 @@ Projection checks and actual native behavior are separate evidence; current
 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3` 和 preset checkout，按该 checkout
 的原 lock 构建 Fork，不与当前新 Fork 混搭。
 
-本次目标为尚未发布的 `v0.7.0-guru.4`。当前未发布源码在 S1 暂留 extension
-`0.7.0-guru.3` 作为 bootstrap revision，S2 才同步推进 `.4`；它不等于旧 `.3` tag 内容。
+本次目标为尚未发布的 `v0.7.0-guru.4`。当前准备源码的 extension 与原 maintenance
+target 为 `0.7.0-guru.4`；它不等于已发布的 immutable `.3` tag 内容。
 当前正式 Fork lock 为 `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`，
 tree `41ff285d857036324e480e1eb64d08fffd5956e1`，成功 main CI `38851816688`，
 包含 #40 维护能力与 #43 的旧原生 schema-1 会话元数据兼容修复；CLI/Core
@@ -83,10 +83,11 @@ tree `41ff285d857036324e480e1eb64d08fffd5956e1`，成功 main CI `38851816688`�
 SHA；不预填未形成的 SHA，不使用尚不存在的 `.4` tag。来源记录和 Fork CI 不替代
 实际构建、Guru exact-candidate、installed/lifecycle 或发布门禁。
 
-S1 保留旧 installed graph，仅交付来源采用和公开说明。取得已提交、干净的完整来源后，
-由原 tools-only 与 selected-task maintenance owners 完成同一 Task 的成套切换并验证
-目标 native/下一实际 owner，再由 S2 重新进行真实 Delivery Planning，完成 `.4` 和
-剩余投影/定向验证。本段不声明维护切换、S2、完整多平台矩阵或业务/Release 通过。
+当前基础工具采用保留其自身 receipt 对应的 `.3` installed graph 与原生 Task2/session3；
+这不证明 `.4` installed parity。S2 先交付实际 clean committed `.4` 来源，S3 再经原
+tools-only owner 执行新的 `.4` 操作，完成四平台投影、三平台 reapply/drift、正式 clean/
+predecessor 维护及目标 native/下一实际 owner、恢复和回退定向验证。来源准备不声明
+`.4` 正式安装、整体准备、完整多平台矩阵或业务/Release 通过。
 
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
 exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代

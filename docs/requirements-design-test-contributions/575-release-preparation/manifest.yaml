@@ -1,0 +1,15 @@
+task_id: 575-release-v070-guru4-preparation
+source: https://github.com/castbox/guru-trellis/issues/575
+status: draft
+strategy: delta_first
+scope: S2 source preparation; S3 projection and formal validation remain in the same task
+preimage: current-main-0.6.17-guru.100
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.93
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md

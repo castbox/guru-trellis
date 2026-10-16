@@ -48,13 +48,17 @@ first adopts the canonical source lock at
 `castbox/Trellis@2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`, reviewed main CI
 `38851816688`, retaining CLI/core `0.7.0-castbox.3` and `pnpm@10.32.1`. This
 source includes #40 maintenance and #43 native schema-1 session compatibility.
-The first source-adoption slice keeps the current extension manifest
-`0.7.0-guru.3` to match the existing maintenance source consumer; it is
-unreleased source, not changed bytes of the immutable `.3` release. The final
-`.4` extension and matching maintenance revision assertion belong to the later
-preparation slice, after supported tools/Task conversion and native continuation.
-An old installation keeps its complete original package until that transition;
-source edits and source/API checks do not establish installed parity.
+Current preparation source uses extension `0.7.0-guru.4` and the matching
+original maintenance target; it does not change the immutable `.3` release.
+The adopted baseline tools remain a `.3` installed graph matching their own
+receipts, with native Task2/session3 adoption separate from final `.4` parity.
+S2 produces the actual clean committed `.4` source. S3 consumes it through a
+new original tools-only operation, completing `.4` packages/runtime/schema and
+four-platform projection, three-platform reapply/drift and formal focused
+clean/predecessor maintenance, target-native next-owner continuation, resume
+and rollback evidence. Do not reuse the earlier `.3` operation for that claim.
+Source/module checks and baseline `.3` receipt checks do not establish `.4`
+installed parity or complete preparation; the whole Task retains those duties.
 
 Before `.4` publication, marketplace and preset must use the same actual,
 remote-addressable full Guru candidate SHA. Do not insert an invented SHA or

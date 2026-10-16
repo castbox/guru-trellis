@@ -1,5 +1,0 @@
-{
-  "exit_id": "scope_confirmation_required",
-  "task_ref": ".trellis/tasks/example-task",
-  "proposal_refs": ["SP-001"]
-}

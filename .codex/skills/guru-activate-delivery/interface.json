@@ -1,0 +1,556 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-activate-delivery",
+  "name": "guru-activate-delivery",
+  "description": "Activate the accepted current Delivery plan through the public Planning writer and recover its exact result.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "public_delivery",
+        "semantic_result"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "public_delivery",
+        "semantic_result"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "public_delivery",
+      "evidence": "Installed Task schema 2.0 and Delivery API 1.0, current task scope and exact session selection Scope revision instead consumes original Clarify current accepted scope and this current-stage semantic slice judgment; stale downstream gates are not prerequisites.",
+      "binding": "One Task generation and explicit Delivery identity",
+      "freshness": "Read public query before each operation"
+    },
+    {
+      "id": "semantic_result",
+      "evidence": "Current same-owner slice judgment or reviewed plan with current AI gate Scope revision instead consumes original Clarify current accepted scope and this current-stage semantic slice judgment; stale downstream gates are not prerequisites.",
+      "binding": "Exact input and actual authority",
+      "freshness": "Fresh semantic judgment before new operation; same operation recovery reuses only applicable factual result"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "delivery_activation_input",
+      "path": "examples/public-delivery-activation-input.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "delivery_started_output",
+      "path": "examples/public-delivery-started-output.json"
+    },
+    {
+      "id": "planning_refresh_required_output",
+      "path": "examples/public-planning-refresh-required-output.json"
+    },
+    {
+      "id": "invalid_delivery_state_output",
+      "path": "examples/public-invalid-delivery-state-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "examples/public-delivery-scope-revision-input-1.0.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "examples/public-delivery-scope-revised-output-1.0.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "delivery_activation_input",
+      "path": "schemas/public-delivery-activation-input.schema.json"
+    },
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "delivery_started_output",
+      "path": "schemas/public-delivery-started-output.schema.json"
+    },
+    {
+      "id": "planning_refresh_required_output",
+      "path": "schemas/public-planning-refresh-required-output.schema.json"
+    },
+    {
+      "id": "invalid_delivery_state_output",
+      "path": "schemas/public-invalid-delivery-state-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_withdrawal_input_1_0",
+      "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_review_1_0",
+      "path": "schemas/delivery-scope-withdrawal-review-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_stopped_output_1_0",
+      "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+    },
+    {
+      "id": "pending_public_operation",
+      "path": "schemas/pending-public-operation.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_revision_review_1_0",
+      "path": "schemas/delivery-scope-revision-review-1.0.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-activate-delivery",
+      "objective_scope": "Validate own input and result; invoke only the installed public parser/store/session; project one typed exit."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "delivery_started",
+      "evidence": "Exact same-owner semantic outcome with public identity/fact verification",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-delivery-started-router"
+      }
+    },
+    {
+      "id": "planning_refresh_required",
+      "evidence": "Exact same-owner semantic outcome with public identity/fact verification",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-delivery-activation-planning-router"
+      }
+    },
+    {
+      "id": "invalid_delivery_state",
+      "evidence": "Exact same-owner semantic outcome with public identity/fact verification",
+      "consumer": {
+        "kind": "stop",
+        "id": "invalid-delivery-state"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "Exact same-owner semantic outcome with public identity/fact verification",
+      "consumer": {
+        "kind": "stop",
+        "id": "delivery-activation-blocked"
+      }
+    },
+    {
+      "id": "delivery_stopped",
+      "evidence": "Current planning owner reviewed complete slice withdrawal and public stop/release succeeded.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-completion"
+      }
+    },
+    {
+      "id": "delivery_scope_revised",
+      "evidence": "Current stage owner reviewed actual accepted scope; public same-Delivery rework succeeded or its exact output was recovered.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-delivery-scope-revised-router"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "Task generation, explicit DeliveryKey and same owner operation",
+    "freshness": "Current public record and local planning files; no phase infers semantic pass",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-activate-delivery-input-delivery-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "delivery_activation",
+          "schema": {
+            "schema_id": "guru-activate-delivery-input-delivery-activation-1.0",
+            "path": "schemas/public-delivery-activation-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_activation_input",
+            "path": "examples/public-delivery-activation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_activation"
+          }
+        },
+        {
+          "id": "delivery_scope_withdrawal",
+          "schema": {
+            "schema_id": "guru-activate-delivery-input-delivery-scope-withdrawal-1.0",
+            "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_scope_withdrawal_input",
+            "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_withdrawal"
+          }
+        },
+        {
+          "id": "delivery_scope_revision",
+          "schema": {
+            "schema_id": "guru-activate-delivery-input-delivery-scope-revision-1.0",
+            "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "public_delivery_scope_revision_input_1_0",
+            "path": "examples/public-delivery-scope-revision-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_revision"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "delivery_activation"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-activate-delivery-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-delivery-activation-input.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "delivery_started",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-delivery-started-1.0",
+          "path": "schemas/public-delivery-started-output.schema.json"
+        },
+        "example": {
+          "id": "delivery_started_output",
+          "path": "examples/public-delivery-started-output.json"
+        },
+        "consumer_use_ids": [
+          "delivery_started_projection"
+        ]
+      },
+      {
+        "exit_id": "planning_refresh_required",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-planning-refresh-required-1.0",
+          "path": "schemas/public-planning-refresh-required-output.schema.json"
+        },
+        "example": {
+          "id": "planning_refresh_required_output",
+          "path": "examples/public-planning-refresh-required-output.json"
+        },
+        "consumer_use_ids": [
+          "planning_refresh_required_projection"
+        ]
+      },
+      {
+        "exit_id": "invalid_delivery_state",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-invalid-delivery-state-1.0",
+          "path": "schemas/public-invalid-delivery-state-output.schema.json"
+        },
+        "example": {
+          "id": "invalid_delivery_state_output",
+          "path": "examples/public-invalid-delivery-state-output.json"
+        },
+        "consumer_use_ids": [
+          "invalid_delivery_state_projection"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked_projection"
+        ]
+      },
+      {
+        "exit_id": "delivery_stopped",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-stopped-1.0",
+          "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "delivery_stopped_output",
+          "path": "examples/public-delivery-stopped-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_stopped"
+        ]
+      },
+      {
+        "exit_id": "delivery_scope_revised",
+        "schema": {
+          "schema_id": "guru-activate-delivery-output-delivery-scope-revised-1.0",
+          "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "public_delivery_scope_revised_output_1_0",
+          "path": "examples/public-delivery-scope-revised-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_scope_revised"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "delivery_started_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-delivery-started-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-activate-delivery-delivery_started-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/activate-delivery-delivery-started.schema.json"
+        }
+      },
+      {
+        "id": "planning_refresh_required_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-delivery-activation-planning-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-activate-delivery-planning_refresh_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/activate-delivery-planning-refresh-required.schema.json"
+        }
+      },
+      {
+        "id": "invalid_delivery_state_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "invalid-delivery-state"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-activate-delivery-invalid_delivery_state-delivery-1.0",
+          "path": "consumers/stop/delivery-1.0/activate-delivery-invalid-delivery-state.schema.json"
+        }
+      },
+      {
+        "id": "blocked_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "delivery-activation-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-activate-delivery-blocked-delivery-1.0",
+          "path": "consumers/stop/delivery-1.0/activate-delivery-blocked.schema.json"
+        }
+      },
+      {
+        "id": "delivery_stopped_completion_seed",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-completion"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-completion/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_completion",
+          "seed_fields": [
+            "task_ref",
+            "task_key"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "delivery_stopped_completion_authoring",
+            "path": "examples/authoring-delivery-stopped-completion-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "scope_revised_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-delivery-scope-revised-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-activate-delivery-scope-revised-1.0",
+          "path": "consumers/workflow/delivery-1.0/activate-delivery-scope-revised.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "delivery_started_projection",
+        "exit_id": "delivery_started",
+        "consumer_input_id": "delivery_started_input",
+        "operation": "direct"
+      },
+      {
+        "id": "planning_refresh_required_projection",
+        "exit_id": "planning_refresh_required",
+        "consumer_input_id": "planning_refresh_required_input",
+        "operation": "direct"
+      },
+      {
+        "id": "invalid_delivery_state_projection",
+        "exit_id": "invalid_delivery_state",
+        "consumer_input_id": "invalid_delivery_state_input",
+        "operation": "direct"
+      },
+      {
+        "id": "blocked_projection",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_delivery_stopped",
+        "exit_id": "delivery_stopped",
+        "consumer_input_id": "delivery_stopped_completion_seed",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "task_key",
+            "target": "task_key"
+          }
+        ]
+      },
+      {
+        "id": "project_delivery_scope_revised",
+        "exit_id": "delivery_scope_revised",
+        "consumer_input_id": "scope_revised_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "pending_public_operation",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-activate-delivery-pending-public-operation-1.0",
+          "path": "schemas/pending-public-operation.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

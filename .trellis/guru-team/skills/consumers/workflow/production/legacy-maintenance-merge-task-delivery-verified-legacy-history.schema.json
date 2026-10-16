@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "legacy-maintenance-merge-task-delivery-verified-legacy-history-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "key",
+    "facts"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "verified_legacy_history"
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "repo_ref",
+          "reviewed_head",
+          "target_branch",
+          "head_branch",
+          "pr_number",
+          "merge_commit"
+        ],
+        "properties": {
+          "repo_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewed_head": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "head_branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pr_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "merge_commit": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

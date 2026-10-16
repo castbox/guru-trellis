@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-contract-wording-workflow-pass-input-1.0-delivery-1.0",
+  "oneOf": [
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-stage0-review-contract-wording-workflow-pass-input-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "profile",
+        "continuation_id"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "pass"
+        },
+        "profile": {
+          "enum": [
+            "change_request",
+            "planning_artifacts",
+            "explicit_paths"
+          ]
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "$id": "guru-review-contract-wording-output-delivery-pass-1.0",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "profile",
+        "continuation_id",
+        "delivery_key",
+        "task_ref"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "pass"
+        },
+        "profile": {
+          "const": "delivery_planning_artifacts"
+        },
+        "continuation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; the target upstream API validates it."
+        }
+      }
+    }
+  ]
+}

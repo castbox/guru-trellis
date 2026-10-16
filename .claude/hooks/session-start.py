@@ -367,7 +367,7 @@ def _resolve_update_hint(trellis_dir: Path, context_key: str | None) -> str | No
         return None  # Optional reminder; keep session-start non-fatal.
 
 
-def _resolve_active_task(trellis_dir: Path, input_data: dict):
+def _resolve_active_task(trellis_dir: Path, input_data: dict, *, platform: str | None = None):
     scripts_dir = trellis_dir / "scripts"
     if str(scripts_dir) not in sys.path:
         sys.path.insert(0, str(scripts_dir))
@@ -376,7 +376,7 @@ def _resolve_active_task(trellis_dir: Path, input_data: dict):
     return resolve_active_task(
         trellis_dir.parent,
         input_data,
-        platform=_detect_platform(input_data),
+        platform=platform or _detect_platform(input_data),
     )
 
 
@@ -452,7 +452,8 @@ def _load_task_data(trellis_dir: Path, task_dir: Path) -> dict:
 
 def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
     """Return compact active-task status, artifact presence, and next action."""
-    active = _resolve_active_task(trellis_dir, input_data)
+    platform = _detect_platform(input_data)
+    active = _resolve_active_task(trellis_dir, input_data, platform=platform)
 
     if getattr(active, "error", None) or getattr(active, "stale", False):
         return f"Status: TASK ERROR\nError: {active.error or 'stale binding'}\nSource: {active.source}"
@@ -476,6 +477,14 @@ def _get_task_status(trellis_dir: Path, input_data: dict) -> str:
         )
 
     task_data = _load_task_data(trellis_dir, task_dir)
+
+    if task_data.get("schema_version") == "2.0":
+        from common.delivery_session import get_current_delivery  # type: ignore[import-not-found]
+        query = get_current_delivery(active.invocation_root, input_data, platform=platform)
+        view = {key: query[key] for key in ("kind", "key", "code", "message") if key in query}
+        if query["kind"] in ("current", "terminal_delivery"):
+            view.update(phase=query["delivery"]["phase"], planning_root=query["delivery"]["planning_root"])
+        return f"Delivery query: {json.dumps(view, ensure_ascii=False)}\nNext: Load get_context.py --mode continuation; the active workflow owns routing."
 
     task_title = task_data.get("title", task_ref)
     task_status = task_data.get("status", "unknown")
@@ -731,14 +740,21 @@ def _build_compact_current_state(
 
     lines.append(_format_git_state(repo_root))
 
-    active = _resolve_active_task(trellis_dir, input_data)
+    platform = _detect_platform(input_data)
+    active = _resolve_active_task(trellis_dir, input_data, platform=platform)
     if getattr(active, "error", None) or getattr(active, "stale", False):
         lines.append(f"Current task: ERROR ({active.error or 'stale binding'}); source={active.source}.")
     elif active.task_path:
         task_dir = active.resolved_task_path
         status = "unknown"
         data = _load_task_data(active.task_workspace_root / ".trellis", task_dir)
-        status = str(data.get("status") or "unknown")
+        if data.get("schema_version") == "2.0":
+            from common.delivery_session import get_current_delivery  # type: ignore[import-not-found]
+            query = get_current_delivery(active.invocation_root, input_data, platform=platform)
+            status = query["delivery"]["phase"] if query["kind"] in ("current", "terminal_delivery") else query["kind"]
+            lines.append(f"Delivery selection: {query['kind']}; key={json.dumps(query.get('key'), ensure_ascii=False)}")
+        else:
+            status = str(data.get("status") or "unknown")
         lines.append(f"Current task: {_repo_relative(repo_root, task_dir)}; status={status}.")
         lines.append(f"Task workspace: {active.task_workspace_root}; caller workspace: {repo_root}.")
     else:

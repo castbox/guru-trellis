@@ -1,0 +1,21 @@
+{
+  "exit_id": "scope_ready",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/demo",
+  "source_selection": [
+    {
+      "locator": "docs/source.md",
+      "section": "Requirements",
+      "authority_kind": "requirement"
+    }
+  ],
+  "revision_refs": [
+    "docs/source.md#Requirements"
+  ],
+  "profile": "task_scope_requirements_acceptance",
+  "scope_action": "revised",
+  "task_key": {
+    "task_id": "demo",
+    "lifecycle_generation": 0
+  }
+}

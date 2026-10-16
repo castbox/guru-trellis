@@ -21,7 +21,7 @@ from .git_facts import (
     run_checkout_git,
     run_common_git,
 )
-from .identity import normalize_generation, normalize_task_id, normalize_task_ref
+from .identity import normalize_generation, normalize_task_id, normalize_task_ref, task_resource_state
 
 
 RebindRoute = Literal["same_checkout_new_ref", "existing_target"]
@@ -97,7 +97,7 @@ def _working_artifact_matches(
     return (
         task_id == key.task_id
         and generation == key.lifecycle_generation
-        and payload.get("status") == expected_status
+        and task_resource_state(checkout, payload) == expected_status
     )
 
 

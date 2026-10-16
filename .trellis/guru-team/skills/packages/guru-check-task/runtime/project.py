@@ -21,6 +21,18 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     public = load(repo, package_root, args.input, "input")
     owner = load(repo, package_root, args.owner_result, "owner_result")
     authoring = load(repo, package_root, args.authoring, "authoring")
+    if public.get("profile") == "delivery_resolved_reconciliation":
+        from delivery import invoke
+        checked = invoke(package_root, repo, public, owner)
+        validate_json(authoring, package_root / "schemas/delivery-resolved-reconciliation-authoring-1.0.schema.json", "authoring")
+        if checked["exit_id"] != "resolved_reconciliation_passed" or authoring["mode"] != public["mode"]:
+            raise CommandError("stale_identity", "owner_result", "Consume the exact current resolved-tree Check conclusion.", 3)
+        output = {**copy.deepcopy(authoring), "source_exit": checked["exit_id"],
+                  "task_ref": checked["task_ref"], "delivery_key": checked["delivery_key"],
+                  "phase2_commit_anchor": checked["phase2_commit_anchor"]}
+        target = package_root.parent / "guru-reconcile-task-base/schemas/delivery-public-resolved-candidate-input.schema.json"
+        validate_json(output, target, "stdout")
+        return output
     validate_json(public, package_root / "schemas/public-resolved-reconciliation-input.schema.json", "input")
     validate_json(owner, package_root / "schemas/phase2-check.schema.json", "owner_result")
     validate_json(authoring, package_root / "schemas/resolved-reconciliation-authoring.schema.json", "authoring")

@@ -5,9 +5,15 @@ description: Maintain a repository Architecture Baseline through semantic bootst
 
 # Guru Maintain Architecture Baseline
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. This Skill is the reusable Architecture Baseline
-owner for exactly four profiles: `bootstrap_foundation`, `task_impact_sync`,
-`promotion`, and `repair`.
+owner for repository `bootstrap_foundation`, `promotion`, `repair`, and
+whole-Task `task_impact_sync(stage=acceptance_finish)`, plus the corresponding
+`delivery_bootstrap_foundation`, `delivery_promotion`, `delivery_repair`, and
+`delivery_task_impact_sync` profiles with explicit public Delivery identity.
 
 Load [references/contract.md](references/contract.md) completely before acting.
 The contract selects the executor: new task Architecture assessments use a
@@ -41,8 +47,8 @@ required only for a real choice or side effect; it never supplies the semantic
 result and is never recorded in the owner result or another authorization
 artifact.
 
-Every standard task enters `task_impact_sync` twice at Planning: first
-`candidate_assessment` on actual prewrite facts, then `final_plan` on Wording-current
+Every Delivery, including D1, enters `delivery_task_impact_sync` twice at Planning:
+first `candidate_assessment` on actual prewrite facts, then `final_plan` on Wording-current
 design. Read the purpose-specific contract below before either invocation. The AI rereads the
 project Architecture Baseline, design-constitution authority, project
 change-contract identity, task scope, and applicable project-check protocol.
@@ -70,7 +76,7 @@ Phase 2 and committed full-diff Branch Review before Publication.
 
 The AI owns applicability, sufficiency, conflict, regression, contribution,
 ADR, promotion, and route judgment. The deterministic runtime validates only
-purpose-bound planning 3.0 and valid nonplanning 2.0 contracts, exact identity/freshness binding,
+purpose-bound Planning 3.0 semantics projected onto Delivery and valid nonplanning 2.0 contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
@@ -94,8 +100,8 @@ to the caller-supplied structured committed range.
 
 Every `baseline_current` requires `authority_status=current`, an existing
 regular repository file at the constitution locator, and carries its exact
-`source_profile`. Only `task_impact_sync` may resume its matching lifecycle
-stage. Bootstrap and repair current results rerun that affected
+`source_profile`. Only the matching `task_impact_sync` or `delivery_task_impact_sync` profile
+may resume its corresponding stage. Bootstrap and repair current results rerun that affected
 `task_impact_sync` stage; promotion current results return through fresh Phase
 2, Task Commit, and independent committed full-diff Branch Review.
 
@@ -138,3 +144,30 @@ Old task-impact planning 2.0 input fails closed; interrupted old planning fresh
 re-enters Author. Bootstrap, repair, promotion and valid nonplanning task impact
 remain 2.0. Historical schemas are validation assets only, never a planning
 fallback. MIGRATION-292 defines the matching workflow/preset update boundary.
+
+## Delivery Architecture projection
+
+Development stages select delivery_task_impact_sync (schema_version
+delivery-1.0), carrying the exact opaque DeliveryKey and public planning_root
+in addition to this owner's original stage authorities. Read the selected
+Delivery's three planning documents and the Task's overall scope separately.
+The installed public API validates key/relationship and planning_root; the
+semantic owner result binds both fields and its exact public input. Independent
+assessment, required concerns, contribution, ADR, project checks and promotion
+remain under this original Architecture owner and contract. No second judgment
+or public Planning writer is added. Whole-task acceptance_finish may have no
+current Delivery and retains task_impact_sync; other development invocations
+without an explicit key are rejected. Delivery exits carry key/root to the
+original route; source_profile=delivery_task_impact_sync distinguishes them.
+Old Task development inputs require the pinned old complete installation.
+
+Delivery stage recovery uses `delivery_promotion`, `delivery_repair`, or
+`delivery_bootstrap_foundation` with the explicit original DeliveryKey and
+planning_root. These profiles execute the same baseline owner algorithms and
+return the original stage identity. Whole-task/global bootstrap, promotion and
+repair retain their existing profiles and never infer a Delivery from private state.
+
+`sync_required` has the sole workflow consumer
+`guru-architecture-baseline-sync-router`. It uses only the closed DTO shape and
+sync_kind to project the exact Task or Delivery promotion/repair/impact entry
+to this same owner. It performs no second semantic assessment and infers no identity.

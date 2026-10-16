@@ -158,7 +158,7 @@
   "external_exits": [
     {
       "id": "no_mutation",
-      "evidence": "source does not own Issue closure",
+      "evidence": "reviewed action set retains OPEN or has no Issue close authority",
       "consumer": {
         "kind": "skill",
         "id": "guru-finish-task"
@@ -166,7 +166,7 @@
     },
     {
       "id": "closed",
-      "evidence": "exact source Issue was closed and post-checked",
+      "evidence": "reviewed closing actions were terminally post-checked; exact source fact follows its own action",
       "consumer": {
         "kind": "skill",
         "id": "guru-finish-task"
@@ -182,7 +182,7 @@
     },
     {
       "id": "external_change_conflict",
-      "evidence": "frozen Closure authority or required closed Issue changed",
+      "evidence": "frozen Closure authority or required OPEN/CLOSED Issue state changed",
       "consumer": {
         "kind": "skill",
         "id": "guru-complete-task-closure"

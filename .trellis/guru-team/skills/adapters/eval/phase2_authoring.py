@@ -18,12 +18,12 @@ ARCHITECTURE = "guru-maintain-architecture-baseline"
 QUALIFIERS = ("guru-qualify-normal-scenario", "guru-qualify-solution-mechanism")
 PUBLIC_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
-    "schemas/phase2-check.schema.json", "schemas/public-input.schema.json",
-    "schemas/public-initial-check-input.schema.json",
+    "schemas/phase2-check.schema.json", "schemas/public-input-delivery-1.0.schema.json",
+    "schemas/public-delivery-initial-check-input-1.0.schema.json",
 )
 ARCHITECTURE_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
-    "schemas/semantic-result.schema.json", "schemas/public-input-impact.schema.json",
+    "schemas/semantic-result-delivery-1.0.schema.json", "schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
 )
 
 
@@ -33,6 +33,8 @@ def write_json(path: Path, value: object) -> None:
 
 
 def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> None:
+    fixture = fixture.resolve()
+    package = package.resolve()
     public = json.loads(public_input_path(request).read_text(encoding="utf-8"))
     task_ref = public["task_ref"]
     task = Path(task_ref)
@@ -135,10 +137,35 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             "docs/architecture/README.md": "# Architecture Baseline\n\nIdentity: range-v1. Active. bounds_policy.py owns pure ordered-bound validation reused by interval.py. interval.py owns the mathematical predicate; range_filter.py is its production caller. Each module has no I/O, external dependency, state or persistence.\n",
             f"{task_ref}/design.md": "# Candidate Design\n\ninterval.py delegates ordered-bound validation to bounds_policy.ordered_bounds and compares both endpoints inclusively. range_filter.py composes the predicate. Tests exercise the predicate, bound validation and production filtering.\n",
         })
+    # Create actual installed public Task/Delivery state before recording any gate.
+    from adapters.eval.architecture_authoring import stage_delivery_identity
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    from adapters.eval.delivery_production import activate
+    from adapters.eval.owner_runtime import load_package_owner_runtime, compose_production_fixture_runtime, compose_production_owner_command_runtime
+    legacy_task_ref = task_ref
+    directory = stage_delivery_identity(fixture, public, scope_content=files[f"{legacy_task_ref}/prd.md"], scope_anchor="R1")
+    task_ref = public.pop('task_locator')
+    task = fixture / task_ref
+    planning_ref = directory.relative_to(fixture).as_posix()
+    files.pop(f'{legacy_task_ref}/task.json')
+    for name in ('prd.md', 'design.md', 'implement.md'):
+        files[f'{planning_ref}/{name}'] = files.pop(f'{legacy_task_ref}/{name}')
+    files[f'{planning_ref}/design.md'] += '\n## Docs SSOT Plan\n\nStrategy: ssot_first. docs/range.md owns range behavior.\n'
+    files[f'{planning_ref}/implement.jsonl'] = ''
+    files[f'{planning_ref}/check.jsonl'] = ''
+    public['task_ref'] = task_ref
+    public.pop('planning_root')
+    public.pop('phase2_commit_anchor', None)
+    DeliveryProjection(fixture, task_ref).select(public['delivery_key'])
     for relative, content in files.items():
         target = fixture / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
+    runtime_target = fixture / '.trellis/guru-team/scripts/bash/run-skill-command.sh'
+    owner_runtime = load_package_owner_runtime(runtime_target, SKILL)
+    compose_production_fixture_runtime(runtime_target, owner_runtime)
+    compose_production_owner_command_runtime(runtime_target, owner_runtime)
+    public['planning_accepted_result_id'] = activate(owner_runtime, fixture, task, public['delivery_key'])
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-qm", "stage inclusive range requirements and test fixture")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", run_git(fixture, "rev-parse", "HEAD"))
@@ -216,7 +243,8 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
         package.parent / ARCHITECTURE / "schemas/public-input-impact.schema.json"
     ).read_text(encoding="utf-8"))
     architecture_input = {
-        "schema_version": "2.0", "profile": "task_impact_sync",
+        "schema_version": "delivery-1.0", "profile": "delivery_task_impact_sync",
+        "delivery_key": public["delivery_key"], "planning_root": directory.relative_to(task).as_posix(),
         "source_exit": "implementation_complete", "mode": "workflow",
         "continuation_id": "range-phase2", "stage": "phase2", "task_locator": task_ref,
         "baseline": {"locator": "docs/architecture/README.md", "identity": "range-v1", "status": "active"},
@@ -235,12 +263,17 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             "required_concern_set_identity": "range-concerns-v1",
         },
         "freshness_identity": hashlib.sha256((fixture / "interval.py").read_bytes()).hexdigest(),
-        "requirement_authority": "docs/range.md", "behavior_authority": f"{task_ref}/design.md",
+        "requirement_authority": "docs/range.md", "behavior_authority": f"{planning_ref}/design.md",
     }
+    projection = DeliveryProjection(fixture, task_ref)
+    candidate_paths = sorted({*files, 'interval.py'})
+    projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
+        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'], observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
+    write_json(evidence / 'check-public-input.json', public)
     write_json(evidence / "architecture-input.json", architecture_input)
     required = sorted([
         *files, *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
-        "docs/phase2-evidence/architecture-input.json",
+        "docs/phase2-evidence/architecture-input.json", "docs/phase2-evidence/check-public-input.json",
         *(f".trellis/guru-team/skills/packages/{ARCHITECTURE}/{path}" for path in ARCHITECTURE_READS),
         *(f".trellis/guru-team/skills/packages/{skill}/{path}" for skill in QUALIFIERS for path in (
             "SKILL.md", "references/contract.md", "schemas/semantic-result.schema.json",
@@ -259,7 +292,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
         "schema_version": "1.0", "required_reads": required,
         "architecture_reads": [
             "docs/architecture/00-foundation/design-constitution.md",
-            "docs/architecture/README.md", "docs/architecture/06-governance/change-contract.md", f"{task_ref}/design.md",
+            "docs/architecture/README.md", "docs/architecture/06-governance/change-contract.md", f"{planning_ref}/design.md",
             "docs/phase2-evidence/diff.patch", "interval.py", "range_filter.py",
             *(["bounds_policy.py"] if dependent else []),
             *(["test_interval.py", "test_range_filter.py"] if test_layer else []),
@@ -279,7 +312,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             "repo_locator": ".", "task_ref": task_ref,
             "checkout_head": run_git(fixture, "rev-parse", "HEAD"),
             "planning_identity": qualification_planning_identity(fixture, [
-                f"{task_ref}/{name}" for name in ("prd.md", "design.md", "implement.md")
+                f"{planning_ref}/{name}" for name in ("prd.md", "design.md", "implement.md")
             ]),
             "diff_locator": "docs/phase2-evidence/diff.patch",
         },

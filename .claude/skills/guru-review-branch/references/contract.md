@@ -1,3 +1,60 @@
+## Public Delivery integration 1.0
+
+This current Skill consumes the target installation's reviewed Delivery API
+1.0 and Task schema 2.0 through a thin projection. `task_ref` is a locator;
+`delivery_key` is the opaque public identity. Read the current `interface.json`
+profile schema and its exact exit consumer before invoking. Do not derive an
+identity from branch, worktree, legacy cycle, PR, or Task status. D1 and later
+Deliveries use the same entry and lifecycle. The public phase never proves a
+semantic pass. Historical facts never prove a currently applicable gate.
+
+Read the Delivery's public `planning_root` for its three planning documents and
+context JSONL; Task-root PRD remains overall scope. Rework keeps the Delivery
+identity and returns through the real current stage owner's public operation to
+the earliest affected role. Invalidate only the affected results. Unchanged,
+still-applicable execution facts need not be rerun. A successful recorder is
+objective evidence only; the AI must actually perform this Skill's full review.
+Missing public API or an unmigrated old record stops with precise migration
+remediation. Do not install a private alternative, select a source fallback,
+convert a legacy checkpoint into pass, or switch an old installation before
+upstream migration/default-cutover qualification.
+
+### Independent Review and continuity
+
+Use `delivery_branch_review` with current Check result, committed candidate and
+complete base-to-HEAD range. Retain independent findings, scope proposals,
+Architecture promotion/fresh final review, and qualification duties. Passed
+Review records public `full_review`, handing its exact result ID to Readiness.
+After local checkpoint consumption, lost stdout recovers only the actually
+recorded applicable public result with matching predecessor/candidate/producer.
+
+`delivery_base_continuity` keeps the exact prior full Review, integration pair,
+current reconciled HEAD/tree, relevant paths and declared resume target. A
+continuity conclusion is not a new full Review pass. `delivery_archived_review`
+reviews actual archived content and payload separately; it does not write a
+current Delivery gate or reset historical phase. Legacy archives remain history
+until their original migration owner resolves a public identity.
+
+### Scope withdrawal in the current stage
+
+`delivery_scope_withdrawal` is an independent semantic entry with mode,
+`task_ref` and `delivery_key`. Before authoring its separate review input,
+read the current whole-scope decision and selected undelivered slice; judge
+that its full scope was withdrawn/replaced, with no remaining obligations in
+that slice. Partial changes use ordinary same-Delivery rework. This package
+uses only its fixed public role and expected phase; it never accepts a role
+parameter or selects an owner from phase. Record the actual reason,
+`scope_decision` and minimum evidence through public `stop`, then release the
+selection. `delivery_stopped` hands Task identity to whole-task Completion.
+Stop preserves commits/PR/resources; PR close and cleanup require their actual
+owners and any necessary current side-effect confirmation. Lost output retries
+the identical stored stop result and releases selection without another stop.
+
+## Preserved semantic and transaction duties
+
+The duties below apply to the current Delivery input and output contracts.
+Historical data is read only by its named history or migration owner.
+
 # `guru-review-branch` Contract
 
 GitHub review/check/mergeability facts use the shared authenticated,
@@ -26,33 +83,15 @@ candidate still binds a classified ref; an empty set cannot carry such a row.
 
 ### Archived Review
 
-Aggregate input schema 5.0 adds `archived_review` without changing the two
-ordinary profiles selected by aggregate schema 4.0. The new input contains
-only profile, mode, task_ref, branch_review_commit A, and
-pr_payload_snapshot_sha256. A is the current completed archive HEAD, not the
-original closeout tip H. Finalizer alone validates H/archive continuity.
+The independent `delivery_archived_review` reads the exact archive, actual
+current-generation Completion/Closure and selected Delivery planning_root.
+It requires committed plans/summary, completely clean checkout, exact registered
+branch, selected local/live base, one current Open Ready PR and current payload
+snapshot. It does not consume current Check or write active Delivery gates.
+Independently review full archived range, requirements, Architecture and tests;
+findings or insufficient authority return blocked without repair or mutation.
 
-The recorder, checker and invocation independently require a committed,
-completely clean completed archive, its planning and finish-summary identity,
-the legacy archive's matching task/summary branch and base, a registered task branch/worktree,
-the configured GitHub publish remote, exact remote/PR HEAD A, and one Open
-non-Draft same-repository PR. Summary PR identity excludes replacement PRs.
-The current selected-base ref (origin tracking first, then the local branch)
-must already resolve to B and match the authenticated live GitHub base ref.
-B must be an ancestor of A. These readers never fetch or consult retired task/workspace mappings.
-The PR snapshot is SHA-256 of UTF-8 JSON `{"title": title, "body": body}`,
-sorted keys, compact separators, no trailing newline and no string trimming.
-
-The global caller mandatory invokes the fresh Architecture
-`task_impact_sync(stage=branch_review)` with
-`source_exit=review_refresh_required` for exact B...A before this semantic
-review. Its read-only contract cannot enter promotion/repair. This owner then
-independently reviews the complete committed diff, live requirements,
-archived planning, Architecture and current test evidence. A missing result
-or result requiring a write blocks. No prior checkpoint or snapshot supplies
-semantic approval; no Architecture private state is read.
-
-The independent private schema `guru-archived-review-gate-1.0` (version
+The independent private schema `guru-review-branch-private-delivery-archived-gate-1.0` (version
 `archived-1.0`) binds the current B, A, PR identity and snapshot to the freshly
 authored semantic result. Its only outcomes are `archived_review_passed` and
 `blocked`. A pass forbids open findings and scope proposals. A blocked result
@@ -72,21 +111,19 @@ private checkpoint and the PR number remain private.
 
 ### Ordinary Entry
 
-Aggregate public input schema 4.0 dispatches two independent profiles. The
-public `branch_review` schema 2.0 input contains only profile, mode, task/base
-refs, `branch_review_commit` and one of `initial_review|fresh_final_review`.
-`guru-create-task-commit:committed` supplies the task and commit identity;
-Branch Review verifies parent, paths and tree from live Git. Commit message
-format is not downstream freshness authority.
+Use `delivery_branch_review` with current Check, exact committed candidate,
+base and initial/fresh-final intent. The current TaskCommit consumer supplies
+identity only; live Git and public Check establish actual content applicability.
 
 Workflow and standalone mode use the same eight preconditions: runtime,
 workspace, task identity, the committed DTO plus live Git, the current Issue
 source Issue identity, complete review range, working tree, and invocation freshness.
-The Skill reads no Planning or Phase 2 checkpoint or Task Commit candidate.
+The Skill reads the Delivery plans and actual public Check predecessor,
+not Phase 2 private evidence or a Task Commit candidate.
 Input that does not satisfy the current public schema fails closed.
 
 Before the full-range review, the global workflow mandatory invokes
-`guru-maintain-architecture-baseline:task_impact_sync(stage=branch_review)`.
+`guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`.
 That semantic owner independently reruns applicable project Architecture checks
 and recomputes before/after satisfaction from the complete committed
 base-to-HEAD diff. Branch Review consumes only its fresh checked current route,
@@ -122,7 +159,7 @@ authority and completes fresh `branch_review_candidate_set` qualification
 before continuing or redispatching work for that candidate. Official
 `trellis-*` agent files remain unchanged and upstream-owned.
 
-The independent current-only `base_continuity` schema 2.0 profile is entered
+The independent current-only `delivery_base_continuity` profile is entered
 only from `guru-reconcile-task-base:review_continuity_required`. Its
 `branch_review_commit` is the prior full Branch Review commit and its
 `task_head` is the current committed reconciled HEAD. The recorder requires
@@ -158,7 +195,7 @@ archived review read-only. Qualified current-scope defects and evidence gaps
 use the profile's existing finding or blocked routes and existing gate fields.
 
 Perform one independent semantic review of the complete current
-`origin/<base>...HEAD` range. For a nonempty actual candidate set, invoke
+`base_oid..head_oid` range. For a nonempty actual candidate set, invoke
 `guru-qualify-normal-scenario:branch_review_candidate_set` before assigning
 severity. Candidate input carries no decision, scenario class, severity,
 expected route, or caller assertion of a normal path. Only candidates returned
@@ -190,11 +227,14 @@ current-slice defect, or a slice that depends on the remaining work already
 being complete prevents `passed`. This compact semantic evidence remains in
 the private gate and does not expand the existing `passed` DTO.
 
-A resolved-tree reconciliation that returned through fresh Phase 2 requires
-this complete full-range review after Reconcile creates or recovers the exact
-merge commit. The `base_continuity` profile cannot replace that review: bounded
-base continuity is not used for a conflict-resolved tree containing task
-adaptations.
+After resolved reconciliation, the current Check must bind the actual merged
+candidate and retained content base. With no prior complete Review, perform
+the first independent full-range review. With a genuine prior full_review,
+read its actual reviewed HEAD and evidence, independently review the resolution
+delta and affected dependencies, and judge coverage of the complete B..Hi.
+Record this owner's actual new full_review against the new Check predecessor;
+a continuity DTO or tree equality alone cannot substitute for that judgment.
+Do not replay unrelated validations or manufacture a second Task Commit.
 
 For delete, replace, merge, or compatibility-impacting ranges, independently
 recompute `code_subtraction` and `docs_ssot_subtraction` using the durable
@@ -207,7 +247,7 @@ safety or compatibility statement.
 
 The review lifecycle is visible in the current dialogue. Immediately before
 dispatch, the caller presents the independent reviewer identity, exact
-committed `origin/<base>...HEAD` range, and review target. Immediately after
+committed `base_oid..head_oid` range, and review target. Immediately after
 return, it presents the final finding summary and the semantic owner's
 conclusion. These notices and the reviewer transcript are transient dialogue
 context only; they do not enter the gate, public DTO, private checkpoint, or a
@@ -299,7 +339,7 @@ Bounded continuity remains bounded; archived review remains read-only.
 
 After the AI gate exists, `review-branch` writes one compact owner-private
 `review-gate.json` at
-`.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/review-gate.json` and
+`.trellis/.runtime/guru-team/owner-checkpoints/<task-key>/<delivery-uuid>/review-gate.json` and
 returns only a minimal task/exit/checkpoint receipt. The task owner and package
 resolver determine the path; callers cannot choose a gate locator.
 `check-review-gate` resolves that exact checkpoint and validates
@@ -341,7 +381,8 @@ or invalid projection retains the checkpoint for same-owner repair. Missing
 after retirement, wrong-task/base/HEAD/content, unsafe components, and symlink
 ancestors or gate files fail closed.
 
-The current gate uses only schema 7.0 with profile-specific identity,
+The current Delivery private gate uses `guru-review-branch-private-delivery-gate-1.0`
+with schema_version 7.0, public key and Check predecessor plus profile-specific identity,
 `review_commit`, `reviewed_content_algorithm`, `reviewed_content_sha256`, and
 the final terminal candidate-classification witness required by its direct
 consumer. For `base_continuity`, `review_commit` equals the current committed
@@ -354,25 +395,54 @@ rewrites, or migrates them.
 
 Return exactly one of:
 
-- `passed`: minimal `task_ref`, `branch_review_commit` seed for
+- `passed`: minimal `task_ref`, `delivery_key`, `full_review_result_id`,
+  and `branch_review_commit` seed for
   `guru-review-task-delivery`, only after the current Branch Review-stage
   Architecture result passes independently;
-- `continuity_passed`: current-only schema 2.0 projects the exact pair and
+- `continuity_passed`: current Delivery output projects the public key, exact pair and
   candidate identity to the workflow-owned `guru-base-continuity-passed-router`,
   sets `branch_review_commit` to the current continuity-reviewed `task_head`,
   and resumes the original target without claiming a full Branch Review;
-- `implementation_required`: `branch_review_commit` and current finding refs;
-- `scope_confirmation_required`: exact proposal refs;
-- `blocked`: stable reason/remediation only.
+- `implementation_required`: public key, `branch_review_commit` and current finding refs;
+- `scope_confirmation_required`: public key and exact proposal refs;
+- `blocked`: stable reason/remediation only;
+- `delivery_stopped`: Task locator and TaskKey for whole-task Completion.
 
 Unknown, multiple, stale, unmapped or consumer-mismatched results fail closed.
 
-## TaskCommit clean candidate consumption
+## Current-stage scope revision
 
-The unchanged committed DTO may originate from TaskCommit exact execution or
-its committed_reentry verification of an existing reconciled candidate. Both
-enter the original post_commit guard then fresh Architecture and independent
-full review of the complete selected-base...HEAD. A candidate with no prior
-full review uses initial_review. Do not read Phase 2
-checkpoints or replace this first full review with continuity. Finding-fix and
-fresh-final intent remain selected by the existing recovery caller.
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.
+
+## Fixed complete range and local integration coverage
+
+Review the exact current candidate base/head OIDs, complete two-dot diff and
+necessary affected dependencies. PR-target ancestry/latest SHA is not entry or
+recording eligibility. A shared fetch cannot change the in-flight object. The
+first complete independent Branch Review remains mandatory.
+
+After real integration, the original current stage uses legal public rework
+to implementation with only readiness cleared; retain the actual prior public
+full_review as historical evidence. Implementation begin_check binds B..Hi,
+Check writes its actual new result, and this owner reads the retained prior
+full_review, its reviewed Hr/evidence, new Check and real Hr..Hi delta. Judge
+whether prior complete coverage plus reviewed delta/affected dependencies
+covers all current B..Hi. Only after this actual judgment may the existing
+full_review record_gate write a new result bound to current candidate and Check
+predecessor, then emit passed. Missing/insufficient prior coverage requires the
+actual complete review. Do not relabel old pass or continuity_passed, infer
+coverage from tree equality, or mechanically replay unrelated work. The
+base_continuity capability remains a bounded assessment, not a substitute for
+this public gate. Recover only a truly recorded current result.

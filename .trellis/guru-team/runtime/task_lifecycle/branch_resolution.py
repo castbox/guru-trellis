@@ -19,7 +19,7 @@ from .git_facts import (
     discover_worktree_facts,
     list_local_branch_refs,
 )
-from .identity import normalize_generation, normalize_task_id, normalize_task_ref
+from .identity import normalize_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_resource_state
 
 
 Ownership = Literal["guru_owned", "caller_owned", "not_applicable"]
@@ -149,8 +149,27 @@ def _artifact_matches(
     return (
         task_id == key.task_id
         and generation == key.lifecycle_generation
-        and metadata.get("status") == expected_status
+        and task_resource_state(repository.context_path, metadata) == expected_status
     )
+
+
+
+def _bound_checkout_artifact_matches(
+    checkout: Path,
+    *,
+    task_ref: str,
+    key: TaskLifecycleKey,
+    expected_status: str,
+) -> bool:
+    # An existing public binding may have been established by selected Task
+    # conversion before a business commit. The registered checkout's canonical
+    # current Task is validated by the same Identity owner as normal execution.
+    try:
+        artifact = resolve_task_ref(checkout, task_ref, expected_task_id=key.task_id)
+    except (OSError, ValueError, LifecycleContractError):
+        return False
+    return (artifact.lifecycle_generation == key.lifecycle_generation
+            and artifact.lifecycle_state == expected_status)
 
 
 def _candidate_id(branch_name: str, kind: CandidateKind, path: Path | None) -> str:
@@ -181,6 +200,7 @@ def discover_branch_candidates(
     required = normalize_branch_name(required_branch_name) if required_branch_name is not None else None
     candidates: list[BranchCandidate] = []
     registered_refs: set[str] = set()
+    current_binding = store.read(normalized_key)
 
     for facts in discover_worktree_facts(repository):
         branch_ref = facts.registration.registered_branch_ref
@@ -199,12 +219,20 @@ def discover_branch_candidates(
             reason = "wrong_repository"
         elif facts.branch_ref != branch_ref or facts.head is None:
             reason = "branch_registration_mismatch"
-        elif not _artifact_matches(
-            repository,
-            head=facts.head,
-            task_ref=normalized_ref,
-            key=normalized_key,
-            expected_status=expected_status,
+        elif not (
+            _bound_checkout_artifact_matches(
+                facts.path,
+                task_ref=normalized_ref,
+                key=normalized_key,
+                expected_status=expected_status,
+            ) if current_binding is not None and current_binding.branch_name == branch_name
+            else _artifact_matches(
+                repository,
+                head=facts.head,
+                task_ref=normalized_ref,
+                key=normalized_key,
+                expected_status=expected_status,
+            )
         ):
             reason = "task_artifact_mismatch"
         elif store.branch_owner(branch_name, excluding=normalized_key) is not None:

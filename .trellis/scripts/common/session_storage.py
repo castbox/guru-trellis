@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -89,10 +90,24 @@ def repository_facts(root: Path) -> RepositoryFacts:
         _git(root, "rev-parse", "--show-toplevel").rstrip("\r\n")
     ).resolve()
     output = _git(root, "worktree", "list", "--porcelain", "-z")
-    worktrees = tuple(dict.fromkeys(
-        Path(field[len("worktree "):]).resolve()
-        for field in output.split("\0") if field.startswith("worktree ")
-    ))
+    registered: list[Path] = []
+    # With -z each field is NUL-terminated and an empty field ends a record.
+    # A stale registration can retain .trellis after its Git entry disappears.
+    # Only Git's explicit prunable marker plus an absent .git permits skipping
+    # that sibling; extant/corrupt/foreign Git entries still require validation.
+    for record in output.split("\0\0"):
+        fields = record.split("\0")
+        if not fields[0].startswith("worktree "):
+            continue
+        worktree = Path(fields[0][len("worktree "):]).resolve()
+        prunable = any(
+            field == "prunable" or field.startswith("prunable ")
+            for field in fields[1:]
+        )
+        if worktree != git_root and prunable and not os.path.lexists(worktree / ".git"):
+            continue
+        registered.append(worktree)
+    worktrees = tuple(dict.fromkeys(registered))
     if git_root not in worktrees:
         raise SessionBindingError(f"unregistered_workspace: {root}")
     facts = RepositoryFacts(root, common, worktrees, git_root)
@@ -213,7 +228,7 @@ def record_exists(path: Path) -> bool:
 
 
 def task_location(
-    ref: str, workspace: Path, *, metadata: bool = True
+    ref: str, workspace: Path, *, metadata: bool = True, allow_archived: bool = False
 ) -> tuple[str, Path]:
     """Validate an explicit CLI TaskRef inside one live workspace."""
     from .paths import get_tasks_dir
@@ -242,11 +257,25 @@ def task_location(
         relative = candidate.resolve().relative_to(tasks.resolve())
     except ValueError as exc:
         raise SessionBindingError(f"invalid_task_path: {ref}") from exc
-    if len(relative.parts) != 1 or relative.parts[0] == "archive":
+    archived = (len(relative.parts) == 3 and relative.parts[0] == "archive"
+                and re.fullmatch(r"[0-9]{4}-(?:0[1-9]|1[0-2])", relative.parts[1]) is not None)
+    active = len(relative.parts) == 1 and relative.parts[0] != "archive"
+    if not active and not (allow_archived and archived):
         raise SessionBindingError(
             f"invalid_task_path: not an active task: {ref}"
         )
     lexical = tasks / relative
+    if archived:
+        # Validate the supplied spelling before realpath strips nested links.
+        for component in (candidate, candidate.parent, candidate.parent.parent):
+            if component.is_symlink():
+                raise SessionBindingError(f"invalid_task_path: nested archive symlink: {component}")
+        # Archive is a history boundary, never an execution root alias.
+        component = tasks
+        for part in relative.parts:
+            component = component / part
+            if component.is_symlink():
+                raise SessionBindingError(f"invalid_task_path: nested archive symlink: {component}")
     if metadata:
         data, reason = read_json_checked(lexical / "task.json")
         if data is None:
@@ -262,13 +291,25 @@ def read_record(path: Path, root: Path, facts: RepositoryFacts) -> SessionRecord
     data, reason = read_json_checked(path)
     if data is None:
         raise SessionBindingError(f"binding_{reason}: {path}")
-    if type(data.get("schema_version")) is not int or data["schema_version"] != 2:
+    if type(data.get("schema_version")) is not int or data["schema_version"] not in (2, 3):
+        from .maintenance import carrier_maintenance_diagnostic
+        diagnostic = carrier_maintenance_diagnostic(data, path, root)
         raise SessionBindingError(
-            f"unsupported_binding_schema: {path}; run task.py start"
+            f"unsupported_binding_schema: {path}; "
+            + (diagnostic or "run task.py start")
         )
     expected = {"schema_version", "task_id", "lifecycle_generation"}
+    if data["schema_version"] == 3:
+        expected.add("delivery_id")
     if set(data) != expected:
         raise SessionBindingError(f"invalid_binding_fields: {path}")
+    if data["schema_version"] == 3 and data["delivery_id"] is not None:
+        try:
+            delivery_id = data["delivery_id"]
+            if not isinstance(delivery_id, str) or str(uuid.UUID(delivery_id)) != delivery_id:
+                raise ValueError("non-canonical UUID")
+        except (ValueError, AttributeError) as exc:
+            raise SessionBindingError(f"invalid_delivery_id: {path}") from exc
     task_id = data.get("task_id")
     if not isinstance(task_id, str) or not TASK_ID_PATTERN.fullmatch(task_id):
         raise SessionBindingError(f"invalid_task_id: {path}")
@@ -364,6 +405,10 @@ def resolve_task_identity(
                 continue
             data, reason = read_json_checked(task_json)
             if data is None:
+                from .maintenance import task_maintenance_diagnostic
+                diagnostic = task_maintenance_diagnostic(directory)
+                if diagnostic:
+                    raise SessionBindingError(diagnostic)
                 raise SessionBindingError(f"task_metadata_{reason}: {task_json}")
             try:
                 candidate_generation = lifecycle_generation(data, task_json)

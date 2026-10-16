@@ -82,10 +82,10 @@ The top-level `wording_current.target_content_sha256` and nested
 `wording.target_content_sha256` carry that same value. It is not the body-only
 digest, and callers do not rebuild it from owner-private scope evidence.
 
-### `planning_artifacts`
+### `delivery_planning_artifacts`
 
-The scope is exactly the current active task's `prd.md`, `design.md`, and
-`implement.md`, in that order. All three must be regular files. The caller may
+The scope is exactly the selected public Delivery planning_root's `prd.md`,
+`design.md`, and `implement.md`, in that order; Task-root PRD retains whole-task scope. All three must be regular files. The caller may
 not supply a selector, alias, replacement, or exclusion. The completed result
 is stdout-only owner-private evidence. Its typed exit is consumed immediately
 by the workflow router; neither the result nor a replacement/supersession chain
@@ -187,7 +187,7 @@ every current hit is classified, unchecked hits are empty for a passed Gate,
 rewrites did not change unconfirmed product meaning, retained classifications
 match current text and deterministic conditions, and zero lexical hits were
 not treated as a substitute for complete requirements review. The
-`planning_artifacts` profile then performs the seven additional planning
+`delivery_planning_artifacts` profile then performs the seven additional planning
 semantic checks defined above; neither another profile nor the deterministic
 runtime may infer those results.
 
@@ -199,7 +199,7 @@ classifications, derived unchecked hits, the AI Review Gate, and exactly one
 exit. It is a current invocation result, not workflow authority or a durable
 handoff. Authorization is dialogue-local and is never part of the result.
 
-For `planning_artifacts`, the same schema conditionally requires the exact
+For `delivery_planning_artifacts`, the same schema conditionally requires the exact
 seven-key `planning_checked_dimensions` object. Missing, false-on-success,
 extra, or non-planning use fails closed. The recorder/checker validate the
 recorded shape and values; they do not perform the semantic review or generate
@@ -228,7 +228,7 @@ history.
 
 ## Planning Approval Consumer
 
-The current `planning_artifacts:pass` router enters fresh Architecture
+The current `delivery_planning_artifacts:pass` router enters fresh Architecture
 `final_plan` before adjacent `guru-approve-task-plan`. Neither downstream owner
 imports scanner hits, classification history, file digests, or this Skill's
 private result.
@@ -236,8 +236,8 @@ private result.
 ## Planning Content-Changed Handoff 2.0 (#292)
 
 The selected `content_changed` output/consumer 2.0 is a closed profile union.
-For `planning_artifacts`, the output contains only `exit_id`, the fixed
-`profile`, `task_ref`, and nonempty unique `change_refs`. After the real
+For `delivery_planning_artifacts`, the output contains only `exit_id`, the fixed
+`profile`, `task_ref`, `delivery_key`, and nonempty unique `change_refs`. After the real
 record/check sequence, this owner's invoke validates that the public task
 locator names the checked planning scope, normalizes it to a repo-relative
 task ref, and projects completed `semantic_review.revisions[].locator` values
@@ -273,7 +273,7 @@ and checker's `validation_receipt` to invoke; do not rebuild a transition,
 source snapshot or receipt from examples. Readiness consumes the resulting
 invoke stdout with that same canonical target identity.
 
-The public profiles remain the fixed `change_request`, `planning_artifacts`,
+The public profiles remain the fixed `change_request`, `delivery_planning_artifacts`,
 and `explicit_paths` scopes. `scripts/invoke.sh --invocation -` receives the
 closed call-local public input, current transition, and owner result only after
 the semantic owner loop, validates the actual checker receipt, and emits a router DTO
@@ -338,9 +338,9 @@ is caller-owned and its updated_at can be null. No locator aliases are added.
    transition for change-request pass. Review commands do not consume a
    transition, synthesize a receipt, or project a public route.
 
-For `planning_artifacts`, record instead uses
-`--root . --mode workflow --profile planning_artifacts --task TASK --input -`;
-check uses `--root . --task TASK --input -`, without `--mode` or `--profile`.
+For `delivery_planning_artifacts`, record instead uses
+`--root . --mode workflow --profile delivery_planning_artifacts --task TASK --delivery-key "$DELIVERY_KEY_JSON" --input -`;
+check uses `--root . --task TASK --delivery-key "$DELIVERY_KEY_JSON" --input -`, without `--mode` or `--profile`.
 The final wrapper is `"$GURU_SKILL_PACKAGE/scripts/invoke.sh" --invocation -`.
 Do not transfer change-request-only envelope arguments to another profile.
 
@@ -372,3 +372,14 @@ consumes flat AI authoring, and check consumes a recorded review. These commands
 need the captured title/body source, not the downstream public input. Reusing
 the public serializer envelope would require irrelevant public/transition
 fields or a second source read. Only the final invoke uses that shared envelope.
+
+## Delivery Planning input
+
+For Delivery documents explicitly use delivery_planning_artifacts and the
+opaque public DeliveryKey. Resolve its task_ref/planning_root through the installed
+API and scan/review all three current files. Never review Task-root documents as
+a surrogate. Current change_request and explicit_paths retain their existing
+contracts. The old planning_artifacts activity profile is retired; no Task
+status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
+their selected router. Recorder/checker envelope carries key/task_ref and the
+same scope; the public DTO never carries the scan or private digest bundle.

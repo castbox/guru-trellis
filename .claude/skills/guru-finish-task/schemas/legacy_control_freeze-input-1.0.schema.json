@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finish-task-input-legacy_control_freeze-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "root",
+    "key",
+    "task_ref",
+    "controls",
+    "source",
+    "operation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "legacy_control_freeze"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "source"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "content_base64",
+              "mode"
+            ],
+            "properties": {
+              "content_base64": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 511
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content_base64",
+        "mode"
+      ],
+      "properties": {
+        "content_base64": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 511
+        }
+      }
+    },
+    "operation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

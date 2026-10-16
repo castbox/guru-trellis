@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reconcile-task-base-reconciliation-result-1.0-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "profile",
+    "task_ref",
+    "branch",
+    "prior_task_head",
+    "old_base_head",
+    "new_base_head",
+    "resume_target",
+    "reconciled_task_head",
+    "candidate_tree_sha256",
+    "delivery_key"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "status": {
+      "const": "committed"
+    },
+    "profile": {
+      "enum": [
+        "delivery_post_plan",
+        "delivery_post_check",
+        "delivery_post_commit",
+        "delivery_post_branch_review",
+        "delivery_post_publication",
+        "delivery_finalizer_base_mismatch"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prior_task_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "old_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "new_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "resume_target": {
+      "enum": [
+        "delivery_activation",
+        "task_commit",
+        "branch_review",
+        "publication_review",
+        "delivery_publication",
+        "finalization_resume"
+      ]
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "reconciled_task_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "candidate_tree_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "delivery_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "delivery_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "enum": [
+              "delivery_post_branch_review",
+              "delivery_post_publication",
+              "delivery_finalizer_base_mismatch"
+            ]
+          }
+        },
+        "required": [
+          "profile"
+        ]
+      },
+      "then": {
+        "required": [
+          "branch_review_commit"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "branch_review_commit"
+          ]
+        }
+      }
+    }
+  ]
+}

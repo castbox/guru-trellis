@@ -1,1 +1,7 @@
-{"profile":"resume_current_task","mode":"standalone","task_id":"example","lifecycle_generation":0,"continuation_id":"resume-example"}
+{
+  "profile": "delivery_resume_current_task",
+  "mode": "standalone",
+  "task_id": "example",
+  "lifecycle_generation": 0,
+  "continuation_id": "resume-example"
+}

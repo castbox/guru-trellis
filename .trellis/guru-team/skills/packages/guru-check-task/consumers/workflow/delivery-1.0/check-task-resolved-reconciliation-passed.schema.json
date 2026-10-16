@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-consumer-guru-check-task-resolved_reconciliation_passed-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "delivery_key",
+    "phase2_commit_anchor"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "resolved_reconciliation_passed"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "phase2_commit_anchor": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  }
+}

@@ -5,6 +5,10 @@ description: Reactivate one normally finished archived task while preserving its
 
 # Guru Reactivate Task
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Reactivate owns one normally finished archived TaskLifecycleKey, never Finish
 recovery or implementation activation. The AI reviews the fresh archive,
 source relation, target base and shared checkout acquisition disposition. Entry
@@ -31,7 +35,11 @@ that already satisfies the current task schema and current Finish/Cleanup
 contract may enter Reactivate.
 
 The executor keeps TaskId, moves the archived artifact into the active locator,
-increments the generation and enters planning. It composes the shared checkout,
+uses the common `guru-task-scope-projection` to call public `reopen_task`.
+Only that operation increments generation; historical Delivery, Completion and
+Closure facts remain intact. No current Delivery is required: evidence-only
+or closeout work follows its original owner, while new implementation first
+enters `guru-create-delivery`. It composes the shared checkout,
 branch binding and common-dir resource ledger; it never creates task/workspace
 mappings or turns historical Finish/Cleanup results into new authority. A
 resolved old-generation binding may be released for branch reuse, but any
@@ -45,6 +53,13 @@ live Git, task and ledger facts without repeating mutations. Partial or stale
 states block; no direct requirements, implementation or evidence-refresh route
 is part of this package. The active #434 workflow router consumes its typed
 result without transferring Reactivate's package-local recovery ownership.
+
+Use `delivery_reactivate_completed_task` and its independent input schema.
+The semantic owner supplies `authority` as the exact current overall scope
+reference in the owner result. It validates the completed/closed public Task
+facts plus the existing Finish seal before any acquisition. Resume compares
+the same public new generation and authority; it never resets Task status,
+reuses an old gate pass or creates an empty Delivery. Old profiles are rejected.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

@@ -284,8 +284,15 @@ def archive_task_dir(task_dir_abs: Path, repo_root: Path | None = None) -> Path 
         return None
 
     try:
-        shutil.move(str(task_dir_abs), str(dest))
-    except (OSError, IOError, shutil.Error) as e:
+        data, reason = read_json_checked(task_dir_abs / FILE_TASK_JSON)
+        if data is None:
+            raise TaskIdentityError(f"task_metadata_{reason}: {task_dir_abs}")
+        if data.get("schema_version") == "2.0":
+            from .task_artifacts import relocate_task_directory
+            relocate_task_directory(task_dir_abs, dest, repo_root if repo_root is not None else get_repo_root())
+        else:
+            shutil.move(str(task_dir_abs), str(dest))
+    except (OSError, IOError, shutil.Error, ValueError) as e:
         print(f"Error: Failed to move task to archive: {e}", file=sys.stderr)
         return None
 
@@ -321,7 +328,7 @@ def archive_task_complete(
 # =============================================================================
 
 def resolve_lifecycle_target(
-    target: str, repo_root: Path, *, use_active: bool = False,
+    target: str, repo_root: Path, *, use_active: bool = False, allow_archived: bool = False,
 ) -> tuple[Path, Path] | None:
     """Resolve start/archive/rename without guessing task ownership by name."""
     from .active_task import resolve_active_task, task_workspace_for_path
@@ -330,8 +337,8 @@ def resolve_lifecycle_target(
     try:
         root = repo_root.resolve()
         if Path(target).is_absolute():
-            workspace = task_workspace_for_path(Path(target), root)
-            _, path = task_location(target, workspace)
+            workspace = task_workspace_for_path(Path(target), root, allow_archived=allow_archived)
+            _, path = task_location(target, workspace, allow_archived=allow_archived)
             return workspace, path
         if use_active:
             active = resolve_active_task(root)
@@ -368,10 +375,13 @@ def resolve_lifecycle_target(
                                 f"ambiguous_task_target: {target}; pass an absolute task path"
                             )
                     return active.task_workspace_root, active.resolved_task_path
+        if allow_archived and "/" in target.replace("\\", "/"):
+            _, path = task_location(target, root, allow_archived=True)
+            return root, path
         path = resolve_task_dir(target, root)
         if path is None:
             return None
-        _, path = task_location(str(path), root)
+        _, path = task_location(str(path), root, allow_archived=allow_archived)
         return root, path
     except (ValueError, OSError, RuntimeError) as exc:
         print(f"Error: {exc}", file=sys.stderr)

@@ -1,0 +1,5 @@
+{
+  "profile": "delivery_revision_reentry",
+  "mode": "workflow",
+  "check_result_id": "result:example"
+}

@@ -1,1 +1,14 @@
-{"profile":"branch_review","mode":"workflow","task_ref":".trellis/tasks/current","base_ref":"origin/main","branch_review_commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","review_intent":"initial_review"}
+{
+  "profile": "delivery_branch_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "base_ref": "1111111111111111111111111111111111111111",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "review_intent": "initial_review",
+  "delivery_key": {
+    "task_id": "delivery-example",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "check_result_id": "check:review-example"
+}

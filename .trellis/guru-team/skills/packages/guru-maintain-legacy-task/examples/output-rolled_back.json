@@ -1,0 +1,7 @@
+{
+  "exit_id": "rolled_back",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  }
+}

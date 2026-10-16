@@ -9,7 +9,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "passed",
       "expected_output": "The current AI completes all nine dimensions from live facts with no observed candidates, records an empty candidate array, and consumes the original passed output.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -66,7 +66,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. One candidate observation to investigate is a possible upper-endpoint exclusion in interval.py; reproduce via contains(4, 2, 4) and the actual endpoint tests. Review the actual task, implementation, Docs, diff and Architecture authority, qualify the actual candidate, author your own complete current-round result and consume the original formal wrapper output.",
       "expected_exit": "passed",
       "expected_output": "The actual endpoint concern is qualified and rejected using live code and tests. Its classification and witness remain in the non-empty array with no findings, and the original wrapper emits passed.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -123,7 +123,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "implementation_required",
       "expected_output": "The AI identifies the requirement violation using actual implementation and failing boundary tests; the original wrapper returns implementation_required.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -175,7 +175,7 @@
       "prompt": "Invoke the original guru-check-task public wrapper for this staged initial_check owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "passed",
       "expected_output": "The original recorder/checker/public initial_check accepts the staged zero-candidate owner result and emits passed; this is deterministic post-owner evidence only.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "assertions": {
         "deterministic": [
           {
@@ -250,7 +250,7 @@
       "prompt": "Invoke the original guru-check-task public wrapper for this staged finding_fix_rerun owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "implementation_required",
       "expected_output": "The public DTO is the declared implementation_required route.",
-      "input_profile_id": "finding_fix_rerun",
+      "input_profile_id": "delivery_finding_fix_rerun",
       "assertions": {
         "deterministic": [
           {
@@ -273,7 +273,7 @@
       "prompt": "Invoke the original guru-check-task public wrapper for this staged planning_reentry owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "planning_stale",
       "expected_output": "The public DTO is the declared planning_stale route.",
-      "input_profile_id": "planning_reentry",
+      "input_profile_id": "delivery_planning_reentry",
       "assertions": {
         "deterministic": [
           {
@@ -296,7 +296,7 @@
       "prompt": "Invoke the original guru-check-task public wrapper for this staged initial_check owner result and observe its deterministic route and lifecycle. The staged result does not prove semantic review.",
       "expected_exit": "blocked",
       "expected_output": "The public DTO is the declared blocked route.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "assertions": {
         "deterministic": [
           {
@@ -319,7 +319,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "passed",
       "expected_output": "The current AI completes the nine dimensions from live fixture facts and the original wrapper returns passed.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -376,7 +376,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "implementation_required",
       "expected_output": "The owner establishes the unchanged dependency failure that prevents current singleton filtering and returns its actual required revision route.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -428,7 +428,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "implementation_required",
       "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -485,7 +485,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "implementation_required",
       "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -542,7 +542,7 @@
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
       "expected_exit": "implementation_required",
       "expected_output": "The overall Check owner returns its actual necessary test revision route after independent Architecture evaluation.",
-      "input_profile_id": "initial_check",
+      "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
       "model_id": "gpt-5.6-sol",
@@ -593,6 +593,94 @@
           }
         ]
       }
+    },
+    {
+      "id": "delivery-stopped",
+      "prompt": "Execute the declared Delivery Check owner against the actual installed legal stage and consume the formal output.",
+      "expected_exit": "delivery_stopped",
+      "expected_output": "The public wrapper returns the declared owner route from the actual stage.",
+      "input_profile_id": "delivery_scope_withdrawal",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "delivery_stopped"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "legal-owner-stage",
+            "criterion": "The actual installed public API establishes the supported checking stage; the owner payload and public output preserve the exact Delivery identity and the declared withdrawal or resolved-tree boundary without creating a normal candidate gate. This is fixture transport evidence, not native AI review.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/delivery-stopped-input.json",
+        "evals/files/delivery-stopped-facts.json"
+      ]
+    },
+    {
+      "id": "resolved-reconciliation-passed",
+      "prompt": "Execute the declared Delivery Check owner against the actual installed legal stage and consume the formal output.",
+      "expected_exit": "resolved_reconciliation_passed",
+      "expected_output": "The public wrapper returns the declared owner route from the actual stage.",
+      "input_profile_id": "delivery_resolved_reconciliation",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "resolved_reconciliation_passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "legal-owner-stage",
+            "criterion": "The actual installed public API establishes the supported checking stage; the owner payload and public output preserve the exact Delivery identity and the declared withdrawal or resolved-tree boundary without creating a normal candidate gate. This is fixture transport evidence, not native AI review.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/resolved-reconciliation-passed-input.json",
+        "evals/files/resolved-reconciliation-passed-facts.json"
+      ]
     }
   ]
 }

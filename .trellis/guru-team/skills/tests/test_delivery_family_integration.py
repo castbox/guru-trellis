@@ -82,20 +82,20 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
         payload, contract = self.project_seed(
             "guru-review-task-delivery", "project_ready"
         )
-        self.assertEqual(contract["profile_id"], "review_ready")
+        self.assertEqual(contract["profile_id"], "delivery_review_ready")
         self.assert_schema_shape(
             payload,
-            self.profile_schema("guru-publish-task-delivery", "review_ready"),
+            self.profile_schema("guru-publish-task-delivery", "delivery_review_ready"),
         )
 
     def test_publish_ready_projects_to_merge_ready(self) -> None:
         payload, contract = self.project_seed(
             "guru-publish-task-delivery", "project_ready_for_merge"
         )
-        self.assertEqual(contract["profile_id"], "ready_for_merge")
+        self.assertEqual(contract["profile_id"], "delivery_ready_for_merge")
         self.assert_schema_shape(
             payload,
-            self.profile_schema("guru-merge-task-delivery", "ready_for_merge"),
+            self.profile_schema("guru-merge-task-delivery", "delivery_ready_for_merge"),
         )
 
     def test_publish_and_merge_stale_routes_author_fresh_review_input(self) -> None:
@@ -105,10 +105,10 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
         ):
             with self.subTest(producer=producer):
                 payload, contract = self.project_seed(producer, projection)
-                self.assertEqual(contract["profile_id"], "delivery_review")
+                self.assertEqual(contract["profile_id"], "delivery_readiness_refresh")
                 self.assert_schema_shape(
                     payload,
-                    self.profile_schema("guru-review-task-delivery", "delivery_review"),
+                    self.profile_schema("guru-review-task-delivery", "delivery_readiness_refresh"),
                 )
 
     def test_delivery_contracts_exclude_terminal_lifecycle_and_bind_identity(self) -> None:
@@ -119,6 +119,7 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
                 interface["public_contracts"]["outputs"], ensure_ascii=False
             ).lower()
             for token in forbidden:
+                # Withdrawal has a Completion consumer, never a completion claim.
                 self.assertNotIn(token, serialized)
         ready = read_json(
             self.package("guru-review-task-delivery") / "examples/public-ready-output.json"
@@ -129,7 +130,8 @@ class DeliveryFamilyIntegrationTest(unittest.TestCase):
             self.package("guru-merge-task-delivery") / "runtime/owner.py"
         ).read_text(encoding="utf-8")
         self.assertIn("Guru-Task-Identity", owner)
-        self.assertIn("Guru-Delivery-Schema: 1", owner)
+        self.assertIn("Guru-Delivery-Identity", owner)
+        self.assertIn("Guru-Task-Generation", owner)
         self.assertIn("Guru-Delivery-Head", owner)
         self.assertIn('"--merge", "--match-head-commit"', owner)
         self.assertNotIn('"--squash"', owner)
