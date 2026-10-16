@@ -167,4 +167,6 @@ setup/调用错误保留原归属：旧runtime默认Python3.15不支持→原支
 
 ### T575-S5-03：本切片收敛边界
 
-当前隔离贡献按delta_first承接S5要求、机制、双向trace、完整clean的新结果与保留失败；shared RDT .101和Architecture .94保持。贡献仍为draft，原owner只在本切片最终Phase2前收敛当前隔离delta；完整committed Review后才串行晋升shared，晋升差额回到fresh门禁，不以文档收敛断言全部准备完成。Delivery/WholeCompletion/Closure/Finish仍需各自真实结果。Stage2最终main/provider/tag/smoke/Release、累计多平台/native-host及真实业务/生产仍未验证。
+晋升前隔离贡献按delta_first承接S5要求、机制、双向trace、完整clean的新结果与保留失败；该时点shared RDT .101和Architecture .94保持，贡献为draft。本次由原RDT owner按expected-current .101串行晋升为 .102：三层薄继承immutable .101，统一入口指向本贡献，manifest记录同一贡献的晋升关系；S1独立贡献与所有前驱正文保持，Architecture仍继承 .94，无新增ADR或架构贡献。
+
+本次知识晋升只收敛已审查的准备合同与真实分层证据。晋升差额须fresh Phase2、TaskCommit与不同评估者完整Review，Delivery/WholeCompletion/Closure/Finish仍由各原owner判断；不以知识版本变化断言全部准备完成。Stage2最终main/provider/tag/smoke/Release、累计多平台/native-host及真实业务/生产仍未验证。
