@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "完整scope与有效测试证据"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "就地替换保持owner及兼容语义"}

@@ -1,0 +1,29 @@
+{
+  "id": "579-git-batch-transport",
+  "name": "579-git-batch-transport",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 579,
+    "disposition": "exact_source"
+  },
+  "title": "#579 修复 Git 批量读取双向管道互等",
+  "description": "保持树身份算法及连续性门禁，以最小传输修复和正式 consumer 回归闭环 #579。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅 Git 批量请求传输、直接消费者回归、canonical/dogfood/installed 投影与必要文档；不修改业务或 CI/CD，不扩为 Release 矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-16",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}
