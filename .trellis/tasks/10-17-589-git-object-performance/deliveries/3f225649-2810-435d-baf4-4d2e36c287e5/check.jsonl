@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_history_public.py", "reason": "正式公开历史查询、截点与隔离对象准备回归"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/tests/test_manual_recovery.py", "reason": "真实公共store手动合并与stdout丢失恢复fixture边界"}

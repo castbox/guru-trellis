@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/history.py", "reason": "原历史查询、对象准备、截点与每份Delivery检查owner"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py", "reason": "原手动合并候选重建与公共hash consumer"}

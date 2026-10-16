@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from candidate_objects import CandidateObjects
 from owner import archived_fact_gap, gh_json, git, require_gh
 from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.io import CommandError
@@ -54,26 +55,18 @@ def ensure_commit(root, repo_ref, sha):
             raise CommandError("stale_identity", "repository.commit", "Fetch the exact selected PR/merge commit before recovery.", 3)
 
 
-def commit_candidate(projection, publication, actual_head, *, git_root=None):
+def commit_candidate(projection, publication, actual_head, *, git_root=None, objects=None):
     """Use the installed public hash over immutable bytes/modes/deletions."""
     candidate = publication["candidate"]
     paths = candidate["paths"]
     source = projection.root if git_root is None else git_root
+    if objects is None:
+        with CandidateObjects(source) as local:
+            return commit_candidate(projection, publication, actual_head,
+                                    git_root=source, objects=local)
     with tempfile.TemporaryDirectory(prefix="guru-manual-delivery-snapshot-") as temporary:
         snapshot = Path(temporary)
-        for locator in paths:
-            row = git(source, "ls-tree", actual_head, "--", locator)
-            if not row:
-                continue
-            mode, kind, blob = row.split("\t", 1)[0].split()
-            if kind != "blob" or mode not in {"100644", "100755"}:
-                raise CommandError("stale_identity", "candidate.paths", "Use the file/mode candidate supported by the installed public API.", 3)
-            data = subprocess.run(["git", "cat-file", "blob", blob], cwd=source,
-                                  check=True, stdout=subprocess.PIPE).stdout
-            file = snapshot / locator
-            file.parent.mkdir(parents=True, exist_ok=True)
-            file.write_bytes(data)
-            file.chmod(0o755 if mode == "100755" else 0o644)
+        objects.snapshot(actual_head, paths, snapshot)
         content = projection._call(projection.api.delivery_store.candidate_content_ref, snapshot, paths, "git")
     return {**candidate, "kind": "git", "head_ref": actual_head, "content_ref": content}
 

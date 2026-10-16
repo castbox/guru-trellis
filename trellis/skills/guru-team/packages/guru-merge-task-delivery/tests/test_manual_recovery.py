@@ -6,6 +6,7 @@ import importlib.util
 import hashlib
 import json
 import os
+import shutil
 import sys
 import unittest
 from pathlib import Path
@@ -157,7 +158,25 @@ class ManualRecoveryTests(unittest.TestCase):
         before = (self.repo / self.flow.task_ref / "task.json").read_bytes()
         query = {"schema_version": "2.0", "task_identity": "flow-task", "repo_ref": "example/repo",
                  "base_ref": "main", "task_ref": self.flow.task_ref}
-        out = self.flow.wrapper(PACKAGE.name, "discover-task-deliveries.sh", "--input", self.flow.write("history.json", query))
+        trace = self.flow.inputs / "history-git-trace.jsonl"
+        trace_bin = self.flow.inputs / "history-trace-bin"
+        trace_bin.mkdir()
+        git = trace_bin / "git"
+        # The public API clears GIT_* variables. Set tracing at the real Git
+        # process boundary, so the assertion covers the actual whole wrapper.
+        git.write_text("#!" + sys.executable + "\nimport os,sys\n"
+            "os.environ['GIT_TRACE2_EVENT'] = " + repr(str(trace)) + "\n"
+            "os.execv(" + repr(shutil.which("git")) + ", ['git', *sys.argv[1:]])\n")
+        git.chmod(0o755)
+        with patch.dict(os.environ, {"PATH": str(trace_bin) + os.pathsep + os.environ["PATH"]}):
+            out = self.flow.wrapper(PACKAGE.name, "discover-task-deliveries.sh", "--input", self.flow.write("history.json", query))
+        with trace.open() as events:
+            message_reads = sum(
+                row.get("event") == "start"
+                and row.get("argv", [])[1:] == ["show", "-s", "--format=%B", self.merge]
+                for row in map(json.loads, events)
+            )
+        self.assertEqual(1, message_reads, "Read each matching merge message once in the actual query wrapper.")
         self.assertEqual([self.merge], [row["merge_commit_sha"] for row in out["deliveries"]])
         self.assertEqual(self.flow.key, out["deliveries"][0]["delivery_key"])
         query.pop("task_ref")
