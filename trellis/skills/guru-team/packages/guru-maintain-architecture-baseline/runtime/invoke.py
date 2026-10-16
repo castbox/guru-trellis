@@ -215,7 +215,7 @@ def _check_project_checks(
                     3,
                 )
         if check["freshness_identity"] != freshness_identity:
-            raise CommandError("stale_identity", f"{check_field}.freshness_identity", "Rerun the project Architecture check for this invocation.", 3)
+            raise CommandError("stale_identity", f"{check_field}.freshness_identity", "Reassess the project Architecture check and bind a current result for this invocation; supporting command facts require current applicability judgment.", 3)
         status = check["status"]
         evidence_locator = check.get("evidence_locator")
         unavailable_reason = check.get("unavailable_reason")

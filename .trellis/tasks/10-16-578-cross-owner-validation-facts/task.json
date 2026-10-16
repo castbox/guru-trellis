@@ -1,0 +1,29 @@
+{
+  "id": "issue-578-cross-owner-validation-facts",
+  "name": "578-cross-owner-validation-facts",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 578,
+    "disposition": "exact_source"
+  },
+  "title": "统一跨独立审查者的工程执行事实适用性",
+  "description": "修补 #578 的 Architecture、Check、Branch Review 依赖级事实采用合同，保留完整语义审查与当前绑定。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "#578",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-16",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -605,3 +605,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-065：#569 固定截点查询的已审贡献
 
 首次独立完整committed range为 `5391d187ae587d978b81d3af073bbaf87abb8a05...36203b09442683b4a9a53e3ed2328d8e968c2e1c`，27路径；原Architecture与BranchReview分别完成正式入口。原owners按expected Architecture .92 / RDT .98维护successor，新差额仍须fresh gates。[贡献](../contributions/569-fixed-cutoff-history-query.md)拥有责任与晋升关系，[唯一Test](../../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)拥有实际验证和边界；本条不复制结果、不改写历史证据，不表示真实source Delivery、Completion或软件发布。
+
+## EVD-066：#578 跨 owner 工程事实的已审贡献
+
+首次独立完整 committed range 为 `404d3f4d7635b19fb2c9f0d6aa642e2f1bf925b4...5ba72ba9ca40d990d8250fbc0c174475bc3d98f4`；原 Architecture 与 BranchReview 正式出口分别为 baseline_current/reviewed_candidate 与 passed。原 owners 按 expected Architecture .93 / RDT .100 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/578-cross-owner-validation-facts.md)与 ADR-029 拥有责任，[唯一 Test](../../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)保留命令原始对象、失败及未验证边界；本条不复制或改写执行事实。

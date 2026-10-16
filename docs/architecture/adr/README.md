@@ -61,3 +61,5 @@
 `ADR-027`（accepted）：独立单 checkout tools/selected legacy Task 维护；公共模型与恢复归 Trellis，原 owners 承接私有控制/runtime/业务职责，旧 Plan2 与 current-only 保持。正文见 [`027-independent-install-maintenance.md`](./027-independent-install-maintenance.md)。
 
 `ADR-028`（accepted）：固定开发基线、Delivery 完整内容与 PR target 分离，原 owners 只按实际集成阻塞整合，并选择明确阶段适用 authority。正文见 [`028-fixed-content-baseline.md`](./028-fixed-content-baseline.md)。只替代 ADR-005 的普遍 CURRENT-advance stale 解释及 ADR-012 第7项的无条件 fresh Phase2 要求；当前其他条目中的默认追赶、latest-target 祖先资格与目标 SHA 全等由 ADR-028 中具名的 current successor 承接。ADR-013/024、历史正文、公共 Task/Delivery、独立语义判断、expected-head、真实事务与整体收尾责任保持。
+
+`ADR-029`（accepted）：跨 owner 工程事实采用与当前完整独立语义判断分离；只窄补充 ADR-019 的命令执行限制和 Check same-owner-only，继承 ADR-028 适用性，原 owner、当前绑定、typed routes 与 private retirement 不变。正文见 [`029-cross-owner-validation-facts.md`](./029-cross-owner-validation-facts.md)。

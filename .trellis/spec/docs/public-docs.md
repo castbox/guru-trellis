@@ -99,8 +99,8 @@ current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
 Current knowledge authority is read from the three layer READMEs:
-`current-main-0.6.17-guru.100` / `active`, with Architecture
-`current-main-0.6.17-guru.93` / `active`. These are independent of software
+`current-main-0.6.17-guru.101` / `active`, with Architecture
+`current-main-0.6.17-guru.94` / `active`. These are independent of software
 release axes; an isolated preparation contribution does not advance them.
 Source and installed registry counts describe their own actual graph, not one
 another. Read the selected registry and matching workflow rather than copying
