@@ -34,29 +34,45 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The official
-release target is repository tag `v0.7.0-guru.3`, extension revision
-`0.7.0-guru.3`, Fork CLI/core `0.7.0-castbox.3`, source
-`castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`, package manager
-`pnpm@10.32.1`, and reviewed Fork CI `37735554354`. These axes are independent;
-do not increment the extension or publish an intermediate `.2` tag for this
-release. Preparing these docs does not publish the target or pass its candidate gate.
-The published Guru predecessor tag is `v0.7.0-guru.1`; its extension revision is
-`0.7.0-guru.1`; its historical framework lock is
-`castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f`, CLI/core `0.7.0-castbox.1`, package
-manager `pnpm@10.32.1`. The published predecessor `v0.6.17-guru.2` does not prove
-successor framework-source adoption. After the target's publication and remote tag
-verification, stable workflow marketplace and preset sources for one installation
-use the same immutable `v0.7.0-guru.3` tag. Until then, the target remains an
-unreleased candidate and `v0.7.0-guru.1` remains its published predecessor.
-Before publication, marketplace and preset use the same addressable full
-candidate SHA; an unreleased reviewed checkout is identified as such and never
-described as tag-pinned release provenance. Unpinned or branch sources remain
-mutable latest/canary inputs.
+Stable install and upgrade docs must keep four version axes explicit. The
+published stable release and this release's predecessor are `v0.7.0-guru.3`
+(peeled `7d20a930341dae3e7dd2d214660ce3b99e28d863`), extension `0.7.0-guru.3`,
+with its historical Fork lock `5c760463680ffc10a3f26957b330c57a4b0c3ff8`,
+CLI/core `0.7.0-castbox.3`, package manager `pnpm@10.32.1` and CI `37735554354`.
+Stable workflow marketplace and preset sources for one installation use that
+same immutable `.3` tag and the Fork lock read from that tag; do not combine
+the released Guru source with a later source tree's Fork lock.
+
+The next repository target is `v0.7.0-guru.4`, not yet published. Its preparation
+first adopts the canonical source lock at
+`castbox/Trellis@2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`, reviewed main CI
+`38851816688`, retaining CLI/core `0.7.0-castbox.3` and `pnpm@10.32.1`. This
+source includes #40 maintenance and #43 native schema-1 session compatibility.
+The first source-adoption slice keeps the current extension manifest
+`0.7.0-guru.3` to match the existing maintenance source consumer; it is
+unreleased source, not changed bytes of the immutable `.3` release. The final
+`.4` extension and matching maintenance revision assertion belong to the later
+preparation slice, after supported tools/Task conversion and native continuation.
+An old installation keeps its complete original package until that transition;
+source edits and source/API checks do not establish installed parity.
+
+Before `.4` publication, marketplace and preset must use the same actual,
+remote-addressable full Guru candidate SHA. Do not insert an invented SHA or
+use the unavailable `.4` tag as a provider. Only after publication and remote
+tag identity verification may both use immutable `v0.7.0-guru.4`. The final
+exact-candidate gate starts from fresh main after preparation and Finish
+bookkeeping merge; source-adoption, earlier local samples and earlier
+predecessor acceptance do not replace it. Unpinned branch inputs remain
+mutable latest/canary sources. These docs do not publish the target or prove
+tools installation, Task conversion, native next-owner continuation or Release.
+
+The older published `v0.7.0-guru.1` used extension `0.7.0-guru.1` and historical
+Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f` / CLI/core `0.7.0-castbox.1` /
+`pnpm@10.32.1`; it is historical evidence, not the predecessor for `.4`.
 
 The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
-must retain that release boundary. The #495 successor candidate defines an
+must retain that release boundary. The historical #495 successor candidate defined an
 independent explicit migration for all `v0.6.x-guru.*` and
 `v0.7.0-guru.*` normal installations, grouped by actual manifest, managed
 assets, and task/control differences. The successor release targets are Guru
@@ -64,7 +80,7 @@ assets, and task/control differences. The successor release targets are Guru
 `castbox/Trellis@cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`, successful main
 CI `37647767799`. Historical same-source Guru acceptance is verified at exact
 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` / EVD-051; a later HEAD is not a rerun.
-The current #503 Fork lock is
+The historical #503 Fork lock is
 `castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`, successful main
 CI `37735554354`; CLI/core and extension version axes remain unchanged.
 The historical `.2` framework lock is
@@ -78,14 +94,21 @@ post-write rollback evidence does not prove that same-source acceptance. Ordinar
 current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
-Current knowledge authority is `current-main-0.6.17-guru.79` / `active`, separate from product
-release axes. Read the three layer READMEs and the unique #382 contribution
-Test. Reviewed root-cause admission thinly inherits immutable `.78`; root owns
-candidate eligibility/applicability/reentry, while existing stage owners and
-#383 retain completion semantics. Candidate registry is 36 Skills / 163 exits /
-109 commands, zero planned; business workflow is 34 invokes / 157 exits.
-Architecture projects ARCH-CUR-052 / ARCH-DOM-035 / ARCH-INT-038 / ADR-020 /
-EVD-055, retaining predecessor decisions and GAP lifecycle. Knowledge promotion
+Current knowledge authority is read from the three layer READMEs:
+`current-main-0.6.17-guru.100` / `active`, with Architecture
+`current-main-0.6.17-guru.93` / `active`. These are independent of software
+release axes; an isolated preparation contribution does not advance them.
+Source and installed registry counts describe their own actual graph, not one
+another. Read the selected registry and matching workflow rather than copying
+a previous count into a new release claim.
+
+The historical `.79` root-cause admission contribution thinly inherited immutable `.78`;
+root owns candidate eligibility/applicability/reentry, while existing stage
+owners and #383 retain completion semantics. Its historical candidate registry
+was 36 Skills / 163 exits / 109 commands; business workflow was 34 invokes /
+157 exits. Its Architecture projection was ARCH-CUR-052 / ARCH-DOM-035 /
+ARCH-INT-038 / ADR-020 / EVD-055, retaining predecessor decisions and GAP lifecycle.
+Knowledge promotion
 requires fresh gates and does not prove business native continuation, production
 repair, unpublished remote installation or full Release matrix. Historical
 #495/#503 evidence remains bound to its original source; EVD-052 is not the

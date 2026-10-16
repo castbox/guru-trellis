@@ -29,18 +29,17 @@ Normal revision/recovery contracts live in `guru-check-task` and
 `guru-review-task-delivery`; apply/reapply projects those canonical packages
 to installed and platform copies. Targeted validation proves those projections;
 it does not replace the cumulative Upgrade/Release matrix.
-The #531 candidate uses the upstream Task schema 2.0 / Delivery API 1.0.
+The historical #531 development candidate uses the upstream Task schema 2.0 / Delivery API 1.0.
 Read [MIGRATION-531.md](./spec/workflow/task-delivery-migration.md) before applying it.
-The current candidate binds product commit
+That historical candidate binds product commit
 `1e40014023de53ddfd9368b3fb4d0a7a31e92293`
 and the matching CLI/Core tar identities recorded in that contract. PR #36
 is merged and upstream #31 is completed; that does not establish Guru joint readiness.
 The local source snapshot fingerprint is separate from the product commit and tar.
 The previous `5181ab…` copy-collision result remains historical. PR #32 is merged;
-its `ce36314b` predecessor is historical evidence, not the current pair.
-The API candidate is independent from the released package version.
-Older source locks below describe predecessor installation evidence,
-not Delivery API availability. Legacy targets require the upstream D2 migration
+its `ce36314b` predecessor is historical evidence, not the later #531 pair.
+Those product/tar/snapshot results retain their historical scope; current-source
+adoption uses the formal source lock below and does not relabel them as new evidence. Legacy targets require the upstream D2 migration
 and Guru private migration before switching; refusal preserves the old install.
 
 Every Delivery, including D1, owns its Planning. `guru-create-delivery` establishes
@@ -67,12 +66,27 @@ Projection checks and actual native behavior are separate evidence; current
 
 ## Apply And Verify
 
-本次 repository 正式发布目标为 `v0.7.0-guru.3`，extension 为 `0.7.0-guru.3`，固定 Fork CLI/core 为 `0.7.0-castbox.3`，package manager 为 `pnpm@10.32.1`；predecessor 是已发布的 `v0.7.0-guru.1`。版本轴独立，保持现有 extension，不发布中间 `.2`。Guru 目标仍为未发布候选，本准备文档不表示 candidate gate 或 Release 已通过。正式 Fork `.3` 已由 PR28 合并并通过 main CI，当前 lock 已固定；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，见 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051。后继文档 HEAD 不代表重跑；Guru 软件发布、真实业务安装和完整累计矩阵仍未验证。
-候选验证的 preset 与 workflow marketplace 使用同一可寻址的完整 Guru candidate SHA；
-只有目标发布且远端 tag 核验与最终 candidate 匹配后，才使用同一 immutable
-`v0.7.0-guru.3`（marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，preset 来自该 tag
-的 checkout）。Fork main CI 成功不替代 Guru
-exact-candidate、installed/lifecycle 或发布门禁。
+已发布稳定版本为 `v0.7.0-guru.3`，peeled commit 为
+`7d20a930341dae3e7dd2d214660ce3b99e28d863`；其原 Fork lock 为
+`5c760463680ffc10a3f26957b330c57a4b0c3ff8`，main CI `37735554354`。
+默认稳定安装使用同一 immutable `.3` tag 的 workflow marketplace
+`gh:castbox/guru-trellis/trellis#v0.7.0-guru.3` 和 preset checkout，按该 checkout
+的原 lock 构建 Fork，不与当前新 Fork 混搭。
+
+本次目标为尚未发布的 `v0.7.0-guru.4`。当前未发布源码在 S1 暂留 extension
+`0.7.0-guru.3` 作为 bootstrap revision，S2 才同步推进 `.4`；它不等于旧 `.3` tag 内容。
+当前正式 Fork lock 为 `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`，
+tree `41ff285d857036324e480e1eb64d08fffd5956e1`，成功 main CI `38851816688`，
+包含 #40 维护能力与 #43 的旧原生 schema-1 会话元数据兼容修复；CLI/Core
+保持 `0.7.0-castbox.3`，package manager 为 `pnpm@10.32.1`。
+源码试用的 workflow marketplace 与 preset 使用同一个真实、远端可寻址的完整 Guru
+SHA；不预填未形成的 SHA，不使用尚不存在的 `.4` tag。来源记录和 Fork CI 不替代
+实际构建、Guru exact-candidate、installed/lifecycle 或发布门禁。
+
+S1 保留旧 installed graph，仅交付来源采用和公开说明。取得已提交、干净的完整来源后，
+由原 tools-only 与 selected-task maintenance owners 完成同一 Task 的成套切换并验证
+目标 native/下一实际 owner，再由 S2 重新进行真实 Delivery Planning，完成 `.4` 和
+剩余投影/定向验证。本段不声明维护切换、S2、完整多平台矩阵或业务/Release 通过。
 
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
 exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代
@@ -80,19 +94,21 @@ exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的
 
 历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；拒绝不代表升级成功。
-本次 `.3` 目标（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）提供独立 semantic
+历史 `.3` 系列迁移能力（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）提供独立 semantic
 `guru-upgrade-installation`，支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，
 按实际 receipt/ownership/core/task 差异分组；从固定目标 source package 加载，不先进入
 business Intake，普通 apply 保持严格。
 支持来源、固定依赖前置条件和验收状态见 [MIGRATION-495.md](./MIGRATION-495.md)。
-正式 Fork source/CI 已固定，Guru 分组验收及上述精确来源的同源远端验收已完成；
+历史 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源远端验收绑定原 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CI `37647767799`，由 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接，不证明当前新来源；
 普通 update/reapply 不替代迁移，普通 runtime 无兼容双读或自动迁移。
 迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](./MIGRATION-495.md) 合同。
-当前 knowledge authority 为 `current-main-0.6.17-guru.76` / `active`，不是软件发布版本。
+当前知识 authority 由 `docs/requirements/README.md`、`docs/design/README.md`、
+`docs/test/README.md` 与 `docs/architecture/README.md` 指定，与软件版本分开读取。
 
-Use the source-locked, built `castbox/Trellis@5c760463680ffc10a3f26957b330c57a4b0c3ff8`
-CLI (successful main CI `37735554354`) and a matching reviewed Guru
-source. For the local workflow sample, compare the canonical `workflow.md`
+For current-source validation, use the source-locked, built
+`castbox/Trellis@2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0` CLI
+(successful main CI `38851816688`) and that same reviewed Guru source.
+Stable `.3` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:
 
@@ -282,11 +298,11 @@ fixture 只证明传输/运行能力，不代表用户业务语义判断。安�
 未枚举 minor 的 identity admission 成功并不证明其 wheel/依赖兼容。这里的聚焦检查不替代
 Python minor、多平台、Upgrade/Release 或业务仓升级验证；旧安装仍须遵守已有迁移边界。
 
-## 单 checkout 工具升级与独立旧任务维护（#566 候选）
+## 单 checkout 工具升级与独立旧任务维护（#566）
 
 `guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
 
-正式source lock尚不包含上游#40本地维护候选，source_locked执行须在写入前阻塞；local_candidate仅供隔离开发，不代表正式发布或业务恢复。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](MIGRATION-566.md)。
+当前正式 source lock 已包含上游 #40 与 #43。`source_locked` 仍要求完整匹配、已提交且干净的 Guru 来源及成功的匹配 Fork 构建；来源锁变化不等于目标已升级。历史 `local_candidate` 仅为隔离开发证据，不证明正式来源维护、业务恢复或发布。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](MIGRATION-566.md)。
 
 ## 固定开发基线
 

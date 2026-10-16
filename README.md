@@ -30,9 +30,12 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前 source candidate 固定到包含上游任务人员身份退役 PR #24、reference-only 创建 PR #26、显式旧安装迁移 PR #27 与系列/current task 支持 PR #28 的
-`5c760463680ffc10a3f26957b330c57a4b0c3ff8`，
-对应成功 main CI `37735554354`。Fork CLI/core 均为 `0.7.0-castbox.3`。
+当前未发布源码固定到 `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`，
+对应 tree `41ff285d857036324e480e1eb64d08fffd5956e1`、成功 main CI
+`38851816688`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
+schema-1 会话元数据兼容修复。Fork CLI/core 均保持 `0.7.0-castbox.3`，
+package manager 为 `pnpm@10.32.1`。这不是已发布 `.3` tag 的框架来源；
+稳定安装的原锁见下表，构建命令始终读取所选 `GURU_SOURCE` 自身的 lock。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -69,24 +72,31 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| Published Guru predecessor tag | `v0.7.0-guru.1` |
-| 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.3` |
-| 当前 Guru extension revision | `0.7.0-guru.3` |
-| Current fixed Fork `castbox/Trellis` CLI | `0.7.0-castbox.3` @ `5c760463680ffc10a3f26957b330c57a4b0c3ff8` |
-| Reviewed Fork CI identity | `37735554354` |
+| 已发布稳定 Guru tag | `v0.7.0-guru.3`（peeled `7d20a930341dae3e7dd2d214660ce3b99e28d863`） |
+| 稳定 `.3` 的原 Fork source / CI | `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / `37735554354` |
+| 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.4` |
+| 当前源码 Guru extension revision | `0.7.0-guru.3`（S1 bootstrap revision；S2 才推进 `.4`） |
+| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.3` @ `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0` |
+| 当前源码 Fork CI identity | `38851816688` |
 | Fork package manager | `pnpm@10.32.1` |
-| 当前 knowledge authority（非软件版本） | `current-main-0.6.17-guru.76` / `active` |
+| 当前知识 authority（非软件版本） | RDT / Architecture 分别由 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 指定 |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
-已发布的 `v0.7.0-guru.1` 是本迁移候选的 predecessor，不含 #495 迁移能力。
-本次正式发布目标为 `v0.7.0-guru.3`，保持 extension `0.7.0-guru.3`，不发布中间 `.2`。目标在实际发布前仍为未发布候选；本准备文档不表示发布或 candidate gate 已通过。Fork `0.7.0-castbox.3` 正式 lock/CI 已固定；Fork 合并及 main CI 成功不等于 Guru
-exact-candidate、installed/lifecycle 或发布门禁通过。候选验证将 `GURU_WORKFLOW_SOURCE`
-与 `GURU_SOURCE` 绑定同一可寻址的完整 Guru candidate SHA，marketplace source 为
-`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`。只有目标发布且远端 tag
-核验与最终 candidate 匹配后，二者才使用同一 immutable `v0.7.0-guru.3`：
-marketplace 为 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，preset 来自该 tag 的 checkout。
-不把未发布候选当作业务仓默认安装版本。
-不能把本地样本或已发布 predecessor 描述为当前 source candidate 的发布证明。
+当前源码虽暂留 extension `.3`，内容已不同于 immutable `.3` tag，不能只凭版本号
+选择安装来源。默认稳定安装使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，
+`GURU_SOURCE` 使用同一 tag 的 checkout，并按其原 lock 构建 Fork；不得把当前新 Fork
+与旧 `.3` Guru source 混搭执行。
+
+试用未发布源码时，workflow marketplace 与 preset 必须来自同一个真实、远端可寻址的
+完整 Guru SHA（`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`）。先选择和核验该
+SHA，再从其 lock 构建；这里不预填尚未形成的提交，也不把未来 `.4` tag 当作可用 provider。
+准备版本不作为业务仓默认安装版本。Fork 合并/main CI、旧 tag 或本地样本不能替代
+Guru exact-candidate、installed/lifecycle 或发布门禁。
+
+当前 S1 只采用正式来源并修订公开说明，保留旧 installed graph。取得已提交、干净的
+完整来源后，再由原 tools-only 与 selected-task maintenance owners 成套切换工具和同一
+Task，验证目标自身 native/下一实际 owner；随后 S2 重新进行真实 Delivery Planning，
+推进 `.4` 并完成剩余投影与定向验证。来源锁更新本身不表示维护切换或投影验证通过。
 
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
 exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代
@@ -95,7 +105,8 @@ exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的
 新仓库的非交互安装入口：
 
 ```bash
-: "${GURU_WORKFLOW_SOURCE:?请设置已审查的 Guru marketplace ref}"
+: "${GURU_WORKFLOW_SOURCE:?请设置与 GURU_SOURCE 同一 ref 的 marketplace source}"
+# GURU_SOURCE 须为同一 tag checkout；源码试用时二者须改为同一真实完整 SHA。
 cd "$TARGET_REPO"
 node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --cursor \
   --workflow guru-team \
@@ -107,7 +118,15 @@ node "$FORK_SOURCE/packages/cli/bin/trellis.js" init -y --claude --codex --curso
 历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；下列普通 update/reapply
 步骤仅适用于与所选 Fork 版本兼容的安装，拒绝不能作为升级成功。
-本次 `.3` 目标中的系列迁移能力（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）通过独立 `guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，按实际 receipt/ownership/core/task 差异分组验收，保留定制、当前任务状态并恢复实际来源。正式 Fork `.3` lock/CI 和本地构建已验证；Guru 精确远端 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源定向验收已完成，结果由 [唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接。Guru 软件版本尚未发布，后继文档 HEAD 不代表重新运行验收。历史 `.2` 依赖与 `.41` 证据只证明原固定范围；下列构建命令读取当前 `.3` lock，本身不证明 Guru 升级。真实业务安装、Release 和完整累计矩阵仍未验证。
+历史 `.3` 系列迁移能力（extension `0.7.0-guru.3` / Fork `0.7.0-castbox.3`）通过独立
+`guru-upgrade-installation` 支持全部 `v0.6.x-guru.*` 与 `v0.7.0-guru.*` 正常安装，
+按实际 receipt/ownership/core/task 差异分组，保留定制、当前任务状态并恢复实际来源。
+精确远端 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的历史同源定向验收由
+[唯一系列 Test](docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接，
+对应当时的 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CI `37647767799`。
+稳定 `.3` 的后续 `5c760463…` lock、历史 `.2` 依赖与 `.41` 证据各保留原归属，
+均不证明当前新来源已完成维护或 `.4` 发布验证。当前源码的真实业务安装、完整累计矩阵
+和 `.4` Release 尚未验证；后继文档 HEAD 不表示重跑历史验收。
 旧安装的显式升级请求从固定目标 source package 加载该 Skill，不先进入 business Intake；普通 update/reapply 不替代迁移。保留业务定制、无关 dirty/untracked 和合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界不变。
 入口和恢复边界见 [旧安装迁移说明](trellis/presets/guru-team/MIGRATION-495.md)。
 普通 runtime 不提供兼容双读或自动迁移。
@@ -430,8 +449,8 @@ normal-scenario、solution-mechanism 的实际合格结果。根因未知的有�
 授权持久化。安装与升级通过 canonical marketplace/preset，并重新应用 preset；
 定向验证和代表性 clean/update/reapply 不代表完整多平台 Release 矩阵。
 
-## 单 checkout 工具升级与独立旧任务维护（#566 候选）
+## 单 checkout 工具升级与独立旧任务维护（#566）
 
 `guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
 
-正式source lock尚不包含上游#40本地维护候选，source_locked执行须在写入前阻塞；local_candidate仅供隔离开发，不代表正式发布或业务恢复。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](trellis/presets/guru-team/MIGRATION-566.md)。
+当前正式 source lock 已包含上游 #40 与 #43。`source_locked` 仍要求完整匹配、已提交且干净的 Guru 来源及成功的匹配 Fork 构建；来源锁变化不等于目标已升级。历史 `local_candidate` 仅为隔离开发证据，不证明正式来源维护、业务恢复或发布。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](trellis/presets/guru-team/MIGRATION-566.md)。
