@@ -1,6 +1,6 @@
 # #575 S1：正式来源采用需求
 
-本贡献只承接 #575 Stage 1 的来源采用切片。整体 Task 继续拥有工具/任务原生切换、最终 `.4`、全部投影与定向验证；本切片不关闭发布 Issue，不表示整个准备任务完成。当前 RDT `.99/active`、Architecture `.93/active` 作为前驱 authority，本候选未晋升 shared current。
+本贡献只承接 #575 Stage 1 的来源采用切片。整体 Task 继续拥有工具/任务原生切换、最终 `.4`、全部投影与定向验证；本切片不关闭发布 Issue，不表示整个准备任务完成。本贡献以 RDT `.99/active` 为前驱，由原 RDT owner 晋升到 `.100/active`；Architecture 继续继承 `.93/active`。
 
 | Identity | 必须满足的行为 | 设计 / 测试 |
 | --- | --- | --- |

@@ -1,6 +1,8 @@
 # Design SSOT
 
-唯一 current RDT authority 为 `current-main-0.6.17-guru.99/active`；[本版入口](./versions/current-main-0.6.17-guru.99/design-main.md)继承 immutable `.98` 的有效合同并承接 [#569 唯一增量](../requirements-design-test-contributions/569-fixed-cutoff-history-query/traceability.md)，继承 Architecture `.93/active`、ADR-026/028。行为、机制与实际结果由专属文档单写；[唯一 Test](../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)保留 fixture、外部/业务/Release 边界。本次晋升新差额须 fresh gates，不代表软件交付或整体完成。
+唯一 current RDT authority 为 `current-main-0.6.17-guru.100/active`；[本版入口](./versions/current-main-0.6.17-guru.100/design-main.md)完整继承 immutable `.99` 的有效合同并承接 [#575 S1 唯一增量](../requirements-design-test-contributions/575-source-adoption/traceability.md)，继续继承 Architecture `.93/active`。本版只拥有正式来源采用与公开映射；M/S2、最终投影和软件发布仍由原 owners 负责。[唯一 Test](../requirements-design-test-contributions/575-source-adoption/test.md)保留真实验证及未验证边界。晋升新差额须 fresh gates，不表示整个准备任务完成。
+
+历史 `.99` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.99/active`；[本版入口](./versions/current-main-0.6.17-guru.99/design-main.md)继承 immutable `.98` 的有效合同并承接 [#569 唯一增量](../requirements-design-test-contributions/569-fixed-cutoff-history-query/traceability.md)，继承 Architecture `.93/active`、ADR-026/028。行为、机制与实际结果由专属文档单写；[唯一 Test](../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)保留 fixture、外部/业务/Release 边界。本次晋升新差额须 fresh gates，不代表软件交付或整体完成。
 
 历史 `.98` authority：当时 RDT authority 为 `current-main-0.6.17-guru.98/active`；[本版入口](./versions/current-main-0.6.17-guru.98/design-main.md)继承 immutable `.97` 的其余有效合同，并由 [#567 唯一增量](../requirements-design-test-contributions/567-fixed-development-baseline/traceability.md)替代冲突的默认追赶/祖先/整体 stale 片段，继承 Architecture `.92/active` 与 ADR-028。行为、机制和实际结果分别由专属文档单写；[唯一 Test](../requirements-design-test-contributions/567-fixed-development-baseline/test.md)保留首次失败/修复、历史红测及外部/业务/Release边界。本次晋升新差额须 fresh gates，不代表软件交付或整体完成。
 
@@ -32,7 +34,8 @@ Design 只解释实现 ownership 与 contract，不覆盖 Requirements 或 Archi
 
 | 状态 | 版本 | Locator |
 | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.99` | [本版入口](./versions/current-main-0.6.17-guru.99/design-main.md) |
+| `active` | `current-main-0.6.17-guru.100` | [本版入口](./versions/current-main-0.6.17-guru.100/design-main.md) |
+| `superseded` | `current-main-0.6.17-guru.99` | [本版入口](./versions/current-main-0.6.17-guru.99/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.98` | [本版入口](./versions/current-main-0.6.17-guru.98/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.97` | [本版入口](./versions/current-main-0.6.17-guru.97/design-main.md) |
 | `superseded` | `current-main-0.6.17-guru.96` | [本版入口](./versions/current-main-0.6.17-guru.96/design-main.md) |

@@ -16,7 +16,7 @@
 
 下一发布目标为 `.4`。切换工具/所选 Task 后，最终 `.4` extension 和原 maintenance revision assertion 由后续切片同步推进。源码试用的 workflow marketplace 与 preset 必须来自同一真实远端完整 Guru SHA；稳定安装使用同一真实已发布 tag 和该 tag 的 Fork lock。不存在的 `.4` tag 不是 provider。
 
-三份 README 与 public-docs spec 只修订当前来源/发布映射；旧 development pair、旧版本与 #495/#503 的 exact-source 验收保留为历史，不改写成新源证明。知识版本来自四层 READMEs，与软件版本分离；孤立贡献不晋升 shared authority。
+三份 README 与 public-docs spec 只修订当前来源/发布映射；旧 development pair、旧版本与 #495/#503 的 exact-source 验收保留为历史，不改写成新源证明。知识版本来自四层 READMEs，与软件版本分离；孤立贡献不自行晋升 shared authority。
 
 ## D575-S1-03 / CON575-S1-03：独立切片与原 owner
 
@@ -24,4 +24,4 @@
 
 实际后续采用沿 [task-delivery migration](../../../trellis/presets/guru-team/spec/workflow/task-delivery-migration.md) 和 [独立维护边界](../../../trellis/presets/guru-team/MIGRATION-566.md)。原 tools owner 管工具/受管资产，公共维护管 Task/session/binding，原 Publish/Merge 与 private owners 管历史事实和 controls；下一 native consumer 和 Creation 决定实际新 Delivery。这里不新建恢复状态、适配器或 gate。
 
-RDT 本贡献和 task Architecture 候选经过首轮完整 committed 独立 Review 后，才由原 owners 按 expected-current 串行晋升。晋升差额重新 Phase2/commit/完整独立 Review。后续切片使用独立贡献定位，不改写本切片晋升历史。S1 Publication 必须列出剩余义务；整 Task Completion、Closure/Finish 与 release Stage2 各由原 owner 判断。
+RDT 本贡献经过首轮完整 committed 独立 Review 后，才由原 RDT owner 按 expected-current 晋升。Architecture 是否晋升由该阶段原 owner 对实际切片判定；S1 继承现有 `.93`，整体规划的 task-owned Architecture 候选保留其原归属，不作为已晋升的共享贡献。晋升差额重新 Phase2/commit/完整独立 Review。后续切片使用独立贡献定位，不改写本切片晋升历史。S1 Publication 必须列出剩余义务；整 Task Completion、Closure/Finish 与 release Stage2 各由原 owner 判断。
