@@ -96,16 +96,22 @@ class HistoryContext:
         self.temporary = None
         self.fetched: set[str] = set()
         self.required: list[str] = []
+        self.objects = None
 
     def __enter__(self):
         return self
 
     def __exit__(self, *_):
+        if self.objects is not None:
+            self.objects.__exit__()
         if self.temporary is not None:
             self.temporary.cleanup()
 
     def fetch(self, commit: str) -> None:
         if self.temporary is None:
+            if self.objects is not None:
+                self.objects.__exit__()
+                self.objects = None
             self.temporary = tempfile.TemporaryDirectory(prefix="guru-delivery-history-")
             self.root = Path(self.temporary.name)
             git(self.root, "init", "--bare")
@@ -148,12 +154,10 @@ class HistoryContext:
 
     def candidate(self, head: str, paths: list[str]) -> None:
         def readable(root):
-            git(root, "cat-file", "-e", head + "^{commit}")
-            for locator in paths:
-                row = git(root, "ls-tree", head, "--", locator)
-                if row:
-                    blob = row.split("\t", 1)[0].split()[2]
-                    git(root, "cat-file", "-e", blob)
+            from candidate_objects import CandidateObjects
+            if self.objects is None:
+                self.objects = CandidateObjects(root, no_lazy_fetch=True)
+            self.objects.read(head, paths)
         self.prepare(head, readable)
 
 
@@ -309,7 +313,6 @@ def commit_facts(root: Path, sha: str) -> dict[str, Any]:
         )
     return {
         "sha": sha,
-        "message": git(root, "show", "-s", "--format=%B", sha),
         "parents": row[1:],
     }
 
@@ -451,7 +454,7 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
             fact = public_fact["fact"]
             context.candidate(fact["reviewed_head"], fact["candidate"]["paths"])
             try:
-                actual_candidate = commit_candidate(projection, fact, fact["reviewed_head"], git_root=context.root)
+                actual_candidate = commit_candidate(projection, fact, fact["reviewed_head"], git_root=context.root, objects=context.objects)
             except LifecycleContractError as exc:
                 raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
             if actual_candidate != fact["candidate"]:

@@ -1165,11 +1165,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-16T18:22:17Z",
+  "installed_at": "2026-10-16T21:07:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
-    "commit": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
+    "ref": "3676b9ee65834ef3720f2ff5cc0d8330afcea6ed",
+    "commit": "3676b9ee65834ef3720f2ff5cc0d8330afcea6ed",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1421,7 +1421,7 @@
       {
         "id": "guru-merge-task-delivery",
         "interface_sha256": "1bb0a9edc48ee25a0c7c4557290ca821a98a233effdbc428e963ff6893bc4973",
-        "tree_sha256": "09e212583f964e61f446adcbc7780b7b1babc8763d38b5ed1c51a04f57c7d9f3"
+        "tree_sha256": "a35c62e6184f29a50e94f86f003e50bc144211a9496b41ea47229514823375b8"
       },
       {
         "id": "guru-publish-task-delivery",
@@ -10933,6 +10933,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+        "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+        "sha256": "494ff3c3445f1ca489f10b36cd8a63ee435eed9f8346e6ff401f476f287e6c5c",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/check.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/check.py",
         "sha256": "ed29a23f670134d2bb9cee04fcff1e8b642c7fb0c0a17b0ef1a4b4c24e51fbfb",
@@ -10949,7 +10956,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/history.py",
-        "sha256": "e1b82b05ad7e5f92710723435f08f209fff4cd8ded9f39373c22126a342457a7",
+        "sha256": "b221f6fa3725a7e7212fd4bd27c4b8ff4dc281e6262fbd3e3c3b95ed566c2bae",
         "executable": false,
         "action": "installed"
       },
@@ -10970,7 +10977,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
-        "sha256": "a293b7579d3fa56d9d39d134457ba5b7557dbca9da510770a0e61dd3c377434e",
+        "sha256": "8d330dea4071cd5fa6e80319d839de8b49ff1fe4aace58753ed4db236ca9bf3f",
         "executable": false,
         "action": "installed"
       },
