@@ -45,6 +45,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     )
     args = parse(parser, argv)
     repo = root(package_root, args.root)
+    tree_memo = {}
     task_dir = task(repo, args.task)
     public = load(repo, package_root, args.skill_input, "skill_input")
     auth = load(repo, package_root, args.semantic_review_file, "semantic_review_file")
@@ -124,7 +125,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                 "Current reconciled HEAD must contain the reviewed base.",
             ),
             (
-                tree_identity(repo, head) == public["candidate_tree_sha256"],
+                tree_identity(repo, head, tree_memo=tree_memo) == public["candidate_tree_sha256"],
                 "candidate_tree_sha256",
                 "Current committed tree must match the integration candidate.",
             ),
@@ -242,7 +243,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             if key not in {"generated_at", "facts_sha256"}
         }
     )
-    validate_gate(package_root, repo, value)
+    validate_gate(package_root, repo, value, tree_memo=tree_memo)
     _, duplicate = store_checkpoint(repo, task_dir, value)
     return {
         "status": "duplicate" if duplicate else "recorded",

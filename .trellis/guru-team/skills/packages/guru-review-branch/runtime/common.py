@@ -4,6 +4,7 @@ import argparse
 import copy
 import hashlib
 import json
+import re
 import stat
 import subprocess
 import sys
@@ -338,23 +339,43 @@ def content_identity(repo, commit):
         ) from exc
 
 
-def tree_identity(repo, commit):
+def tree_identity(repo, commit, *, tree_memo=None):
+    repository = Path(repo).resolve()
+    commit_key = (repository, "commit-tree", commit)
+    immutable = re.fullmatch(r"[0-9a-f]{40}", commit) is not None
+    if tree_memo is not None and immutable and commit_key in tree_memo:
+        tree = tree_memo[commit_key]
+    else:
+        resolved = subprocess.run(
+            ["git", "rev-parse", "--verify", commit + "^{tree}"],
+            cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        if resolved.returncode:
+            raise CommandError(
+                "stale_identity", "candidate_tree_sha256",
+                resolved.stderr.decode("utf-8", "replace").strip()
+                or "Rebuild the current integration candidate.", 3,
+            )
+        tree = resolved.stdout.strip().decode("ascii")
+    # This memo belongs only to the current caller. The key names this exact
+    # path/content/gitlink byte rule; a Git tree OID is not the returned digest.
+    tree_key = (repository, "path-content-gitlink-sha256-v1", tree)
+    if tree_memo is not None and tree_key in tree_memo:
+        if immutable:
+            tree_memo[commit_key] = tree
+        return tree_memo[tree_key]
     raw = subprocess.run(
-        ["git", "ls-tree", "-r", "-z", "--full-tree", commit],
-        cwd=repo,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        ["git", "ls-tree", "-r", "-z", "--full-tree", tree],
+        cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     if raw.returncode:
         raise CommandError(
-            "stale_identity",
-            "candidate_tree_sha256",
+            "stale_identity", "candidate_tree_sha256",
             raw.stderr.decode("utf-8", "replace").strip()
-            or "Rebuild the current integration candidate.",
-            3,
+            or "Rebuild the current integration candidate.", 3,
         )
     entries = []
-    blobs = []
+    blob_digests = {}
     for entry in raw.stdout.split(b"\0"):
         if not entry:
             continue
@@ -368,76 +389,97 @@ def tree_identity(repo, commit):
         if parts[1] != b"blob":
             continue
         entries.append(("blob", path, parts[2]))
-        blobs.append((path, parts[2]))
-    # Stage the complete request before Git starts producing object contents;
-    # a regular-file stdin avoids mutually blocking writes on two pipes.
-    with tempfile.TemporaryFile() as request:
-        request.write(b"".join(oid + b"\n" for _, oid in blobs))
-        request.seek(0)
-        batch = subprocess.run(
-            ["git", "cat-file", "--batch"],
-            cwd=repo,
-            stdin=request,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-    if batch.returncode:
-        raise CommandError(
-            "stale_identity",
-            "candidate_tree_sha256",
-            batch.stderr.decode("utf-8", "replace").strip()
-            or "Rebuild the current integration candidate.",
-            3,
-        )
-    offset = 0
-    blob_digests = {}
-    for _, expected_oid in blobs:
-        header_end = batch.stdout.find(b"\n", offset)
-        if header_end < 0:
-            raise CommandError(
-                "stale_identity",
-                "candidate_tree_sha256",
-                "Git returned an incomplete candidate tree batch.",
-                3,
-            )
-        header = batch.stdout[offset:header_end].split()
-        if len(header) != 3 or header[0] != expected_oid or header[1] != b"blob":
-            raise CommandError(
-                "stale_identity",
-                "candidate_tree_sha256",
-                "Git returned an invalid candidate tree batch entry.",
-                3,
-            )
-        try:
-            size = int(header[2])
-        except ValueError as exc:
-            raise CommandError(
-                "stale_identity",
-                "candidate_tree_sha256",
-                "Git returned an invalid candidate blob size.",
-                3,
-            ) from exc
-        content_start = header_end + 1
-        content_end = content_start + size
-        if content_end >= len(batch.stdout) or batch.stdout[content_end:content_end + 1] != b"\n":
-            raise CommandError(
-                "stale_identity",
-                "candidate_tree_sha256",
-                "Git returned an incomplete candidate blob.",
-                3,
-            )
-        blob_digests[expected_oid] = hashlib.sha256(
-            batch.stdout[content_start:content_end]
-        ).hexdigest().encode()
-        offset = content_end + 1
+        blob_digests.setdefault(parts[2], None)
+    if blob_digests:
+        # All requests already exist before Git starts. Only stdout is a pipe;
+        # Python never writes into a pipe while waiting for response bytes.
+        with tempfile.TemporaryFile() as request, tempfile.TemporaryFile() as errors:
+            for oid in blob_digests:
+                request.write(oid + b"\n")
+            request.seek(0)
+            with subprocess.Popen(
+                ["git", "cat-file", "--batch", "--buffer"], cwd=repo, stdin=request,
+                stdout=subprocess.PIPE, stderr=errors, bufsize=1024 * 1024,
+            ) as batch:
+                response = batch.stdout
+                parse_error = None
+                try:
+                    try:
+                        for expected_oid in blob_digests:
+                            header = response.readline().split()
+                            if len(header) != 3 or header[:2] != [expected_oid, b"blob"]:
+                                raise CommandError(
+                                    "stale_identity", "candidate_tree_sha256",
+                                    "Git returned a missing or invalid candidate tree batch entry.", 3,
+                                )
+                            if not header[2].isdigit():
+                                raise CommandError(
+                                    "stale_identity", "candidate_tree_sha256",
+                                    "Git returned an invalid candidate blob size.", 3,
+                                )
+                            remaining = int(header[2])
+                            initial_size = min(remaining, 1024 * 1024)
+                            initial = response.read(initial_size)
+                            if len(initial) != initial_size:
+                                raise CommandError(
+                                    "stale_identity", "candidate_tree_sha256",
+                                    "Git returned an incomplete candidate blob.", 3,
+                                )
+                            content = hashlib.sha256(initial)
+                            remaining -= initial_size
+                            while remaining:
+                                chunk = response.read(min(remaining, 1024 * 1024))
+                                if not chunk:
+                                    raise CommandError(
+                                        "stale_identity", "candidate_tree_sha256",
+                                        "Git returned an incomplete candidate blob.", 3,
+                                    )
+                                content.update(chunk)
+                                remaining -= len(chunk)
+                            if response.read(1) != b"\n":
+                                raise CommandError(
+                                    "stale_identity", "candidate_tree_sha256",
+                                    "Git returned an incomplete candidate blob.", 3,
+                                )
+                            blob_digests[expected_oid] = content.hexdigest().encode("ascii")
+                    except CommandError as exc:
+                        parse_error = exc
+                    # The finite request is complete. Drain even after a parser
+                    # error before waiting, preserving Git's own stderr priority.
+                    while response.read(1024 * 1024):
+                        pass
+                except OSError as exc:
+                    response.close()
+                    batch.wait()
+                    raise CommandError(
+                        "stale_identity", "candidate_tree_sha256",
+                        "Read the complete candidate blob response.", 3,
+                    ) from exc
+                batch.wait()
+                if batch.returncode:
+                    errors.seek(0)
+                    raise CommandError(
+                        "stale_identity", "candidate_tree_sha256",
+                        errors.read().decode("utf-8", "replace").strip()
+                        or "Rebuild the current integration candidate.", 3,
+                    )
+                if parse_error is not None:
+                    raise parse_error
+    # These rows contain only paths, content digests and gitlink metadata;
+    # blob contents only pass through the pipe and bounded hash chunks.
     rows = []
     for kind, path, oid in entries:
         identity = b"160000" if kind == "gitlink" else blob_digests[oid]
         rows.append(path + b"\0" + identity + b"\0" + (oid + b"\0" if kind == "gitlink" else b""))
-    return hashlib.sha256(b"".join(rows)).hexdigest()
+    value = hashlib.sha256(b"".join(rows)).hexdigest()
+    if tree_memo is not None:
+        tree_memo[tree_key] = value
+        if immutable:
+            tree_memo[commit_key] = tree
+    return value
 
 
-def validate_gate(package_root, repo, value, expected_exit=None):
+def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=None):
     archived = value.get("profile") == "archived_review"
     if (
         value.get("schema_version") != ("archived-1.0" if archived else "7.0")
@@ -549,7 +591,7 @@ def validate_gate(package_root, repo, value, expected_exit=None):
                 "Bind continuity to the reconciled base contained by current HEAD.",
                 3,
             )
-        if tree_identity(repo, pair["task_head"]) != pair["candidate_tree_sha256"]:
+        if tree_identity(repo, pair["task_head"], tree_memo=tree_memo) != pair["candidate_tree_sha256"]:
             raise CommandError(
                 "stale_identity",
                 "integration_pair.candidate_tree_sha256",

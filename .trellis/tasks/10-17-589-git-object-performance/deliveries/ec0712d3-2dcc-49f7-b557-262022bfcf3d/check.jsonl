@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py", "reason": "真实Git摘要oracle和大树/兼容验证"}
+{"file": "trellis/skills/guru-team/packages/guru-check-task/tests/test_delivery_flow.py", "reason": "原schema2实际整合bounded continuity及当前完整Review消费者"}
