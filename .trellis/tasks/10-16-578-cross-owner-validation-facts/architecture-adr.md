@@ -10,3 +10,5 @@
 保留 ADR-019 的 fresh generic reviewer、读取顺序和下游 eligibility、ADR-028 的固定候选和阶段适用性、原 phase/Skill/exit/公共DTO和 private checkpoint退休。仅替代“本人执行”被解释为无条件命令重跑及 Check same-owner-only 的限制；无新authority存储、cache、ledger或审批链。
 完整安装是采用边界，当前开发Task不热替换。正式编号和 accepted 状态由首次独立完整 committed Review 后的原 promotion owner 选择。实际结果由 RDT 唯一Test拥有，不因本候选文档存在声称实现或发布完成。
 
+
+晋升处置：原 promotion owner 已将上述决定晋升为 [ADR-029](../../../docs/architecture/adr/029-cross-owner-validation-facts.md)，Architecture `.94`；本 task candidate 保留其原 proposed 对象。

@@ -1,6 +1,10 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.93`；状态：`active`；predecessor：`current-main-0.6.17-guru.92`；source baseline：[已晋升 #569 贡献](./contributions/569-fixed-cutoff-history-query.md) + immutable `.92` authority（Git 历史）。constitution、ADR-026/028、GAP lifecycle、原 owners 与软件四轴保持。
+版本：`current-main-0.6.17-guru.94`；状态：`active`；predecessor：`current-main-0.6.17-guru.93`；source baseline：[已晋升 #578 贡献](./contributions/578-cross-owner-validation-facts.md) + immutable `.93` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
+
+当前增量 ARCH-CUR-067 / ARCH-DOM-050 / ARCH-INT-053 与 ADR-029 承接首次独立完整审查的 #578。原 owner 独立当前判断与工程事实采用分离；当前绑定、private 退休与完整安装边界保持。[唯一 Test](../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)单写真实验证和边界。晋升新差额仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview，不表示 Delivery/Completion、软件发布或业务采用。
+
+历史 `.93`：当时版本：`current-main-0.6.17-guru.93`；状态：`active`；predecessor：`current-main-0.6.17-guru.92`；source baseline：[已晋升 #569 贡献](./contributions/569-fixed-cutoff-history-query.md) + immutable `.92` authority（Git 历史）。constitution、ADR-026/028、GAP lifecycle、原 owners 与软件四轴保持。
 
 当前增量 ARCH-CUR-066 / ARCH-DOM-049 / ARCH-INT-052 承接已独立完整审查的 #569。原 history owner 自动准备固定截点所需历史，原 AI consumer 判断适用性；没有新 owner、缓存或 ADR。[唯一 Test](../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)拥有实际结果与未验证边界；本次晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的独立完整 BranchReview。
 
