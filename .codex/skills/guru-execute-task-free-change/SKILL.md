@@ -5,6 +5,10 @@ description: Execute one bounded task-free change through AI-owned checkout suit
 
 # Guru Execute Task-Free Change
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 Invoke this Skill only after `guru-select-workflow-mode:task_free`. The caller
 authors the current request summary, bounded target paths, continuation identity,
 and whether selection was automatic or explicit. The selector contributes only

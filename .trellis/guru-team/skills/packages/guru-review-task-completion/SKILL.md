@@ -5,23 +5,38 @@ description: Review all current task Delivery and evidence facts and select one 
 
 # Guru Review Task Completion
 
-Use this semantic owner after an exact Delivery merge result, or after a
-normally finished task is Reactivated to its next generation and only fresh
-validation is needed, without a new business Delivery. In that case use
-`reactivation_validation` with the current active TaskLifecycleKey, the
-preceding generation's unique committed terminal archive identity, and
-current `reactivation` and `validation` evidence slots. The archive is historical
-context, not a current Completion or Delivery result. Verify it against Git and
-the Reactivate transaction before the AI gate; no old Finish/Cleanup receipt
-proves the new generation complete. Old closeout/restore lineages remain
-pinned-old or require individual manual disposition; they are not current
-standalone inputs. Freshly resolve accepted scope, all historical Delivery
-facts, the selected basis and its current evidence slots. Review remaining
-work before authoring `semantic-result.json`. The wrapper binds the reviewed
-identities and records the AI-owned route; a merge or passing test alone does
-not establish Completion. `completed` requires no remaining work and emits a
-`ResultRefDTO`. Other routes emit `TaskArtifactDTO` and `ReasonDTO`, or only
-`ReasonDTO` for `blocked`.
+Use this semantic owner for Task-wide completion, including Delivery merge,
+withdrawal, evidence-only refresh or Reactivate validation with no current
+Delivery. Current profiles are `delivery_completion`,
+`delivery_evidence_refresh`, and `delivery_reactivation_validation`.
+All consume `task_ref` and public `task_key`; evidence refresh additionally
+consumes the concrete source exit/reason, and Reactivate validation consumes
+its actual preceding archive anchor. Reread current accepted scope and every
+actual Delivery result across generations. The semantic result binds those
+exact scope/fact identities, minimum current evidence and remaining work.
+Do not infer completion from all known Deliveries being terminal: unallocated
+scope, changed acceptance or missing causal evidence remains this owner's
+whole-task judgment. A fresh public `complete_task` writes only the actual
+completed conclusion after the full semantic review. Recover lost output from
+the identical result; do not synthesize another result or require an empty
+Delivery. `completed` emits the existing minimum ResultRef to Closure; other
+continuation exits emit `task_ref`, `task_key`, and the concrete ReasonDTO.
+
+For a manual merge recorded by original Merge, read the actual DeliveryFact
+candidate/head and original Publication separately. Upstream `reviewed_head`
+in the terminal fact identifies actual content; it is not a new Check/Review
+pass. Compare the full published-to-actual and PR delta, including paths beyond
+the original candidate, current accepted authority, actual CI/reviews and
+scope-required evidence. Old gate applicability against the original candidate
+alone cannot establish that the actual head was reviewed. Reuse still-applicable
+same/equivalent evidence; changed content returns through affected original
+owners. Required evidence gaps select `evidence_pending`, actual unfinished
+work selects its applicable remaining/revision route, and changed authority
+selects `requirements_revision_required`. Non-required CI does not add scope.
+Pending/cancelled/missing/failed remains its real state even when MERGED is
+reliable. Never demand another merge, invent pass, or infer `completed` from
+the recovered fact. Public aggregate facts remain readable without trailers;
+history discovery is not a Completion prerequisite.
 
 Consume the actual current Architecture
 `task_impact_sync(stage=acceptance_finish)` result before completion. That
@@ -71,16 +86,10 @@ fields. Preserve the active task; do not archive, create a replacement task,
 force dangerous replay or request business production access.
 
 `evidence_pending` has exactly the existing `evidence_refresh` consumer.
-With no new evidence, wait for that condition instead of immediately invoking
-another review. On arrival, reread applicable authority, whole scope and current
-evidence: Delivery-based refresh retains the exact same-generation
-`merge_result`; Reactivate-only refresh retains the current
-`reactivation_anchor` and this generation's evidence. Historical merge,
-Completion or Finish does not substitute for that anchor or new evidence.
-Keep Delivery slots `planning`, `delivery_review`, `delivery_publication`
-and Reactivate slots `reactivation`, `validation` unchanged; read production
-facts from their existing source and bind the current evidence identity using
-existing fields, without a production/global causal slot.
+With no new evidence, wait for its acquisition condition. On arrival, reread
+current scope and all actual Delivery facts. Historical Completion/Finish never
+substitutes for fresh evidence. The refresh profile does not require a current
+Delivery or reuse an old merge DTO as current approval.
 
 After merge/deploy, new facts may require `requirements_revision_required`,
 `implementation_revision_required` or `additional_delivery_required` in the
@@ -95,12 +104,30 @@ scripts/invoke.sh --input <completion-input.json> \
   --semantic-result <semantic-result.json> --json
 ```
 
-Only `completed` projects to Closure. All other exits preserve the active task
-and route to their declared owner. `evidence_pending` on the Reactivate-only
-path re-enters `evidence_refresh` with `reactivation_anchor`, not `merge_result`;
-author the same current-generation identity and fresh evidence using
-`examples/reactivation-evidence-refresh-authoring.json`. Delivery-based
-`evidence_refresh` retains its exact same-generation merge result.
+Only `completed` projects to Closure. All other exits preserve the Task and
+route to their declared owner. Evidence-only recovery preserves Task identity,
+while implementation/new business work uses a genuine same/new Delivery.
+Completion, Closure, Finish archive persistence and Cleanup are distinct facts.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Bounded history consumption
+
+Read all current Task/generation scope and actual Delivery/evidence facts. A
+history result proves only its explicit cutoff; later unrelated Task or
+bookkeeping commits do not require a requery, integration or business gate
+refresh. If this Task has a new Delivery or changed required evidence, obtain
+only missing facts and rejudge affected Completion conclusions. Never use the
+old cutoff to claim current completeness. When history is actually needed,
+call the original Merge `discover-task-deliveries` owner with query1 (historical
+trailer-only callers) or query2 (public recorded facts). Consume its result3.0
+`task_identity`, `repo_ref`, `base_ref`, `cutoff_commit` and `deliveries` with
+the explicit query context; no producer-private state is needed. Preparation
+belongs to that owner and never requires a caller fetch or Task integration.
+On lost output, reenter the original query and read its newly explicit cutoff;
+do not infer an unobserved former cutoff. Obtain a bounded new result only for
+known missing same-Task facts/evidence, then rejudge affected conclusions. No
+remote SHA equality qualifies Completion, and history is not a new mandatory
+prerequisite when public Task facts already suffice. Adopt the matching
+result/consumer combination described in MIGRATION-569.

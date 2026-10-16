@@ -161,30 +161,38 @@
           "repeatable": false,
           "conflicts": [
             "--invocation",
-            "--committed-reentry"
+            "--input"
           ]
         },
         {
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Compatibility-only call-local invocation envelope or dash for stdin.",
+          "description": "Retired legacy envelope, rejected with schema_mismatch; use current Delivery input.",
           "repeatable": false,
           "conflicts": [
             "--candidate-artifact",
-            "--committed-reentry"
+            "--input"
           ]
         },
         {
-          "flag": "--committed-reentry",
+          "flag": "--input",
           "required": false,
           "kind": "json",
-          "description": "Read-only committed_reentry public_input/owner_result envelope; dash for stdin only.",
+          "description": "Current Delivery commit input.",
           "repeatable": false,
           "conflicts": [
-            "--candidate-artifact",
-            "--invocation"
+            "--invocation",
+            "--candidate-artifact"
           ]
+        },
+        {
+          "flag": "--owner-result",
+          "required": false,
+          "kind": "json",
+          "description": "Completed semantic commit review.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
       "stdin": "optional_json",
@@ -200,11 +208,64 @@
       ],
       "side_effect": "git_write",
       "schema_bindings": [
-        "schemas/happy-path-result.schema.json",
-        "schemas/committed-reentry-envelope.schema.json"
+        "schemas/delivery-commit-result-1.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
+    },
+    {
+      "id": "migrate-task-commit-planning-source",
+      "owner": "guru-create-task-commit",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Owner-local migration argument.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "string",
+          "description": "Original owner reviewed source migration input.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--owner-result",
+          "required": true,
+          "kind": "string",
+          "description": "Owner-local migration argument.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--preview",
+          "required": false,
+          "kind": "boolean",
+          "description": "Read-only exact private migration write-set preview.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "none",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "runtime_write",
+      "schema_bindings": [],
+      "validator_id": "planning_source_migration",
+      "runtime_role": "record"
     }
   ]
 }

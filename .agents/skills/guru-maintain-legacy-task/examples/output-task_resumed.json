@@ -1,0 +1,6 @@
+{
+  "exit_id": "task_resumed",
+  "task_id": "legacy-task",
+  "lifecycle_generation": 0,
+  "task_ref": ".trellis/tasks/legacy-task"
+}

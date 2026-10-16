@@ -109,6 +109,26 @@
     {
       "id": "public_invocation_error",
       "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "delivery_resume_current_task_input",
+      "path": "schemas/public-delivery-resume-current-task-input.schema.json"
+    },
+    {
+      "id": "delivery_rebind_missing_session_input",
+      "path": "schemas/public-delivery-rebind-missing-session-input.schema.json"
+    },
+    {
+      "id": "delivery_switch_task_input",
+      "path": "schemas/public-delivery-switch-task-input.schema.json"
+    },
+    {
+      "id": "delivery_reactivate_rebind_input",
+      "path": "schemas/public-delivery-reactivate-rebind-input.schema.json"
+    },
+    {
+      "id": "delivery_manual_recovery_input",
+      "path": "schemas/public-delivery-manual-recovery-input.schema.json"
     }
   ],
   "validators": [
@@ -215,15 +235,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-bind-task-session-input-2.0",
+        "schema_id": "guru-bind-task-session-input-delivery-1.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
-          "id": "resume_current_task",
+          "id": "delivery_resume_current_task",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-2.0",
-            "path": "schemas/public-input.schema.json"
+            "schema_id": "guru-bind-task-session-input-delivery-resume-current-task-1.0",
+            "path": "schemas/public-delivery-resume-current-task-input.schema.json"
           },
           "example": {
             "id": "input_resume_current_task",
@@ -231,14 +251,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "resume_current_task"
+            "value": "delivery_resume_current_task"
           }
         },
         {
-          "id": "rebind_missing_session",
+          "id": "delivery_rebind_missing_session",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-2.0",
-            "path": "schemas/public-input.schema.json"
+            "schema_id": "guru-bind-task-session-input-delivery-rebind-missing-session-1.0",
+            "path": "schemas/public-delivery-rebind-missing-session-input.schema.json"
           },
           "example": {
             "id": "input_rebind_missing_session",
@@ -246,14 +266,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "rebind_missing_session"
+            "value": "delivery_rebind_missing_session"
           }
         },
         {
-          "id": "switch_task",
+          "id": "delivery_switch_task",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-2.0",
-            "path": "schemas/public-input.schema.json"
+            "schema_id": "guru-bind-task-session-input-delivery-switch-task-1.0",
+            "path": "schemas/public-delivery-switch-task-input.schema.json"
           },
           "example": {
             "id": "input_switch_task",
@@ -261,14 +281,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "switch_task"
+            "value": "delivery_switch_task"
           }
         },
         {
-          "id": "reactivate_rebind",
+          "id": "delivery_reactivate_rebind",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-2.0",
-            "path": "schemas/public-input.schema.json"
+            "schema_id": "guru-bind-task-session-input-delivery-reactivate-rebind-1.0",
+            "path": "schemas/public-delivery-reactivate-rebind-input.schema.json"
           },
           "example": {
             "id": "input_reactivate_rebind",
@@ -276,14 +296,14 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "reactivate_rebind"
+            "value": "delivery_reactivate_rebind"
           }
         },
         {
-          "id": "manual_recovery",
+          "id": "delivery_manual_recovery",
           "schema": {
-            "schema_id": "guru-bind-task-session-input-2.0",
-            "path": "schemas/public-input.schema.json"
+            "schema_id": "guru-bind-task-session-input-delivery-manual-recovery-1.0",
+            "path": "schemas/public-delivery-manual-recovery-input.schema.json"
           },
           "example": {
             "id": "input_manual_recovery",
@@ -291,7 +311,7 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "manual_recovery"
+            "value": "delivery_manual_recovery"
           }
         }
       ]
@@ -301,7 +321,7 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "rebind_missing_session"
+        "profile_id": "delivery_rebind_missing_session"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -400,7 +420,9 @@
           "id": "public_explicit_output",
           "path": "examples/public-explicit-output.json"
         },
-        "consumer_use_ids": ["explicit_task_mode"]
+        "consumer_use_ids": [
+          "explicit_task_mode"
+        ]
       },
       {
         "exit_id": "binding_blocked",
@@ -485,7 +507,10 @@
       },
       {
         "id": "explicit_task_mode",
-        "consumer": {"kind": "workflow", "id": "guru-current-phase-router"},
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-current-phase-router"
+        },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",

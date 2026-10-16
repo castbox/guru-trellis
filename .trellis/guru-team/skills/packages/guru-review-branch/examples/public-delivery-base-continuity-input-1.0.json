@@ -1,0 +1,21 @@
+{
+  "profile": "delivery_base_continuity",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/08-13-example",
+  "task_head": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "branch_review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "old_base_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "new_base_head": "cccccccccccccccccccccccccccccccccccccccc",
+  "candidate_tree_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "relevant_paths": [
+    "trellis/workflows/guru-team/workflow.md"
+  ],
+  "resume_target": "publication_review",
+  "review_intent": "base_continuity",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "check_result_id": "result:example"
+}

@@ -647,6 +647,36 @@ def intake_projection_assets(interface: dict[str, Any]) -> set[Path]:
     return assets
 
 
+def schema_projection_closure(package: Path, assets: set[Path]) -> set[Path]:
+    """Include actual local schema dependencies of the selected public contracts."""
+    result = set(assets)
+    pending = [path for path in assets if path.parts[0] == "schemas" and path.suffix == ".json"]
+
+    def references(value):
+        if isinstance(value, dict):
+            if isinstance(value.get("$ref"), str):
+                yield value["$ref"]
+            for child in value.values():
+                yield from references(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from references(child)
+
+    while pending:
+        relative = pending.pop()
+        for ref in references(json.loads((package / relative).read_text())):
+            locator = ref.split("#", 1)[0]
+            if not locator:
+                continue
+            dependency = (package / relative.parent / locator).resolve().relative_to(package.resolve())
+            if dependency.parts[0] != "schemas" or not (package / dependency).is_file():
+                raise ValueError(f"Selected public schema dependency is unavailable: {ref}")
+            if dependency not in result:
+                result.add(dependency)
+                pending.append(dependency)
+    return result
+
+
 def intake_read_inventory(projection: Path, repository: Path, evidence: list[Path]) -> dict[str, list[str]]:
     from adapters.eval.intake_authoring import INTAKE_SKILLS
 
@@ -654,7 +684,7 @@ def intake_read_inventory(projection: Path, repository: Path, evidence: list[Pat
     for skill in INTAKE_SKILLS:
         package = projection if skill == INTAKE_SKILLS[-1] else projection / "flow-packages" / skill
         interface = json.loads((package / "interface.json").read_text())
-        contracts.update(package / path for path in intake_projection_assets(interface) | public_projection_shared_assets(interface))
+        contracts.update(package / path for path in schema_projection_closure(package, intake_projection_assets(interface)) | public_projection_shared_assets(interface))
     return {
         "skill_contract": sorted(str(path) for path in contracts),
         "owner_file": sorted(str(repository / path) for path in intake_repository_assets(repository)),
@@ -735,13 +765,14 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
     if request.get("native_execution_mode") == "semantic_authoring" and not intake_flow:
         public_assets.add(Path("references/contract.md"))
         if request["skill_id"] == "guru-maintain-architecture-baseline":
-            from adapters.eval.architecture_authoring import contract_paths
+            from adapters.eval.architecture_authoring import public_contract_reads
             from adapters.eval.fixture_io import public_input_path
 
             public = json.loads(public_input_path(request).read_text())
-            public_assets.update(Path(path) for path in contract_paths(public))
+            public_assets.update(path.relative_to(canonical_root) for path in public_contract_reads(canonical_root, public))
         else:
             public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
+    public_assets = schema_projection_closure(canonical_root, public_assets)
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):
         source = canonical_root / relative
         if source.is_symlink() or not source.is_file():

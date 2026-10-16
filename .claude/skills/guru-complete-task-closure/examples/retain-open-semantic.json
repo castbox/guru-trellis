@@ -1,0 +1,16 @@
+{
+  "profile": "completion_approved",
+  "mode": "workflow",
+  "reviewed_action_set": [
+    {
+      "issue_ref": {
+        "repo_ref": "castbox/guru-trellis",
+        "issue_number": 436
+      },
+      "disposition": "retain_open"
+    }
+  ],
+  "route": {
+    "typed_exit": "apply"
+  }
+}

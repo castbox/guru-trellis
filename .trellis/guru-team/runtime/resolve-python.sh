@@ -50,6 +50,10 @@ elif [[ -f "$REPO_ROOT/.git" && ! -L "$REPO_ROOT/.git" ]]; then
   fi
 fi
 
+LOCAL_STATE_ROOT="$REPO_ROOT/.trellis/.runtime/guru-team/python"
+if [[ -e "$LOCAL_STATE_ROOT/active.json" || -L "$LOCAL_STATE_ROOT/active.json" ]]; then
+  STATE_ROOT="$LOCAL_STATE_ROOT"
+fi
 ACTIVE="$STATE_ROOT/active.json"
 [[ -f "$ACTIVE" && ! -L "$ACTIVE" ]] || runtime_error runtime_not_bootstrapped python-runtime
 ACTIVE_LINE="$(tr -d '\n\r' < "$ACTIVE")"

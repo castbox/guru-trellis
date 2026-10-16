@@ -1,8 +1,0 @@
-{
-  "exit_id": "content_changed",
-  "profile": "planning_artifacts",
-  "task_ref": ".trellis/tasks/10-11-sample-planning",
-  "change_refs": [
-    ".trellis/tasks/10-11-sample-planning/design.md"
-  ]
-}

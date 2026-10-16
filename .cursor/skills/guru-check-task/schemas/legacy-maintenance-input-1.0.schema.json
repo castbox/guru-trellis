@@ -1,0 +1,21 @@
+{
+  "$id": "guru-check-task-input-legacy-maintenance-1.0",
+  "oneOf": [
+    {
+      "$ref": "legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_freeze-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_restore_check-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_control_restore-input-1.0.schema.json"
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

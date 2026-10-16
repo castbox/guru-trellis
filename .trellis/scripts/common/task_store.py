@@ -43,7 +43,7 @@ from .git import (
     stderr_indicates_index_lock,
 )
 from .path_boundary import require_project_path
-from .io import describe_json_read_failure, read_json_checked, write_json
+from .io import describe_json_read_failure, read_json_checked, write_json, write_text_atomic
 from .log import Colors, colored
 from .paths import (
     DIR_ARCHIVE,
@@ -310,10 +310,21 @@ def _parse_create_source(raw: str | None) -> dict | None:
     return None
 
 
-def _default_prd_content(title: str, description: str | None = None) -> str:
+def _default_prd_content(title: str, description: str | None = None, *, delivery_workflow: bool = False) -> str:
     """Return the default PRD skeleton created with every task."""
     goal = (description or "").strip() or "TBD."
     heading = title.strip() or "Untitled task"
+    notes = (
+        "- This root `prd.md` defines whole-Task requirements, constraints and acceptance criteria.\n"
+        "- The active workflow's declared Task-scope owner judges accepted scope; creation supplies no acceptance.\n"
+        "- Create and select the exact Delivery before its Planning call through the active workflow's declared owners.\n"
+        "- Delivery `prd.md`, `design.md`, `implement.md` and context manifests belong under that Delivery's `planning_root`.\n"
+        "- `task.py start` only binds Task selection to the session; it does not start implementation or create a Delivery.\n"
+        if delivery_workflow else
+        "- Keep `prd.md` focused on requirements, constraints, and acceptance criteria.\n"
+        "- Lightweight tasks can remain PRD-only.\n"
+        "- For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.\n"
+    )
     return f"""# {heading}
 
 ## Goal
@@ -330,10 +341,7 @@ def _default_prd_content(title: str, description: str | None = None) -> str:
 
 ## Notes
 
-- Keep `prd.md` focused on requirements, constraints, and acceptance criteria.
-- Lightweight tasks can remain PRD-only.
-- For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.
-"""
+{notes}"""
 
 
 # =============================================================================
@@ -343,6 +351,29 @@ def _default_prd_content(title: str, description: str | None = None) -> str:
 def cmd_create(args: argparse.Namespace) -> int:
     """Create a new task."""
     repo_root = get_repo_root()
+
+    selected_schema = getattr(args, "schema_version", None)
+    workflow = repo_root / DIR_WORKFLOW / "workflow.md"
+    require_project_path(workflow, repo_root)
+    declared_v2 = False
+    from .runtime_contract import RuntimeContractError, read_runtime_contract
+    try:
+        # Missing workflow is an undeclared compatibility installation. A
+        # dangling entry, unreadable file or malformed declaration is not.
+        if workflow.exists() or workflow.is_symlink():
+            read_runtime_contract(workflow)
+            declared_v2 = True
+    except RuntimeContractError as exc:
+        if exc.code != "missing_runtime_contract":
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+    if selected_schema == "2.0" and not declared_v2:
+        print("Error: missing_runtime_contract: schema 2.0 requires a matching installed declaration", file=sys.stderr)
+        return 1
+    if selected_schema == "legacy" and declared_v2:
+        print("Error: incompatible_task_schema: installed Delivery workflow requires schema 2.0", file=sys.stderr)
+        return 1
+    is_v2 = declared_v2
 
     # Title and description are checked first, before ensure_tasks_dir and any
     # other write, so a rejected create leaves the tree untouched. Both are
@@ -580,6 +611,10 @@ def cmd_create(args: argparse.Namespace) -> int:
         "notes": "",
         "meta": meta,
     }
+    if is_v2:
+        for field_name in ("status", "completedAt", "commit", "pr_url"):
+            task_data.pop(field_name)
+        task_data.update(schema_version="2.0", accepted_scope=None, deliveries=[], completion_results=[], closure_results=[])
 
     # A directory without task.json is not a task: `list` hides it and every
     # lifecycle command refuses it. Fail here rather than printing "Created
@@ -599,7 +634,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     prd_path = task_dir / "prd.md"
     if not prd_path.exists():
         prd_path.write_text(
-            _default_prd_content(args.title, description),
+            _default_prd_content(args.title, description, delivery_workflow=is_v2),
             encoding="utf-8",
         )
 
@@ -611,7 +646,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     # (Kilo / Antigravity / Devin) skip this — they load specs via the
     # trellis-before-dev skill instead of JSONL.
     created_jsonl = False
-    if _has_subagent_platform(repo_root):
+    if not is_v2 and _has_subagent_platform(repo_root):
         for jsonl_name in ("implement.jsonl", "check.jsonl"):
             jsonl_path = task_dir / jsonl_name
             if not jsonl_path.exists():
@@ -651,15 +686,16 @@ def cmd_create(args: argparse.Namespace) -> int:
 
         print(colored(f"Linked as child of: {parent_dir.name}", Colors.GREEN), file=sys.stderr)
 
-    # Auto-activate the new task so the per-turn breadcrumb fires planning
-    # state. Best-effort: gracefully degrade if no session identity (CLI run
+    # Bind Task selection only; schema-2 selection never starts execution or
+    # creates a Delivery. Best-effort: degrade if no session identity (CLI run
     # outside an AI session) — the task is still created, the user can run
     # task.py start later. Pointer is session-scoped so this never affects
     # other AI sessions.
+    session_action = "selection" if is_v2 else "activation"
     if getattr(args, "no_start", False):
         print(
             colored(
-                "Skipped session activation (--no-start); run task.py start when ready.",
+                f"Skipped session {session_action} (--no-start); run task.py start when ready.",
                 Colors.YELLOW,
             ),
             file=sys.stderr,
@@ -669,7 +705,7 @@ def cmd_create(args: argparse.Namespace) -> int:
             from .active_task import resolve_context_key, set_active_task
         except Exception as exc:
             print(
-                colored(f"Warning: session activation unavailable (import failed: {exc})", Colors.YELLOW),
+                colored(f"Warning: session {session_action} unavailable (import failed: {exc})", Colors.YELLOW),
                 file=sys.stderr,
             )
         else:
@@ -677,7 +713,7 @@ def cmd_create(args: argparse.Namespace) -> int:
                 context_key = resolve_context_key()
             except Exception as exc:
                 print(
-                    colored(f"Warning: session activation failed (context resolution: {exc})", Colors.YELLOW),
+                    colored(f"Warning: session {session_action} failed (context resolution: {exc})", Colors.YELLOW),
                     file=sys.stderr,
                 )
             else:
@@ -692,28 +728,34 @@ def cmd_create(args: argparse.Namespace) -> int:
                         active = set_active_task(rel_dir, repo_root)
                     except Exception as exc:
                         print(
-                            colored(f"Warning: session activation failed (pointer persistence: {exc})", Colors.YELLOW),
+                            colored(f"Warning: session {session_action} failed (pointer persistence: {exc})", Colors.YELLOW),
                             file=sys.stderr,
                         )
                     else:
                         if active:
                             print(
-                                colored(f"Activated task for this session: {active.task_path}", Colors.GREEN),
+                                colored(f"{'Selected' if is_v2 else 'Activated'} task for this session: {active.task_path}", Colors.GREEN),
                                 file=sys.stderr,
                             )
                             print(f"Source: {active.source}", file=sys.stderr)
                         else:
                             print(
-                                colored("Warning: session activation failed (no pointer returned)", Colors.YELLOW),
+                                colored(f"Warning: session {session_action} failed (no pointer returned)", Colors.YELLOW),
                                 file=sys.stderr,
                             )
 
     print(colored(f"Created task: {dir_name}", Colors.GREEN), file=sys.stderr)
     print("", file=sys.stderr)
     print(colored("Next steps:", Colors.BLUE), file=sys.stderr)
-    print("  - Fill prd.md with requirements and acceptance criteria", file=sys.stderr)
-    print("  - Lightweight task: PRD-only is valid", file=sys.stderr)
-    print("  - Complex task: add design.md and implement.md before task.py start", file=sys.stderr)
+    if is_v2:
+        print("  - Fill root prd.md with whole-Task requirements and acceptance criteria", file=sys.stderr)
+        print("  - Follow the active workflow's declared Task-scope and Delivery creation/Planning owners", file=sys.stderr)
+        print("  - Create/select the exact Delivery before Planning; place its artifacts and context manifests under its planning_root", file=sys.stderr)
+        print("  - task.py start binds Task selection only; it does not start implementation or create a Delivery", file=sys.stderr)
+    else:
+        print("  - Fill prd.md with requirements and acceptance criteria", file=sys.stderr)
+        print("  - Lightweight task: PRD-only is valid", file=sys.stderr)
+        print("  - Complex task: add design.md and implement.md before task.py start", file=sys.stderr)
     if created_jsonl:
         print(
             "  - Curate implement.jsonl / check.jsonl (created empty) as spec/research "
@@ -845,30 +887,8 @@ def _plan_jsonl_rewrites(
     Matching on ``<old path>/`` rather than the bare path keeps a sibling task
     whose name merely starts with this one's out of the rewrite.
     """
-    rewrites: list[tuple[Path, list[int], str]] = []
-    needle = f"{old_rel}/"
-    replacement = f"{new_rel}/"
-
-    for jsonl_name in _JSONL_NAMES:
-        require_project_path(task_dir / jsonl_name, repo_root)
-    for jsonl_name in _JSONL_NAMES:
-        jsonl_path = task_dir / jsonl_name
-        if not jsonl_path.is_file():
-            continue
-        try:
-            lines = jsonl_path.read_text(encoding="utf-8").splitlines(keepends=True)
-        except (OSError, UnicodeDecodeError):
-            continue
-
-        changed: list[int] = []
-        for index, line in enumerate(lines):
-            if needle in line:
-                lines[index] = line.replace(needle, replacement)
-                changed.append(index + 1)
-        if changed:
-            rewrites.append((jsonl_path, changed, "".join(lines)))
-
-    return rewrites
+    from .task_artifacts import manifest_relocations
+    return manifest_relocations(task_dir, repo_root, new_rel)
 
 
 def _plan_backrefs(
@@ -1036,7 +1056,8 @@ def _apply_rename(plan: _RenamePlan, repo_root: Path) -> int:
 
     for jsonl_path, _linenos, text in plan.jsonl:
         try:
-            jsonl_path.write_text(text, encoding="utf-8")
+            if not write_text_atomic(jsonl_path, text, mode=jsonl_path.stat().st_mode & 0o777):
+                raise OSError(f"Failed to write {jsonl_path}")
         except OSError as exc:
             print(
                 colored(f"Error: Failed to write {jsonl_path}: {exc}", Colors.RED),
@@ -1052,8 +1073,9 @@ def _apply_rename(plan: _RenamePlan, repo_root: Path) -> int:
             return 1
 
     try:
-        plan.task_dir.rename(plan.new_dir)
-    except OSError as exc:
+        from .task_artifacts import relocate_task_directory
+        relocate_task_directory(plan.task_dir, plan.new_dir, repo_root)
+    except (OSError, ValueError) as exc:
         print(
             colored(f"Error: Failed to move {plan.old_rel} -> {plan.new_rel}: {exc}", Colors.RED),
             file=sys.stderr,
@@ -1224,6 +1246,23 @@ def cmd_archive(args: argparse.Namespace) -> int:
         return 1
 
     from .task_utils import resolve_lifecycle_target
+    # Inspect the supplied leaf before the resolver canonicalizes an active alias.
+    normalized = task_name.replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    if normalized.startswith("tasks/"):
+        normalized = ".trellis/" + normalized
+    supplied = Path(normalized)
+    if supplied.is_absolute():
+        leaves = [supplied]
+    elif "/" in normalized:
+        leaves = [repo_root / supplied]
+    else:
+        leaves = [p for p in get_tasks_dir(repo_root).iterdir()
+                  if p.name == normalized or p.name.endswith("-" + normalized)] if get_tasks_dir(repo_root).is_dir() else []
+    if any(leaf.is_symlink() for leaf in leaves):
+        print("Error: invalid_locator: cannot archive a Task-leaf symlink", file=sys.stderr)
+        return 1
     target = resolve_lifecycle_target(task_name, repo_root, use_active=True)
     if target is None:
         print(f"Error: refusing to archive '{task_name}': task authority could not be validated", file=sys.stderr)
@@ -1265,6 +1304,20 @@ def cmd_archive(args: argparse.Namespace) -> int:
         _report_read_failure(task_json_path, read_reason)
         print("The task was not archived.", file=sys.stderr)
         return 1
+    from .runtime_contract import require_task_runtime
+    try:
+        require_task_runtime(repo_root, task_data)
+    except ValueError as exc:
+        print(f"Error: {exc}; the task was not modified or archived", file=sys.stderr)
+        return 1
+    is_v2 = task_data.get("schema_version") == "2.0"
+    if is_v2:
+        generation = task_data["lifecycle_generation"]
+        completions = [r for r in task_data["completion_results"] if r["lifecycle_generation"] == generation and r["accepted_scope"] == task_data["accepted_scope"]]
+        closure = any(r["lifecycle_generation"] == generation and any(c["result_id"] == r["completion_result_id"] for c in completions) for r in task_data["closure_results"])
+        if not completions or not closure or any(d["phase"] not in ("delivered", "stopped") for d in task_data["deliveries"]):
+            print("Error: completion_and_closure_required: archive cannot manufacture Task completion", file=sys.stderr)
+            return 1
     try:
         identity = task_identity_from_data(task_data, task_json_path)
         require_unique_task_id(
@@ -1291,6 +1344,14 @@ def cmd_archive(args: argparse.Namespace) -> int:
         print("Move or rename the existing archived task, then retry.", file=sys.stderr)
         return 1
 
+    if is_v2:
+        from .task_artifacts import manifest_relocations
+        try:
+            manifest_relocations(task_dir, repo_root, archive_dest_check.relative_to(repo_root).as_posix())
+        except (ValueError, OSError) as exc:
+            print(f"Error: {exc}; the task was not modified or archived", file=sys.stderr)
+            return 1
+
     from .active_task import clear_task_from_sessions, task_session_records
     try:
         archive_session_records = task_session_records(
@@ -1310,8 +1371,9 @@ def cmd_archive(args: argparse.Namespace) -> int:
     if task_json_path.is_file():
         data = task_data
         if data is not None:
-            data["status"] = "completed"
-            data["completedAt"] = today
+            if not is_v2:
+                data["status"] = "completed"
+                data["completedAt"] = today
             if not write_json(task_json_path, data):
                 _report_write_failure(task_json_path)
                 print(

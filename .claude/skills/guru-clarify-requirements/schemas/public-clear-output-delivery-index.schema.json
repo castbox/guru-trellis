@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-output-clear-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-clear-output-3.0.schema.json"
+    }
+  ]
+}

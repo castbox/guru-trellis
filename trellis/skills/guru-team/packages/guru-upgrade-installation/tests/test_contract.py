@@ -341,11 +341,22 @@ class MigrationContractTests(unittest.TestCase):
                 self.assertEqual(rollback(root, recovery, checkpoint), {"exit_id": "blocked", "reason": "business_work_since_migration"})
                 self.assertEqual(path.read_text(), "normal new work during pause\n")
 
+    def test_delivery_upgraded_result_matches_source_and_public_consumer(self):
+        from delivery_upgrade import upgraded
+        result = upgraded({"plan": {"dependency_mode": "local_candidate"}},
+                          Path("12345678-1234-1234-1234-123456789abc"))
+        source = source_root(PACKAGE)
+        manifest = json.loads((source / "trellis/guru-team-extension.json").read_text())
+        self.assertEqual(result["installed_version"], manifest["version"])
+        schema = json.loads((PACKAGE / "schemas/public-upgraded-output.schema.json").read_text())
+        Draft202012Validator(schema).validate(result)
+        self.assertEqual(result["unverified"], ["formal_fork_source_lock"])
+
     def test_formal_source_requires_committed_clean_canonical_candidate(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.fixture(root)
-            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.3"})
+            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.4"})
             skill = root / "trellis/skills/guru-team/packages/guru-upgrade-installation/SKILL.md"
             skill.parent.mkdir(parents=True)
             skill.write_text("candidate source\n")
@@ -365,7 +376,7 @@ class MigrationContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.fixture(root)
-            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.3"})
+            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.4"})
             subprocess.run(["git", "add", "trellis"], cwd=root, check=True, capture_output=True)
             subprocess.run(["git", "commit", "-qm", "version"], cwd=root, check=True, capture_output=True)
             skill = root / "trellis/skills/guru-team/packages/guru-upgrade-installation/SKILL.md"

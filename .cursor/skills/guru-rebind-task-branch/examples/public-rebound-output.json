@@ -1,1 +1,5 @@
-{"exit_id":"rebound","task_id":"demo","lifecycle_generation":0}
+{
+  "exit_id": "rebound",
+  "task_id": "demo",
+  "lifecycle_generation": 0
+}

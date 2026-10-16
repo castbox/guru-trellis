@@ -119,6 +119,14 @@
     {
       "id": "public_output_content_changed_example_2_0",
       "path": "examples/public-content-changed-output-2.0.json"
+    },
+    {
+      "id": "delivery_planning_artifacts_input",
+      "path": "examples/public-delivery-planning-artifacts-input.json"
+    },
+    {
+      "id": "delivery_content_changed_output",
+      "path": "examples/public-delivery-content-changed-output.json"
     }
   ],
   "schemas": [
@@ -169,6 +177,42 @@
     {
       "id": "public_output_content_changed_2_0",
       "path": "schemas/public-content-changed-output-2.0.schema.json"
+    },
+    {
+      "id": "delivery_planning_artifacts_input",
+      "path": "schemas/public-delivery-planning-artifacts-input.schema.json"
+    },
+    {
+      "id": "change_request_review_invocation",
+      "path": "schemas/change-request-review-invocation.schema.json"
+    },
+    {
+      "id": "delivery_review_invocation",
+      "path": "schemas/delivery-review-invocation.schema.json"
+    },
+    {
+      "id": "delivery_pass_output",
+      "path": "schemas/public-delivery-pass-output.schema.json"
+    },
+    {
+      "id": "nonplanning_pass_output",
+      "path": "schemas/legacy-nonplanning-pass-output.schema.json"
+    },
+    {
+      "id": "delivery_content_changed_output",
+      "path": "schemas/public-delivery-content-changed-output.schema.json"
+    },
+    {
+      "id": "nonplanning_content_changed_output",
+      "path": "schemas/legacy-nonplanning-content-changed-output.schema.json"
+    },
+    {
+      "id": "delivery_index_pass_output",
+      "path": "schemas/public-pass-output-delivery-index-1.0.schema.json"
+    },
+    {
+      "id": "delivery_index_content_changed_output",
+      "path": "schemas/public-content-changed-output-delivery-index-1.0.schema.json"
     }
   ],
   "validators": [
@@ -276,18 +320,18 @@
           }
         },
         {
-          "id": "planning_artifacts",
+          "id": "delivery_planning_artifacts",
           "schema": {
-            "schema_id": "guru-stage0-review-contract-wording-input-planning-artifacts-1.0",
-            "path": "schemas/public-planning-artifacts-input.schema.json"
+            "schema_id": "guru-review-contract-wording-input-delivery-planning-artifacts-1.0",
+            "path": "schemas/public-delivery-planning-artifacts-input.schema.json"
           },
           "example": {
-            "id": "planning_artifacts_input",
-            "path": "examples/public-planning-artifacts-input.json"
+            "id": "delivery_planning_artifacts_input",
+            "path": "examples/public-delivery-planning-artifacts-input.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "planning_artifacts"
+            "value": "delivery_planning_artifacts"
           }
         },
         {
@@ -340,8 +384,8 @@
       {
         "exit_id": "pass",
         "schema": {
-          "schema_id": "guru-stage0-review-contract-wording-output-pass-3.0",
-          "path": "schemas/public-pass-output-2.0.schema.json"
+          "schema_id": "guru-review-contract-wording-output-pass-delivery-index-1.0",
+          "path": "schemas/public-pass-output-delivery-index-1.0.schema.json"
         },
         "example": {
           "id": "pass_output",
@@ -354,12 +398,12 @@
       {
         "exit_id": "content_changed",
         "schema": {
-          "schema_id": "guru-stage0-review-contract-wording-output-content-changed-2.0",
-          "path": "schemas/public-content-changed-output-2.0.schema.json"
+          "schema_id": "guru-review-contract-wording-output-content-changed-delivery-index-1.0",
+          "path": "schemas/public-content-changed-output-delivery-index-1.0.schema.json"
         },
         "example": {
-          "id": "content_changed_output_2_0",
-          "path": "examples/public-content-changed-output-2.0.json"
+          "id": "delivery_content_changed_output",
+          "path": "examples/public-delivery-content-changed-output.json"
         },
         "consumer_use_ids": [
           "project_content_changed"
@@ -390,8 +434,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-review-contract-wording-workflow-pass-input-1.0",
-          "path": "consumers/workflow/stage0/review-contract-wording-pass.schema.json"
+          "schema_id": "guru-consumer-guru-review-contract-wording-pass-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-contract-wording-pass.schema.json"
         },
         "transition": {
           "source_field": "transition",
@@ -412,8 +456,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-stage0-review-contract-wording-workflow-content_changed-input-2.0",
-          "path": "consumers/workflow/stage0/review-contract-wording-content-changed-2.0.schema.json"
+          "schema_id": "guru-consumer-guru-review-contract-wording-content_changed-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-contract-wording-content-changed.schema.json"
         }
       },
       {
@@ -430,21 +474,7 @@
         "id": "project_pass",
         "exit_id": "pass",
         "consumer_input_id": "pass_workflow_input",
-        "operation": "select",
-        "mappings": [
-          {
-            "source": "exit_id",
-            "target": "exit_id"
-          },
-          {
-            "source": "profile",
-            "target": "profile"
-          },
-          {
-            "source": "continuation_id",
-            "target": "continuation_id"
-          }
-        ]
+        "operation": "direct"
       },
       {
         "id": "project_content_changed",

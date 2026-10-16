@@ -1,15 +1,22 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
-from common import change_request_target_content_sha256,check_receipt,digest,load,parse,root,validate_result
+from common import change_request_target_content_sha256,check_receipt,digest,load,parse,root,scope,validate_result
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);a=parse(p,argv);repo=root(package_root,a.root);e=load(repo,package_root,a.invocation,"invocation");public=e.get("public_input");owner=e.get("owner_result");transition=e.get("transition")
  if not isinstance(public,dict) or not isinstance(owner,dict):raise CommandError("invalid_arguments","invocation","Provide public input and owner result.")
+ interface=__import__("json").loads((package_root/"interface.json").read_text())
+ rows=[row for row in interface["public_contracts"]["input"]["profiles"] if row["id"]==public.get("profile")]
+ if len(rows)!=1:raise CommandError("schema_mismatch","profile","Use one declared current wording profile.")
+ validate_json(public,package_root/rows[0]["schema"]["path"],"public_input")
  validate_result(package_root,owner)
  check_receipt(owner,e.get("validation_receipt"))
  if owner["profile"]!=public["profile"] or owner["mode"]!=public["mode"]:raise CommandError("stale_identity","owner_result","Rerun wording for the fixed profile.",3)
+ if public["profile"]=="delivery_planning_artifacts":
+  actual=scope(repo,public["profile"],task=public["task_ref"],delivery_key=public["delivery_key"])
+  if actual!=owner["scope"]:raise CommandError("stale_identity","scope","Rerun wording for the selected Delivery planning_root.",3)
  exit_id=owner["typed_exit"];out={"exit_id":exit_id}
  if exit_id=="pass":
   out.update({"profile":public["profile"],"continuation_id":public["continuation_id"]})
@@ -32,4 +39,10 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   else:out["continuation_id"]=public["continuation_id"]
   schema="public-content-changed-output-2.0.schema.json"
  else:schema="public-blocked-output.schema.json"
+ if public["profile"]=="delivery_planning_artifacts" and exit_id in {"pass","content_changed"}:
+  out.update(delivery_key=public["delivery_key"],task_ref=public["task_ref"])
+  if exit_id=="content_changed":
+   out.pop("continuation_id",None)
+   out["change_refs"]=list(dict.fromkeys(row["locator"] for row in owner["semantic_review"]["revisions"]))
+  schema="public-delivery-"+exit_id.replace("_","-")+"-output.schema.json"
  validate_json(out,package_root/"schemas"/schema,"stdout");return out

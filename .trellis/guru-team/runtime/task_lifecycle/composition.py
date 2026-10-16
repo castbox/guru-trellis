@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -14,7 +13,7 @@ from .checkout_acquisition import CheckoutAcquisitionPlan, CheckoutAcquisitionRe
 from .checkout_resolution import canonical_head_ref
 from .errors import LifecycleContractError
 from .git_facts import commit_path_bytes, find_registration, inspect_registered_worktree, inspect_repository, is_ancestor, list_task_history_branch_refs, list_worktree_registrations, local_branch_head
-from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_identity_reservation
+from .identity import lifecycle_generation, normalize_task_id, normalize_task_ref, resolve_task_ref, task_identity_reservation, task_resource_state
 from .resource_ledger import ResourceLedgerStore
 from .schema import load_contract, validate_dto
 from .session_adapter import OfficialSessionPort, SessionAdapterResult, bind_session
@@ -95,7 +94,7 @@ def _created_checkout(inputs: CreationInputs, result: CheckoutAcquisitionResult)
         source = normalize_source(metadata.get("source"))
     except (OSError, ValueError, LifecycleContractError) as exc:
         raise LifecycleContractError("creation_identity_mismatch", "task_ref", "Read the created planning task.") from exc
-    if metadata.get("status") != "planning" or source != inputs.reviewed_source or metadata.get("base_branch") != inputs.selected_base_ref.removeprefix("refs/heads/"):
+    if task_resource_state(live.path, metadata) != "active" or source != inputs.reviewed_source or metadata.get("base_branch") != inputs.selected_base_ref.removeprefix("refs/heads/"):
         raise LifecycleContractError("creation_identity_mismatch", "task_ref", "Recover only the exact reviewed task source and base.")
 
 
@@ -212,7 +211,7 @@ def prepare_creation_inputs(
         or acquisition.task_ref != task_ref
         or acquisition.lifecycle_generation != 0
         or acquisition.task_artifact_expectation != "absent"
-        or acquisition.expected_status != "planning"
+        or acquisition.expected_status != "active"
         or acquisition.route not in {"adopt_invocation_checkout", "provision_linked_worktree"}
     ):
         raise LifecycleContractError("creation_acquisition_mismatch", "acquisition", "Acquire the exact pre-task generation-zero checkout.")
@@ -282,133 +281,7 @@ def prepare_creation_inputs(
     )
 
 
-@dataclass(frozen=True)
-class ActivationInputs:
-    task_id: str
-    task_ref: str
-    lifecycle_generation: int
-    planning_result_id: str
-    selected_base_ref: str
-    continuity: dict[str, str]
-    session_mode: str
-
-
-def prepare_activation_inputs(
-    repo_root: Path | str,
-    payload: dict[str, Any],
-    session: SessionAdapterResult,
-) -> ActivationInputs:
-    """Validate current planning identity; the activation owner alone changes status."""
-
-    return _activation_inputs(repo_root, payload, session, expected_status="planning")
-
-
-def recover_activation_inputs(
-    repo_root: Path | str,
-    payload: dict[str, Any],
-    session: SessionAdapterResult,
-) -> ActivationInputs:
-    """Reread an activated task without repeating its status mutation."""
-
-    return _activation_inputs(repo_root, payload, session, expected_status="in_progress")
-
-
-def prepare_resume_execution_inputs(
-    repo_root: Path | str,
-    payload: dict[str, Any],
-    session: SessionAdapterResult,
-) -> ActivationInputs:
-    """Validate a newly reviewed active plan without applying a status transition."""
-
-    return _activation_inputs(repo_root, payload, session, expected_status="in_progress")
-
-
-def _activation_inputs(
-    repo_root: Path | str,
-    payload: dict[str, Any],
-    session: SessionAdapterResult,
-    *,
-    expected_status: str,
-) -> ActivationInputs:
-
-    data = _input("task-activation-input.schema.json", payload)
-    key = TaskLifecycleKey(data["task_id"], data["lifecycle_generation"])
-    artifact = validate_dto("TaskArtifactDTO", {
-        "task_id": key.task_id,
-        "task_ref": data["task_ref"],
-        "lifecycle_generation": key.lifecycle_generation,
-    })
-    current = resolve_task_ref(Path(repo_root), artifact["task_ref"], expected_task_id=key.task_id)
-    if current.lifecycle_state != "active" or current.lifecycle_generation != key.lifecycle_generation:
-        raise LifecycleContractError("activation_identity_stale", "task_ref", "Resolve the current active incarnation.")
-    if session.status != data["session_mode"] or session.lifecycle != key or session.status not in {"session_bound", "explicit_task_mode"}:
-        raise LifecycleContractError("activation_session_mismatch", "session_mode", "Use the current C5 session outcome.")
-    metadata = Path(repo_root) / current.task_ref / "task.json"
-    try:
-        task_data = json.loads(metadata.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        raise LifecycleContractError("activation_identity_stale", "task_ref", "Read the current planning artifact.") from exc
-    if task_data.get("status") != expected_status:
-        raise LifecycleContractError("activation_status_mismatch", "task.status", "Only the activation owner transitions planning to in_progress.")
-    planning_result_id = _current_planning_identity(repo_root, current.task_ref)
-    if data["planning_result_id"] != planning_result_id:
-        raise LifecycleContractError("activation_approval_stale", "planning_result_id", "Use the current approved planning result identity.")
-    base_ref = canonical_head_ref(data["selected_base_ref"], field_path="selected_base_ref")
-    if task_data.get("base_branch") != base_ref.removeprefix("refs/heads/"):
-        raise LifecycleContractError("activation_base_mismatch", "selected_base_ref", "Use the task's selected delivery base.")
-    repository = inspect_repository(repo_root)
-    binding = BranchBindingStore(repository).read(key)
-    ownership = ResourceLedgerStore(repository).read_current(key)
-    if binding is None or ownership is None or (
-        binding.binding_revision != ownership.binding_revision
-        or binding.branch_name != ownership.branch_name
-    ):
-        raise LifecycleContractError("activation_branch_unresolved", "branch_binding", "Establish matching current branch and ownership first.")
-    continuity = data["continuity"]
-    if local_branch_head(repository, binding.branch_ref) != continuity["task_head"]:
-        raise LifecycleContractError("activation_head_stale", "continuity.task_head", "Refresh the current reviewed task head.")
-    base_head = continuity["base_head"] if continuity["kind"] == "base_current" else continuity["new_base_head"]
-    if local_branch_head(repository, base_ref) != base_head or not is_ancestor(repository, base_head, continuity["task_head"]):
-        raise LifecycleContractError("activation_base_stale", "continuity", "Refresh the selected base and task continuity before activation.")
-    return ActivationInputs(key.task_id, current.task_ref, key.lifecycle_generation, planning_result_id, data["selected_base_ref"], continuity, data["session_mode"])
-
-
-def _current_planning_identity(repo_root: Path | str, task_ref: str) -> str:
-    root = Path(repo_root)
-    planning_paths = [f"{task_ref}/{name}" for name in ("prd.md", "design.md", "implement.md")]
-    try:
-        files = []
-        for relative in planning_paths:
-            path = root / relative
-            if path.is_symlink() or not path.is_file() or not path.read_text(encoding="utf-8").strip():
-                raise OSError(relative)
-            files.append({"path": relative, "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
-        current_digest = hashlib.sha256(
-            json.dumps(files, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
-        ).hexdigest()
-    except (OSError, UnicodeError) as exc:
-        raise LifecycleContractError(
-            "activation_approval_stale", "planning_paths",
-            "Restore the reviewed planning files and rerun Planning Approval.",
-        ) from exc
-    return f"planning:{current_digest}"
-
-
-def activate_task_status(repo_root: Path | str, inputs: ActivationInputs) -> None:
-    """Apply the reviewed planning transition without materializing legacy branch metadata."""
-
-    path = Path(repo_root) / inputs.task_ref / "task.json"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        raise LifecycleContractError("activation_identity_stale", "task_ref", "Read the current planning task.") from exc
-    if not isinstance(data, dict) or data.get("id") != inputs.task_id or data.get("status") != "planning" or lifecycle_generation(data) != inputs.lifecycle_generation:
-        raise LifecycleContractError("activation_status_mismatch", "task.status", "Refresh the reviewed activation boundary.")
-    data["status"] = "in_progress"
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-
 __all__ = [
-    "ActivationInputs", "CreationInputs", "activate_task_status", "establish_created_control_state",
-    "prepare_activation_inputs", "prepare_creation_inputs", "prepare_resume_execution_inputs", "recover_activation_inputs", "recover_created_control_state",
+    "CreationInputs", "bind_created_session", "establish_created_control_state",
+    "prepare_creation_inputs", "recover_created_control_state",
 ]

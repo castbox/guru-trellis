@@ -18,8 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
-
 from .installed import validate_skill_installed
 from .io import CommandError, read_json_file
 from .validate import validate as validate_skill_source
@@ -678,18 +676,11 @@ def validate_qualification_matrix(evals: dict[str, Any]) -> None:
 
 
 def validate_instance(instance: Any, schema_path: Path, field_path: str) -> None:
-    schema = strict_json(schema_path, f"{field_path}.schema")
-    failures = sorted(
-        Draft202012Validator(schema).iter_errors(instance),
-        key=lambda item: [str(part) for part in item.path],
-    )
-    if failures:
-        suffix = ".".join(str(part) for part in failures[0].path)
-        raise error(
-            "schema_mismatch",
-            field_path + (f".{suffix}" if suffix else ""),
-            "Repair the value to match the declared schema.",
-        )
+    # Keep finite-JSON validation and reuse the package file resolver for
+    # versioned input/output indexes. Eval does not own a second schema loader.
+    strict_json(schema_path, f"{field_path}.schema")
+    from .schema import validate_json
+    validate_json(instance, schema_path, field_path)
 
 
 def roots(root: Path, mode: str) -> tuple[Path, dict[str, Any]]:

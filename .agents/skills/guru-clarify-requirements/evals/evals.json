@@ -47,7 +47,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-clear-input.json", "evals/files/eval-clear-facts.json"],
+      "files": [
+        "evals/files/eval-clear-input.json",
+        "evals/files/eval-clear-facts.json"
+      ],
       "input_profile_id": "standalone_review"
     },
     {
@@ -66,8 +69,11 @@
           }
         ]
       },
-      "files": ["evals/files/eval-needs-context-input.json", "evals/files/eval-needs-context-facts.json"],
-      "input_profile_id": "active_task_scope_change"
+      "files": [
+        "evals/files/eval-needs-context-input.json",
+        "evals/files/eval-needs-context-facts.json"
+      ],
+      "input_profile_id": "delivery_active_task_scope_change"
     },
     {
       "id": "refresh-context-route",
@@ -85,7 +91,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-refresh-context-input.json", "evals/files/eval-refresh-context-facts.json"],
+      "files": [
+        "evals/files/eval-refresh-context-input.json",
+        "evals/files/eval-refresh-context-facts.json"
+      ],
       "input_profile_id": "standalone_review"
     },
     {
@@ -104,7 +113,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-retarget-context-input.json", "evals/files/eval-retarget-context-facts.json"],
+      "files": [
+        "evals/files/eval-retarget-context-input.json",
+        "evals/files/eval-retarget-context-facts.json"
+      ],
       "input_profile_id": "standard_intake"
     },
     {
@@ -123,7 +135,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-new-task-input.json", "evals/files/eval-new-task-facts.json"],
+      "files": [
+        "evals/files/eval-new-task-input.json",
+        "evals/files/eval-new-task-facts.json"
+      ],
       "input_profile_id": "standard_intake"
     },
     {
@@ -142,7 +157,10 @@
           }
         ]
       },
-      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "files": [
+        "evals/files/eval-blocked-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
       "input_profile_id": "standard_intake"
     }
   ]

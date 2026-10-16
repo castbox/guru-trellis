@@ -1,0 +1,8 @@
+{
+  "exit_id": "delivery_stopped",
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  }
+}

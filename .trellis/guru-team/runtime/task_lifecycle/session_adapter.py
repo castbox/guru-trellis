@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -19,7 +20,7 @@ SessionAdapterStatus = Literal[
 
 
 class OfficialSessionPort(Protocol):
-    """Narrow adapter over the Fixed Fork schema-2 session APIs."""
+    """Narrow adapter over the installed Fixed Fork session APIs."""
 
     def resolve_context_key(
         self,
@@ -64,26 +65,20 @@ def _lifecycle(payload: dict[str, Any]) -> TaskLifecycleKey:
 
 def _record(key: TaskLifecycleKey) -> dict[str, Any]:
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "task_id": key.task_id,
         "lifecycle_generation": key.lifecycle_generation,
+        "delivery_id": None,
     }
 
 
 def _record_identity(record: Any, *, field_path: str) -> TaskLifecycleKey:
     data = getattr(record, "data", None)
-    if not isinstance(data, dict) or data != _record(
-        TaskLifecycleKey(
-            getattr(record, "task_id", None),
-            getattr(record, "lifecycle_generation", None),
-        )
-    ):
-        raise LifecycleContractError(
-            "session_record_invalid",
-            field_path,
-            "Use the exact Fixed Fork schema-2 task lifecycle session record.",
-        )
-    return TaskLifecycleKey(record.task_id, record.lifecycle_generation)
+    if isinstance(data, dict) and data.get("schema_version") == 3:
+        # read_record is the public parser; do not copy its Delivery session schema.
+        return _lifecycle({"task_id": record.task_id, "lifecycle_generation": record.lifecycle_generation})
+    raise LifecycleContractError("session_record_invalid", field_path,
+                                 "Use the installed public schema-3 session binding. Old bindings require upstream migration before Delivery execution.")
 
 
 def _resolved_task_ref(resolved: Any) -> str:
@@ -117,7 +112,7 @@ def bind_session(
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> SessionAdapterResult:
-    """Write one exact schema-2 binding without owning lifecycle rollback."""
+    """Bind Task identity without replacing an existing Delivery selection."""
 
     key = _lifecycle(lifecycle)
     context_key = _context_key(official, platform_input, platform)
@@ -147,7 +142,15 @@ def bind_session(
         )
 
     try:
-        official.write_record(path, _record(key), root)
+        payload = _record(key)
+        workspace = getattr(resolved, "workspace", root)
+        from ..delivery_projection.adapter import DeliveryProjection
+        DeliveryProjection(workspace, task_ref).read_record()
+        if official.record_exists(path):
+            prior = official.read_record(path, root, facts)
+            if _record_identity(prior, field_path="official_session.record") == key:
+                payload = prior.data
+        official.write_record(path, payload, root)
     except (OSError, RuntimeError, ValueError):
         return SessionAdapterResult(
             "session_write_failed",
@@ -187,7 +190,7 @@ def resolve_session(
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> SessionAdapterResult:
-    """Resolve a schema-2 record and fresh TaskRef, never a stored locator."""
+    """Resolve a public schema-3 binding and fresh TaskRef, never a stored locator."""
 
     context_key = _context_key(official, platform_input, platform)
     if context_key is None:
@@ -215,6 +218,8 @@ def resolve_session(
             key.task_id,
             key.lifecycle_generation,
         )
+        from ..delivery_projection.adapter import DeliveryProjection
+        DeliveryProjection(getattr(resolved, "workspace", root), _resolved_task_ref(resolved)).read_record()
         return SessionAdapterResult(
             "session_resolved",
             key,

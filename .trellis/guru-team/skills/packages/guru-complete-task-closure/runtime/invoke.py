@@ -9,6 +9,7 @@ from pathlib import Path
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
+from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_id
@@ -91,6 +92,14 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         current_source = task_source_with_review(metadata, public["source"])
     except (LifecycleContractError, OSError, ValueError) as exc:
         raise CommandError("stale_identity", "task.source", "Reread the current task source relation.", 3) from exc
+    projection = None
+    if metadata.get("schema_version") == "2.0":
+        projection = DeliveryProjection(root, artifact.task_ref)
+        record = projection.read_record()
+        current_completion = next((r for r in record["completion_results"] if r["result_id"] == completion["result_id"]), None)
+        if (current_completion is None or current_completion["lifecycle_generation"] != key["lifecycle_generation"]
+                or current_completion["accepted_scope"] != record["accepted_scope"]):
+            raise CommandError("stale_identity", "completion_result", "Read the current public Completion before Closure.", 3)
     if current_source != public["source"]:
         raise CommandError("stale_identity", "source", "Use the current task source relation and disposition.", 3)
     binding = public["binding_ref"]
@@ -106,6 +115,14 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         row["issue_ref"] == {"repo_ref": source["repo_ref"], "issue_number": source["number"]} for row in actions
     ):
         raise CommandError("stale_identity", "action_set", "Include the exact source relation in the reviewed action set.", 3)
+    identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
+    if len(identities) != len(set(identities)):
+        raise CommandError("stale_identity", "action_set", "Review each Issue once in the frozen action set.", 3)
+    if semantic["route"]["typed_exit"] == "blocked":
+        output = {"exit_id": "blocked", "reason": semantic["route"]["reason"]}
+        validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
+        return output
+    source_action = None
     if source["kind"] == "issue":
         source_action = next(row for row in actions if row["issue_ref"] == {
             "repo_ref": source["repo_ref"], "issue_number": source["number"],
@@ -115,13 +132,6 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                 raise CommandError("stale_identity", "action_set", "Review the exact source Issue closure action.", 3)
         elif any(row["disposition"] != "no_close_authority" for row in actions):
             raise CommandError("stale_identity", "action_set", "Non-exact source relations have no Issue close authority.", 3)
-    identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
-    if len(identities) != len(set(identities)):
-        raise CommandError("stale_identity", "action_set", "Review each Issue once in the frozen action set.", 3)
-    if semantic["route"]["typed_exit"] == "blocked":
-        output = {"exit_id": "blocked", "reason": semantic["route"]["reason"]}
-        validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
-        return output
     if semantic["reviewed_action_set"] != actions:
         raise CommandError("stale_identity", "semantic_result.reviewed_action_set", "Review the complete current action set.", 3)
 
@@ -163,6 +173,14 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             if state is None:
                 output = {"exit_id": "resume_closure", "transaction_ref": ref}
                 break
+            if row["disposition"] == "retain_open":
+                if state != "OPEN":
+                    output = _conflict(ref, "required_open_issue_closed", issue_key)
+                    break
+                if issue_key not in transaction["verified"]:
+                    transaction["verified"].append(issue_key)
+                    _store(path, transaction)
+                continue
             if issue_key in transaction["verified"] and state != "CLOSED":
                 output = _conflict(ref, "required_closed_issue_reopened", issue_key)
                 break
@@ -188,9 +206,28 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                 transaction["verified"].append(issue_key)
                 _store(path, transaction)
         if output is None:
-            terminal = "closed" if any(row["disposition"] != "no_close_authority" for row in actions) else "no_mutation"
+            terminal = "closed" if any(row["disposition"] in {"close", "already_closed_at_review"} for row in actions) else "no_mutation"
             transaction["terminal"] = terminal
             _store(path, transaction)
+            if projection is not None:
+                record = projection.read_record()
+                owner = projection.declaration()["owners"]["closure"]
+                source_closed = source_action is not None and source_action["disposition"] in {"close", "already_closed_at_review"}
+                source_fact = ({"locator": f"https://github.com/{source['repo_ref']}/issues/{source['number']}", "revision": "CLOSED"}
+                               if source_closed else None)
+                closure = {"result_id": ref["result_id"], "owner_id": owner,
+                           "evidence": [source_fact or record["accepted_scope"]],
+                           "lifecycle_generation": key["lifecycle_generation"], "completion_result_id": completion["result_id"],
+                           "disposition": "source_closed" if source_closed else "no_mutation", "source_result": source_fact}
+                existing = next((r for r in record["closure_results"] if r["result_id"] == closure["result_id"]), None)
+                if existing is not None and existing != closure:
+                    raise CommandError("stale_identity", "closure_result", "Recover the exact original Closure fact.", 3)
+                if existing is None:
+                    try:
+                        projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
+                                          "owner_role": "closure", "owner_id": owner, "result": closure})
+                    except LifecycleContractError:
+                        return {"exit_id": "resume_closure", "transaction_ref": ref}
             output = {"exit_id": terminal, "result_ref": {
                 **key, "result_id": ref["result_id"],
             }}

@@ -1,1 +1,15 @@
-{"profile":"ready_for_merge","mode":"workflow","task_ref":".trellis/tasks/current","delivery_cycle_ref":"delivery-cycle:v1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","repo_ref":"example/repo","pr_number":27,"expected_head_sha":"1111111111111111111111111111111111111111","publication_body_sha256":"2222222222222222222222222222222222222222222222222222222222222222"}
+{
+  "profile": "delivery_ready_for_merge",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "repo_ref": "example/repo",
+  "pr_number": 27,
+  "expected_head_sha": "1111111111111111111111111111111111111111",
+  "publication_body_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "delivery_key": {
+    "task_id": "current",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  },
+  "publication_result_id": "publication:eval-current"
+}

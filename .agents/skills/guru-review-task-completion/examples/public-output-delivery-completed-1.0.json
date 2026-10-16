@@ -1,0 +1,8 @@
+{
+  "exit_id": "completed",
+  "result_ref": {
+    "task_id": "example",
+    "lifecycle_generation": 0,
+    "result_id": "completion:example"
+  }
+}

@@ -1,1 +1,4 @@
-{"profile":"base_continuity","mode":"workflow"}
+{
+  "profile": "delivery_base_continuity",
+  "mode": "workflow"
+}

@@ -1,0 +1,6 @@
+{
+  "profile": "delivery_base_continuity",
+  "mode": "workflow",
+  "review_intent": "base_continuity",
+  "check_result_id": "result:example"
+}

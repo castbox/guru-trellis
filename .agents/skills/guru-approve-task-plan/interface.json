@@ -94,7 +94,7 @@
   "artifacts": [
     {
       "id": "planning_approval_example",
-      "path": "examples/planning-approval.json"
+      "path": "examples/planning-approval-delivery.json"
     },
     {
       "id": "public_input_initial_review_example",
@@ -131,12 +131,72 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "delivery_initial_review_input",
+      "path": "examples/public-delivery-initial-review-input.json"
+    },
+    {
+      "id": "delivery_revision_reentry_input",
+      "path": "examples/public-delivery-revision-reentry-input.json"
+    },
+    {
+      "id": "delivery_clarification_reentry_input",
+      "path": "examples/public-delivery-clarification-reentry-input.json"
+    },
+    {
+      "id": "delivery_approved_output",
+      "path": "examples/public-delivery-approved-output.json"
+    },
+    {
+      "id": "delivery_revision_required_output",
+      "path": "examples/public-delivery-revision-required-output.json"
+    },
+    {
+      "id": "delivery_clarify_scope_output",
+      "path": "examples/public-delivery-clarify-scope-output.json"
+    },
+    {
+      "id": "delivery_blocked_output",
+      "path": "examples/public-delivery-blocked-output.json"
+    },
+    {
+      "id": "authoring_delivery_revision_required_1_0",
+      "path": "examples/authoring-delivery-revision-required-1.0.json"
+    },
+    {
+      "id": "planning_approval",
+      "path": "examples/planning-approval.json"
+    },
+    {
+      "id": "public_delivery_clarification_reentry_input_2_0",
+      "path": "examples/public-delivery-clarification-reentry-input-2.0.json"
+    },
+    {
+      "id": "public_delivery_initial_review_input_2_0",
+      "path": "examples/public-delivery-initial-review-input-2.0.json"
+    },
+    {
+      "id": "public_delivery_revision_reentry_input_2_0",
+      "path": "examples/public-delivery-revision-reentry-input-2.0.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "examples/legacy_control_inspection-input-1.0.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "examples/legacy_control_retirement-input-1.0.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "examples/legacy_controls_retired-output-1.0.json"
     }
   ],
   "schemas": [
     {
-      "id": "legacy_private_gate_planning_approval",
-      "path": "schemas/planning-approval.schema.json"
+      "id": "planning_approval_schema",
+      "path": "schemas/planning-approval-delivery.schema.json"
     },
     {
       "id": "public_input_initial_review",
@@ -181,6 +241,90 @@
     {
       "id": "revision_required_output_2",
       "path": "schemas/public-revision-required-output-2.0.schema.json"
+    },
+    {
+      "id": "delivery_initial_review_input",
+      "path": "schemas/public-delivery-initial-review-input.schema.json"
+    },
+    {
+      "id": "delivery_revision_reentry_input",
+      "path": "schemas/public-delivery-revision-reentry-input.schema.json"
+    },
+    {
+      "id": "delivery_clarification_reentry_input",
+      "path": "schemas/public-delivery-clarification-reentry-input.schema.json"
+    },
+    {
+      "id": "delivery_approved_output",
+      "path": "schemas/public-delivery-approved-output.schema.json"
+    },
+    {
+      "id": "delivery_revision_required_output",
+      "path": "schemas/public-delivery-revision-required-output.schema.json"
+    },
+    {
+      "id": "delivery_clarify_scope_output",
+      "path": "schemas/public-delivery-clarify-scope-output.schema.json"
+    },
+    {
+      "id": "delivery_blocked_output",
+      "path": "schemas/public-delivery-blocked-output.schema.json"
+    },
+    {
+      "id": "planning_approval",
+      "path": "schemas/planning-approval.schema.json"
+    },
+    {
+      "id": "public_delivery_clarification_reentry_input_2_0",
+      "path": "schemas/public-delivery-clarification-reentry-input-2.0.schema.json"
+    },
+    {
+      "id": "public_delivery_initial_review_input_2_0",
+      "path": "schemas/public-delivery-initial-review-input-2.0.schema.json"
+    },
+    {
+      "id": "public_delivery_revision_reentry_input_2_0",
+      "path": "schemas/public-delivery-revision-reentry-input-2.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_index_2_0",
+      "path": "schemas/public-input-delivery-index-2.0.schema.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "schemas/legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+    },
+    {
+      "id": "legacy_maintenance_input",
+      "path": "schemas/legacy-maintenance-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_maintenance_input",
+      "path": "schemas/legacy-maintenance-input-1.0.schema.json"
+    },
+    {
+      "id": "public_input_legacy_index",
+      "path": "schemas/public-input-legacy-index-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_freeze_input",
+      "path": "schemas/legacy_control_freeze-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_check_input",
+      "path": "schemas/legacy_control_restore_check-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_input",
+      "path": "schemas/legacy_control_restore-input-1.0.schema.json"
     }
   ],
   "validators": [
@@ -207,6 +351,12 @@
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-approve-task-plan",
       "objective_scope": "validate the minimal route input, check the owner-private result, and serialize one minimal typed exit"
+    },
+    {
+      "id": "legacy_maintenance",
+      "command": "scripts/legacy-maintenance.sh",
+      "runtime_command": "legacy-maintenance-guru-approve-task-plan",
+      "objective_scope": "Exact legacy original-owner facts, attribution and fixed preimage retirement; no current lifecycle or publication/merge/Finish action."
     }
   ],
   "external_exits": [
@@ -215,7 +365,7 @@
       "evidence": "the current eight-dimension semantic result passed with no finding, revision, scope proposal, or blocker",
       "consumer": {
         "kind": "workflow",
-        "id": "phase-1-task-activation"
+        "id": "phase-1-delivery-activation"
       }
     },
     {
@@ -241,6 +391,14 @@
         "kind": "stop",
         "id": "task-plan-approval-blocked"
       }
+    },
+    {
+      "id": "legacy_controls_retired",
+      "evidence": "This original gate owner verified preserved raw source and retired only its fixed selected legacy gate.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-approve-task-plan-legacy-controls-retired"
+      }
     }
   ],
   "reentry": {
@@ -249,7 +407,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_legacy_maintenance.py"
   ],
   "platform_destinations": [
     "shared",
@@ -280,53 +439,83 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-production-approve-task-plan-input-aggregate-2.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-approve-task-plan-input-legacy-index-1.0",
+        "path": "schemas/public-input-legacy-index-1.0.schema.json"
       },
       "profiles": [
         {
-          "id": "initial_review",
+          "id": "delivery_initial_review",
           "schema": {
-            "schema_id": "guru-production-approve-task-plan-input-initial-review-2.0",
-            "path": "schemas/public-initial-review-input.schema.json"
+            "schema_id": "guru-approve-task-plan-input-delivery-initial-review-2.0",
+            "path": "schemas/public-delivery-initial-review-input-2.0.schema.json"
           },
           "example": {
-            "id": "initial_review_input",
-            "path": "examples/public-initial-review-input.json"
+            "id": "delivery_initial_review_input",
+            "path": "examples/public-delivery-initial-review-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "initial_review"
+            "value": "delivery_initial_review"
           }
         },
         {
-          "id": "revision_reentry",
+          "id": "delivery_revision_reentry",
           "schema": {
-            "schema_id": "guru-production-approve-task-plan-input-revision-reentry-2.0",
-            "path": "schemas/public-revision-reentry-input.schema.json"
+            "schema_id": "guru-approve-task-plan-input-delivery-revision-reentry-2.0",
+            "path": "schemas/public-delivery-revision-reentry-input-2.0.schema.json"
           },
           "example": {
-            "id": "revision_reentry_input",
-            "path": "examples/public-revision-reentry-input.json"
+            "id": "delivery_revision_reentry_input",
+            "path": "examples/public-delivery-revision-reentry-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "revision_reentry"
+            "value": "delivery_revision_reentry"
           }
         },
         {
-          "id": "clarification_reentry",
+          "id": "delivery_clarification_reentry",
           "schema": {
-            "schema_id": "guru-production-approve-task-plan-input-clarification-reentry-2.0",
-            "path": "schemas/public-clarification-reentry-input.schema.json"
+            "schema_id": "guru-approve-task-plan-input-delivery-clarification-reentry-2.0",
+            "path": "schemas/public-delivery-clarification-reentry-input-2.0.schema.json"
           },
           "example": {
-            "id": "clarification_reentry_input",
-            "path": "examples/public-clarification-reentry-input.json"
+            "id": "delivery_clarification_reentry_input",
+            "path": "examples/public-delivery-clarification-reentry-input-2.0.json"
           },
           "discriminator": {
             "field": "profile",
-            "value": "clarification_reentry"
+            "value": "delivery_clarification_reentry"
+          }
+        },
+        {
+          "id": "legacy_control_inspection",
+          "schema": {
+            "schema_id": "guru-approve-task-plan-input-legacy_control_inspection-1.0",
+            "path": "schemas/legacy_control_inspection-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_control_inspection_input",
+            "path": "examples/legacy_control_inspection-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_control_inspection"
+          }
+        },
+        {
+          "id": "legacy_control_retirement",
+          "schema": {
+            "schema_id": "guru-approve-task-plan-input-legacy_control_retirement-1.0",
+            "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_control_retirement_input",
+            "path": "examples/legacy_control_retirement-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_control_retirement"
           }
         }
       ]
@@ -336,7 +525,7 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "initial_review"
+        "profile_id": "delivery_initial_review"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -349,21 +538,19 @@
       },
       "example_argv": [
         "--input",
-        "examples/public-initial-review-input.json",
-        "--owner-result",
-        "examples/planning-approval.json"
+        "examples/public-delivery-initial-review-input.json"
       ]
     },
     "outputs": [
       {
         "exit_id": "approved",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-approved-3.0",
-          "path": "schemas/public-approved-output.schema.json"
+          "schema_id": "guru-approve-task-plan-output-delivery-approved-1.0",
+          "path": "schemas/public-delivery-approved-output.schema.json"
         },
         "example": {
-          "id": "approved_output",
-          "path": "examples/public-approved-output.json"
+          "id": "delivery_approved_output",
+          "path": "examples/public-delivery-approved-output.json"
         },
         "consumer_use_ids": [
           "project_approved"
@@ -372,12 +559,12 @@
       {
         "exit_id": "revision_required",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-revision-required-2.0",
-          "path": "schemas/public-revision-required-output-2.0.schema.json"
+          "schema_id": "guru-approve-task-plan-output-delivery-revision-required-1.0",
+          "path": "schemas/public-delivery-revision-required-output.schema.json"
         },
         "example": {
-          "id": "revision_required_output",
-          "path": "examples/public-revision-required-output.json"
+          "id": "delivery_revision_required_output",
+          "path": "examples/public-delivery-revision-required-output.json"
         },
         "consumer_use_ids": [
           "project_revision_required"
@@ -386,12 +573,12 @@
       {
         "exit_id": "clarify_scope",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-clarify-scope-1.0",
-          "path": "schemas/public-clarify-scope-output.schema.json"
+          "schema_id": "guru-approve-task-plan-output-delivery-clarify-scope-1.0",
+          "path": "schemas/public-delivery-clarify-scope-output.schema.json"
         },
         "example": {
-          "id": "clarify_scope_output",
-          "path": "examples/public-clarify-scope-output.json"
+          "id": "delivery_clarify_scope_output",
+          "path": "examples/public-delivery-clarify-scope-output.json"
         },
         "consumer_use_ids": [
           "project_clarify_scope"
@@ -400,15 +587,29 @@
       {
         "exit_id": "blocked",
         "schema": {
-          "schema_id": "guru-production-approve-task-plan-output-blocked-1.0",
-          "path": "schemas/public-blocked-output.schema.json"
+          "schema_id": "guru-approve-task-plan-output-delivery-blocked-1.0",
+          "path": "schemas/public-delivery-blocked-output.schema.json"
         },
         "example": {
-          "id": "blocked_output",
-          "path": "examples/public-blocked-output.json"
+          "id": "delivery_blocked_output",
+          "path": "examples/public-delivery-blocked-output.json"
         },
         "consumer_use_ids": [
           "project_blocked"
+        ]
+      },
+      {
+        "exit_id": "legacy_controls_retired",
+        "schema": {
+          "schema_id": "guru-approve-task-plan-output-legacy_controls_retired-1.0",
+          "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "legacy_controls_retired_output",
+          "path": "examples/legacy_controls_retired-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_legacy_controls_retired"
         ]
       }
     ],
@@ -417,13 +618,13 @@
         "id": "approved_workflow_input",
         "consumer": {
           "kind": "workflow",
-          "id": "phase-1-task-activation"
+          "id": "phase-1-delivery-activation"
         },
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-production-approve-task-plan-workflow-approved-input-3.0",
-          "path": "consumers/workflow/production/approve-task-plan-approved.schema.json"
+          "schema_id": "guru-consumer-guru-approve-task-plan-approved-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/approve-task-plan-approved.schema.json"
         }
       },
       {
@@ -435,8 +636,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-production-approve-task-plan-revision-consumer-2.0",
-          "path": "consumers/workflow/production/approve-task-plan-revision-2.0.schema.json"
+          "schema_id": "guru-consumer-guru-approve-task-plan-revision_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/approve-task-plan-revision-required.schema.json"
         }
       },
       {
@@ -448,8 +649,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-production-approve-task-plan-workflow-clarify-scope-input-1.0",
-          "path": "consumers/workflow/production/approve-task-plan-clarify-scope.schema.json"
+          "schema_id": "guru-consumer-guru-approve-task-plan-clarify_scope-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/approve-task-plan-clarify-scope.schema.json"
         }
       },
       {
@@ -459,6 +660,19 @@
           "id": "task-plan-approval-blocked"
         },
         "payload_kind": "zero_payload"
+      },
+      {
+        "id": "legacy_controls_retired_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-approve-task-plan-legacy-controls-retired"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-approve-task-plan-legacy-controls-retired-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-approve-task-plan-legacy-controls-retired.schema.json"
+        }
       }
     ],
     "projections": [
@@ -486,6 +700,12 @@
         "consumer_input_id": "blocked_stop_input",
         "operation": "select",
         "mappings": []
+      },
+      {
+        "id": "project_legacy_controls_retired",
+        "exit_id": "legacy_controls_retired",
+        "consumer_input_id": "legacy_controls_retired_input",
+        "operation": "direct"
       }
     ],
     "private_artifacts": [
@@ -493,8 +713,8 @@
         "id": "planning_approval",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-planning-approval-4.0.json",
-          "path": "schemas/planning-approval-4.0.schema.json"
+          "schema_id": "guru-planning-approval-delivery-1.0",
+          "path": "schemas/planning-approval-delivery.schema.json"
         },
         "persistence": "ignored_runtime"
       }

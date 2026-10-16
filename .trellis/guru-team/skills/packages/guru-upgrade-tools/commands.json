@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.1",
+  "package_id": "guru-upgrade-tools",
+  "commands": [
+    {
+      "id": "invoke-guru-upgrade-tools",
+      "owner": "guru-upgrade-tools",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Target repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input profile.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--plan",
+          "required": false,
+          "kind": "json",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--upstream-source",
+          "required": false,
+          "kind": "json",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_typed_exit",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "internal_error"
+      ],
+      "side_effect": "repo_write",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "invoke",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "preview-tools-upgrade",
+      "owner": "guru-upgrade-tools",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Target repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input profile.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--plan",
+          "required": false,
+          "kind": "json",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--upstream-source",
+          "required": false,
+          "kind": "json",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "internal_error"
+      ],
+      "side_effect": "repo_read",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "preview",
+      "runtime_role": "preview"
+    },
+    {
+      "id": "prepare-tools-upgrade",
+      "owner": "guru-upgrade-tools",
+      "entrypoint": "runtime/record.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": true,
+          "kind": "string",
+          "description": "Target repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Public input profile.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--plan",
+          "required": false,
+          "kind": "json",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--upstream-source",
+          "required": false,
+          "kind": "json",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "internal_error"
+      ],
+      "side_effect": "repo_read",
+      "schema_bindings": [
+        "schemas/public-invocation-error.schema.json"
+      ],
+      "validator_id": "prepare",
+      "runtime_role": "record"
+    }
+  ]
+}

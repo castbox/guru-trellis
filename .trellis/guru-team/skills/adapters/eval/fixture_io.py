@@ -271,6 +271,15 @@ def stage_clean_installed_owner_repo(
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
     shutil.copy2(source_workflow, fixture / ".trellis/workflow.md")
+    canonical_workflow_path = source_repo / "trellis/workflows/guru-team/workflow.md"
+    delivery_installation = canonical_workflow_path.is_file() and '"task_schema": "2.0"' in canonical_workflow_path.read_text()
+    if delivery_installation and not (fixture / ".trellis/scripts/common/delivery_store.py").is_file():
+        reviewed_scripts = Path(os.environ.get("GURU_UPSTREAM_DELIVERY_SCRIPTS", ""))
+        if not (reviewed_scripts / "common/delivery_store.py").is_file():
+            raise ValueError("Current Guru fixture requires the explicitly selected reviewed installed Delivery API; set GURU_UPSTREAM_DELIVERY_SCRIPTS. No source fallback is supported.")
+        shutil.copytree(reviewed_scripts, fixture / ".trellis/scripts", dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        (fixture / ".trellis/.version").write_text("0.7.0-castbox.3\n")
     (fixture / ".gitignore").write_text(
         ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
         encoding="utf-8",
@@ -294,7 +303,7 @@ def stage_clean_installed_owner_repo(
             raise ValueError("canonical workflow input is unavailable for owner staging")
         shutil.copy2(canonical_workflow, fixture / ".trellis/workflow.md")
         applied = subprocess.run(
-            [sys.executable, str(apply_script), "--repo", str(fixture)],
+            [sys.executable, str(apply_script), "--python", sys.executable, "--repo", str(fixture)],
             cwd=source_repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=False, env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )

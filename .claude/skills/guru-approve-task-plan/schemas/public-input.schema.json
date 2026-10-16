@@ -1,9 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-production-approve-task-plan-input-aggregate-2.0",
+  "$id": "guru-approve-task-plan-input-delivery-1.0",
   "oneOf": [
-    {"$ref": "public-initial-review-input.schema.json"},
-    {"$ref": "public-revision-reentry-input.schema.json"},
-    {"$ref": "public-clarification-reentry-input.schema.json"}
+    {
+      "$ref": "public-delivery-initial-review-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-revision-reentry-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-clarification-reentry-input.schema.json"
+    }
   ]
 }

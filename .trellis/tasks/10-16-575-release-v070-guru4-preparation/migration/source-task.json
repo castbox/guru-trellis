@@ -1,0 +1,29 @@
+{
+  "id": "575-release-v070-guru4-preparation",
+  "name": "575-release-v070-guru4-preparation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 575,
+    "disposition": "reference_only"
+  },
+  "title": "#575 准备 v0.7.0-guru.4 发布与正式依赖对齐",
+  "description": "只承接 #575 Stage 1：正式采用已验证 Fork 来源，对齐 extension 0.7.0-guru.4、公开文档和安装投影，完成定向验证及必要 Docs/Architecture/RDT 承接；准备交付为 reference_only。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "仅发布准备 Stage 1：版本与来源对齐、公开发布和安装文档、版本断言和受管投影、Docs/Architecture/RDT 收敛与定向验证、准备交付及原生终态收尾；不执行 Stage 2 exact-candidate 发布、tag/smoke/Release/Issue关闭或真实业务迁移。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-16",
+  "completedAt": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

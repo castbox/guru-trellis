@@ -5,17 +5,17 @@ description: Review one approved active-task Delivery slice through a fresh sema
 
 # Guru Review Task Delivery
 
+Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
 Use with a current checked Branch Review output for the exact committed HEAD.
-When Publish returns `review_stale`, its `task_ref` is only a seed: the caller
-authors the ordinary `delivery_review` profile using the contract's current
-anchor applicability rules. A still-available checked Branch Review output
-for unchanged candidate, base/range and applicable review obligations need not
-be rerun. This owner always performs fresh Delivery Review; lost Branch Review
-output or changed obligations return to their original owner. Publish's stale
-reason and retired checkpoints cannot supply a semantic pass.
+When Publish returns `review_stale` or Merge returns `review_refresh_required`,
+consume `delivery_readiness_refresh` with exact key and reentry reason. Read
+the actual public full Review/candidate, then perform this whole semantic
+round. Applicable unchanged full Review need not be rerun; missing/stale gates
+return to their original owner. History and phase cannot supply readiness.
 Read `references/contract.md`, the current requirement authority, approved
 Delivery policy, current slice and remaining work, validation evidence, RDT and
 Architecture authorities, full Branch Review, base, and live Git/GitHub facts.
@@ -26,9 +26,6 @@ Coordination and informational Related Work changes do not automatically
 invalidate review or become PR source/Closure targets. Material dependency
 changes return to the earliest affected existing owner under the current
 dependency-scoped contract; out-of-scope Follow-up stays outside this slice.
-For a legacy active task with no structured source and noncanonical scope,
-freshly review a non-exact relation in `reviewed_source`. It stays in this
-round's private semantic result; task metadata is not written for review alone.
 
 This Skill is the sole semantic owner of Delivery readiness. The normal public
 path is `scripts/invoke.sh` with one public input and one AI-completed semantic
@@ -87,3 +84,19 @@ existing planning/implementation/scope/blocked exits, never an invented exit.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Current-stage scope revision
+
+`delivery_scope_revision` is this existing owner's semantic re-entry after original
+Clarify has published the changed whole-Task scope. Read actual accepted scope,
+selected Delivery and obligations; review the retained slice anchors and original
+source_selection/revision_refs. Complete the AI gate before invoking this profile.
+Do not require stale Planning/Check/Review/Readiness evidence to revise scope.
+Project only the reviewed current scope_ref through upstream rework to planning;
+invalidate planning/check/full_review/readiness and retain identity, candidate and
+historical publication/delivery facts. No new acceptance or approval is inferred.
+`delivery_scope_revised` goes only to guru-delivery-scope-revised-router and the
+same Delivery Author active_task_scope_change. A retry after lost output reads
+matching public scope, planning phase and cleared results; it returns the same
+minimal handoff, without replaying rework or installing an approval token.
+A new change receives fresh original Clarify and this owner judgment.

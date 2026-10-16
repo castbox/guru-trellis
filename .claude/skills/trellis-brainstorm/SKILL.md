@@ -5,6 +5,22 @@ description: "Guides collaborative requirements discovery with or without a Trel
 
 # Trellis Brainstorm
 
+## Active workflow ownership
+
+Before formal work, load the validated Task workspace workflow with:
+
+```bash
+python3 .trellis/scripts/get_context.py --mode runtime-contract
+python3 .trellis/scripts/get_context.py --mode continuation
+```
+
+A declared Delivery contract owns all formal routing. Stop on malformed or
+unsupported contracts. If the role owner differs from this Skill, hand off to
+that declared owner and stop; do not run a parallel native gate. Read
+`.trellis/delivery-contract.md` and the exact current Delivery query before
+recording results. `missing_runtime_contract` means the existing legacy workflow has no declaration;
+retain the legacy behavior below in that case. Task-free work creates no formal lifecycle result.
+
 ## Non-Negotiable Planning Contract
 
 A request to build, implement, fix, refactor, or "go ahead" is not approval to leave planning. The caller owns any lifecycle approval and activation.
@@ -26,6 +42,14 @@ Repository evidence establishes current behavior and technical constraints. The 
 ---
 
 Use this skill to turn a requirement or problem into clear, reviewable planning content. It can run with or without a Trellis task.
+
+## Delivery planning profile
+
+For the declared planning owner, use the selected Delivery planning_root for
+PRD/design/implement and manifests; root Task PRD remains overall authority.
+After actual artifact review and accepted planning, the declared owner may
+record record_gate(planning). Creation/binding never activates implementation.
+Existing caller-owned planning and approval constraints remain applicable.
 
 ## Input and Output
 

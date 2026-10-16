@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-delivery-history-query-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "delivery-history-query.schema.json"
+    },
+    {
+      "$ref": "delivery-history-query-2.0.schema.json"
+    }
+  ]
+}

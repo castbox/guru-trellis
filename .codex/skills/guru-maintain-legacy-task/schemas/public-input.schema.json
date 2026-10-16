@@ -1,0 +1,17 @@
+{
+  "$id": "guru-maintain-legacy-task-input-1.0",
+  "oneOf": [
+    {
+      "$ref": "input-convert.schema.json"
+    },
+    {
+      "$ref": "input-history_closeout.schema.json"
+    },
+    {
+      "$ref": "input-resume.schema.json"
+    },
+    {
+      "$ref": "input-rollback.schema.json"
+    }
+  ]
+}

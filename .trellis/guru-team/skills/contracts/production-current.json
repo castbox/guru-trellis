@@ -55,28 +55,28 @@
       "producer_skill_id": "guru-check-task",
       "exit_id": "passed",
       "consumer_skill_id": "guru-create-task-commit",
-      "profile_id": "initial_commit",
+      "profile_id": "delivery_initial_commit",
       "consumer_input_id": "initial_commit_seed_input",
       "projection_id": "project_passed",
-      "authoring_example_id": "initial_commit_authoring"
+      "authoring_example_id": "passed_delivery_authoring"
     },
     {
       "producer_skill_id": "guru-create-task-commit",
       "exit_id": "committed",
       "consumer_skill_id": "guru-review-branch",
-      "profile_id": "branch_review",
+      "profile_id": "delivery_branch_review",
       "consumer_input_id": "branch_review_seed_input",
       "projection_id": "project_committed",
-      "authoring_example_id": "branch_review_authoring"
+      "authoring_example_id": "committed_delivery_authoring"
     },
     {
       "producer_skill_id": "guru-create-task-commit",
       "exit_id": "revision-required",
       "consumer_skill_id": "guru-create-task-commit",
-      "profile_id": "revision_reentry",
+      "profile_id": "delivery_revision_reentry",
       "consumer_input_id": "revision_reentry_seed_input",
       "projection_id": "project_revision_required",
-      "authoring_example_id": "revision_reentry_authoring"
+      "authoring_example_id": "revision_required_delivery_authoring"
     }
   ],
   "skills": [
@@ -84,26 +84,26 @@
       "id": "guru-approve-task-plan",
       "input_kind": "structured_json",
       "input_profile_ids": [
-        "initial_review",
-        "revision_reentry",
-        "clarification_reentry"
+        "delivery_initial_review",
+        "delivery_revision_reentry",
+        "delivery_clarification_reentry"
       ],
       "profile_case_bindings": [
         {
-          "profile_id": "initial_review",
+          "profile_id": "delivery_initial_review",
           "eval_case_ids": [
             "approved-initial",
             "blocked-initial"
           ]
         },
         {
-          "profile_id": "revision_reentry",
+          "profile_id": "delivery_revision_reentry",
           "eval_case_ids": [
             "revision-required"
           ]
         },
         {
-          "profile_id": "clarification_reentry",
+          "profile_id": "delivery_clarification_reentry",
           "eval_case_ids": [
             "clarify-scope"
           ]
@@ -112,8 +112,8 @@
       "exit_bindings": [
         {
           "exit_id": "approved",
-          "output_schema_id": "guru-production-approve-task-plan-output-approved-3.0",
-          "output_example_id": "approved_output",
+          "output_schema_id": "guru-approve-task-plan-output-delivery-approved-1.0",
+          "output_example_id": "delivery_approved_output",
           "consumer_input_id": "approved_workflow_input",
           "projection_id": "project_approved",
           "eval_case_ids": [
@@ -122,8 +122,8 @@
         },
         {
           "exit_id": "revision_required",
-          "output_schema_id": "guru-production-approve-task-plan-output-revision-required-2.0",
-          "output_example_id": "revision_required_output",
+          "output_schema_id": "guru-approve-task-plan-output-delivery-revision-required-1.0",
+          "output_example_id": "delivery_revision_required_output",
           "consumer_input_id": "revision_workflow_input",
           "projection_id": "project_revision_required",
           "eval_case_ids": [
@@ -132,8 +132,8 @@
         },
         {
           "exit_id": "clarify_scope",
-          "output_schema_id": "guru-production-approve-task-plan-output-clarify-scope-1.0",
-          "output_example_id": "clarify_scope_output",
+          "output_schema_id": "guru-approve-task-plan-output-delivery-clarify-scope-1.0",
+          "output_example_id": "delivery_clarify_scope_output",
           "consumer_input_id": "clarify_scope_workflow_input",
           "projection_id": "project_clarify_scope",
           "eval_case_ids": [
@@ -142,8 +142,8 @@
         },
         {
           "exit_id": "blocked",
-          "output_schema_id": "guru-production-approve-task-plan-output-blocked-1.0",
-          "output_example_id": "blocked_output",
+          "output_schema_id": "guru-approve-task-plan-output-delivery-blocked-1.0",
+          "output_example_id": "delivery_blocked_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
           "eval_case_ids": [
@@ -164,57 +164,86 @@
       "id": "guru-check-task",
       "input_kind": "structured_json",
       "input_profile_ids": [
-        "initial_check",
-        "finding_fix_rerun",
-        "planning_reentry",
-        "resolved_reconciliation"
+        "delivery_initial_check",
+        "delivery_finding_fix_rerun",
+        "delivery_planning_reentry",
+        "delivery_resolved_reconciliation",
+        "delivery_scope_withdrawal"
       ],
       "profile_case_bindings": [
         {
-          "profile_id": "initial_check",
+          "profile_id": "delivery_initial_check",
           "eval_case_ids": [
+            "native-owner-clean",
+            "native-owner-all-rejected",
+            "native-owner-finding",
             "passed-initial",
-            "blocked-initial"
+            "blocked-initial",
+            "native-owner-historical-red",
+            "native-owner-required-dependency",
+            "native-owner-test-boundary",
+            "native-owner-test-support",
+            "native-owner-selection-assertion"
           ]
         },
         {
-          "profile_id": "finding_fix_rerun",
+          "profile_id": "delivery_finding_fix_rerun",
           "eval_case_ids": [
             "implementation-required"
           ]
         },
         {
-          "profile_id": "planning_reentry",
+          "profile_id": "delivery_planning_reentry",
           "eval_case_ids": [
             "planning-stale"
+          ]
+        },
+        {
+          "profile_id": "delivery_resolved_reconciliation",
+          "eval_case_ids": [
+            "resolved-reconciliation-passed"
+          ]
+        },
+        {
+          "profile_id": "delivery_scope_withdrawal",
+          "eval_case_ids": [
+            "delivery-stopped"
           ]
         }
       ],
       "exit_bindings": [
         {
           "exit_id": "passed",
-          "output_schema_id": "guru-production-check-task-output-passed-3.0",
-          "output_example_id": "passed_output",
+          "output_schema_id": "guru-check-task-output-delivery-passed-1.0",
+          "output_example_id": "passed_delivery_output",
           "consumer_input_id": "initial_commit_seed_input",
           "projection_id": "project_passed",
           "eval_case_ids": [
-            "passed-initial"
+            "native-owner-clean",
+            "native-owner-all-rejected",
+            "passed-initial",
+            "native-owner-historical-red"
           ]
         },
         {
           "exit_id": "implementation_required",
-          "output_schema_id": "guru-production-check-task-output-implementation-required-1.0",
-          "output_example_id": "implementation_required_output",
+          "output_schema_id": "guru-check-task-output-delivery-implementation-required-1.0",
+          "output_example_id": "implementation_required_delivery_output",
           "consumer_input_id": "implementation_required_workflow_input",
           "projection_id": "project_implementation_required",
           "eval_case_ids": [
-            "implementation-required"
+            "native-owner-finding",
+            "implementation-required",
+            "native-owner-required-dependency",
+            "native-owner-test-boundary",
+            "native-owner-test-support",
+            "native-owner-selection-assertion"
           ]
         },
         {
           "exit_id": "planning_stale",
-          "output_schema_id": "guru-production-check-task-output-planning-stale-1.0",
-          "output_example_id": "planning_stale_output",
+          "output_schema_id": "guru-check-task-output-delivery-planning-stale-1.0",
+          "output_example_id": "planning_stale_delivery_output",
           "consumer_input_id": "planning_stale_workflow_input",
           "projection_id": "project_planning_stale",
           "eval_case_ids": [
@@ -223,12 +252,32 @@
         },
         {
           "exit_id": "blocked",
-          "output_schema_id": "guru-production-check-task-output-blocked-1.0",
-          "output_example_id": "blocked_output",
+          "output_schema_id": "guru-check-task-output-delivery-blocked-1.0",
+          "output_example_id": "blocked_delivery_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
           "eval_case_ids": [
             "blocked-initial"
+          ]
+        },
+        {
+          "exit_id": "delivery_stopped",
+          "output_schema_id": "guru-check-task-output-delivery-stopped-1.0",
+          "output_example_id": "delivery_stopped_output",
+          "consumer_input_id": "delivery_stopped_seed",
+          "projection_id": "project_delivery_stopped",
+          "eval_case_ids": [
+            "delivery-stopped"
+          ]
+        },
+        {
+          "exit_id": "resolved_reconciliation_passed",
+          "output_schema_id": "guru-check-task-output-delivery-resolved-reconciliation-passed-1.0",
+          "output_example_id": "delivery_resolved_passed_output",
+          "consumer_input_id": "resolved_reconciliation_passed_router_input",
+          "projection_id": "project_resolved_reconciliation_passed",
+          "eval_case_ids": [
+            "resolved-reconciliation-passed"
           ]
         }
       ],
@@ -238,60 +287,68 @@
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "eval_schema_id": "guru-team-skill-evals-1.0",
       "eval_case_selector": {
-        "expected_case_count": 4
+        "expected_case_count": 14
       }
     },
     {
       "id": "guru-create-task-commit",
       "input_kind": "structured_json",
       "input_profile_ids": [
-        "initial_commit",
-        "revision_reentry",
-        "finding_fix_commit",
-        "recovery_resume"
+        "delivery_initial_commit",
+        "delivery_revision_reentry",
+        "delivery_finding_fix_commit",
+        "delivery_recovery_resume",
+        "delivery_committed_reentry"
       ],
       "profile_case_bindings": [
         {
-          "profile_id": "initial_commit",
+          "profile_id": "delivery_initial_commit",
           "eval_case_ids": [
             "committed-initial"
           ]
         },
         {
-          "profile_id": "revision_reentry",
+          "profile_id": "delivery_revision_reentry",
           "eval_case_ids": [
             "revision-required"
           ]
         },
         {
-          "profile_id": "finding_fix_commit",
+          "profile_id": "delivery_finding_fix_commit",
           "eval_case_ids": [
             "committed-finding-fix"
           ]
         },
         {
-          "profile_id": "recovery_resume",
+          "profile_id": "delivery_recovery_resume",
           "eval_case_ids": [
             "blocked-recovery"
+          ]
+        },
+        {
+          "profile_id": "delivery_committed_reentry",
+          "eval_case_ids": [
+            "clean-committed-reentry"
           ]
         }
       ],
       "exit_bindings": [
         {
           "exit_id": "committed",
-          "output_schema_id": "guru-production-create-task-commit-output-committed-2.0",
-          "output_example_id": "committed_output",
+          "output_schema_id": "guru-create-task-commit-output-delivery-committed-1.0",
+          "output_example_id": "committed_delivery_output",
           "consumer_input_id": "branch_review_seed_input",
           "projection_id": "project_committed",
           "eval_case_ids": [
             "committed-initial",
-            "committed-finding-fix"
+            "committed-finding-fix",
+            "clean-committed-reentry"
           ]
         },
         {
           "exit_id": "revision-required",
-          "output_schema_id": "guru-production-create-task-commit-output-revision-required-1.0",
-          "output_example_id": "revision_required_output",
+          "output_schema_id": "guru-create-task-commit-output-delivery-revision-required-1.0",
+          "output_example_id": "revision-required_delivery_output",
           "consumer_input_id": "revision_reentry_seed_input",
           "projection_id": "project_revision_required",
           "eval_case_ids": [
@@ -300,8 +357,8 @@
         },
         {
           "exit_id": "blocked",
-          "output_schema_id": "guru-production-create-task-commit-output-blocked-1.0",
-          "output_example_id": "blocked_output",
+          "output_schema_id": "guru-create-task-commit-output-delivery-blocked-1.0",
+          "output_example_id": "blocked_delivery_output",
           "consumer_input_id": "blocked_stop_input",
           "projection_id": "project_blocked",
           "eval_case_ids": [
@@ -310,12 +367,16 @@
         }
       ],
       "private_artifact_ids": [
-        "task_commit_candidate"
+        "task_commit_candidate",
+        "task_commit_happy_path_result",
+        "delivery_commit_candidate_1_0",
+        "delivery_commit_result_1_0",
+        "delivery_planning_source_1_0"
       ],
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "eval_schema_id": "guru-team-skill-evals-1.0",
       "eval_case_selector": {
-        "expected_case_count": 4
+        "expected_case_count": 5
       }
     },
     {

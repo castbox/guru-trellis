@@ -16,13 +16,16 @@ from .schema import validate_json
 APPROVED_KERNEL_FILES = {
     "__init__.py",
     "command.py",
+    "base_selection.py",
     "bootstrap.py",
+    "bootstrap_check.py",
     "compat.py",
     "discovery.py",
     "eval_runner.py",
     "installed.py",
     "io.py",
     "lifecycle_helpers.py",
+    "maintenance_transport.py",
     "launch.sh",
     "probe.py",
     "python-runtime.json",
@@ -309,6 +312,21 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                 raise CommandError("unknown_error", f"{package_id}.{command_id}.errors", "Declare every referenced error in the package catalog.")
             if "guru_team_trellis.py" in wrapper_source or "guru_team_trellis.py" in entrypoint.read_text(encoding="utf-8"):
                 raise CommandError("legacy_dependency", f"{package_id}.{command_id}", "Remove the shared monolith dependency.")
+    if mode == "source":
+        # Nested production modules must be included in the actual installer
+        # projection. Top-level kernel checks alone cannot prove importability.
+        import runpy
+        inventory_path = root / "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py"
+        inventory = runpy.run_path(str(inventory_path))["SKILL_RUNTIME_KERNEL_PATHS"]
+        declared_python = {path for path in inventory if path.suffix == ".py"}
+        actual_python = {path.relative_to(kernel) for path in kernel.rglob("*.py")
+                         if "tests" not in path.relative_to(kernel).parts
+                         and "__pycache__" not in path.relative_to(kernel).parts}
+        if declared_python != actual_python:
+            raise CommandError("missing_contract", "runtime.inventory",
+                               "Include every production runtime module in the installer inventory; "
+                               f"omitted={sorted(str(p) for p in actual_python - declared_python)}, "
+                               f"missing={sorted(str(p) for p in declared_python - actual_python)}.")
     actual_kernel_files = {
         path.name for path in kernel.iterdir()
         if path.is_file() and not path.is_symlink()

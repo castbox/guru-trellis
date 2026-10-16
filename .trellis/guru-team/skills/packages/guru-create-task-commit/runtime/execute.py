@@ -224,9 +224,12 @@ def _write_happy_path_receipt(
             _raw_commit_message(repo, commit).encode()
         ).hexdigest(),
     }
+    if "delivery_key" in candidate:
+        receipt.update(delivery_key=candidate["delivery_key"], check_result_id=candidate["check_result_id"], schema_version="delivery-1.0")
+        receipt["$schema"] = "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-1.0.json"
     validate_json(
         receipt,
-        package_root / "schemas/happy-path-result.schema.json",
+        package_root / ("schemas/delivery-commit-result-1.0.schema.json" if "delivery_key" in candidate else "schemas/happy-path-result.schema.json"),
         "happy_path_result",
     )
     _path, _relative, task_key, sequence = canonical_candidate_locator(
@@ -247,7 +250,7 @@ def recover_published_happy_path_commit(
 ) -> None:
     validate_json(
         candidate,
-        package_root / "schemas/task-commit-candidate.schema.json",
+        package_root / ("schemas/delivery-commit-candidate-1.0.schema.json" if "delivery_key" in candidate else "schemas/task-commit-candidate.schema.json"),
         "candidate",
     )
     expected = {

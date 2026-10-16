@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-consumer-guru-activate-delivery-delivery_started-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "delivery_key",
+    "task_ref",
+    "planning_accepted_result_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "delivery_started"
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque public API 1.0 key; validated only by the installed upstream parser."
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "planning_accepted_result_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

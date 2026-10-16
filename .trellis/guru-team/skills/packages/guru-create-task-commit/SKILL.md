@@ -5,6 +5,12 @@ description: Create a reviewed Trellis task work commit after Phase 2, including
 
 # Create Task Commit
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
+Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+
 Use this skill for creating a task commit, committing Phase 2 changes,
 committing a Branch Review finding fix, or creating a revision commit.
 
@@ -17,17 +23,9 @@ platform discovery without that routing; it still requires the complete,
 current Guru Team preset and extension runtime. This Skill directory is not
 a self-contained or portable package.
 
-First read the passed DTO, task and complete Git state. A clean current
-committed range uses `committed_reentry`: complete the current TaskCommit
-semantic gate, then call `scripts/invoke.sh --committed-reentry -` once with
-one `public_input`/`owner_result` stdin envelope (see contract). It verifies
-existing Git facts through the original Phase 2 checker and emits the existing
-committed DTO; it never creates a commit or requests commit confirmation.
-Dirty increments use the existing path below. Both paths preserve post_commit
-pair guard and first independent full Branch Review; no caller synthesizes a
-committed DTO, empty commit or artificial dirty change.
+For a clean committed candidate, use `scripts/invoke.sh --input <delivery_committed_reentry> --owner-result <actual-review>`. After semantic review it returns the existing candidate without stage, commit, hook or ref mutation.
 
-The recommended dirty Happy Path is exactly two package calls:
+For a necessary dirty increment the Happy Path is exactly two package calls:
 
 1. Use `scripts/prepare-task-commit.sh` once to record the AI-owned path
    classifications, seven structured message fields, and completed semantic
@@ -49,10 +47,10 @@ publication, or PR state neither grant nor deny commit authority and are not
 read as commit preconditions.
 
 `scripts/invoke.sh` is the sole public invocation wrapper. Its
-`--candidate-artifact` mode is the normal path. Existing callers that already
-orchestrate an executor result may continue to use compatibility-only
-`--invocation`; all three argument shapes are mutually exclusive, and the
-compatibility branch is never run before the normal transaction.
+`--candidate-artifact` mode is the exact dirty transaction; `--input` is the
+clean committed re-entry. These argument shapes are mutually exclusive.
+Legacy `--invocation` envelopes are retired; recover a committed candidate
+through the current Delivery input after its fresh Check and semantic review.
 
 `scripts/check-task-commit-plan.sh` and `scripts/create-task-commit.sh` remain
 package-private diagnostic, testing, and bounded recovery entries. They must
@@ -67,13 +65,15 @@ That global boundary does not relax this Skill's entry or completion contract.
 
 The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
-removed after success. Candidate 5.0 has no authorization, branch
+removed after success. Candidate delivery-1.0 has no authorization, branch
 classification, publication eligibility, freshness digest, or terminal result
 fields. The public invocation may retain one minimal ignored result receipt after success
 so the same locator can recover lost stdout without repeating the commit; a
-fresh prepare for the same task retires that receipt. An unfinished 4.0 candidate is rejected or replaced only by a complete
+fresh prepare for the same task retires that receipt. A pre-Delivery candidate is rejected or replaced only by a complete
 reprepare from current Phase 2 and live Git evidence. Git supplies committed
 tree/message/path facts.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+For actual Plan2 planning relocation, this owner may explicitly review and select the bounded `markdown_relative_links_v1` private source mode described in the contract. Existing absent-mode source mappings stay strict bytes/modes. Planning owners never consume this private association.

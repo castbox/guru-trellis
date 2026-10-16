@@ -5,6 +5,10 @@ description: Create one reviewed proposed GitHub Issue, or recover its exact res
 
 # Create Issue
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. Accept only a current
 `guru-review-change-request:ready` transition whose `target.kind` is
 `proposed_draft`. Before mutation reread the selected repository, title,

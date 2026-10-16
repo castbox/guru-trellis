@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-input-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-standard-intake-input.schema.json"
+    },
+    {
+      "$ref": "public-reviewed-plan-intake-input.schema.json"
+    },
+    {
+      "$ref": "public-active-task-scope-change-input.schema.json"
+    },
+    {
+      "$ref": "public-standalone-review-input.schema.json"
+    },
+    {
+      "$ref": "public-normal-scenario-scope-confirmation-input.schema.json"
+    },
+    {
+      "$ref": "public-solution-mechanism-scope-confirmation-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-active-task-scope-change-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-task-scope-revision-input.schema.json"
+    }
+  ]
+}

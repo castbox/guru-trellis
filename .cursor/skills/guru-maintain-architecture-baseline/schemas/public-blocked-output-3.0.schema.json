@@ -93,6 +93,96 @@
           "minLength": 1
         }
       }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "reason_code",
+        "remediation",
+        "planning_purpose",
+        "stage",
+        "task_locator",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "blocked"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "reason_code",
+        "remediation",
+        "planning_purpose",
+        "stage",
+        "task_locator",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "blocked"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   ]
 }

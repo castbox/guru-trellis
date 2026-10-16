@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-delivery-scope-withdrawal-review-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reviewed_delivery_key",
+    "result_id",
+    "reason",
+    "scope_decision",
+    "evidence"
+  ],
+  "properties": {
+    "reviewed_delivery_key": {
+      "type": "object"
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locator",
+        "revision"
+      ],
+      "properties": {
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "scope_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locator",
+        "revision"
+      ],
+      "properties": {
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "locator",
+          "revision"
+        ],
+        "properties": {
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

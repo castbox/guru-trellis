@@ -5,6 +5,10 @@ description: Maintain one traceable Requirements, Design, and Test repository au
 
 # Guru Maintain Requirements Design Test SSOT
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. This Skill is the single semantic owner for the
 Requirements, Design, and Test authority of a repository. It supports exactly
 `bootstrap_foundation`, `task_impact_sync`, `promotion`, and `repair`.

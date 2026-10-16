@@ -8,7 +8,6 @@
   "bookkeeping": {
     "repo_ref": "example/repo",
     "base_branch": "main",
-    "expected_base_head": "1111111111111111111111111111111111111111",
     "head_branch": "codex/example-task",
     "archive_ref": ".trellis/tasks/archive/2026-09/example-task",
     "commit_subject": "chore(trellis): persist example task finish",
@@ -18,5 +17,7 @@
     "merge_subject": "chore(merge): 持久化 example task 收尾归档",
     "merge_body": "Merge the reviewed bookkeeping candidate.\n\nRefs #1"
   },
-  "route": {"typed_exit": "success"}
+  "route": {
+    "typed_exit": "success"
+  }
 }

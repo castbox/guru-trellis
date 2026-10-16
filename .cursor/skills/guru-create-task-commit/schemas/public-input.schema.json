@@ -13,9 +13,6 @@
     },
     {
       "$ref": "public-recovery-resume-input.schema.json"
-    },
-    {
-      "$ref": "public-committed-reentry-input.schema.json"
     }
   ]
 }

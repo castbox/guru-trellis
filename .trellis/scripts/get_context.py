@@ -30,7 +30,7 @@ def main() -> None:
         if active.error and options.mode != "default":
             print(f"Error: {active.error}", file=sys.stderr)
             sys.exit(1)
-        if options.mode in {"phase", "continuation"} and active.task_workspace_root:
+        if options.mode in {"phase", "continuation", "runtime-contract"} and active.task_workspace_root:
             os.chdir(active.task_workspace_root)
         _main()
         if active.error:

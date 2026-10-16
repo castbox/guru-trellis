@@ -35,7 +35,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-plan-request.schema.json"
+        "schemas/public-plan-request-delivery-1.0.schema.json"
       ],
       "validator_id": "plan_recorder",
       "runtime_role": "invoke"
@@ -73,7 +73,7 @@
       ],
       "side_effect": "git_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-delivery-1.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "rebind_executor",
@@ -112,7 +112,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-delivery-1.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "result_checker",
@@ -151,7 +151,7 @@
       ],
       "side_effect": "git_read",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-delivery-1.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "result_recovery",
@@ -190,7 +190,7 @@
       ],
       "side_effect": "git_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
+        "schemas/public-input-delivery-1.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "public_invocation",

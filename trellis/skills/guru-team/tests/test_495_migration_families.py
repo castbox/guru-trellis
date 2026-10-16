@@ -134,7 +134,8 @@ def group(name, tag, core):
     if result['exit_id'] != 'upgraded':
         checkpoint = json.loads((root / '.git/guru-team/install-upgrade' / result['recovery_ref'] / 'checkpoint.json').read_text()) if 'recovery_ref' in result else {}
         raise RuntimeError(name + ' ' + str(result) + ' ' + str(checkpoint.get('failure')))
-    assert result['installed_version'] == '0.7.0-guru.3'
+    canonical = json.loads((SOURCE / 'trellis/guru-team-extension.json').read_text())
+    assert result['installed_version'] == canonical['version']
     for p in ['business.txt', 'unrelated.txt', '.trellis/guru-team/config.yml']:
         assert ((root / p).read_bytes(), (root / p).stat().st_mode & 511) == before[p], p
     assert 'fixture_setting: preserved' in (root / '.trellis/config.yaml').read_text()

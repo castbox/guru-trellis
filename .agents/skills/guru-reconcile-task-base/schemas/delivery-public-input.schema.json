@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reconcile-task-base-input-aggregate-2.0-delivery-1.0",
+  "oneOf": [
+    {
+      "$ref": "delivery-public-post-plan-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-post-check-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-post-commit-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-post-branch-review-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-post-publication-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-finalizer-base-mismatch-input.schema.json"
+    },
+    {
+      "$ref": "delivery-public-resolved-candidate-input.schema.json"
+    }
+  ]
+}

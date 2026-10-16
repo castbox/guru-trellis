@@ -1,0 +1,52 @@
+{
+  "$id": "guru-check-task-input-legacy_control_inspection-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "root",
+    "key",
+    "task_ref",
+    "control_refs"
+  ],
+  "properties": {
+    "profile": {
+      "const": "legacy_control_inspection"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "control_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

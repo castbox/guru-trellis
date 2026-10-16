@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-input-delivery-solution-planning-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "architecture_assessment",
+    "delivery_key"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_solution_planning"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "architecture_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planning_purpose",
+        "baseline_identity",
+        "constitution_identity",
+        "impact_kind",
+        "impact_reason"
+      ],
+      "properties": {
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "baseline_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constitution_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "impact_kind": {
+          "enum": [
+            "architecture_impact",
+            "no_architecture_impact"
+          ]
+        },
+        "impact_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change_path": {
+          "enum": [
+            "target_native",
+            "legacy_boundary_convergence",
+            "dedicated_refactor_slice"
+          ]
+        },
+        "decision_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "impact_kind": {
+                "const": "architecture_impact"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "change_path",
+              "decision_refs"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "change_path"
+                  ]
+                },
+                {
+                  "required": [
+                    "decision_refs"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; only the installed public parser validates identity and relationship."
+    }
+  }
+}

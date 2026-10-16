@@ -1,30 +1,18 @@
 # `guru-reconcile-task-base` Contract
 
-## Entry And Pair Guard
+## Actual integration entry
 
-The semantic Skill has six caller-owned input profiles: `post_plan`,
-`post_check`, `post_commit`, `post_branch_review`, `post_publication`, and
-`finalizer_base_mismatch`. Each carries one exact active-task identity,
-selected base ref, task HEAD, and a closed `resume_target`. The three
-pre-review profiles do not accept caller-supplied old/new base SHAs: the guard
-resolves the selected base and derives the old base from the unique live merge
-base of task HEAD and selected base. The three post-review profiles carry the
-adjacent old/new pair plus their minimum caller-owned full-review identity.
-There is no optional continuity bag.
+Only the original stage owner invokes this Skill for actual merge conflict,
+concrete required-check integration failure, this original merge flow’s
+confirmed existing server update requirement, explicit dependency/requirement
+incorporation, or user-requested synchronization. Behind/base SHA alone never
+triggers it. guard-task-base-pair and its default edges are retired.
 
-Before semantic invocation, `guard-task-base-pair` performs one live resolution
-of the selected base ref. For a pre-review profile it treats the selected base
-being an ancestor of task HEAD as `unchanged`; otherwise it emits the
-operation-scoped `(live merge base, selected base HEAD)` pair. For a
-post-review profile it validates the caller-bound adjacent pair. It returns
-only `unchanged`, `current_pair`, `new_pair`, or `blocked`. It checks identity
-and ancestry, but never judges
-authority, task-content impact, integration impact, relevant paths, validation
-sufficiency, findings, or route. `unchanged` creates no checkpoint. A matching
-owner-private result makes `current_pair` return its already validated exact
-typed output and delete the checkpoint as the deterministic one-use consumer.
-It never replaces that output with an unconditional `resume_target`; only
-`unchanged` resumes the caller target directly.
+Retain the six Delivery profiles and resolved-candidate entry. Select one fixed
+target OID before invocation and supply it as selected_base_ref; every candidate,
+executor, recorder/checker and recovery uses that same object. Pre-review
+old-base computation reads only that fixed pair’s unique merge base; it does
+not observe a moving remote ref. Content baseline B remains separate.
 
 ## Common causal authority impact
 
@@ -59,14 +47,18 @@ the integration clock. Live Issue authority, accepted scope, approved planning
 assumptions, and task content form the authority/task-content clock. Advancing
 the integration clock alone never makes planning stale and never changes the
 caller's closed `resume_target`. If authority and task content remain unchanged
-and the exact candidate is compatible, `post_plan`, `post_check`, and
-`post_commit` create one checked local reconciliation merge commit before
-returning `reconciled`. `post_plan` preserves `task_activation`; `post_check`
-and `post_commit` both route to fresh Phase 2. The three post-review profiles
+and the exact candidate is compatible, `delivery_post_plan`, `delivery_post_check`, and
+`delivery_post_commit` create one checked local reconciliation merge commit before
+returning `reconciled`. `delivery_post_plan` preserves `delivery_activation`; `delivery_post_check`
+and `delivery_post_commit` both route to bounded candidate/Check applicability re-entry. The three post-review profiles
 also return `reconciled` when the candidate preserves the reviewed-content
 identity. When that identity must advance, only those three profiles may return
-`review_continuity_required`; they do not route through implementation or a
-new full Branch Review. `planning_stale` is valid only when current live
+`review_continuity_required`. Bounded continuity does not itself require a new
+full Branch Review or provide a public gate pass. Its workflow consumer rereads
+public Check and full-review applicability for the reconciled candidate:
+missing/stale Check reenters the original bounded candidate/Check owner;
+missing/stale full review returns to the original Branch Review owner to judge
+prior complete coverage plus actual integration delta. `planning_stale` is valid only when current live
 authority or an approved planning assumption has actually changed; it carries
 exact reason refs for that change.
 
@@ -124,7 +116,7 @@ and is not included in any request, result, checkpoint, or DTO.
 
 `execute-base-reconciliation` is package-private. It requires a uniquely
 branch-bound task worktree at the exact prior task HEAD and binds the
-selected ref to the exact new base. For pre-review profiles it re-derives the
+fixed selected OID to the exact operation target. For pre-review profiles it re-derives the
 old base from the live merge base. For post-review profiles it validates the
 adjacent old-base ancestry and prior full-review ancestry. It creates one local
 `--no-ff` merge commit and verifies exact parent order, result ancestry,
@@ -144,9 +136,60 @@ selected exit, minimal consumer fields, and local digest. It is deleted after a
 successful same-owner public invocation; stale state is removed before a fresh
 review rather than chained.
 
-## Conflict-Resolved Candidate
+## Pre-Implementation Resolved Baseline
 
-The `resolved_candidate` profile is entered only from
+The two private candidate/reconciliation requests add the closed optional
+`resolved_candidate` object with exactly `stage0_tree` and `integration_paths`.
+Omitting it retains the ordinary clean-merge algorithm. Persistent consumption
+is restricted to `delivery_post_plan` with `resume_target=delivery_activation`;
+it creates no new public input, exit, checkpoint, or downstream gate.
+
+This owner reads the current live source, approved planning and exact base
+delta for the same Task generation and Delivery, resolves the genuine document
+conflict, and selects the integration paths. In a temporary index, build the
+stage-0 candidate from the resolved live index and restore every unselected
+entry to the prior task HEAD. Path selection, preservation of both authorities,
+planning applicability, resolution sufficiency and validation choice remain AI
+judgments. The real index/worktree are never rewritten by candidate building.
+
+`execute-base-candidate` verifies current HEAD, one active selected-base
+`MERGE_HEAD`, zero unmerged entries, no other sequencer, and the reviewed
+candidate path set. Every prior-HEAD-to-candidate change must be selected;
+selected live index mode/oid/stage entries must equal the candidate, and
+selected paths must have no unstaged changes. It loads that exact tree into a
+temporary detached checkout, runs the AI-supplied argv-array baseline checks,
+returns the original candidate facts using `index_tree_digest`, and removes
+the checkout. Baseline validation proves integration and planning applicability;
+unimplemented business scope is not a prerequisite and receives no Check pass.
+
+After the baseline semantic gate, display the exact Task/Delivery, branch,
+prior HEAD, live operation pair, `MERGE_HEAD`, selected paths, tree/digest,
+message, parent order `[prior_task_head,new_base_head]` and zero remote effects.
+Only current-dialogue confirmation permits the persistent Git invocation.
+No authorization is present in a request, schema, result or checkpoint.
+
+`execute-base-reconciliation` rechecks the branch-bound Task/Delivery, selected
+ref and unique old merge base, active merge facts and candidate equality. It
+loads the reviewed tree into a temporary `GIT_INDEX_FILE` and uses ordinary
+`git commit`. The real index, unrelated staged/unstaged/untracked content and
+parallel pending planning remain intact; no stash or reset occurs. Commit
+readback verifies exact parents, tree, message, digest and terminal merge state.
+The original receipt then enters record/check/invoke and returns `reconciled`
+to the original Activation owner for the same Task generation and Delivery.
+
+If stdout is lost, the same request may recover only the current HEAD with
+those exact parents/tree/message/digest, the same selected base/old pair and a
+terminal Git operation state. Unrelated pending changes remain allowed. The
+receipt identifies the existing commit; recovery never commits or amends.
+Ordinary HEAD/base/tree/index changes, unresolved conflicts or changed reviewed
+paths stop without altering the existing state and require this owner's fresh
+read/re-entry. Actual authority/planning changes follow its existing semantic
+exits. This route does not call business Check, Task Commit, Branch Review or
+readiness; those owners run after implementation.
+
+## Post-Implementation Conflict-Resolved Candidate
+
+The `delivery_resolved_candidate` profile is entered only from
 `guru-check-task:resolved_reconciliation_passed`. Its public input binds the
 fresh Phase 2 commit anchor, active `MERGE_HEAD`, selected new base, stage-0
 tree object, index-tree digest, exact parent order, branch, and commit message.
@@ -162,21 +205,31 @@ mutation.
 If stdout is lost after that commit, the same request may recover only when
 current `HEAD` has the exact reviewed parents, tree, and message in a clean
 terminal Git state. Recovery returns the existing commit and never creates a
-second commit. `project-resolved-full-review` combines that checked result with
-explicit Branch Review authoring and emits the complete existing
-`branch_review` input. This marker-free deterministic projection is not a
+second commit. Before Full Review, the reviewing owner invokes public rework
+to implementation; the implementation owner binds the reconciled candidate with
+`begin_check`, and the Check owner reviews current applicability and records a
+fresh candidate-bound public Check. This preserves the Delivery identity, plan
+and existing reconciled commit; still-valid test evidence need not be rerun.
+`project-resolved-full-review` combines that checked result with explicit Branch
+Review authoring only after validating the actual current public Check owner,
+passed result, predecessor applicability, exact reconciled HEAD/base, live
+candidate bytes and scope/plan/evidence references. A token by itself is not
+sufficient. It emits the complete current `delivery_branch_review` input. This marker-free deterministic projection is not a
 Reconcile external exit; bounded base continuity is not used for this path.
 
 ## Exits
 
 - `reconciled`: the workflow router receives task/current-base identity and the
-  checked resume target. `post_plan` preserves task activation; `post_check`
-  and `post_commit` route to fresh Phase 2; post-review profiles preserve their
+  checked resume target. `delivery_post_plan` preserves Delivery activation; `delivery_post_check`
+  and `delivery_post_commit` retain the `phase2` transport discriminator for
+  bounded implementation/Check reentry over the actual delta and affected
+  dependencies; it never means unconditional replay or another commit.
+  Post-review profiles preserve their
   closed target when no bounded continuity review is needed.
 - `review_continuity_required`: Branch Review receives the exact old/new pair,
   prior full-review commit, current reconciled task HEAD, candidate tree token,
   semantically relevant paths, and original route for bounded continuity. This
-  exit is invalid for `post_plan`, `post_check`, and `post_commit`, and cannot
+  exit is invalid for `delivery_post_plan`, `delivery_post_check`, and `delivery_post_commit`, and cannot
   substitute for the first complete Branch Review.
 - `implementation_required`: implementation receives exact finding refs and
   resumes the affected downstream graph.
@@ -193,9 +246,8 @@ fail closed.
 ## Compatibility
 
 The continuity output and private result are direct current-only 2.0 contracts.
-Older continuity output/private checkpoints are stale and are not dual-read,
-migrated, or wrapped. Legacy active-task
-base anchors may form one initial pair; absent anchors require a complete
-bounded reconciliation. The package never reads another Skill's private
+Older continuity output/private checkpoints require original-owner fresh review,
+not a fabricated DTO. Missing content/authority facts return to their original
+producer without forcing an unnecessary Reconcile. The package never reads another Skill's private
 checkpoint, restores the retired shared compatibility dispatcher, rewrites
 tracked task artifacts, or creates a remote ref or commit.

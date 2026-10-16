@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "maintain-legacy-task-resumed-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_id",
+    "lifecycle_generation",
+    "task_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "task_resumed"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lifecycle_generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

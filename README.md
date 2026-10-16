@@ -75,15 +75,15 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 已发布稳定 Guru tag | `v0.7.0-guru.3`（peeled `7d20a930341dae3e7dd2d214660ce3b99e28d863`） |
 | 稳定 `.3` 的原 Fork source / CI | `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / `37735554354` |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.4` |
-| 当前源码 Guru extension revision | `0.7.0-guru.3`（S1 bootstrap revision；S2 才推进 `.4`） |
+| 当前源码 Guru extension revision | `0.7.0-guru.4`（未发布的准备源码） |
 | 当前源码固定 Fork CLI/Core | `0.7.0-castbox.3` @ `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0` |
 | 当前源码 Fork CI identity | `38851816688` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | RDT / Architecture 分别由 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 指定 |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
-当前源码虽暂留 extension `.3`，内容已不同于 immutable `.3` tag，不能只凭版本号
-选择安装来源。默认稳定安装使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，
+当前源码 extension 为 `.4`，与已发布的 immutable `.3` tag 分属不同来源，不能只凭
+Fork CLI/Core 的相同版本号选择安装来源。默认稳定安装使用 `gh:castbox/guru-trellis/trellis#v0.7.0-guru.3`，
 `GURU_SOURCE` 使用同一 tag 的 checkout，并按其原 lock 构建 Fork；不得把当前新 Fork
 与旧 `.3` Guru source 混搭执行。
 
@@ -93,10 +93,11 @@ SHA，再从其 lock 构建；这里不预填尚未形成的提交，也不把�
 准备版本不作为业务仓默认安装版本。Fork 合并/main CI、旧 tag 或本地样本不能替代
 Guru exact-candidate、installed/lifecycle 或发布门禁。
 
-当前 S1 只采用正式来源并修订公开说明，保留旧 installed graph。取得已提交、干净的
-完整来源后，再由原 tools-only 与 selected-task maintenance owners 成套切换工具和同一
-Task，验证目标自身 native/下一实际 owner；随后 S2 重新进行真实 Delivery Planning，
-推进 `.4` 并完成剩余投影与定向验证。来源锁更新本身不表示维护切换或投影验证通过。
+来源准备将 canonical extension 与原 maintenance target 对齐为 `.4`；已采用的基础工具
+仍是其自身 receipt 对应的 `.3` installed graph，原生 Task2/session3 的采用与最终
+`.4` 投影证明分开。S2 经独立审查交付实际 clean committed `.4` 来源后，S3 再由原
+tools-only owner 开始新的 `.4` 操作，完成四平台投影及正式安装、所选 Task 的目标 native/
+下一实际 owner、恢复与回退定向验证。来源准备不表示 `.4` 安装或完整准备验收通过。
 
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
 exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代

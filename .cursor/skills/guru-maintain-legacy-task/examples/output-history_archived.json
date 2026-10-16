@@ -1,0 +1,8 @@
+{
+  "exit_id": "history_archived",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "archive_ref": ".trellis/tasks/archive/legacy-task"
+}

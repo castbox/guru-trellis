@@ -1,0 +1,7 @@
+{
+  "profile": "delivery_task_scope_revision",
+  "mode": "workflow",
+  "target_locator": "https://github.com/example/repository/issues/1",
+  "resume_target": "delivery-planning",
+  "continuation_id": "scope-d1"
+}

@@ -61,7 +61,7 @@ def main() -> None:
     parser.add_argument(
         "--mode",
         "-m",
-        choices=["default", "packages", "phase", "continuation"],
+        choices=["default", "packages", "phase", "continuation", "runtime-contract"],
         default="default",
         help="Output mode: default (full context), packages (package info only), phase (workflow step extraction), continuation (workflow-owned continuation contract)",
     )
@@ -94,6 +94,14 @@ def main() -> None:
             )
             content = filter_platform(content, effective)
         print(content, end="")
+    elif args.mode == "runtime-contract":
+        from .runtime_contract import RuntimeContractError, read_runtime_contract
+        workflow_path = get_repo_root() / DIR_WORKFLOW / "workflow.md"
+        require_project_path(workflow_path, get_repo_root())
+        try:
+            print(json.dumps(read_runtime_contract(workflow_path), indent=2, ensure_ascii=False))
+        except RuntimeContractError as exc:
+            parser.exit(2, f"invalid_runtime_contract: {exc}: {workflow_path}\n")
     elif args.mode == "continuation":
         workflow_path = get_repo_root() / DIR_WORKFLOW / "workflow.md"
         require_project_path(workflow_path, get_repo_root())

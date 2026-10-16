@@ -13,7 +13,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     operation={**public,"old_base_head":old_base,"new_base_head":new_base}
     receipt=None
     if args.reconciliation_result:
-        receipt=read_json(repo,package_root,args.reconciliation_result,"reconciliation_result"); validate_json(receipt,package_root/"schemas/reconciliation-result.schema.json","reconciliation_result")
+        receipt=read_json(repo,package_root,args.reconciliation_result,"reconciliation_result"); validate_json(receipt,package_root/"schemas/delivery-reconciliation-result.schema.json","reconciliation_result")
     committed_reconciliation=(exit_id=="review_continuity_required" or (exit_id=="reconciled" and public["profile"] in PRE_REVIEW_PROFILES))
     if committed_reconciliation:
         if receipt is None:
@@ -29,8 +29,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("schema_mismatch","reconciliation_result","Only committed reconciliation routes consume a reconciliation result.")
         current_head=public["task_head"]
     objective_identity(repo,public,expected_head=current_head)
-    output=output_for(operation,gate,exit_id,task_head=current_head); validate_json(output,package_root/f"schemas/public-{exit_id.replace('_','-')}-output.schema.json","typed_output")
+    output=output_for(operation,gate,exit_id,task_head=current_head); validate_json(output,package_root/f"schemas/delivery-public-{exit_id.replace('_','-')}-output.schema.json","typed_output")
     result={"schema_version":"2.0","skill_id":"guru-reconcile-task-base",**{k:copy.deepcopy(v) for k,v in public.items() if k not in {"task_head","old_base_head","new_base_head"}},"prior_task_head":public["task_head"],"task_head":current_head,"old_base_head":old_base,"new_base_head":new_base,"semantic_gate":gate,"reconciliation_result":receipt,"typed_output":output}
     result["facts_sha256"]=digest(result); validate_result(package_root,repo,result,public)
-    target=checkpoint_path(repo,public["task_ref"],allow_planning=public["profile"]=="post_plan"); target.parent.mkdir(parents=True,exist_ok=True); target.write_text(__import__('json').dumps(result,ensure_ascii=False,indent=2)+"\n")
+    target=checkpoint_path(repo,public["task_ref"],delivery_key=public["delivery_key"]); target.parent.mkdir(parents=True,exist_ok=True); target.write_text(__import__('json').dumps(result,ensure_ascii=False,indent=2)+"\n")
     return result

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-contract-incomplete-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-contract-incomplete-output.schema.json"
+    },
+    {
+      "$ref": "public-output-delivery-contract-incomplete-1.0.schema.json"
+    }
+  ]
+}

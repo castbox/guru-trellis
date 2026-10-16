@@ -38,6 +38,7 @@ class InventoryEntry:
 
 
 INVENTORY: tuple[InventoryEntry, ...] = (
+    InventoryEntry("python_runtime_check", "python_bootstrap", "directory", "guru-python-runtime-check-", "TMPDIR"),
     InventoryEntry("installation_upgrade_core_preview", "installation_upgrade", "directory", "guru-install-upgrade-core-", "TMPDIR"),
     InventoryEntry("preset_staging", "preset_apply", "directory", "guru-team-preset-stage-", "TMPDIR"),
     InventoryEntry("throwaway_install", "throwaway_install", "directory", "guru-trellis-install.", "TMPDIR"),

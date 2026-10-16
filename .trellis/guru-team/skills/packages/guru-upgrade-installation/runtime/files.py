@@ -116,7 +116,7 @@ def task_token(root: Path, checkpoint: dict) -> str:
 def control_token(checkpoint: dict) -> str:
     # The preset owns its Python pointers, including aliases of the same path.
     pointers = {Path(checkpoint["controls"][key]).resolve()
-                for key in ("python_common", "python_checkout") if key in checkpoint["controls"]}
+                for key in ("python_common", "python_checkout", "python_effective") if key in checkpoint["controls"]}
     return content_token({key: Path(path) for key, path in checkpoint["controls"].items()
                           if Path(path).resolve() not in pointers})
 

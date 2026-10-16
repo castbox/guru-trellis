@@ -1,0 +1,12 @@
+{
+  "profile": "delivery_initial_commit",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-26-example",
+  "source_exit": "passed",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "check_result_id": "result:example"
+}

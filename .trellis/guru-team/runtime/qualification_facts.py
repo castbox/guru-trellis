@@ -58,6 +58,21 @@ def verify_current_facts(public_input: dict, repo: Path) -> None:
             task_path = Path(task_ref)
             if task_path.parts[:2] != (".trellis", "tasks"):
                 task_path = Path(".trellis/tasks") / task_path
+            metadata = repo / task_path / 'task.json'
+            if metadata.is_file() and json.loads(metadata.read_text()).get('schema_version') == '2.0':
+                from runtime.delivery_projection.adapter import DeliveryProjection
+                from runtime.task_lifecycle.errors import LifecycleContractError
+                try:
+                    projection = DeliveryProjection(repo, task_path.as_posix())
+                    current = projection.current()
+                    record = projection.read_record()
+                    key = current.get('key', {})
+                    if (current.get('kind') != 'current' or key.get('task_id') != record['id']
+                            or key.get('lifecycle_generation') != record['lifecycle_generation']):
+                        raise CommandError('stale_identity', 'public_input.target.task_ref', 'Select the exact current Delivery before qualifying its plan.', 3)
+                    task_path = projection.planning_directory(key).relative_to(repo.resolve())
+                except LifecycleContractError as exc:
+                    raise CommandError('stale_identity', exc.field_path, exc.remediation, 3) from exc
             planning_paths = [(task_path / name).as_posix() for name in ("prd.md", "design.md", "implement.md")]
         if target["planning_identity"] != file_set_identity(repo, planning_paths):
             raise CommandError("stale_identity", "public_input.target.planning_identity", "Reread the current planning files and rerun qualification.", 3)

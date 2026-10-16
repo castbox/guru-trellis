@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-baseline-current-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-baseline-current-output.schema.json"
+    },
+    {
+      "$ref": "public-output-delivery-baseline-current-1.0.schema.json"
+    }
+  ]
+}

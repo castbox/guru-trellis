@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-delivery-semantic-result-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typed_exit",
+    "reason"
+  ],
+  "properties": {
+    "typed_exit": {
+      "enum": [
+        "created",
+        "scope_revision_required",
+        "selection_required",
+        "blocked"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

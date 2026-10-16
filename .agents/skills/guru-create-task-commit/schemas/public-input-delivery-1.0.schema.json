@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-task-commit-input-delivery-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-delivery-initial-commit-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-revision-reentry-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-finding-fix-commit-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-recovery-resume-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-committed-reentry-input-1.0.schema.json"
+    }
+  ]
+}

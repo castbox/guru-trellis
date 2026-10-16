@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-legacy-task-input-convert-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_ref",
+    "target_checkout",
+    "key",
+    "task_ref"
+  ],
+  "properties": {
+    "profile": {
+      "const": "convert"
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cli_package_root",
+        "dependency_mode",
+        "expected_candidate"
+      ],
+      "properties": {
+        "cli_package_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependency_mode": {
+          "enum": [
+            "source_locked",
+            "local_candidate"
+          ]
+        },
+        "expected_candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cli_version",
+            "core_version",
+            "cli_digest",
+            "core_digest"
+          ],
+          "properties": {
+            "cli_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "core_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "cli_digest": {
+              "type": "string",
+              "minLength": 1
+            },
+            "core_digest": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "source_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "guru_source_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fork_source_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "target_checkout": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

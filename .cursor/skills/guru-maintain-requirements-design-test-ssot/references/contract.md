@@ -25,3 +25,13 @@ identity, safe locator, direct version/freshness binding, unique consumer,
 minimal output, and schema. It never overwrites those semantic-owner bindings. Public
 output never contains document bodies, scan history, review narrative, Git
 facts, authorization, recorder state, or private digests.
+
+## Stage applicability
+
+This owner selects the RDT/Architecture versions applicable to the current
+Task plan and candidate. Use actual immutable version/Git-history authority
+when shared CURRENT advances without affecting this Task. Such advancement
+does not require contribution rewrite, promotion or fresh business gates.
+Explicitly applicable rules and real requirement/scope/dependency/solution
+changes still enter the original revision owners. Shared-current promotion
+retains its own live expected-current and subtraction/traceability checks.

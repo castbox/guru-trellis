@@ -137,7 +137,7 @@ def stage0_eval_transition(
 ) -> dict[str, Any] | None:
     if (
         skill_id == "guru-review-contract-wording"
-        and public_input.get("profile") in {"planning_artifacts", "explicit_paths"}
+        and public_input.get("profile") in {"delivery_planning_artifacts", "explicit_paths"}
     ):
         return None
     mode = str(public_input.get("mode") or owner_result.get("mode") or "workflow")
@@ -701,7 +701,7 @@ def wording_review(
             key: passed for key in runtime.CONTRACT_WORDING_REVIEW_DIMENSIONS
         },
     }
-    if profile == "planning_artifacts":
+    if profile == "delivery_planning_artifacts":
         gate["planning_checked_dimensions"] = {
             key: passed for key in runtime.CONTRACT_WORDING_PLANNING_REVIEW_DIMENSIONS
         }
@@ -720,7 +720,7 @@ def wording_review(
     return runtime.contract_wording_derive_result(profile, mode, scope, scan, authored)
 
 def build_wording_owner(
-    runtime: Any, fixture: Path, package_root: Path, recipe: str,
+    runtime: Any, fixture: Path, package_root: Path, recipe: str, public_input=None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     change_request = {
         "kind": "draft", "draft_id": "stage0-wording-eval",
@@ -738,10 +738,18 @@ def build_wording_owner(
         )
         typed_exit = "pass"
     elif recipe == "wording-content-changed":
-        profile, mode = "planning_artifacts", "workflow"
-        task = fixture / ".trellis/tasks/current"
+        from adapters.eval.delivery_production import seed_delivery
+        profile, mode = "delivery_planning_artifacts", "workflow"
+        run_git(fixture, "checkout", "-qb", "eval/current")
+        task, key, projection = seed_delivery(fixture, "wording-delivery-eval")
+        directory = projection.planning_directory(key)
+        prior_content = hashlib.sha256((directory / "prd.md").read_bytes()).hexdigest()
+        (directory / "prd.md").write_text("# Delivery PRD\n\nR1. Production eval. The exact owner wrapper is required.\n")
+        if public_input is None:
+            raise ValueError("Delivery wording staging requires its public identity input.")
+        public_input.update(task_ref=task.relative_to(fixture).as_posix(), delivery_key=key)
         scope, contents = runtime.contract_wording_build_scope(
-            fixture, profile, mode, task_dir=task,
+            fixture, profile, mode, task_dir=task, delivery_key=key,
         )
         typed_exit = "content_changed"
     elif recipe == "wording-blocked":
@@ -754,7 +762,20 @@ def build_wording_owner(
     else:
         raise ValueError(f"unsupported wording owner staging recipe: {recipe}")
     scan = runtime.scan_contract_wording(scope, contents)
-    return wording_review(runtime, profile, mode, scope, scan, typed_exit), change_request
+    result = wording_review(runtime, profile, mode, scope, scan, typed_exit)
+    if profile == "delivery_planning_artifacts":
+        result["semantic_review"]["revisions"][0]["before_sha256"] = prior_content
+        authored = copy.deepcopy(result["semantic_review"])
+        authored.update(typed_exit=result["typed_exit"], generated_at=result["generated_at"])
+        envelope = {"profile": profile, "mode": mode,
+                    "task_ref": task.relative_to(fixture).as_posix(), "delivery_key": key,
+                    "owner_result": authored}
+        result = stage0_command(fixture, "guru-review-contract-wording", "record-contract-wording-review",
+                                envelope, "--invocation", "-", "--root", str(fixture))
+        envelope["owner_result"] = result
+        stage0_command(fixture, "guru-review-contract-wording", "check-contract-wording-review",
+                       envelope, "--invocation", "-", "--root", str(fixture))
+    return result, change_request
 
 def readiness_prerequisites(
     runtime: Any,

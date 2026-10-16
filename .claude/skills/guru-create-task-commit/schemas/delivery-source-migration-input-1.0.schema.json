@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-task-commit-source-migration-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "delivery_key",
+    "source_commit",
+    "planning_sources",
+    "profile",
+    "task_ref",
+    "plan_file",
+    "workspace"
+  ],
+  "properties": {
+    "delivery_key": {
+      "type": "object"
+    },
+    "source_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "planning_sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prd.md",
+        "design.md",
+        "implement.md",
+        "implement.jsonl",
+        "check.jsonl"
+      ],
+      "properties": {
+        "prd.md": {
+          "type": "string",
+          "minLength": 1
+        },
+        "design.md": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implement.md": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implement.jsonl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "check.jsonl": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "profile": {
+      "const": "delivery_source_migration"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_file": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "planning_projection": {
+      "const": "markdown_relative_links_v1"
+    }
+  }
+}

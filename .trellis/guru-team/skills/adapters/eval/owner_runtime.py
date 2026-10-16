@@ -206,12 +206,12 @@ def compose_production_owner_command_runtime(
         "cmd_record_planning_approval": lambda args: run_component(
             "guru-approve-task-plan",
             "record-planning-approval.sh",
-            ["--root", str(args.root), "--task", str(args.task), "--input", str(args.input)],
+            ["--root", str(args.root), "--task", str(args.task), "--delivery-key", json.dumps(args.delivery_key), "--input", str(args.input)],
         ),
         "cmd_check_planning_approval": lambda args: run_component(
             "guru-approve-task-plan",
             "check-planning-approval.sh",
-            ["--root", str(args.root), "--task", str(args.task)],
+            ["--root", str(args.root), "--task", str(args.task), "--delivery-key", json.dumps(args.delivery_key)],
         ),
         "cmd_record_phase2_check": lambda args: run_component(
             "guru-check-task",
@@ -256,6 +256,7 @@ def compose_production_owner_command_runtime(
             [
                 "--root", str(args.root), "--task", str(args.task),
                 "--expected-exit", str(args.expected_exit),
+                *(["--delivery-key", json.dumps(args.delivery_key)] if getattr(args, "delivery_key", None) else []),
             ],
         ),
     }

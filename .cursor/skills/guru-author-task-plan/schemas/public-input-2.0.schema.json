@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-input-aggregate-2.0",
+  "oneOf": [
+    {
+      "$ref": "public-task-scope-requirements-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-initial-review-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-active-task-scope-change-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-wording-reentry-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-approval-revision-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-delivery-plan-revision-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-requirements-revision-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-solution-planning-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-architecture-conflict-resolution-input.schema.json"
+    }
+  ]
+}

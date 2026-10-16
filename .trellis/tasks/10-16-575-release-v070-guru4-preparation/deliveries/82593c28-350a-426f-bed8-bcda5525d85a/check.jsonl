@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "完整切片定向验证和测试价值；不足不记pass"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "完整投影与历史资产退出、code/docs subtraction和直接演进判断"}

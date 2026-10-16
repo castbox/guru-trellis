@@ -1,1 +1,5 @@
-{"error":"schema_mismatch","field":"public_input.profile","remediation":"Match one declared caller profile."}
+{
+  "error": "schema_mismatch",
+  "field": "public_input.profile",
+  "remediation": "Match one declared caller profile."
+}

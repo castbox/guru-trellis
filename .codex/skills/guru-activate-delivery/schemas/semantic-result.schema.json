@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-activate-delivery-semantic-result-delivery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "typed_exit",
+    "reason"
+  ],
+  "properties": {
+    "typed_exit": {
+      "enum": [
+        "delivery_started",
+        "planning_refresh_required",
+        "invalid_delivery_state",
+        "blocked"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

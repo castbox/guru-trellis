@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-delivery-consumer-selection-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_key",
+    "task_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "selection_required"
+    },
+    "task_key": {
+      "type": "object",
+      "description": "Opaque public API 1.0 key; validated only by the installed upstream parser."
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

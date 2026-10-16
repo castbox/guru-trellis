@@ -94,6 +94,22 @@
     {
       "id": "public_upgraded_output",
       "path": "examples/public-upgraded-output.json"
+    },
+    {
+      "id": "public_delivery_upgrade_input",
+      "path": "examples/public-delivery_upgrade-input.json"
+    },
+    {
+      "id": "public_delivery_resume_input",
+      "path": "examples/public-delivery_resume-input.json"
+    },
+    {
+      "id": "public_delivery_rollback_input",
+      "path": "examples/public-delivery_rollback-input.json"
+    },
+    {
+      "id": "public_delivery_resume_required_output",
+      "path": "examples/public-delivery_resume_required-output.json"
     }
   ],
   "schemas": [
@@ -140,6 +156,30 @@
     {
       "id": "public_upgraded_output_schema",
       "path": "schemas/public-upgraded-output.schema.json"
+    },
+    {
+      "id": "public_delivery_upgrade_input_schema",
+      "path": "schemas/public-delivery_upgrade-input.schema.json"
+    },
+    {
+      "id": "public_delivery_resume_input_schema",
+      "path": "schemas/public-delivery_resume-input.schema.json"
+    },
+    {
+      "id": "public_delivery_rollback_input_schema",
+      "path": "schemas/public-delivery_rollback-input.schema.json"
+    },
+    {
+      "id": "private_delivery_plan_schema",
+      "path": "schemas/private-delivery-plan.schema.json"
+    },
+    {
+      "id": "private_delivery_recovery_schema",
+      "path": "schemas/private-delivery-recovery.schema.json"
+    },
+    {
+      "id": "public_delivery_resume_required_output_schema",
+      "path": "schemas/public-delivery_resume_required-output.schema.json"
     }
   ],
   "validators": [
@@ -188,6 +228,14 @@
         "kind": "stop",
         "id": "upgrade-installation-blocked"
       }
+    },
+    {
+      "id": "delivery_resume_required",
+      "evidence": "Actual Plan2 partial write or original-owner/preset failure retained with the same frozen plan.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-upgrade-installation"
+      }
     }
   ],
   "reentry": {
@@ -196,7 +244,9 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_delivery_upgrade.py",
+    "tests/test_untracked_legacy.py"
   ],
   "platform_destinations": [
     "shared",
@@ -227,7 +277,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-upgrade-installation-input-aggregate-1.0",
+        "schema_id": "guru-upgrade-installation-input-aggregate-2.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
@@ -274,6 +324,51 @@
           "discriminator": {
             "field": "profile",
             "value": "rollback"
+          }
+        },
+        {
+          "id": "delivery_upgrade",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-delivery_upgrade-input-1.0",
+            "path": "schemas/public-delivery_upgrade-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_upgrade_input",
+            "path": "examples/public-delivery_upgrade-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_upgrade"
+          }
+        },
+        {
+          "id": "delivery_resume",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-delivery_resume-input-1.0",
+            "path": "schemas/public-delivery_resume-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_resume_input",
+            "path": "examples/public-delivery_resume-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_resume"
+          }
+        },
+        {
+          "id": "delivery_rollback",
+          "schema": {
+            "schema_id": "guru-upgrade-installation-public-delivery_rollback-input-1.0",
+            "path": "schemas/public-delivery_rollback-input.schema.json"
+          },
+          "example": {
+            "id": "delivery_rollback_input",
+            "path": "examples/public-delivery_rollback-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_rollback"
           }
         }
       ]
@@ -360,6 +455,20 @@
         "consumer_use_ids": [
           "project_blocked"
         ]
+      },
+      {
+        "exit_id": "delivery_resume_required",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-public-delivery_resume_required-output-1.0",
+          "path": "schemas/public-delivery_resume_required-output.schema.json"
+        },
+        "example": {
+          "id": "delivery_resume_required_output",
+          "path": "examples/public-delivery_resume_required-output.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_resume_required"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -386,8 +495,8 @@
         "contract": {
           "kind": "skill_input",
           "interface_path": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-          "profile_id": "resume",
-          "input_kind": "structured_json"
+          "input_kind": "structured_json",
+          "profile_id": "resume"
         }
       },
       {
@@ -414,6 +523,20 @@
           "kind": "json_schema",
           "schema_id": "guru-upgrade-installation-stop-blocked-1.0",
           "path": "consumers/stop/production/upgrade-installation-blocked.schema.json"
+        }
+      },
+      {
+        "id": "delivery_resume_required_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-upgrade-installation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_resume"
         }
       }
     ],
@@ -451,6 +574,22 @@
         "exit_id": "blocked",
         "consumer_input_id": "blocked_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_delivery_resume_required",
+        "exit_id": "delivery_resume_required",
+        "consumer_input_id": "delivery_resume_required_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "profile",
+            "target": "profile"
+          },
+          {
+            "source": "recovery_ref",
+            "target": "recovery_ref"
+          }
+        ]
       }
     ],
     "private_artifacts": [
@@ -460,6 +599,15 @@
         "schema": {
           "schema_id": "guru-upgrade-installation-private-recovery-1.0",
           "path": "schemas/private-recovery.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_migration_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-upgrade-installation-private-delivery-recovery-2.0",
+          "path": "schemas/private-delivery-recovery.schema.json"
         },
         "persistence": "ignored_runtime"
       }

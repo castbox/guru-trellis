@@ -4,7 +4,7 @@ from pathlib import Path
 from common import check_legacy_inputs,digest,load,load_review_invocation,parse,root,scan,scope,validate_result
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
- p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation");p.add_argument("--mode",choices=("workflow","standalone"));p.add_argument("--profile",choices=("change_request","planning_artifacts","explicit_paths"));p.add_argument("--input");p.add_argument("--task");p.add_argument("--path",action="append",default=[]);p.add_argument("--change-request-input");p.add_argument("--scan-only",action="store_true")
+ p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation");p.add_argument("--mode",choices=("workflow","standalone"));p.add_argument("--profile",choices=("change_request","delivery_planning_artifacts","explicit_paths"));p.add_argument("--input");p.add_argument("--task");p.add_argument("--delivery-key");p.add_argument("--path",action="append",default=[]);p.add_argument("--change-request-input");p.add_argument("--scan-only",action="store_true")
  a=parse(p,argv);repo=root(package_root,a.root);envelope=None
  if a.invocation:
   envelope=load_review_invocation(repo,package_root,a,"scan" if a.scan_only else "record");a.profile=envelope["profile"];a.mode=envelope["mode"];change=envelope["change_request"]
@@ -12,7 +12,9 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   check_legacy_inputs(a)
   if not a.mode or not a.profile:raise CommandError("invalid_arguments","profile","Provide --invocation or legacy --mode and --profile.")
   change=load(repo,package_root,a.change_request_input,"change_request") if a.change_request_input else None
- sc=scope(repo,a.profile,a.task,a.path,change);contents={}
+ from runtime.io import read_json
+ key=getattr(a,"public_delivery_key",None) or (read_json(a.delivery_key,"delivery_key") if a.delivery_key else None)
+ sc=scope(repo,a.profile,a.task,a.path,change,key);contents={}
  for item in sc["items"]:
   contents[item["id"]]=(repo/item["path"]).read_text() if item["kind"]=="markdown_file" else str(change[item["field"]])
  sn=scan(sc,contents)

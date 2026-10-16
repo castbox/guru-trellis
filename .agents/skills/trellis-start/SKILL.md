@@ -32,7 +32,7 @@ Keep the returned Phase Index together with the current-task facts from Step 1.
 ## Step 3: Enter or Continue
 
 - If `## CURRENT SESSION TASK` is `(none)`, follow only the current workflow's initial request entry from the Phase Index. Do not create or select a task from `## PROJECT TASKS` unless that entry and the user authorize it.
-- If an exact current task is present, load the current invocation repository's continuation contract:
+- If an exact current task is present, load the validated Task workspace's continuation contract:
 
   ```bash
   python3 ./.trellis/scripts/get_context.py --mode continuation

@@ -1,6 +1,6 @@
 # Guru Team Workflow Skill Package Contract
 
-## Current #434 Package Graph
+## Current Task / Delivery Package Graph
 
 The current canonical registry/Interface selectors and workflow, not the
 historical cardinalities or versioned predecessor schemas below, define the
@@ -725,18 +725,24 @@ compatibility contract. A legacy DTO that cannot establish the current stage or
 source-preserving provenance fails closed and reruns its current producer; it
 must not default missing fields or derive them from ambient live state.
 
-Current Clarify active-task private evidence uses 4.0. Accepted current scope
-returns scope_ready 1.0 to the original clear router's independently owned
-scope-ready 1.0 input; direct projection contains only exit_id, mode, task_ref,
-source_selection and AI-selected revision_refs. The router drops exit_id and
-adds fixed active_task_scope_change for the existing Author input. Non-current
+Current Clarify keeps its own semantic scope judgment and private evidence.
+The #531 selector uses scope_ready 2.0: the closed pre-publication shape sends
+mode/task_ref/source_selection/revision_refs to Author task_scope_requirements.
+Author writes only root requirements and sends scope_requirements_ready to
+Clarify task_scope_requirements_acceptance. That same owner rereads current
+requirements/source before publishing public accepted_scope. Its post-publication
+shape adds the actual task_key and routes to explicit Creation, affected Delivery
+rework/withdrawal, or Completion by current obligations. Scope-only writing cannot
+enter Architecture/Approval or require a Delivery. No-current Delivery never
+implies automatic empty Creation. Historical scope-ready 1.0 is not converted
+into a current acceptance. Non-current
 active clear still permits null target disposition and projects retained;
 initial/standalone null remains invalid. Historical 3.0 private/clear and 2.0
 clear consumer assets are immutable. Successful old active results re-enter
 original Clarify; no conversion or inferred pass. No planning-bound task action
 or lifecycle writer belongs to this boundary.
 
-### Four-Package Manifest And Historical Routing Snapshot
+### Four-Package Manifest And Versioned Migration
 
 `trellis/skills/guru-team/contracts/production-current-4.0.json` with contract id
 `production-current-v4` is a pinned historical four-package submanifest. The
@@ -747,97 +753,34 @@ the pinned snapshot, not current Planning. Its historical
 activation extended the then-live six-Skill/23-exit Intake contract, not the
 #434 split Intake graph. The production contract contains exactly:
 
-- `guru-approve-task-plan`: `approved`, `revision_required`, `clarify_scope`,
-  `blocked`;
-- `guru-check-task`: `passed`, `implementation_required`, `planning_stale`,
-  `blocked`;
-- `guru-create-task-commit`: `committed`, `revision-required`, `blocked`.
-- `guru-qualify-normal-scenario`: `classified`,
-  `scope_confirmation_required`, `mechanism_revision_required`, `blocked`.
+`contracts/production-current-5.0.json` is the current four-package
+submanifest; it binds the selected Delivery profiles and independent output
+schemas of Approval, Check and Task Commit, plus the delivered #292 normal-scenario qualification, including
+its author_candidate_set input and current outputs. It is a subset of the full registry, not an alternate lifecycle
+selector. Versioned v1-v4 manifests remain historical assets and cannot select
+current inputs. `production-current.json` is the current v5 alias.
 
-The 20 closed structured input profiles are `initial_review`,
-`revision_reentry`, `clarification_reentry`, `initial_check`,
-`finding_fix_rerun`, `planning_reentry`, `initial_commit`,
-`revision_reentry`, `finding_fix_commit`, and `recovery_resume`, plus the ten
-normal-scenario qualification profiles declared by Interface 1.6. Profile ids
-are package-local: the two `revision_reentry` profiles are intentionally owned
-by different Skills. Each profile has one executable example and at least one
-current eval case binding.
+The selected producer and target Interfaces own public schemas, authoring seed
+fields and thin projections. Workflow/stop consumers own independent schemas
+under the shared `consumers/` roots. A semantic consumer authors its own missing
+intent fields from current facts; neither example values nor private lookup
+supplies a missing TaskKey/DeliveryKey or predecessor result by default.
 
-The public DTOs are exact. Planning emits `approved(exit_id, task_ref)`,
-`revision_required(exit_id, task_ref)`,
-`clarify_scope(exit_id, task_ref, proposal_refs)`, or blocked `exit_id` only.
-Check emits `passed(exit_id, task_ref, phase2_commit_anchor)`,
-`implementation_required(exit_id, task_ref, finding_refs)`,
-`planning_stale(exit_id, task_ref, planning_route, proposal_refs)`, or blocked
-`exit_id` only. Commit emits `committed(exit_id, task_ref, base_ref,
-branch_review_commit)`, `revision-required(exit_id, task_ref)`, or blocked
-`exit_id` only. Active `guru-review-branch` consumes exactly `task_ref`,
-`base_ref`, and `branch_review_commit`; the caller authors only `profile`, `mode`, and
-`review_intent` for the selected aggregate schema 4.0 profile. Branch Review
-emits `passed(exit_id, task_ref, branch_review_commit)`,
-`continuity_passed(exit_id, task_ref, branch_review_commit,
-prior_branch_review_commit, task_head,
-old_base_head, new_base_head, candidate_tree_sha256, resume_target)`,
-`implementation_required(exit_id, task_ref, branch_review_commit, finding_refs)`,
-`scope_confirmation_required(exit_id, task_ref, proposal_refs)`, or blocked
-`exit_id` only.
+Task root PRD owns whole scope. Each Delivery owns all five public planning
+files under its upstream planning locator; Approval's compact private result
+serves its local checker only. The checked Guru Planning token reaches only
+Delivery Activation. Activation's actual upstream Planning result reaches
+implementation and Check. Check's result reaches Commit; Commit's actual HEAD
+reaches independent complete Branch Review; full review reaches Readiness.
+No public phase means a semantic pass. Exact current schemas and gate
+applicability remain required after recovery.
 
-Planning and check wrappers materialize their existing owner input,
-invoke the existing recorder/checker pair, and project only the checker-passed
-actual exit. The commit public input contains only profile/mode/task/source-exit/
-`phase2_commit_anchor`. Target-owned AI authoring supplies path classifications,
-structured message fields, and the semantic result to a deterministic private
-candidate builder, which combines them with the passed Phase 2 DTO and live
-task, requirement/source authority, Git, snapshot, and sequence facts. It canonicalizes and validates
-the complete candidate before dialogue-local commit confirmation; neither the
-candidate nor any persisted state records user authorization. The checked
-executor consumes only that private candidate.
-Caller-selected `expected_exit`, artifact bodies, digests, file metadata,
-absolute paths, and runtime snapshots are not public input.
-
-Semantic handoffs use Interface-declared target-owned authoring seeds. The first
-five are
-`guru-approve-task-plan:revision_required -> revision_reentry`,
-`guru-check-task:passed -> guru-create-task-commit:initial_commit`, and
-`guru-create-task-commit:revision-required -> revision_reentry`, and
-`guru-create-task-commit:committed -> guru-review-branch:branch_review`, and
-`guru-review-branch:passed -> guru-review-task-publication:publication_review`
-in the pinned-old graph. The current successor is
-`guru-review-branch:passed -> guru-review-task-delivery`. That old finalization family added
-`guru-review-task-publication:ready -> guru-finalize-task:publication_ready`,
-and the finalizer's `publication_review_stale`, `same_plan_resume`, and
-`reprepare_preview` targets. Task-free execution adds
-`guru-select-workflow-mode:task_free -> guru-execute-task-free-change:selected_route`,
-the execution Skill's `location_required` and `explicit_choice_required`
-self-reentries, and `reselect_mode -> guru-select-workflow-mode:initial_request`.
-Requirements/Design/Test SSOT adds
-`guru-maintain-requirements-design-test-ssot:sync_required -> promotion`; its
-`sync_kind` preserves whether the reviewed bounded projection is promotion or
-repair work without asking the consumer to repeat that semantic judgment.
-Their projected seed fields are respectively `source_exit/task_ref`,
-`source_exit/task_ref/phase2_commit_anchor`, `source_exit/task_ref`,
-`task_ref/base_ref/branch_review_commit`, and
-`task_ref/branch_review_commit`. Publication `ready` seeds Finalizer with
-`task_ref/branch_review_commit/pr_title/pr_body`; every other finalization-family seed
-is the minimal field set declared by its target profile, with reprepare fixed to
-`task_ref/reason_code/branch_review_commit/publication_head`. Target package
-authoring examples supply every remaining
-required fresh semantic field. The validator proves disjoint partition,
-required-set equality, no-overwrite merge, and full target-schema validity;
-all other Skill/workflow/stop consumers keep their existing contracts.
-
-Active closure is derived from the live registry, the production current
-manifest, and every complete active Interface 1.4 row. Every
-active profile and exit must have
-a current canonical case binding and byte-identical selected-platform corpus.
-The historical package cardinality assertion was 32 active Skills, 142 exits, and
-102 commands. That business workflow projection contained 22 invoke markers,
-98 exit markers, 35 workflow-target markers, and 24 stop-target markers. The
-#434 whole-graph cardinality is derived afresh from registry/interfaces/markers.
-Missing,
-extra, duplicate, renamed, unknown, partially activated, or
-case-mismatched entries fail closed.
+TaskCommit keeps one semantic owner for dirty exact commits and clean committed
+reentry. The latter preserves HEAD, consumes fresh Check, and reaches the first
+complete independent Review. It never dirties tracked content for proof.
+New Delivery profiles reject legacy Task-status inputs; the old whole installed
+version stays pinned until the public D2 and Guru private migrations are ready.
+See [task-delivery-migration.md](task-delivery-migration.md) for the supported switch boundary.
 
 ### Normal-scenario qualification public package
 
@@ -934,43 +877,50 @@ public input, private checkpoint, archive, or output.
 New private evidence uses `guru-planning-approval-4.0` under ignored runtime.
 It stores only mode, task/planning locators, authority refs, compact Docs SSOT,
 one composite planning-content freshness token, the final semantic result,
-typed exit, reason, and consumer. The token serves only the local checker before
-activation and Phase 2 recording; a mismatch returns to the owner for AI delta
+typed exit, reason, and consumer. The token serves only the local checker and adjacent Delivery Activation; a mismatch returns to the owner for AI delta
 classification. It is not authorization, semantic approval, public handoff, or
 whole-chain authority. The checkpoint contains no repository snapshot, file
 metadata, per-file or artifact digest bundle, provenance transcript, review
 report, assignment, liveness, or confirmation chain. The public input
-only selects `initial_review`, `revision_reentry`, or
-`clarification_reentry`; callers never preselect findings or an exit.
+only selects `delivery_initial_review`, `delivery_revision_reentry`, or
+`delivery_clarification_reentry`; callers never preselect findings or an exit.
 
 The four external exits and unique consumers are:
 
-- `approved` -> workflow target `phase-1-task-activation`;
+- `approved` -> workflow target `phase-1-delivery-activation`;
 - `revision_required` -> workflow target `guru-task-plan-approval-revision-router`;
 - `clarify_scope` -> workflow target `guru-task-plan-clarify-scope-router`;
 - `blocked` -> stop `task-plan-approval-blocked`.
 
-`revision_required` carries concrete revision_actions through its 2.0 public
-projection to Author approval_revision; Approval never writes the plan. The
+The delivered #292 `revision_required` carries concrete revision_actions;
+the #531 projection preserves task_ref/delivery_key/revision_actions into Author
+delivery_approval_revision. Approval never writes the plan. Its independent
+Delivery input 2.0 consumes the actual final_plan Architecture output and checks
+current design freshness; candidate_assessment cannot enter Approval. The
 affected dependencies, Wording and final Architecture precede Approval re-entry.
 `clarify_scope` delegates through the three-field routing-only
 workflow target, which establishes scope context and mandatory invokes
-`guru-clarify-requirements:active_task_scope_change`; the caller AI authors the
+`guru-clarify-requirements:delivery_active_task_scope_change`; the caller AI authors the
 complete clarification input from fresh live context before all eight planning
 entry checks restart. Unknown, duplicate, multiple, unmapped, or
-consumer-mismatched exits fail closed. The package uses current-only closed
-schema `guru-planning-approval-4.0`; any other shape fails schema validation and
+consumer-mismatched exits fail closed. The delivered #292 legacy-Task package uses current-only closed
+schema `guru-planning-approval-4.0`. The #531 candidate selects its explicit
+Delivery private schema through the current Interface; neither shape is
+converted into semantic approval. A mismatching installation fails closed and
 requires a complete current semantic review.
 
-`guru-author-task-plan` independently owns eight closed inputs and four minimal
-outputs through Interface 1.6. It is the sole business writer for task planning
-documents and official JSONL. Its package contract owns source-design
+`guru-author-task-plan` independently owns nine closed inputs and five minimal
+outputs through Interface 1.6: Task scope-only plus eight Delivery profiles.
+It is the sole business writer for root requirements and each Delivery's three
+planning documents and official JSONL. Its package contract owns source-design
 convergence, writing and profile-local recovery; global order and thin routers
 remain in the canonical workflow. Architecture planning uses purpose-specific
-3.0 contracts: candidate_assessment returns to Author and final_plan returns
-to adjacent Approval. Nonplanning Architecture contracts retain 2.0. The
-matching workflow/preset migration is defined in MIGRATION-292; interrupted
-old planning re-enters the current Author without a compatibility parser.
+purpose-bound Delivery contracts: candidate_assessment returns to
+delivery_solution_planning and final_plan returns to adjacent Delivery Approval.
+Task-only Architecture maintenance retains its independent contract. MIGRATION-292
+records the predecessor writing contract; task-delivery-migration.md owns the
+#531 object/I/O migration. Old pass records cannot acquire a DeliveryKey by
+mechanical conversion; current purpose-bound gates must be rerun.
 
 `guru-create-task-commit` is mandatory after a fresh final Phase 2 pass and
 before every task work stage/commit side effect. It exposes only `committed`,
@@ -1475,29 +1425,19 @@ projected the old `created` exit; it is not a #434 recovery entry. Current
 and generation; continuation must not create a second Issue, branch, worktree,
 or task. The workflow consumes only its checked `created` exit before planning.
 
-Current Phase 1 activation belongs to `guru-activate-task` after checked
-Planning approval and workflow-owned current plan presentation/acceptance.
-Its `activate` action performs the status-only
-`planning -> in_progress` transition; read-only result recovery for the same
-TaskId/generation through `recover_activation` never repeats that mutation.
-For an `in_progress` task's newly approved replan, the same owner instead uses
-`resume_execution` and returns the minimal `execution_resumed` DTO to its unique
-Phase 2 router without changing task metadata or identity. `recover_execution`
-only restores that completed resumption's lost result. Single aggregate input
-and output schemas advance to 2.0; existing first-activation payloads retain
-their meaning, controlled consumers update together, and no parallel parser
-or adapter is retained. The unchanged Planning `approved` handoff carries its
-original `planning_result_id` into either execution action.
-One ignored owner-private execution result binds the actual completed operation,
-planning identity, lifecycle/ref, branch-binding revision and continuity solely
-for same-owner recovery and current Phase 2 consumption. It contains no semantic
-approval or dialogue acceptance. A current Check passed projection calls the
-original execution owner's retirement helper; other owners never interpret
-that checkpoint. Established downstream tasks with no checkpoint keep their
-existing routes. Lost semantic approval returns to its original fresh owner;
-pending acceptance unavailable in the dialogue requires a new presentation.
-The pinned-old workflow-owned
-`initial|recovery` invocation was not a separate current public Skill.
+Current Delivery creation and Planning transition belong respectively to
+`guru-create-delivery` and `guru-activate-delivery`. Their independent public
+contracts and typed exits replace the old Task activation package in the current
+graph; old fixed installations remain pinned until the reviewed migration.
+Current consumers reference only those new schemas and profiles. Historical
+validation assets do not authorize a second executable legacy path.
+
+The public runtime owns Delivery identity/phase; Guru original owners retain
+semantic evidence and private transactions. Recovery is producer-local and
+returns its schema-validated minimal output. A public phase alone cannot restore
+Approval, Check, full Review or readiness. Creation checkpoints are consumed
+only by Creation, not read/deleted by Approval or Author. Scope/implementation
+projections are stateless modules, not one-command wrapper Skills.
 
 `guru-create-task-commit` keeps its existing `recovery_resume` public input and
 same-candidate transaction recovery. The producer validates the retained
@@ -2214,17 +2154,20 @@ Create Task created remains identity-only. No source matrix, final disposition,
 full text, history, authorization, task.json source model or future Author
 registration enters that handoff.
 
-## Clean Committed TaskCommit Re-entry
-
-The existing `guru-create-task-commit` owns both dirty exact commits and
-read-only verification of current committed candidates. The additive
-`committed_reentry` profile uses its declared mutually exclusive public invoke
-signature and preserves all existing inputs and typed exits. Its canonical
-package contract owns the semantic gate, live checks, and Phase 2 consumption;
-platform entries only load that owner. Reapply the matching complete preset
-when adopting this profile; old installations do not gain it from workflow
-text alone.
-
 ## Independent single-checkout maintenance
 
 #566 adds standalone/source-loaded `guru-upgrade-tools` and `guru-maintain-legacy-task`, with profile-specific inputs, minimal exit DTOs and exact same-owner recovery refs. Original Publish/Merge/Finish own their closed legacy fact/control profiles; their thin consumer routes return only to selected maintenance. Ordinary current profiles and independent full Plan2 preserve their input semantics. Matching API, source qualification, fixed preimages and target-native validation are package-owned; no copied discovery directory claims portability. See `trellis/presets/guru-team/MIGRATION-566.md`.
+
+## Fixed Candidate Consumer Contract
+
+Each Delivery stage consumes the fixed complete content range selected by the
+original owner; PR target branch identity is distinct. The existing candidate
+base_ref/head_ref carry complete commit OIDs. Their actual applicability and
+same-operation recovery do not depend on latest remote-tracking refs or overall
+CURRENT versions. D2 uses real preceding Delivery facts and never repeats D1.
+Original semantic owners retain responsibility for true applicable authority
+changes, actual candidate evolution and bounded integration evidence. Default
+pair guard command/results are retired under MIGRATION-567, without replacing
+them with a new gate or public DTO. Finish private transaction v3 removes the
+unused expected_base_head; its same-owner v2 conversion preserves operation,
+commit, payload and recovery rather than restarting or synchronizing.

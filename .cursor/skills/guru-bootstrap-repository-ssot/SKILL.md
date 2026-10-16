@@ -5,6 +5,10 @@ description: Bootstrap and repair the repository Requirements/Design/Test and Ar
 
 # Guru Bootstrap Repository SSOT
 
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
 `judgment_mode=semantic`. This Skill owns Bootstrap orchestration, cross-SSOT
 alignment, activation, revision, and route selection. It supports exactly three
 public profiles: `new_repository`, `existing_repository`, and `repair`.
