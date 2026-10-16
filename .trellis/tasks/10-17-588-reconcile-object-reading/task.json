@@ -1,0 +1,199 @@
+{
+  "schema_version": "2.0",
+  "id": "588-reconcile-object-reading",
+  "name": "588-reconcile-object-reading",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 588,
+    "disposition": "exact_source"
+  },
+  "title": "#588 修复 Reconcile 对象读取与重复摘要开销",
+  "description": "以#588为唯一Direct Source，保持摘要/API/恢复语义，批量读取与调用内复用并完成正式链性能资源验证。",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/588",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-17",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/prd.md",
+    "revision": "sha256:bbb508e680bd75b9d1546e58b50f3bb42f27ada365b7f0bf646c8f9ccc0618ef"
+  },
+  "deliveries": [
+    {
+      "id": "ec1761c6-0be3-4f5a-a8ff-c12e884696a9",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/prd.md",
+          "revision": "sha256:bbb508e680bd75b9d1546e58b50f3bb42f27ada365b7f0bf646c8f9ccc0618ef"
+        },
+        "anchors": [
+          "AC01",
+          "AC02",
+          "AC03",
+          "AC04",
+          "AC05",
+          "AC06",
+          "AC07",
+          "AC08",
+          "AC09",
+          "AC10"
+        ]
+      },
+      "planning_root": "deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/design.md",
+        "revision": "sha256:1c102c1aae1b7931944e6a8e8037c339e1365216309e4c60292467a50e8a0cc5"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:86a86770b6f806c982c38d3e5e59e28e061eaad3434a94d5c864e9975aaaec66",
+        "paths": [
+          ".agents/skills/guru-reconcile-task-base/references/contract.md",
+          ".claude/skills/guru-reconcile-task-base/references/contract.md",
+          ".codex/skills/guru-reconcile-task-base/references/contract.md",
+          ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/benchmark_object_reading.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py"
+        ],
+        "head_ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
+        "base_ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:e90499ca-a6a7-4a88-9b4a-4c8d0b446afb",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/prd.md",
+              "revision": "sha256:bbb508e680bd75b9d1546e58b50f3bb42f27ada365b7f0bf646c8f9ccc0618ef"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03",
+              "AC04",
+              "AC05",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/design.md",
+            "revision": "sha256:1c102c1aae1b7931944e6a8e8037c339e1365216309e4c60292467a50e8a0cc5"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/prd.md",
+              "revision": "sha256:1d20137ece920e912e28f4eed0a5a5b43e9f1ed0f9955408656b4acc5ff97368"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/design.md",
+              "revision": "sha256:1c102c1aae1b7931944e6a8e8037c339e1365216309e4c60292467a50e8a0cc5"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/implement.md",
+              "revision": "sha256:ee0ff2cdfc0aa08a856f17158a0e5742d6fa0de22ee9c633fe52d3b5cee21f81"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:de772cec877522e4b6868165e6a255f0a9b923c416da1a6f1be444a8236a2fe1",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/prd.md",
+              "revision": "sha256:bbb508e680bd75b9d1546e58b50f3bb42f27ada365b7f0bf646c8f9ccc0618ef"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC03",
+              "AC04",
+              "AC05",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/design.md",
+            "revision": "sha256:1c102c1aae1b7931944e6a8e8037c339e1365216309e4c60292467a50e8a0cc5"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:86a86770b6f806c982c38d3e5e59e28e061eaad3434a94d5c864e9975aaaec66",
+            "paths": [
+              ".agents/skills/guru-reconcile-task-base/references/contract.md",
+              ".claude/skills/guru-reconcile-task-base/references/contract.md",
+              ".codex/skills/guru-reconcile-task-base/references/contract.md",
+              ".cursor/skills/guru-reconcile-task-base/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/benchmark_object_reading.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/test_runtime.py"
+            ],
+            "head_ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
+            "base_ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775"
+          },
+          "predecessor_result_id": "planning-accepted:e90499ca-a6a7-4a88-9b4a-4c8d0b446afb",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/prd.md",
+              "revision": "sha256:1d20137ece920e912e28f4eed0a5a5b43e9f1ed0f9955408656b4acc5ff97368"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/design.md",
+              "revision": "sha256:1c102c1aae1b7931944e6a8e8037c339e1365216309e4c60292467a50e8a0cc5"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-588-reconcile-object-reading/deliveries/ec1761c6-0be3-4f5a-a8ff-c12e884696a9/implement.md",
+              "revision": "sha256:ee0ff2cdfc0aa08a856f17158a0e5742d6fa0de22ee9c633fe52d3b5cee21f81"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

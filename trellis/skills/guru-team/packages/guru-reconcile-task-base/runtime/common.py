@@ -166,7 +166,8 @@ def index_tree_digest(repo: Path, *, index_file: Path | None = None) -> str:
     )
     if process.returncode:
         raise CommandError("stale_identity", "repository.index", "Refresh the exact candidate index.", 3)
-    rows: list[bytes] = []
+    entries: list[tuple[bytes, bytes, bytes]] = []
+    blobs: dict[bytes, bytes] = {}
     for entry in process.stdout.split(b"\0"):
         if not entry:
             continue
@@ -174,45 +175,91 @@ def index_tree_digest(repo: Path, *, index_file: Path | None = None) -> str:
         parts = metadata.split()
         if not separator or len(parts) != 3 or parts[2] != b"0":
             raise CommandError(
-                "candidate_failed",
-                "repository.index",
-                "Resolve the candidate before computing its identity.",
-                3,
+                "candidate_failed", "repository.index",
+                "Resolve the candidate before computing its identity.", 3,
             )
-        if parts[0] == b"160000":
-            rows.append(path + b"\0" + b"160000" + b"\0" + parts[1] + b"\0")
-            continue
-        blob = subprocess.run(
-            ["git", "cat-file", "blob", parts[1].decode("ascii")],
-            cwd=repo,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        if blob.returncode:
-            raise CommandError(
-                "candidate_failed",
-                "repository.index",
-                blob.stderr.decode("utf-8", "replace").strip()
-                or "Read the exact candidate blob identity.",
-                3,
+        mode, oid, _ = parts
+        entries.append((path, mode, oid))
+        if mode != b"160000":
+            blobs.setdefault(oid, b"")
+    if blobs:
+        # Both directions use files: Git finishes before Python reads any output.
+        # Only content digests survive parsing, including for repeated blob OIDs.
+        with tempfile.TemporaryFile() as requests, tempfile.TemporaryFile() as response:
+            for oid in blobs:
+                requests.write(oid + b"\n")
+            requests.seek(0)
+            batch = subprocess.run(
+                ["git", "cat-file", "--batch"], cwd=repo, stdin=requests,
+                stdout=response, stderr=subprocess.PIPE,
             )
-        rows.append(
-            path + b"\0" + hashlib.sha256(blob.stdout).hexdigest().encode() + b"\0"
-        )
-    return hashlib.sha256(b"".join(rows)).hexdigest()
+            if batch.returncode:
+                raise CommandError(
+                    "candidate_failed", "repository.index",
+                    batch.stderr.decode("utf-8", "replace").strip()
+                    or "Read the exact candidate blob identity.", 3,
+                )
+            response.seek(0)
+            for oid in blobs:
+                header = response.readline().split()
+                if (len(header) != 3 or header[0] != oid or header[1] != b"blob"
+                        or not header[2].isdigit()):
+                    raise CommandError(
+                        "candidate_failed", "repository.index",
+                        "Read the exact candidate blob identity.", 3,
+                    )
+                remaining = int(header[2])
+                content = hashlib.sha256()
+                while remaining:
+                    chunk = response.read(min(remaining, 1024 * 1024))
+                    if not chunk:
+                        raise CommandError(
+                            "candidate_failed", "repository.index",
+                            "Read the complete candidate blob content.", 3,
+                        )
+                    content.update(chunk)
+                    remaining -= len(chunk)
+                if response.read(1) != b"\n":
+                    raise CommandError(
+                        "candidate_failed", "repository.index",
+                        "Read the complete candidate blob response.", 3,
+                    )
+                blobs[oid] = content.hexdigest().encode("ascii")
+    result = hashlib.sha256()
+    for path, mode, oid in entries:
+        if mode == b"160000":
+            result.update(path + b"\0" + mode + b"\0" + oid + b"\0")
+        else:
+            result.update(path + b"\0" + blobs[oid] + b"\0")
+    return result.hexdigest()
 
 
-def committed_tree_digest(repo: Path) -> str:
+def committed_tree_digest(
+    repo: Path, *, tree_memo: dict[tuple[Path, str], str] | None = None,
+) -> str:
+    resolved = subprocess.run(
+        ["git", "rev-parse", "--verify", "HEAD^{tree}"], cwd=repo,
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if resolved.returncode:
+        raise CommandError("stale_identity", "repository.tree", "Read the committed reconciliation tree.", 3)
+    tree = resolved.stdout.strip()
+    key = (repo.resolve(), tree)
+    if tree_memo is not None and key in tree_memo:
+        return tree_memo[key]
     with tempfile.TemporaryDirectory(prefix="guru-reconcile-tree-") as directory:
         index = Path(directory) / "index"
         loaded = subprocess.run(
-            ["git", "read-tree", "HEAD"], cwd=repo,
+            ["git", "read-tree", tree], cwd=repo,
             env={**os.environ, "GIT_INDEX_FILE": str(index)},
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
         if loaded.returncode:
             raise CommandError("stale_identity", "repository.tree", "Read the committed reconciliation tree.", 3)
-        return index_tree_digest(repo, index_file=index)
+        value = index_tree_digest(repo, index_file=index)
+    if tree_memo is not None:
+        tree_memo[key] = value
+    return value
 
 
 def require_clean_worktree(repo: Path) -> None:
@@ -255,7 +302,11 @@ def checkpoint_path(repo: Path, task_ref: str, *, delivery_key: dict) -> Path:
     return repo / ".trellis/.runtime/guru-team/owner-checkpoints" / namespace / "guru-reconcile-task-base" / "base-reconciliation.json"
 
 
-def validate_result(package: Path, repo: Path, result: dict[str, Any], public: dict[str, Any] | None = None) -> None:
+def validate_result(
+    package: Path, repo: Path, result: dict[str, Any],
+    public: dict[str, Any] | None = None, *,
+    tree_memo: dict[tuple[Path, str], str] | None = None,
+) -> None:
     validate_json(result, package / "schemas/delivery-base-reconciliation.schema.json", "owner_result")
     unsigned = {key: copy.deepcopy(value) for key, value in result.items() if key != "facts_sha256"}
     if result["facts_sha256"] != digest(unsigned):
@@ -312,7 +363,7 @@ def validate_result(package: Path, repo: Path, result: dict[str, Any], public: d
             raise CommandError("stale_identity", "branch_review_commit", "The prior full-review commit must remain an ancestor.", 3)
         if result["profile"] in POST_REVIEW_PROFILES:
             require_clean_worktree(repo)
-        if committed_tree_digest(repo) != receipt["candidate_tree_sha256"]:
+        if committed_tree_digest(repo, tree_memo=tree_memo) != receipt["candidate_tree_sha256"]:
             raise CommandError("stale_identity", "candidate_tree_sha256", "The committed tree must match the reviewed candidate.", 3)
     elif receipt is not None or result["task_head"] != result["prior_task_head"]:
         raise CommandError("schema_mismatch", "reconciliation_result", "Only committed reconciliation routes may consume a reconciliation result.")
