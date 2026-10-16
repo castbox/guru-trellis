@@ -1183,14 +1183,16 @@ PR target is not a candidate-content change.
 
 `guru-review-branch` owns the independent complete-range semantic review for
 delete, replace, merge, and compatibility-impacting ranges, including both
-subtraction dimensions. It does not read Phase 2 evidence; the workflow only
-routes its declared result.
+subtraction dimensions. It does not read Phase 2 private evidence or inherit
+its semantic pass; the workflow only routes its declared result.
 
 For the first complete committed candidate, mandatory invoke
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`.
-The Architecture owner independently recomputes applicable checks and
-before/after satisfaction over the complete committed base-to-HEAD diff; it
-cannot reuse Phase 2. Only its fresh current route invokes guru-review-branch,
+The Architecture owner independently judges applicable project checks and
+before/after satisfaction over the complete committed base-to-HEAD diff; the
+Phase 2 semantic result cannot supply this judgment or current binding.
+Engineering command facts follow each owning Skill's applicability contract.
+Only its fresh current route invokes guru-review-branch,
 which performs its own independent complete-range semantic review and likewise
 cannot use Phase 2 as Branch Review proof.
 Before dispatch, the current dialogue names the independent reviewer identity,

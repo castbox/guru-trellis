@@ -1,4 +1,4 @@
-# #575 S2/S3：来源准备与来源校验修复设计
+# #575 S2/S3/S4：来源准备、工具采用与验证器修复设计
 
 行为由 requirements.md 单写，实际结果由 test.md 单写。本设计继承 [S1](../575-source-adoption/design.md) 与 Architecture `.93/active`，不复制或改名历史证明。
 
@@ -39,3 +39,31 @@ S2 仅 Refs #575；实际交付后由 Whole Completion/Creation 建立真实 S3 
 原 tools 操作只由原 owner 在不变 source 下处理完毕；修复会改变 canonical token，不能用其恢复引用消费新 source。当前 S3 独立交付 code/回归/draft delta，经原 Check、TaskCommit、完整 committed Review 与 Refs-only 交付形成 source。原 Whole Completion 保留所有剩余安装义务，原 Creation 建立后续 Delivery，原 tools owner 从 clean committed 修复源预览/准备新的 source_locked 操作。
 
 D575-S2-03/04 的完整投影、A/B 对象、真实 stable predecessor、目标 native/下一 owner、恢复/兼容回退和保留责任继续有效，由后续完整安装 Delivery 承接。当前贡献保持 draft；最终 reconciliation/promotion 及前后 fresh gates 留到证据完整的后继切片。Stage2 对最终 main candidate 重跑，不以当前 source 修复替代发布门禁。
+
+## 工具采用、平台证据与正常捕获修复增量
+
+### D575-S4-01 / CON575-S4-01：原 owners 的完整工具采用
+
+复用 ADR-027 的单 checkout 工具维护分工。新 source_locked 操作只消费实际 clean committed 修复源；原 public maintenance 写其工具/workflow，原 Guru installer 临时退休精确旧受管资产、完整重装并生成 manifest，本 checkout managed Python override 与 peer/common 默认分开。旧已回滚 operation 不切换 source 或重新作为恢复。所有写集/保留项由本次原owner现场prepare并审查，历史数量不成为新操作授权。
+
+当前Task2/session3、五规划与Delivery历史、raw source、未选archives和配置保留。目标自身resolver/installed validator/native/current与实际下一owner分别观察，不以source launcher或静态DTO替代。无新公共API、owner、状态、兼容reader或恢复框架。
+
+### D575-S4-02 / CON575-S4-02：分离验证对象与层次
+
+A含合法旧archives，保留普通current-only guard而使用tools-only。B为相同实际Guru/Fork来源、无旧archives的隔离样本，执行三平台apply/reapply/drift；四投影source graph和私有release Skill四份bytes独立验证。focused Codex clean/local-workflow只声明本地/隔离来源链，Stage2远端最终provider仍重新验证。
+
+### D575-S4-03 / CON575-S4-03：真实 predecessor 联合维护
+
+从真实stable `.3`及其原正式锁/构建创建正常旧活动Task样本。原tools owner先只更新工具，目标native对旧Task返回原maintenance诊断；原selected-task owner执行所选对象维护，再由目标自身native与下一consumer证明身份、规划/历史/配置保留和继续运行。原operation的正常resume与不兼容单侧toolsrollback分别观察，不伪造recovery、digest或状态、不添加故障注入。generic existing的update/workflow/apply链不作为联合证明；有前置gap先由原owner处理，不静默SKIP或放宽guard。
+
+### D575-S4-04 / CON575-S4-04：当前独立交付与剩余准备
+
+当前五文件draft在本切片final Phase2前reconcile；工具/平台证据与可独立消费的source helper修复经完整当前Check/TaskCommit/committed独立Review交付。WholeCompletion保留完整clean样本、真实predecessor最终证据适用性与完整最终RDT责任，仅其additional_delivery_required经原Creation建立后继，不预造key或把根验收删减。
+
+完整准备候选首次committedReview后，原owners以现场expected-current串行晋升，晋升差额fresh Check/TaskCommit/完整Review。当前不提前晋升shared；无Architecture impact不制造贡献/ADR。Refs-only、reference-onlyClosure/Finish和软件Stage2保持独立。
+
+### D575-S4-05 / CON575-S4-05：verifier捕获边界修复
+
+在原matrix `_run` 中分别捕获stdout/stderr，各自strict UTF8解码；capture给Git/version/JSON直接消费者stdout数据，log/MatrixError保留完整双流诊断、实际returncode与timeout124分类/残留事实。不改CLI/警告/参数、超时预算或source检查，不增加API/owner/state/恢复框架，不以两流合并字节作为文本。
+
+本helper和定向tests不进入安装managed projections；A4096工具/runtime和B平台事实按bytes/参数/依赖逐项判适用，保留实际来源，不改称新HEAD已安装。完整trellis source token仍随helper变化，因此新source不恢复旧operation。定向真实子进程success/nonzero/timeout和同Fork init分别检测数据/诊断/退出及原失败阶段；完整focused留待包含修复的真实clean committed source，dirty或fixture自建提交不作正式源。

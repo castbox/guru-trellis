@@ -7,6 +7,7 @@ import json
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from runtime.io import CommandError
@@ -368,13 +369,18 @@ def tree_identity(repo, commit):
             continue
         entries.append(("blob", path, parts[2]))
         blobs.append((path, parts[2]))
-    batch = subprocess.run(
-        ["git", "cat-file", "--batch"],
-        cwd=repo,
-        input=b"".join(oid + b"\n" for _, oid in blobs),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    # Stage the complete request before Git starts producing object contents;
+    # a regular-file stdin avoids mutually blocking writes on two pipes.
+    with tempfile.TemporaryFile() as request:
+        request.write(b"".join(oid + b"\n" for _, oid in blobs))
+        request.seek(0)
+        batch = subprocess.run(
+            ["git", "cat-file", "--batch"],
+            cwd=repo,
+            stdin=request,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
     if batch.returncode:
         raise CommandError(
             "stale_identity",

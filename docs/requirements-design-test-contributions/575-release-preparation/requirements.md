@@ -1,4 +1,4 @@
-# #575 S2/S3：来源准备与来源校验修复需求
+# #575 S2/S3/S4：来源准备、工具采用与验证器修复需求
 
 本贡献以 RDT `.100` 为前驱，继承 Architecture `.93/active`；[S1](../575-source-adoption/requirements.md)保留正式来源采用与历史公开映射。依据为 #575 Stage 1、Task 整体 R575-01..07 及当前同 Delivery 的来源准备规划。软件发布目标与知识版本独立；实际结果仅由 test.md 拥有。
 
@@ -27,3 +27,16 @@
 | R575-S3-02 / BEH575-S3-02 | 在原 validator 与 preset source-only 调用边界证明同失败点修复，并保留 default/True 对照；模块证据不冒充正式工具安装 | D575-S3-01 / T575-S3-01、02 |
 | R575-S3-03 / BEH575-S3-03 | 先经原 Check/TaskCommit/完整独立 Review 交付可消费的真实 source；后续完整安装使用新的 source_locked 操作，不变更旧 recovery/source/preimages | D575-S3-02 / T575-S3-02、03 |
 | R575-S3-04 / BEH575-S3-04 | 当前只收敛既有 draft contribution 与双向 trace；完整安装、最终 RDT promotion 前后门禁、Completion/Closure/Finish 留同 Task 原 owners | D575-S3-02 / T575-S3-03 |
+
+## 工具采用、平台证据与正常捕获修复增量
+
+当前 S4 沿 RDT `.101/active`、Architecture `.94/active` 承接根 R575-01..07；S2/S3 上述来源、失败、回滚和未完成描述保留原观察时间。下列要求与设计/测试定位只定义本切片责任，不提前宣称整体完成。
+
+| Requirement / Behavior | 必须满足的行为 | Design / Test |
+| --- | --- | --- |
+| R575-S4-01 / BEH575-S4-01 | 从真实已提交修复源建立新的正式 source_locked tools 操作，当前 checkout 完整 `.4` 投影可由自身 resolver/native 及下一实际 owner 消费；保留 Task/session/历史/配置与 peer/common | D575-S4-01 / T575-S4-01 |
+| R575-S4-02 / BEH575-S4-02 | A含旧归档只走 tools-only；同源无旧归档B证明普通三平台apply/reapply/drift，Shared/Codex/Claude/Cursor source及私有release Skill投影一致，ownership/权限/退休项/sidecar/卫生真实可核实 | D575-S4-02 / T575-S4-02 |
+| R575-S4-03 / BEH575-S4-03 | 正常CLI两流分别strict UTF8消费，stdout数据不混入stderr；日志/错误保留完整诊断和真实exit/timeout，定向回归与同Fork init证明原解码阶段；禁止quiet/filter/替换解码/放宽timeout | D575-S4-05 / T575-S4-05 |
+| R575-S4-04 / BEH575-S4-04 | 本切片唯一Test/trace收敛，保留完整clean、真实predecessor最终证据判断和最终RDT/晋升义务，WholeCompletion路由后继而不预造key；Refs-only不充当整体完成 | D575-S4-04 / T575-S4-04 |
+
+当前R575-S4-03的捕获修复替代原S4方案的执行顺序，不删除根R575-04/A575-05的完整focused与真实predecessor要求。保留的整体责任由D575-S4-02/03、T575-S4-02/03定位；原首次focused失败与真实predecessor结果分别记录，当前捕获回归不能改称完整clean通过。最终promotion仍遵守根R575-05/06与私有release合同。

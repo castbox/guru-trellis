@@ -2,7 +2,7 @@ task_id: 575-release-v070-guru4-preparation
 source: https://github.com/castbox/guru-trellis/issues/575
 status: draft
 strategy: delta_first
-scope: S2 source preparation and S3 source-only ownership repair; full projection and formal validation remain in the same task
+scope: S2 source preparation, S3 ownership repair and S4 tools adoption, platform evidence and source verifier capture repair; remaining clean-source validation and final promotion retain their original owners
 preimage: current-main-0.6.17-guru.101
 architecture:
   locator: docs/architecture/README.md

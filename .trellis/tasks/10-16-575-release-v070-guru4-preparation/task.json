@@ -28620,7 +28620,7 @@
       },
       "planning_root": "deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/design.md",
         "revision": "sha256:d9bbbca96f1cf199e838026493d410ff55a883da282c7326d4e117f36966ce22"
@@ -28672,7 +28672,7 @@
           "trellis/workflows/guru-team/README.md",
           "trellis/workflows/guru-team/workflow.md"
         ],
-        "head_ref": "a417a46726d95d071835f38c2b972bf6d594d797",
+        "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
         "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c"
       },
       "results": {
@@ -28722,7 +28722,7 @@
           ]
         },
         "check": {
-          "result_id": "check:b6203416dd434f2057fe85df93fb935c19f831421461eeb2c9367c8546181e1d",
+          "result_id": "check:553e144ff76496a5ea1ae912fa23e59f23e4b51c7cd26c39aa16313e358e047e",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -28795,7 +28795,7 @@
               "trellis/workflows/guru-team/README.md",
               "trellis/workflows/guru-team/workflow.md"
             ],
-            "head_ref": "a417a46726d95d071835f38c2b972bf6d594d797",
+            "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
             "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c"
           },
           "predecessor_result_id": "planning-accepted:4520997b-ad00-44c4-b258-83bcde0b2b0a",
@@ -28812,6 +28812,593 @@
             {
               "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/implement.md",
               "revision": "sha256:fc2a5d5836de9ccd56a76f5c79d605feb34a7a3ba284598318d9fcb309bc681d"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:e99090fcaf878ce40ee1681b7262e150504aa2000f0deb3a66e86aa075efe15f",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/prd.md",
+              "revision": "sha256:1915a4e17a1f2a4537eda060a46d32f4656604c5a7e578d69789d6ab341cf7da"
+            },
+            "anchors": [
+              "R575-03",
+              "R575-04",
+              "R575-05",
+              "R575-06",
+              "R575-07",
+              "A575-04",
+              "A575-05",
+              "A575-06",
+              "A575-07",
+              "A575-08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/design.md",
+            "revision": "sha256:d9bbbca96f1cf199e838026493d410ff55a883da282c7326d4e117f36966ce22"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0a0c4cc03d36e8bd63e5ce2f8f577fba48f1af7ecb16081b4c179ad0fffab348",
+            "paths": [
+              ".trellis/spec/architecture/baseline-usage.md",
+              ".trellis/spec/docs/public-docs.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/README.md",
+              "docs/architecture/adr/029-cross-owner-validation-facts.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/contributions/578-cross-owner-validation-facts.md",
+              "docs/architecture/evidence/current-evidence.md",
+              "docs/design/README.md",
+              "docs/design/versions/current-main-0.6.17-guru.101/design-main.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+              "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/design.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/manifest.yaml",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/requirements.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/test.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/traceability.md",
+              "docs/requirements/README.md",
+              "docs/requirements/versions/current-main-0.6.17-guru.101/requirement-main.md",
+              "docs/test/README.md",
+              "docs/test/versions/current-main-0.6.17-guru.101/test-strategy.md",
+              "trellis/presets/guru-team/MIGRATION-578.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+              "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+            "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c"
+          },
+          "predecessor_result_id": "check:553e144ff76496a5ea1ae912fa23e59f23e4b51c7cd26c39aa16313e358e047e",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/implement.md",
+              "revision": "sha256:fc2a5d5836de9ccd56a76f5c79d605feb34a7a3ba284598318d9fcb309bc681d"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:ddf774fa218156a18468255ad8d5e3b26c8a6c0672b163ef8e9bdc054c52f948",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/prd.md",
+              "revision": "sha256:1915a4e17a1f2a4537eda060a46d32f4656604c5a7e578d69789d6ab341cf7da"
+            },
+            "anchors": [
+              "R575-03",
+              "R575-04",
+              "R575-05",
+              "R575-06",
+              "R575-07",
+              "A575-04",
+              "A575-05",
+              "A575-06",
+              "A575-07",
+              "A575-08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/design.md",
+            "revision": "sha256:d9bbbca96f1cf199e838026493d410ff55a883da282c7326d4e117f36966ce22"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0a0c4cc03d36e8bd63e5ce2f8f577fba48f1af7ecb16081b4c179ad0fffab348",
+            "paths": [
+              ".trellis/spec/architecture/baseline-usage.md",
+              ".trellis/spec/docs/public-docs.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/README.md",
+              "docs/architecture/adr/029-cross-owner-validation-facts.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/contributions/578-cross-owner-validation-facts.md",
+              "docs/architecture/evidence/current-evidence.md",
+              "docs/design/README.md",
+              "docs/design/versions/current-main-0.6.17-guru.101/design-main.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+              "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/design.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/manifest.yaml",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/requirements.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/test.md",
+              "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/traceability.md",
+              "docs/requirements/README.md",
+              "docs/requirements/versions/current-main-0.6.17-guru.101/requirement-main.md",
+              "docs/test/README.md",
+              "docs/test/versions/current-main-0.6.17-guru.101/test-strategy.md",
+              "trellis/presets/guru-team/MIGRATION-578.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+              "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+            "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c"
+          },
+          "predecessor_result_id": "full-review:e99090fcaf878ce40ee1681b7262e150504aa2000f0deb3a66e86aa075efe15f",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/ac3479a5-b7b3-4a37-9a0d-ae75c6f01836/implement.md",
+              "revision": "sha256:fc2a5d5836de9ccd56a76f5c79d605feb34a7a3ba284598318d9fcb309bc681d"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:967d37b2bd744186419cbf531526711bd2bb92ce62cc4dce189bfa333a90dac1",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/585",
+            "revision": "sha256:107f05ccc4f5a74549f2f577f04f9e6749b133dfd5336d445a02f66ae82fac71"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c",
+          "content_ref": "sha256:0a0c4cc03d36e8bd63e5ce2f8f577fba48f1af7ecb16081b4c179ad0fffab348",
+          "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+          "kind": "git",
+          "paths": [
+            ".trellis/spec/architecture/baseline-usage.md",
+            ".trellis/spec/docs/public-docs.md",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/README.md",
+            "docs/architecture/adr/029-cross-owner-validation-facts.md",
+            "docs/architecture/adr/README.md",
+            "docs/architecture/contributions/578-cross-owner-validation-facts.md",
+            "docs/architecture/evidence/current-evidence.md",
+            "docs/design/README.md",
+            "docs/design/versions/current-main-0.6.17-guru.101/design-main.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+            "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/design.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/manifest.yaml",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/requirements.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/test.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/traceability.md",
+            "docs/requirements/README.md",
+            "docs/requirements/versions/current-main-0.6.17-guru.101/requirement-main.md",
+            "docs/test/README.md",
+            "docs/test/versions/current-main-0.6.17-guru.101/test-strategy.md",
+            "trellis/presets/guru-team/MIGRATION-578.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+            "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+            "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 585,
+        "reviewed_head": "4096fac812b612e0fdd9c178402fc257b16c5334",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/585",
+          "revision": "sha256:107f05ccc4f5a74549f2f577f04f9e6749b133dfd5336d445a02f66ae82fac71"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:f993d51d237dacec80aa0e2f4c098aa6e7d66476",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/585",
+            "revision": "f993d51d237dacec80aa0e2f4c098aa6e7d66476"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "d3bfeae0d8dc9f350317e5919fbd7751c394834c",
+          "content_ref": "sha256:0a0c4cc03d36e8bd63e5ce2f8f577fba48f1af7ecb16081b4c179ad0fffab348",
+          "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+          "kind": "git",
+          "paths": [
+            ".trellis/spec/architecture/baseline-usage.md",
+            ".trellis/spec/docs/public-docs.md",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/README.md",
+            "docs/architecture/adr/029-cross-owner-validation-facts.md",
+            "docs/architecture/adr/README.md",
+            "docs/architecture/contributions/578-cross-owner-validation-facts.md",
+            "docs/architecture/evidence/current-evidence.md",
+            "docs/design/README.md",
+            "docs/design/versions/current-main-0.6.17-guru.101/design-main.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+            "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+            "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/design.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/manifest.yaml",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/requirements.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/test.md",
+            "docs/requirements-design-test-contributions/578-cross-owner-validation-facts/traceability.md",
+            "docs/requirements/README.md",
+            "docs/requirements/versions/current-main-0.6.17-guru.101/requirement-main.md",
+            "docs/test/README.md",
+            "docs/test/versions/current-main-0.6.17-guru.101/test-strategy.md",
+            "trellis/presets/guru-team/MIGRATION-578.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/test_upstream_ownership.py",
+            "trellis/presets/guru-team/scripts/python/validate_upstream_ownership.py",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
+            "trellis/skills/guru-team/packages/guru-review-branch/tests/test_contract.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 585,
+        "reviewed_head": "4096fac812b612e0fdd9c178402fc257b16c5334",
+        "merge_commit": "f993d51d237dacec80aa0e2f4c098aa6e7d66476",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    },
+    {
+      "id": "37509012-a0c8-4498-8f44-06fb1e48304d",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/prd.md",
+          "revision": "sha256:1915a4e17a1f2a4537eda060a46d32f4656604c5a7e578d69789d6ab341cf7da"
+        },
+        "anchors": [
+          "R575-01",
+          "R575-02",
+          "R575-03",
+          "R575-04",
+          "R575-05",
+          "R575-06",
+          "R575-07",
+          "A575-01",
+          "A575-02",
+          "A575-03",
+          "A575-04",
+          "A575-05",
+          "A575-06",
+          "A575-07",
+          "A575-08"
+        ]
+      },
+      "planning_root": "deliveries/37509012-a0c8-4498-8f44-06fb1e48304d",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/design.md",
+        "revision": "sha256:76c65155992ff7496e8b5914679bb37fb9989a2e90473cff2ca6519516708ffc"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:651cf6e1762149212bb6e84bd5afe6fa10bc0741b4d1a765be196ff2cc8788b0",
+        "paths": [
+          ".agents/skills/guru-check-task/SKILL.md",
+          ".agents/skills/guru-check-task/references/contract.md",
+          ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".agents/skills/guru-review-branch/SKILL.md",
+          ".agents/skills/guru-review-branch/references/contract.md",
+          ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".agents/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+          ".claude/skills/guru-check-task/SKILL.md",
+          ".claude/skills/guru-check-task/references/contract.md",
+          ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".claude/skills/guru-review-branch/SKILL.md",
+          ".claude/skills/guru-review-branch/references/contract.md",
+          ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".claude/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+          ".codex/skills/guru-check-task/SKILL.md",
+          ".codex/skills/guru-check-task/references/contract.md",
+          ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".codex/skills/guru-review-branch/SKILL.md",
+          ".codex/skills/guru-review-branch/references/contract.md",
+          ".codex/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".codex/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".codex/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".codex/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+          ".cursor/skills/guru-check-task/SKILL.md",
+          ".cursor/skills/guru-check-task/references/contract.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".cursor/skills/guru-review-branch/SKILL.md",
+          ".cursor/skills/guru-review-branch/references/contract.md",
+          ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".cursor/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+          ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+          ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/workflow.md",
+          "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+          "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+          "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+          "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+          "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+        "base_ref": "4096fac812b612e0fdd9c178402fc257b16c5334"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:acc0611f-f89d-46df-8583-136806ba957a",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/prd.md",
+              "revision": "sha256:1915a4e17a1f2a4537eda060a46d32f4656604c5a7e578d69789d6ab341cf7da"
+            },
+            "anchors": [
+              "R575-01",
+              "R575-02",
+              "R575-03",
+              "R575-04",
+              "R575-05",
+              "R575-06",
+              "R575-07",
+              "A575-01",
+              "A575-02",
+              "A575-03",
+              "A575-04",
+              "A575-05",
+              "A575-06",
+              "A575-07",
+              "A575-08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/design.md",
+            "revision": "sha256:76c65155992ff7496e8b5914679bb37fb9989a2e90473cff2ca6519516708ffc"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/prd.md",
+              "revision": "sha256:d2ce127319accc2a30f54030d650574120e149cc8a746921de42d0f44425993f"
+            },
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/design.md",
+              "revision": "sha256:76c65155992ff7496e8b5914679bb37fb9989a2e90473cff2ca6519516708ffc"
+            },
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/implement.md",
+              "revision": "sha256:7f0ad4b46dedc3a1a58d8f705db595e8fb02bc16d692b1a144f6aa885b1c3706"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:0869778ca96655e3fc0d642edd99afd18c204adf8a4d1942c384c5e3b0d73f2e",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/prd.md",
+              "revision": "sha256:1915a4e17a1f2a4537eda060a46d32f4656604c5a7e578d69789d6ab341cf7da"
+            },
+            "anchors": [
+              "R575-01",
+              "R575-02",
+              "R575-03",
+              "R575-04",
+              "R575-05",
+              "R575-06",
+              "R575-07",
+              "A575-01",
+              "A575-02",
+              "A575-03",
+              "A575-04",
+              "A575-05",
+              "A575-06",
+              "A575-07",
+              "A575-08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/design.md",
+            "revision": "sha256:76c65155992ff7496e8b5914679bb37fb9989a2e90473cff2ca6519516708ffc"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:651cf6e1762149212bb6e84bd5afe6fa10bc0741b4d1a765be196ff2cc8788b0",
+            "paths": [
+              ".agents/skills/guru-check-task/SKILL.md",
+              ".agents/skills/guru-check-task/references/contract.md",
+              ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".agents/skills/guru-review-branch/SKILL.md",
+              ".agents/skills/guru-review-branch/references/contract.md",
+              ".agents/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".agents/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".agents/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".agents/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+              ".claude/skills/guru-check-task/SKILL.md",
+              ".claude/skills/guru-check-task/references/contract.md",
+              ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-review-branch/SKILL.md",
+              ".claude/skills/guru-review-branch/references/contract.md",
+              ".claude/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".claude/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".claude/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".claude/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+              ".codex/skills/guru-check-task/SKILL.md",
+              ".codex/skills/guru-check-task/references/contract.md",
+              ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".codex/skills/guru-review-branch/SKILL.md",
+              ".codex/skills/guru-review-branch/references/contract.md",
+              ".codex/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".codex/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".codex/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".codex/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+              ".cursor/skills/guru-check-task/SKILL.md",
+              ".cursor/skills/guru-check-task/references/contract.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-review-branch/SKILL.md",
+              ".cursor/skills/guru-review-branch/references/contract.md",
+              ".cursor/skills/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".cursor/skills/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".cursor/skills/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".cursor/skills/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+              ".trellis/guru-team/skills/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/consumers/stop/production/upgrade-installation-upgraded.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/examples/public-upgraded-output.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/schemas/public-upgraded-output.schema.json",
+              ".trellis/guru-team/skills/packages/guru-upgrade-tools/examples/public-tools_upgraded-output.json",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/workflow.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/design.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/manifest.yaml",
+              "docs/requirements-design-test-contributions/575-release-preparation/requirements.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/test.md",
+              "docs/requirements-design-test-contributions/575-release-preparation/traceability.md",
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ],
+            "head_ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
+            "base_ref": "4096fac812b612e0fdd9c178402fc257b16c5334"
+          },
+          "predecessor_result_id": "planning-accepted:acc0611f-f89d-46df-8583-136806ba957a",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/prd.md",
+              "revision": "sha256:d2ce127319accc2a30f54030d650574120e149cc8a746921de42d0f44425993f"
+            },
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/design.md",
+              "revision": "sha256:76c65155992ff7496e8b5914679bb37fb9989a2e90473cff2ca6519516708ffc"
+            },
+            {
+              "locator": ".trellis/tasks/10-16-575-release-v070-guru4-preparation/deliveries/37509012-a0c8-4498-8f44-06fb1e48304d/implement.md",
+              "revision": "sha256:7f0ad4b46dedc3a1a58d8f705db595e8fb02bc16d692b1a144f6aa885b1c3706"
             }
           ]
         },

@@ -136,9 +136,13 @@ When a necessary new constraint exists only in the task, obtain only that fact
 and its source; do not import the whole task narrative. Missing constraints or
 evidence remain conditional or use the existing incomplete/blocked route.
 
-The reviewer personally executes applicable project checks, authors the
-semantic result and invokes the formal wrapper. It returns the actual declared
-exit/output and current identity to the caller. Structure/schema/green commands,
+The reviewer independently determines the current complete scope, risks,
+affected consumers and applicable project-check set before inspecting prior
+execution results. It performs every applicable semantic project check for the
+current invocation, authors the semantic result and invokes the formal wrapper.
+Engineering commands supporting those checks follow the execution-fact rules
+below; independent assessment does not require unconditional command repetition.
+It returns the actual declared exit/output and current identity to the caller. Structure/schema/green commands,
 prefilled owner results, worker labels, and caller self-filled Architecture
 results are not evidence of this execution. Normal caller self-authoring can
 pass objective validation while failing this Markdown method; re-enter with a
@@ -153,6 +157,33 @@ candidate independently; Phase 2 pass cannot substitute. New facts that change
 Architecture judgment return to the corresponding fresh assessment stage.
 Review and validation commands are read-only evidence collection; they do not
 authorize product fixes, scope changes or promotion.
+
+### Engineering execution facts and current project-check results
+
+After the independent read order and current check-set determination, the
+reviewer may adopt original engineering command results from another reviewer
+or stage when they are lawfully accessible and verifiable and the actual check
+definition/version, dependencies, toolchain, parameters, environment and test
+expectations remain applicable. Verify against actual command results, existing
+summary/evidence locators and Git checked objects. Neither a reviewer, stage,
+commit or promotion identity change alone invalidates these facts, nor does a
+matching path or code tree establish their applicability. Documentation that
+changes behavior contracts or introduces risks can change the check set.
+
+Execute new checks and affected checks when any of those inputs changed, their
+applicability is unknown or the original result is unavailable; preserve other
+applicable facts. In the existing project-check evidence/summary explain what
+ran this round, what was adopted, its original source and applicability reason.
+Never claim the current reviewer executed an adopted command. Do not read
+another owner's private state, retain or reconstruct retired checkpoints, or
+introduce a ledger, cache or long-lived result history to make adoption possible.
+
+The current semantic project-check result is always newly judged and bound to
+this invocation after the review. Prior semantic pass, project-check result or
+freshness token is not an engineering execution fact and cannot supply this
+result. The original descriptor/result and wrapper freshness checks remain
+unchanged. A necessary rerun belongs to the affected check, not an unrelated
+full suite or another phase.
 
 ## Responsibility and change causality
 
