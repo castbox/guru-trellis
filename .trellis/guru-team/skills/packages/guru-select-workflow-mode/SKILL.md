@@ -23,6 +23,14 @@ the shortest public expression is `这次走 task-free`. Recognize equivalent
 multilingual wording semantically rather than through a keyword table. Neither
 `帮我改一下` nor `不要开 Issue` is explicit task-free intent.
 
+A request whose outcome is creating a GitHub Issue requires the existing
+standard Intake draft/readiness review before `guru-create-issue` can mutate.
+Select `standard_intake` for that requested publication scope; a short draft
+or “只创建 Issue” does not make it a task-free file edit. Preserve Issue-only
+scope and do not infer permission to create a Task or execution resources.
+A request only to edit a local draft remains subject to the ordinary scope
+and risk decision below.
+
 Without explicit intent, read only the limited live repository and Issue facts
 needed for the decision:
 
