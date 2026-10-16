@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "当前S3最小可靠source/installed/四平台/正式隔离维护验证与测试价值，FAIL/SKIP不算pass"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "检查受管旧资产退出、直接演进、code/docs subtraction，不新增兼容旁路或恢复框架"}

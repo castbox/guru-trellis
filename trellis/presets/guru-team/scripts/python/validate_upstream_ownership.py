@@ -333,7 +333,10 @@ def _validate_repository(
     schema = read_json(repo_root / SCHEMA_RELATIVE, "ownership_schema", errors)
     inventory = read_json(repo_root / INVENTORY_RELATIVE, "ownership_inventory", errors)
     extension = read_json(repo_root / EXTENSION_RELATIVE, "extension_manifest", errors)
-    installed = read_json(repo_root / INSTALLED_EXTENSION_RELATIVE, "installed_extension_manifest", errors)
+    installed = (
+        read_json(repo_root / INSTALLED_EXTENSION_RELATIVE, "installed_extension_manifest", errors)
+        if validate_installed else None
+    )
     registry = read_json(repo_root / SKILL_REGISTRY_RELATIVE, "skill_registry", errors)
 
     if not isinstance(inventory, dict):
