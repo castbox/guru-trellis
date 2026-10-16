@@ -1,5 +1,5 @@
 from __future__ import annotations
-import hashlib, json, os, subprocess, sys, tempfile, unittest
+import hashlib, json, os, stat, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 PACKAGE=Path(__file__).resolve().parents[1]; SKILLS=PACKAGE.parents[1]; LOCAL=PACKAGE/'runtime'
@@ -195,6 +195,133 @@ class RuntimeTest(unittest.TestCase):
         self.assertNotEqual(*identities)
         self.assertEqual([], list((self.repo / 'vendor/child').iterdir()))
         self.assertFalse((self.repo / '.git/modules').exists())
+
+    def prior_index_digest(self):
+        # Independent byte oracle: the original per-entry algorithm, no batch helper.
+        staged = subprocess.run(
+            ['git', 'ls-files', '--stage', '-z'], cwd=self.repo,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+        ).stdout
+        rows = []
+        for entry in staged.split(b'\0'):
+            if not entry:
+                continue
+            metadata, path = entry.split(b'\t', 1)
+            mode, oid, stage = metadata.split()
+            self.assertEqual(b'0', stage)
+            if mode == b'160000':
+                rows.append(path + b'\0' + mode + b'\0' + oid + b'\0')
+            else:
+                blob = subprocess.run(
+                    ['git', 'cat-file', 'blob', oid.decode('ascii')], cwd=self.repo,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True,
+                ).stdout
+                rows.append(path + b'\0' + hashlib.sha256(blob).hexdigest().encode() + b'\0')
+        return hashlib.sha256(b''.join(rows)).hexdigest()
+
+    def test_batch_digest_matches_old_byte_oracle_with_all_entry_types(self):
+        self.add_uninitialized_gitlink()
+        files = {'empty': b'', 'binary': bytes(range(256)),
+                 '重复\tfile\n.txt': b'shared\0content\n',
+                 'duplicate': b'shared\0content\n', 'executable': b'#!/bin/sh\n'}
+        for name, content in files.items():
+            (self.repo / name).write_bytes(content)
+        (self.repo / 'link').symlink_to('missing-target')
+        self.git('add', '.')
+        self.git('update-index', '--chmod=+x', 'executable')
+        expected = self.prior_index_digest()
+        self.assertEqual(expected, index_tree_digest(self.repo))
+        self.git('update-index', '--chmod=-x', 'executable')
+        self.assertEqual(expected, index_tree_digest(self.repo))
+
+    def test_batch_reads_and_hashes_each_unique_blob_once_using_files(self):
+        assets = self.repo / 'assets'
+        assets.mkdir()
+        for number in range(1800):
+            (assets / f'unique-{number}').write_bytes(str(number).encode())
+        for number in range(100):
+            (assets / f'duplicate-{number}').write_bytes(b'shared')
+        (assets / 'large').write_bytes(bytes(range(256)) * 8193)
+        self.git('add', '.')
+        staged = subprocess.run(['git', 'ls-files', '--stage', '-z'], cwd=self.repo,
+                                stdout=subprocess.PIPE, check=True).stdout
+        expected_oids = list(dict.fromkeys(
+            entry.split(b'\t', 1)[0].split()[1]
+            for entry in staged.split(b'\0') if entry))
+        run = subprocess.run
+        requests_seen = []
+
+        def observe(argv, **kwargs):
+            if argv[:2] == ['git', 'cat-file']:
+                self.assertEqual(['git', 'cat-file', '--batch'], argv)
+                for stream in ('stdin', 'stdout'):
+                    self.assertTrue(stat.S_ISREG(os.fstat(kwargs[stream].fileno()).st_mode))
+                requests_seen.append(kwargs['stdin'].read().splitlines())
+                kwargs['stdin'].seek(0)
+            return run(argv, **kwargs)
+
+        with mock.patch.object(subprocess, 'run', side_effect=observe), \
+                mock.patch.object(common.hashlib, 'sha256', wraps=hashlib.sha256) as hashes:
+            actual = index_tree_digest(self.repo)
+        self.assertEqual([expected_oids], requests_seen)
+        self.assertEqual(len(expected_oids) + 1, hashes.call_count)
+        self.assertRegex(actual, r'^[0-9a-f]{64}$')
+
+    def test_batch_missing_blob_keeps_candidate_index_error(self):
+        path = self.repo / 'incomplete-object.txt'
+        path.write_text('object absent from incomplete local object store\n')
+        self.git('add', path.name)
+        oid = self.git('rev-parse', ':' + path.name)
+        (self.repo / '.git/objects' / oid[:2] / oid[2:]).unlink()
+        with self.assertRaises(CommandError) as raised:
+            index_tree_digest(self.repo)
+        self.assertEqual('candidate_failed', raised.exception.code)
+        self.assertEqual('repository.index', raised.exception.field_path)
+
+    def test_committed_memo_follows_actual_tree_and_never_caches_index(self):
+        memo = {}
+        original = common.committed_tree_digest(self.repo, tree_memo=memo)
+        with mock.patch.object(common, 'index_tree_digest', wraps=index_tree_digest) as scans:
+            self.assertEqual(original, common.committed_tree_digest(self.repo, tree_memo=memo))
+            self.assertEqual(0, scans.call_count)
+            (self.repo / 'task.txt').write_text('new index contents\n')
+            self.git('add', 'task.txt')
+            changed = index_tree_digest(self.repo)
+            self.assertNotEqual(original, changed)
+            self.assertEqual(original, common.committed_tree_digest(self.repo, tree_memo=memo))
+            self.git('commit', '-qm', 'new actual tree')
+            self.assertEqual(changed, common.committed_tree_digest(self.repo, tree_memo=memo))
+            self.assertEqual(1, scans.call_count)
+            # An independent caller receives no previous invocation's memo.
+            self.assertEqual(changed, common.committed_tree_digest(self.repo))
+            self.assertEqual(2, scans.call_count)
+
+    def test_invoke_scans_once_but_validates_both_results_independently(self):
+        public, candidate, receipt = self.execute_reconciliation('delivery_post_check')
+        owner = record.run(PACKAGE, {}, [
+            '--root', str(self.repo), '--skill-input', str(self.write('memo-public.json', public)),
+            '--semantic-review-file', str(self.write('memo-gate.json', self.gate(candidate))),
+            '--typed-exit', 'reconciled',
+            '--reconciliation-result', str(self.write('memo-receipt.json', receipt)),
+        ])
+        envelope = self.write('memo-envelope.json', {'public_input': public, 'owner_result': owner})
+        checkpoint = common.checkpoint_path(self.repo, self.task_ref, delivery_key=self.delivery_key)
+        with mock.patch.object(common, 'index_tree_digest', wraps=index_tree_digest) as scans, \
+                mock.patch.object(invoke, 'validate_result', wraps=common.validate_result) as validations, \
+                mock.patch.object(common, 'validate_json', wraps=common.validate_json) as schemas, \
+                mock.patch.object(common, 'objective_identity', wraps=common.objective_identity) as identities, \
+                mock.patch.object(common, 'is_ancestor', wraps=common.is_ancestor) as ancestors, \
+                mock.patch.object(common, 'committed_tree_digest', wraps=common.committed_tree_digest) as comparisons:
+            output = invoke.run(PACKAGE, {}, ['--root', str(self.repo), '--invocation', str(envelope)])
+        self.assertEqual('reconciled', output['exit_id'])
+        self.assertFalse(checkpoint.exists())
+        self.assertEqual(1, scans.call_count)
+        self.assertEqual(2, validations.call_count)
+        self.assertIsNot(validations.call_args_list[0].args[2], validations.call_args_list[1].args[2])
+        self.assertEqual(2, sum(call.args[2] == 'owner_result' for call in schemas.call_args_list))
+        self.assertEqual(2, identities.call_count)
+        self.assertEqual(4, ancestors.call_count)
+        self.assertEqual(2, comparisons.call_count)
 
     def test_blob_modes_retain_prior_digest_and_content_sensitivity(self):
         ordinary = self.repo / 'ordinary\tfile\n.txt'

@@ -1165,11 +1165,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-16T13:06:33Z",
+  "installed_at": "2026-10-16T18:22:17Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "4096fac812b612e0fdd9c178402fc257b16c5334",
-    "commit": "4096fac812b612e0fdd9c178402fc257b16c5334",
+    "ref": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
+    "commit": "1b2c30b4b1a326f2276c96f0d155605bf2cb1775",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1456,7 +1456,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "4cf232ccf3712aa3dadc311934aea41b44944e2344df1c9b86f3184eb9dd74dc",
-        "tree_sha256": "bcaf82f68a8d070497b79fcb3b9aa839bf5e3e7720dea41c59bba88af76dd52c"
+        "tree_sha256": "e6e41236b02b727988df1e6d42dbc297110bbdce1066abe4abf45decc3a336f4"
       },
       {
         "id": "guru-review-branch",
@@ -14190,7 +14190,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "29a736b5c42e5eb863a799cb2bdcf645f865756c4fb0c5934ba947b07dc65ed2",
+        "sha256": "9af4118629c2f0b59915212bb2fc4d30979b106c157874f5790bb7a01c36d882",
         "executable": false,
         "action": "installed"
       },
@@ -14204,7 +14204,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/common.py",
-        "sha256": "418f4a3da15f8451c7c73e7ba394e428b8405a3ba4474433c9655aa566c2efaf",
+        "sha256": "dfc26ee71837665f082f36304c2759c9ca18a7d0a3435dc0c4b737205ff5288c",
         "executable": false,
         "action": "installed"
       },
@@ -14218,7 +14218,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/invoke.py",
-        "sha256": "aa8c9bbea7cfd1f71ed3b325a0a894a88441cab90b2bf5fa6c645dd8a6c2fe32",
+        "sha256": "0b56822c456c0e5dd5afda48bd98f4237b3c685cd3638d5800cafeab4e0bf2d1",
         "executable": false,
         "action": "installed"
       },
@@ -53453,7 +53453,7 @@
       {
         "path": ".agents/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "29a736b5c42e5eb863a799cb2bdcf645f865756c4fb0c5934ba947b07dc65ed2",
+        "sha256": "9af4118629c2f0b59915212bb2fc4d30979b106c157874f5790bb7a01c36d882",
         "executable": false,
         "action": "installed"
       },
@@ -54062,7 +54062,7 @@
       {
         "path": ".codex/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "29a736b5c42e5eb863a799cb2bdcf645f865756c4fb0c5934ba947b07dc65ed2",
+        "sha256": "9af4118629c2f0b59915212bb2fc4d30979b106c157874f5790bb7a01c36d882",
         "executable": false,
         "action": "installed"
       },
@@ -54671,7 +54671,7 @@
       {
         "path": ".claude/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "29a736b5c42e5eb863a799cb2bdcf645f865756c4fb0c5934ba947b07dc65ed2",
+        "sha256": "9af4118629c2f0b59915212bb2fc4d30979b106c157874f5790bb7a01c36d882",
         "executable": false,
         "action": "installed"
       },
@@ -55280,7 +55280,7 @@
       {
         "path": ".cursor/skills/guru-reconcile-task-base/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/references/contract.md",
-        "sha256": "29a736b5c42e5eb863a799cb2bdcf645f865756c4fb0c5934ba947b07dc65ed2",
+        "sha256": "9af4118629c2f0b59915212bb2fc4d30979b106c157874f5790bb7a01c36d882",
         "executable": false,
         "action": "installed"
       },

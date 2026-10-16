@@ -98,6 +98,14 @@ ordinary files, executable files, and symlink target blobs. The final identity
 is SHA-256 of the concatenated rows. This does not expand blob-backed mode-only
 identity semantics or change their existing read-failure behavior.
 
+Each scan requests unique blob OIDs once through one `cat-file --batch`, with
+both request and response carried by temporary files. Content hashing reads
+bounded chunks; only per-OID digests remain in memory. Original index order
+still owns the final rows. A public invocation shares only the committed-tree
+digest, keyed by repository and freshly resolved immutable HEAD tree, between
+its two full result validations. Independent calls and mutable indexes share
+no cache; both results retain their own identity, receipt and digest checks.
+
 Trees without gitlinks retain byte-identical digests and existing successful
 short-lived evidence. The previous implementation could not produce successful
 candidate evidence for a gitlink tree. Rerun those failed attempts with the
