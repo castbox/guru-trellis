@@ -51,6 +51,38 @@ class UpstreamOwnershipTest(unittest.TestCase):
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(self.repo / relative, destination)
 
+    def test_source_only_validation_accepts_retired_installed_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            # Tools-only rebuild retires the receipt before validating this
+            # same checkout's canonical source for preset installation.
+            (repo / ownership.INSTALLED_EXTENSION_RELATIVE).unlink(missing_ok=True)
+            payload = ownership.validate_repository(repo, validate_installed=False)
+            self.assertEqual(payload["status"], "ok", payload["errors"])
+
+    def test_preset_source_validation_accepts_retired_installed_manifest(self) -> None:
+        import apply_guru_team_trellis_preset as preset
+
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            (repo / ownership.INSTALLED_EXTENSION_RELATIVE).unlink(missing_ok=True)
+            payload = preset.run_upstream_ownership_validator(repo)
+            self.assertEqual(payload["status"], "ok", payload["errors"])
+
+    def test_installed_validation_still_requires_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            (repo / ownership.INSTALLED_EXTENSION_RELATIVE).unlink(missing_ok=True)
+            payload = ownership.validate_repository(repo)
+            self.assertEqual(payload["status"], "error")
+            self.assertIn(
+                "missing_installed_extension_manifest",
+                {row["code"] for row in payload["errors"]},
+            )
+
     def test_current_facts_are_stable_and_descriptor_driven(self) -> None:
         first = ownership.validate_repository(self.repo)
         second = ownership.validate_repository(self.repo)
