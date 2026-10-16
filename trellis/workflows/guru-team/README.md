@@ -1,5 +1,7 @@
 # Guru Team Workflow
 
+跨独立审查者的工程执行事实采用与完整安装边界见 [MIGRATION-578](../../presets/guru-team/MIGRATION-578.md)；当前完整语义判断和结果绑定继续由原 owner 拥有。
+
 原 Merge history owner 在一次固定远端截点内自动准备/核验历史，query1/query2
 统一返回显式cutoff的result3.0。Completion/独立/恢复caller的直接消费与同步迁移见
 [MIGRATION-569](../../presets/guru-team/MIGRATION-569.md)及原step-local合同。

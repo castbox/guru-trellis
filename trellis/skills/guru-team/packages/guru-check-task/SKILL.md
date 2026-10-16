@@ -109,11 +109,13 @@ Current Delivery input only routes the selected formal Check. Retain the full
 semantic judgment and return exactly one declared exit. Record the public
 Check only after that judgment; TaskCommit consumes its actual result ID.
 
-On re-entry, complete the current semantic round and follow the contract's
-dependency-scoped validation steps. Recompute the applicable check set; reuse
-only execution facts this owner still lawfully holds and can prove applicable
-to the current candidate. Bind those facts in the current result through the
-existing validation summaries; otherwise rerun the affected check. A complete
+On every entry, complete the current semantic round and follow the contract's
+Dependency-Scoped Validation order: determine the complete check set before
+inspecting prior facts. Accessible engineering results from another reviewer or
+stage may be adopted only after current applicability judgment. Existing
+validation summaries distinguish actual execution from adoption with source and
+reason; affected, new, missing or uncertain checks execute. Bind the current
+result through the original recorder; an old pass or token cannot supply it. A complete
 semantic round does not require rerunning unaffected commands. Fresh authority
 applicability belongs to its original owner; actual contract or content changes
 return to the earliest affected owner. Keep exact-candidate checks and checkpoint

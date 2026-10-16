@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "Skill I/O与owner/private边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "最小验证与真实Agent行为"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性script边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与最小充分"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern/project-check"}
+{"file": ".trellis/tasks/10-16-578-cross-owner-validation-facts/design.md", "reason": "D578设计与来源处分"}

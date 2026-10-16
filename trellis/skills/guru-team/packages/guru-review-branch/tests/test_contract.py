@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import signal
 import subprocess
 import tempfile
 import unittest
@@ -187,7 +188,7 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         return path
 
     def run_wrapper(self, name, *args, ok=True):
-        process = subprocess.run(
+        child = subprocess.Popen(
             [
                 str(PACKAGE / "scripts" / name),
                 "--root",
@@ -199,7 +200,16 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            start_new_session=hasattr(self, "wrapper_timeout"),
         )
+        try:
+            stdout, stderr = child.communicate(timeout=getattr(self, "wrapper_timeout", None))
+        except subprocess.TimeoutExpired:
+            # Only this probe's process group belongs to the test.
+            os.killpg(child.pid, signal.SIGKILL)
+            stdout, stderr = child.communicate()
+            self.fail(f"{name} did not complete within 60s: {stderr}")
+        process = subprocess.CompletedProcess(child.args, child.returncode, stdout, stderr)
         payload = json.loads(process.stdout or process.stderr)
         if ok:
             self.assertEqual(0, process.returncode, payload)
@@ -221,20 +231,26 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
             check=True,
         ).stdout
         rows = []
+        blob_digests = {}
         for entry in raw.split(b"\0"):
             if not entry:
                 continue
             metadata, _, path = entry.partition(b"\t")
             mode, kind, oid = metadata.split()
+            if mode == b"160000" and kind == b"commit":
+                rows.append(path + b"\0" + mode + b"\0" + oid + b"\0")
+                continue
             if kind != b"blob":
                 continue
-            blob = subprocess.run(
-                ["git", "cat-file", "blob", oid.decode("ascii")],
-                cwd=self.repo,
-                stdout=subprocess.PIPE,
-                check=True,
-            ).stdout
-            rows.append(path + b"\0" + hashlib.sha256(blob).hexdigest().encode() + b"\0")
+            if oid not in blob_digests:
+                blob = subprocess.run(
+                    ["git", "cat-file", "blob", oid.decode("ascii")],
+                    cwd=self.repo,
+                    stdout=subprocess.PIPE,
+                    check=True,
+                ).stdout
+                blob_digests[oid] = hashlib.sha256(blob).hexdigest().encode()
+            rows.append(path + b"\0" + blob_digests[oid] + b"\0")
         return hashlib.sha256(b"".join(rows)).hexdigest()
 
     def continuity_public(self):
@@ -635,6 +651,64 @@ class BranchReviewWrapperLifecycleTest(unittest.TestCase):
         self.assertFalse(self.checkpoint().exists())
         self.assertEqual(head_before, self.git("rev-parse", "HEAD"))
         self.assertEqual(count_before, self.git("rev-list", "--count", "HEAD"))
+
+    def test_large_committed_tree_continuity_completes_with_original_identity(self):
+        """A normal large tree must finish the real recorder/checker/invoke chain."""
+        self.wrapper_timeout = 60
+        files = self.repo / "objects"
+        files.mkdir()
+        # Repeated OIDs remain separate requests, as in ordinary copied assets.
+        content = bytes(range(256)) * 16
+        for index in range(4096):
+            (files / f"copy-{index:04d}.bin").write_bytes(content)
+        (files / "00-large.bin").write_bytes(bytes(range(256)) * 4096)
+        (files / "empty.txt").write_bytes(b"")
+        executable = files / "run.sh"
+        executable.write_text("#!/bin/sh\nexit 0\n")
+        executable.chmod(0o755)
+        (files / "link").symlink_to("copy-0000.bin")
+        (self.repo / "submodule").mkdir()
+        self.git("add", "objects")
+        self.git("update-index", "--add", "--cacheinfo", f"160000,{self.head},submodule")
+        self.git("commit", "-qm", "add normal large asset tree")
+        self.head = self.git("rev-parse", "HEAD")
+        public = self.continuity_public()
+        before = (
+            self.git("rev-parse", "HEAD"),
+            self.git("ls-files", "--stage"),
+            self.git("show-ref"),
+            self.git("status", "--porcelain=v1"),
+        )
+        self.assertEqual("", before[-1])
+        self.record(public, self.auth("continuity_passed"), "continuity_passed")
+        gate = json.loads(self.checkpoint().read_text())
+        self.assertEqual(public["candidate_tree_sha256"], gate["integration_pair"]["candidate_tree_sha256"])
+        checked = self.run_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF,
+            "--expected-exit", "continuity_passed",
+        )
+        self.assertEqual("continuity_passed", checked["typed_exit"])
+        output = self.run_wrapper(
+            "invoke.sh", "--task", TASK_REF,
+            "--input", self.inputs / "public.json",
+        )
+        self.assertEqual({
+            "exit_id": "continuity_passed",
+            "task_ref": TASK_REF,
+            "task_head": public["task_head"],
+            "branch_review_commit": public["task_head"],
+            "old_base_head": public["old_base_head"],
+            "new_base_head": public["new_base_head"],
+            "candidate_tree_sha256": public["candidate_tree_sha256"],
+            "resume_target": public["resume_target"],
+        }, output)
+        self.assertFalse(self.checkpoint().exists())
+        self.assertEqual(before, (
+            self.git("rev-parse", "HEAD"),
+            self.git("ls-files", "--stage"),
+            self.git("show-ref"),
+            self.git("status", "--porcelain=v1"),
+        ))
 
     def test_base_continuity_rejects_stale_head_prior_review_base_and_tree(self):
         public = self.continuity_public()
