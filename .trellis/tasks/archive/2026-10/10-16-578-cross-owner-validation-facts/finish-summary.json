@@ -1,0 +1,76 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-16T09:56:56Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-16-578-cross-owner-validation-facts",
+    "title": "统一跨独立审查者的工程执行事实适用性",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-16-578-cross-owner-validation-facts",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/578-cross-owner-validation-facts",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md",
+    "design": "design.md",
+    "implement": "implement.md"
+  },
+  "index": {
+    "problem": "统一跨独立审查者的工程执行事实适用性",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts",
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/design.md",
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/implement.md",
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/prd.md",
+          ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#578"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/578-cross-owner-validation-facts"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts",
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/design.md",
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/implement.md",
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/prd.md",
+        ".trellis/tasks/archive/2026-10/10-16-578-cross-owner-validation-facts/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "统一跨独立审查者的工程执行事实适用性；#578；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
