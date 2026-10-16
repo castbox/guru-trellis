@@ -1165,11 +1165,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-16T21:07:34Z",
+  "installed_at": "2026-10-16T22:41:53Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "3676b9ee65834ef3720f2ff5cc0d8330afcea6ed",
-    "commit": "3676b9ee65834ef3720f2ff5cc0d8330afcea6ed",
+    "ref": "924f293821e1e3031b7efdbfc3b0868ef9d02011",
+    "commit": "924f293821e1e3031b7efdbfc3b0868ef9d02011",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1461,7 +1461,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
-        "tree_sha256": "864b2043411b8970ed5a4c496fb8d8213387acd0d61e133892b5fa4a0dbd33dc"
+        "tree_sha256": "aea667b160eec7ac7b43db2959fee9987bae32b51452f20bdbbd093908624aad"
       },
       {
         "id": "guru-review-change-request",
@@ -15128,7 +15128,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
-        "sha256": "b298a64ce8b153dbe1dafde5eeefdb7dd8900018ed14ea412ed63c864299d8d0",
+        "sha256": "c817b09818bd35b1af8da8aa786e2479afac3f2d7c66e65ca630d8d432b42eca",
         "executable": false,
         "action": "installed"
       },
@@ -15149,7 +15149,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/record.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/record.py",
-        "sha256": "cdc4be136c258eb9926d6d2e6efafb5970d3b6733de5cb4616454833c327f6ac",
+        "sha256": "e7a4d24e37660672330fbb6f2e269d7e994941f194ebc9dc8d50ecd19f2043ab",
         "executable": false,
         "action": "installed"
       },

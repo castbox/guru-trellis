@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py", "reason": "原tree_identity摘要及validate_gate独立检查"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/runtime/record.py", "reason": "同次record到validate的摘要复用caller"}
