@@ -1,4 +1,4 @@
-# #575 S2/S3/S4：来源准备、工具采用与验证器修复设计
+# #575 S2/S3/S4/S5：来源、工具采用与完整准备设计
 
 行为由 requirements.md 单写，实际结果由 test.md 单写。本设计继承 [S1](../575-source-adoption/design.md) 与 Architecture `.93/active`，不复制或改名历史证明。
 
@@ -67,3 +67,24 @@ A含合法旧archives，保留普通current-only guard而使用tools-only。B为
 在原matrix `_run` 中分别捕获stdout/stderr，各自strict UTF8解码；capture给Git/version/JSON直接消费者stdout数据，log/MatrixError保留完整双流诊断、实际returncode与timeout124分类/残留事实。不改CLI/警告/参数、超时预算或source检查，不增加API/owner/state/恢复框架，不以两流合并字节作为文本。
 
 本helper和定向tests不进入安装managed projections；A4096工具/runtime和B平台事实按bytes/参数/依赖逐项判适用，保留实际来源，不改称新HEAD已安装。完整trellis source token仍随helper变化，因此新source不恢复旧operation。定向真实子进程success/nonzero/timeout和同Fork init分别检测数据/诊断/退出及原失败阶段；完整focused留待包含修复的真实clean committed source，dirty或fixture自建提交不作正式源。
+
+
+## 完整 clean 与最终准备收敛增量
+
+### D575-S5-01 / CON575-S5-01：真实来源的完整 focused
+
+在仓库外取得包含修复的真实提交07884d05d746d398c290cd834a9a03192a0e7205的干净checkout，保留该Git身份和正式origin；不把verifier自建的fixture提交当成formal source。正式Fork2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0与匹配CLI/Core0.7.0-castbox.3由原source lock/validator消费。
+
+复用原verify-throwaway-install.sh的focused/Codex，workflow provider固定同真实07884完整SHA、关闭local-sample，preset来源也为该HEAD；单次PATH选择原支持CPython3.12.8 seed，锁/阶段/预算保持，指定全新外部work directory保留样本/日志。现有direct分支让CLI按初始Guru contract生成Task，preset guard不变；不删除/转换bootstrap或修改代码。原profile执行init/preset、两轮update --skip-all/workflow preview与apply/preset reapply、source lock/template hashes/Docs保留/sidecar/版本、来源复核、native platform load与session binding；全部阶段及最终退出实际满足才证明完整cell。已交付helper分流捕获，警告、真实exit和timeout124保留，不修改预算、样本或过滤输出。新失败先保留再走原qualification/诊断，不用后阶段成功覆盖首失败。原local-sample/native-init首失败保留，不宣称修复；本准备source的direct远端结果不充当Stage2最终main candidate gate。
+
+### D575-S5-02 / CON575-S5-02：依赖感知终审
+
+先确定根A575-01..05完整定向检查集，再逐项核原工具/平台/predecessor来源、当前bytes/定义、输入/工具链/参数/期望及raw结果。未变且可核实事实注明实际执行来源采用；缺失、变化或无法判断补受影响检查。当前AI语义独立执行，不继承旧pass或跨owner private checkpoint。
+
+predecessor保留真实stable tag/旧正式Fork构建、原tools与selected-task分离维护、Task/五规划/历史/config、目标自身native及下一实际consumer、同operation恢复和不兼容单侧tools rollback阻塞。旧build来源不足与后续完整来源补核分别记录；source4096安装不改称07884，改变source不恢复旧冻结operation。原73suite两计数FAIL和Bhelper对照只保持其因果层证据，不扩大为历史checkout全suite结论或新增断言维护义务。
+
+### D575-S5-03 / CON575-S5-03：唯一贡献与最终晋升
+
+当前根requirement/design/Test/trace由原RDT owner在本五文件delta_first收敛，最终Phase2前reconcile draft；S1独立已晋升source-adoption贡献与历史版本保持。第一次完整committed Review零开放finding后，原owners以写前expected-current串行晋升；Architecture无impact不制造贡献/ADR。实际shared差额回到fresh Phase2、TaskCommit与不同reviewer完整Review，post-promotion结果才进入publication/readiness。
+
+本机制只有原owners与直接consumer，不新增状态、authority或恢复框架。Refs-only交付后WholeCompletion判断全部根义务；只有completed才进入reference_only Closure/no_mutation与Finish/bookkeeping。软件Stage2独立，不从准备样本、RDT晋升或PR合并推断发布/业务/生产效果。
