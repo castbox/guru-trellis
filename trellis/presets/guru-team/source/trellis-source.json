@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
   "repository": "https://github.com/castbox/Trellis.git",
-  "commit": "5c760463680ffc10a3f26957b330c57a4b0c3ff8",
+  "commit": "2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0",
   "parents": [
-    "cc5f9a30652be29cffee9acc7e14d5dc5daaf04c",
-    "a776a97cd5699f6324582ae57245542f80576a6c"
+    "138961cbcac8367d15abe3d9d2f06101fa921cf6",
+    "e28e44b7d45533584732aad74fd869a8bec7b466"
   ],
-  "tree": "9f044e4233edc90fd2b3169442ea13e5d1951780",
-  "ci_run_id": 37735554354,
+  "tree": "41ff285d857036324e480e1eb64d08fffd5956e1",
+  "ci_run_id": 38851816688,
   "cli_version": "0.7.0-castbox.3",
   "package_manager": "pnpm@10.32.1"
 }

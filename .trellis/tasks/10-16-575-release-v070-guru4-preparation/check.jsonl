@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "完整切片审查与source/installed实际证明层次"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "真实旧消费者保留/退出，无第二writer"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "当前项目九项Architecture concern与检查"}
+{"file": ".agents/skills/guru-approve-task-plan/references/contract.md", "reason": "staged独立性、remaining与整Task完成条件"}
+{"file": "trellis/presets/guru-team/spec/workflow/task-delivery-migration.md", "reason": "真实历史转换和Delivery-native接续边界"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "Refs-only、多次完整review与发布边界"}
+{"file": "trellis/presets/guru-team/MIGRATION-566.md", "reason": "核验正式source前置与原maintenance consumer，代码按design定位直接读取"}

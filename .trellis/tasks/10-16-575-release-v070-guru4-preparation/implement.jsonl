@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/preset/installer.md", "reason": "读取原tools/preset写集与受管资产边界，不直接patch生成副本"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "对齐当前公开版本与来源，保留历史tag证据"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按当前切片与整体Stage1区分验证责任"}
+{"file": "trellis/presets/guru-team/spec/workflow/task-delivery-migration.md", "reason": "旧完整图保留到公共转换，新Delivery身份必须真实"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "正式来源与单checkout工具维护前置及恢复"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md", "reason": "所选Task与原private owners转换/native下一owner"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "逐切片promotion前后完整门禁与Stage2独立边界"}
