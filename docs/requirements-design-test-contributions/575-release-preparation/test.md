@@ -1,4 +1,4 @@
-# #575 S2/S3：唯一验证结果与边界
+# #575 S2/S3/S4/S5：唯一验证结果与边界
 
 本文件拥有本贡献的实际执行结果。需求、机制与双向 trace 分别读同目录专属文档。本文的未执行项不是通过，知识贡献不证明软件发布。
 
@@ -131,3 +131,40 @@ setup/调用错误保留原归属：旧runtime默认Python3.15不支持→原支
 现有 `test_verify_trellis_upgrade_contract` 全73项实际执行为71通过、2失败，完整suite仍为FAIL，不能声明全绿。首失败分别在原测试1889、2122行，接口计数预期35、当前实际40。两条原测试bytes与B4096相同；有界对照仅将外部加载helper改为原B4096版本，其余仍为相同当前REPO/参数，两条均保留相同40!=35。依赖读表明断言消费capability/installed projection计数，不调用_run/capture/log，因此失败与本次捕获修复无因果依赖；此对照不证明完整原B checkout历史suite结果。没有修改计数断言、真实registry或安装图；当前真实source/installed/parity证明见T575-S4-01/02。
 
 原T575-S4-02首FAIL与raw/separate诊断保持原观察；新增回归和CLI结果证明有界capture修复，不证明后继真实clean committed source的完整focused、最终main exact candidate、累计矩阵、真实业务或软件发布。
+
+
+## S5完整执行与最终准备证据
+
+### T575-S5-01：真实07884完整focused的两个未通过样本
+
+本轮从实际提交07884d05d746d398c290cd834a9a03192a0e7205普通clone取得独立干净source，tree1cb5f6c805f8b8ea46b2186d1a3f0bcdf3edc27c，正式Guru origin；没有fixture自建source commit。两轮均执行原完整shell focused/codex，allow-local-sample=1、workflow-source #main、相同正式Fork和预算，各自独立work directory与原始日志保留。
+
+首轮PATH seed为Python3.15.0，在source bootstrap返回dependency_install_failed/runtime fcd303b616c52a278e1b6a8e，shell exit2；尚未source validate/init。原bootstrap捕获后未保留pip原stderr/exit，不能断言wheel或网络是原因，不能声称已修复该环境。
+
+按bootstrap原remediation选择S4实际CPython3.12.8 seed后，第二轮bootstrap复用c5898、source/Fork锁校验与实际CLI init成功。正式Fork2a6f10b/tree41ff285/CLI-Core0.7.0-castbox.3/pnpm10.32.1/CI38851816688/211templates被实际validator消费；Fork origin为本机clone、upstream为官方URL，原validator接受任一正式remote，本轮匹配的是upstream，不误称origin官方。
+
+第二轮preset-initial exit1，整体shell exit2，matrix status failed/pre-matrix；code=upstream_delivery_migration_required，唯一Task为正常init生成的00-bootstrap-guidelines（无schema_version，status=in_progress）。只读源码与真实样本表明：verifier local_sample先init --workflow native，CLI在无Delivery contract时生成legacy Task，之后才复制Guru workflow；preset current-only guard按原合同拒绝。未删/转Task、未放宽guard、未修改源码或重跑新variant。两轮preset成功、两次update/reapply、native load与session binding均未达到，不构成完整focused通过。
+
+上述两轮实际执行/raw结果与样本由外部guru575-s5-focused/evidence-report.md、command/shell-result及两轮source-managed-runtime/init/preset/matrix日志保存。它们是各自真实未通过观察；后继同源direct执行见下文，不覆盖原失败或宣称local分支已修复。
+
+#### 同源完整SHA provider的实际完整执行
+
+沿修订规划从同一干净07884/tree1cb5 source运行原focused/Codex shell，workflow-source为gh:castbox/guru-trellis/trellis#07884d05d746d398c290cd834a9a03192a0e7205，local-sample=0，PATH seed为原CPython3.12.8，正式Fork及原profile/阶段/预算不变。执行前GitHub commits API返回相同commit/tree；全新run-exact-provider保留原始双流、命令、样本和结果，原source及Fork仍tracked clean。没有修改helper/CLI/guard或删除、转换Task。
+
+真实shell exit0，原matrix与focused-summary均status=passed、local_workflow_sample=false。direct初始化正常生成schema2 bootstrap Task；preset初装及两轮update --skip-all、workflow preview/apply、preset reapply均实际完成，same_candidate_update_count=2，无待处置backup。原source复核继续消费Fork2a6f10b/tree41ff285、CLI/Core0.7.0-castbox.3、pnpm10.32.1、CI38851816688和211templates。template hashes共97条、95匹配，已知AGENTS投影与config.yaml/AGENTS本地保留单列，unknown_drift_count=0。
+
+原native_load检查实际为passed/actual_load=projection_parity、markdown_prompt入口.codex/prompts/guru-finish-work.md、40skills及Shared/Codex两根；它证明原verifier的平台入口投影一致性，不代表真实宿主交互或package-private tests。session_binding原same-session-linked-worktree-and-foreign-isolation场景实际passed。完整结果见外部guru575-s5-focused/run-exact-provider/matrix/codex/focused-summary.json、matrix-focused-codex.json、shell-result-exact-provider.json及各阶段原log。
+
+本次证明准备source07884的一个完整同源exact-provider clean/update/reapply cell，补齐当前代表性clean工程证据；full_matrix_verified=false、predecessor_upgrade_verified=false，真实predecessor事实另由T575-S4-03/T575-S5-02承接。原Python3.15 bootstrap根因仍未知，原local-sample/native-init路径仍未修复；新结果不充当Stage2最终main candidate、最终predecessor发布gate、tag smoke或软件发布证明。
+
+### T575-S5-02：已有定向工程事实的当前依赖终审
+
+独立V2先按根A575-01..05建立完整检查集后重读原A/B与predecessor raw结果并核当前依赖。12,508 tracked路径核对中，canonical相对4096仅非managed capture helper/test；58项dogfood差额是S4实际已执行投影，不能把全范围说只有两文件。相对实际07884受管依赖无差异；B保留样本9,673项bytes/mode仍匹配原二次reapply快照，predecessor14保护项与rollback前后/现目标10,094项均保持。私有release四根bytes、五规划root与迁移副本、原suite测试bytes均重读相同。
+
+原tools/source-installed/四平台/B/predecessor工程事实可按其实际4096来源采用；没有重跑未受影响安装，不继承旧semantic pass。原predecessor工具/selected-task分离维护、目标native及下一C4/Creation/Author、同ref恢复和不兼容单侧rollback阻塞的raw输出分别核实。旧实际build的local-origin不足与后来official-origin正常重建全包bytes/mode相同的两层证明保留；旧日志缺口不改写为齐全。完整联合层的具体原观察继续由T575-S4-03承接。
+
+73suite仍71通过/2FAIL，Bhelper同当前对象对照只证明捕获无因果依赖，不充当完整原B历史suite。初次B样本核对脚本把原dict和新list直接比较曾得false；原输出保留，随后按原mode/sha256同shape逐项重读为equal且mismatches=[]，不是产品失败或证据改写。本轮外部报告guru575-s5-existing-facts/report.md与dependency/supplement-observations保留。V1完整clean由T575-S5-01的新执行单独证明；V4新bytes检查、最终RDT及前后fresh门禁未由V2证明。
+
+### T575-S5-03：本切片收敛边界
+
+当前隔离贡献按delta_first承接S5要求、机制、双向trace、完整clean的新结果与保留失败；shared RDT .101和Architecture .94保持。贡献仍为draft，原owner只在本切片最终Phase2前收敛当前隔离delta；完整committed Review后才串行晋升shared，晋升差额回到fresh门禁，不以文档收敛断言全部准备完成。Delivery/WholeCompletion/Closure/Finish仍需各自真实结果。Stage2最终main/provider/tag/smoke/Release、累计多平台/native-host及真实业务/生产仍未验证。

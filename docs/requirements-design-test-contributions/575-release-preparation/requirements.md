@@ -1,4 +1,4 @@
-# #575 S2/S3/S4：来源准备、工具采用与验证器修复需求
+# #575 S2/S3/S4/S5：来源、工具采用与完整准备需求
 
 本贡献以 RDT `.100` 为前驱，继承 Architecture `.93/active`；[S1](../575-source-adoption/requirements.md)保留正式来源采用与历史公开映射。依据为 #575 Stage 1、Task 整体 R575-01..07 及当前同 Delivery 的来源准备规划。软件发布目标与知识版本独立；实际结果仅由 test.md 拥有。
 
@@ -40,3 +40,17 @@
 | R575-S4-04 / BEH575-S4-04 | 本切片唯一Test/trace收敛，保留完整clean、真实predecessor最终证据判断和最终RDT/晋升义务，WholeCompletion路由后继而不预造key；Refs-only不充当整体完成 | D575-S4-04 / T575-S4-04 |
 
 当前R575-S4-03的捕获修复替代原S4方案的执行顺序，不删除根R575-04/A575-05的完整focused与真实predecessor要求。保留的整体责任由D575-S4-02/03、T575-S4-02/03定位；原首次focused失败与真实predecessor结果分别记录，当前捕获回归不能改称完整clean通过。最终promotion仍遵守根R575-05/06与私有release合同。
+
+
+## 完整 clean 与最终准备收敛增量
+
+S5沿当前RDT `.101/active` 与Architecture `.94/active` 承接根A575-01..08。S2/S3/S4的原要求与历史层次保持；当前行为只补齐完整样本和最终Docs责任。来源为 live #575 Stage1及既有staged plan，实际执行结果只读test.md，不从本表推定通过。
+
+| Requirement / Behavior | 必须满足的行为 | Design / Test |
+| --- | --- | --- |
+| R575-S5-01 / BEH575-S5-01 | 从包含捕获修复的真实clean committed source及其同一完整SHA的真实远端provider、正式Fork执行原完整Codex focused；init/preset、两轮update/reapply、native load和session binding全部观察，保留真实退出/首失败；原local-sample失败不改称修复，准备SHA不充当Stage2最终main | D575-S5-01 / T575-S5-01 |
+| R575-S5-02 / BEH575-S5-02 | 对根定向来源/工具/平台/真实stable predecessor证据按当前依赖独立终审；可核实且未受影响的原事实注明来源采用，缺失/变化/不确定补受影响验证；不把旧安装重命名为新source执行 | D575-S5-02 / T575-S5-02 |
+| R575-S5-03 / BEH575-S5-03 | 既有唯一五文件及Test/双向trace完整收敛，首次完整committed Review后原owners按expected-current串行晋升，shared差额重新Check/TaskCommit/不同reviewer完整Review | D575-S5-03 / T575-S5-03 |
+| R575-S5-04 / BEH575-S5-04 | 当前Refs-only交付及WholeCompletion、reference_only Closure、Finish保持原owner；Stage2最终main/provider/tag/smoke/Release独立，未验证层次不提升为完成声明 | D575-S5-03 / T575-S5-03 |
+
+上述承接根R575-04/A575-05及R575-05/A575-06，S4的有界捕获回归不替代R575-S5-01。完整累计多平台/native-host、真实业务安装升级/原始在途/生产仍为未验证边界；不扩张其它Open Issue或新增产品机制。
