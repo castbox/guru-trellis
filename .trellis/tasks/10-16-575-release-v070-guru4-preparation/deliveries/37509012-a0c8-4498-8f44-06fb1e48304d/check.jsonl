@@ -1,0 +1,3 @@
+{"file": "docs/requirements-design-test-contributions/575-release-preparation/test.md", "reason": "唯一Test保留真实失败、代码与安装证据层次及未完成责任"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证职责及跨owner工程事实独立适用性判断"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "验证正常双流strict decode、stdout数据消费者及完整失败/timeout诊断"}

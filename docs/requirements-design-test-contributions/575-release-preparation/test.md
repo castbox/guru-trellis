@@ -79,3 +79,55 @@ cwd 为本 Task 的准备 worktree；未显式覆盖环境或 PYTHONPATH，resol
 当前最终三规划与两份官方 JSONL 的实际 secret scan 覆盖约 19,365 bytes，gitleaks exit0/no leaks；逐文件 no-index whitespace check 无诊断（no-index differences exit1，不当成内容错误）。该结果只绑定当时规划 bytes，不覆盖本轮新增代码和五份贡献的新差额；它们由本轮实际检查补充。本文保留 T575-S2 的历史 FAIL/SKIP 和未验证层次，不以当前来源修复改写旧结果。
 
 当前代码与五份贡献写入后，主会话按固定内容 B 到当前工作树的全部实际变更并合并 untracked 规划，隔离扫描 65 个 regular files / 3,944,543 bytes，gitleaks exit0/no leaks。当前 tracked `git diff --check` exit0，五份新规划/JSONL 的 no-index whitespace 检查无诊断。这次扫描包含继承的 #578/#579 差额，未复用旧扫描冒充当前结果；本段新增文字在后续检查中单独补扫，不作自引用绑定。安装副本未更新，未执行 `.4` 正式安装或业务验证。
+
+## 完整安装与最终准备增量
+
+S2/S3以上记录是当时执行观察，包含未完成叙述；当前S4只在下列条目记录新的实际结果，不改写旧失败为成功。
+
+### T575-S4-01：当前目标的正式 tools 安装与自身运行
+
+实际Guru来源 `4096fac812b612e0fdd9c178402fc257b16c5334`，正式Fork `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`，CLI/Core均为`0.7.0-castbox.3`；clean canonical、Fork build/lock/API与成功CI来源由原tools owner现场核对。原owner只执行一次新prepare和原冻结invoke，实际返回 `tools_upgraded / installed_version=0.7.0-guru.4 / unverified=[]`，exit0、stderr空。旧S3失败operation没有复用。
+
+本次 public actions 为211项（210同字节，仅workflow改变），9,480旧Guru owned项按原owner临时退休后完整重装，旧manifest另行退休/生成；最终owned canonical字节改变56、其余9,424相同，永久退休0。checkout-local Python pointer由本owner维护，common/peer pointer保持。9,480项最终投影全部匹配。
+
+目标自己的resolver运行installed validator返回passed；native continuation、current query exit0，当前S4/implementing及实际Planning身份匹配。另实际调用目标installed `guru-ensure-task-checkout/scripts/invoke.sh`返回`checkout_resolved`，精确Task/gen0/worktree匹配；这一层是真实下一owner执行，与current DTO查询分开。
+
+原owner保留对照中6,580个非工具文件和303个peer/common pointers无变化，Task/历史/session、config.yaml/config.yml、AGENTS和gitignore保留；2,495项广义保护集合唯一变化为已展示的canonical受管quality-guidelines.md，不能声称该集合全部不变。工具tracked差额58（56 owned+workflow+manifest），canonical源码未改。该结果证明A的`.4`工具采用及目标自身运行，不证明B/clean/predecessor联合样本或软件发布。
+
+本次卫生扫描另发现13个既有`.trellis/scripts/common/__pycache__/*.pyc`，birth/mtime为安装前18:21:27；全部ignored/untracked，不属于public/Guru preimages、actions或上述6,580保留对照，本轮自身生成bytecode为0。主会话逐文件核对hash/mode和Git忽略事实后将恰好13项移至仓库外可恢复临时备份，bytes/modes保持，没有删除文件或修改恢复对象。该观察补充旧21项Guru runtime缓存的历史移出边界，不能继续沿用此前“全目标bytecode为零”的未覆盖断言。当前卫生由本轮后续检查重扫。
+
+### T575-S4-02：平台与focused clean
+
+四平台与 B 平台层已实际完成。A 的 source/installed validator、Shared/Codex/Claude/Cursor source、ownership、只读 dogfood drift 均 exit0；私有 release Skill 的 SKILL/contract 四根 bytes 相同。A 递归 pyc/pyo/.new/.bak 为0。B 经原 clean-candidate-source 生成器取得同 canonical、无旧 archives 的样本；第一次 apply exit2，56个 .bak 的前像逐项等于固定4096来源旧安装bytes、后像等于A `.4` validated projection，review 后备份移至外部可恢复目录。后续两次 reapply、drift、installed 全部通过；第二次 reapply 前后9,673项 bytes+mode无变化，最终无 sidecar。B fixture commit仅是样本身份，不能成为正式 source_ref。
+
+focused 独立层为 FAIL，尚未证明完整 clean。使用 clean Guru4096、正式 Fork2a6f10b 和原 Codex focused shell；原支持的 allow-local-sample 与 #main 只证明本地 workflow 样本，不是远端 immutable provider。bootstrap/caller inventory/Fork lock越过后，在真实 `init -y --codex --workflow native` 的 `_run` 首次发生 UnicodeDecodeError（UTF-8 byte0xe2、offset511），未到 preset/update/native/session。
+
+独立有界诊断不是原执行：相同CLI命令实际exit0并写正确`.version`；raw merged1809bytes仍在offset511无效，stderr hook warning插入stdout横幅e2/96 88之间。分离捕获stdout1449与stderr360bytes各自strict UTF-8有效，CLI仍exit0。该证据定位verifier合并后解码的因果；无源码修复、quiet/filter/容错解码/改timeout或focused重跑，不声明修复完成。原focused.log、raw/separate诊断保留外部，唯一长期结果由本Test承接。
+
+### T575-S4-03：真实stable predecessor分离维护
+
+真实 stable `.3` 隔离样本已完成分离维护。predecessor为tag peeled `7d20a930341dae3e7dd2d214660ce3b99e28d863`，旧Fork `5c760463680ffc10a3f26957b330c57a4b0c3ff8`；实际tag provider init及旧preset原writer建立正常旧Task/五规划/原binding/start/native。新Guru source4096与正式Fork2a6f10b按source_locked调用原tools owner，实际 tools_upgraded `.4`、unverified=[]，工具前后14项Task/session/config bytes+mode不变；目标自身resolver/installed成功，native/current明确maintenance_required，没有把tools更新当数据转换。同一recovery/source/plan的resume返回相同结果。
+
+原selected-task owner独立inspect/prepare/apply/observe/finalize返回task_resumed，TaskId/generation/metadata与raw source保持，唯一迁移Delivery为planning；根五规划与其planning_root副本bytes/mode相等，所有plan_ref/candidate/gate/业务完成结果为空，没有导入旧pass。目标native/current成功、C4 checkout_resolved、原Creation显式选择同一迁移key返回created、原Author读取实际规划返回requirements_ready；该链证明真实下一consumer，不是JSON查询或Planning Approval。显式同ref/action=resume返回相同task_resumed。
+
+原tools owner基于原postimage和当前Task2/session3尝试单侧rollback，真实返回blocked/incompatible_restore；10094项完整文件bytes/mode全保持，后native仍成功，没有只恢复public或Guru半边。正式target递归pyc/new/bak均0。该结果证明受支持的隔离分离维护及不兼容回退阻塞；不证明样本业务完成、联合restore或软件发布。
+
+来源补核：实际旧Fork既有build的origin为本机clone路径，不能单独声称完整formal lock通过。另从相同exact对象、官方origin取得独立旧Fork，按自身pnpm10.32.1正常frozen install/build，真实成功后记录HEADmarker；旧源validator通过parents/tree/198template bytes/CLI/Core与liveCI37735554354。其CLI/Core package.json/bin/dist/src完整bytes/mode digest与实际执行旧build各自相同，没有复制dist或用版本号替代。该验证补足来源，不删除原formal校验失败。
+
+setup/调用错误保留原归属：旧runtime默认Python3.15不支持→原支持3.14的实际PATH；旧preset需完整source cwd；source runtime需原bootstrap；最初本机origin产生receipt provenance拒绝且no-op reapply不改receipt→保留setup target，首次官方origin另建formal target，由真实writer生成receipt；旧binding前需正常sample规划commit/start需显式empty-context；installed validator相对root重复→绝对root；selected terminal resume省略action触发preview_command_required→合同显式resume。无guard/timeout/source/recovery伪改；早期少数同名日志被后续调用覆盖，报告明确仅有现场输出摘录，不声称每次独立raw log齐全。全部外部样本与备份保留，主Task源码未由样本owner改动。
+
+### T575-S4-04：完整Docs与门禁边界
+
+当前增量沿RDT`.101/active`与Architecture`.94/active`，贡献仍为draft。本切片draft delta按当前工具/平台/capture责任收敛；完整clean与最终全范围reconciliation、committedReview、原RDT晋升及晋升差额fresh门禁仍归后继真实结果，当前切片不提前晋升shared。当前安装/capture回归不表示WholeCompletion已完成。Stage2最终main/provider/tag/smoke/Release与业务生产均不由本条证明。
+
+### T575-S4-05：正常双流捕获与真实退出回归
+
+实际修改source helper与新增 `test_verify_trellis_matrix_capture.py` 两文件：stdout/stderr独立PIPE、UTF-8 strict解码，capture只返回stdout；正常log/非零MatrixError保存双流，timeout保持124并以repr保留可能截断字符的原始双流bytes，不以解码异常覆盖超时。
+
+通过目标managed resolver执行新增5项真实子进程回归，5通过、0failure/error，约1.088s。分别覆盖合法Unicode按正常pipe chunk穿插、JSON stdout与正常warning分离/文本stdin、非零exit7及双流完整诊断、非capture成功日志、timeout124及双流partial bytes。测试执行真实helper和真实子进程，不用mock结果代替capture行为。
+
+同一正式Fork2a6f10b的原Node入口 `init -y --codex --workflow native` 经实际修复helper在外部新target运行，exit0，目标`.version=0.7.0-castbox.3`；stdout横幅保留且不混warning，完整log保留stderr hooks warning。原首次focused失败阶段已越过，但本次只是相同CLI初始化，不是完整focused clean/update/reapply/native/session通过。两文件AST语法和helper差额diffcheck通过，source Python目录无pyc/pyo/new/bak；完整最终candidate检查仍由Check owner执行。
+
+现有 `test_verify_trellis_upgrade_contract` 全73项实际执行为71通过、2失败，完整suite仍为FAIL，不能声明全绿。首失败分别在原测试1889、2122行，接口计数预期35、当前实际40。两条原测试bytes与B4096相同；有界对照仅将外部加载helper改为原B4096版本，其余仍为相同当前REPO/参数，两条均保留相同40!=35。依赖读表明断言消费capability/installed projection计数，不调用_run/capture/log，因此失败与本次捕获修复无因果依赖；此对照不证明完整原B checkout历史suite结果。没有修改计数断言、真实registry或安装图；当前真实source/installed/parity证明见T575-S4-01/02。
+
+原T575-S4-02首FAIL与raw/separate诊断保持原观察；新增回归和CLI结果证明有界capture修复，不证明后继真实clean committed source的完整focused、最终main exact candidate、累计矩阵、真实业务或软件发布。

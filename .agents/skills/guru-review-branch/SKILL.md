@@ -121,6 +121,11 @@ before/after satisfaction from the complete committed base-to-HEAD diff. This
 Skill then rereads the current Architecture Baseline, design constitution, and
 task-local change contract as part of its own complete-range semantic review.
 Neither owner may reuse the Phase 2 Architecture result as Branch Review proof.
+For engineering commands, follow the contract's Engineering validation in the
+complete review: determine the current complete check set first, judge accessible
+original facts independently, document execution/adoption and sources, and
+execute affected or new checks. This never substitutes for current semantic
+review or exact-range result binding.
 A single extra blank line, or multiple blank lines, at the end of a text file
 is formatting noise when it is the only observed issue and the file's
 meaningful bytes are otherwise unchanged. Keep EOF-only whitespace as a

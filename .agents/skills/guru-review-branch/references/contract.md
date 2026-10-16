@@ -124,9 +124,11 @@ Input that does not satisfy the current public schema fails closed.
 
 Before the full-range review, the global workflow mandatory invokes
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=branch_review)`.
-That semantic owner independently reruns applicable project Architecture checks
+That semantic owner independently judges applicable project Architecture checks
 and recomputes before/after satisfaction from the complete committed
-base-to-HEAD diff. Branch Review consumes only its fresh checked current route,
+base-to-HEAD diff. Its current project-check result is mandatory; supporting
+engineering commands follow that owner's execution-fact applicability rules.
+Branch Review consumes only its fresh checked current route,
 then rereads the live Architecture Baseline, design-constitution authority, and
 task-local Architecture change contract. It never opens Architecture private
 state; this consumer does not read Architecture private state and never treats
@@ -137,6 +139,30 @@ reviewer for this committed candidate. A compliant worker may perform
 Architecture first and this complete review afterwards; do not dispatch a
 narrative-preloaded overall worker and ask it to retroactively author the
 Architecture pass. Actual results and exact committed identities stay separate.
+
+### Engineering validation in the complete review
+
+Independently determine the complete committed scope, risks, affected consumers
+and applicable checks before inspecting prior engineering results. Adopt an
+original command result from another reviewer or stage only when lawfully
+accessible and verifiable and its definition/version, actual dependencies,
+toolchain, invocation parameters, environment and test expectations remain
+applicable. Verify actual results through existing summary/evidence locators
+and Git checked objects. Same paths or code trees do not establish applicability;
+changed documentation can introduce behavior contracts, risks and obligations.
+Reviewer, stage, commit or promotion changes alone do not require rerunning a
+still-applicable engineering command.
+
+Execute affected or new checks when inputs changed, applicability is unknown or
+the original result is unavailable; preserve unaffected verifiable facts. In the
+existing validation summary distinguish current execution from adoption, with
+original source and applicability reason, without claiming to have run adopted
+commands. Complete this review and bind its result to the current exact range
+through the existing recorder/checker. Old semantic passes, freshness tokens and
+Phase 2 private evidence cannot supply that judgment or binding. Do not read
+another owner's private state, retain or reconstruct retired checkpoints, or
+create a ledger, cache or long-lived history. Apply this rule within this owner;
+do not transfer unconditional reruns to Architecture or another phase.
 
 ### Whitespace Candidate Hygiene
 

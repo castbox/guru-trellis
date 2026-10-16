@@ -532,14 +532,32 @@ output-schema success. The Phase 2 wrapper retains only a valid `passed`
 checkpoint for Task Commit and deletes every other valid exit checkpoint; Task
 Commit tests must prove candidate construction and execution reread it, failures
 retain it, and successful publication or recovery deletes it.
-Semantic replay coverage must additionally prove the current candidate can
-reuse execution facts from the original Check owner only
-after check/version, actual dependencies, toolchain/runtime and environment are
-revalidated. Observe A-only changes leaving independent B execution counts
-unchanged, each B dependency change rerunning B, new applicable C executing,
-and unavailable facts rerunning only their check. Observe current result
-binding without altering old candidate records. Legitimate configuration
-changes are rerun inputs, not an old-value correctness whitelist.
+
+Engineering execution facts may be adopted across reviewers and stages only
+after the current owner independently determines the complete scope, risks,
+consumers and applicable check set, then verifies the original accessible
+result and the applicability of its definition/version, actual dependencies,
+toolchain, invocation parameters, environment and test expectations. Existing
+summaries distinguish actual execution from adoption with source and reason;
+adoption never claims current execution, supplies semantic pass or copies old
+freshness tokens. Current judgment and binding remain with each original owner.
+Do not read another owner's private state, retain or reconstruct retired
+checkpoints, or introduce a ledger, cache or long-lived result history.
+
+Semantic replay coverage must observe a fresh reviewer completing the full
+current review while adopting verifiable unchanged A/B facts, with unchanged
+command counts. Cover affected B reruns for behavior-contract/expectation,
+shared-dependency, definition/version, toolchain, parameter and environment
+changes; new applicable C execution; and missing original B results rerunning
+only B. Documentation-only changes require consumer/obligation judgment, not
+an automatic code-tree equivalence claim. Observe fresh current result binding
+across reviewer/stage/commit/promotion changes without altering old records or
+copying old passes/tokens, including accessible facts after the original private
+checkpoint has retired. Legitimate configuration changes are rerun inputs,
+not an old-value correctness whitelist. Actual Agent choices and command
+observations are required; fixed-text assertions or a green DTO alone do not
+prove this behavior.
+
 Delivery recovery coverage must distinguish loss of Delivery Review output
 with an applicable held Branch Review DTO from loss of that DTO itself; normal
 checkpoint retirement cannot force unaffected semantic owners to rerun. New

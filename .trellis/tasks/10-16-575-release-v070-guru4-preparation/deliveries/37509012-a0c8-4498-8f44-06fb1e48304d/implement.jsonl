@@ -1,0 +1,3 @@
+{"file": ".trellis/guru-team/skills/packages/guru-upgrade-tools/references/contract.md", "reason": "单checkout正式工具更新的原owner、prepare/invoke/resume及写集保留边界"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "Stage1晋升前后完整门禁及Stage2发布边界"}
+{"file": "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py", "reason": "当前source-side输出捕获与git/version/JSON直接消费者的唯一修复位置"}

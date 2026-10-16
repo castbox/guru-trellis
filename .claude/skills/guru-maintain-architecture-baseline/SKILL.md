@@ -26,8 +26,10 @@ Execute one profile in this order:
 
 1. validate the caller/profile and read the exact public input;
 2. apply the selected assessment or eligibility entry and its read order;
-3. run or inspect every applicable project check and judge its applicability,
-   blocking effect, and before/after meaning;
+3. determine the complete scope, risks, consumers and applicable check set before
+   inspecting prior results; perform current semantic project checks and apply
+   the contract's Engineering execution facts rules to supporting commands;
+   judge applicability, blocking effect and before/after meaning;
 4. make the applicable judgments as the contract-selected AI owner;
 5. author one complete result matching the selected planning 3.0 or nonplanning 2.0 schema;
 6. submit `public_input` plus that `owner_result` once through the formal

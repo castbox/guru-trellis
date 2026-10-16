@@ -844,32 +844,40 @@ def _run(
             cwd=str(cwd) if cwd else None,
             env=merged_env,
             text=True,
+            encoding="utf-8",
+            errors="strict",
             input=input_text,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             check=False,
             timeout=timeout,
         )
     except subprocess.TimeoutExpired as exc:
-        output = exc.output or ""
+        # TimeoutExpired retains raw bytes, possibly ending partway through a
+        # character. Preserve both streams without obscuring the timeout with
+        # a decoding error or claiming an ordering between the streams.
+        diagnostics = f"stdout (partial):\n{exc.stdout!r}\nstderr (partial):\n{exc.stderr!r}"
+        if log:
+            log.write_text(diagnostics, encoding="utf-8")
         raise MatrixError(
             f"command timed out after {timeout:.3f}s: {_stable_command_label(argv)}",
             command_label=_stable_command_label(argv),
             exit_code=124,
             error_tail=(
                 f"command timed out after {timeout:.3f}s\n"
-                f"stdout:\n{output}"
+                f"{diagnostics}"
             ),
         ) from exc
     output = completed.stdout or ""
+    diagnostics = f"stdout:\n{output}\nstderr:\n{completed.stderr or ''}"
     if log:
-        log.write_text(output, encoding="utf-8")
+        log.write_text(diagnostics, encoding="utf-8")
     if completed.returncode != 0:
         raise MatrixError(
             f"command failed ({completed.returncode}): {_stable_command_label(argv)}",
             command_label=_stable_command_label(argv),
             exit_code=completed.returncode,
-            error_tail=output,
+            error_tail=diagnostics,
         )
     return output if capture else ""
 
