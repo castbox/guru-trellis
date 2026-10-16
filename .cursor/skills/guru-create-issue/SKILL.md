@@ -1,9 +1,28 @@
 ---
 name: guru-create-issue
-description: Create one reviewed proposed GitHub Issue, or recover its exact result read-only.
+description: Use when the user asks to create, open, or file a GitHub Issue, including 新建 issue、创建 Issue、新增 Issue、提 Issue and contextual confirmation such as 同意新建 issue. Load the required upstream review before creating one reviewed Issue, or recover its exact result read-only.
 ---
 
 # Create Issue
+
+## Intent Entry
+
+Load this Skill when the user requests GitHub Issue creation in natural
+language or explicitly names it. Recognize equivalent intent semantically;
+the description examples are not an exhaustive keyword list. A contextual
+confirmation such as “同意新建 issue” retains the actual proposal and scope
+from the current conversation. Quoting these phrases to discuss this Skill
+is not itself an Issue creation request.
+
+Loading the Skill does not satisfy its creation preconditions. If the current
+`guru-review-change-request:ready` transition for `proposed_draft` is missing,
+return control to the current workflow's initial Intake or applicable active
+scope owner to obtain the actual upstream review, then invoke this Skill
+with that result. Do not fabricate a transition or bypass this owner with
+`gh issue create` or a provider create call. Retain the user's Issue-only
+scope; Issue creation does not authorize Task, branch or worktree creation.
+
+## Reviewed Creation
 
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
