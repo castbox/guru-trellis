@@ -5,6 +5,13 @@ description: Resolve the current task's unique registered checkout from its Task
 
 # Ensure Task Checkout
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Use this deterministic owner for an active task. Read the immutable TaskId and
 generation from the caller, then resolve its current task artifact, branch
 binding, resource ownership, and registered Git checkout. A machine path is

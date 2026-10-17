@@ -5,6 +5,13 @@ description: Check the complete current task through one AI-owned semantic round
 
 # Guru Check Task
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this

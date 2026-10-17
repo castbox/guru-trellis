@@ -609,3 +609,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-066：#578 跨 owner 工程事实的已审贡献
 
 首次独立完整 committed range 为 `404d3f4d7635b19fb2c9f0d6aa642e2f1bf925b4...5ba72ba9ca40d990d8250fbc0c174475bc3d98f4`；原 Architecture 与 BranchReview 正式出口分别为 baseline_current/reviewed_candidate 与 passed。原 owners 按 expected Architecture .93 / RDT .100 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/578-cross-owner-validation-facts.md)与 ADR-029 拥有责任，[唯一 Test](../../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)保留命令原始对象、失败及未验证边界；本条不复制或改写执行事实。
+
+## EVD-067：#599 清晰写作与入口读取的已审贡献
+
+首次独立完整 committed range 为 `dev@ea9998c36a188f3afae1d7d6e5746edc07fa003f...af246dc6184e6c779f2f08ab72a4ff889c6dbc0f`。原 Check 已绑定该范围的 HEAD，Architecture 与独立 Branch Review 分别通过正式入口；原 Architecture owner 按 expected `.94` 晋升 `.95`。本次新增晋升差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview。[贡献](../contributions/599-clear-technical-writing.md)拥有责任与晋升关系，[唯一 Test](../../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有实际结果、首轮遗漏、finding 修复和未验证边界；本条不复制执行记录，不证明软件发布、业务采用或 Task Completion。

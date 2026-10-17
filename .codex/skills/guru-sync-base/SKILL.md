@@ -5,6 +5,13 @@ description: Resolve, safely synchronize, and deterministically validate the sel
 
 # Guru Sync Base
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Use this Skill when the Guru Team workflow mandatory invokes `guru-sync-base`,
 or when the user explicitly asks to refresh or verify a repository base branch.
 
