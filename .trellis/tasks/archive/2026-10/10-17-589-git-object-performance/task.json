@@ -4433,7 +4433,7 @@
       },
       "planning_root": "deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/design.md",
         "revision": "sha256:9649f00710a68ce20db6a57278cc383bed3039d6b85d7504deee5c1959e10d5c"
@@ -4455,7 +4455,7 @@
           ".trellis/scripts/common/git_objects.py",
           "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
         ],
-        "head_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+        "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
         "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8"
       },
       "results": {
@@ -4507,7 +4507,7 @@
           ]
         },
         "check": {
-          "result_id": "check:47acb4301ad030f5820c9dd40b48d63894f8b6edb70f7f810c775c5fa13b301a",
+          "result_id": "check:ff2ef6588cafa0b0f51b14f67bc833ff044728b7e9579846ca589dd6fb2144df",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -4552,7 +4552,7 @@
               ".trellis/scripts/common/git_objects.py",
               "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
             ],
-            "head_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+            "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
             "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8"
           },
           "predecessor_result_id": "planning-accepted:f5e1b44f-c69c-4323-b747-951f01c62e77",
@@ -4572,14 +4572,266 @@
             }
           ]
         },
-        "full_review": null,
-        "readiness": null
+        "full_review": {
+          "result_id": "full-review:4731d3418a79c5e22b088fb286a9ac9d51a1f203066ef842fd8008fbe34cc821",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:fd2de429169bda40eef500236cb30c483f0abf8a678210f7684377afd545def9"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/design.md",
+            "revision": "sha256:9649f00710a68ce20db6a57278cc383bed3039d6b85d7504deee5c1959e10d5c"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:995999473a7cb48785e7b41020bda0532834930e596243247307f9f5960cb15e",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/.version",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/delivery_store.py",
+              ".trellis/scripts/common/git_objects.py",
+              "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
+            ],
+            "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
+            "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8"
+          },
+          "predecessor_result_id": "check:ff2ef6588cafa0b0f51b14f67bc833ff044728b7e9579846ca589dd6fb2144df",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/implement.md",
+              "revision": "sha256:2e5a398138c8ec88fd4977418203931aa97275683c8299f0e2919c3e732798a4"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:90d4bf02e21441c29b5a23437c0abcaab07c0095f59f1d74aa95d77b9a1af036",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:fd2de429169bda40eef500236cb30c483f0abf8a678210f7684377afd545def9"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/design.md",
+            "revision": "sha256:9649f00710a68ce20db6a57278cc383bed3039d6b85d7504deee5c1959e10d5c"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:995999473a7cb48785e7b41020bda0532834930e596243247307f9f5960cb15e",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/.version",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/delivery_store.py",
+              ".trellis/scripts/common/git_objects.py",
+              "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
+            ],
+            "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
+            "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8"
+          },
+          "predecessor_result_id": "full-review:4731d3418a79c5e22b088fb286a9ac9d51a1f203066ef842fd8008fbe34cc821",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/implement.md",
+              "revision": "sha256:2e5a398138c8ec88fd4977418203931aa97275683c8299f0e2919c3e732798a4"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:ed77e1838457eacf842c04933cddc39cce1621bf84002205e6ded524bda65fbc",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/606",
+            "revision": "sha256:a5b1ca7f2120ac451ac541bae332b33307e2eabc02f69a432dcf53f0eff3125c"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+          "content_ref": "sha256:995999473a7cb48785e7b41020bda0532834930e596243247307f9f5960cb15e",
+          "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
+          "kind": "git",
+          "paths": [
+            ".trellis/.template-hashes.json",
+            ".trellis/.version",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/scripts/common/delivery_store.py",
+            ".trellis/scripts/common/git_objects.py",
+            "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 606,
+        "reviewed_head": "c4e63b708d7915d9e05d2013f8859a2167263147",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/606",
+          "revision": "sha256:a5b1ca7f2120ac451ac541bae332b33307e2eabc02f69a432dcf53f0eff3125c"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:1c6b68133d29c442ccb1ded2e87b1c9d78b21358",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/606",
+            "revision": "1c6b68133d29c442ccb1ded2e87b1c9d78b21358"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+          "content_ref": "sha256:995999473a7cb48785e7b41020bda0532834930e596243247307f9f5960cb15e",
+          "head_ref": "c4e63b708d7915d9e05d2013f8859a2167263147",
+          "kind": "git",
+          "paths": [
+            ".trellis/.template-hashes.json",
+            ".trellis/.version",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+            ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/scripts/common/delivery_store.py",
+            ".trellis/scripts/common/git_objects.py",
+            "docs/requirements-design-test-contributions/589-git-object-performance/test.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 606,
+        "reviewed_head": "c4e63b708d7915d9e05d2013f8859a2167263147",
+        "merge_commit": "1c6b68133d29c442ccb1ded2e87b1c9d78b21358",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
-  "completion_results": [],
-  "closure_results": []
+  "completion_results": [
+    {
+      "result_id": "completion:589-all-eight-deliveries-live-chain-1c6b681",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/10-17-589-git-object-performance/completion-report.md",
+          "revision": "589-final-live-chain-1c6b681"
+        },
+        {
+          "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/7043a11f-8a23-43aa-b5d6-8c16939ba261/validation.md",
+          "revision": "git:c4e63b708d7915d9e05d2013f8859a2167263147"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/606",
+          "revision": "merge:1c6b68133d29c442ccb1ded2e87b1c9d78b21358"
+        },
+        {
+          "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/533a4e7a-9173-47db-b810-f26de5db74f3/performance-results.md",
+          "revision": "git:1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8"
+        },
+        {
+          "locator": "docs/architecture/README.md",
+          "revision": "current-main-0.6.17-guru.96"
+        },
+        {
+          "locator": "docs/requirements/README.md",
+          "revision": "current-main-0.6.17-guru.104"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+        "revision": "sha256:fd2de429169bda40eef500236cb30c483f0abf8a678210f7684377afd545def9"
+      },
+      "delivery_result_ids": [
+        "delivery:faef781870c69e3657fcbafeb1ce24d0474e6969",
+        "delivery:5baff654d2c7ac7a069cea181852d4831c2e65bd",
+        "delivery:cc4d91a9080a8c9f76984b55e67e4c373168fed6",
+        "delivery:32e3244b8504e1af11925777294a5e165865ec1e",
+        "delivery:ff238f67f625a96f50ee8ed2f7e906bee7f26fdc",
+        "delivery:ea9998c36a188f3afae1d7d6e5746edc07fa003f",
+        "delivery:9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807",
+        "delivery:1c6b68133d29c442ccb1ded2e87b1c9d78b21358"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:89476b4d0ea56bccff57f8e7",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/589",
+          "revision": "CLOSED"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:589-all-eight-deliveries-live-chain-1c6b681",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/589",
+        "revision": "CLOSED"
+      }
+    }
+  ]
 }
