@@ -2159,6 +2159,118 @@ def validate_cell(
     return result
 
 
+def _checkout_predecessor_source(repo_root: Path, before_tag: str, source_root: Path, cell_root: Path) -> None:
+    _run(("git", "clone", "--shared", "--no-checkout", str(repo_root), str(source_root)),
+         log=cell_root / "before-source-clone.log")
+    _git(source_root, "remote", "set-url", "origin", "https://github.com/castbox/guru-trellis.git")
+    _git(source_root, "checkout", "--detach", before_tag)
+
+
+def _upgrade_bootstrap_fixture(
+    repo_root: Path, target: Path, fork_source: Path, workflow_source: str,
+    cell_root: Path, env: Mapping[str, str],
+) -> dict[str, Any]:
+    """Run the original Plan2 owner for the fixed init/bootstrap scenario.
+
+    This scenario explicitly retains the init-owned bootstrap as defer. It is
+    not an inventory planner for business Tasks or session restoration.
+    """
+    import base64
+    source_ref = _git(repo_root, "rev-parse", "HEAD").strip()
+    provider, _, provider_ref = workflow_source.partition("#")
+    if (provider != "gh:castbox/guru-trellis/trellis"
+            or _git(repo_root, "rev-parse", f"{provider_ref or 'main'}^{{commit}}").strip() != source_ref):
+        raise MatrixError("existing fixture provider must resolve to the source candidate")
+    package = repo_root / "trellis/skills/guru-team/packages/guru-upgrade-installation"
+    def save(name: str, value: Any) -> Path:
+        path = cell_root / ("upgrade-" + name + ".json")
+        path.write_text(json.dumps(value), encoding="utf-8")
+        return path
+    installed = _load_json(target / ".trellis/guru-team/extension.json")
+    public = save("input", {
+        "profile": "delivery_upgrade", "target_source_ref": source_ref,
+        "source_profile": "guru0.7.0-family" if installed["extension"]["version"].startswith("0.7.0") else "guru0.6-family",
+    })
+    fork = str(fork_source / "packages/cli/bin/trellis.js")
+    def call(script: str, *extra: str) -> dict[str, Any]:
+        output = _run(
+            (str(package / "scripts" / script), "--root", str(target),
+             "--input", str(public), "--fork", fork, *extra),
+            cwd=repo_root, env=env, capture=True,
+            log=cell_root / ("upgrade-" + script + ("-planned" if extra else "") + ".log"),
+        )
+        return _require_dict(json.loads(output), "upgrade owner output")
+    preview = call("preview.sh")
+    save("inventory", preview)
+    facts = preview["result"]
+    inventory = facts.get("inventory", {})
+    workspaces = inventory.get("workspaces", [])
+    if (len(workspaces) != 1 or Path(workspaces[0]["root"]).resolve() != target.resolve()
+            or inventory.get("common_sessions") or workspaces[0].get("local_sessions")):
+        raise MatrixError("existing fixture requires its single init workspace without sessions")
+    workspace = workspaces[0]
+    tasks = workspace["tasks"]
+    if ([row["task_ref"] for row in tasks] != [".trellis/tasks/00-bootstrap-guidelines"]
+            or inventory.get("branch_bindings")):
+        raise MatrixError("existing fixture requires exactly the init-owned bootstrap Task")
+    task = tasks[0]
+    templates = workspace["prospective_templates"]
+    workflow = (repo_root / "trellis/workflows/guru-team/workflow.md").read_text()
+    contract = json.loads(workflow.split("[trellis-runtime-contract]", 1)[1].split("[/trellis-runtime-contract]", 1)[0])
+    def raw(path: Path) -> dict[str, Any] | None:
+        if not path.exists():
+            return None
+        content = path.read_bytes()
+        return {"sha256": hashlib.sha256(content).hexdigest(),
+                "mode": stat.S_IMODE(path.stat().st_mode),
+                "content_base64": base64.b64encode(content).decode()}
+    files = [{"target": {"kind": "project", "workspace": "primary", "path": name},
+              "owner": "preserve", "action": "preserve", "source": original}
+             for name, original in task["artifacts"].items()]
+    for item in templates["files"]:
+        name = item["path"]
+        files.append({"target": {"kind": "project", "workspace": "primary", "path": name},
+                      "owner": "template", "action": "write", "source": raw(target / name),
+                      "target_content_base64": templates["contents"][name], "target_mode": item["mode"]})
+    files.append({"target": {"kind": "project", "workspace": "primary", "path": ".trellis/workflow.md"},
+                  "owner": "workflow", "action": "write", "source": workspace["workflow_source"],
+                  "target_content_base64": base64.b64encode(workflow.encode()).decode(), "target_mode": 0o644})
+    receipt = json.loads(base64.b64decode(workspace["receipt_source"]["content_base64"]))
+    for name in receipt["hashes"]:
+        if name not in templates["contents"] and name.startswith((".trellis/scripts/", ".trellis/agents/")):
+            files.append({"target": {"kind": "project", "workspace": "primary", "path": name},
+                          "owner": "preserve", "action": "preserve", "source": raw(target / name)})
+    core_plan = {
+        "schema_version": "2.0",
+        "source": {"version": facts["installed_core"], "task_schema": "mixed", "delivery_api": None},
+        "target": {"version": "0.7.0-castbox.4", "task_schema": "2.0", "delivery_api": "1.0"},
+        "workspaces": [{"id": "primary", "root": str(target.resolve()), "project_relative": None}],
+        "installations": [{"workspace": "primary", "version_source": workspace["version_source"], "receipt_source": workspace["receipt_source"]}],
+        "tasks": [{"workspace": "primary", "task_ref": task["task_ref"], "source": task["source"],
+                   "source_task_schema": "1.0", "disposition": "defer"}],
+        "sessions": [], "workflows": [{"workspace": "primary", "template_id": "guru-team", "contract": contract}],
+        "templates": [{"workspace": "primary", "candidate_sha256": templates["candidate_sha256"], "files": templates["files"]}],
+        "files": files, "branch_bindings": [],
+    }
+    plan = save("plan", {
+        "core_plan": core_plan, "dependency_mode": "source_locked", "fork_source_root": str(fork_source.resolve()),
+        "source_candidate": facts["source_candidate"], "fork_candidate": facts["fork_candidate"],
+        "guru_workspaces": [{"workspace": "primary", "selected_platforms": installed["install"]["selected_platforms"], "decisions": []}],
+        "controls": [], "owner_migrations": [],
+    })
+    planned = call("preview.sh", "--plan", str(plan))
+    if planned.get("result", {}).get("exit_id") == "blocked":
+        raise MatrixError("original installation owner rejected the fixed bootstrap projection")
+    result = call("invoke.sh", "--plan", str(plan))
+    save("output", result)
+    if result.get("exit_id") != "upgraded" or result.get("unverified"):
+        raise MatrixError("original installation owner did not complete the source-locked fixture upgrade")
+    for name, original in task["artifacts"].items():
+        if raw(target / name) != original:
+            raise MatrixError("bootstrap fixture bytes or modes changed during upgrade")
+    return result
+
+
 def _run_cell(
     *,
     repo_root: Path,
@@ -2186,7 +2298,7 @@ def _run_cell(
 
     if scenario == "existing":
         source_root = cell_root / "before-source"
-        _export_git_tree(repo_root, before_tag, source_root, cell_root / "before-source.tar")
+        _checkout_predecessor_source(repo_root, before_tag, source_root, cell_root)
         predecessor_extension = _require_dict(
             _load_json(source_root / "trellis/guru-team-extension.json"),
             "predecessor extension manifest",
@@ -2260,38 +2372,15 @@ def _run_cell(
         # No CLI self-upgrade: a separately validated predecessor is required.
         binary = tuple(source["command"])
         actual_after_upgrade = _assert_version(binary, target_cli, env)
-        _run(
-            (*binary, "update", "--dry-run"),
-            cwd=target,
-            env=env,
-            capture=True,
-            log=cell_root / "trellis-update-dry-run.log",
-        )
-        _run(
-            (*binary, "update", "--skip-all"),
-            cwd=target,
-            env=env,
-            log=cell_root / "trellis-update.log",
-        )
-        update_mode = "update"
-        expected_managed_workflow = (
-            source_root / "trellis/workflows/guru-team/workflow.md"
-        )
         local_sample = _workflow_source_requires_local_sample(repo_root, workflow_source)
-        if local_sample and not allow_local_sample:
+        if local_sample:
             raise MatrixError(
                 "existing cell candidate workflow is unpublished; exact remote source is required"
             )
-        _preview_and_switch_workflow(
-            target,
-            binary,
-            env,
-            workflow_source,
-            repo_root,
-            expected_managed_workflow,
-            local_sample,
-            cell_root,
+        _upgrade_bootstrap_fixture(
+            repo_root, target, fork_source, workflow_source, cell_root, env,
         )
+        update_mode = "source_locked_installation_upgrade"
         reapplied_preset = _apply_preset(
             repo_root,
             target,
@@ -2330,7 +2419,8 @@ def _run_cell(
     result.update(
         {
             "update_mode": update_mode,
-            "workflow_sample": "public_plus_local_candidate" if local_sample else "exact_marketplace",
+            "workflow_sample": ("source_locked_installation_upgrade" if scenario == "existing" else
+                                "public_plus_local_candidate" if local_sample else "exact_marketplace"),
             "before_projection_sha256": before_projection["projection_sha256"],
             "after_projection_sha256": after_projection["projection_sha256"],
             "current_projection_comparison_sha256": current_projection_comparison[
