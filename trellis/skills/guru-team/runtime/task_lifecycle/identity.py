@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterator
 
 from .errors import LifecycleContractError
-from .git_facts import commit_path_bytes, inspect_repository
+from .git_facts import TaskObjectReader, inspect_repository
 from .source import normalize_repo_ref, normalize_source
 
 
@@ -349,70 +349,73 @@ def discover_archived_issue_candidate(
     matches: list[ArchivedIssueCandidate] = []
     origin_is_source = origin_matches(repository.context_path, source_repo)
     identities = _task_identities(repo_root)
-    for artifact in identities:
-        if artifact.lifecycle_state != "archived":
-            continue
-        summary_ref = f"{artifact.task_ref}/finish-summary.json"
-        task_ref = f"{artifact.task_ref}/task.json"
-        summary_bytes = commit_path_bytes(repository, archive_head, summary_ref)
-        task_bytes = commit_path_bytes(repository, archive_head, task_ref)
-        if summary_bytes is None or task_bytes is None:
-            continue
-        try:
-            summary = json.loads(summary_bytes)
-            task = json.loads(task_bytes)
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            continue
-        if not isinstance(summary, dict) or not isinstance(task, dict):
-            continue
-        if "source" in task:
+    archives = [artifact for artifact in identities if artifact.lifecycle_state == "archived"]
+    paths = [f"{artifact.task_ref}/{name}" for artifact in archives
+             for name in ("finish-summary.json", "task.json")]
+    with TaskObjectReader(repository) as reader:
+        committed = reader.prepare(archive_head, paths)
+        for artifact in archives:
+            summary_ref = f"{artifact.task_ref}/finish-summary.json"
+            task_ref = f"{artifact.task_ref}/task.json"
             try:
-                source = normalize_source(task["source"])
-            except LifecycleContractError:
+                summary_bytes = reader.read_path(committed, summary_ref)
+                summary = json.loads(summary_bytes) if summary_bytes is not None else None
+                del summary_bytes
+                task_bytes = reader.read_path(committed, task_ref)
+                task = json.loads(task_bytes) if task_bytes is not None else None
+                del task_bytes
+            except (UnicodeDecodeError, json.JSONDecodeError):
                 continue
-            matched = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
-                "issue", source_repo, issue_number, "exact_source",
-            )
-        else:
-            clues: list[set[int]] = []
-            github = summary.get("github", {})
-            indexed = github.get("source_issues") if isinstance(github, dict) else None
-            if origin_is_source and isinstance(indexed, list) and indexed:
-                numbers = {number for number in indexed if type(number) is int and number > 0}
-                if numbers:
-                    clues.append(numbers)
-            scope = task.get("scope", "")
-            url_hint = LEGACY_URL_ISSUE_HINT.fullmatch(scope) if isinstance(scope, str) else None
-            if url_hint and url_hint[1] == source_repo:
-                clues.append({int(url_hint[2])})
-            if url_hint and url_hint[1] != source_repo and any(issue_number in clue for clue in clues):
-                raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue repositories require manual disposition.")
-            if len(clues) > 1 and any(clue != clues[0] for clue in clues[1:]) and any(issue_number in clue for clue in clues):
-                raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue clues require manual disposition.")
-            matched = bool(clues) and all(clue == {issue_number} for clue in clues)
-        if not matched:
-            continue
-        if artifact.legacy:
-            finished = task.get("status") == "completed"
-        else:
-            from ..delivery_projection.adapter import upstream_modules
-            public_record = upstream_modules(repo_root).delivery_schema.parse_task_v2(task)
-            completions = [r for r in public_record["completion_results"]
-                           if r["lifecycle_generation"] == artifact.lifecycle_generation
-                           and r["accepted_scope"] == public_record["accepted_scope"]]
-            finished = bool(completions) and any(
-                r["lifecycle_generation"] == artifact.lifecycle_generation
-                and r["completion_result_id"] == completions[-1]["result_id"]
-                for r in public_record["closure_results"])
-        if (
-            task.get("id") != artifact.task_id
-            or (not artifact.legacy and normalize_generation(task.get("lifecycle_generation", 0)) != artifact.lifecycle_generation)
-            or not finished
-            or summary.get("task", {}).get("archive_dir") != artifact.task_ref
-            or summary.get("task", {}).get("status") != "completed"
-        ):
-            continue
-        matches.append(ArchivedIssueCandidate(artifact.task_id, artifact.task_ref, artifact.lifecycle_generation, archive_head))
+            if not isinstance(summary, dict) or not isinstance(task, dict):
+                continue
+            if "source" in task:
+                try:
+                    source = normalize_source(task["source"])
+                except LifecycleContractError:
+                    continue
+                matched = (source.get("kind"), source.get("repo_ref"), source.get("number"), source.get("disposition")) == (
+                    "issue", source_repo, issue_number, "exact_source",
+                )
+            else:
+                clues: list[set[int]] = []
+                github = summary.get("github", {})
+                indexed = github.get("source_issues") if isinstance(github, dict) else None
+                if origin_is_source and isinstance(indexed, list) and indexed:
+                    numbers = {number for number in indexed if type(number) is int and number > 0}
+                    if numbers:
+                        clues.append(numbers)
+                scope = task.get("scope", "")
+                url_hint = LEGACY_URL_ISSUE_HINT.fullmatch(scope) if isinstance(scope, str) else None
+                if url_hint and url_hint[1] == source_repo:
+                    clues.append({int(url_hint[2])})
+                if url_hint and url_hint[1] != source_repo and any(issue_number in clue for clue in clues):
+                    raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue repositories require manual disposition.")
+                if len(clues) > 1 and any(clue != clues[0] for clue in clues[1:]) and any(issue_number in clue for clue in clues):
+                    raise LifecycleContractError("archived_issue_candidate_not_unique", "source_issue", "Conflicting archive Issue clues require manual disposition.")
+                matched = bool(clues) and all(clue == {issue_number} for clue in clues)
+            if not matched:
+                continue
+            if artifact.legacy:
+                finished = task.get("status") == "completed"
+            else:
+                from ..delivery_projection.adapter import upstream_modules
+                public_record = upstream_modules(repo_root).delivery_schema.parse_task_v2(task)
+                completions = [r for r in public_record["completion_results"]
+                               if r["lifecycle_generation"] == artifact.lifecycle_generation
+                               and r["accepted_scope"] == public_record["accepted_scope"]]
+                finished = bool(completions) and any(
+                    r["lifecycle_generation"] == artifact.lifecycle_generation
+                    and r["completion_result_id"] == completions[-1]["result_id"]
+                    for r in public_record["closure_results"])
+            if (
+                task.get("id") != artifact.task_id
+                or (not artifact.legacy and normalize_generation(task.get("lifecycle_generation", 0)) != artifact.lifecycle_generation)
+                or not finished
+                or summary.get("task", {}).get("archive_dir") != artifact.task_ref
+                or summary.get("task", {}).get("status") != "completed"
+            ):
+                continue
+            matches.append(ArchivedIssueCandidate(artifact.task_id, artifact.task_ref, artifact.lifecycle_generation, archive_head))
     if not matches:
         raise LifecycleContractError(
             "archived_issue_candidate_not_found", "source_issue",

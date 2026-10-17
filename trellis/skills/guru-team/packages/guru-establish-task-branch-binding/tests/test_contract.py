@@ -6,11 +6,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
 from runtime.delivery_projection.tests.upstream_fixture import install_common, public_task
+from runtime.task_lifecycle import branch_resolution
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
@@ -75,6 +77,49 @@ class BranchBindingTests(unittest.TestCase):
         self.assertEqual((store.snapshot(self.key), ledger.snapshot(self.key)), before)
         self.assertEqual(self.invoke(self.input), result)
         self.assertEqual((store.snapshot(self.key), ledger.snapshot(self.key)), before)
+
+    def test_first_invoke_reuses_bytes_but_resolves_both_inputs(self):
+        original = branch_resolution.resolve_establishment
+        run = subprocess.run
+        readers, requests = [], []
+        def resolve(*args, **kwargs):
+            readers.append(kwargs["reader"])
+            return original(*args, **kwargs)
+        def observe(argv, **kwargs):
+            if "cat-file" in argv and "--batch" in argv:
+                position = kwargs["stdin"].tell()
+                requests.extend(kwargs["stdin"].read().splitlines())
+                kwargs["stdin"].seek(position)
+            return run(argv, **kwargs)
+        with patch.object(MODULE, "resolve_establishment", side_effect=resolve), \
+                patch.object(branch_resolution, "resolve_establishment", side_effect=resolve), \
+                patch("subprocess.run", side_effect=observe):
+            result = self.invoke(self.input)
+        self.assertEqual("binding_established", result["exit_id"])
+        self.assertEqual(2, len(readers))
+        self.assertIs(readers[0], readers[1])
+        self.assertEqual(1, len(requests))
+        self.assertTrue(readers[0].objects.response.closed)
+
+    def test_second_resolve_rereads_ref_after_normal_head_advance(self):
+        original = branch_resolution.resolve_establishment
+        calls = []
+        def resolve(*args, **kwargs):
+            calls.append(kwargs["reader"])
+            if len(calls) == 2:
+                (self.root / "new-work.txt").write_text("normal work committed between operations\n")
+                self.git("add", "new-work.txt")
+                self.git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "new work")
+            return original(*args, **kwargs)
+        with patch.object(MODULE, "resolve_establishment", side_effect=resolve), \
+                patch.object(branch_resolution, "resolve_establishment", side_effect=resolve):
+            result = self.invoke(self.input)
+        self.assertEqual("selection_required", result["exit_id"])
+        self.assertEqual("selected_candidate_stale", result["reason_code"])
+        self.assertEqual(2, len(calls))
+        self.assertIs(calls[0], calls[1])
+        self.assertIsNone(BranchBindingStore(self.repo).read(self.key))
+        self.assertIsNone(ResourceLedgerStore(self.repo).read_current(self.key))
 
     def test_stale_selected_head_and_recovery_before_write(self) -> None:
         self.assertEqual(self.invoke({**self.input, "action": "recover", "recovery": {

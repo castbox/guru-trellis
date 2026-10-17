@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import os
 import subprocess
-import tempfile
 from pathlib import Path
 
+from runtime.git_object_batch import GitObjectBatch, GitObjectBatchError
 from runtime.io import CommandError
 
 
@@ -28,14 +28,13 @@ class CandidateObjects:
         if no_lazy_fetch:
             self.environment["GIT_NO_LAZY_FETCH"] = "1"
         self.entries = {}
-        self.blobs = {}
-        self.response = tempfile.TemporaryFile()
+        self.objects = GitObjectBatch(self.root, environment=self.environment)
 
     def __enter__(self):
         return self
 
     def __exit__(self, *_):
-        self.response.close()
+        self.objects.__exit__()
 
     def run(self, args, **kwargs):
         result = subprocess.run(["git", *args], cwd=self.root,
@@ -71,7 +70,7 @@ class CandidateObjects:
                     raise CommandError("stale_identity", "candidate.paths",
                                        "Use the file/mode candidate supported by the installed public API.", 3)
         wanted = {row[2]: row[1] for row in entries.values() if row is not None}
-        self.read_blobs({oid: kind for oid, kind in wanted.items() if oid not in self.blobs})
+        self.read_blobs(wanted)
         return entries
 
     def read_entries(self, commit, args, paths):
@@ -86,52 +85,29 @@ class CandidateObjects:
         for path in paths:
             self.entries[commit, path] = rows.get(path)
 
+    @property
+    def response(self):
+        return self.objects.response
+
     def read_blobs(self, oids):
-        if not oids:
-            return
-        # Append each completed Git response to one call-local spool. Previously
-        # read blobs keep offsets here, without open files or duplicate copies.
-        self.response.seek(0, os.SEEK_END)
-        start = self.response.tell()
-        with tempfile.TemporaryFile() as request:
-            for oid in oids:
-                request.write(oid.encode("ascii") + b"\n")
-            request.seek(0)
-            self.run(["cat-file", "--batch"], stdin=request, stdout=self.response)
-        end = self.response.seek(0, os.SEEK_END)
-        self.response.seek(start)
-        pending = {}
-        for oid in oids:
-            header = self.response.readline(256).split()
-            if len(header) != 3 or header[:2] != [oid.encode("ascii"), oids[oid].encode("ascii")] or not header[2].isdigit():
+        try:
+            entries = self.objects.ensure(oids)
+        except GitObjectBatchError as exc:
+            raise unreadable(str(exc)) from exc
+        for oid, kind in oids.items():
+            if entries[oid] is None or entries[oid][0] != kind:
                 raise unreadable("Git returned a missing or invalid candidate blob response.")
-            size = int(header[2])
-            offset = self.response.tell()
-            if offset + size >= end:
-                raise unreadable("Git returned an incomplete candidate blob response.")
-            self.response.seek(size, os.SEEK_CUR)
-            if self.response.read(1) != b"\n":
-                raise unreadable("Git returned an incomplete candidate blob response.")
-            pending[oid] = (offset, size)
-        if self.response.tell() != end:
-            raise unreadable("Git returned an invalid candidate blob response length.")
-        self.blobs.update(pending)
 
     def snapshot(self, head, paths, destination):
         for locator, row in self.read(head, paths, files_only=True).items():
             if row is None:
                 continue
             mode, _, oid = row
-            offset, size = self.blobs[oid]
-            self.response.seek(offset)
             file = destination / locator
             file.parent.mkdir(parents=True, exist_ok=True)
             with file.open("wb") as output:
-                remaining = size
-                while remaining:
-                    data = self.response.read(min(COPY_BYTES, remaining))
-                    if not data:
-                        raise unreadable("Git returned an incomplete candidate blob response.")
-                    output.write(data)
-                    remaining -= len(data)
+                try:
+                    self.objects.copy_to(oid, output)
+                except GitObjectBatchError as exc:
+                    raise unreadable(str(exc)) from exc
             file.chmod(0o755 if mode == "100755" else 0o644)
