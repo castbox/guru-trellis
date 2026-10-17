@@ -14,7 +14,7 @@ from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
-from runtime.task_lifecycle.git_facts import commit_path_bytes, inspect_repository
+from runtime.task_lifecycle.git_facts import TaskObjectReader, commit_path_bytes, inspect_repository
 from runtime.task_lifecycle.handoff_cleanup import read_handoff_cleanup_inventory
 from runtime.task_lifecycle.identity import normalize_task_ref
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
@@ -198,7 +198,8 @@ def normal_receipt(store: ResourceLedgerStore, public: dict[str, Any]) -> tuple[
     return path, identity
 
 
-def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str, Any]], finishing_key: TaskLifecycleKey) -> bool:
+def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str, Any]], finishing_key: TaskLifecycleKey,
+                           objects: TaskObjectReader, task_paths: dict[str, list[str]]) -> bool:
     selected = {(row["kind"], json.dumps(row["portable_ref"], sort_keys=True)) for row in resources}
     for ledger in store.iter_ledgers():
         for row in ledger.resources:
@@ -209,8 +210,9 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
             return True
     selected_branches = {row["portable_ref"].get("ref", row["portable_ref"].get("branch_ref"))
                          for row in resources}
-    local_branches = git(store.repository.context_path, "for-each-ref", "--format=%(refname)", "refs/heads").stdout.splitlines()
-    selected_heads = [(branch, branch) for branch in selected_branches if branch in local_branches]
+    local_branches = dict(line.split(" ", 1) for line in git(
+        store.repository.context_path, "for-each-ref", "--format=%(refname) %(objectname)", "refs/heads").stdout.splitlines())
+    selected_heads = [(branch, local_branches[branch]) for branch in selected_branches if branch in local_branches]
     for row in resources:
         if row["kind"] == "remote_branch":
             branch = row["portable_ref"]["ref"]
@@ -219,12 +221,19 @@ def manual_targets_current(store: ResourceLedgerStore, resources: list[dict[str,
                 raise LifecycleContractError("resource_head_unavailable", branch, "Fetch the selected remote head before manual cleanup.")
             selected_heads.append((branch, head))
     for _branch, head in selected_heads:
-        active_artifacts = [path for path in git(store.repository.context_path, "ls-tree", "-r", "--name-only",
-                                                head, "--", ".trellis/tasks").stdout.splitlines()
-                            if re.fullmatch(r"\.trellis/tasks/[^/]+/task\.json", path)]
+        if head not in task_paths:
+            # Keep the original Git path formatting and selection rules.
+            task_paths[head] = [path for path in git(store.repository.context_path, "ls-tree", "-r", "--name-only",
+                                                    head, "--", ".trellis/tasks").stdout.splitlines()
+                                if re.fullmatch(r"\.trellis/tasks/[^/]+/task\.json", path)]
+        active_artifacts = task_paths[head]
+        try:
+            objects.prepare(head, active_artifacts)
+        except LifecycleContractError:
+            return True
         for path in active_artifacts:
             try:
-                payload = commit_path_bytes(store.repository, head, path)
+                payload = objects.read_path(head, path)
                 task = json.loads(payload) if payload is not None else None
             except (UnicodeDecodeError, json.JSONDecodeError, LifecycleContractError):
                 return True
@@ -353,119 +362,121 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict[str, Any]:
         out = handoff_cleanup(root, public, confirmed=args.confirmed_cleanup and route == "handoff_cleanup_complete")
     else:
         store = ResourceLedgerStore(inspect_repository(root))
-        key = TaskLifecycleKey(public["task_id"], public["lifecycle_generation"])
-        try:
-            if public["profile"] == "normal":
-                receipt_path, receipt_identity = normal_receipt(store, public)
-                ledger = store.read(key)
-                if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
-                    raise LifecycleContractError("resource_ledger_conflict", "finish_result_id", "Recover only the exact sealed Finish result.")
-                if receipt_path.is_file():
-                    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-                    if receipt.get("identity") != receipt_identity:
-                        raise LifecycleContractError("resource_inventory_stale", "normal_receipt", "Recover the exact sealed Cleanup result.")
-                    out = receipt["output"]
-                    resources = []
-                else:
-                    resolution = store.cleanup_resolution(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"])
-                    if resolution.resolution_kind == "manual_selection_required":
-                        require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
-                        out = manual_required(public, [dto for dto, _item in discover_candidates(root).values()])
+        with TaskObjectReader(store.repository) as objects:
+            task_paths: dict[str, list[str]] = {}
+            key = TaskLifecycleKey(public["task_id"], public["lifecycle_generation"])
+            try:
+                if public["profile"] == "normal":
+                    receipt_path, receipt_identity = normal_receipt(store, public)
+                    ledger = store.read(key)
+                    if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
+                        raise LifecycleContractError("resource_ledger_conflict", "finish_result_id", "Recover only the exact sealed Finish result.")
+                    if receipt_path.is_file():
+                        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                        if receipt.get("identity") != receipt_identity:
+                            raise LifecycleContractError("resource_inventory_stale", "normal_receipt", "Recover the exact sealed Cleanup result.")
+                        out = receipt["output"]
                         resources = []
                     else:
-                        resources = [item.as_dict() for item in resolution.resources]
-                        out = {}
-            else:
-                ledger = store.read(key)
-                if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
-                    raise LifecycleContractError("resource_ledger_conflict", "finish_result_id", "Select the current Finish result.")
-                out = {}
-                receipt_path, receipt_identity = manual_receipt(store, public)
-                if receipt_path.is_file():
-                    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-                    if receipt.get("identity") != receipt_identity:
-                        raise LifecycleContractError("resource_inventory_stale", "manual_receipt", "Recover the exact selected cleanup result.")
-                    out = receipt["output"]
-                    resources = []
-                    candidates = {}
+                        resolution = store.cleanup_resolution(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"])
+                        if resolution.resolution_kind == "manual_selection_required":
+                            require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
+                            out = manual_required(public, [dto for dto, _item in discover_candidates(root).values()])
+                            resources = []
+                        else:
+                            resources = [item.as_dict() for item in resolution.resources]
+                            out = {}
                 else:
-                    candidates = discover_candidates(root)
-                    selected = public["selected_candidate_ids"]
-                    resources = [candidates[candidate_id][1] for candidate_id in selected if candidate_id in candidates]
-                    if not selected:
-                        terminal = None
-                        if ledger is None:
-                            terminal = require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
-                        head_branch = terminal.get("head_branch") if terminal else None
-                        branch_still_present = any(dto["branch_name"] == head_branch for dto, _item in candidates.values())
-                        if ledger is not None or not head_branch or branch_still_present or not args.confirmed_cleanup or route != "cleaned":
-                            out = manual_required(public, [dto for dto, _item in candidates.values()])
-                    elif len(resources) != len(selected):
-                        out = blocked("cleanup_candidate_stale", "selected_candidate_ids")
-                    elif ledger is None:
-                        require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
-                if ledger is not None:
-                    eligible = {(row.kind, json.dumps(row.portable_ref, sort_keys=True)): row for row in ledger.resources if row.ownership == "caller_owned" and row.state == "retained" and row.responsibility_role == "manual_only"}
-                    if not out and any(
-                        (item["kind"], json.dumps(item["portable_ref"], sort_keys=True)) not in eligible
-                        for item in resources
-                    ):
-                        raise LifecycleContractError("resource_ownership_conflict", "selected_candidate_ids", "Select only exact caller-owned retired resources.")
-                if not out and manual_targets_current(store, resources, key):
-                    raise LifecycleContractError("resource_in_current_use", "selected_candidate_ids", "Do not delete any active task's current resource.")
-        except LifecycleContractError as exc:
-            out = blocked(exc.code, exc.field_path)
-            resources = []
-        if not out:
-            scheduled_worktree_refs = frozenset(item["portable_ref"]["branch_ref"] for item in resources if item["kind"] == "linked_worktree")
-            conflicts = [code for item in resources for present, code in [inspect_resource(root, item, scheduled_worktree_refs)] if code]
-            if conflicts:
-                out = blocked(conflicts[0], public["task_id"])
-            elif route in {"remaining_resources", "manual_cleanup_required"} or (resources and not args.confirmed_cleanup):
-                out = (manual_required(public, [dto for dto, _item in candidates.values()])
-                       if public["profile"] == "select_explicit_cleanup_targets"
-                       else pending(public, "confirmation_required"))
-            else:
-                remaining = []
-                for item in sorted(resources, key=lambda row: ORDER[row["kind"]]):
-                    present, conflict = inspect_resource(root, item)
-                    if conflict:
-                        out = blocked(conflict, item["resource_id"])
-                        break
-                    if public["profile"] == "select_explicit_cleanup_targets" and manual_targets_current(store, [item], key):
-                        out = blocked("resource_in_current_use", item["resource_id"])
-                        break
-                    if present and not remove_resource(root, item):
-                        remaining.append(item["resource_id"])
-                else:
+                    ledger = store.read(key)
+                    if ledger is not None and ledger.finish_result_id != public["finish_result_id"]:
+                        raise LifecycleContractError("resource_ledger_conflict", "finish_result_id", "Select the current Finish result.")
                     out = {}
-                if not out:
-                    for item in resources:
+                    receipt_path, receipt_identity = manual_receipt(store, public)
+                    if receipt_path.is_file():
+                        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+                        if receipt.get("identity") != receipt_identity:
+                            raise LifecycleContractError("resource_inventory_stale", "manual_receipt", "Recover the exact selected cleanup result.")
+                        out = receipt["output"]
+                        resources = []
+                        candidates = {}
+                    else:
+                        candidates = discover_candidates(root)
+                        selected = public["selected_candidate_ids"]
+                        resources = [candidates[candidate_id][1] for candidate_id in selected if candidate_id in candidates]
+                        if not selected:
+                            terminal = None
+                            if ledger is None:
+                                terminal = require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
+                            head_branch = terminal.get("head_branch") if terminal else None
+                            branch_still_present = any(dto["branch_name"] == head_branch for dto, _item in candidates.values())
+                            if ledger is not None or not head_branch or branch_still_present or not args.confirmed_cleanup or route != "cleaned":
+                                out = manual_required(public, [dto for dto, _item in candidates.values()])
+                        elif len(resources) != len(selected):
+                            out = blocked("cleanup_candidate_stale", "selected_candidate_ids")
+                        elif ledger is None:
+                            require_missing_terminal(store, package_root, key, public["finish_result_id"], root)
+                    if ledger is not None:
+                        eligible = {(row.kind, json.dumps(row.portable_ref, sort_keys=True)): row for row in ledger.resources if row.ownership == "caller_owned" and row.state == "retained" and row.responsibility_role == "manual_only"}
+                        if not out and any(
+                            (item["kind"], json.dumps(item["portable_ref"], sort_keys=True)) not in eligible
+                            for item in resources
+                        ):
+                            raise LifecycleContractError("resource_ownership_conflict", "selected_candidate_ids", "Select only exact caller-owned retired resources.")
+                    if not out and manual_targets_current(store, resources, key, objects, task_paths):
+                        raise LifecycleContractError("resource_in_current_use", "selected_candidate_ids", "Do not delete any active task's current resource.")
+            except LifecycleContractError as exc:
+                out = blocked(exc.code, exc.field_path)
+                resources = []
+            if not out:
+                scheduled_worktree_refs = frozenset(item["portable_ref"]["branch_ref"] for item in resources if item["kind"] == "linked_worktree")
+                conflicts = [code for item in resources for present, code in [inspect_resource(root, item, scheduled_worktree_refs)] if code]
+                if conflicts:
+                    out = blocked(conflicts[0], public["task_id"])
+                elif route in {"remaining_resources", "manual_cleanup_required"} or (resources and not args.confirmed_cleanup):
+                    out = (manual_required(public, [dto for dto, _item in candidates.values()])
+                           if public["profile"] == "select_explicit_cleanup_targets"
+                           else pending(public, "confirmation_required"))
+                else:
+                    remaining = []
+                    for item in sorted(resources, key=lambda row: ORDER[row["kind"]]):
                         present, conflict = inspect_resource(root, item)
                         if conflict:
                             out = blocked(conflict, item["resource_id"])
                             break
-                        if present:
+                        if public["profile"] == "select_explicit_cleanup_targets" and manual_targets_current(store, [item], key, objects, task_paths):
+                            out = blocked("resource_in_current_use", item["resource_id"])
+                            break
+                        if present and not remove_resource(root, item):
                             remaining.append(item["resource_id"])
-                if not out:
-                    if remaining:
-                        out = pending(public, "deletion_incomplete")
                     else:
-                        try:
-                            if public["profile"] == "normal":
-                                successor_id = store.resolve_for_cleanup(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"], resource_ids=[item["resource_id"] for item in resources])
-                            else:
-                                successor_id = (store.resolve_selected_cleanup(key, finish_result_id=public["finish_result_id"], resource_ids=[next(row.resource_id for row in store.read(key).resources if row.kind == item["kind"] and row.portable_ref == item["portable_ref"]) for item in resources])
-                                                if store.read(key) is not None else "manual-selected:" + hashlib.sha256(json.dumps(resources, sort_keys=True).encode()).hexdigest()[:24])
-                        except LifecycleContractError as exc:
-                            out = blocked(exc.code, exc.field_path)
+                        out = {}
+                    if not out:
+                        for item in resources:
+                            present, conflict = inspect_resource(root, item)
+                            if conflict:
+                                out = blocked(conflict, item["resource_id"])
+                                break
+                            if present:
+                                remaining.append(item["resource_id"])
+                    if not out:
+                        if remaining:
+                            out = pending(public, "deletion_incomplete")
                         else:
-                            out = cleaned(public, successor_id)
-                            if public["profile"] in {"normal", "select_explicit_cleanup_targets"}:
-                                receipt_path, identity = (normal_receipt(store, public) if public["profile"] == "normal"
-                                                          else manual_receipt(store, public))
-                                receipt_path.parent.mkdir(parents=True, exist_ok=True)
-                                receipt_path.write_text(json.dumps({"identity": identity, "output": out}, sort_keys=True) + "\n", encoding="utf-8")
+                            try:
+                                if public["profile"] == "normal":
+                                    successor_id = store.resolve_for_cleanup(key, finish_result_id=public["finish_result_id"], inventory_id=public["inventory_id"], resource_ids=[item["resource_id"] for item in resources])
+                                else:
+                                    successor_id = (store.resolve_selected_cleanup(key, finish_result_id=public["finish_result_id"], resource_ids=[next(row.resource_id for row in store.read(key).resources if row.kind == item["kind"] and row.portable_ref == item["portable_ref"]) for item in resources])
+                                                    if store.read(key) is not None else "manual-selected:" + hashlib.sha256(json.dumps(resources, sort_keys=True).encode()).hexdigest()[:24])
+                            except LifecycleContractError as exc:
+                                out = blocked(exc.code, exc.field_path)
+                            else:
+                                out = cleaned(public, successor_id)
+                                if public["profile"] in {"normal", "select_explicit_cleanup_targets"}:
+                                    receipt_path, identity = (normal_receipt(store, public) if public["profile"] == "normal"
+                                                              else manual_receipt(store, public))
+                                    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+                                    receipt_path.write_text(json.dumps({"identity": identity, "output": out}, sort_keys=True) + "\n", encoding="utf-8")
     validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
     return out
 

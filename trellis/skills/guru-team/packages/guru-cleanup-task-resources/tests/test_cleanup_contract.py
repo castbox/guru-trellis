@@ -472,6 +472,59 @@ def missing_ledger_fixture(tmp_path: Path, *, linked: bool = False) -> tuple[Pat
     return root, store, selection(root, finish_result_id=result_id), checkout
 
 
+def snapshot_selection(tmp_path: Path, count: int) -> tuple[Path, dict]:
+    root, _store, public, _checkout = missing_ledger_fixture(tmp_path)
+    git(root, "switch", "-qc", "snapshot-source")
+    task = root / ".trellis/tasks/demo/task.json"
+    task.parent.mkdir(parents=True)
+    task.write_text(json.dumps({"id": "demo", "lifecycle_generation": 0}))
+    git(root, "add", ".trellis/tasks/demo/task.json")
+    git(root, "commit", "-qm", "old task snapshot")
+    for index in range(count):
+        git(root, "branch", f"old-task-{index}")
+    git(root, "switch", "-q", "main")
+    public["selected_candidate_ids"] = [
+        candidate_id for candidate_id, (dto, _item) in CLEANUP.discover_candidates(root).items()
+        if dto["kind"] == "local_branch" and dto["branch_name"].startswith("old-task-")
+    ]
+    return root, public
+
+
+def test_manual_cleanup_reads_same_head_objects_independently_of_resource_count(tmp_path, monkeypatch):
+    object_counts = []
+    for count in (2, 8):
+        directory = tmp_path / str(count)
+        directory.mkdir()
+        root, public = snapshot_selection(directory, count)
+        trace = directory / "git.trace.jsonl"
+        with monkeypatch.context() as environment:
+            environment.setenv("GIT_TRACE2_EVENT", str(trace))
+            assert invoke(directory, root, public, confirmed=True)["exit_id"] == "cleaned"
+        commands = [event["argv"] for line in trace.read_text().splitlines()
+                    if (event := json.loads(line)).get("event") == "start"]
+        assert any("cat-file" in command and "--batch" in command for command in commands)
+        object_counts.append({name: sum(name in command for command in commands)
+                              for name in ("show", "cat-file", "ls-tree")})
+        remaining = git(root, "for-each-ref", "--format=%(refname)", "refs/heads").splitlines()
+        assert not any(ref.startswith("refs/heads/old-task-") for ref in remaining)
+    assert object_counts[0] == object_counts[1]
+
+
+def test_manual_cleanup_refreshes_task_facts_after_a_normal_ref_advance(tmp_path):
+    root, public = snapshot_selection(tmp_path, 1)
+    assert invoke(tmp_path, root, public)["exit_id"] == "manual_cleanup_required"
+    git(root, "switch", "-q", "old-task-0")
+    task = root / ".trellis/tasks/other/task.json"
+    task.parent.mkdir(parents=True)
+    task.write_text(json.dumps({"id": "other", "lifecycle_generation": 0}))
+    git(root, "add", ".trellis/tasks/other/task.json")
+    git(root, "commit", "-qm", "start another task")
+    git(root, "switch", "-q", "main")
+    current = selection(root, finish_result_id=public["finish_result_id"], branch_name="old-task-0")
+    assert invoke(tmp_path, root, current, confirmed=True)["reason_code"] == "resource_in_current_use"
+    assert git(root, "show-ref", "--verify", "refs/heads/old-task-0")
+
+
 def test_missing_ledger_uses_finish_commit_when_retained_checkout_lags(tmp_path):
     root, _store, selected, checkout = missing_ledger_fixture(tmp_path, linked=True)
     assert checkout is not None

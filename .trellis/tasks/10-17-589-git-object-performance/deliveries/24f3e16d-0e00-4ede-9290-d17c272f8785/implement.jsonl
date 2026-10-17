@@ -1,0 +1,3 @@
+{"file": "trellis/skills/guru-team/packages/guru-cleanup-task-resources/runtime/invoke.py", "reason": "原Cleanup逐资源归属与对象读取owner"}
+{"file": "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py", "reason": "现有TaskObjectReader不可变事实与错误兼容"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "脚本确定性与原owner边界"}
