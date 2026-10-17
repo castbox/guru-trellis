@@ -54,7 +54,7 @@
       },
       "candidate": {
         "kind": "git",
-        "content_ref": "sha256:7c9c8ef5c4d508e01c23b15a5b9d65b097d85d5c551d240e19260271cf9c32bf",
+        "content_ref": "sha256:e64be9153033de190e4b2bda859364857ad67379fdf7f73187ae38577c92d402",
         "paths": [
           ".agents/skills/guru-approve-task-plan/references/legacy-maintenance.md",
           ".agents/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
@@ -348,7 +348,7 @@
           "trellis/workflows/guru-team/README.md",
           "trellis/workflows/guru-team/workflow.md"
         ],
-        "head_ref": "36db1a206c3021f65accfdbc846e2151289f319e",
+        "head_ref": "5171e3f5212c89b45098df1f45309ffddc3c3c23",
         "base_ref": "ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e"
       },
       "results": {
@@ -394,7 +394,7 @@
           ]
         },
         "check": {
-          "result_id": "check:9cb31f00d597773a16d24469e0aee9dabcb4115465a67a2e84647bf9fbc04352",
+          "result_id": "check:c9a71dc6aba7d6a0517a2248807a259c5d2f0e13f281f5620852cb4a425d7a4e",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -418,7 +418,7 @@
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:7c9c8ef5c4d508e01c23b15a5b9d65b097d85d5c551d240e19260271cf9c32bf",
+            "content_ref": "sha256:e64be9153033de190e4b2bda859364857ad67379fdf7f73187ae38577c92d402",
             "paths": [
               ".agents/skills/guru-approve-task-plan/references/legacy-maintenance.md",
               ".agents/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
@@ -712,7 +712,7 @@
               "trellis/workflows/guru-team/README.md",
               "trellis/workflows/guru-team/workflow.md"
             ],
-            "head_ref": "36db1a206c3021f65accfdbc846e2151289f319e",
+            "head_ref": "5171e3f5212c89b45098df1f45309ffddc3c3c23",
             "base_ref": "ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e"
           },
           "predecessor_result_id": "planning-accepted:bbe43878-d78b-45b1-8932-c60c5a86925a",

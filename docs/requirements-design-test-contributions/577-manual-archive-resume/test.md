@@ -25,7 +25,7 @@
 
 ## 定向回归
 
-产品 wrapper与最终 unittest 使用原 managed resolver：Python 3.12 venv（cache identity `f0b89dabd24ef812b1244b8b`）。lifecycle 161、Delivery projection 16、maintenance 9、Bind 13、六原owner legacy 23、完整 Plan2 原合同34项与新增dirty来源3项均通过。source package验证40 packages/124 commands、ownership22 descriptors/43 claims/22 overlays和 diff --check通过。Reactivate25项由独立工程解释器 Python3.12/pytest8.3.5通过；该工程测试环境不是产品runtime fallback。
+产品 wrapper与最终 unittest 使用原 managed resolver：Python 3.14.8 venv（cache identity `f0b89dabd24ef812b1244b8b`）。lifecycle 161、Delivery projection 16、maintenance 9、Bind 13、六原owner legacy 23、完整 Plan2 原合同34项与新增dirty来源3项均通过。source package验证40 packages/124 commands、ownership22 descriptors/43 claims/22 overlays和 diff --check通过。Reactivate25项由独立工程解释器 Python3.12.8/pytest8.3.5通过；该工程测试环境不是产品runtime fallback。
 
 真实CLI/Core回归含 packed维护6项，首次C4绑定、保留同ID归档后current唯一、真实active占用冲突、同operation丢输出/前缀恢复/rollback和后续工作保护。生命周期旧错误文案断言因官方resolver更早给出 `current_task_checkout_unresolved` 而失败；修正断言后全161通过。两项installed测试最初硬编码core.3，真实pair.4被正确拒绝；fixture改读选定包实际version后16项通过，产品version/capability gate未放宽。
 
