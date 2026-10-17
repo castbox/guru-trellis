@@ -5,13 +5,13 @@
   "version": "0.7.0-guru.4",
   "workflow_template_id": "guru-team",
   "marketplace_index_schema_version": 1,
-  "target_trellis_cli": "0.7.0-castbox.3",
+  "target_trellis_cli": "0.7.0-castbox.4",
   "requires": {
-    "trellis_cli": "0.7.0-castbox.3"
+    "trellis_cli": "0.7.0-castbox.4"
   },
   "tested": {
     "trellis_cli": [
-      "0.7.0-castbox.3"
+      "0.7.0-castbox.4"
     ]
   },
   "public_api": {

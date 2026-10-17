@@ -613,3 +613,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-067：#599 清晰写作与入口读取的已审贡献
 
 首次独立完整 committed range 为 `dev@ea9998c36a188f3afae1d7d6e5746edc07fa003f...af246dc6184e6c779f2f08ab72a4ff889c6dbc0f`。原 Check 已绑定该范围的 HEAD，Architecture 与独立 Branch Review 分别通过正式入口；原 Architecture owner 按 expected `.94` 晋升 `.95`。本次新增晋升差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview。[贡献](../contributions/599-clear-technical-writing.md)拥有责任与晋升关系，[唯一 Test](../../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有实际结果、首轮遗漏、finding 修复和未验证边界；本条不复制执行记录，不证明软件发布、业务采用或 Task Completion。
+
+## EVD-068：#589 D7 公开不可变摘要消费的已审贡献
+
+首次独立完整 committed range 为 `865f4a9576eabc85cb3b91e74ecd856785095510..f168092b2783d8c09ee416fb850ecaa1c694d65c`。本轮 Architecture 正式出口为 `baseline_current/reviewed_candidate`，独立 Branch Review 正式出口为 `passed`，绑定 current Check；原 Architecture owner 随后按 live expected `.95` 晋升 `.96`。[已晋升贡献](../contributions/589-git-object-performance.md)记录职责与前后关系，[唯一 Test](../../requirements-design-test-contributions/589-git-object-performance/test.md)单写工程结果及未验证边界。晋升产生的新差额尚未 Check/TaskCommit/完整 Review；不声明正式工具采用、native/live 效果、软件发布或整体 Task 完成。

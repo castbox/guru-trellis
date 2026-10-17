@@ -41,13 +41,15 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前未发布源码固定到 `c7bd746b42d75f73534c85e263cd6b51fe0e5287`，
-对应 tree `02c6ec8688920d8acb56d1467d6725b03012c0e0`、成功 main CI
-`38994652194`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
-schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化。
-本次仅准备精确来源，目标工具安装、Guru PR 链与性能验收仍须后续独立验证。Fork CLI/core 均保持 `0.7.0-castbox.3`，
+当前未发布源码固定到 `9f40ec70914f98fce2619560274cc1d0619f2f7e`，
+对应 tree `ed56affdaf7bddb7db0c2c14097b73a866d18c92`、成功 main CI
+`39013710371`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
+schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化和 #50 的公开 `GitCandidateContent` 不可变摘要能力。
+本次仅准备精确来源，目标工具安装、Guru PR 链与性能验收仍须后续独立验证。Fork CLI/core 均为 `0.7.0-castbox.4`，
 package manager 为 `pnpm@10.32.1`。这不是已发布 `.3` tag 的框架来源；
 稳定安装的原锁见下表，构建命令始终读取所选 `GURU_SOURCE` 自身的 lock。
+Fork `.4` 已发布配对 Release tarball `castbox-v0.7.0-castbox.4`，未发布到 npm；
+Guru `.4` 仍未发布。新公开摘要能力不替代目标正式采用与整体性能验收。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
 installed/lifecycle 验证已完成。安装与发布 evidence 必须同时记录 commit 和 CI identity。
 
@@ -88,8 +90,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 稳定 `.3` 的原 Fork source / CI | `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / `37735554354` |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.4` |
 | 当前源码 Guru extension revision | `0.7.0-guru.4`（未发布的准备源码） |
-| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.3` @ `c7bd746b42d75f73534c85e263cd6b51fe0e5287` |
-| 当前源码 Fork CI identity | `38994652194` |
+| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.4` @ `9f40ec70914f98fce2619560274cc1d0619f2f7e` |
+| 当前源码 Fork CI identity | `39013710371` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | RDT / Architecture 分别由 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 指定 |
 

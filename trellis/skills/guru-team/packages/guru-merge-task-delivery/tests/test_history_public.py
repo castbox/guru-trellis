@@ -65,6 +65,38 @@ class PublicHistoryTests(unittest.TestCase):
         result = self.query_result(success=False)
         self.assertEqual("history.base_ref", result["field_path"])
 
+    def test_later_candidate_preparation_rechecks_earlier_head_after_actual_root_changes(self):
+        # Reuse the existing public-writer fixture, without running any benchmark.
+        sys.path.insert(0, str(PACKAGE / "tests"))
+        from benchmark_history import prepare_history
+        first_head = self.source.actual
+        prepare_history(self.source, [], 2)
+        second_head = self.source.actual
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        clone = Path(temporary.name) / "restored"
+        shutil.copytree(self.flow.repo, clone)
+        blob = self.flow.git("rev-parse", second_head + ":app.txt").strip()
+        # An incomplete restored store has all commits but lacks a later blob.
+        (clone / ".git/objects" / blob[:2] / blob[2:]).unlink()
+        sys.path.insert(0, str(PACKAGE / "runtime"))
+        spec = importlib.util.spec_from_file_location("history_changed_root_owner", PACKAGE / "runtime/history.py")
+        history = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(history)
+        with patch.dict(os.environ, {"GIT_CONFIG_COUNT": "1",
+                 "GIT_CONFIG_KEY_0": "url." + self.flow.repo.as_uri() + ".insteadOf",
+                 "GIT_CONFIG_VALUE_0": "https://github.com/example/repo.git"}), \
+                patch.object(history, "git", wraps=history.git) as reads:
+            result = history.discover(clone, PACKAGE, self.query)
+        self.assertEqual(2, len(result["deliveries"]))
+        checks = [(call.args[0], call.args[3]) for call in reads.call_args_list
+                  if call.args[1:3] == ("cat-file", "-e")]
+        first_checks = [root for root, sha in checks if sha == first_head + "^{commit}"]
+        self.assertEqual(1, len(first_checks))
+        self.assertNotEqual(clone, first_checks[0])
+        self.assertFalse(any(sha == second_head + "^{commit}" for _, sha in checks))
+        self.assertFalse((clone / ".git/objects" / blob[:2] / blob[2:]).exists())
+
     def test_restored_session_missing_merge_uses_scratch_candidate_context(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

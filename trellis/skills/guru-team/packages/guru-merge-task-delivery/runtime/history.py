@@ -96,22 +96,22 @@ class HistoryContext:
         self.temporary = None
         self.fetched: set[str] = set()
         self.required: list[str] = []
-        self.objects = None
+        self.content = None
 
     def __enter__(self):
         return self
 
     def __exit__(self, *_):
-        if self.objects is not None:
-            self.objects.__exit__()
+        if self.content is not None:
+            self.content.close()
         if self.temporary is not None:
             self.temporary.cleanup()
 
     def fetch(self, commit: str) -> None:
         if self.temporary is None:
-            if self.objects is not None:
-                self.objects.__exit__()
-                self.objects = None
+            if self.content is not None:
+                self.content.close()
+                self.content = None
             self.temporary = tempfile.TemporaryDirectory(prefix="guru-delivery-history-")
             self.root = Path(self.temporary.name)
             git(self.root, "init", "--bare")
@@ -142,7 +142,9 @@ class HistoryContext:
             self.required.append(commit)
         try:
             return reader(self.root)
-        except CommandError:
+        except CommandError as exc:
+            if exc.field_path == "candidate.paths":
+                raise
             # A caller may have the commit but not its parents, trees or blobs.
             # Switch once to a complete isolated context, then verify again.
             for target in self.required:
@@ -152,13 +154,18 @@ class HistoryContext:
     def history(self, commit: str) -> list[list[str]]:
         return self.prepare(commit, lambda root: first_parent_history(root, commit))
 
-    def candidate(self, head: str, paths: list[str]) -> None:
-        def readable(root):
-            from candidate_objects import CandidateObjects
-            if self.objects is None:
-                self.objects = CandidateObjects(root, no_lazy_fetch=True)
-            self.objects.read(head, paths)
-        self.prepare(head, readable)
+    def candidate(self, projection, publication):
+        from manual_recovery import commit_candidate
+
+        head = publication["reviewed_head"]
+        def read(root):
+            if self.content is None:
+                self.content = projection._call(
+                    projection.api.delivery_store.GitCandidateContent,
+                    root, no_lazy_fetch=True)
+            return commit_candidate(projection, publication, head,
+                                    git_root=root, content=self.content)
+        return self.prepare(head, read)
 
 
 def _github_error(proc: subprocess.CompletedProcess[str], operation: str) -> CommandError:
@@ -424,7 +431,6 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
 
     recorded = {}
     if query["schema_version"] == "2.0":
-        from manual_recovery import commit_candidate
         try:
             projection = DeliveryProjection(root, query["task_ref"])
             record = projection.read_record()
@@ -452,13 +458,13 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
         outside_history = {sha: {row[0] for row in context.history(sha)} for sha in outside}
         for public_fact in recorded.values():
             fact = public_fact["fact"]
-            context.candidate(fact["reviewed_head"], fact["candidate"]["paths"])
             try:
-                actual_candidate = commit_candidate(projection, fact, fact["reviewed_head"], git_root=context.root, objects=context.objects)
+                actual_candidate = context.candidate(projection, fact)
             except LifecycleContractError as exc:
                 raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc
             if actual_candidate != fact["candidate"]:
                 raise CommandError("stale_identity", "history.candidate", "Read the immutable recorded candidate bytes and modes.", 3)
+            public_fact["reconstructed_root"] = context.root
         deliveries: list[dict[str, Any]] = []
         seen_heads: set[str] = set()
         seen_prs: set[int] = set()
@@ -479,7 +485,8 @@ def discover(root: Path, package_root: Path, query: dict[str, Any]) -> dict[str,
                     raise CommandError("stale_identity", "history.delivery_identity", "Cross-check public fact and legal trailer history before deduplication.", 3)
                 trailers["delivery_key"] = public_fact["key"]
             reviewed_head = trailers["reviewed_head"]
-            context.prepare(reviewed_head, lambda source: git(source, "cat-file", "-e", reviewed_head + "^{commit}"))
+            if public_fact is None or public_fact["reconstructed_root"] != context.root:
+                context.prepare(reviewed_head, lambda source: git(source, "cat-file", "-e", reviewed_head + "^{commit}"))
             commit = commit_facts(context.root, sha)
             if commit["parents"][1] != reviewed_head:
                 raise CommandError(

@@ -117,12 +117,14 @@ accept Delivery Planning or begin implementation.
 
 本次目标为尚未发布的 `v0.7.0-guru.4`。当前准备源码的 extension 与原 maintenance
 target 为 `0.7.0-guru.4`；它不等于已发布的 immutable `.3` tag 内容。
-当前正式 Fork lock 为 `c7bd746b42d75f73534c85e263cd6b51fe0e5287`，
-tree `02c6ec8688920d8acb56d1467d6725b03012c0e0`，成功 main CI `38994652194`，
+当前正式 Fork lock 为 `9f40ec70914f98fce2619560274cc1d0619f2f7e`，
+tree `ed56affdaf7bddb7db0c2c14097b73a866d18c92`，成功 main CI `39013710371`，
 包含 #40 维护能力、#43 的旧原生 schema-1 会话元数据兼容修复与 #47 的
-Task/Delivery Git 对象读取优化。本次仅准备精确来源；目标工具安装、Guru PR 链与
+Task/Delivery Git 对象读取优化，以及 #50 的公开 `GitCandidateContent` 不可变摘要能力。本次仅准备精确来源；目标工具安装、Guru PR 链与
 性能验收仍须后续独立验证。CLI/Core
-保持 `0.7.0-castbox.3`，package manager 为 `pnpm@10.32.1`。
+均为 `0.7.0-castbox.4`，package manager 为 `pnpm@10.32.1`。
+Fork `.4` 配对 tarball 已发布为 `castbox-v0.7.0-castbox.4`，未发布到 npm；
+不代表 Guru `.4` 已发布或目标正式采用。
 源码试用的 workflow marketplace 与 preset 使用同一个真实、远端可寻址的完整 Guru
 SHA；不预填未形成的 SHA，不使用尚不存在的 `.4` tag。来源记录和 Fork CI 不替代
 实际构建、Guru exact-candidate、installed/lifecycle 或发布门禁。
@@ -148,8 +150,8 @@ exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的
 `docs/test/README.md` 与 `docs/architecture/README.md` 指定，与软件版本分开读取。
 
 For current-source validation, use the source-locked Trellis Fork checkout
-(`castbox/Trellis@c7bd746b42d75f73534c85e263cd6b51fe0e5287`, successful main CI
-`38994652194`) and that same reviewed Guru source. Stable `.3` installation
+(`castbox/Trellis@9f40ec70914f98fce2619560274cc1d0619f2f7e`, successful main CI
+`39013710371`) and that same reviewed Guru source. Stable `.3` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
 it. Apply the Guru preset using
