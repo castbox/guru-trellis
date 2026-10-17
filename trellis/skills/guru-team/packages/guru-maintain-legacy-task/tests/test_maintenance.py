@@ -30,6 +30,16 @@ class MaintenanceTests(unittest.TestCase):
     def git(self,*args):return subprocess.check_output(['git',*args],cwd=self.root,stderr=subprocess.DEVNULL,text=True).strip()
     def write(self,ref,text):
         path=self.root/ref;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text);return path
+    def test_archive_capability_missing_stops_before_target_inspection(self):
+        from unittest.mock import patch
+        older_contract={'operation_kinds':['tools_install','task_conversion','legacy_closeout']}
+        public={'profile':'archive_resume','source_ref':{'dependency_mode':'local_candidate'}}
+        with patch.object(owner,'inspect_source',return_value={'contract':older_contract}), patch.object(owner,'call',side_effect=AssertionError('must stop before target inspection')):
+            with self.assertRaises(CommandError) as raised:
+                owner.inspect_selected_source(public)
+        self.assertEqual(raised.exception.code,'maintenance_prerequisite_missing')
+        self.assertIn('original tools owner',str(raised.exception))
+
     def test_target_native_official_dot_slash_entry(self):
         self.write('.trellis/scripts/get_context.py','print("target native")\n')
         out=owner.observe_native(self.root,[sys.executable,'./.trellis/scripts/get_context.py'])
@@ -37,7 +47,7 @@ class MaintenanceTests(unittest.TestCase):
     def test_packed_conversion_actual_native_next_owner_and_rollback(self):
         candidate_path=os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
         if not candidate_path:self.skipTest('Set matching packed candidate.json')
-        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'
+        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate.get('cli_package_root',Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'))
         source={'cli_package_root':str(cli),'dependency_mode':'local_candidate','expected_candidate':candidate['candidate']}
         shutil.copytree(cli/'dist/templates/trellis/scripts',self.root/'.trellis/scripts')
         shutil.copyfile(cli/'dist/templates/trellis/workflow-delivery-v1.md',self.root/'.trellis/workflow.md')
@@ -69,7 +79,7 @@ class MaintenanceTests(unittest.TestCase):
     def test_normal_owner_edits_block_before_public_writes_on_initial_and_partial_freeze_resume(self):
         candidate_path=os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
         if not candidate_path:self.skipTest('Set matching packed candidate.json')
-        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'
+        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate.get('cli_package_root',Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'))
         source={'cli_package_root':str(cli),'dependency_mode':'local_candidate','expected_candidate':candidate['candidate']}
         public={'profile':'history_closeout','source_ref':source,'target_checkout':str(self.root),'key':self.key,'task_ref':self.ref}
         first='.trellis/.runtime/guru-team/guru-publish-task-delivery/state.json';second='.trellis/.runtime/guru-team/merge-task-delivery/state.json'
@@ -91,10 +101,63 @@ class MaintenanceTests(unittest.TestCase):
         self.assertFalse((checkpoint.parent/'public').exists());self.assertTrue((self.root/first).exists());self.assertTrue((self.root/second).exists())
         self.assertEqual(json.loads(checkpoint.read_text())['public_plan']['operation_id'],prepared['public_plan']['operation_id'])
 
+    def test_archive_resume_public_identity_original_controls_retry_and_rollback(self):
+        candidate_path=os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
+        if not candidate_path:self.skipTest('Set matching packed candidate.json')
+        candidate=json.loads(Path(candidate_path).read_text())
+        cli=Path(candidate.get('cli_package_root',Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'))
+        source={'cli_package_root':str(cli),'dependency_mode':'local_candidate','expected_candidate':candidate['candidate']}
+        archive='.trellis/tasks/archive/2026-10/selected';active='.trellis/tasks/resumed-selected'
+        (self.root/archive).parent.mkdir(parents=True);(self.root/self.ref).rename(self.root/archive)
+        original=controls.raw(self.root/archive/'task.json')
+        note=self.write(archive+'/manual-closeout.md','Manual history only; acceptance remains open.\n')
+        import hashlib
+        authority={'locator':note.relative_to(self.root).as_posix(),'revision':'sha256:'+hashlib.sha256(note.read_bytes()).hexdigest()}
+        script="import {createRequire} from 'node:module';import {pathToFileURL} from 'node:url';const r=createRequire(process.argv[1]+'/package.json');const m=await import(pathToFileURL(r.resolve('@mindfoldhq/trellis-core/task/v2')));console.log(JSON.stringify(m.emptyTaskRecordV2({id:'selected',name:'Selected',title:'Selected'})));"
+        projection=json.loads(subprocess.check_output(['node','--input-type=module','-e',script,str(cli)],text=True))
+        projection['accepted_scope']={'locator':archive+'/prd.md','revision':'sha256:'+hashlib.sha256((self.root/archive/'prd.md').read_bytes()).hexdigest()}
+        public={'profile':'archive_resume','source_ref':source,'target_checkout':str(self.root),'key':self.key,'task_ref':archive,'original_task_ref':self.ref,'active_ref':active}
+        observed=owner.call(source,'inspectTaskTarget',owner.selection_input(public))
+        control='.trellis/.runtime/guru-team/guru-publish-task-delivery/state.json'
+        self.write(control,json.dumps({'input':{**self.key,'task_ref':self.ref}}))
+        before_control=controls.raw(self.root/control)
+        other=self.write('.trellis/tasks/other/notes.md','unrelated business work\n')
+        upstream={**owner.selection_input(public),'active_ref':active,'source_kind':'legacy','projection':projection,
+                  'artifacts':[{'path':a['path'],'action':'preserve','source':a['source']} for a in observed['artifacts'] if a['kind']=='file' and a['path']!=archive+'/task.json'],
+                  'legacy_facts':[{'field':'completedAt','disposition':'source_snapshot','owner_id':'guru-maintain-legacy-task','reason':authority}],
+                  'sessions':[],'branch_binding':{'action':'establish','source':None,'record':{'schema_version':'1.0',**self.key,'binding_revision':1,'branch_name':'main'}},
+                  'resume_intent':{'reason':authority,'archive_review':authority,'next_owner_id':'guru-clarify-requirements','next_action':'Review pending acceptance against preserved scope'}}
+        prepared=owner.prepare(PACKAGE,public,{'upstream_input':upstream,'control_refs':{'guru-publish-task-delivery':[control]},'history_note':'Acceptance remains open; no current gate is inherited.'})
+        checkpoint=self.root/'.trellis/.runtime/guru-team/guru-maintain-legacy-task'/prepared['public_plan']['operation_id']/'checkpoint.json'
+        owner.store(checkpoint,prepared)
+        # Public apply finishes; its caller loses the returned output. Resume uses
+        # that operation's original recovery ref rather than preparing again.
+        owner.freeze_selected_owners(PACKAGE,checkpoint,prepared)
+        prepared['upstream_recovery_ref']=str(checkpoint.parent/'public'/(prepared['public_plan']['operation_id']+'.json'))
+        owner.store(checkpoint,prepared)
+        owner.call(source,'applyMaintenance',{'plan':prepared['public_plan'],'state_dir':str(checkpoint.parent/'public')})
+        out=owner.resume(PACKAGE,checkpoint,json.loads(checkpoint.read_text()))
+        self.assertEqual(out['exit_id'],'resume_required')
+        state=json.loads(checkpoint.read_text())
+        self.assertEqual(state['resumed_task'],{'key':self.key,'task_ref':active})
+        self.assertFalse((self.root/control).exists())
+        self.assertEqual(controls.raw(self.root/archive/'task.json'),original)
+        self.assertEqual(controls.raw(self.root/active/'migration/source-task.json'),original)
+        self.assertEqual(json.loads((self.root/active/'task.json').read_text())['deliveries'],[])
+        again=owner.resume(PACKAGE,checkpoint,state)
+        self.assertEqual(again,out)
+        self.assertEqual(json.loads(checkpoint.read_text())['public_plan']['operation_id'],prepared['public_plan']['operation_id'])
+        rollback=self.write('rollback.json',json.dumps({'profile':'rollback','recovery_ref':str(checkpoint)}))
+        self.assertEqual(owner.run(PACKAGE,{},['--root',str(self.root),'--input',str(rollback)])['exit_id'],'rolled_back')
+        self.assertFalse((self.root/active).exists())
+        self.assertEqual(controls.raw(self.root/archive/'task.json'),original)
+        self.assertEqual(controls.raw(self.root/control),before_control)
+        self.assertEqual(other.read_text(),'unrelated business work\n')
+
     def test_prepared_rollback_has_no_public_operation_and_preserves_task(self):
         candidate_path=os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
         if not candidate_path:self.skipTest('Set matching packed candidate.json')
-        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'
+        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate.get('cli_package_root',Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'))
         source={'cli_package_root':str(cli),'dependency_mode':'local_candidate','expected_candidate':candidate['candidate']}
         public={'profile':'history_closeout','source_ref':source,'target_checkout':str(self.root),'key':self.key,'task_ref':self.ref}
         decision={'upstream_input':{'root':str(self.root),'key':self.key,'task_ref':self.ref,'source_kind':'legacy','archive_ref':'.trellis/tasks/archive/2026-10/selected','history_note':'External acceptance pending.','retirements':[]},'control_refs':{},'history_note':'External acceptance pending.'}
@@ -107,7 +170,7 @@ class MaintenanceTests(unittest.TestCase):
     def test_packed_public_closeout_fixed_recovery_and_owner_barrier(self):
         candidate_path=os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
         if not candidate_path:self.skipTest('Set TRELLIS_MAINTENANCE_CANDIDATE to matching packed candidate.json')
-        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'
+        candidate=json.loads(Path(candidate_path).read_text());cli=Path(candidate.get('cli_package_root',Path(candidate_path).parent/'installed/node_modules/@mindfoldhq/trellis'))
         source={'cli_package_root':str(cli),'dependency_mode':'local_candidate','expected_candidate':candidate['candidate']}
         public={'profile':'history_closeout','source_ref':source,'target_checkout':str(self.root),'key':self.key,'task_ref':self.ref}
         control='.trellis/.runtime/guru-team/guru-publish-task-delivery/state.json';self.write(control,json.dumps({'input':{**self.key,'task_ref':self.ref}}))

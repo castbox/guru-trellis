@@ -16,6 +16,7 @@ from runtime.io import CommandError
 _METHODS = {
     "getMaintenanceContract", "inspectToolsTarget", "inspectTaskTarget",
     "prepareToolsInstallation", "prepareTaskConversion", "prepareLegacyCloseout",
+    "prepareArchivedTaskResume",
     "previewMaintenance", "applyMaintenance", "recoverMaintenance",
     "resumeMaintenance", "rollbackMaintenance",
 }
@@ -99,7 +100,7 @@ def inspect_source(source):
     facts = _invoke(root, "source")
     contract = facts["contract"]
     if (contract.get("maintenance_api") != "1.0" or contract.get("cli_version") != contract.get("core_version")
-            or contract.get("operation_kinds") != ["tools_install", "task_conversion", "legacy_closeout"]):
+            or not {"tools_install", "task_conversion", "legacy_closeout"}.issubset(contract.get("operation_kinds", []))):
         _fail("maintenance_prerequisite_missing", "Matching public CLI/Core maintenance API 1.0 is required before writes")
     core = Path(facts["core_package_root"])
     actual = {"cli_version": contract["cli_version"], "core_version": contract["core_version"],
@@ -132,4 +133,6 @@ def call(source, method, payload=None):
     facts = inspect_source(source)
     if method == "getMaintenanceContract":
         return facts["contract"]
+    if method == "prepareArchivedTaskResume" and "task_resume" not in facts["contract"]["operation_kinds"]:
+        _fail("maintenance_prerequisite_missing", "The selected CLI/Core pair lacks task_resume; use the original tools/source owner before archive-resume writes")
     return _invoke(facts["cli_package_root"], method, payload)

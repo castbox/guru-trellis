@@ -21,3 +21,13 @@ fact validator. Real PR/head/target are reread; Merge requires actual merged SHA
 and target ancestry. These facts are only projection evidence, never a gate pass.
 Unverified or unavailable history remains raw with its concrete obligation; no
 push, merge, Issue mutation, new Delivery or current pass is performed.
+
+## Manual archive source (#577)
+
+For manual archive resume, task_ref retains original active-path attribution.
+The optional source_task_ref names the exact physical archive used by this
+owner's inspection and freeze; omission retains the existing profile meaning.
+Retirement checks the same frozen source and exact controls. This field never
+authorizes a different Task or generation. AI must return unfinished Closure,
+Finish or Finalizer work to its original transaction before maintenance writes;
+terminal Finish results and resource seals remain intact.

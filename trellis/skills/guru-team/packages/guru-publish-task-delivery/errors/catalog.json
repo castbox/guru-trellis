@@ -50,6 +50,13 @@
       "exit_status": 70,
       "locator": "field_path",
       "remediation": "Inspect package runtime without repeating remote mutations."
+    },
+    {
+      "code": "source_mismatch",
+      "trigger": "The selected archived Task bytes or mode differ from the physical source supplied to this original owner.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the exact selected archive through the original maintenance owner; preserve its frozen source and any later work."
     }
   ]
 }

@@ -47,6 +47,10 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "source_task_ref": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

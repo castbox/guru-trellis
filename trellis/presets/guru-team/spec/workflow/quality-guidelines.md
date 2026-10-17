@@ -1563,3 +1563,8 @@ selection/reuse, zero/one/partial convergence and real resume remain Agent
 evidence; fixture/schema/string checks do not prove them. One representative
 clean and existing update/reapply target supplies focused distribution proof.
 Full multi-platform Release compatibility remains with its dedicated owner.
+
+
+## Manual archive resume (#577)
+
+Archive-resume validation exercises a matching public pair, preserved raw archive/source, original owner attribution and exact retirement/restore, returned active identity, real active ambiguity, same-operation retry/output loss/rollback and later-work protection. One representative old-installation topology must execute target-native continuation and the next actual Guru semantic owner. Report formal source-lock adoption, real business adoption and full Release matrix separately; none follows from local_candidate or fixture results.

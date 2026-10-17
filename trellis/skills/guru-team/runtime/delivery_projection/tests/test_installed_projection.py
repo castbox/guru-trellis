@@ -48,7 +48,8 @@ class InstalledProjectionTests(unittest.TestCase):
         subprocess.run(["git", "init", "-b", "task"], cwd=self.root, capture_output=True, check=True)
         shutil.copytree(scripts, self.root / ".trellis/scripts")
         (self.root / ".trellis/.developer").write_text("projection-test\n")
-        (self.root / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        version = json.loads((scripts.parents[3] / "package.json").read_text())["version"]
+        (self.root / ".trellis/.version").write_text(version + "\n")
         (self.root / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n" + json.dumps(DECLARATION) + "\n[/trellis-runtime-contract]\n")
         self.environment = patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "projection-test"})
         self.environment.start()

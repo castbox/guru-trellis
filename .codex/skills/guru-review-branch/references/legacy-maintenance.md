@@ -21,3 +21,13 @@ uses the same fixed checkpoint; rollback checks for later control work before
 restoring original bytes and mode. Unknown paths and different Task controls
 stop. `legacy_controls_retired` returns only to the selected legacy maintenance
 consumer, never to current Planning, Check, Review, Completion or Finish.
+
+## Manual archive source (#577)
+
+For manual archive resume, task_ref retains original active-path attribution.
+The optional source_task_ref names the exact physical archive used by this
+owner's inspection and freeze; omission retains the existing profile meaning.
+Retirement checks the same frozen source and exact controls. This field never
+authorizes a different Task or generation. AI must return unfinished Closure,
+Finish or Finalizer work to its original transaction before maintenance writes;
+terminal Finish results and resource seals remain intact.

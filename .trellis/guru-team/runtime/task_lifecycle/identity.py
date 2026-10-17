@@ -292,13 +292,44 @@ def task_identity_reservation(repo_root: Path, task_id: str, task_ref: str) -> s
     return None
 
 
+def _archived_lifecycle_candidates(repo_root: Path, matches: list[tuple[str, str]]) -> list[tuple[str, str]]:
+    """Exclude only the historical source identified by public archive resume."""
+    root = repo_root.resolve()
+    historical_sources = set()
+    for task_id, ref in matches:
+        if not ARCHIVE_TASK_REF.fullmatch(ref):
+            continue
+        try:
+            migration = root / ref / "migration"
+            resumed = json.loads((migration / "archive-resume.json").read_text(encoding="utf-8"))
+            if not isinstance(resumed, dict):
+                continue
+            source_ref = normalize_task_ref(resumed.get("archive_ref"))
+            original_ref = normalize_task_ref(resumed.get("original_task_ref"))
+            if (not ARCHIVE_TASK_REF.fullmatch(source_ref) or not ACTIVE_TASK_REF.fullmatch(original_ref)
+                    or source_ref == ref or (task_id, source_ref) not in matches):
+                continue
+            current = _read_identity(root, ref)
+            source = _read_task_metadata(root, source_ref)
+            source_generation = lifecycle_generation(source)
+            if (current.legacy or source.get("schema_version") == "2.0"
+                    or source.get("id") != task_id
+                    or resumed.get("key") != {"task_id": task_id, "lifecycle_generation": source_generation}
+                    or source_generation > current.lifecycle_generation):
+                continue
+            # The public writer retained these exact bytes; Finish only moved
+            # their containing task tree. Reservation itself keeps both records.
+            if (migration / "source-task.json").read_bytes() == (root / source_ref / "task.json").read_bytes():
+                historical_sources.add(source_ref)
+        except (OSError, ValueError, LifecycleContractError):
+            # Missing/stale provenance cannot remove an identity collision.
+            continue
+    return [(task_id, ref) for task_id, ref in matches if ref not in historical_sources]
+
+
 def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | None = None) -> TaskArtifactIdentity:
     ref = normalize_task_ref(task_ref)
     selected_id = _read_reserved_task_id(repo_root.resolve(), ref)
-    matches = [(task_id, locator) for task_id, locator in _identity_reservations(repo_root)
-               if task_id.casefold() == selected_id.casefold()]
-    if len(matches) != 1:
-        raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve the duplicate TaskId before lifecycle use.")
     if expected_task_id is not None and selected_id != normalize_task_id(expected_task_id, field_path="expected_task_id"):
         raise LifecycleContractError(
             "invalid_task_identity", "expected_task_id", "Use the immutable TaskId declared by the selected task artifact."
@@ -306,6 +337,43 @@ def resolve_task_ref(repo_root: Path, task_ref: Any, *, expected_task_id: Any | 
     selected = _read_identity(repo_root.resolve(), ref)
     if selected.legacy:
         raise LifecycleContractError("unsupported_legacy_task", ref, "Old records reserve identity but are not lifecycle candidates. Load guru-maintain-legacy-task from a complete matching new source and select this exact task checkout for conversion or historical closeout; the old target parser is not a prerequisite. Full-installation Plan2 remains a separate guru-upgrade-installation choice.")
+    if selected.lifecycle_state == "active":
+        return _resolve_current_identity(repo_root, selected)
+    matches = [(task_id, locator) for task_id, locator in _identity_reservations(repo_root)
+               if task_id.casefold() == selected_id.casefold()]
+    matches = _archived_lifecycle_candidates(repo_root, matches)
+    if len(matches) != 1:
+        raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve the duplicate archived TaskId before lifecycle use.")
+    return selected
+
+
+def _resolve_current_identity(repo_root: Path, selected: TaskArtifactIdentity) -> TaskArtifactIdentity:
+    from ..delivery_projection.adapter import CurrentCheckoutPort, official_session_port
+    root = repo_root.resolve()
+    official = official_session_port(root)
+    try:
+        facts = official.repository_facts(root)
+        if facts.common_dir is not None:
+            from .branch_store import BranchBindingStore, TaskLifecycleKey
+            binding = BranchBindingStore(inspect_repository(root)).read(
+                TaskLifecycleKey(selected.task_id, selected.lifecycle_generation))
+            if binding is None:
+                # Identity precedes initial C4 establishment. The public parser
+                # has validated this artifact; C4 still owns binding selection.
+                occupied = [ref for task_id, ref in _identity_reservations(root)
+                            if ACTIVE_TASK_REF.fullmatch(ref)
+                            and task_id.casefold() == selected.task_id.casefold()]
+                if len(occupied) != 1:
+                    raise LifecycleContractError("task_id_casefold_collision", "task_id", "Resolve duplicate active TaskIds before initial binding.")
+                return selected
+        resolved = CurrentCheckoutPort(official, root).resolve_task_identity(
+            facts, selected.task_id, selected.lifecycle_generation)
+    except (ValueError, OSError, RuntimeError) as exc:
+        code = str(exc).split(":", 1)[0]
+        if code == "ambiguous_task_identity": code = "task_id_casefold_collision"
+        raise LifecycleContractError(code, "task_id", str(exc)) from exc
+    if resolved.task_ref != selected.task_ref or resolved.workspace.resolve() != root:
+        raise LifecycleContractError("invalid_task_identity", "task_ref", "Use the active Task resolved by the target's public resolver in the selected checkout.")
     return selected
 
 
@@ -323,8 +391,21 @@ def task_resource_state(repo_root: Path | str, metadata: dict[str, Any]) -> str:
 
 def resolve_task_id(repo_root: Path, task_id: Any) -> TaskArtifactIdentity:
     requested = normalize_task_id(task_id)
-    matches = [(candidate_id, ref) for candidate_id, ref in _identity_reservations(repo_root)
+    reservations = list(_identity_reservations(repo_root))
+    active = [(candidate_id, ref) for candidate_id, ref in reservations
+              if ACTIVE_TASK_REF.fullmatch(ref) and candidate_id.casefold() == requested.casefold()]
+    if active:
+        # Read the selected generation; the installed resolver owns active uniqueness.
+        exact = next((ref for candidate_id, ref in active if candidate_id == requested), active[0][1])
+        selected = _read_identity(repo_root.resolve(), exact)
+        if selected.legacy:
+            raise LifecycleContractError("unsupported_legacy_task", exact, "Old records reserve identity but require the original maintenance owner before current lifecycle use.")
+        if selected.task_id != requested:
+            raise LifecycleContractError("invalid_task_identity", "task_id", "Use the exact TaskId spelling.")
+        return _resolve_current_identity(repo_root, selected)
+    matches = [(candidate_id, ref) for candidate_id, ref in reservations
                if candidate_id.casefold() == requested.casefold()]
+    matches = _archived_lifecycle_candidates(repo_root, matches)
     if not matches:
         raise LifecycleContractError("task_not_found", "task_id", "Select an existing active or archived TaskId.")
     if len(matches) != 1:

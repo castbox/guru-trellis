@@ -28,6 +28,26 @@ on retries. Review any required target tools upgrade as a separate operation;
 this Skill never silently installs tools or merges a baseline. Reconcile retains
 business-diff judgment after parsing becomes possible.
 
+For `archive_resume`, select the exact monthly archive, its `original_task_ref`
+and destination `active_ref`. Public inspection receives original_task_ref; the
+old dispatcher, a current binding and manual relocation are not prerequisites.
+AI reads the manual closeout note, source/accepted scope, historical Deliveries,
+sessions, bindings and unfinished obligations. A manual historical archive has
+no formal Completion/Closure/Finish and no pending closeout transaction. A
+normally finished current archive enters `guru-reactivate-task`, including its
+legal manual Cleanup. Pending Closure/Finish or an old Finalizer returns to its
+original transaction or established manual disposition. Do not retire that
+transaction as historical controls. Status or a merged PR cannot decide this.
+
+Require the selected pair's additive `task_resume` capability and public
+`prepareArchivedTaskResume`. Supply its complete projection, owner-authored
+accepted_scope, exact artifact/session/binding dispositions and resume_intent
+(reason/archive_review AuthorityRefs, next_owner_id and next_action). Public
+Trellis owns format, provenance, generation and data writes. Preserve raw archive
+and planning; do not create a substitute Task, empty Delivery, current pass or
+completed timestamp. Verify historical PR/commit attribution with original
+Publish/Merge before projection; retain unknown facts as explicit gaps.
+
 For `history_closeout`, author a concrete public archive/note preserving original
 history and external obligations. No tools upgrade is required. Do not call
 normal Completion, Closure, Finish, cleanup, push or merge to fabricate a terminal
@@ -44,7 +64,11 @@ old source definition. Select only exact files attributed to this Task/generatio
 unknown owner/path blocks before writes. Do not manufacture empty gate owners.
 Review external PR/push/merge facts with the original owner and preserve unresolved
 facts in history_note. Inspect original owner control files before public writes.
-Keep terminal Finish results and sealed resources intact.
+Keep terminal Finish results and sealed resources intact. For archive resume,
+original private owners receive task_ref=original_task_ref for attribution and
+source_task_ref=archive task_ref for physical Task bytes. Each owner validates
+and freezes its own exact source/control preimages; the coordinator never
+interprets its control state or deletes its namespace.
 
 Only actual choices and concrete side effects need current-dialogue confirmation.
 Never serialize authorization, its status or its process.
@@ -59,7 +83,10 @@ backups stay independent. Actual public conversion backup/archive must be readab
 then retire Publish → Merge → Finish → any explicitly supported other original
 owner. Unsupported required owners block preparation. Private retirement inputs
 contain exact selected Task, preserved_source_ref, control_refs and original
-recovery_ref; no removed active source is consulted.
+recovery_ref; no removed active source is consulted. For archive resume, inspect
+both the unchanged original archive and public active migration/source-task.json.
+Persist only the public returned resumed_task key/ref for same-operation recovery;
+finalization reads that active locator, never the archive or original path.
 
 ## Recovery and real target verification
 
@@ -74,9 +101,15 @@ new reviewed combined scope, never automatic widening.
 After mutation `resume_required` routes automatically to this owner; it is not
 business completion. Before finalization, use `--action observe --plan REQUEST`
 through scripts/preview.sh with actual target-native argv. Native must be the target checkout's own entry,
-not the external maintenance runtime. For convert additionally run the next
-actual owner: planning consumes current Planning; delivered pending acceptance
-must enter actual Completion evidence_pending without creating another Delivery.
+not the external maintenance runtime. For convert and archive_resume additionally run the next actual owner. Verify
+target installed Identity, checkout, branch binding, Bind and native continuation
+against the returned active TaskKey with a real session or lawful explicit-task
+route. Initial prebinding Identity validates the active artifact through the
+public schema parser and existing active occupancy before original C4 binding;
+postbinding execution uses the official active resolver with selected checkout.
+Scope changes enter original Clarify while preserving historical scope;
+only a real new implementation slice enters Delivery/Planning. Delivered pending
+acceptance enters actual Completion evidence_pending without an empty Delivery.
 Read actual Task/planning/session/branch facts. AI judges native continuation and
 owner output, not JSON syntax or process exit alone. History closeout runs old
 normal context/current and proves the old Task is no longer selected while other
@@ -84,7 +117,7 @@ Task/session facts persist.
 
 `--action finalize --review-input REVIEW` reruns the actual native and next-owner
 commands and compares the reviewed observations. REVIEW contains native_argv,
-next_owner_argv (convert only), exact observations and the minimal AI-selected
+next_owner_argv (convert and archive_resume), exact observations and the minimal AI-selected
 output. The validator never decides a semantic route from status. Native success
 alone is insufficient: AI must assess the actual output and next owner behavior.
 

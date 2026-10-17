@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "所有新增自然语言使用唯一写作正文"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共profile和原owner最小I/O"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md", "reason": "原维护闭环与恢复状态所有权"}
+{"file": "docs/architecture/adr/027-independent-install-maintenance.md", "reason": "公共模型与原私有owner边界"}

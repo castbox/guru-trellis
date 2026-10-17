@@ -63,7 +63,8 @@
         "invalid_json",
         "schema_mismatch",
         "stale_identity",
-        "internal_error"
+        "internal_error",
+        "source_mismatch"
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
@@ -102,7 +103,8 @@
         "schema_mismatch",
         "invalid_arguments",
         "invalid_json",
-        "internal_error"
+        "internal_error",
+        "source_mismatch"
       ],
       "side_effect": "repo_write",
       "schema_bindings": [

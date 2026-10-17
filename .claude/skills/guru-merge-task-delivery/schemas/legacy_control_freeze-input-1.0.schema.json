@@ -83,6 +83,10 @@
     "operation_id": {
       "type": "string",
       "minLength": 1
+    },
+    "source_task_ref": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

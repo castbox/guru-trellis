@@ -67,7 +67,7 @@ class LifecycleHelperTests(unittest.TestCase):
         self.git("checkout", "-qb", "wrong-branch")
         code, result = self.helper("check-task-checkout-boundary")
         self.assertEqual((code, result["status"]), (2, "blocked"))
-        self.assertIn("does not match branch binding", result["errors"][0])
+        self.assertIn("current_task_checkout_unresolved", result["errors"][0])
 
     def test_recovery_requires_ordered_predecessor_and_current_boundary(self) -> None:
         self.bind()

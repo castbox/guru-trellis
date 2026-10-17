@@ -83,6 +83,19 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual(resolved.lifecycle_key, ("demo", 3))
         self.assertEqual(resolved.lifecycle_state, "archived")
 
+    def test_preserved_manual_archive_is_history_not_active_authority(self):
+        active = ".trellis/tasks/10-18-resumed"
+        archive = ".trellis/tasks/archive/2026-10/10-13-original"
+        self.write_task(active, "same-task", 0)
+        original = self.write_task(archive, "same-task") / "task.json"
+        before = original.read_bytes()
+        self.assertEqual(resolve_task_id(self.repo, "same-task").task_ref, active)
+        self.assertEqual(resolve_task_ref(self.repo, active).task_ref, active)
+        self.assertEqual(task_identity_reservation(self.repo, "same-task", ".trellis/tasks/new"), active + "/task.json")
+        with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
+            resolve_task_ref(self.repo, archive)
+        self.assertEqual(original.read_bytes(), before)
+
     def test_missing_generation_reads_as_zero_and_invalid_values_fail(self):
         self.write_task(".trellis/tasks/09-20-legacy", "legacy")
         with self.assertRaisesRegex(LifecycleContractError, "unsupported_legacy_task"):
@@ -129,7 +142,7 @@ class IdentityTests(unittest.TestCase):
     def test_exact_and_casefold_collisions_fail_repository_resolution(self):
         current = ".trellis/tasks/09-20-first"
         self.write_task(current, "Task-A", 0)
-        self.write_task(".trellis/tasks/archive/2026-09/09-19-second", "task-a", 1)
+        self.write_task(".trellis/tasks/09-19-second", "task-a", 1)
         with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
             resolve_task_id(self.repo, "Task-A")
         with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
@@ -245,7 +258,7 @@ class IdentityTests(unittest.TestCase):
 
     def test_exact_duplicate_task_ids_fail_repository_resolution(self):
         self.write_task(".trellis/tasks/09-20-first", "task-a", 0)
-        self.write_task(".trellis/tasks/archive/2026-09/09-19-second", "task-a", 1)
+        self.write_task(".trellis/tasks/09-19-second", "task-a", 1)
         with self.assertRaisesRegex(LifecycleContractError, "task_id_casefold_collision"):
             resolve_task_id(self.repo, "task-a")
 

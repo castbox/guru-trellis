@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -220,6 +221,47 @@ class RuntimeTest(unittest.TestCase):
 
 
 class FixedForkIntegrationTest(unittest.TestCase):
+    def test_initial_identity_binding_checkout_and_session_keep_manual_archive(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)/'repo'
+            subprocess.check_call(['git','init','-q','-b','task-initial',str(root)])
+            install_common(root)
+            task_ref='.trellis/tasks/a'
+            task=root/task_ref;task.mkdir(parents=True)
+            (task/'task.json').write_text(json.dumps(current_task('a')))
+            archive=root/'.trellis/tasks/archive/2026-10/a/task.json'
+            archive.parent.mkdir(parents=True)
+            archive.write_text(json.dumps({'id':'a','status':'completed','creator':'fixture','assignee':'fixture'}))
+            # This module fixture enables the public resolver's installed-Guru
+            # binding requirement; it is not an installation qualification.
+            marker=root/'.trellis/guru-team/extension.json';marker.parent.mkdir(parents=True)
+            marker.write_text('{}')
+            git(root,'add','.')
+            git(root,'-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','initial task')
+            def original_owner(name):
+                path=PACKAGE.parent/name/'runtime/invoke.py'
+                spec=importlib.util.spec_from_file_location('initial_'+name.replace('-','_'),path)
+                owner=importlib.util.module_from_spec(spec);spec.loader.exec_module(owner)
+                return owner
+            identity=original_owner('guru-establish-task-identity')
+            branch=original_owner('guru-establish-task-branch-binding')
+            checkout=original_owner('guru-ensure-task-checkout')
+            selected={'profile':'delivery_active_task','mode':'standalone','task_id':'a','task_ref':task_ref,'lifecycle_generation':0}
+            before={p.relative_to(root).as_posix():p.read_bytes() for p in (root/'.trellis').rglob('*') if p.is_file()}
+            with patch.object(sys, 'dont_write_bytecode', False):
+                self.assertEqual(identity.invoke(root,selected)['exit_id'],'identity_established')
+            self.assertEqual(before,{p.relative_to(root).as_posix():p.read_bytes() for p in (root/'.trellis').rglob('*') if p.is_file()})
+            self.assertEqual(branch.invoke(root,{**selected,'action':'establish'})['exit_id'],'binding_established')
+            key_only={k:v for k,v in selected.items() if k!='task_ref'}
+            self.assertEqual(checkout.invoke(root,key_only)['exit_id'],'checkout_resolved')
+            with patch.dict(os.environ,{'TRELLIS_CONTEXT_ID':'initial-bind-fixture'}):
+                public,semantic=request('rebind_missing_session')
+                self.assertEqual(bind.execute(root,json.dumps(public),json.dumps(semantic))['exit_id'],'session_rebound')
+                official=bind.official_port(root)
+                resolved=official.resolve_task_identity(official.repository_facts(root),'a',0)
+                self.assertEqual(resolved.task_ref,task_ref)
+            self.assertEqual(json.loads(archive.read_text())['id'],'a')
+
     def test_official_schema_three_port_with_real_git_checkout(self):
         scripts = scripts_source()
         with tempfile.TemporaryDirectory() as directory:

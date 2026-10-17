@@ -29,6 +29,20 @@
       "exit_status": 2,
       "locator": "field_path",
       "remediation": "Read command help and refresh the current input."
+    },
+    {
+      "code": "maintenance_prerequisite_missing",
+      "trigger": "The selected CLI/Core pair lacks the required public archive-resume capability.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Select the complete matching pair through the original source/tools owner before target writes."
+    },
+    {
+      "code": "resumed_identity_missing",
+      "trigger": "An applied public archive-resume result does not contain its required active Task identity.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Keep the same operation and resolve the public result with its original maintenance owner before private retirement."
     }
   ]
 }

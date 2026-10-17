@@ -306,7 +306,8 @@
         "github_permission_denied",
         "github_api_unavailable",
         "github_response_incomplete",
-        "internal_error"
+        "internal_error",
+        "source_mismatch"
       ],
       "side_effect": "github_write",
       "schema_bindings": [
@@ -409,7 +410,8 @@
         "schema_mismatch",
         "invalid_arguments",
         "invalid_json",
-        "internal_error"
+        "internal_error",
+        "source_mismatch"
       ],
       "side_effect": "repo_write",
       "schema_bindings": [

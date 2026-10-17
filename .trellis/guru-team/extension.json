@@ -1167,11 +1167,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-17T12:17:30Z",
+  "installed_at": "2026-10-17T17:23:47Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "87176aea126cc9ade10f334eb379e0d35a053295",
-    "commit": "87176aea126cc9ade10f334eb379e0d35a053295",
+    "ref": "36db1a206c3021f65accfdbc846e2151289f319e",
+    "commit": "36db1a206c3021f65accfdbc846e2151289f319e",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1247,11 +1247,11 @@
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "b6917597cfc92a6112a8fc4475c6739bc23ee567af288ea91bd63dc0900c91f0",
       ".trellis/spec/workflow/semantic-retrieval.md": "7f523e481aa122eddcda7d2d59c5ec04c4c6012247e6ac0b6958626a4ae8501f",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
-      ".trellis/spec/workflow/workflow-contract.md": "0741af04276801d4ac719ec985611f56b92d360bb0837a82697b722683644106",
-      ".trellis/spec/workflow/skill-package-contract.md": "36476c057f6e895d230d450927891ea0d1ce3f8565bb023481255fc36cf7fc0d",
-      ".trellis/spec/workflow/data-contracts.md": "784e9a06e2e9ce836e77cc6ea0f883e8cb576312cc22c16cc7e5fe9870e78c11",
-      ".trellis/spec/workflow/companion-scripts.md": "f57f2329d57ea35b0cd15acca5b51fac3b242a220664a2d75645ad268ac16b83",
-      ".trellis/spec/workflow/quality-guidelines.md": "70bcc5a35a66732b0ae06a99f54b2255b9d828d28b51bb51538a2f14b874c718",
+      ".trellis/spec/workflow/workflow-contract.md": "801a5a1672bd808c0a8995c4e2ebb3ed82e47f9b0e88ba35869cd2542f564642",
+      ".trellis/spec/workflow/skill-package-contract.md": "a5d93f3d08b2f518a89b1f758838a73264ae0f8cfe14d781bceb5b16fab40ed2",
+      ".trellis/spec/workflow/data-contracts.md": "43bad2cc09ab1fae19a10a1761318813e5f6db1e6cff86fb48981f748530be9e",
+      ".trellis/spec/workflow/companion-scripts.md": "32afe7704ba0d63c6d1dc865b89fba146417ffce0f7b3246accc9df36c51f801",
+      ".trellis/spec/workflow/quality-guidelines.md": "cc4f20c9f51d025d923bd8c98f1567fc9b164e5f85c2310040895c282934fff8",
       ".trellis/guru-team/trellis-source.json": "8152d2918d5610baee8354f7bbcab969d55032572b7d4b5faa3a7eaecf6b3342"
     },
     "new_copies": [],
@@ -1320,7 +1320,7 @@
       {
         "id": "guru-approve-task-plan",
         "interface_sha256": "bc45a8e31f7f9d94ddc4943fd8f86bf6fd7489d865233bc0ec5657513cc632b7",
-        "tree_sha256": "41b8badc4f44c244d0c6d28d56103ebbe729fd58fa65bf5443bcf212a4bd18a3"
+        "tree_sha256": "2f22b1c9c37bba3c301d91583f28241da3013dccd4ce79d6d67276516ac04c2e"
       },
       {
         "id": "guru-author-task-plan",
@@ -1330,7 +1330,7 @@
       {
         "id": "guru-bind-task-session",
         "interface_sha256": "d3e7a8cae14f5a8ac21fb8df387a3a0604b9150b0cf337960a235c86617c8cd5",
-        "tree_sha256": "8b12818e1471f896a09c73013f595de923093247634bb1096812eeee2fc080c6"
+        "tree_sha256": "f2a5432783d6e73089fad8ee867eb0ca8d128a4e06caf5dc4f3817c3f33c26c2"
       },
       {
         "id": "guru-bootstrap-repository-ssot",
@@ -1340,7 +1340,7 @@
       {
         "id": "guru-check-task",
         "interface_sha256": "4b015f16cb0400fba344cd9fb3d0ac03149015edb6719d447efe3fea942ef9b3",
-        "tree_sha256": "0230bfd062f938c2b609a39a27931ad3740ed615fac14ebcb93c4539ca0c4193"
+        "tree_sha256": "eab38726a617d2b6b55e60d07b9c9f72fd9c0e180ad5bf63dd68d29a25a4c2c2"
       },
       {
         "id": "guru-clarify-requirements",
@@ -1405,7 +1405,7 @@
       {
         "id": "guru-finish-task",
         "interface_sha256": "faf0e63730bbbedf1069e7373ac35d322daefe6826ac9cb99a70c5c62caceb57",
-        "tree_sha256": "186dd58f07ec9a190cffa0dca8858f681524a9a6f0417cfea95bd903bb37a6fa"
+        "tree_sha256": "fe393ef64435439f6cbb99702fd0f166ac1b666f05bb748dcdce687116f80eb3"
       },
       {
         "id": "guru-maintain-architecture-baseline",
@@ -1414,8 +1414,8 @@
       },
       {
         "id": "guru-maintain-legacy-task",
-        "interface_sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
-        "tree_sha256": "67ed69f673bd63ad9bfeadb8abd7caf4e5b35eadba66284acf438c3763349490"
+        "interface_sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
+        "tree_sha256": "e86a5e75f8f20cadf301c63250e007ebc3b355bed37a2b2826c7f2ed55e53575"
       },
       {
         "id": "guru-maintain-requirements-design-test-ssot",
@@ -1425,12 +1425,12 @@
       {
         "id": "guru-merge-task-delivery",
         "interface_sha256": "1bb0a9edc48ee25a0c7c4557290ca821a98a233effdbc428e963ff6893bc4973",
-        "tree_sha256": "1c3b098e83557595750a5f3b002166b898aa980f8d34e09b6dc7d27882fa445c"
+        "tree_sha256": "f3636420604ad1e1f8a12c6853ae49b9f13e84fd99ca10e517fcac963fc943e6"
       },
       {
         "id": "guru-publish-task-delivery",
         "interface_sha256": "875ec932162accc9ec4ce00f5ac881b7f8c468f249ac5fb4c6a16612ca61f296",
-        "tree_sha256": "51d1b4bf7ac4ae124107c9a871e15228cf0cdabf0596aabc9d79eddbf53c7d92"
+        "tree_sha256": "ba4645e18485cb42f8198361f8efb8217b40b6d9f5889d4c8fcb2e64fc90b439"
       },
       {
         "id": "guru-qualify-normal-scenario",
@@ -1465,7 +1465,7 @@
       {
         "id": "guru-review-branch",
         "interface_sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
-        "tree_sha256": "aad5ec0fd7f062d86ea9acdd113ef8bf0752914f65ac503fa71b868faefd6a16"
+        "tree_sha256": "4159ba88e9c678b537ef606cb4c63e288fe35e2b8c7652fb6bdd1127b622a1a8"
       },
       {
         "id": "guru-review-change-request",
@@ -1499,8 +1499,8 @@
       },
       {
         "id": "guru-upgrade-installation",
-        "interface_sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
-        "tree_sha256": "1fb1550ffa3dbb06e1fa30a07a9a2344ff5d3e7c9f43cca12b74ec0c5451b886"
+        "interface_sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
+        "tree_sha256": "3f0ab036f028d1c9f52055a499c657b57acfb1110477f00e01a947d438a638e1"
       },
       {
         "id": "guru-upgrade-tools",
@@ -3211,7 +3211,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/legacy-maintenance.md",
-        "sha256": "baf51e8041872659680fd3f00e917337014690cba251a01a0bdb6055d6a47cd9",
+        "sha256": "17a06776b56f25cdfb183c13a46ddc0aea2a6297e18d49cfa7f6dcab8154983f",
         "executable": false,
         "action": "installed"
       },
@@ -3246,7 +3246,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/runtime/legacy_maintenance.py",
-        "sha256": "a20cf2a91f4b3b529718163944834b7de900212ca5a37afb68838ca19178ee74",
+        "sha256": "235521ba6dde8febd62aa1c4ec300220ac99fcea646dfda01ed1d4b04cb51c29",
         "executable": false,
         "action": "installed"
       },
@@ -3274,14 +3274,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "d946126df7c7068b30b27810f3e7d5d6b4b94d2c9b7bf62b4d4530a7aca4e0d7",
+        "sha256": "dbcd3b90d6d5a8d5f4d846abc6b04f48e13f0303fa1dcba01bfe66195ff9f98c",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "2b8c546378f664464e476db2204a3869eb0d577c6208d02a81ca47e72956b78a",
+        "sha256": "6bb3d5a7c595a515c788c9839c8b1a6fb6ef61e1cc8c11bc56095ee4ab29d459",
         "executable": false,
         "action": "installed"
       },
@@ -3302,7 +3302,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "cb1a7f50587baab54effca10ecd0de0cc2a9957b45051abe89a12c30462044d8",
+        "sha256": "a407cd62700105e127817f3c045849cd16dbf75c08d05825f507658674693d51",
         "executable": false,
         "action": "installed"
       },
@@ -4184,7 +4184,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-bind-task-session/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-bind-task-session/runtime/invoke.py",
-        "sha256": "86ff3e6607c780f5e994214dab76378c70fafd6fba7b8ef1ab741ed2ae3227be",
+        "sha256": "c4fe6c05ea514cdaf0f6c2ecac7b0c51505aff85e57b2c70a33fb13e3d626ba2",
         "executable": false,
         "action": "installed"
       },
@@ -5017,7 +5017,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/legacy-maintenance.md",
-        "sha256": "e1921a2185e802259feba2c86d32e2a55a32686e68761bba93ac156dc1840e11",
+        "sha256": "39997961417a83e199692c3eca16de2ebb382446ae3ffd5bb2b72f24dd6828a3",
         "executable": false,
         "action": "installed"
       },
@@ -5052,7 +5052,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-check-task/runtime/legacy_maintenance.py",
-        "sha256": "619c19f9b59acc01cdf8a6ec48f3c56c8e5ca5956c83e11affeee0f494ac116b",
+        "sha256": "599524f87d6c40f241a163bb78e4fe193c5884b707601ba28943b7618f7eccec",
         "executable": false,
         "action": "installed"
       },
@@ -5108,14 +5108,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "56e98498af64cb80dc507b35c1f66216be691dd48d02160220f75f7fb0091add",
+        "sha256": "8fdc5905c4a1b6dfa3622c315d80e3fdeb620b37af4b55c75096199becc72ee4",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "4c2db0484ce2ba20fb60dda8e34121672486c9d98bc077ded913365aa5052bba",
+        "sha256": "f4d1b58471e20dd2f10d837528a73759a9d4d4333353f54fb4ce3fb05bed64ea",
         "executable": false,
         "action": "installed"
       },
@@ -5136,7 +5136,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bd5fe255969bf2e7cf91ca592f4a1474734d5d0ce8101491072ed39f57a442d0",
+        "sha256": "d187504e35808b0946f3f853359eea009b6c59894ebf6c376cad89aa9adc9542",
         "executable": false,
         "action": "installed"
       },
@@ -8818,7 +8818,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/commands.json",
-        "sha256": "0d13c87c225cdc9a0202bcd94ab8aa8d611b3058483c0f31486a2229f61b65af",
+        "sha256": "7d9831bbe4da0f2a3e43660eda5cec24e8cdb34866605a786d46ff865b754b78",
         "executable": false,
         "action": "installed"
       },
@@ -8839,7 +8839,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/errors/catalog.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/errors/catalog.json",
-        "sha256": "538082bf1fdc6bc6f84544c4dbacde7b38b62cbd378f8817630e81b5c9c800bf",
+        "sha256": "fbf49bc62cc30df1c1dee4ee2350d94b3afcc3baf41030c61416cd9970f4b92b",
         "executable": false,
         "action": "installed"
       },
@@ -8958,7 +8958,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/references/legacy-maintenance.md",
-        "sha256": "1ad0ff2daf326172491cdc46909f7b79d8c57740993babe5216bf296e15fb38b",
+        "sha256": "7739312e25bfa287ef77847bb0f09ee1c32ba5387869a5e8194f906f1dde3c32",
         "executable": false,
         "action": "installed"
       },
@@ -8972,7 +8972,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/runtime/legacy_maintenance.py",
-        "sha256": "73558e18449eec19f9338a810d5ad5960c5ce8047bb49f1ab6fd51b46cb6b387",
+        "sha256": "a105feea9c75093a05f496340d204a2208cc538fd5d757b264894ed682d9cbb5",
         "executable": false,
         "action": "installed"
       },
@@ -9014,14 +9014,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "ab2543f2323acee0fe27401348aee9f1749fbd0cd325ad3b9bddd39156c96e40",
+        "sha256": "6ee2c461adcaefeee1c5b0386b4c77de2d6dee15d36ff8bc6405796da057b447",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "82fba0119ece8417b0d4fcafe99d12b53ea9b2878cec5cc6a462a0d7c75112f5",
+        "sha256": "40fdcf5eca83ac60471ab76f87510a111310578fbb988997b32cef8d4e014f04",
         "executable": false,
         "action": "installed"
       },
@@ -9042,7 +9042,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "05de4deee02b8ef6e069ed9a29eefe775cfc5a16d1e5267ad270e0781d9e28f6",
+        "sha256": "63a7fd011e7f1e82c8880f5afa54aeef2fee154c67f059e30a705d8fc92dda64",
         "executable": false,
         "action": "installed"
       },
@@ -10141,21 +10141,28 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md",
-        "sha256": "a309767d0dc7972680c2a952010f1bb0cb5c1e4e27a1e380a8c13f57aa6d3428",
+        "sha256": "8c6668505a4da96727d396650f27eef2a969d7e5657da2beb2734d429b380049",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/commands.json",
-        "sha256": "768c19c64c080df58e79300f29d160466446fd8e0f6369ffbc1c347f269f0dc5",
+        "sha256": "67737b0035db7d3236dbeec8034f709ccc5cb80e528afaeec66fc672d60de3d6",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/errors/catalog.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/errors/catalog.json",
-        "sha256": "2baa35faff794d5f35170c226557e4489ba86255d7fcfc763c6c63d580b94306",
+        "sha256": "2d8a599fc1e7d15dad6f30a3875899749cceb4a21458c773ec1a5be5c8b43938",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/examples/input-archive_resume.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/examples/input-archive_resume.json",
+        "sha256": "d20258255b6ecdb3104dc740f20b9d9c92cc59334fadf0fa5a0fdefe09bb741b",
         "executable": false,
         "action": "installed"
       },
@@ -10232,14 +10239,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/interface.json",
-        "sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
+        "sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md",
-        "sha256": "0d72af9a7f872ec73b7d47e741058de3d372b6702eddde621ea485625c04a244",
+        "sha256": "c503585bf6d7e04938246ce2e492bf597c962de3a944384ca4b6608bc51f6d1f",
         "executable": false,
         "action": "installed"
       },
@@ -10253,14 +10260,21 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/runtime/controls.py",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/runtime/controls.py",
-        "sha256": "529961f0d9f6903379f19255639fd781b54ac71e4e2df924cc32577fc2f3827e",
+        "sha256": "04008695096a027ded59f59f18a7c1ceb373138e86db99e6ccc658124a885eb9",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/runtime/invoke.py",
-        "sha256": "8206775abf459faeaa769d868fb3a2e7d5f2c6b9b6474192720c8cf95d4218c6",
+        "sha256": "5b0c5924dd4a7f2a6e714878b81f35ed20b64a1bc835d6c05bb19e827233bffe",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "sha256": "eba2c929c488b2c0734284963f11297684cda0c98d5881b43b2e0b3bc44a1ab6",
         "executable": false,
         "action": "installed"
       },
@@ -10330,14 +10344,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/schemas/private-legacy-recovery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/private-legacy-recovery-1.0.schema.json",
-        "sha256": "f5e1d81084c03961afe9f659a8bb90bfd18dd53f5e0a74eab0ae50c5d3795062",
+        "sha256": "2bc9d54542b218d8976628670743aed1f9ccb76365560ff7782eb29f460347f6",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
-        "sha256": "d919f86408ff37266e8fd0978be15f5fa166cef59d4bebcf7d54193d77c0388f",
+        "sha256": "8d9c8b849efde1bb81bc0b4b2d35dc5b01140ff9f921bc8949d5a2cf14c7047a",
         "executable": false,
         "action": "installed"
       },
@@ -10694,7 +10708,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
-        "sha256": "0172fda8a8976ec74480a47db57c6d01db47da2e6c588d386b84f27fb367d656",
+        "sha256": "5c54295693e1b5479df8b0269cea87b8f83d2680640edb0590b24c49c9386e28",
         "executable": false,
         "action": "installed"
       },
@@ -10736,7 +10750,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/errors/catalog.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/errors/catalog.json",
-        "sha256": "c1c0de104921b0be9877c60eaa46fca64fd8184916645e23e0b23648332d8be4",
+        "sha256": "5565ba35905d63513c750ce572fea21a36c5c5d3d3df50a54b4b8709df0648fc",
         "executable": false,
         "action": "installed"
       },
@@ -11058,7 +11072,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -11093,7 +11107,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/legacy_maintenance.py",
-        "sha256": "ffe3f5e5b819efaa86f7c4bf0069259063c4ddd4cc412311b6ae4e3113e10342",
+        "sha256": "4633290f0bae159b44888c3de7e6b4f5c97aebe55662b62b6a556a86bfd9f24f",
         "executable": false,
         "action": "installed"
       },
@@ -11219,14 +11233,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "a2b53d81dea2119aea9805466800e4f53997e59bc480ffdaea4c421b6379902a",
+        "sha256": "5b1035dde50c76a664be50d33ccc8f7cc0d424c1b113acac237519c85958a0d8",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "e9ab8f4aeb6cb4b0932d8fbc5c9828dca35eee3fb0a0fc590b976029934100a9",
+        "sha256": "72577ba69580f0489f5fb4699f7b2fbf4b544224920b106eada1900fbf217a22",
         "executable": false,
         "action": "installed"
       },
@@ -11247,7 +11261,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "2b6c6693ba72634872cf20fb655f71d6a019f9f2f693abe7eb98d6d453524a5a",
+        "sha256": "9c05e3aaf7d2097d2050bb0f2252273b9a43253e8928e8808a62e6fd3df607b9",
         "executable": false,
         "action": "installed"
       },
@@ -11541,7 +11555,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "50b741eaadc98eae875b1aaab7230097cb3da78db54f59d15b17518865215b40",
+        "sha256": "7e5e0b5d686b4348a994a5d0aa0ddd1aaeab7d0d16aefc071b769479c567c9eb",
         "executable": false,
         "action": "installed"
       },
@@ -11569,7 +11583,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/errors/catalog.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/errors/catalog.json",
-        "sha256": "09f2ff051b2546445e558c0bc1ccdc8ef5c06a00dfbc3b601c5b8f630ace1869",
+        "sha256": "b4ad4f625ce614fe512441cbd77428a6fc0eb2cc5df2454538a48e2ec1dc7863",
         "executable": false,
         "action": "installed"
       },
@@ -11877,7 +11891,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -11912,7 +11926,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/runtime/legacy_maintenance.py",
-        "sha256": "852b5f741510da46794639ca3a19677c45b51acc9e330c092fc1533c5286a448",
+        "sha256": "df3616e6de1a38f73b6d337ab9ac9473290cc8ea4d6788f8f1fe8f6c7cc2f08c",
         "executable": false,
         "action": "installed"
       },
@@ -11968,14 +11982,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "0b9c3f128c4ff86cce832661d553da6abfeec773e1ee1d624114238d13c466ff",
+        "sha256": "8dd75a6d0f0486f46da1a68100205443a43cd98b37af8cfa384e081ca54947af",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "59f8e655f36cf56ebc0c5619ab2451821c20557c0e53c41bb47a23bc74106bac",
+        "sha256": "c9ec1637e0a33444478c6c4cf0548b42280e1778cab8bfaf1c1d297ecceb464e",
         "executable": false,
         "action": "installed"
       },
@@ -11996,7 +12010,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "70d418074baadf73130bca5e1b58d3f8a047812e31e7001312c2c96625447e9d",
+        "sha256": "1dcbb83617d4815ff457d9835f0d4460f4524071f84516eaf26dab5bd1b4913b",
         "executable": false,
         "action": "installed"
       },
@@ -15237,7 +15251,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
-        "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "sha256": "226c2848f4c001fdf295889da385a3be64811cebe309a9398c7e20652de9f9d5",
         "executable": false,
         "action": "installed"
       },
@@ -15279,7 +15293,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/legacy_maintenance.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/legacy_maintenance.py",
-        "sha256": "f1cc1b0105523de8824001804c6f7ad2d0a7bb99e7aa16d25e2e294766c7611b",
+        "sha256": "1bc8324b3a9d4ca1320ce90f6598e97f591fa2e78d5c27026b6c25755e6c1da5",
         "executable": false,
         "action": "installed"
       },
@@ -15356,14 +15370,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "e6ac1b752f50cc79ceb4d64ed988dad604889791c0cd020de1ec34f2f7bccc9b",
+        "sha256": "5a792f6e0f6a3bcb91e9f57aee5763fd1029045291a0892fd28614089bd65884",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "a59ca7d921104a4e15f36cc0c0707c1d21b123955db0efc38e4140c582ac9477",
+        "sha256": "63006c8363bded76277ec56e12e49230add99c54512501ced06a50ac1ab524ea",
         "executable": false,
         "action": "installed"
       },
@@ -15384,7 +15398,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bcf9340e8da65de30e78d3c8163146ff5485b80d8f3cecd27573dda7b8bb0505",
+        "sha256": "576df4fad500863a4cf800be1cc717a9f2b7f989893f4cd23215a073fd68191f",
         "executable": false,
         "action": "installed"
       },
@@ -18198,14 +18212,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-        "sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
+        "sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "5d08dbd09c0a8ac1c138abd1590b4c2026121871ecefce5da9d75679062d69b8",
+        "sha256": "199106d940d4a3ca062a3a81b553ab5890adf05647941c17a7ef67b527cc5d6a",
         "executable": false,
         "action": "installed"
       },
@@ -18254,7 +18268,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
-        "sha256": "ecd0c95e7599ca1756b09373ecff4ad7a0554924566d5d0ccf241afa02ef2fe8",
+        "sha256": "ef63b7c8fc54c16ec4858dae82e9267c0c5f4eb4b3cb7af82351aa1aee94fdae",
         "executable": false,
         "action": "installed"
       },
@@ -19129,7 +19143,7 @@
       {
         "path": ".trellis/guru-team/runtime/maintenance_transport.py",
         "source": "trellis/skills/guru-team/runtime/maintenance_transport.py",
-        "sha256": "6104551a1d3565729bcb3d8a88866be0248078469a3c5c6985d6c5ff10d89076",
+        "sha256": "f1c0f692da1ebcc51e105b66c435ea77d0da99ecbee05846bd78bfe771faff59",
         "executable": false,
         "action": "installed"
       },
@@ -19220,7 +19234,7 @@
       {
         "path": ".trellis/guru-team/runtime/delivery_projection/adapter.py",
         "source": "trellis/skills/guru-team/runtime/delivery_projection/adapter.py",
-        "sha256": "2ee9f2fd9d9e425ab7dfd835630ce99388e092be53a32ec24b43adbcbb39ea0a",
+        "sha256": "ad1790abfaee9e50c0596fe0002790f2872d3a945c39110bc28e015f07f19b45",
         "executable": false,
         "action": "installed"
       },
@@ -19325,7 +19339,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/identity.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
-        "sha256": "bc634625d9d8b95271d706a4a2d099d24f91dd843f55ec4a3148bfaab9d74ad9",
+        "sha256": "95c98b068e30769ea591417dbad9b80da76f7fa2badd47b8ddebf57060bf334d",
         "executable": false,
         "action": "installed"
       },
@@ -20543,7 +20557,7 @@
       {
         "path": ".agents/skills/guru-approve-task-plan/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/legacy-maintenance.md",
-        "sha256": "baf51e8041872659680fd3f00e917337014690cba251a01a0bdb6055d6a47cd9",
+        "sha256": "17a06776b56f25cdfb183c13a46ddc0aea2a6297e18d49cfa7f6dcab8154983f",
         "executable": false,
         "action": "installed"
       },
@@ -20557,14 +20571,14 @@
       {
         "path": ".agents/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "d946126df7c7068b30b27810f3e7d5d6b4b94d2c9b7bf62b4d4530a7aca4e0d7",
+        "sha256": "dbcd3b90d6d5a8d5f4d846abc6b04f48e13f0303fa1dcba01bfe66195ff9f98c",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "2b8c546378f664464e476db2204a3869eb0d577c6208d02a81ca47e72956b78a",
+        "sha256": "6bb3d5a7c595a515c788c9839c8b1a6fb6ef61e1cc8c11bc56095ee4ab29d459",
         "executable": false,
         "action": "installed"
       },
@@ -20585,7 +20599,7 @@
       {
         "path": ".agents/skills/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "cb1a7f50587baab54effca10ecd0de0cc2a9957b45051abe89a12c30462044d8",
+        "sha256": "a407cd62700105e127817f3c045849cd16dbf75c08d05825f507658674693d51",
         "executable": false,
         "action": "installed"
       },
@@ -20935,7 +20949,7 @@
       {
         "path": ".codex/skills/guru-approve-task-plan/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/legacy-maintenance.md",
-        "sha256": "baf51e8041872659680fd3f00e917337014690cba251a01a0bdb6055d6a47cd9",
+        "sha256": "17a06776b56f25cdfb183c13a46ddc0aea2a6297e18d49cfa7f6dcab8154983f",
         "executable": false,
         "action": "installed"
       },
@@ -20949,14 +20963,14 @@
       {
         "path": ".codex/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "d946126df7c7068b30b27810f3e7d5d6b4b94d2c9b7bf62b4d4530a7aca4e0d7",
+        "sha256": "dbcd3b90d6d5a8d5f4d846abc6b04f48e13f0303fa1dcba01bfe66195ff9f98c",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "2b8c546378f664464e476db2204a3869eb0d577c6208d02a81ca47e72956b78a",
+        "sha256": "6bb3d5a7c595a515c788c9839c8b1a6fb6ef61e1cc8c11bc56095ee4ab29d459",
         "executable": false,
         "action": "installed"
       },
@@ -20977,7 +20991,7 @@
       {
         "path": ".codex/skills/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "cb1a7f50587baab54effca10ecd0de0cc2a9957b45051abe89a12c30462044d8",
+        "sha256": "a407cd62700105e127817f3c045849cd16dbf75c08d05825f507658674693d51",
         "executable": false,
         "action": "installed"
       },
@@ -21327,7 +21341,7 @@
       {
         "path": ".claude/skills/guru-approve-task-plan/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/legacy-maintenance.md",
-        "sha256": "baf51e8041872659680fd3f00e917337014690cba251a01a0bdb6055d6a47cd9",
+        "sha256": "17a06776b56f25cdfb183c13a46ddc0aea2a6297e18d49cfa7f6dcab8154983f",
         "executable": false,
         "action": "installed"
       },
@@ -21341,14 +21355,14 @@
       {
         "path": ".claude/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "d946126df7c7068b30b27810f3e7d5d6b4b94d2c9b7bf62b4d4530a7aca4e0d7",
+        "sha256": "dbcd3b90d6d5a8d5f4d846abc6b04f48e13f0303fa1dcba01bfe66195ff9f98c",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "2b8c546378f664464e476db2204a3869eb0d577c6208d02a81ca47e72956b78a",
+        "sha256": "6bb3d5a7c595a515c788c9839c8b1a6fb6ef61e1cc8c11bc56095ee4ab29d459",
         "executable": false,
         "action": "installed"
       },
@@ -21369,7 +21383,7 @@
       {
         "path": ".claude/skills/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "cb1a7f50587baab54effca10ecd0de0cc2a9957b45051abe89a12c30462044d8",
+        "sha256": "a407cd62700105e127817f3c045849cd16dbf75c08d05825f507658674693d51",
         "executable": false,
         "action": "installed"
       },
@@ -21719,7 +21733,7 @@
       {
         "path": ".cursor/skills/guru-approve-task-plan/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/references/legacy-maintenance.md",
-        "sha256": "baf51e8041872659680fd3f00e917337014690cba251a01a0bdb6055d6a47cd9",
+        "sha256": "17a06776b56f25cdfb183c13a46ddc0aea2a6297e18d49cfa7f6dcab8154983f",
         "executable": false,
         "action": "installed"
       },
@@ -21733,14 +21747,14 @@
       {
         "path": ".cursor/skills/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "d946126df7c7068b30b27810f3e7d5d6b4b94d2c9b7bf62b4d4530a7aca4e0d7",
+        "sha256": "dbcd3b90d6d5a8d5f4d846abc6b04f48e13f0303fa1dcba01bfe66195ff9f98c",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "2b8c546378f664464e476db2204a3869eb0d577c6208d02a81ca47e72956b78a",
+        "sha256": "6bb3d5a7c595a515c788c9839c8b1a6fb6ef61e1cc8c11bc56095ee4ab29d459",
         "executable": false,
         "action": "installed"
       },
@@ -21761,7 +21775,7 @@
       {
         "path": ".cursor/skills/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-approve-task-plan/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "cb1a7f50587baab54effca10ecd0de0cc2a9957b45051abe89a12c30462044d8",
+        "sha256": "a407cd62700105e127817f3c045849cd16dbf75c08d05825f507658674693d51",
         "executable": false,
         "action": "installed"
       },
@@ -25590,7 +25604,7 @@
       {
         "path": ".agents/skills/guru-check-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/legacy-maintenance.md",
-        "sha256": "e1921a2185e802259feba2c86d32e2a55a32686e68761bba93ac156dc1840e11",
+        "sha256": "39997961417a83e199692c3eca16de2ebb382446ae3ffd5bb2b72f24dd6828a3",
         "executable": false,
         "action": "installed"
       },
@@ -25625,14 +25639,14 @@
       {
         "path": ".agents/skills/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "56e98498af64cb80dc507b35c1f66216be691dd48d02160220f75f7fb0091add",
+        "sha256": "8fdc5905c4a1b6dfa3622c315d80e3fdeb620b37af4b55c75096199becc72ee4",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "4c2db0484ce2ba20fb60dda8e34121672486c9d98bc077ded913365aa5052bba",
+        "sha256": "f4d1b58471e20dd2f10d837528a73759a9d4d4333353f54fb4ce3fb05bed64ea",
         "executable": false,
         "action": "installed"
       },
@@ -25653,7 +25667,7 @@
       {
         "path": ".agents/skills/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bd5fe255969bf2e7cf91ca592f4a1474734d5d0ce8101491072ed39f57a442d0",
+        "sha256": "d187504e35808b0946f3f853359eea009b6c59894ebf6c376cad89aa9adc9542",
         "executable": false,
         "action": "installed"
       },
@@ -26143,7 +26157,7 @@
       {
         "path": ".codex/skills/guru-check-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/legacy-maintenance.md",
-        "sha256": "e1921a2185e802259feba2c86d32e2a55a32686e68761bba93ac156dc1840e11",
+        "sha256": "39997961417a83e199692c3eca16de2ebb382446ae3ffd5bb2b72f24dd6828a3",
         "executable": false,
         "action": "installed"
       },
@@ -26178,14 +26192,14 @@
       {
         "path": ".codex/skills/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "56e98498af64cb80dc507b35c1f66216be691dd48d02160220f75f7fb0091add",
+        "sha256": "8fdc5905c4a1b6dfa3622c315d80e3fdeb620b37af4b55c75096199becc72ee4",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "4c2db0484ce2ba20fb60dda8e34121672486c9d98bc077ded913365aa5052bba",
+        "sha256": "f4d1b58471e20dd2f10d837528a73759a9d4d4333353f54fb4ce3fb05bed64ea",
         "executable": false,
         "action": "installed"
       },
@@ -26206,7 +26220,7 @@
       {
         "path": ".codex/skills/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bd5fe255969bf2e7cf91ca592f4a1474734d5d0ce8101491072ed39f57a442d0",
+        "sha256": "d187504e35808b0946f3f853359eea009b6c59894ebf6c376cad89aa9adc9542",
         "executable": false,
         "action": "installed"
       },
@@ -26696,7 +26710,7 @@
       {
         "path": ".claude/skills/guru-check-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/legacy-maintenance.md",
-        "sha256": "e1921a2185e802259feba2c86d32e2a55a32686e68761bba93ac156dc1840e11",
+        "sha256": "39997961417a83e199692c3eca16de2ebb382446ae3ffd5bb2b72f24dd6828a3",
         "executable": false,
         "action": "installed"
       },
@@ -26731,14 +26745,14 @@
       {
         "path": ".claude/skills/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "56e98498af64cb80dc507b35c1f66216be691dd48d02160220f75f7fb0091add",
+        "sha256": "8fdc5905c4a1b6dfa3622c315d80e3fdeb620b37af4b55c75096199becc72ee4",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "4c2db0484ce2ba20fb60dda8e34121672486c9d98bc077ded913365aa5052bba",
+        "sha256": "f4d1b58471e20dd2f10d837528a73759a9d4d4333353f54fb4ce3fb05bed64ea",
         "executable": false,
         "action": "installed"
       },
@@ -26759,7 +26773,7 @@
       {
         "path": ".claude/skills/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bd5fe255969bf2e7cf91ca592f4a1474734d5d0ce8101491072ed39f57a442d0",
+        "sha256": "d187504e35808b0946f3f853359eea009b6c59894ebf6c376cad89aa9adc9542",
         "executable": false,
         "action": "installed"
       },
@@ -27249,7 +27263,7 @@
       {
         "path": ".cursor/skills/guru-check-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/legacy-maintenance.md",
-        "sha256": "e1921a2185e802259feba2c86d32e2a55a32686e68761bba93ac156dc1840e11",
+        "sha256": "39997961417a83e199692c3eca16de2ebb382446ae3ffd5bb2b72f24dd6828a3",
         "executable": false,
         "action": "installed"
       },
@@ -27284,14 +27298,14 @@
       {
         "path": ".cursor/skills/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "56e98498af64cb80dc507b35c1f66216be691dd48d02160220f75f7fb0091add",
+        "sha256": "8fdc5905c4a1b6dfa3622c315d80e3fdeb620b37af4b55c75096199becc72ee4",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "4c2db0484ce2ba20fb60dda8e34121672486c9d98bc077ded913365aa5052bba",
+        "sha256": "f4d1b58471e20dd2f10d837528a73759a9d4d4333353f54fb4ce3fb05bed64ea",
         "executable": false,
         "action": "installed"
       },
@@ -27312,7 +27326,7 @@
       {
         "path": ".cursor/skills/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bd5fe255969bf2e7cf91ca592f4a1474734d5d0ce8101491072ed39f57a442d0",
+        "sha256": "d187504e35808b0946f3f853359eea009b6c59894ebf6c376cad89aa9adc9542",
         "executable": false,
         "action": "installed"
       },
@@ -37637,7 +37651,7 @@
       {
         "path": ".agents/skills/guru-finish-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/commands.json",
-        "sha256": "0d13c87c225cdc9a0202bcd94ab8aa8d611b3058483c0f31486a2229f61b65af",
+        "sha256": "7d9831bbe4da0f2a3e43660eda5cec24e8cdb34866605a786d46ff865b754b78",
         "executable": false,
         "action": "installed"
       },
@@ -37735,7 +37749,7 @@
       {
         "path": ".agents/skills/guru-finish-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/references/legacy-maintenance.md",
-        "sha256": "1ad0ff2daf326172491cdc46909f7b79d8c57740993babe5216bf296e15fb38b",
+        "sha256": "7739312e25bfa287ef77847bb0f09ee1c32ba5387869a5e8194f906f1dde3c32",
         "executable": false,
         "action": "installed"
       },
@@ -37763,14 +37777,14 @@
       {
         "path": ".agents/skills/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "ab2543f2323acee0fe27401348aee9f1749fbd0cd325ad3b9bddd39156c96e40",
+        "sha256": "6ee2c461adcaefeee1c5b0386b4c77de2d6dee15d36ff8bc6405796da057b447",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "82fba0119ece8417b0d4fcafe99d12b53ea9b2878cec5cc6a462a0d7c75112f5",
+        "sha256": "40fdcf5eca83ac60471ab76f87510a111310578fbb988997b32cef8d4e014f04",
         "executable": false,
         "action": "installed"
       },
@@ -37791,7 +37805,7 @@
       {
         "path": ".agents/skills/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "05de4deee02b8ef6e069ed9a29eefe775cfc5a16d1e5267ad270e0781d9e28f6",
+        "sha256": "63a7fd011e7f1e82c8880f5afa54aeef2fee154c67f059e30a705d8fc92dda64",
         "executable": false,
         "action": "installed"
       },
@@ -37889,7 +37903,7 @@
       {
         "path": ".codex/skills/guru-finish-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/commands.json",
-        "sha256": "0d13c87c225cdc9a0202bcd94ab8aa8d611b3058483c0f31486a2229f61b65af",
+        "sha256": "7d9831bbe4da0f2a3e43660eda5cec24e8cdb34866605a786d46ff865b754b78",
         "executable": false,
         "action": "installed"
       },
@@ -37987,7 +38001,7 @@
       {
         "path": ".codex/skills/guru-finish-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/references/legacy-maintenance.md",
-        "sha256": "1ad0ff2daf326172491cdc46909f7b79d8c57740993babe5216bf296e15fb38b",
+        "sha256": "7739312e25bfa287ef77847bb0f09ee1c32ba5387869a5e8194f906f1dde3c32",
         "executable": false,
         "action": "installed"
       },
@@ -38015,14 +38029,14 @@
       {
         "path": ".codex/skills/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "ab2543f2323acee0fe27401348aee9f1749fbd0cd325ad3b9bddd39156c96e40",
+        "sha256": "6ee2c461adcaefeee1c5b0386b4c77de2d6dee15d36ff8bc6405796da057b447",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "82fba0119ece8417b0d4fcafe99d12b53ea9b2878cec5cc6a462a0d7c75112f5",
+        "sha256": "40fdcf5eca83ac60471ab76f87510a111310578fbb988997b32cef8d4e014f04",
         "executable": false,
         "action": "installed"
       },
@@ -38043,7 +38057,7 @@
       {
         "path": ".codex/skills/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "05de4deee02b8ef6e069ed9a29eefe775cfc5a16d1e5267ad270e0781d9e28f6",
+        "sha256": "63a7fd011e7f1e82c8880f5afa54aeef2fee154c67f059e30a705d8fc92dda64",
         "executable": false,
         "action": "installed"
       },
@@ -38141,7 +38155,7 @@
       {
         "path": ".claude/skills/guru-finish-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/commands.json",
-        "sha256": "0d13c87c225cdc9a0202bcd94ab8aa8d611b3058483c0f31486a2229f61b65af",
+        "sha256": "7d9831bbe4da0f2a3e43660eda5cec24e8cdb34866605a786d46ff865b754b78",
         "executable": false,
         "action": "installed"
       },
@@ -38239,7 +38253,7 @@
       {
         "path": ".claude/skills/guru-finish-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/references/legacy-maintenance.md",
-        "sha256": "1ad0ff2daf326172491cdc46909f7b79d8c57740993babe5216bf296e15fb38b",
+        "sha256": "7739312e25bfa287ef77847bb0f09ee1c32ba5387869a5e8194f906f1dde3c32",
         "executable": false,
         "action": "installed"
       },
@@ -38267,14 +38281,14 @@
       {
         "path": ".claude/skills/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "ab2543f2323acee0fe27401348aee9f1749fbd0cd325ad3b9bddd39156c96e40",
+        "sha256": "6ee2c461adcaefeee1c5b0386b4c77de2d6dee15d36ff8bc6405796da057b447",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "82fba0119ece8417b0d4fcafe99d12b53ea9b2878cec5cc6a462a0d7c75112f5",
+        "sha256": "40fdcf5eca83ac60471ab76f87510a111310578fbb988997b32cef8d4e014f04",
         "executable": false,
         "action": "installed"
       },
@@ -38295,7 +38309,7 @@
       {
         "path": ".claude/skills/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "05de4deee02b8ef6e069ed9a29eefe775cfc5a16d1e5267ad270e0781d9e28f6",
+        "sha256": "63a7fd011e7f1e82c8880f5afa54aeef2fee154c67f059e30a705d8fc92dda64",
         "executable": false,
         "action": "installed"
       },
@@ -38393,7 +38407,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/commands.json",
-        "sha256": "0d13c87c225cdc9a0202bcd94ab8aa8d611b3058483c0f31486a2229f61b65af",
+        "sha256": "7d9831bbe4da0f2a3e43660eda5cec24e8cdb34866605a786d46ff865b754b78",
         "executable": false,
         "action": "installed"
       },
@@ -38491,7 +38505,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/references/legacy-maintenance.md",
-        "sha256": "1ad0ff2daf326172491cdc46909f7b79d8c57740993babe5216bf296e15fb38b",
+        "sha256": "7739312e25bfa287ef77847bb0f09ee1c32ba5387869a5e8194f906f1dde3c32",
         "executable": false,
         "action": "installed"
       },
@@ -38519,14 +38533,14 @@
       {
         "path": ".cursor/skills/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "ab2543f2323acee0fe27401348aee9f1749fbd0cd325ad3b9bddd39156c96e40",
+        "sha256": "6ee2c461adcaefeee1c5b0386b4c77de2d6dee15d36ff8bc6405796da057b447",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "82fba0119ece8417b0d4fcafe99d12b53ea9b2878cec5cc6a462a0d7c75112f5",
+        "sha256": "40fdcf5eca83ac60471ab76f87510a111310578fbb988997b32cef8d4e014f04",
         "executable": false,
         "action": "installed"
       },
@@ -38547,7 +38561,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "05de4deee02b8ef6e069ed9a29eefe775cfc5a16d1e5267ad270e0781d9e28f6",
+        "sha256": "63a7fd011e7f1e82c8880f5afa54aeef2fee154c67f059e30a705d8fc92dda64",
         "executable": false,
         "action": "installed"
       },
@@ -42222,14 +42236,14 @@
       {
         "path": ".agents/skills/guru-maintain-legacy-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md",
-        "sha256": "a309767d0dc7972680c2a952010f1bb0cb5c1e4e27a1e380a8c13f57aa6d3428",
+        "sha256": "8c6668505a4da96727d396650f27eef2a969d7e5657da2beb2734d429b380049",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-legacy-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/commands.json",
-        "sha256": "768c19c64c080df58e79300f29d160466446fd8e0f6369ffbc1c347f269f0dc5",
+        "sha256": "67737b0035db7d3236dbeec8034f709ccc5cb80e528afaeec66fc672d60de3d6",
         "executable": false,
         "action": "installed"
       },
@@ -42271,14 +42285,21 @@
       {
         "path": ".agents/skills/guru-maintain-legacy-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/interface.json",
-        "sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
+        "sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-legacy-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md",
-        "sha256": "0d72af9a7f872ec73b7d47e741058de3d372b6702eddde621ea485625c04a244",
+        "sha256": "c503585bf6d7e04938246ce2e492bf597c962de3a944384ca4b6608bc51f6d1f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "sha256": "eba2c929c488b2c0734284963f11297684cda0c98d5881b43b2e0b3bc44a1ab6",
         "executable": false,
         "action": "installed"
       },
@@ -42348,7 +42369,7 @@
       {
         "path": ".agents/skills/guru-maintain-legacy-task/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
-        "sha256": "d919f86408ff37266e8fd0978be15f5fa166cef59d4bebcf7d54193d77c0388f",
+        "sha256": "8d9c8b849efde1bb81bc0b4b2d35dc5b01140ff9f921bc8949d5a2cf14c7047a",
         "executable": false,
         "action": "installed"
       },
@@ -42376,14 +42397,14 @@
       {
         "path": ".codex/skills/guru-maintain-legacy-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md",
-        "sha256": "a309767d0dc7972680c2a952010f1bb0cb5c1e4e27a1e380a8c13f57aa6d3428",
+        "sha256": "8c6668505a4da96727d396650f27eef2a969d7e5657da2beb2734d429b380049",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-legacy-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/commands.json",
-        "sha256": "768c19c64c080df58e79300f29d160466446fd8e0f6369ffbc1c347f269f0dc5",
+        "sha256": "67737b0035db7d3236dbeec8034f709ccc5cb80e528afaeec66fc672d60de3d6",
         "executable": false,
         "action": "installed"
       },
@@ -42425,14 +42446,21 @@
       {
         "path": ".codex/skills/guru-maintain-legacy-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/interface.json",
-        "sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
+        "sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-legacy-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md",
-        "sha256": "0d72af9a7f872ec73b7d47e741058de3d372b6702eddde621ea485625c04a244",
+        "sha256": "c503585bf6d7e04938246ce2e492bf597c962de3a944384ca4b6608bc51f6d1f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "sha256": "eba2c929c488b2c0734284963f11297684cda0c98d5881b43b2e0b3bc44a1ab6",
         "executable": false,
         "action": "installed"
       },
@@ -42502,7 +42530,7 @@
       {
         "path": ".codex/skills/guru-maintain-legacy-task/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
-        "sha256": "d919f86408ff37266e8fd0978be15f5fa166cef59d4bebcf7d54193d77c0388f",
+        "sha256": "8d9c8b849efde1bb81bc0b4b2d35dc5b01140ff9f921bc8949d5a2cf14c7047a",
         "executable": false,
         "action": "installed"
       },
@@ -42530,14 +42558,14 @@
       {
         "path": ".claude/skills/guru-maintain-legacy-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md",
-        "sha256": "a309767d0dc7972680c2a952010f1bb0cb5c1e4e27a1e380a8c13f57aa6d3428",
+        "sha256": "8c6668505a4da96727d396650f27eef2a969d7e5657da2beb2734d429b380049",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-legacy-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/commands.json",
-        "sha256": "768c19c64c080df58e79300f29d160466446fd8e0f6369ffbc1c347f269f0dc5",
+        "sha256": "67737b0035db7d3236dbeec8034f709ccc5cb80e528afaeec66fc672d60de3d6",
         "executable": false,
         "action": "installed"
       },
@@ -42579,14 +42607,21 @@
       {
         "path": ".claude/skills/guru-maintain-legacy-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/interface.json",
-        "sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
+        "sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-legacy-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md",
-        "sha256": "0d72af9a7f872ec73b7d47e741058de3d372b6702eddde621ea485625c04a244",
+        "sha256": "c503585bf6d7e04938246ce2e492bf597c962de3a944384ca4b6608bc51f6d1f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "sha256": "eba2c929c488b2c0734284963f11297684cda0c98d5881b43b2e0b3bc44a1ab6",
         "executable": false,
         "action": "installed"
       },
@@ -42656,7 +42691,7 @@
       {
         "path": ".claude/skills/guru-maintain-legacy-task/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
-        "sha256": "d919f86408ff37266e8fd0978be15f5fa166cef59d4bebcf7d54193d77c0388f",
+        "sha256": "8d9c8b849efde1bb81bc0b4b2d35dc5b01140ff9f921bc8949d5a2cf14c7047a",
         "executable": false,
         "action": "installed"
       },
@@ -42684,14 +42719,14 @@
       {
         "path": ".cursor/skills/guru-maintain-legacy-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/SKILL.md",
-        "sha256": "a309767d0dc7972680c2a952010f1bb0cb5c1e4e27a1e380a8c13f57aa6d3428",
+        "sha256": "8c6668505a4da96727d396650f27eef2a969d7e5657da2beb2734d429b380049",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-legacy-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/commands.json",
-        "sha256": "768c19c64c080df58e79300f29d160466446fd8e0f6369ffbc1c347f269f0dc5",
+        "sha256": "67737b0035db7d3236dbeec8034f709ccc5cb80e528afaeec66fc672d60de3d6",
         "executable": false,
         "action": "installed"
       },
@@ -42733,14 +42768,21 @@
       {
         "path": ".cursor/skills/guru-maintain-legacy-task/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/interface.json",
-        "sha256": "cdaeb7071c6fefc557c341594365636caa787fef550f47c1bac790e0487bd829",
+        "sha256": "c2ea7c7500fe77af9af8253c20844c401e82d8dc0281a0d1d45ebacfc401cf57",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-legacy-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/references/contract.md",
-        "sha256": "0d72af9a7f872ec73b7d47e741058de3d372b6702eddde621ea485625c04a244",
+        "sha256": "c503585bf6d7e04938246ce2e492bf597c962de3a944384ca4b6608bc51f6d1f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/input-archive_resume.schema.json",
+        "sha256": "eba2c929c488b2c0734284963f11297684cda0c98d5881b43b2e0b3bc44a1ab6",
         "executable": false,
         "action": "installed"
       },
@@ -42810,7 +42852,7 @@
       {
         "path": ".cursor/skills/guru-maintain-legacy-task/schemas/public-input.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-legacy-task/schemas/public-input.schema.json",
-        "sha256": "d919f86408ff37266e8fd0978be15f5fa166cef59d4bebcf7d54193d77c0388f",
+        "sha256": "8d9c8b849efde1bb81bc0b4b2d35dc5b01140ff9f921bc8949d5a2cf14c7047a",
         "executable": false,
         "action": "installed"
       },
@@ -44049,7 +44091,7 @@
       {
         "path": ".agents/skills/guru-merge-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
-        "sha256": "0172fda8a8976ec74480a47db57c6d01db47da2e6c588d386b84f27fb367d656",
+        "sha256": "5c54295693e1b5479df8b0269cea87b8f83d2680640edb0590b24c49c9386e28",
         "executable": false,
         "action": "installed"
       },
@@ -44259,7 +44301,7 @@
       {
         "path": ".agents/skills/guru-merge-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -44336,14 +44378,14 @@
       {
         "path": ".agents/skills/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "a2b53d81dea2119aea9805466800e4f53997e59bc480ffdaea4c421b6379902a",
+        "sha256": "5b1035dde50c76a664be50d33ccc8f7cc0d424c1b113acac237519c85958a0d8",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "e9ab8f4aeb6cb4b0932d8fbc5c9828dca35eee3fb0a0fc590b976029934100a9",
+        "sha256": "72577ba69580f0489f5fb4699f7b2fbf4b544224920b106eada1900fbf217a22",
         "executable": false,
         "action": "installed"
       },
@@ -44364,7 +44406,7 @@
       {
         "path": ".agents/skills/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "2b6c6693ba72634872cf20fb655f71d6a019f9f2f693abe7eb98d6d453524a5a",
+        "sha256": "9c05e3aaf7d2097d2050bb0f2252273b9a43253e8928e8808a62e6fd3df607b9",
         "executable": false,
         "action": "installed"
       },
@@ -44581,7 +44623,7 @@
       {
         "path": ".codex/skills/guru-merge-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
-        "sha256": "0172fda8a8976ec74480a47db57c6d01db47da2e6c588d386b84f27fb367d656",
+        "sha256": "5c54295693e1b5479df8b0269cea87b8f83d2680640edb0590b24c49c9386e28",
         "executable": false,
         "action": "installed"
       },
@@ -44791,7 +44833,7 @@
       {
         "path": ".codex/skills/guru-merge-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -44868,14 +44910,14 @@
       {
         "path": ".codex/skills/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "a2b53d81dea2119aea9805466800e4f53997e59bc480ffdaea4c421b6379902a",
+        "sha256": "5b1035dde50c76a664be50d33ccc8f7cc0d424c1b113acac237519c85958a0d8",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "e9ab8f4aeb6cb4b0932d8fbc5c9828dca35eee3fb0a0fc590b976029934100a9",
+        "sha256": "72577ba69580f0489f5fb4699f7b2fbf4b544224920b106eada1900fbf217a22",
         "executable": false,
         "action": "installed"
       },
@@ -44896,7 +44938,7 @@
       {
         "path": ".codex/skills/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "2b6c6693ba72634872cf20fb655f71d6a019f9f2f693abe7eb98d6d453524a5a",
+        "sha256": "9c05e3aaf7d2097d2050bb0f2252273b9a43253e8928e8808a62e6fd3df607b9",
         "executable": false,
         "action": "installed"
       },
@@ -45113,7 +45155,7 @@
       {
         "path": ".claude/skills/guru-merge-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
-        "sha256": "0172fda8a8976ec74480a47db57c6d01db47da2e6c588d386b84f27fb367d656",
+        "sha256": "5c54295693e1b5479df8b0269cea87b8f83d2680640edb0590b24c49c9386e28",
         "executable": false,
         "action": "installed"
       },
@@ -45323,7 +45365,7 @@
       {
         "path": ".claude/skills/guru-merge-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -45400,14 +45442,14 @@
       {
         "path": ".claude/skills/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "a2b53d81dea2119aea9805466800e4f53997e59bc480ffdaea4c421b6379902a",
+        "sha256": "5b1035dde50c76a664be50d33ccc8f7cc0d424c1b113acac237519c85958a0d8",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "e9ab8f4aeb6cb4b0932d8fbc5c9828dca35eee3fb0a0fc590b976029934100a9",
+        "sha256": "72577ba69580f0489f5fb4699f7b2fbf4b544224920b106eada1900fbf217a22",
         "executable": false,
         "action": "installed"
       },
@@ -45428,7 +45470,7 @@
       {
         "path": ".claude/skills/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "2b6c6693ba72634872cf20fb655f71d6a019f9f2f693abe7eb98d6d453524a5a",
+        "sha256": "9c05e3aaf7d2097d2050bb0f2252273b9a43253e8928e8808a62e6fd3df607b9",
         "executable": false,
         "action": "installed"
       },
@@ -45645,7 +45687,7 @@
       {
         "path": ".cursor/skills/guru-merge-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/commands.json",
-        "sha256": "0172fda8a8976ec74480a47db57c6d01db47da2e6c588d386b84f27fb367d656",
+        "sha256": "5c54295693e1b5479df8b0269cea87b8f83d2680640edb0590b24c49c9386e28",
         "executable": false,
         "action": "installed"
       },
@@ -45855,7 +45897,7 @@
       {
         "path": ".cursor/skills/guru-merge-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -45932,14 +45974,14 @@
       {
         "path": ".cursor/skills/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "a2b53d81dea2119aea9805466800e4f53997e59bc480ffdaea4c421b6379902a",
+        "sha256": "5b1035dde50c76a664be50d33ccc8f7cc0d424c1b113acac237519c85958a0d8",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "e9ab8f4aeb6cb4b0932d8fbc5c9828dca35eee3fb0a0fc590b976029934100a9",
+        "sha256": "72577ba69580f0489f5fb4699f7b2fbf4b544224920b106eada1900fbf217a22",
         "executable": false,
         "action": "installed"
       },
@@ -45960,7 +46002,7 @@
       {
         "path": ".cursor/skills/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "2b6c6693ba72634872cf20fb655f71d6a019f9f2f693abe7eb98d6d453524a5a",
+        "sha256": "9c05e3aaf7d2097d2050bb0f2252273b9a43253e8928e8808a62e6fd3df607b9",
         "executable": false,
         "action": "installed"
       },
@@ -46177,7 +46219,7 @@
       {
         "path": ".agents/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "50b741eaadc98eae875b1aaab7230097cb3da78db54f59d15b17518865215b40",
+        "sha256": "7e5e0b5d686b4348a994a5d0aa0ddd1aaeab7d0d16aefc071b769479c567c9eb",
         "executable": false,
         "action": "installed"
       },
@@ -46401,7 +46443,7 @@
       {
         "path": ".agents/skills/guru-publish-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -46429,14 +46471,14 @@
       {
         "path": ".agents/skills/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "0b9c3f128c4ff86cce832661d553da6abfeec773e1ee1d624114238d13c466ff",
+        "sha256": "8dd75a6d0f0486f46da1a68100205443a43cd98b37af8cfa384e081ca54947af",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "59f8e655f36cf56ebc0c5619ab2451821c20557c0e53c41bb47a23bc74106bac",
+        "sha256": "c9ec1637e0a33444478c6c4cf0548b42280e1778cab8bfaf1c1d297ecceb464e",
         "executable": false,
         "action": "installed"
       },
@@ -46457,7 +46499,7 @@
       {
         "path": ".agents/skills/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "70d418074baadf73130bca5e1b58d3f8a047812e31e7001312c2c96625447e9d",
+        "sha256": "1dcbb83617d4815ff457d9835f0d4460f4524071f84516eaf26dab5bd1b4913b",
         "executable": false,
         "action": "installed"
       },
@@ -46695,7 +46737,7 @@
       {
         "path": ".codex/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "50b741eaadc98eae875b1aaab7230097cb3da78db54f59d15b17518865215b40",
+        "sha256": "7e5e0b5d686b4348a994a5d0aa0ddd1aaeab7d0d16aefc071b769479c567c9eb",
         "executable": false,
         "action": "installed"
       },
@@ -46919,7 +46961,7 @@
       {
         "path": ".codex/skills/guru-publish-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -46947,14 +46989,14 @@
       {
         "path": ".codex/skills/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "0b9c3f128c4ff86cce832661d553da6abfeec773e1ee1d624114238d13c466ff",
+        "sha256": "8dd75a6d0f0486f46da1a68100205443a43cd98b37af8cfa384e081ca54947af",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "59f8e655f36cf56ebc0c5619ab2451821c20557c0e53c41bb47a23bc74106bac",
+        "sha256": "c9ec1637e0a33444478c6c4cf0548b42280e1778cab8bfaf1c1d297ecceb464e",
         "executable": false,
         "action": "installed"
       },
@@ -46975,7 +47017,7 @@
       {
         "path": ".codex/skills/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "70d418074baadf73130bca5e1b58d3f8a047812e31e7001312c2c96625447e9d",
+        "sha256": "1dcbb83617d4815ff457d9835f0d4460f4524071f84516eaf26dab5bd1b4913b",
         "executable": false,
         "action": "installed"
       },
@@ -47213,7 +47255,7 @@
       {
         "path": ".claude/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "50b741eaadc98eae875b1aaab7230097cb3da78db54f59d15b17518865215b40",
+        "sha256": "7e5e0b5d686b4348a994a5d0aa0ddd1aaeab7d0d16aefc071b769479c567c9eb",
         "executable": false,
         "action": "installed"
       },
@@ -47437,7 +47479,7 @@
       {
         "path": ".claude/skills/guru-publish-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -47465,14 +47507,14 @@
       {
         "path": ".claude/skills/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "0b9c3f128c4ff86cce832661d553da6abfeec773e1ee1d624114238d13c466ff",
+        "sha256": "8dd75a6d0f0486f46da1a68100205443a43cd98b37af8cfa384e081ca54947af",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "59f8e655f36cf56ebc0c5619ab2451821c20557c0e53c41bb47a23bc74106bac",
+        "sha256": "c9ec1637e0a33444478c6c4cf0548b42280e1778cab8bfaf1c1d297ecceb464e",
         "executable": false,
         "action": "installed"
       },
@@ -47493,7 +47535,7 @@
       {
         "path": ".claude/skills/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "70d418074baadf73130bca5e1b58d3f8a047812e31e7001312c2c96625447e9d",
+        "sha256": "1dcbb83617d4815ff457d9835f0d4460f4524071f84516eaf26dab5bd1b4913b",
         "executable": false,
         "action": "installed"
       },
@@ -47731,7 +47773,7 @@
       {
         "path": ".cursor/skills/guru-publish-task-delivery/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/commands.json",
-        "sha256": "50b741eaadc98eae875b1aaab7230097cb3da78db54f59d15b17518865215b40",
+        "sha256": "7e5e0b5d686b4348a994a5d0aa0ddd1aaeab7d0d16aefc071b769479c567c9eb",
         "executable": false,
         "action": "installed"
       },
@@ -47955,7 +47997,7 @@
       {
         "path": ".cursor/skills/guru-publish-task-delivery/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/legacy-maintenance.md",
-        "sha256": "e0cc97755bc096e063779bfbd61724580b78628394bd017e7ab2e5d3bd0bdaf2",
+        "sha256": "6cd8b757a457bb555db71c7ac28256d27667b4b4c9e95f5d0e74c97e63e49556",
         "executable": false,
         "action": "installed"
       },
@@ -47983,14 +48025,14 @@
       {
         "path": ".cursor/skills/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "0b9c3f128c4ff86cce832661d553da6abfeec773e1ee1d624114238d13c466ff",
+        "sha256": "8dd75a6d0f0486f46da1a68100205443a43cd98b37af8cfa384e081ca54947af",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "59f8e655f36cf56ebc0c5619ab2451821c20557c0e53c41bb47a23bc74106bac",
+        "sha256": "c9ec1637e0a33444478c6c4cf0548b42280e1778cab8bfaf1c1d297ecceb464e",
         "executable": false,
         "action": "installed"
       },
@@ -48011,7 +48053,7 @@
       {
         "path": ".cursor/skills/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "70d418074baadf73130bca5e1b58d3f8a047812e31e7001312c2c96625447e9d",
+        "sha256": "1dcbb83617d4815ff457d9835f0d4460f4524071f84516eaf26dab5bd1b4913b",
         "executable": false,
         "action": "installed"
       },
@@ -56614,7 +56656,7 @@
       {
         "path": ".agents/skills/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
-        "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "sha256": "226c2848f4c001fdf295889da385a3be64811cebe309a9398c7e20652de9f9d5",
         "executable": false,
         "action": "installed"
       },
@@ -56656,14 +56698,14 @@
       {
         "path": ".agents/skills/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "e6ac1b752f50cc79ceb4d64ed988dad604889791c0cd020de1ec34f2f7bccc9b",
+        "sha256": "5a792f6e0f6a3bcb91e9f57aee5763fd1029045291a0892fd28614089bd65884",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "a59ca7d921104a4e15f36cc0c0707c1d21b123955db0efc38e4140c582ac9477",
+        "sha256": "63006c8363bded76277ec56e12e49230add99c54512501ced06a50ac1ab524ea",
         "executable": false,
         "action": "installed"
       },
@@ -56684,7 +56726,7 @@
       {
         "path": ".agents/skills/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bcf9340e8da65de30e78d3c8163146ff5485b80d8f3cecd27573dda7b8bb0505",
+        "sha256": "576df4fad500863a4cf800be1cc717a9f2b7f989893f4cd23215a073fd68191f",
         "executable": false,
         "action": "installed"
       },
@@ -57321,7 +57363,7 @@
       {
         "path": ".codex/skills/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
-        "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "sha256": "226c2848f4c001fdf295889da385a3be64811cebe309a9398c7e20652de9f9d5",
         "executable": false,
         "action": "installed"
       },
@@ -57363,14 +57405,14 @@
       {
         "path": ".codex/skills/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "e6ac1b752f50cc79ceb4d64ed988dad604889791c0cd020de1ec34f2f7bccc9b",
+        "sha256": "5a792f6e0f6a3bcb91e9f57aee5763fd1029045291a0892fd28614089bd65884",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "a59ca7d921104a4e15f36cc0c0707c1d21b123955db0efc38e4140c582ac9477",
+        "sha256": "63006c8363bded76277ec56e12e49230add99c54512501ced06a50ac1ab524ea",
         "executable": false,
         "action": "installed"
       },
@@ -57391,7 +57433,7 @@
       {
         "path": ".codex/skills/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bcf9340e8da65de30e78d3c8163146ff5485b80d8f3cecd27573dda7b8bb0505",
+        "sha256": "576df4fad500863a4cf800be1cc717a9f2b7f989893f4cd23215a073fd68191f",
         "executable": false,
         "action": "installed"
       },
@@ -58028,7 +58070,7 @@
       {
         "path": ".claude/skills/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
-        "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "sha256": "226c2848f4c001fdf295889da385a3be64811cebe309a9398c7e20652de9f9d5",
         "executable": false,
         "action": "installed"
       },
@@ -58070,14 +58112,14 @@
       {
         "path": ".claude/skills/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "e6ac1b752f50cc79ceb4d64ed988dad604889791c0cd020de1ec34f2f7bccc9b",
+        "sha256": "5a792f6e0f6a3bcb91e9f57aee5763fd1029045291a0892fd28614089bd65884",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "a59ca7d921104a4e15f36cc0c0707c1d21b123955db0efc38e4140c582ac9477",
+        "sha256": "63006c8363bded76277ec56e12e49230add99c54512501ced06a50ac1ab524ea",
         "executable": false,
         "action": "installed"
       },
@@ -58098,7 +58140,7 @@
       {
         "path": ".claude/skills/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bcf9340e8da65de30e78d3c8163146ff5485b80d8f3cecd27573dda7b8bb0505",
+        "sha256": "576df4fad500863a4cf800be1cc717a9f2b7f989893f4cd23215a073fd68191f",
         "executable": false,
         "action": "installed"
       },
@@ -58735,7 +58777,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
-        "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "sha256": "226c2848f4c001fdf295889da385a3be64811cebe309a9398c7e20652de9f9d5",
         "executable": false,
         "action": "installed"
       },
@@ -58777,14 +58819,14 @@
       {
         "path": ".cursor/skills/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_freeze-input-1.0.schema.json",
-        "sha256": "e6ac1b752f50cc79ceb4d64ed988dad604889791c0cd020de1ec34f2f7bccc9b",
+        "sha256": "5a792f6e0f6a3bcb91e9f57aee5763fd1029045291a0892fd28614089bd65884",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_inspection-input-1.0.schema.json",
-        "sha256": "a59ca7d921104a4e15f36cc0c0707c1d21b123955db0efc38e4140c582ac9477",
+        "sha256": "63006c8363bded76277ec56e12e49230add99c54512501ced06a50ac1ab524ea",
         "executable": false,
         "action": "installed"
       },
@@ -58805,7 +58847,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/legacy_control_retirement-input-1.0.schema.json",
-        "sha256": "bcf9340e8da65de30e78d3c8163146ff5485b80d8f3cecd27573dda7b8bb0505",
+        "sha256": "576df4fad500863a4cf800be1cc717a9f2b7f989893f4cd23215a073fd68191f",
         "executable": false,
         "action": "installed"
       },
@@ -65840,14 +65882,14 @@
       {
         "path": ".agents/skills/guru-upgrade-installation/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-        "sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
+        "sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "5d08dbd09c0a8ac1c138abd1590b4c2026121871ecefce5da9d75679062d69b8",
+        "sha256": "199106d940d4a3ca062a3a81b553ab5890adf05647941c17a7ef67b527cc5d6a",
         "executable": false,
         "action": "installed"
       },
@@ -66043,14 +66085,14 @@
       {
         "path": ".codex/skills/guru-upgrade-installation/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-        "sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
+        "sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "5d08dbd09c0a8ac1c138abd1590b4c2026121871ecefce5da9d75679062d69b8",
+        "sha256": "199106d940d4a3ca062a3a81b553ab5890adf05647941c17a7ef67b527cc5d6a",
         "executable": false,
         "action": "installed"
       },
@@ -66246,14 +66288,14 @@
       {
         "path": ".claude/skills/guru-upgrade-installation/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-        "sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
+        "sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "5d08dbd09c0a8ac1c138abd1590b4c2026121871ecefce5da9d75679062d69b8",
+        "sha256": "199106d940d4a3ca062a3a81b553ab5890adf05647941c17a7ef67b527cc5d6a",
         "executable": false,
         "action": "installed"
       },
@@ -66449,14 +66491,14 @@
       {
         "path": ".cursor/skills/guru-upgrade-installation/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/interface.json",
-        "sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
+        "sha256": "95025b92403dc5ad8eb79e06f77652a757b13c08b7ebdd7f80558262c9dad07d",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-upgrade-installation/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/references/contract.md",
-        "sha256": "5d08dbd09c0a8ac1c138abd1590b4c2026121871ecefce5da9d75679062d69b8",
+        "sha256": "199106d940d4a3ca062a3a81b553ab5890adf05647941c17a7ef67b527cc5d6a",
         "executable": false,
         "action": "installed"
       },

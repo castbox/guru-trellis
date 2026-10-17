@@ -1,0 +1,15 @@
+task_id: 577-manual-archive-resume
+source: https://github.com/castbox/guru-trellis/issues/577
+status: active
+strategy: delta_first
+preimage: current-main-0.6.17-guru.105
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.97
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+promoted_version: current-main-0.6.17-guru.106

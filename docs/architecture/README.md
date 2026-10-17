@@ -1,5 +1,13 @@
 # Architecture Baseline SSOT
 
+版本：`current-main-0.6.17-guru.98`；状态：`active`；predecessor：`current-main-0.6.17-guru.97`（比较起点 main@`ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e`）。本增量承接 [#577 人工旧归档恢复贡献](./contributions/577-manual-archive-resume.md)。constitution、ADR-024/027/030、原 owners、GAP lifecycle 以及软件四轴保持；完整继承下方 `.97` 的 #589 D7 与 #600 组合权威。
+
+当前增量为 ARCH-CUR-071 / ARCH-DOM-054 / ARCH-INT-057 / EVD-070。原 source-loaded maintenance 增加闭合 archive-resume，公共 Trellis 拥有恢复模型与 operation，原 Guru owners 保留历史核验、私有控制和实际下一阶段判断。创建/历史 reservation 与当前 active identity 消费分开；known-dirty 历史来源仍由原 upgrade owner 逐路径核验。职责与兼容退出读贡献和原 ADR；实际验证、首次失败及未验证边界只由 [唯一 Test](../requirements-design-test-contributions/577-manual-archive-resume/test.md) 记录。
+
+本次原 Architecture owner 在独立 Phase2 评估完整候选及拟写内容后，按 expected `.97` 写入 `.98`。最终 Check、Task Commit、committed 独立 Architecture 与完整 Branch Review 仍须覆盖实际晋升候选。知识晋升不证明 Delivery、Completion、正式 source-locked 采用、真实业务恢复、软件发布或完整 Release 矩阵。
+
+## 历史 `.97` 组合权威
+
 版本：`current-main-0.6.17-guru.97`；状态：`active`；predecessor：main@`9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807` 的 `current-main-0.6.17-guru.96`。本执行分支组合继承[已晋升 #589 D7 贡献](./contributions/589-git-object-performance.md)与[已晋升 #600 贡献](./contributions/600-promotion-before-check.md)。constitution、原 owners、ADR/GAP lifecycle 与所整合源码的软件版本轴保持；知识组合不改变发布身份。
 
 #589 保留 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 / EVD-068；#600 当前投影使用 ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 / EVD-069，并保留 [ADR-030](./adr/030-promotion-before-final-check.md)。两项增量分别保留其职责、来源、验证事实和未验证边界；实际结果各读原唯一 Test。本次真实冲突整合形成 `.97` 组合身份，不重新执行已完成的贡献晋升。完整整合候选的 Architecture、Check、Task Commit 与独立 Review 仍须取得当前正式结果；原分支通过不覆盖新增整合差额。

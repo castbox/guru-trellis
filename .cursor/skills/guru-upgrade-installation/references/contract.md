@@ -46,7 +46,13 @@ global npm installations or node_modules to bypass the old-version guard.
    inside the executor. A normal core-only update can leave an older core
    requirement in the receipt; preview reports recorded and live cores separately
    and passes the supported live core to Fork migrate. Old asset sources still
-   match the receipt's recorded extension/core contract.
+   match the receipt's recorded extension/core contract. When the receipt
+   explicitly records source.tree_state=dirty, its actual provenance commit
+   may supply per-path historical candidates despite different whole-tree
+   extension/core metadata. Require the real Git object and readable source;
+   retain the existing per-path byte checks and explicit unknown preimage
+   decisions. This does not qualify a complete dirty source or substitute HEAD.
+   Clean metadata mismatch and missing source objects still block.
    Early upstream-owned overlay claims belong to the Fork
    and cannot be retired by Guru.
 2. AI owns every source/field/relationship projection. Preserve legal TaskId,

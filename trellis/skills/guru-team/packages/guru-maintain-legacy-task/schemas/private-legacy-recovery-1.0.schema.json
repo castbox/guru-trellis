@@ -52,6 +52,23 @@
     },
     "terminal_output": {
       "type": "object"
+    },
+    "resumed_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "task_ref"
+      ],
+      "properties": {
+        "key": {
+          "type": "object"
+        },
+        "task_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   }
 }

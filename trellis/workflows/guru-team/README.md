@@ -290,7 +290,7 @@ venv，不自动跟随 Homebrew 或回退全局依赖，不自动清理旧 cache
 
 ## 单 checkout 工具升级与独立旧任务维护（#566）
 
-`guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
+`guru-upgrade-tools` 与 `guru-maintain-legacy-task` 从完整匹配来源加载，分别处理工具更新、所选Task转换、人工旧归档恢复或仅历史保留；目标旧parser和Reconcile不成为维护启动前置。原完整Plan2保持独立。只更新显式目标，省略时先按既有配置与dev/develop/main/master/远端默认分支选分支，再绑定唯一checkout。
 
 当前正式 source lock 已包含上游 #40 与 #43。`source_locked` 仍要求完整匹配、已提交且干净的 Guru 来源及成功的匹配 Fork 构建；来源锁变化不等于目标已升级。历史 `local_candidate` 仅为隔离开发证据，不证明正式来源维护、业务恢复或发布。入口、最小I/O成套切换、原owner核验/退役、native验证和兼容回退边界见 [MIGRATION-566.md](../../presets/guru-team/MIGRATION-566.md)。
 
@@ -302,3 +302,9 @@ Task 开发基线、Delivery 完整内容范围与 PR target 分开承接。各�
 处理固定一次整合目标和必要差额。D2 消费真实已交付事实；Completion 核验全部
 scope。合同退役与正常在途恢复见 preset 的 MIGRATION-567.md；不得单独更新
 workflow/Skill 混入旧安装 graph。
+
+人工旧归档恢复使用原维护 owner 的 `archive_resume` profile。正式 Finish 归档
+仍由 Reactivate 承接；未完成收尾返回原事务。恢复保留原归档并消费公共返回的
+活动身份，目标 native 和下一实际 Guru owner 必须实际验证。
+正式 source lock 不变，本地 matching candidate 只用于隔离开发；详见
+[兼容与依赖边界](../../presets/guru-team/MIGRATION-577.md)。

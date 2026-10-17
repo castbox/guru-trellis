@@ -42,7 +42,7 @@ discovery is optional convenience; it never replaces a mandatory marker.
 ## Guru Team Gate
 
 An explicit single-checkout tools request enters standalone `guru-upgrade-tools`;
-an explicit selected legacy Task conversion or historical-retention request
+an explicit selected legacy Task conversion, manual archive resume or historical-retention request
 enters standalone `guru-maintain-legacy-task`. Load either from the complete
 matching reviewed source before the target old dispatcher, Identity, session
 continuation or Reconcile. Consume only its declared exits. These are separate
