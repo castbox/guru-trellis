@@ -1,0 +1,23 @@
+{
+  "exit_id": "baseline_current",
+  "source_profile": "task_impact_sync",
+  "task_locator": ".trellis/tasks/example",
+  "stage": "implementation_discovery",
+  "baseline_identity": "current-v1",
+  "constitution_identity": "constitution-v1",
+  "constitution_status": "current",
+  "impact_kind": "no_architecture_impact",
+  "impact_reason": "The reviewed task changes no architecture authority, owner, boundary, decision, or GAP.",
+  "promotion_state": "no_change",
+  "freshness_identity": "impact-fresh-v1",
+  "before_authority": {
+    "git_revision": "0123456789abcdef0123456789abcdef01234567",
+    "baseline_locator": "docs/architecture/README.md",
+    "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md"
+  },
+  "candidate": {
+    "head": "89abcdef0123456789abcdef0123456789abcdef",
+    "content_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

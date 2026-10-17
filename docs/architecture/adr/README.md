@@ -6,7 +6,7 @@
 | `ADR-002` | accepted | RDT 与 Architecture 保持独立 semantic owners，Bootstrap 只做编排与 cross-review |
 | `ADR-003` | accepted | current main as-built 与 stable released baseline 分开版本化 |
 | `ADR-004` | accepted | `.trellis/spec` 只做 minimal locator/usage projection |
-| `ADR-005` | accepted | 双维 authority 只在 task-local change contract 相交；shared current 由 expected-current-bound single writer 在 independent review 后 promotion，并强制 post-promotion re-entry |
+| `ADR-005` | accepted; promotion timing superseded by ADR-030 | 双维 authority 只在 task-local change contract 相交；shared current 由 expected-current-bound single writer 在 independent review 后 promotion，并强制 post-promotion re-entry |
 | `ADR-006` | accepted | base selection 与 authority checkout binding 分离；detached session 只作为 invocation shell，selected-base checkout 独占同步与 equality authority |
 | `ADR-007` | accepted | Finalizer extension source checkout 与 target reviewed checkout 独立绑定；closed `self_hosted|installed` modes |
 | `ADR-008` | accepted | normal-scenario 与 solution-mechanism 资格由独立 semantic owners 承接，OS primitive 不得成为业务 authority |
@@ -63,3 +63,7 @@
 `ADR-028`（accepted）：固定开发基线、Delivery 完整内容与 PR target 分离，原 owners 只按实际集成阻塞整合，并选择明确阶段适用 authority。正文见 [`028-fixed-content-baseline.md`](./028-fixed-content-baseline.md)。只替代 ADR-005 的普遍 CURRENT-advance stale 解释及 ADR-012 第7项的无条件 fresh Phase2 要求；当前其他条目中的默认追赶、latest-target 祖先资格与目标 SHA 全等由 ADR-028 中具名的 current successor 承接。ADR-013/024、历史正文、公共 Task/Delivery、独立语义判断、expected-head、真实事务与整体收尾责任保持。
 
 `ADR-029`（accepted）：跨 owner 工程事实采用与当前完整独立语义判断分离；只窄补充 ADR-019 的命令执行限制和 Check same-owner-only，继承 ADR-028 适用性，原 owner、当前绑定、typed routes 与 private retirement 不变。正文见 [`029-cross-owner-validation-facts.md`](./029-cross-owner-validation-facts.md)。
+
+| `ADR-030` | accepted | 受审分支晋升先于最终 Check；原 authority、committed 独立判断、完整 Review 与有界引用对齐保持 |
+
+`ADR-030` 正文见 [`030-promotion-before-final-check.md`](./030-promotion-before-final-check.md)。

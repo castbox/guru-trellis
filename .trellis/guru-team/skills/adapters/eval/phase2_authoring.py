@@ -13,7 +13,8 @@ from adapters.eval.fixture_io import public_input_path, run_git
 from adapters.eval.eval_support import qualification_planning_identity
 
 SKILL = "guru-check-task"
-FACTS = "docs/phase2-evidence/public-authoring-facts.json"
+FACTS = ".trellis/tasks/phase2-evidence/public-authoring-facts.json"
+ARCHITECTURE_INPUT = ".trellis/tasks/phase2-evidence/architecture-input.json"
 ARCHITECTURE = "guru-maintain-architecture-baseline"
 QUALIFIERS = ("guru-qualify-normal-scenario", "guru-qualify-solution-mechanism")
 PUBLIC_READS = (
@@ -23,7 +24,7 @@ PUBLIC_READS = (
 )
 ARCHITECTURE_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
-    "schemas/semantic-result-delivery-1.0.schema.json", "schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
+    "schemas/semantic-result-delivery-2.0.schema.json", "schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
 )
 
 
@@ -243,7 +244,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
         package.parent / ARCHITECTURE / "schemas/public-input-impact.schema.json"
     ).read_text(encoding="utf-8"))
     architecture_input = {
-        "schema_version": "delivery-1.0", "profile": "delivery_task_impact_sync",
+        "schema_version": "delivery-2.0", "profile": "delivery_task_impact_sync",
         "delivery_key": public["delivery_key"], "planning_root": directory.relative_to(task).as_posix(),
         "source_exit": "implementation_complete", "mode": "workflow",
         "continuation_id": "range-phase2", "stage": "phase2", "task_locator": task_ref,
@@ -257,7 +258,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             ],
         },
         "project_contract": {
-            "guru_contract_identity": f"{ARCHITECTURE}:2.0",
+            "guru_contract_identity": f"{ARCHITECTURE}:4.0",
             "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
             "change_contract_identity": "range-contract-v1",
             "required_concern_set_identity": "range-concerns-v1",
@@ -270,10 +271,10 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
         head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'], observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
     write_json(evidence / 'check-public-input.json', public)
-    write_json(evidence / "architecture-input.json", architecture_input)
+
     required = sorted([
         *files, *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
-        "docs/phase2-evidence/architecture-input.json", "docs/phase2-evidence/check-public-input.json",
+        ARCHITECTURE_INPUT, "docs/phase2-evidence/check-public-input.json",
         *(f".trellis/guru-team/skills/packages/{ARCHITECTURE}/{path}" for path in ARCHITECTURE_READS),
         *(f".trellis/guru-team/skills/packages/{skill}/{path}" for skill in QUALIFIERS for path in (
             "SKILL.md", "references/contract.md", "schemas/semantic-result.schema.json",
@@ -288,6 +289,14 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
         required.append("docs/phase2-evidence/bounds-validation.json")
     if test_layer:
         required.append("docs/phase2-evidence/test-layer-validation.json")
+    from runtime.reviewed_content import reviewed_content_identity
+    architecture_input["before_authority"] = {"git_revision": run_git(fixture, "rev-parse", "origin/main"),
+        "baseline_locator": architecture_input["baseline"]["locator"],
+        "constitution_locator": architecture_input["constitution"]["authority_locator"],
+        "change_contract_locator": architecture_input["project_contract"]["change_contract_locator"]}
+    architecture_input["candidate"] = {"head": run_git(fixture, "rev-parse", "HEAD"),
+        "content_identity": "sha256:" + reviewed_content_identity(fixture)["sha256"]}
+    write_json(fixture / ARCHITECTURE_INPUT, architecture_input)
     write_json(fixture / FACTS, {
         "schema_version": "1.0", "required_reads": required,
         "architecture_reads": [
@@ -299,7 +308,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             *(["range_test_support.py", "test_range_test_support.py"] if test_support else []),
             *(["selection_test_support.py", "test_selection_test_support.py", "test_selection.py"] if selection_assertion else []),
             "docs/range.md",
-            "docs/phase2-evidence/architecture-input.json",
+            ARCHITECTURE_INPUT,
         ],
         "architecture_input_sha256": hashlib.sha256(json.dumps(
             architecture_input, ensure_ascii=False, sort_keys=True, separators=(",", ":"),

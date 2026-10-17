@@ -1,7 +1,8 @@
 {
   "scenario": "Another task advanced the current baseline identity.",
   "owner_staging": {
-    "recipe": "architecture-parallel-stale"
+    "recipe": "architecture-parallel-stale",
+    "observed_current_identity": "current-v2"
   },
   "public_invocation": {
     "arguments": [

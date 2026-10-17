@@ -72,3 +72,15 @@ actual blob hash count are separate facts. Profile, hash observation, volume,
 RSS and plain timing have different instrumentation costs and cannot be summed
 or treated as interchangeable acceptance evidence. This harness does not set
 performance thresholds; use the selected Delivery's pre-implementation contract.
+
+## Promotion reference alignment
+
+`test_promotion_alignment.py` runs the actual public Full Review, legal Check
+rework, reference-alignment recorder/checker/invocation and Delivery Review on
+one Git fixture. It checks current Check/candidate binding, original-output
+recovery after checkpoint retirement, the cleared old full_review slot, full
+Git-delta consistency, stale/missing input, and original-owner stop. Run it with
+`TRELLIS_DELIVERY_API_COMMON` set to the matching public API common directory.
+Semantic results in these tests are fixtures. They prove deterministic
+transport and consumers, not an independent AI's reference-only judgment.
+Existing continuity tests retain their separate integration meaning.

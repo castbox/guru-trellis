@@ -6,7 +6,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 | Concern | Required current meaning |
 | --- | --- |
-| `authority-binding` | Planning 绑定 `guru-maintain-architecture-baseline:planning:3.0` 与明确的 `candidate_assessment` 或 `final_plan`；非 Planning 与 maintenance 绑定 `guru-maintain-architecture-baseline:2.0`；同时绑定明确阶段适用的 baseline 与本 change-contract identity |
+| `authority-binding` | Planning 绑定 `guru-maintain-architecture-baseline:planning:3.0` 与明确的 `candidate_assessment` 或 `final_plan`；非 Planning impact/promotion 绑定 `guru-maintain-architecture-baseline:4.0`（Delivery2.0）；bootstrap/repair 保留原2.0合同；同时绑定明确阶段适用的 baseline 与本 change-contract identity |
 | `constitution-binding` | 绑定 current constitution locator、status、version/content identity 与实际命中的原则 refs |
 | `boundary-and-decision` | 记录 requirement/behavior authority、current/target boundary、decision/GAP refs 与唯一 change path |
 | `owner-and-single-writer` | 明确 current/target semantic owner、task writer 与 shared-current promotion single-writer |
@@ -57,3 +57,7 @@ shared-current promotion 自身仍绑定写前 expected-current；错配只由�
 Clarify active scope_ready1.0 在完成 scope 判断后，经原 clear-router 的薄 consumer1.0 projection 交同一 Author，先判断后写作；不写 planning hash、生命周期或授权状态。Wording change refs、Approval revision actions 与 Delivery/Completion 的适用修订原因均经显式 projection 回唯一 writer。旧 planning2.0 无 purpose 入口不作 runtime fallback，中断旧调用 fresh 重入；合法非 Planning2.0 和历史 validation assets 保持原边界。canonical workflow/preset matching migration 是唯一安装切换路径。
 
 #531以ADR-024迁移上述Planning责任：Task整体scope-only由Author写作后Clarify审查；Delivery candidate/final两目的独立Architecture、Wording、Approval与Activation保持原owner，同DeliveryKey/planning_root回程。Task-only Completion/Finish仍使用task_impact_sync，不将Delivery与Task结果换标签。
+
+## #600 晋升顺序与输入后继
+
+[ADR-030](../adr/030-promotion-before-final-check.md)作为 ADR-005 的晋升时机后继。非 Planning4.0/Delivery2.0 current input 显式绑定 before_authority 与完整 candidate；promotion 移除尚未发生的 committed_range 前置。Planning purpose3.0、bootstrap/repair、九 concerns、descriptor/check/result identities 与原 owners保持。新 CURRENT 必须作为受审差额与晋升前 authority 比较；最终 Check及committed独立判断覆盖实际写入。窄引用对齐、恢复和在途切换由 [MIGRATION-600](../../../trellis/presets/guru-team/MIGRATION-600.md)定位原合同。

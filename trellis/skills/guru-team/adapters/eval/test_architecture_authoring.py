@@ -47,7 +47,7 @@ class ArchitectureAuthoringTests(unittest.TestCase):
             for relative in facts['required_reads']:
                 self.assertTrue((repo / relative).is_file(), relative)
                 self.assertNotIn(Path(relative).name, {'prd.md', 'implement.md', 'task.json'})
-            self.assertFalse((repo / '.trellis/.runtime').exists())
+            self.assertFalse((repo / '.trellis/.runtime/guru-team/evals/owner-result.json').exists())
             self.assertIn('query_summary.py', facts['required_reads'])
             self.assertIn('import_pipeline.py', facts['required_reads'])
             diff = (repo / 'docs/architecture-eval/candidate.patch').read_text()
@@ -64,6 +64,19 @@ class ArchitectureAuthoringTests(unittest.TestCase):
             self.assertIn('transport.py', (repo / inventory['tracked_diff']).read_text())
             actual = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
             self.assertEqual(inventory['review_head'], actual)
+
+    def test_nonplanning_candidate_binding_remains_current_after_fact_staging(self):
+        from runtime.reviewed_content import reviewed_content_identity
+        from runtime.schema import validate_json
+        with tempfile.TemporaryDirectory() as temp:
+            repo = self.fixture(Path(temp), stage='phase2')
+            facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
+            public = json.loads((repo / facts['public_input_locator']).read_text())
+            validate_json(public, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-2.0.schema.json', 'input')
+            self.assertEqual(public['candidate']['content_identity'], 'sha256:' + reviewed_content_identity(repo)['sha256'])
+            self.assertEqual(public['before_authority']['git_revision'], public['candidate']['head'])
+            (repo / 'query_summary.py').write_text('A changed unchanged-consumer dependency\n')
+            self.assertNotEqual(public['candidate']['content_identity'], 'sha256:' + reviewed_content_identity(repo)['sha256'])
 
     def test_business_candidate_source_tests_and_proposed_contribution_are_consistent(self):
         for case in ('planning-business-default-native', 'planning-inherited-business-default-native'):

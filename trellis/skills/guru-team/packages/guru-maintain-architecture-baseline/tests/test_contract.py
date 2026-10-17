@@ -1,5 +1,6 @@
 import copy
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -66,6 +67,17 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             / "docs/architecture/00-foundation/design-constitution.md"
         )
         self.write_current_constitution()
+        for locator in ("docs/architecture/README.md", "docs/architecture/06-governance/change-contract.md"):
+            path = self.repository / locator
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# Current fixture authority\n")
+        subprocess.run(["git", "add", "."], cwd=self.repository, check=True, capture_output=True)
+        subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "Architecture authority"], cwd=self.repository, check=True, capture_output=True)
+        self.authority_revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repository, check=True, text=True, capture_output=True).stdout.strip()
+        sys.path.insert(0, str(self.package.parents[1]))
+        spec = importlib.util.spec_from_file_location("architecture_candidate_fixture", self.package / "runtime/promotion.py")
+        self.candidate_runtime = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.candidate_runtime)
 
     def tearDown(self):
         self.fixture.cleanup()
@@ -255,6 +267,21 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             public_input.update(delivery_key=self.delivery_key, planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
             if selected.get("task_locator") == original:
                 selected["task_locator"] = public_input["task_locator"]
+        # Test authoring projects historical fixture seeds onto the current
+        # contract. Production runtime never performs this migration.
+        if public_input.get("profile") in {"task_impact_sync", "delivery_task_impact_sync"} and public_input.get("stage") != "planning" and public_input.get("schema_version") in {"2.0", "delivery-1.0"}:
+            public_input["schema_version"] = "delivery-2.0" if public_input["profile"].startswith("delivery_") else "4.0"
+            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:4.0"
+            public_input["before_authority"] = {"git_revision": self.authority_revision,
+                "baseline_locator": "docs/architecture/README.md",
+                "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+                "change_contract_locator": "docs/architecture/06-governance/change-contract.md"}
+            public_input["candidate"] = self.candidate_runtime.capture_candidate(self.repository)
+            if "committed_range" in public_input:
+                original_range = copy.deepcopy(public_input["committed_range"])
+                public_input["committed_range"].update(base_head=self.authority_revision, review_head=public_input["candidate"]["head"])
+                if selected.get("review", {}).get("committed_range") == original_range:
+                    selected["review"]["committed_range"] = copy.deepcopy(public_input["committed_range"])
         return public_input, selected
 
     def invoke(self, public_input, selected):
@@ -293,6 +320,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
+        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+            owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
         if public_input["profile"] in {"promotion", "delivery_promotion"}:
@@ -343,6 +372,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
+        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+            owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
         if public_input["profile"] in {"promotion", "delivery_promotion"}:
@@ -393,8 +424,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(
             aggregate,
             {
-                "schema_id": "guru-maintain-architecture-baseline-input-delivery-index-1.0",
-                "path": "schemas/public-input-aggregate-delivery-index-1.0.schema.json",
+                "schema_id": "guru-maintain-architecture-baseline-input-index-4.0",
+                "path": "schemas/public-input-aggregate-4.0.schema.json",
             },
         )
         self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
@@ -406,8 +437,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             {item["id"] for item in interface["external_exits"]},
             {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
         )
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
         architecture_input_ids = {
             interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
             *(
@@ -943,58 +974,14 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                 })
                 self.assertEqual(result.returncode, 3)
 
-    def test_promotion_required_needs_current_reviewed_contribution_and_successor(self):
-        public_input = self.load("public-input-promotion.json")
-        target = public_input["sync_target"]
-        selected = self.architecture_selection(
-            public_input,
-            promotion_state="reviewed_promoted",
-            contribution_locator=target["locator"],
-            contribution_identity=target["current_identity"],
-            review={
-                "status": "reviewed",
-                "independent": True,
-                "committed_range": copy.deepcopy(public_input["committed_range"]),
-            },
-        )
-        result = self.invoke(public_input, selected)
-        self.assertEqual(result.returncode, 0, result.stderr)
-
-        stale_baseline = copy.deepcopy(public_input)
-        stale_baseline["baseline"]["identity"] = stale_baseline["expected_current_identity"]
-        selected["baseline_identity"] = stale_baseline["baseline"]["identity"]
-        result = self.invoke(stale_baseline, selected)
-        self.assertEqual(result.returncode, 3)
-
-        wrong_contribution = self.architecture_selection(
-            public_input,
-            promotion_state="reviewed_promoted",
-            contribution_locator=target["locator"],
-            contribution_identity="stale-contribution",
-            review={
-                "status": "reviewed",
-                "independent": True,
-                "committed_range": copy.deepcopy(public_input["committed_range"]),
-            },
-        )
-        result = self.invoke(public_input, wrong_contribution)
-        self.assertEqual(result.returncode, 3)
-
-        wrong_range = self.architecture_selection(
-            public_input,
-            promotion_state="reviewed_promoted",
-            contribution_locator=target["locator"],
-            contribution_identity=target["current_identity"],
-            review={
-                "status": "reviewed",
-                "independent": True,
-                "committed_range": copy.deepcopy(public_input["committed_range"]),
-            },
-        )
-        wrong_range["review"]["committed_range"]["base_ref"] = "origin/other"
-        result = self.invoke(public_input, wrong_range)
-        self.assertEqual(result.returncode, 3)
-        self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.review")
+    def test_legacy_committed_promotion_requires_current_owner_reentry(self):
+        for name, schema in (("public-input-promotion.json", "public-input-promotion.schema.json"),
+                             ("public-input-delivery-promotion-1.0.json", "public-input-delivery-promotion-1.0.schema.json")):
+            public = self.load(name)
+            self.assert_schema_valid(self.schema(schema), public)
+            result = self.invoke(public, self.architecture_selection(public))
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "schema_version")
 
     def test_sync_router_preserves_current_output_without_reconstructing_a_promotion(self):
         interface = json.loads((self.package / "interface.json").read_text())
@@ -1013,18 +1000,14 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             self.assertEqual(output["sync_kind"], kind)
 
     def test_delivery_recovery_profiles_preserve_original_identity(self):
-        for profile in ("delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"):
+        for profile in ("delivery_repair", "delivery_bootstrap_foundation"):
             public = self.load("public-input-" + profile.replace("_", "-") + "-1.0.json")
             public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
                           planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
-            if profile == "delivery_promotion":
-                selected = self.architecture_selection(public, promotion_state="reviewed_promoted",
-                                                       review={"status": "reviewed", "independent": True, "committed_range": public["committed_range"]})
-            else:
-                selected = {"typed_exit": "baseline_current", "task_locator": public["task_locator"],
-                            "baseline_identity": public.get("successor_baseline", public["baseline"])["identity"],
-                            "constitution_identity": public["constitution"]["identity"], "impact_kind": "no_architecture_impact",
-                            "impact_reason": "Current baseline recovery satisfies the original stage.", "promotion_state": "no_change"}
+            selected = {"typed_exit": "baseline_current", "task_locator": public["task_locator"],
+                        "baseline_identity": public.get("successor_baseline", public["baseline"])["identity"],
+                        "constitution_identity": public["constitution"]["identity"], "impact_kind": "no_architecture_impact",
+                        "impact_reason": "Current baseline recovery satisfies the original stage.", "promotion_state": "no_change"}
             before = self.upstream.projection.read_record()
             result = self.invoke(public, selected)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -1377,7 +1360,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "typed_exit": "blocked", "consumer": {"kind": "stop", "id": "architecture-baseline-blocked"},
             "reason_code": "stale_identity", "remediation": "Reread.",
         }
-        owner.update(delivery_key=envelope["delivery_key"], planning_root=envelope["planning_root"])
+        owner.update(delivery_key=envelope["delivery_key"], planning_root=envelope["planning_root"], before_authority=envelope["before_authority"], candidate=envelope["candidate"])
         result = subprocess.run(
             [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
             input=json.dumps({"public_input": envelope, "owner_result": owner}),
@@ -1452,7 +1435,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "Load [references/contract.md](references/contract.md) completely before acting.",
-            "selected planning 3.0 or nonplanning 2.0 schema",
+            "Planning 3.0, nonplanning 4.0, or matching Delivery schema",
             "scripts/invoke.sh --invocation -",
             "owner_not_yet_executed",
             "platform truly cannot provide the contract-required",

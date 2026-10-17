@@ -617,3 +617,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-068：#589 D7 公开不可变摘要消费的已审贡献
 
 首次独立完整 committed range 为 `865f4a9576eabc85cb3b91e74ecd856785095510..f168092b2783d8c09ee416fb850ecaa1c694d65c`。本轮 Architecture 正式出口为 `baseline_current/reviewed_candidate`，独立 Branch Review 正式出口为 `passed`，绑定 current Check；原 Architecture owner 随后按 live expected `.95` 晋升 `.96`。[已晋升贡献](../contributions/589-git-object-performance.md)记录职责与前后关系，[唯一 Test](../../requirements-design-test-contributions/589-git-object-performance/test.md)单写工程结果及未验证边界。晋升产生的新差额尚未 Check/TaskCommit/完整 Review；不声明正式工具采用、native/live 效果、软件发布或整体 Task 完成。
+
+## EVD-069：#600 晋升时机与原 authority 的受审增量
+
+ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 与 [ADR-030](../adr/030-promotion-before-final-check.md)承接 [#600 贡献](../contributions/600-promotion-before-check.md)，原分支晋升从 expected `.95` 到 successor `.96`，保留于 `87176aea126cc9ade10f334eb379e0d35a053295`。本次与 main #589 `.96` 的真实冲突整合形成 `.97` 组合投影；原独立判断不自动覆盖新增差额。本项定位本次知识增量，不记录自引用最终 SHA、完整审查历史或授权。实际独立评估、写入、Check、committed Review、恢复和安装结果只由[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)记录。未来门禁、Delivery、Completion、Release 和业务效果不由本项预先证明。

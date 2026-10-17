@@ -494,7 +494,8 @@
     "tests/test_contract.py",
     "tests/test_runtime.py",
     "tests/test_archived.py",
-    "tests/test_legacy_maintenance.py"
+    "tests/test_legacy_maintenance.py",
+    "tests/test_promotion_alignment.py"
   ],
   "platform_destinations": [
     "shared",
@@ -525,8 +526,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-review-branch-input-legacy-index-1.0",
-        "path": "schemas/public-input-legacy-index-1.0.schema.json"
+        "schema_id": "guru-review-branch-input-legacy-index-2.0",
+        "path": "schemas/public-input-legacy-index-2.0.schema.json"
       },
       "profiles": [
         {
@@ -632,6 +633,21 @@
           "discriminator": {
             "field": "profile",
             "value": "legacy_control_retirement"
+          }
+        },
+        {
+          "id": "delivery_promotion_reference_alignment",
+          "schema": {
+            "schema_id": "guru-review-branch-input-delivery-promotion-reference-alignment-1.0",
+            "path": "schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_promotion_reference_alignment_input",
+            "path": "examples/public-delivery-promotion-reference-alignment-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_promotion_reference_alignment"
           }
         }
       ]
@@ -1028,6 +1044,15 @@
         "schema": {
           "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-archived-review-gate-1.0.json",
           "path": "schemas/archived-review-gate-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_alignment_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-review-branch-private-delivery-alignment-gate-1.0",
+          "path": "schemas/delivery-alignment-gate-1.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

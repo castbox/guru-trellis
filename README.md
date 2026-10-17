@@ -1,5 +1,10 @@
 # Guru Trellis
 
+架构变化先在现有 Phase2 独立评估中审查完整候选及拟晋升内容，再由原 owner
+在执行分支晋升，随后完成最终 Check、Task Commit、committed 独立架构判断和
+完整 Branch Review。安装切换、在途恢复及完整审查后的窄引用/状态对齐见
+[MIGRATION-600](trellis/presets/guru-team/MIGRATION-600.md)。知识晋升不代表交付、部署或采用。
+
 [清晰技术写作规范](trellis/presets/guru-team/spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。

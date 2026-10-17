@@ -481,8 +481,9 @@ def tree_identity(repo, commit, *, tree_memo=None):
 
 def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=None):
     archived = value.get("profile") == "archived_review"
+    alignment = value.get("profile") == "promotion_reference_alignment"
     if (
-        value.get("schema_version") != ("archived-1.0" if archived else "7.0")
+        value.get("schema_version") != ("alignment-1.0" if alignment else "archived-1.0" if archived else "7.0")
         or value.get("reviewed_content_algorithm") != REVIEWED_CONTENT_ALGORITHM
     ):
         raise CommandError(
@@ -492,7 +493,16 @@ def validate_gate(package_root, repo, value, expected_exit=None, *, tree_memo=No
             3,
         )
     schema = ("delivery-archived-review-gate-1.0.schema.json" if archived else "delivery-review-gate-1.0.schema.json") if "delivery_key" in value else "archived-review-gate-1.0.schema.json" if archived else "review-gate-7.0.schema.json"
+    if alignment:
+        schema = "delivery-alignment-gate-1.0.schema.json"
     validate_json(value, package_root / "schemas" / schema, "gate")
+    if alignment:
+        from alignment import validate_facts
+        validate_facts(package_root, repo, value)
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        DeliveryProjection(repo, value["task_dir"]).require_current_check(
+            value["delivery_key"], value["check_result_id"],
+            head_ref=value["review_commit"], base_ref=value["base_head"])
     if archived:
         from archived import facts
         archived_input = {
@@ -649,6 +659,7 @@ def validate_public_binding(package_root, repo, public, gate):
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
         "archived_review": "public-archived-review-input.schema.json",
+        "promotion_reference_alignment": "public-delivery-promotion-reference-alignment-input-1.0.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -663,7 +674,7 @@ def validate_public_binding(package_root, repo, public, gate):
         "task_dir": public["task_ref"],
         "mode": public["mode"],
         "profile": profile,
-        "review_intent": "archived_review" if profile == "archived_review" else public["review_intent"],
+        "review_intent": "promotion_reference_alignment" if profile == "promotion_reference_alignment" else "archived_review" if profile == "archived_review" else public["review_intent"],
         "review_commit": (
             public["task_head"]
             if profile == "base_continuity"
@@ -679,6 +690,10 @@ def validate_public_binding(package_root, repo, public, gate):
         if public["pr_payload_snapshot_sha256"] != gate["pr_payload_snapshot_sha256"]:
             raise CommandError("stale_identity", "pr_payload_snapshot_sha256", "Use the exact current PR snapshot.", 3)
         return gate
+    if profile == "promotion_reference_alignment":
+        from alignment import facts
+        if facts(package_root, repo, public) != gate.get("promotion_alignment"):
+            raise CommandError("stale_identity", "promotion_alignment", "Use the exact original result and complete reviewed delta.", 3)
     base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
     if gate.get("base_ref") != base_ref or gate.get("base_head") != base_head:

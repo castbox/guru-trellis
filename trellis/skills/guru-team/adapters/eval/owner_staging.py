@@ -216,6 +216,11 @@ def stage_owner_execution(
                 "# Design Constitution\n\nCurrent project authority fixture.\n",
                 encoding="utf-8",
             )
+    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"4.0", "delivery-2.0"}:
+        for locator in (public_payload["baseline"]["locator"], public_payload["project_contract"]["change_contract_locator"]):
+            path = fixture / locator
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# Current eval Architecture authority\n")
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-q", "-m", "stage owner fixture")
     head = run_git(fixture, "rev-parse", "HEAD")
@@ -247,6 +252,16 @@ def stage_owner_execution(
             },
             fixture,
         )
+    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"4.0", "delivery-2.0"}:
+        from runtime.reviewed_content import reviewed_content_identity
+        public_payload["before_authority"] = {"git_revision": head,
+            "baseline_locator": public_payload["baseline"]["locator"],
+            "constitution_locator": public_payload["constitution"]["authority_locator"],
+            "change_contract_locator": public_payload["project_contract"]["change_contract_locator"]}
+        public_payload["candidate"] = {"head": head, "content_identity": "sha256:" + reviewed_content_identity(fixture)["sha256"]}
+        if "expected_current_content_identity" in public_payload:
+            public_payload["expected_current_content_identity"] = "sha256:" + hashlib.sha256((fixture / public_payload["baseline"]["locator"]).read_bytes()).hexdigest()
+        (fixture / OWNER_INPUT).write_text(json.dumps(public_payload))
     public_mode = str(public_payload.get("mode") or "")
     fake_bin = write_fake_gh(execution_root, recipe)
     environment = {"PATH": f"{fake_bin}{os.pathsep}{os.environ.get('PATH', '')}"}
@@ -427,8 +442,10 @@ def stage_owner_execution(
                     "task_locator": str(public_payload["task_locator"]),
                     "sync_kind": "baseline_advanced",
                     "expected_current_identity": str(public_payload["expected_current_identity"]),
-                    "current_identity": str(public_payload["current_identity"]),
-                    "sync_target": copy.deepcopy(public_payload["sync_target"]),
+                    "current_identity": owner_staging["observed_current_identity"],
+                    "sync_target": {"kind": "baseline", "locator": public_payload["baseline"]["locator"],
+                                    "expected_identity": public_payload["expected_current_identity"],
+                                    "current_identity": owner_staging["observed_current_identity"]},
                 }
             elif recipe == "architecture-unpromoted":
                 selected = {
@@ -457,6 +474,8 @@ def stage_owner_execution(
                 selected.pop("promotion_state", None)
             owner = {
                 "schema_version": public_payload["schema_version"],
+                **({key: copy.deepcopy(public_payload[key]) for key in ("before_authority", "candidate")}
+                   if public_payload.get("schema_version") in {"4.0", "delivery-2.0"} else {}),
                 **({"planning_purpose": public_payload["planning_purpose"]} if "planning_purpose" in public_payload else {}),
                 **({"delivery_key": public_payload["delivery_key"], "planning_root": public_payload["planning_root"]} if public_payload["profile"].startswith("delivery_") else {}),
                 "profile": public_payload["profile"],

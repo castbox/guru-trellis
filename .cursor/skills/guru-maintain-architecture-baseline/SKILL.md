@@ -38,7 +38,7 @@ Execute one profile in this order:
    the contract's Engineering execution facts rules to supporting commands;
    judge applicability, blocking effect and before/after meaning;
 4. make the applicable judgments as the contract-selected AI owner;
-5. author one complete result matching the selected planning 3.0 or nonplanning 2.0 schema;
+5. author one complete result matching the selected Planning 3.0, nonplanning 4.0, or matching Delivery schema;
 6. submit `public_input` plus that `owner_result` once through the formal
    `scripts/invoke.sh --invocation -` boundary; and
 7. consume exactly one declared typed exit.
@@ -78,14 +78,16 @@ five stable principle identities/short names, and task-local change/evidence
 contracts. It does not turn principles into a scorecard and does not encode
 language, framework, or business-specific checks.
 
-Only task-owned contributions may be written before independent Branch Review.
-Shared current Architecture authority changes only through serialized
-`promotion` bound to the expected current identity. A promotion diff re-enters
-Phase 2 and committed full-diff Branch Review before Publication.
+The existing independent Phase 2 reviewer assesses the complete candidate and
+proposed Architecture writes before promotion. The original owner then writes
+the reviewed contents on the execution branch against expected-current. Its
+actual promoted result enters the final Check directly. Task Commit and the
+independent committed full-diff Architecture assessment/Branch Review follow.
+Promotion alone does not restart the same-content independent assessment.
 
 The AI owns applicability, sufficiency, conflict, regression, contribution,
 ADR, promotion, and route judgment. The deterministic runtime validates only
-purpose-bound Planning 3.0 semantics projected onto Delivery and valid nonplanning 2.0 contracts, exact identity/freshness binding,
+purpose-bound Planning 3.0 semantics and current nonplanning 4.0 / Delivery 2.0 contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
@@ -104,15 +106,15 @@ contribution, descriptor, check, or ADR fields.
 
 Bootstrap may project `baseline_current` only from an active successor at the
 same locator with a distinct identity. Repair always starts from an active
-baseline. Branch Review and promotion bind their nested reviewed range exactly
-to the caller-supplied structured committed range.
+baseline. Branch Review binds the caller-supplied committed range. Promotion binds the
+actual worktree candidate and the complete reviewed target contents.
 
 Every `baseline_current` requires `authority_status=current`, an existing
 regular repository file at the constitution locator, and carries its exact
 `source_profile`. Only the matching `task_impact_sync` or `delivery_task_impact_sync` profile
 may resume its corresponding stage. Bootstrap and repair current results rerun that affected
-`task_impact_sync` stage; promotion current results return through fresh Phase
-2, Task Commit, and independent committed full-diff Branch Review.
+`task_impact_sync` stage; promotion current results enter the final Check with the actual promoted
+candidate; Task Commit and independent committed full-diff Review follow.
 
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and
@@ -150,14 +152,14 @@ conflict profile; fitness regression and blocked retain their original meaning.
 No new Architecture owner or lifecycle stage is introduced.
 
 Old task-impact planning 2.0 input fails closed; interrupted old planning fresh
-re-enters Author. Bootstrap, repair, promotion and valid nonplanning task impact
-remain 2.0. Historical schemas are validation assets only, never a planning
+re-enters Author. Bootstrap and repair retain their fixed contracts. Nonplanning task impact and
+promotion select 4.0 / Delivery 2.0 under MIGRATION-600. Historical schemas are validation assets only, never a planning
 fallback. MIGRATION-292 defines the matching workflow/preset update boundary.
 
 ## Delivery Architecture projection
 
-Development stages select delivery_task_impact_sync (schema_version
-delivery-1.0), carrying the exact opaque DeliveryKey and public planning_root
+Nonplanning development stages select delivery_task_impact_sync (schema_version
+delivery-2.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
 in addition to this owner's original stage authorities. Read the selected
 Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
@@ -173,10 +175,24 @@ Old Task development inputs require the pinned old complete installation.
 Delivery stage recovery uses `delivery_promotion`, `delivery_repair`, or
 `delivery_bootstrap_foundation` with the explicit original DeliveryKey and
 planning_root. These profiles execute the same baseline owner algorithms and
-return the original stage identity. Whole-task/global bootstrap, promotion and
+return the original stage identity; promotion specifically selects phase2.
+Whole-task/global bootstrap, promotion and
 repair retain their existing profiles and never infer a Delivery from private state.
 
 `sync_required` has the sole workflow consumer
 `guru-architecture-baseline-sync-router`. It uses only the closed DTO shape and
 sync_kind to project the exact Task or Delivery promotion/repair/impact entry
 to this same owner. It performs no second semantic assessment and infers no identity.
+
+## Pre-Check promotion 4.0 / Delivery 2.0
+
+Read the matching section in references/contract.md. Current promotion is
+phase2/promotion_required only. Other stale authority uses fresh impact sync;
+project-contract repair retains repair. Current selectors reject old inputs;
+no future committed Review is a promotion prerequisite.
+
+The original Architecture owner writes and recovers reviewed targets with
+ordinary file tools. The wrapper is a recorder/validator and writes no target
+or persistent intent. Read back the same call-local intent after partial write
+or output loss. Continue only uniquely recoverable, conflict-free pending
+writes; never recreate a successor or overwrite a conflict.

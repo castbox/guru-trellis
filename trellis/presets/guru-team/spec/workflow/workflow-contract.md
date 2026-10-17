@@ -199,9 +199,12 @@ Planning cannot approve without current baseline, design-constitution, and
 project change-contract evidence. Expansion of scope, risk, owner, state
 authority, persistence, SDK lifecycle, external integration, or another
 architecture boundary invalidates the Planning result before the expanded edit
-or test. Phase 2 performs the first project-check and semantic before/after
-judgment. Branch Review independently recomputes those concerns over the
-complete committed diff and never reuses Phase 2 as review proof.
+or test. Phase 2 assesses the complete candidate and proposed Architecture delta
+after Docs reconciliation. The original Architecture owner promotes the
+reviewed delta and verifies actual-write applicability before final Check.
+Branch Review independently recomputes those concerns over the complete
+committed diff, including promoted files and pre-promotion authority. It never
+reuses Phase 2 as review proof.
 
 Every fresh `baseline_current` binds `constitution_status=current`, an existing
 regular project-owned constitution locator, and its exact source profile. Only
@@ -210,10 +213,11 @@ same DeliveryKey and planning root; Task-only acceptance/finish uses
 `source_profile=task_impact_sync`. `delivery_bootstrap_foundation|delivery_repair`
 reruns `delivery_task_impact_sync(stage=<affected-stage>)` with that same key and
 root. Task-only `bootstrap_foundation|repair` reruns the matching
-`task_impact_sync` call. `source_profile=delivery_promotion|promotion` always
-re-enters fresh Phase 2, Task Commit, and
-independent committed full-diff Branch Review before Delivery Review or
-Completion/Finish reruns. Missing or stale Architecture evidence,
+`task_impact_sync` call. `source_profile=delivery_promotion|promotion` returns to
+the original Architecture owner for actual-write applicability and its matching
+final Phase 2 result. A consistent write does not dispatch the same independent
+assessment again. The resulting complete candidate enters final Check, Task
+Commit and independent committed Review. Missing or stale Architecture evidence,
 `architecture_conflict`, `contract_incomplete`, or `fitness_regression` cannot
 reach Delivery Review. Stale baseline, constitution, contribution,
 expected-current, or stage identity returns `sync_required` to the Architecture
@@ -221,6 +225,20 @@ owner. Completion/Finish requires `reviewed_promoted` for a long-term
 Architecture change or a current `no_change` proof. This is routing-only
 integration; Delivery, Completion, Closure and Finish retain their package-owned
 judgments.
+
+The matching nonplanning 4.0 / Delivery 2.0 Architecture current result carries
+`before_authority` and `candidate` to this existing current router. The router
+preserves them for the original stage owner to read the actual comparison origin
+and final candidate; it does not interpret private project checks or decide
+applicability. Planning 3.0 and bootstrap/repair keep their declared contracts.
+
+After a full Review, the original Branch Review owner alone handles
+`delivery_promotion_reference_alignment`. Its formal `passed` covers the final
+candidate by reviewing all source/status alignment delta and dependencies while
+retaining a recoverable original complete Review. This narrow profile is not
+Git continuity. Missing proof or changed obligations return through the
+affected original owner. Completion/Finish never repeats an accepted promotion
+or adds baseline prose solely to record final Review/HEAD.
 
 ### Workflow mode selection and Phase 0 — Issue-backed intake
 

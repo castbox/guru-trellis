@@ -130,6 +130,21 @@ consumes only the checked current route and the live authorities; it does not
 read Architecture private state or repeat applicability, contribution, ADR,
 promotion, or typed-route judgment.
 
+The Architecture current router consumes the matching nonplanning 4.0 or
+Delivery 2.0 DTO directly. Its `before_authority` locates the immutable
+pre-promotion baseline/constitution/change contract; its `candidate` identifies
+the actual worktree after any required promotion. This Check owner reads those
+public facts and the current files as its existing stage precondition, without
+reading Architecture private state or treating new CURRENT as the old rule.
+The Check route input remains its own minimal Delivery/Planning identity.
+
+Architecture's existing Phase 2 assessment includes the proposed delta. After
+an exact reviewed write, that original owner verifies applicability and binds
+the actual candidate. Do not dispatch the same assessment again only because
+promotion changed a baseline identity. This Check still covers the complete
+post-promotion candidate. A changed semantic/dependency/check obligation or a
+write outside reviewed content returns to the earliest affected original owner.
+
 The Architecture contract selects a fresh independent reviewer over the
 complete tracked/untracked candidate before task narratives. The same fresh
 worker may execute this Skill only after completing Architecture and then
@@ -329,8 +344,13 @@ generated/projection, promotion, or finding-fix changes receive the same impact
 judgment and automatic re-entry. Record the current worktree candidate through
 the original recorder even when business conclusions remain applicable; do
 not exclude task metadata from exact-candidate checking. Once committed
-content changes, the current exact base-to-HEAD still receives a complete
-independent Branch Review.
+content changes, the first current exact base-to-HEAD receives a complete
+independent Branch Review. After that complete Review, only the Branch Review
+owner's declared promotion-reference alignment profile may combine the
+recoverable original full Review with its reviewed complete delta and issue a
+new formal result over the final candidate. Other substantive changes retain
+the existing affected-review routes; Git integration continuity keeps its own
+meaning.
 
 This owner independently judges the applicability of accessible execution facts.
 No new cache, checkpoint field, public DTO, cross-Skill receipt chain, or long-lived result

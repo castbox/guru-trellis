@@ -1,5 +1,9 @@
 # Design SSOT
 
+唯一 current RDT authority 为 `current-main-0.6.17-guru.105/active`；[本版入口](./versions/current-main-0.6.17-guru.105/design-main.md)继承 main 的 immutable `.104`（#589）并承接 [#600 唯一增量](../requirements-design-test-contributions/600-promotion-before-check/traceability.md)。双方来源与追踪保留。本 Task 的 Architecture 比较起点仍为 `.95`；当前组合由 Architecture 原 owner 单独核验。[唯一 Test](../requirements-design-test-contributions/600-promotion-before-check/test.md)记录实际验证与边界。
+
+历史 `.104` authority：
+
 唯一 current RDT authority 为 `current-main-0.6.17-guru.104/active`；[本版入口](./versions/current-main-0.6.17-guru.104/design-main.md)完整继承 immutable `.103`，承接 [#589 唯一增量](../requirements-design-test-contributions/589-git-object-performance/traceability.md)。Architecture 继承 `.95/active`；公开摘要 owner、独立校验和资源生命周期保持原职责。[唯一 Test](../requirements-design-test-contributions/589-git-object-performance/test.md)区分读取/hash消除、耗时与内存观测、历史失败及未完成的正式采用。晋升差额仍须 fresh Phase2、TaskCommit 与独立完整 Branch Review；知识晋升不表示 Delivery、整体完成、软件发布或业务采用。
 
 历史 `.103` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.103/active`；[本版入口](./versions/current-main-0.6.17-guru.103/design-main.md)继承 immutable `.102` 并承接 [#599 唯一增量](../requirements-design-test-contributions/599-clear-technical-writing/traceability.md)。Architecture 继承 `.95/active`；规则正文保持单一来源，[唯一 Test](../requirements-design-test-contributions/599-clear-technical-writing/test.md)记录实际结果与未验证边界。晋升差额须 fresh Phase2、TaskCommit 和不同 fresh reviewer 完整 Branch Review。

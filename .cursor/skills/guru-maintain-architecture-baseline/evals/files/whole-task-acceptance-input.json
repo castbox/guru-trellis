@@ -1,5 +1,5 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "4.0",
   "profile": "task_impact_sync",
   "source_exit": "acceptance_finish",
   "mode": "workflow",
@@ -40,12 +40,22 @@
     ]
   },
   "project_contract": {
-    "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+    "guru_contract_identity": "guru-maintain-architecture-baseline:4.0",
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"
   },
   "freshness_identity": "eval-fresh-v2",
   "requirement_authority": "docs/requirements/README.md",
-  "behavior_authority": "docs/design/README.md"
+  "behavior_authority": "docs/design/README.md",
+  "before_authority": {
+    "git_revision": "0123456789abcdef0123456789abcdef01234567",
+    "baseline_locator": "docs/architecture/README.md",
+    "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md"
+  },
+  "candidate": {
+    "head": "89abcdef0123456789abcdef0123456789abcdef",
+    "content_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
 }

@@ -468,8 +468,8 @@
           "guru-approve-task-plan-input-legacy_control_inspection-1.0",
           "guru-approve-task-plan-input-legacy_control_retirement-1.0",
           "guru-architecture-baseline-input-bootstrap-2.0",
-          "guru-architecture-baseline-input-impact-nonplanning-2.0",
-          "guru-architecture-baseline-input-promotion-2.0",
+          "guru-architecture-baseline-input-impact-nonplanning-4.0",
+          "guru-architecture-baseline-input-promotion-4.0",
           "guru-architecture-baseline-input-repair-2.0",
           "guru-author-task-plan-input-aggregate-2.0",
           "guru-author-task-plan-input-delivery-active-task-scope-change-1.0",
@@ -529,10 +529,10 @@
           "guru-finish-task-input-2.0",
           "guru-finish-task-input-legacy_control_retirement-1.0",
           "guru-maintain-architecture-baseline-input-delivery-bootstrap-foundation-1.0",
-          "guru-maintain-architecture-baseline-input-delivery-index-1.0",
-          "guru-maintain-architecture-baseline-input-delivery-promotion-1.0",
+          "guru-maintain-architecture-baseline-input-delivery-promotion-2.0",
           "guru-maintain-architecture-baseline-input-delivery-repair-1.0",
-          "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-1.0",
+          "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-2.0",
+          "guru-maintain-architecture-baseline-input-index-4.0",
           "guru-maintain-legacy-task-input-1.0",
           "guru-maintain-legacy-task-input-convert-1.0",
           "guru-maintain-legacy-task-input-history_closeout-1.0",
@@ -584,9 +584,10 @@
           "guru-review-branch-input-delivery-archived-review-1.0",
           "guru-review-branch-input-delivery-base-continuity-1.0",
           "guru-review-branch-input-delivery-branch-review-1.0",
+          "guru-review-branch-input-delivery-promotion-reference-alignment-1.0",
           "guru-review-branch-input-delivery-scope-revision-1.0",
           "guru-review-branch-input-delivery-scope-withdrawal-1.0",
-          "guru-review-branch-input-legacy-index-1.0",
+          "guru-review-branch-input-legacy-index-2.0",
           "guru-review-branch-input-legacy_control_inspection-1.0",
           "guru-review-branch-input-legacy_control_retirement-1.0",
           "guru-review-contract-wording-input-delivery-planning-artifacts-1.0",
@@ -735,7 +736,7 @@
           "guru-finish-task-output-resume-finish-2.0",
           "guru-finish-task-output-success-2.0",
           "guru-maintain-architecture-baseline-output-architecture-conflict-delivery-index-1.0",
-          "guru-maintain-architecture-baseline-output-baseline-current-delivery-index-1.0",
+          "guru-maintain-architecture-baseline-output-baseline-current-index-4.0",
           "guru-maintain-architecture-baseline-output-baseline-incomplete-delivery-index-1.0",
           "guru-maintain-architecture-baseline-output-contract-incomplete-delivery-index-1.0",
           "guru-maintain-architecture-baseline-output-fitness-regression-delivery-index-1.0",
@@ -882,6 +883,7 @@
           "guru-reactivate-task-source-transaction-1.0",
           "guru-reactivate-task-transaction-1.0",
           "guru-reconcile-task-base-private-result-2.0-delivery-1.0",
+          "guru-review-branch-private-delivery-alignment-gate-1.0",
           "guru-review-task-delivery-gate-1.0",
           "guru-task-commit-planning-source-1.0",
           "guru-upgrade-installation-private-delivery-recovery-2.0",
@@ -1165,11 +1167,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-17T12:01:37Z",
+  "installed_at": "2026-10-17T12:17:30Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
-    "commit": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+    "ref": "87176aea126cc9ade10f334eb379e0d35a053295",
+    "commit": "87176aea126cc9ade10f334eb379e0d35a053295",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1245,11 +1247,11 @@
       ".trellis/spec/workflow/requirements-design-test-ssot.md": "b6917597cfc92a6112a8fc4475c6739bc23ee567af288ea91bd63dc0900c91f0",
       ".trellis/spec/workflow/semantic-retrieval.md": "7f523e481aa122eddcda7d2d59c5ec04c4c6012247e6ac0b6958626a4ae8501f",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
-      ".trellis/spec/workflow/workflow-contract.md": "85d450f2f59a13e023d42c383a33a8cbad826b653049630984ba00fb1de5eaf4",
+      ".trellis/spec/workflow/workflow-contract.md": "0741af04276801d4ac719ec985611f56b92d360bb0837a82697b722683644106",
       ".trellis/spec/workflow/skill-package-contract.md": "36476c057f6e895d230d450927891ea0d1ce3f8565bb023481255fc36cf7fc0d",
       ".trellis/spec/workflow/data-contracts.md": "784e9a06e2e9ce836e77cc6ea0f883e8cb576312cc22c16cc7e5fe9870e78c11",
       ".trellis/spec/workflow/companion-scripts.md": "f57f2329d57ea35b0cd15acca5b51fac3b242a220664a2d75645ad268ac16b83",
-      ".trellis/spec/workflow/quality-guidelines.md": "5d69b3c5e3aa5e2bafbbfcbdf3d3befdf6abe04184e999d082aeb1a551af5098",
+      ".trellis/spec/workflow/quality-guidelines.md": "70bcc5a35a66732b0ae06a99f54b2255b9d828d28b51bb51538a2f14b874c718",
       ".trellis/guru-team/trellis-source.json": "8152d2918d5610baee8354f7bbcab969d55032572b7d4b5faa3a7eaecf6b3342"
     },
     "new_copies": [],
@@ -1323,7 +1325,7 @@
       {
         "id": "guru-author-task-plan",
         "interface_sha256": "a99a2cbc2f5d634d5c19eab714b45a29c40348007ca23563fcbde0c2c13b5a35",
-        "tree_sha256": "98bdb90676133ea60ed1db97daae7e0a974b64faeed3178c3b7afe4bb1930404"
+        "tree_sha256": "7aa50ed65f45eb4fb78b070cd8b2b5cacb8fe1fca6467ce33815a83089f4f75a"
       },
       {
         "id": "guru-bind-task-session",
@@ -1338,7 +1340,7 @@
       {
         "id": "guru-check-task",
         "interface_sha256": "4b015f16cb0400fba344cd9fb3d0ac03149015edb6719d447efe3fea942ef9b3",
-        "tree_sha256": "f2e095c3a7f01680f42001a53289ed9900a24c029e9efa5061ec72dbb78c06b8"
+        "tree_sha256": "0230bfd062f938c2b609a39a27931ad3740ed615fac14ebcb93c4539ca0c4193"
       },
       {
         "id": "guru-clarify-requirements",
@@ -1403,12 +1405,12 @@
       {
         "id": "guru-finish-task",
         "interface_sha256": "faf0e63730bbbedf1069e7373ac35d322daefe6826ac9cb99a70c5c62caceb57",
-        "tree_sha256": "5f776b99a7a42e52387d2d3b5a3dbadfa9fe2183eefbccaef66fca7b84f1b542"
+        "tree_sha256": "186dd58f07ec9a190cffa0dca8858f681524a9a6f0417cfea95bd903bb37a6fa"
       },
       {
         "id": "guru-maintain-architecture-baseline",
-        "interface_sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
-        "tree_sha256": "c2206bcaf2c37798fbe0a465f8747f7af29fd13f5aedcf3b905fc989a3485f9b"
+        "interface_sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
+        "tree_sha256": "42dc1406c62232e148ec3633f8841a8c192bd9556dc722b95010d3f0bdca5d36"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -1462,8 +1464,8 @@
       },
       {
         "id": "guru-review-branch",
-        "interface_sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
-        "tree_sha256": "f701541c58d9cc86560d6082fbf679f13edd4013292863d032878b969e3f0a5b"
+        "interface_sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
+        "tree_sha256": "aad5ec0fd7f062d86ea9acdd113ef8bf0752914f65ac503fa71b868faefd6a16"
       },
       {
         "id": "guru-review-change-request",
@@ -1478,12 +1480,12 @@
       {
         "id": "guru-review-task-completion",
         "interface_sha256": "2a3006fe019c84fe85a0b37fa38aa0b0561c9e46379d3e37672f750b0dde9946",
-        "tree_sha256": "24257b9bb5c961d16323f78f6ed1199b5ea696018a1c19e03ee508fe0d0121f4"
+        "tree_sha256": "ebe788d1774f827316acd1ef1d75ec92e09b80a82cc524820e1a8560b101457b"
       },
       {
         "id": "guru-review-task-delivery",
         "interface_sha256": "78bf2889d576ba75d599b9cd56c71b669ecf19c09ee6f41bf09ed88497fb093a",
-        "tree_sha256": "8e51e20ab066e8840e8b0ce005fd03b111203b63b06d6bc6b10519e03dd089f6"
+        "tree_sha256": "aabe22c47d73a8c9c19a777baf80f2e478915dc11f6ce4cae1355d472964345f"
       },
       {
         "id": "guru-select-workflow-mode",
@@ -1774,7 +1776,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/architecture_authoring.py",
         "source": "trellis/skills/guru-team/adapters/eval/architecture_authoring.py",
-        "sha256": "bdf1e98aab651c9f7f3b1af51b7ca32b218f604dc153459410b3289ef45ac4a9",
+        "sha256": "ace5b6f921aa536e22c7541cac4e85b5e1f7a43a4a53c5aacf51c2a19a283018",
         "executable": false,
         "action": "installed"
       },
@@ -1837,7 +1839,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/eval_constants.py",
         "source": "trellis/skills/guru-team/adapters/eval/eval_constants.py",
-        "sha256": "a21c8f311cc15cf97adfb9e1260559e59d192c41198350f106200b0be4b87488",
+        "sha256": "85fcb8d915964b764d0bd11a856c0da4c776b7096a5ce9081d9465c174b25ae8",
         "executable": false,
         "action": "installed"
       },
@@ -1851,7 +1853,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/fixture_io.py",
         "source": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
-        "sha256": "5a795e197ddf08c217aecd5fbc7b891a89c0e0554bb4436dcf343addd8d63aa6",
+        "sha256": "1a84c3b202b92c86d9d4d7be93fc0beb4ebf796199f052a9890236becd3fa526",
         "executable": false,
         "action": "installed"
       },
@@ -1879,7 +1881,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/native_adapter.py",
         "source": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
-        "sha256": "b7497a491a3c918378923372de4acad982aaa8788c8967fd8aefadc7f7ab97e4",
+        "sha256": "11c1fa048d75089eb60a36110aacd3b3ca664e48fef4027483f62e5669a32014",
         "executable": false,
         "action": "installed"
       },
@@ -1893,14 +1895,14 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/owner_staging.py",
         "source": "trellis/skills/guru-team/adapters/eval/owner_staging.py",
-        "sha256": "325fa8e40da19ec3431719e0ae326da0285809a278e4a93e20f68ccfb5cdb3f8",
+        "sha256": "f67eb22bca1fa8d37096054fdf7bee301b70e6507f590ba7591a6c3f01a63765",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/adapters/eval/phase2_authoring.py",
         "source": "trellis/skills/guru-team/adapters/eval/phase2_authoring.py",
-        "sha256": "2c743bf459edb3ed6f40f1e4c9c9c20b72cd630ab864754ba29f1e52da6715b5",
+        "sha256": "a195608e921210f4f8e96d625cbe1af8d9308ae636a562b880c76565ee6f6023",
         "executable": false,
         "action": "installed"
       },
@@ -1949,7 +1951,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/test_architecture_authoring.py",
         "source": "trellis/skills/guru-team/adapters/eval/test_architecture_authoring.py",
-        "sha256": "996214d6e0ba2bf80e4b3cc79eee66560c66057dcb3dada84bdb77f56189e256",
+        "sha256": "5685e32530ebb3075cbd87a79e74abc7e4e404f35a36fe9b3b294463a9a5abfe",
         "executable": false,
         "action": "installed"
       },
@@ -1963,7 +1965,7 @@
       {
         "path": ".trellis/guru-team/skills/adapters/eval/test_phase2_authoring.py",
         "source": "trellis/skills/guru-team/adapters/eval/test_phase2_authoring.py",
-        "sha256": "13ddc1efbdae9ea2e101fccdd21a36a11fb0bf957019fc7c6486d0e6dc3f73af",
+        "sha256": "2f3d4955d4e26b057a991cb2abc1a3abd8f9ffeec31990462f19ae30c71381b8",
         "executable": false,
         "action": "installed"
       },
@@ -3818,7 +3820,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
-        "sha256": "7a7cdcff9223cc806b9df8dfc2f7a0568fa1aa9823309b1ef630532a474853cf",
+        "sha256": "f9b34f1108bf177987fc08cd5e9c72e05254e79a17445d5449aee2eee5b561ae",
         "executable": false,
         "action": "installed"
       },
@@ -4616,7 +4618,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "096efaf5e2735c149ebac6bbae05162cf5426384c3f3d833fc5af2bf51903fad",
+        "sha256": "0a9b2281ffa4e7fb781ffe46b8f6db33b693439a2aefc82e2f0859d72f70c1bc",
         "executable": false,
         "action": "installed"
       },
@@ -5008,7 +5010,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "437a91ce167b37ed1fb49af0b544f533f2be28c9238a50e34274181fa38daa04",
+        "sha256": "4a5fe9dbc13a35d4cd294b2c479b3bd3dd9d18565da05d53310243278e105495",
         "executable": false,
         "action": "installed"
       },
@@ -8809,7 +8811,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-finish-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/SKILL.md",
-        "sha256": "78530030ccb27ec71201edabdd91befa60ba5c56b28bd365d93141b592d2b66d",
+        "sha256": "c84c79873d11a74339eb6c2563d01ea2c7adc61ebe7c37d5682d4ee7edbdd191",
         "executable": false,
         "action": "installed"
       },
@@ -9145,7 +9147,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "bcd69d4c6820f022aa2d6c4e793a494dda5aa0f3f39294cddeec1cd5db56e08f",
+        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
         "executable": false,
         "action": "installed"
       },
@@ -9209,6 +9211,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "sha256": "df9988fcde4abf55ea2fb837c759f2f462ff630ef8e10adf7142391ebd643729",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "sha256": "30bcb6c56df4549912f0f82d7c297d52e02ce2ea909829c278dc9112d63b1dfa",
         "executable": false,
         "action": "installed"
       },
@@ -9313,7 +9322,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
-        "sha256": "65c58831afe94bab3fc415f50cb4f36c94f162d041ddda0f46076d0a36cfabe5",
+        "sha256": "ee4eee99efb011109421a7021aaa0ee7315264971f250a0973a64c8e31822719",
         "executable": false,
         "action": "installed"
       },
@@ -9334,7 +9343,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
-        "sha256": "949549f829a271e40e49df8d772d28a58a84abf7241e1b647af72b5632cfb8ff",
+        "sha256": "0515ba3b1b32642cb4dbb11d46153cb7e1ee9ee9858679398d28f06e414cda75",
         "executable": false,
         "action": "installed"
       },
@@ -9362,7 +9371,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
-        "sha256": "97ba59512723cecc62ee4d995dd3ac0be3d36d6c45b900b09b5ddf70d7492fda",
+        "sha256": "c13cb103d050854a51f66a8a3c5125e35c0b311661709c610ee1c19271d079cd",
         "executable": false,
         "action": "installed"
       },
@@ -9376,21 +9385,21 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
-        "sha256": "b7a27f2400023be8624ffcac86a052e6c075a2eaaf434aad311e6a512cf1d2b3",
+        "sha256": "d0366a01d3524ccc7a80b6196605805dbc3179209407cefed82b1d1adc52c696",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
-        "sha256": "9d3572ff28684fefcc11bf6f507fa5faa412b70a907952a255f10a0a9d1bab22",
+        "sha256": "cbb9ac43cd116081e7191cb3129e4d995307588e730bfc2b7781072df63b401a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
-        "sha256": "e25a919925c97c517df1fc9c2dfa09f16019c7d79f18d3da8bf40ddbbfba473c",
+        "sha256": "2eac0fe02c9eb3acd55af61e5f3e5cf4385f42169300da7a6454519a41bdb51c",
         "executable": false,
         "action": "installed"
       },
@@ -9425,14 +9434,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
-        "sha256": "2a70bd64e5b9a0cad15f9d29cc2ff6b9cc15c079e8a057234c67dec8640b3053",
+        "sha256": "08c3d2125a7d49761f9207528074936c6c076f185db433e9dcdeb4f708bd7969",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
-        "sha256": "8e173d37567968c1c2ff96fb33531708f3bd8cdf9afc4c3c8fea583825f18d5c",
+        "sha256": "913087b1deadc61fb3e91b617c7a66f429a3bed82554bf83a6f187a79a0be29d",
         "executable": false,
         "action": "installed"
       },
@@ -9446,7 +9455,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
-        "sha256": "2e912e4f64fc8dadfe4d20039f8ad7d0b78918d2941bad305f0935d4b560d2a1",
+        "sha256": "db35ebb35590443546f2df28f675e334cc9ea414b87e8223cb08e1d8c688361a",
         "executable": false,
         "action": "installed"
       },
@@ -9488,7 +9497,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
-        "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -9535,6 +9544,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "sha256": "ff41b8d5755765b90e1ef9ebc2c8069d212c7ed09af1c01c074041661166aba2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "sha256": "e0cd6de75bde67cbeddaae7358f81fa1ea5ea7d61ad9d32e6cccf5c73915a975",
@@ -9545,6 +9561,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-1.0.json",
         "sha256": "837e341285b9e8f158a615143a097f9d2b7a119091b997c82bbea0257ba5d3bf",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "sha256": "5530627daa4a6b31d4b97523a18597f157e30a8c3a5bcd7c058ccbcc8c1c668d",
         "executable": false,
         "action": "installed"
       },
@@ -9570,6 +9593,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "sha256": "2f54b5921a0083593fb680b2c20e80e507560b49dac2591fa31080760141feb6",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-promotion.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion.json",
         "sha256": "d792add3854d513a8ef903c4864fd19dd277c6f0e5dd5dfbc6e35c805cae583d",
@@ -9587,6 +9617,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-2.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-2.0.json",
         "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -9615,6 +9652,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "sha256": "ae9338829a4e883394015a704974d9184455b5b7e739e078837f64c8a5b071a1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "sha256": "4f7a150a2f5725e3717e00381595515c64b2f788898bc847378948b2d8e603fa",
         "executable": false,
         "action": "installed"
       },
@@ -9649,21 +9693,35 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json",
-        "sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
+        "sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d4f7e96f9d6a860ee79631a4cdcdb5f21e7829c03fdd48e9fcc15d96782b456a",
+        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
-        "sha256": "63504f1e6404e359768f35ab82b677f9fe33578450a93c9ad02dff005e8db049",
+        "sha256": "03d1e4a9f8b4ab1a8327c33157a4adbca8f05b6edfab028314c999cc92ff9fa8",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/promotion.py",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/promotion.py",
+        "sha256": "f519a654386f4b27ad99c004fd767a45ec8a4068eb78e109b0b6629b2f12289b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "sha256": "d6b94765d80e2be320b0d5334f8a2be1a1f9f738b5fa697ea979858f9c18d60d",
         "executable": false,
         "action": "installed"
       },
@@ -9706,6 +9764,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "sha256": "843c512da6eb045081441f44d2d155edba3f53eb2e97bd2799fd1c77a4a04232",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "sha256": "cbffaf2635a0c5103e4ecc49e3a996a195e8fd5afd561558dac67c43c62120d3",
         "executable": false,
         "action": "installed"
       },
@@ -9780,6 +9845,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "sha256": "8d9a3114a39062a1a27aef45cc945a1125610d6c75c904c84c5d27a99a419707",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "sha256": "bb9c48082d354f5661d98ee47c12a605ff2ee27f530d50e231a59823729d16bd",
@@ -9822,6 +9894,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "sha256": "daa305b676c9483024ca20317256ed20af94beeb4e5d753bae5e0e9b9472f41a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "sha256": "83fbe7be3ab1e2682285f8ccda156fcf3e892b98b60eb542b1840b7969729040",
@@ -9832,6 +9911,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "sha256": "93fedd15328c40ece6b46bc86d45f0b1a3d57071d8675945cfe888564ff3d9bd",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "sha256": "628154390534130ae146e2f82cd89f7af3b44e13ffcddf3adbd147201f8ee1c6",
         "executable": false,
         "action": "installed"
       },
@@ -9857,9 +9943,23 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "sha256": "0d0f69ac1f354a4b7fb023f3f700ed898e59995acc1d2724a77b27395b75e040",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "sha256": "f944f940bb816fe04c1f5c28493ff485ce9594415de117714942cdd31e6f9e6f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "sha256": "542c82f6494867bc6d0c7151d259e3cfab252f4b940bc8178f2021529ad4f55c",
         "executable": false,
         "action": "installed"
       },
@@ -9892,6 +9992,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "sha256": "f2b4cb70a4a2c070e24afda359028295a494004643d4a5fb70f76bfc2a784e9a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "sha256": "1ac1a10eb9c0184676541016fee24718261260ce4a0060cfd72fe2986d4c3e60",
@@ -9916,6 +10023,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "sha256": "9f99b6b214b2bcc069fe5e6ab071eac4688e364d7cea72c05c34606e4b6f0904",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "sha256": "3772ae9bfcbf640d636086d3e400b9799970ada7e149b1ae6e940c4f875c3d1a",
         "executable": false,
         "action": "installed"
       },
@@ -9976,9 +10090,23 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "sha256": "cd32a3f23f65d0f2942f017012c64d9dc64c55d8f79d7ff41f65999b0d0873da",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "sha256": "cdb84aeae1ae23dc9e6380c91a1fd6716d4dfe7df3868780cf3c6b52ace2c21f",
         "executable": false,
         "action": "installed"
       },
@@ -14633,7 +14761,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "946b03599aa1b0f0f81cea0916672510fb26fec2086b4552ae06ab7a835ffe2e",
+        "sha256": "d06a620b64261fc10448170ad5dc82c630729a74033382d5b347212eb42a497b",
         "executable": false,
         "action": "installed"
       },
@@ -14967,6 +15095,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "sha256": "200b9eef74491a5be830740d02ecc1f9b683b7a8c88dfecc2a7790d1ff2f2263",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "sha256": "e3d8995a6774949821b6847b1b4820eb63072efc999a422f07d96403b259d27f",
@@ -15088,14 +15223,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
+        "sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "00c2630c34e729d067c80aebe714655e686a3ec6a5ecc87eecaae43a76e67abd",
+        "sha256": "4d2745a8595235c5aec3a6d956d6828e6c7397a4d874deb29d7cd6b67fed1a30",
         "executable": false,
         "action": "installed"
       },
@@ -15103,6 +15238,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/references/legacy-maintenance.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/legacy-maintenance.md",
         "sha256": "c64f0469e88fea01b7b4ee56d3e755f75f369000edd8363f5ebfb08a28bbd344",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/alignment.py",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/alignment.py",
+        "sha256": "163f5d676cc53e22d06b5554895b41a15ba4a234dfa126292b9a3db49840e30d",
         "executable": false,
         "action": "installed"
       },
@@ -15123,14 +15265,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/common.py",
-        "sha256": "c817b09818bd35b1af8da8aa786e2479afac3f2d7c66e65ca630d8d432b42eca",
+        "sha256": "d966ae9b1990e4248ccf997a17f73a2b6afa8a14ddd18e2aa78db5ea86a02459",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/invoke.py",
-        "sha256": "a736b1d82718aafd824ca7dcdb749fb2aef1cd68588f98a2529c5da31976d93d",
+        "sha256": "63d351e3623313acc1ed2a665109ae9ba0ea704a4d9b6db1dff05803185d356b",
         "executable": false,
         "action": "installed"
       },
@@ -15144,7 +15286,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/runtime/record.py",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/runtime/record.py",
-        "sha256": "e7a4d24e37660672330fbb6f2e269d7e994941f194ebc9dc8d50ecd19f2043ab",
+        "sha256": "c56096430d9df6a9b5db4b09bbe9356ef24e70277c6a13bb5662f9e1b4abc940",
         "executable": false,
         "action": "installed"
       },
@@ -15166,6 +15308,13 @@
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/archived-review-gate-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/archived-review-gate-1.0.schema.json",
         "sha256": "059cb3c13ba779a42dad4469c42bcba7ad24ce1dd528baad1b896047e67c90a0",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/delivery-alignment-gate-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/delivery-alignment-gate-1.0.schema.json",
+        "sha256": "c5cde2592af9b861ff52b576a479f89e7470b5c192745022540d4af8f4e40b91",
         "executable": false,
         "action": "installed"
       },
@@ -15324,6 +15473,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "sha256": "0c9bd9e597c8bbf061a288725dd871d8033b68a7e64e4e487b69fa65dd9685bc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "sha256": "c6662a7033c45260163ef7a86153065073da731601ce51e68a51cc7e45c0d7e5",
@@ -15387,9 +15543,23 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "sha256": "d25b4cbc40af5ea715d794c3f67402702bde2654f07d61b7589e95cfee0b56b1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "sha256": "efcc844dc845b2091b3722299cbf1c1710b61fcecfcb37e2d0741e5a3c86bdcb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "sha256": "8ce3f149f600d9ac38dcd3ead89fdc48ffed734e9ea63b0998818ab1aa9e0539",
         "executable": false,
         "action": "installed"
       },
@@ -16369,7 +16539,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-completion/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
-        "sha256": "cb48829864b65f119120bb7ab692df9db6d779381391654bb092714ed10c0945",
+        "sha256": "22126517f530ffd48963ac3bc5fe5d960b05f75f982d563212b058cbbf59ebd4",
         "executable": false,
         "action": "installed"
       },
@@ -17181,7 +17351,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-review-task-delivery/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md",
-        "sha256": "43417bf604e99b51579c36960424c847c0a5496c9759697c357d126db757bd5a",
+        "sha256": "72b156c7248fdc9e7b350295a6116d3ddef75ce432f4139c5d93a706d49a03ac",
         "executable": false,
         "action": "installed"
       },
@@ -21899,7 +22069,7 @@
       {
         "path": ".agents/skills/guru-author-task-plan/references/authoring.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
-        "sha256": "7a7cdcff9223cc806b9df8dfc2f7a0568fa1aa9823309b1ef630532a474853cf",
+        "sha256": "f9b34f1108bf177987fc08cd5e9c72e05254e79a17445d5449aee2eee5b561ae",
         "executable": false,
         "action": "installed"
       },
@@ -22249,7 +22419,7 @@
       {
         "path": ".codex/skills/guru-author-task-plan/references/authoring.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
-        "sha256": "7a7cdcff9223cc806b9df8dfc2f7a0568fa1aa9823309b1ef630532a474853cf",
+        "sha256": "f9b34f1108bf177987fc08cd5e9c72e05254e79a17445d5449aee2eee5b561ae",
         "executable": false,
         "action": "installed"
       },
@@ -22599,7 +22769,7 @@
       {
         "path": ".claude/skills/guru-author-task-plan/references/authoring.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
-        "sha256": "7a7cdcff9223cc806b9df8dfc2f7a0568fa1aa9823309b1ef630532a474853cf",
+        "sha256": "f9b34f1108bf177987fc08cd5e9c72e05254e79a17445d5449aee2eee5b561ae",
         "executable": false,
         "action": "installed"
       },
@@ -22949,7 +23119,7 @@
       {
         "path": ".cursor/skills/guru-author-task-plan/references/authoring.md",
         "source": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
-        "sha256": "7a7cdcff9223cc806b9df8dfc2f7a0568fa1aa9823309b1ef630532a474853cf",
+        "sha256": "f9b34f1108bf177987fc08cd5e9c72e05254e79a17445d5449aee2eee5b561ae",
         "executable": false,
         "action": "installed"
       },
@@ -25140,7 +25310,7 @@
       {
         "path": ".agents/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "096efaf5e2735c149ebac6bbae05162cf5426384c3f3d833fc5af2bf51903fad",
+        "sha256": "0a9b2281ffa4e7fb781ffe46b8f6db33b693439a2aefc82e2f0859d72f70c1bc",
         "executable": false,
         "action": "installed"
       },
@@ -25413,7 +25583,7 @@
       {
         "path": ".agents/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "437a91ce167b37ed1fb49af0b544f533f2be28c9238a50e34274181fa38daa04",
+        "sha256": "4a5fe9dbc13a35d4cd294b2c479b3bd3dd9d18565da05d53310243278e105495",
         "executable": false,
         "action": "installed"
       },
@@ -25693,7 +25863,7 @@
       {
         "path": ".codex/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "096efaf5e2735c149ebac6bbae05162cf5426384c3f3d833fc5af2bf51903fad",
+        "sha256": "0a9b2281ffa4e7fb781ffe46b8f6db33b693439a2aefc82e2f0859d72f70c1bc",
         "executable": false,
         "action": "installed"
       },
@@ -25966,7 +26136,7 @@
       {
         "path": ".codex/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "437a91ce167b37ed1fb49af0b544f533f2be28c9238a50e34274181fa38daa04",
+        "sha256": "4a5fe9dbc13a35d4cd294b2c479b3bd3dd9d18565da05d53310243278e105495",
         "executable": false,
         "action": "installed"
       },
@@ -26246,7 +26416,7 @@
       {
         "path": ".claude/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "096efaf5e2735c149ebac6bbae05162cf5426384c3f3d833fc5af2bf51903fad",
+        "sha256": "0a9b2281ffa4e7fb781ffe46b8f6db33b693439a2aefc82e2f0859d72f70c1bc",
         "executable": false,
         "action": "installed"
       },
@@ -26519,7 +26689,7 @@
       {
         "path": ".claude/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "437a91ce167b37ed1fb49af0b544f533f2be28c9238a50e34274181fa38daa04",
+        "sha256": "4a5fe9dbc13a35d4cd294b2c479b3bd3dd9d18565da05d53310243278e105495",
         "executable": false,
         "action": "installed"
       },
@@ -26799,7 +26969,7 @@
       {
         "path": ".cursor/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "096efaf5e2735c149ebac6bbae05162cf5426384c3f3d833fc5af2bf51903fad",
+        "sha256": "0a9b2281ffa4e7fb781ffe46b8f6db33b693439a2aefc82e2f0859d72f70c1bc",
         "executable": false,
         "action": "installed"
       },
@@ -27072,7 +27242,7 @@
       {
         "path": ".cursor/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "437a91ce167b37ed1fb49af0b544f533f2be28c9238a50e34274181fa38daa04",
+        "sha256": "4a5fe9dbc13a35d4cd294b2c479b3bd3dd9d18565da05d53310243278e105495",
         "executable": false,
         "action": "installed"
       },
@@ -37460,7 +37630,7 @@
       {
         "path": ".agents/skills/guru-finish-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/SKILL.md",
-        "sha256": "78530030ccb27ec71201edabdd91befa60ba5c56b28bd365d93141b592d2b66d",
+        "sha256": "c84c79873d11a74339eb6c2563d01ea2c7adc61ebe7c37d5682d4ee7edbdd191",
         "executable": false,
         "action": "installed"
       },
@@ -37712,7 +37882,7 @@
       {
         "path": ".codex/skills/guru-finish-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/SKILL.md",
-        "sha256": "78530030ccb27ec71201edabdd91befa60ba5c56b28bd365d93141b592d2b66d",
+        "sha256": "c84c79873d11a74339eb6c2563d01ea2c7adc61ebe7c37d5682d4ee7edbdd191",
         "executable": false,
         "action": "installed"
       },
@@ -37964,7 +38134,7 @@
       {
         "path": ".claude/skills/guru-finish-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/SKILL.md",
-        "sha256": "78530030ccb27ec71201edabdd91befa60ba5c56b28bd365d93141b592d2b66d",
+        "sha256": "c84c79873d11a74339eb6c2563d01ea2c7adc61ebe7c37d5682d4ee7edbdd191",
         "executable": false,
         "action": "installed"
       },
@@ -38216,7 +38386,7 @@
       {
         "path": ".cursor/skills/guru-finish-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-finish-task/SKILL.md",
-        "sha256": "78530030ccb27ec71201edabdd91befa60ba5c56b28bd365d93141b592d2b66d",
+        "sha256": "c84c79873d11a74339eb6c2563d01ea2c7adc61ebe7c37d5682d4ee7edbdd191",
         "executable": false,
         "action": "installed"
       },
@@ -38468,7 +38638,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "bcd69d4c6820f022aa2d6c4e793a494dda5aa0f3f39294cddeec1cd5db56e08f",
+        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
         "executable": false,
         "action": "installed"
       },
@@ -38532,6 +38702,13 @@
         "path": ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "sha256": "df9988fcde4abf55ea2fb837c759f2f462ff630ef8e10adf7142391ebd643729",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "sha256": "30bcb6c56df4549912f0f82d7c297d52e02ce2ea909829c278dc9112d63b1dfa",
         "executable": false,
         "action": "installed"
       },
@@ -38629,7 +38806,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
-        "sha256": "65c58831afe94bab3fc415f50cb4f36c94f162d041ddda0f46076d0a36cfabe5",
+        "sha256": "ee4eee99efb011109421a7021aaa0ee7315264971f250a0973a64c8e31822719",
         "executable": false,
         "action": "installed"
       },
@@ -38650,7 +38827,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
-        "sha256": "949549f829a271e40e49df8d772d28a58a84abf7241e1b647af72b5632cfb8ff",
+        "sha256": "0515ba3b1b32642cb4dbb11d46153cb7e1ee9ee9858679398d28f06e414cda75",
         "executable": false,
         "action": "installed"
       },
@@ -38678,7 +38855,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
-        "sha256": "97ba59512723cecc62ee4d995dd3ac0be3d36d6c45b900b09b5ddf70d7492fda",
+        "sha256": "c13cb103d050854a51f66a8a3c5125e35c0b311661709c610ee1c19271d079cd",
         "executable": false,
         "action": "installed"
       },
@@ -38692,21 +38869,21 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
-        "sha256": "b7a27f2400023be8624ffcac86a052e6c075a2eaaf434aad311e6a512cf1d2b3",
+        "sha256": "d0366a01d3524ccc7a80b6196605805dbc3179209407cefed82b1d1adc52c696",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
-        "sha256": "9d3572ff28684fefcc11bf6f507fa5faa412b70a907952a255f10a0a9d1bab22",
+        "sha256": "cbb9ac43cd116081e7191cb3129e4d995307588e730bfc2b7781072df63b401a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
-        "sha256": "e25a919925c97c517df1fc9c2dfa09f16019c7d79f18d3da8bf40ddbbfba473c",
+        "sha256": "2eac0fe02c9eb3acd55af61e5f3e5cf4385f42169300da7a6454519a41bdb51c",
         "executable": false,
         "action": "installed"
       },
@@ -38741,14 +38918,14 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
-        "sha256": "2a70bd64e5b9a0cad15f9d29cc2ff6b9cc15c079e8a057234c67dec8640b3053",
+        "sha256": "08c3d2125a7d49761f9207528074936c6c076f185db433e9dcdeb4f708bd7969",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
-        "sha256": "8e173d37567968c1c2ff96fb33531708f3bd8cdf9afc4c3c8fea583825f18d5c",
+        "sha256": "913087b1deadc61fb3e91b617c7a66f429a3bed82554bf83a6f187a79a0be29d",
         "executable": false,
         "action": "installed"
       },
@@ -38762,7 +38939,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
-        "sha256": "2e912e4f64fc8dadfe4d20039f8ad7d0b78918d2941bad305f0935d4b560d2a1",
+        "sha256": "db35ebb35590443546f2df28f675e334cc9ea414b87e8223cb08e1d8c688361a",
         "executable": false,
         "action": "installed"
       },
@@ -38804,7 +38981,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
-        "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -38823,6 +39000,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "sha256": "ff41b8d5755765b90e1ef9ebc2c8069d212c7ed09af1c01c074041661166aba2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "sha256": "e0cd6de75bde67cbeddaae7358f81fa1ea5ea7d61ad9d32e6cccf5c73915a975",
@@ -38830,9 +39014,30 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "sha256": "5530627daa4a6b31d4b97523a18597f157e30a8c3a5bcd7c058ccbcc8c1c668d",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "sha256": "d8932a8f433d83f78702200e97b1e39d0518e78431a21ee46f0f111ca8447838",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "sha256": "2f54b5921a0083593fb680b2c20e80e507560b49dac2591fa31080760141feb6",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -38861,6 +39066,13 @@
         "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "sha256": "ae9338829a4e883394015a704974d9184455b5b7e739e078837f64c8a5b071a1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "sha256": "4f7a150a2f5725e3717e00381595515c64b2f788898bc847378948b2d8e603fa",
         "executable": false,
         "action": "installed"
       },
@@ -38895,14 +39107,21 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json",
-        "sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
+        "sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d4f7e96f9d6a860ee79631a4cdcdb5f21e7829c03fdd48e9fcc15d96782b456a",
+        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "sha256": "d6b94765d80e2be320b0d5334f8a2be1a1f9f738b5fa697ea979858f9c18d60d",
         "executable": false,
         "action": "installed"
       },
@@ -38945,6 +39164,13 @@
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "sha256": "843c512da6eb045081441f44d2d155edba3f53eb2e97bd2799fd1c77a4a04232",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "sha256": "cbffaf2635a0c5103e4ecc49e3a996a195e8fd5afd561558dac67c43c62120d3",
         "executable": false,
         "action": "installed"
       },
@@ -39019,6 +39245,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "sha256": "8d9a3114a39062a1a27aef45cc945a1125610d6c75c904c84c5d27a99a419707",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "sha256": "bb9c48082d354f5661d98ee47c12a605ff2ee27f530d50e231a59823729d16bd",
@@ -39061,6 +39294,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "sha256": "daa305b676c9483024ca20317256ed20af94beeb4e5d753bae5e0e9b9472f41a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "sha256": "83fbe7be3ab1e2682285f8ccda156fcf3e892b98b60eb542b1840b7969729040",
@@ -39071,6 +39311,13 @@
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "sha256": "93fedd15328c40ece6b46bc86d45f0b1a3d57071d8675945cfe888564ff3d9bd",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "sha256": "628154390534130ae146e2f82cd89f7af3b44e13ffcddf3adbd147201f8ee1c6",
         "executable": false,
         "action": "installed"
       },
@@ -39096,9 +39343,23 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "sha256": "0d0f69ac1f354a4b7fb023f3f700ed898e59995acc1d2724a77b27395b75e040",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "sha256": "f944f940bb816fe04c1f5c28493ff485ce9594415de117714942cdd31e6f9e6f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "sha256": "542c82f6494867bc6d0c7151d259e3cfab252f4b940bc8178f2021529ad4f55c",
         "executable": false,
         "action": "installed"
       },
@@ -39131,6 +39392,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "sha256": "f2b4cb70a4a2c070e24afda359028295a494004643d4a5fb70f76bfc2a784e9a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "sha256": "1ac1a10eb9c0184676541016fee24718261260ce4a0060cfd72fe2986d4c3e60",
@@ -39155,6 +39423,13 @@
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "sha256": "9f99b6b214b2bcc069fe5e6ab071eac4688e364d7cea72c05c34606e4b6f0904",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "sha256": "3772ae9bfcbf640d636086d3e400b9799970ada7e149b1ae6e940c4f875c3d1a",
         "executable": false,
         "action": "installed"
       },
@@ -39215,9 +39490,23 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "sha256": "cd32a3f23f65d0f2942f017012c64d9dc64c55d8f79d7ff41f65999b0d0873da",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "sha256": "cdb84aeae1ae23dc9e6380c91a1fd6716d4dfe7df3868780cf3c6b52ace2c21f",
         "executable": false,
         "action": "installed"
       },
@@ -39245,7 +39534,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "bcd69d4c6820f022aa2d6c4e793a494dda5aa0f3f39294cddeec1cd5db56e08f",
+        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
         "executable": false,
         "action": "installed"
       },
@@ -39309,6 +39598,13 @@
         "path": ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "sha256": "df9988fcde4abf55ea2fb837c759f2f462ff630ef8e10adf7142391ebd643729",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "sha256": "30bcb6c56df4549912f0f82d7c297d52e02ce2ea909829c278dc9112d63b1dfa",
         "executable": false,
         "action": "installed"
       },
@@ -39406,7 +39702,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
-        "sha256": "65c58831afe94bab3fc415f50cb4f36c94f162d041ddda0f46076d0a36cfabe5",
+        "sha256": "ee4eee99efb011109421a7021aaa0ee7315264971f250a0973a64c8e31822719",
         "executable": false,
         "action": "installed"
       },
@@ -39427,7 +39723,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
-        "sha256": "949549f829a271e40e49df8d772d28a58a84abf7241e1b647af72b5632cfb8ff",
+        "sha256": "0515ba3b1b32642cb4dbb11d46153cb7e1ee9ee9858679398d28f06e414cda75",
         "executable": false,
         "action": "installed"
       },
@@ -39455,7 +39751,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
-        "sha256": "97ba59512723cecc62ee4d995dd3ac0be3d36d6c45b900b09b5ddf70d7492fda",
+        "sha256": "c13cb103d050854a51f66a8a3c5125e35c0b311661709c610ee1c19271d079cd",
         "executable": false,
         "action": "installed"
       },
@@ -39469,21 +39765,21 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
-        "sha256": "b7a27f2400023be8624ffcac86a052e6c075a2eaaf434aad311e6a512cf1d2b3",
+        "sha256": "d0366a01d3524ccc7a80b6196605805dbc3179209407cefed82b1d1adc52c696",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
-        "sha256": "9d3572ff28684fefcc11bf6f507fa5faa412b70a907952a255f10a0a9d1bab22",
+        "sha256": "cbb9ac43cd116081e7191cb3129e4d995307588e730bfc2b7781072df63b401a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
-        "sha256": "e25a919925c97c517df1fc9c2dfa09f16019c7d79f18d3da8bf40ddbbfba473c",
+        "sha256": "2eac0fe02c9eb3acd55af61e5f3e5cf4385f42169300da7a6454519a41bdb51c",
         "executable": false,
         "action": "installed"
       },
@@ -39518,14 +39814,14 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
-        "sha256": "2a70bd64e5b9a0cad15f9d29cc2ff6b9cc15c079e8a057234c67dec8640b3053",
+        "sha256": "08c3d2125a7d49761f9207528074936c6c076f185db433e9dcdeb4f708bd7969",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
-        "sha256": "8e173d37567968c1c2ff96fb33531708f3bd8cdf9afc4c3c8fea583825f18d5c",
+        "sha256": "913087b1deadc61fb3e91b617c7a66f429a3bed82554bf83a6f187a79a0be29d",
         "executable": false,
         "action": "installed"
       },
@@ -39539,7 +39835,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
-        "sha256": "2e912e4f64fc8dadfe4d20039f8ad7d0b78918d2941bad305f0935d4b560d2a1",
+        "sha256": "db35ebb35590443546f2df28f675e334cc9ea414b87e8223cb08e1d8c688361a",
         "executable": false,
         "action": "installed"
       },
@@ -39581,7 +39877,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
-        "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -39600,6 +39896,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "sha256": "ff41b8d5755765b90e1ef9ebc2c8069d212c7ed09af1c01c074041661166aba2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "sha256": "e0cd6de75bde67cbeddaae7358f81fa1ea5ea7d61ad9d32e6cccf5c73915a975",
@@ -39607,9 +39910,30 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "sha256": "5530627daa4a6b31d4b97523a18597f157e30a8c3a5bcd7c058ccbcc8c1c668d",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "sha256": "d8932a8f433d83f78702200e97b1e39d0518e78431a21ee46f0f111ca8447838",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "sha256": "2f54b5921a0083593fb680b2c20e80e507560b49dac2591fa31080760141feb6",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -39638,6 +39962,13 @@
         "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "sha256": "ae9338829a4e883394015a704974d9184455b5b7e739e078837f64c8a5b071a1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "sha256": "4f7a150a2f5725e3717e00381595515c64b2f788898bc847378948b2d8e603fa",
         "executable": false,
         "action": "installed"
       },
@@ -39672,14 +40003,21 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json",
-        "sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
+        "sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d4f7e96f9d6a860ee79631a4cdcdb5f21e7829c03fdd48e9fcc15d96782b456a",
+        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "sha256": "d6b94765d80e2be320b0d5334f8a2be1a1f9f738b5fa697ea979858f9c18d60d",
         "executable": false,
         "action": "installed"
       },
@@ -39722,6 +40060,13 @@
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "sha256": "843c512da6eb045081441f44d2d155edba3f53eb2e97bd2799fd1c77a4a04232",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "sha256": "cbffaf2635a0c5103e4ecc49e3a996a195e8fd5afd561558dac67c43c62120d3",
         "executable": false,
         "action": "installed"
       },
@@ -39796,6 +40141,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "sha256": "8d9a3114a39062a1a27aef45cc945a1125610d6c75c904c84c5d27a99a419707",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "sha256": "bb9c48082d354f5661d98ee47c12a605ff2ee27f530d50e231a59823729d16bd",
@@ -39838,6 +40190,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "sha256": "daa305b676c9483024ca20317256ed20af94beeb4e5d753bae5e0e9b9472f41a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "sha256": "83fbe7be3ab1e2682285f8ccda156fcf3e892b98b60eb542b1840b7969729040",
@@ -39848,6 +40207,13 @@
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "sha256": "93fedd15328c40ece6b46bc86d45f0b1a3d57071d8675945cfe888564ff3d9bd",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "sha256": "628154390534130ae146e2f82cd89f7af3b44e13ffcddf3adbd147201f8ee1c6",
         "executable": false,
         "action": "installed"
       },
@@ -39873,9 +40239,23 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "sha256": "0d0f69ac1f354a4b7fb023f3f700ed898e59995acc1d2724a77b27395b75e040",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "sha256": "f944f940bb816fe04c1f5c28493ff485ce9594415de117714942cdd31e6f9e6f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "sha256": "542c82f6494867bc6d0c7151d259e3cfab252f4b940bc8178f2021529ad4f55c",
         "executable": false,
         "action": "installed"
       },
@@ -39908,6 +40288,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "sha256": "f2b4cb70a4a2c070e24afda359028295a494004643d4a5fb70f76bfc2a784e9a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "sha256": "1ac1a10eb9c0184676541016fee24718261260ce4a0060cfd72fe2986d4c3e60",
@@ -39932,6 +40319,13 @@
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "sha256": "9f99b6b214b2bcc069fe5e6ab071eac4688e364d7cea72c05c34606e4b6f0904",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "sha256": "3772ae9bfcbf640d636086d3e400b9799970ada7e149b1ae6e940c4f875c3d1a",
         "executable": false,
         "action": "installed"
       },
@@ -39992,9 +40386,23 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "sha256": "cd32a3f23f65d0f2942f017012c64d9dc64c55d8f79d7ff41f65999b0d0873da",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "sha256": "cdb84aeae1ae23dc9e6380c91a1fd6716d4dfe7df3868780cf3c6b52ace2c21f",
         "executable": false,
         "action": "installed"
       },
@@ -40022,7 +40430,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "bcd69d4c6820f022aa2d6c4e793a494dda5aa0f3f39294cddeec1cd5db56e08f",
+        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
         "executable": false,
         "action": "installed"
       },
@@ -40086,6 +40494,13 @@
         "path": ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "sha256": "df9988fcde4abf55ea2fb837c759f2f462ff630ef8e10adf7142391ebd643729",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "sha256": "30bcb6c56df4549912f0f82d7c297d52e02ce2ea909829c278dc9112d63b1dfa",
         "executable": false,
         "action": "installed"
       },
@@ -40183,7 +40598,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
-        "sha256": "65c58831afe94bab3fc415f50cb4f36c94f162d041ddda0f46076d0a36cfabe5",
+        "sha256": "ee4eee99efb011109421a7021aaa0ee7315264971f250a0973a64c8e31822719",
         "executable": false,
         "action": "installed"
       },
@@ -40204,7 +40619,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
-        "sha256": "949549f829a271e40e49df8d772d28a58a84abf7241e1b647af72b5632cfb8ff",
+        "sha256": "0515ba3b1b32642cb4dbb11d46153cb7e1ee9ee9858679398d28f06e414cda75",
         "executable": false,
         "action": "installed"
       },
@@ -40232,7 +40647,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
-        "sha256": "97ba59512723cecc62ee4d995dd3ac0be3d36d6c45b900b09b5ddf70d7492fda",
+        "sha256": "c13cb103d050854a51f66a8a3c5125e35c0b311661709c610ee1c19271d079cd",
         "executable": false,
         "action": "installed"
       },
@@ -40246,21 +40661,21 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
-        "sha256": "b7a27f2400023be8624ffcac86a052e6c075a2eaaf434aad311e6a512cf1d2b3",
+        "sha256": "d0366a01d3524ccc7a80b6196605805dbc3179209407cefed82b1d1adc52c696",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
-        "sha256": "9d3572ff28684fefcc11bf6f507fa5faa412b70a907952a255f10a0a9d1bab22",
+        "sha256": "cbb9ac43cd116081e7191cb3129e4d995307588e730bfc2b7781072df63b401a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
-        "sha256": "e25a919925c97c517df1fc9c2dfa09f16019c7d79f18d3da8bf40ddbbfba473c",
+        "sha256": "2eac0fe02c9eb3acd55af61e5f3e5cf4385f42169300da7a6454519a41bdb51c",
         "executable": false,
         "action": "installed"
       },
@@ -40295,14 +40710,14 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
-        "sha256": "2a70bd64e5b9a0cad15f9d29cc2ff6b9cc15c079e8a057234c67dec8640b3053",
+        "sha256": "08c3d2125a7d49761f9207528074936c6c076f185db433e9dcdeb4f708bd7969",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
-        "sha256": "8e173d37567968c1c2ff96fb33531708f3bd8cdf9afc4c3c8fea583825f18d5c",
+        "sha256": "913087b1deadc61fb3e91b617c7a66f429a3bed82554bf83a6f187a79a0be29d",
         "executable": false,
         "action": "installed"
       },
@@ -40316,7 +40731,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
-        "sha256": "2e912e4f64fc8dadfe4d20039f8ad7d0b78918d2941bad305f0935d4b560d2a1",
+        "sha256": "db35ebb35590443546f2df28f675e334cc9ea414b87e8223cb08e1d8c688361a",
         "executable": false,
         "action": "installed"
       },
@@ -40358,7 +40773,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
-        "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -40377,6 +40792,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "sha256": "ff41b8d5755765b90e1ef9ebc2c8069d212c7ed09af1c01c074041661166aba2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "sha256": "e0cd6de75bde67cbeddaae7358f81fa1ea5ea7d61ad9d32e6cccf5c73915a975",
@@ -40384,9 +40806,30 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "sha256": "5530627daa4a6b31d4b97523a18597f157e30a8c3a5bcd7c058ccbcc8c1c668d",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "sha256": "d8932a8f433d83f78702200e97b1e39d0518e78431a21ee46f0f111ca8447838",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "sha256": "2f54b5921a0083593fb680b2c20e80e507560b49dac2591fa31080760141feb6",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -40415,6 +40858,13 @@
         "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "sha256": "ae9338829a4e883394015a704974d9184455b5b7e739e078837f64c8a5b071a1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "sha256": "4f7a150a2f5725e3717e00381595515c64b2f788898bc847378948b2d8e603fa",
         "executable": false,
         "action": "installed"
       },
@@ -40449,14 +40899,21 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json",
-        "sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
+        "sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d4f7e96f9d6a860ee79631a4cdcdb5f21e7829c03fdd48e9fcc15d96782b456a",
+        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "sha256": "d6b94765d80e2be320b0d5334f8a2be1a1f9f738b5fa697ea979858f9c18d60d",
         "executable": false,
         "action": "installed"
       },
@@ -40499,6 +40956,13 @@
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "sha256": "843c512da6eb045081441f44d2d155edba3f53eb2e97bd2799fd1c77a4a04232",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "sha256": "cbffaf2635a0c5103e4ecc49e3a996a195e8fd5afd561558dac67c43c62120d3",
         "executable": false,
         "action": "installed"
       },
@@ -40573,6 +41037,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "sha256": "8d9a3114a39062a1a27aef45cc945a1125610d6c75c904c84c5d27a99a419707",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "sha256": "bb9c48082d354f5661d98ee47c12a605ff2ee27f530d50e231a59823729d16bd",
@@ -40615,6 +41086,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "sha256": "daa305b676c9483024ca20317256ed20af94beeb4e5d753bae5e0e9b9472f41a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "sha256": "83fbe7be3ab1e2682285f8ccda156fcf3e892b98b60eb542b1840b7969729040",
@@ -40625,6 +41103,13 @@
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "sha256": "93fedd15328c40ece6b46bc86d45f0b1a3d57071d8675945cfe888564ff3d9bd",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "sha256": "628154390534130ae146e2f82cd89f7af3b44e13ffcddf3adbd147201f8ee1c6",
         "executable": false,
         "action": "installed"
       },
@@ -40650,9 +41135,23 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "sha256": "0d0f69ac1f354a4b7fb023f3f700ed898e59995acc1d2724a77b27395b75e040",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "sha256": "f944f940bb816fe04c1f5c28493ff485ce9594415de117714942cdd31e6f9e6f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "sha256": "542c82f6494867bc6d0c7151d259e3cfab252f4b940bc8178f2021529ad4f55c",
         "executable": false,
         "action": "installed"
       },
@@ -40685,6 +41184,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "sha256": "f2b4cb70a4a2c070e24afda359028295a494004643d4a5fb70f76bfc2a784e9a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "sha256": "1ac1a10eb9c0184676541016fee24718261260ce4a0060cfd72fe2986d4c3e60",
@@ -40709,6 +41215,13 @@
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "sha256": "9f99b6b214b2bcc069fe5e6ab071eac4688e364d7cea72c05c34606e4b6f0904",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "sha256": "3772ae9bfcbf640d636086d3e400b9799970ada7e149b1ae6e940c4f875c3d1a",
         "executable": false,
         "action": "installed"
       },
@@ -40769,9 +41282,23 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "sha256": "cd32a3f23f65d0f2942f017012c64d9dc64c55d8f79d7ff41f65999b0d0873da",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "sha256": "cdb84aeae1ae23dc9e6380c91a1fd6716d4dfe7df3868780cf3c6b52ace2c21f",
         "executable": false,
         "action": "installed"
       },
@@ -40799,7 +41326,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "bcd69d4c6820f022aa2d6c4e793a494dda5aa0f3f39294cddeec1cd5db56e08f",
+        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
         "executable": false,
         "action": "installed"
       },
@@ -40863,6 +41390,13 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-3.0.schema.json",
         "sha256": "df9988fcde4abf55ea2fb837c759f2f462ff630ef8e10adf7142391ebd643729",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/current-4.0.schema.json",
+        "sha256": "30bcb6c56df4549912f0f82d7c297d52e02ce2ea909829c278dc9112d63b1dfa",
         "executable": false,
         "action": "installed"
       },
@@ -40960,7 +41494,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/branch-review-independent-native-input.json",
-        "sha256": "65c58831afe94bab3fc415f50cb4f36c94f162d041ddda0f46076d0a36cfabe5",
+        "sha256": "ee4eee99efb011109421a7021aaa0ee7315264971f250a0973a64c8e31822719",
         "executable": false,
         "action": "installed"
       },
@@ -40981,7 +41515,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/delivery-promotion-identity-input.json",
-        "sha256": "949549f829a271e40e49df8d772d28a58a84abf7241e1b647af72b5632cfb8ff",
+        "sha256": "0515ba3b1b32642cb4dbb11d46153cb7e1ee9ee9858679398d28f06e414cda75",
         "executable": false,
         "action": "installed"
       },
@@ -41009,7 +41543,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-architecture-input.json",
-        "sha256": "97ba59512723cecc62ee4d995dd3ac0be3d36d6c45b900b09b5ddf70d7492fda",
+        "sha256": "c13cb103d050854a51f66a8a3c5125e35c0b311661709c610ee1c19271d079cd",
         "executable": false,
         "action": "installed"
       },
@@ -41023,21 +41557,21 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-scope-expansion-input.json",
-        "sha256": "b7a27f2400023be8624ffcac86a052e6c075a2eaaf434aad311e6a512cf1d2b3",
+        "sha256": "d0366a01d3524ccc7a80b6196605805dbc3179209407cefed82b1d1adc52c696",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/impact-unpromoted-input.json",
-        "sha256": "9d3572ff28684fefcc11bf6f507fa5faa412b70a907952a255f10a0a9d1bab22",
+        "sha256": "cbb9ac43cd116081e7191cb3129e4d995307588e730bfc2b7781072df63b401a",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/implementation-discovery-independent-native-input.json",
-        "sha256": "e25a919925c97c517df1fc9c2dfa09f16019c7d79f18d3da8bf40ddbbfba473c",
+        "sha256": "2eac0fe02c9eb3acd55af61e5f3e5cf4385f42169300da7a6454519a41bdb51c",
         "executable": false,
         "action": "installed"
       },
@@ -41072,14 +41606,14 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/parallel-stale-facts.json",
-        "sha256": "2a70bd64e5b9a0cad15f9d29cc2ff6b9cc15c079e8a057234c67dec8640b3053",
+        "sha256": "08c3d2125a7d49761f9207528074936c6c076f185db433e9dcdeb4f708bd7969",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/phase2-independent-native-input.json",
-        "sha256": "8e173d37567968c1c2ff96fb33531708f3bd8cdf9afc4c3c8fea583825f18d5c",
+        "sha256": "913087b1deadc61fb3e91b617c7a66f429a3bed82554bf83a6f187a79a0be29d",
         "executable": false,
         "action": "installed"
       },
@@ -41093,7 +41627,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/promotion-sync-input.json",
-        "sha256": "2e912e4f64fc8dadfe4d20039f8ad7d0b78918d2941bad305f0935d4b560d2a1",
+        "sha256": "db35ebb35590443546f2df28f675e334cc9ea414b87e8223cb08e1d8c688361a",
         "executable": false,
         "action": "installed"
       },
@@ -41135,7 +41669,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/evals/files/whole-task-acceptance-input.json",
-        "sha256": "6632a5e957f484df78cd31fe8a2d98687acd3b647829600b6d0bac5da4013651",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -41154,6 +41688,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-promotion-2.0.json",
+        "sha256": "ff41b8d5755765b90e1ef9ebc2c8069d212c7ed09af1c01c074041661166aba2",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-repair-1.0.json",
         "sha256": "e0cd6de75bde67cbeddaae7358f81fa1ea5ea7d61ad9d32e6cccf5c73915a975",
@@ -41161,9 +41702,30 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-delivery-task-impact-sync-2.0.json",
+        "sha256": "5530627daa4a6b31d4b97523a18597f157e30a8c3a5bcd7c058ccbcc8c1c668d",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-impact-architecture.json",
         "sha256": "d8932a8f433d83f78702200e97b1e39d0518e78431a21ee46f0f111ca8447838",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-promotion-4.0.json",
+        "sha256": "2f54b5921a0083593fb680b2c20e80e507560b49dac2591fa31080760141feb6",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-input-whole-task-acceptance-4.0.json",
+        "sha256": "13ddacb5a59c5c59fabdcd523b5e84fe7e4a27f18ae4ee7e41e4fc41f18ea57c",
         "executable": false,
         "action": "installed"
       },
@@ -41192,6 +41754,13 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-contract-incomplete.json",
         "sha256": "ae9338829a4e883394015a704974d9184455b5b7e739e078837f64c8a5b071a1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/examples/public-output-current-4.0.json",
+        "sha256": "4f7a150a2f5725e3717e00381595515c64b2f788898bc847378948b2d8e603fa",
         "executable": false,
         "action": "installed"
       },
@@ -41226,14 +41795,21 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json",
-        "sha256": "2fe587f966bd7d094f2df1c55362d2f3f145b352aa96a3e0e7bcdc4a1d01038a",
+        "sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "d4f7e96f9d6a860ee79631a4cdcdb5f21e7829c03fdd48e9fcc15d96782b456a",
+        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/architecture-contribution-4.0.schema.json",
+        "sha256": "d6b94765d80e2be320b0d5334f8a2be1a1f9f738b5fa697ea979858f9c18d60d",
         "executable": false,
         "action": "installed"
       },
@@ -41276,6 +41852,13 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-3.0.schema.json",
         "sha256": "843c512da6eb045081441f44d2d155edba3f53eb2e97bd2799fd1c77a4a04232",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-baseline-current-output-4.0.schema.json",
+        "sha256": "cbffaf2635a0c5103e4ecc49e3a996a195e8fd5afd561558dac67c43c62120d3",
         "executable": false,
         "action": "installed"
       },
@@ -41350,6 +41933,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-4.0.schema.json",
+        "sha256": "8d9a3114a39062a1a27aef45cc945a1125610d6c75c904c84c5d27a99a419707",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-aggregate-delivery-index-1.0.schema.json",
         "sha256": "bb9c48082d354f5661d98ee47c12a605ff2ee27f530d50e231a59823729d16bd",
@@ -41392,6 +41982,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-promotion-2.0.schema.json",
+        "sha256": "daa305b676c9483024ca20317256ed20af94beeb4e5d753bae5e0e9b9472f41a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-repair-1.0.schema.json",
         "sha256": "83fbe7be3ab1e2682285f8ccda156fcf3e892b98b60eb542b1840b7969729040",
@@ -41402,6 +41999,13 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-1.0.schema.json",
         "sha256": "93fedd15328c40ece6b46bc86d45f0b1a3d57071d8675945cfe888564ff3d9bd",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+        "sha256": "628154390534130ae146e2f82cd89f7af3b44e13ffcddf3adbd147201f8ee1c6",
         "executable": false,
         "action": "installed"
       },
@@ -41427,9 +42031,23 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact-nonplanning-4.0.schema.json",
+        "sha256": "0d0f69ac1f354a4b7fb023f3f700ed898e59995acc1d2724a77b27395b75e040",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-impact.schema.json",
         "sha256": "f944f940bb816fe04c1f5c28493ff485ce9594415de117714942cdd31e6f9e6f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-input-promotion-4.0.schema.json",
+        "sha256": "542c82f6494867bc6d0c7151d259e3cfab252f4b940bc8178f2021529ad4f55c",
         "executable": false,
         "action": "installed"
       },
@@ -41462,6 +42080,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-current-index-4.0.schema.json",
+        "sha256": "f2b4cb70a4a2c070e24afda359028295a494004643d4a5fb70f76bfc2a784e9a",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-baseline-incomplete-delivery-index-1.0.schema.json",
         "sha256": "1ac1a10eb9c0184676541016fee24718261260ce4a0060cfd72fe2986d4c3e60",
@@ -41486,6 +42111,13 @@
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-1.0.schema.json",
         "sha256": "9f99b6b214b2bcc069fe5e6ab071eac4688e364d7cea72c05c34606e4b6f0904",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-baseline-current-2.0.schema.json",
+        "sha256": "3772ae9bfcbf640d636086d3e400b9799970ada7e149b1ae6e940c4f875c3d1a",
         "executable": false,
         "action": "installed"
       },
@@ -41546,9 +42178,23 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-4.0.schema.json",
+        "sha256": "cd32a3f23f65d0f2942f017012c64d9dc64c55d8f79d7ff41f65999b0d0873da",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-1.0.schema.json",
         "sha256": "01752068cb12d39574abef76820777a1725091236f3a04b72aaafed9b058743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/semantic-result-delivery-2.0.schema.json",
+        "sha256": "cdb84aeae1ae23dc9e6380c91a1fd6716d4dfe7df3868780cf3c6b52ace2c21f",
         "executable": false,
         "action": "installed"
       },
@@ -55632,7 +56278,7 @@
       {
         "path": ".agents/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "946b03599aa1b0f0f81cea0916672510fb26fec2086b4552ae06ab7a835ffe2e",
+        "sha256": "d06a620b64261fc10448170ad5dc82c630729a74033382d5b347212eb42a497b",
         "executable": false,
         "action": "installed"
       },
@@ -55882,6 +56528,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "sha256": "200b9eef74491a5be830740d02ecc1f9b683b7a8c88dfecc2a7790d1ff2f2263",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-review-branch/examples/public-delivery-review-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "sha256": "e3d8995a6774949821b6847b1b4820eb63072efc999a422f07d96403b259d27f",
@@ -55947,14 +56600,14 @@
       {
         "path": ".agents/skills/guru-review-branch/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
+        "sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "00c2630c34e729d067c80aebe714655e686a3ec6a5ecc87eecaae43a76e67abd",
+        "sha256": "4d2745a8595235c5aec3a6d956d6828e6c7397a4d874deb29d7cd6b67fed1a30",
         "executable": false,
         "action": "installed"
       },
@@ -56120,6 +56773,13 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "sha256": "0c9bd9e597c8bbf061a288725dd871d8033b68a7e64e4e487b69fa65dd9685bc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "sha256": "c6662a7033c45260163ef7a86153065073da731601ce51e68a51cc7e45c0d7e5",
@@ -56183,9 +56843,23 @@
         "action": "installed"
       },
       {
+        "path": ".agents/skills/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "sha256": "d25b4cbc40af5ea715d794c3f67402702bde2654f07d61b7589e95cfee0b56b1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".agents/skills/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "sha256": "efcc844dc845b2091b3722299cbf1c1710b61fcecfcb37e2d0741e5a3c86bdcb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "sha256": "8ce3f149f600d9ac38dcd3ead89fdc48ffed734e9ea63b0998818ab1aa9e0539",
         "executable": false,
         "action": "installed"
       },
@@ -56311,7 +56985,7 @@
       {
         "path": ".codex/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "946b03599aa1b0f0f81cea0916672510fb26fec2086b4552ae06ab7a835ffe2e",
+        "sha256": "d06a620b64261fc10448170ad5dc82c630729a74033382d5b347212eb42a497b",
         "executable": false,
         "action": "installed"
       },
@@ -56561,6 +57235,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "sha256": "200b9eef74491a5be830740d02ecc1f9b683b7a8c88dfecc2a7790d1ff2f2263",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-review-branch/examples/public-delivery-review-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "sha256": "e3d8995a6774949821b6847b1b4820eb63072efc999a422f07d96403b259d27f",
@@ -56626,14 +57307,14 @@
       {
         "path": ".codex/skills/guru-review-branch/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
+        "sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".codex/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "00c2630c34e729d067c80aebe714655e686a3ec6a5ecc87eecaae43a76e67abd",
+        "sha256": "4d2745a8595235c5aec3a6d956d6828e6c7397a4d874deb29d7cd6b67fed1a30",
         "executable": false,
         "action": "installed"
       },
@@ -56799,6 +57480,13 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "sha256": "0c9bd9e597c8bbf061a288725dd871d8033b68a7e64e4e487b69fa65dd9685bc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "sha256": "c6662a7033c45260163ef7a86153065073da731601ce51e68a51cc7e45c0d7e5",
@@ -56862,9 +57550,23 @@
         "action": "installed"
       },
       {
+        "path": ".codex/skills/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "sha256": "d25b4cbc40af5ea715d794c3f67402702bde2654f07d61b7589e95cfee0b56b1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".codex/skills/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "sha256": "efcc844dc845b2091b3722299cbf1c1710b61fcecfcb37e2d0741e5a3c86bdcb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "sha256": "8ce3f149f600d9ac38dcd3ead89fdc48ffed734e9ea63b0998818ab1aa9e0539",
         "executable": false,
         "action": "installed"
       },
@@ -56990,7 +57692,7 @@
       {
         "path": ".claude/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "946b03599aa1b0f0f81cea0916672510fb26fec2086b4552ae06ab7a835ffe2e",
+        "sha256": "d06a620b64261fc10448170ad5dc82c630729a74033382d5b347212eb42a497b",
         "executable": false,
         "action": "installed"
       },
@@ -57240,6 +57942,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "sha256": "200b9eef74491a5be830740d02ecc1f9b683b7a8c88dfecc2a7790d1ff2f2263",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-review-branch/examples/public-delivery-review-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "sha256": "e3d8995a6774949821b6847b1b4820eb63072efc999a422f07d96403b259d27f",
@@ -57305,14 +58014,14 @@
       {
         "path": ".claude/skills/guru-review-branch/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
+        "sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "00c2630c34e729d067c80aebe714655e686a3ec6a5ecc87eecaae43a76e67abd",
+        "sha256": "4d2745a8595235c5aec3a6d956d6828e6c7397a4d874deb29d7cd6b67fed1a30",
         "executable": false,
         "action": "installed"
       },
@@ -57478,6 +58187,13 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "sha256": "0c9bd9e597c8bbf061a288725dd871d8033b68a7e64e4e487b69fa65dd9685bc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "sha256": "c6662a7033c45260163ef7a86153065073da731601ce51e68a51cc7e45c0d7e5",
@@ -57541,9 +58257,23 @@
         "action": "installed"
       },
       {
+        "path": ".claude/skills/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "sha256": "d25b4cbc40af5ea715d794c3f67402702bde2654f07d61b7589e95cfee0b56b1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".claude/skills/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "sha256": "efcc844dc845b2091b3722299cbf1c1710b61fcecfcb37e2d0741e5a3c86bdcb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "sha256": "8ce3f149f600d9ac38dcd3ead89fdc48ffed734e9ea63b0998818ab1aa9e0539",
         "executable": false,
         "action": "installed"
       },
@@ -57669,7 +58399,7 @@
       {
         "path": ".cursor/skills/guru-review-branch/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md",
-        "sha256": "946b03599aa1b0f0f81cea0916672510fb26fec2086b4552ae06ab7a835ffe2e",
+        "sha256": "d06a620b64261fc10448170ad5dc82c630729a74033382d5b347212eb42a497b",
         "executable": false,
         "action": "installed"
       },
@@ -57919,6 +58649,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-promotion-reference-alignment-input-1.0.json",
+        "sha256": "200b9eef74491a5be830740d02ecc1f9b683b7a8c88dfecc2a7790d1ff2f2263",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-review-branch/examples/public-delivery-review-authoring.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/examples/public-delivery-review-authoring.json",
         "sha256": "e3d8995a6774949821b6847b1b4820eb63072efc999a422f07d96403b259d27f",
@@ -57984,14 +58721,14 @@
       {
         "path": ".cursor/skills/guru-review-branch/interface.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/interface.json",
-        "sha256": "80a54c9320fcffdc1f10628a8a2dff09905906320bca567f4b0d3c01b9a75442",
+        "sha256": "82dca307b4f08a85d876e5fe7d90ca7d984c4daff51c8379bdcb8161022108c5",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-review-branch/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
-        "sha256": "00c2630c34e729d067c80aebe714655e686a3ec6a5ecc87eecaae43a76e67abd",
+        "sha256": "4d2745a8595235c5aec3a6d956d6828e6c7397a4d874deb29d7cd6b67fed1a30",
         "executable": false,
         "action": "installed"
       },
@@ -58157,6 +58894,13 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "sha256": "0c9bd9e597c8bbf061a288725dd871d8033b68a7e64e4e487b69fa65dd9685bc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-delivery-scope-revised-output-1.0.schema.json",
         "sha256": "c6662a7033c45260163ef7a86153065073da731601ce51e68a51cc7e45c0d7e5",
@@ -58220,9 +58964,23 @@
         "action": "installed"
       },
       {
+        "path": ".cursor/skills/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-delivery-2.0.schema.json",
+        "sha256": "d25b4cbc40af5ea715d794c3f67402702bde2654f07d61b7589e95cfee0b56b1",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".cursor/skills/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-1.0.schema.json",
         "sha256": "efcc844dc845b2091b3722299cbf1c1710b61fcecfcb37e2d0741e5a3c86bdcb",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "source": "trellis/skills/guru-team/packages/guru-review-branch/schemas/public-input-legacy-index-2.0.schema.json",
+        "sha256": "8ce3f149f600d9ac38dcd3ead89fdc48ffed734e9ea63b0998818ab1aa9e0539",
         "executable": false,
         "action": "installed"
       },
@@ -60756,7 +61514,7 @@
       {
         "path": ".agents/skills/guru-review-task-completion/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
-        "sha256": "cb48829864b65f119120bb7ab692df9db6d779381391654bb092714ed10c0945",
+        "sha256": "22126517f530ffd48963ac3bc5fe5d960b05f75f982d563212b058cbbf59ebd4",
         "executable": false,
         "action": "installed"
       },
@@ -61085,7 +61843,7 @@
       {
         "path": ".codex/skills/guru-review-task-completion/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
-        "sha256": "cb48829864b65f119120bb7ab692df9db6d779381391654bb092714ed10c0945",
+        "sha256": "22126517f530ffd48963ac3bc5fe5d960b05f75f982d563212b058cbbf59ebd4",
         "executable": false,
         "action": "installed"
       },
@@ -61414,7 +62172,7 @@
       {
         "path": ".claude/skills/guru-review-task-completion/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
-        "sha256": "cb48829864b65f119120bb7ab692df9db6d779381391654bb092714ed10c0945",
+        "sha256": "22126517f530ffd48963ac3bc5fe5d960b05f75f982d563212b058cbbf59ebd4",
         "executable": false,
         "action": "installed"
       },
@@ -61743,7 +62501,7 @@
       {
         "path": ".cursor/skills/guru-review-task-completion/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md",
-        "sha256": "cb48829864b65f119120bb7ab692df9db6d779381391654bb092714ed10c0945",
+        "sha256": "22126517f530ffd48963ac3bc5fe5d960b05f75f982d563212b058cbbf59ebd4",
         "executable": false,
         "action": "installed"
       },
@@ -62275,7 +63033,7 @@
       {
         "path": ".agents/skills/guru-review-task-delivery/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md",
-        "sha256": "43417bf604e99b51579c36960424c847c0a5496c9759697c357d126db757bd5a",
+        "sha256": "72b156c7248fdc9e7b350295a6116d3ddef75ce432f4139c5d93a706d49a03ac",
         "executable": false,
         "action": "installed"
       },
@@ -62653,7 +63411,7 @@
       {
         "path": ".codex/skills/guru-review-task-delivery/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md",
-        "sha256": "43417bf604e99b51579c36960424c847c0a5496c9759697c357d126db757bd5a",
+        "sha256": "72b156c7248fdc9e7b350295a6116d3ddef75ce432f4139c5d93a706d49a03ac",
         "executable": false,
         "action": "installed"
       },
@@ -63031,7 +63789,7 @@
       {
         "path": ".claude/skills/guru-review-task-delivery/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md",
-        "sha256": "43417bf604e99b51579c36960424c847c0a5496c9759697c357d126db757bd5a",
+        "sha256": "72b156c7248fdc9e7b350295a6116d3ddef75ce432f4139c5d93a706d49a03ac",
         "executable": false,
         "action": "installed"
       },
@@ -63409,7 +64167,7 @@
       {
         "path": ".cursor/skills/guru-review-task-delivery/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md",
-        "sha256": "43417bf604e99b51579c36960424c847c0a5496c9759697c357d126db757bd5a",
+        "sha256": "72b156c7248fdc9e7b350295a6116d3ddef75ce432f4139c5d93a706d49a03ac",
         "executable": false,
         "action": "installed"
       },

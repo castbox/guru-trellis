@@ -778,7 +778,7 @@ def build_context(
         reads = list(facts["architecture_reads"] if phase2 else facts["required_reads"])
         reads.append(str(facts_path.relative_to(model_repository_root)))
         architecture_package = (model_repository_root / ".trellis/guru-team/skills/packages" / ARCHITECTURE_SKILL) if phase2 else projection_root
-        architecture_input = (model_repository_root / "docs/phase2-evidence/architecture-input.json") if phase2 else (model_repository_root / facts["public_input_locator"])
+        architecture_input = (model_repository_root / phase2_authoring.ARCHITECTURE_INPUT) if phase2 else (model_repository_root / facts["public_input_locator"])
         architecture_context = architecture_authoring.reviewer_context(
             model_repository_root, architecture_package,
             f"{helper_path} {qualification_helper_arguments}", reads, architecture_input,
@@ -964,7 +964,7 @@ def validate_native_trace(
         raise ValueError("semantic authoring trace must re-read every staged case file")
     if semantic_authoring:
         required_public_reads = ({projection_root / path for path in phase2_authoring.PUBLIC_READS}
-                                 if phase2 else set(architecture_authoring.public_contract_reads(projection_root, json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text()))))
+                                 if phase2 else set(architecture_authoring.public_contract_reads(projection_root, json.loads((owner_repository / json.loads((owner_repository / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())["public_input_locator"]).read_text()))))
         observed_public_reads = {
             Path(str(event["path"])).resolve()
             for event in events

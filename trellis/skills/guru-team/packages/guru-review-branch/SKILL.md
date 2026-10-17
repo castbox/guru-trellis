@@ -198,14 +198,19 @@ another checkpoint. Failed check or projection preserves the current regular
 checkpoint. A retired, mismatched, stale, unsafe, or symlink-backed checkpoint
 fails closed.
 
-If Architecture promotion changes shared current files, that diff returns to a
-fresh Phase 2 Architecture/check round, a new task commit, and this independent
-complete-range Branch Review. Delivery Review cannot consume the pre-promotion
-review or a Phase 2 result in place of that fresh review; Delivery Review
-consumes only the post-promotion `passed` result.
+Required Architecture promotion happens before final Check. The committed
+Architecture review and this independent complete-range Branch Review cover
+actual promotion files and before/after responsibilities. A later change
+returns to the earliest affected owner according to its actual obligations.
+For the bounded exception after an actual complete Review, use
+`delivery_promotion_reference_alignment` exactly as defined in the contract's
+Promotion reference alignment section. It emits the existing `passed` only
+after the original owner reviews all Git delta and affected dependencies.
+Delivery Review consumes the new current full_review; it never substitutes a
+Phase 2 result or relabels the old pass.
 
 The current Delivery aggregate dispatches independent full Review, continuity,
-and archived profiles. Full Review and continuity bind the exact actual Check,
+archived Review and promotion reference alignment profiles. Full Review and continuity bind the exact actual Check,
 current candidate and base. The full Review gate writes only after independent
 review. Continuity separates prior full-review HEAD from current committed
 integration HEAD/tree and never creates a new full Review result. Checkpoints

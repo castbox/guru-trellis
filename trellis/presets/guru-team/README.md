@@ -1,5 +1,10 @@
 # Guru Team Preset
 
+Architecture 晋升在最终 Check 前完成；committed 独立判断和完整 Branch Review
+覆盖实际晋升文件。公共入口与 consumer 必须成套更新，三类在途 Delivery、
+partial/output-loss 恢复和窄引用/状态对齐见 [MIGRATION-600](MIGRATION-600.md)。
+源码更新不证明已有安装或业务采用完成。
+
 [清晰技术写作规范](./spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
