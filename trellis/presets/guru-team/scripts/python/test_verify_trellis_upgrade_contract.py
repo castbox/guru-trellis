@@ -482,7 +482,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual(result["parallel_finish"]["status"], "passed")
             self.assertEqual((root / "install/project/installed-marker").read_text(), "installed")
 
-    def test_existing_cell_seeds_before_command_then_updates_target_command(self) -> None:
+    def test_existing_cell_seeds_before_command_then_calls_public_tools_owner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
             before = ("node", "/before/bin/trellis.js")
@@ -542,6 +542,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
+                 mock.patch.object(self.matrix, "_upgrade_empty_fixture_tools") as upgrade, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
                  mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
                  mock.patch.object(self.matrix, "_assert_projection_consistency"), \
@@ -551,16 +552,11 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     before_cli="0.6.16", target_cli="0.6.17", allow_local_sample=False,
                     fork_source=root / "fork", predecessor={"command": before})
             self.assertEqual(init.call_args.args[1], before)
-            self.assertEqual([call.args[0] for call in run.call_args_list], [
-                (*target, "update", "--dry-run"),
-                (*target, "update", "--skip-all"),
-            ])
-            self.assertEqual(switch.call_args.args[1], target)
-            self.assertEqual(
-                switch.call_args.args[5],
-                root / "cell/before-source/trellis/workflows/guru-team/workflow.md",
-            )
-            self.assertEqual(result["update_mode"], "update")
+            run.assert_not_called()
+            switch.assert_not_called()
+            self.assertEqual(upgrade.call_args.args[:4],
+                             (root, root / "cell/project", root / "fork", "fixture"))
+            self.assertEqual(result["update_mode"], "public_tools_install")
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {
@@ -586,96 +582,46 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             "cursor",
         )
 
-    def test_existing_cell_ordinary_update_uses_predecessor_workflow_identity(self) -> None:
+    def test_existing_tools_fixture_rejects_business_task_before_owner_write(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            before = ("node", "/before/bin/trellis.js")
-            target = ("node", "/target/packages/cli/bin/trellis.js")
-            projection = {
-                "projection_sha256": "projection",
-                "schema_version": "1.0",
-                "extension": {
-                    "extension_id": "guru-team",
-                    "version": "0.6.17-guru.test",
-                    "target_trellis_cli": "0.6.17",
-                    "requires_trellis_cli": "0.6.17",
-                    "tested_trellis_cli": ["0.6.17"],
-                },
-                "workflow": {},
-                "task_data": {},
-                "docs_authority": {},
-            }
-            predecessor_extension = {
-                "version": "0.6.16-guru.41",
-                "target_trellis_cli": "0.6.16",
-                "public_api": {
-                    "managed_paths": [
-                        ".agents/skills/guru-*/",
-                        ".codex/skills/guru-*/",
-                        ".cursor/skills/guru-*/",
-                        ".claude/skills/guru-*/",
-                    ]
-                },
-            }
-            workflow_bytes = b"before workflow\n"
+            root = Path(directory)
+            task = root / ".trellis/tasks/business/task.json"
+            task.parent.mkdir(parents=True)
+            task.write_text('{"id":"business"}')
+            with mock.patch.object(self.matrix, "_run") as run:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "must not contain a Task"):
+                    self.matrix._upgrade_empty_fixture_tools(root, root, root, "fixture", root, {})
+            run.assert_not_called()
 
-            def export_tree(_repo, _tag, destination, _archive):
-                workflow = destination / "trellis/workflows/guru-team/workflow.md"
-                workflow.parent.mkdir(parents=True)
-                workflow.write_bytes(workflow_bytes)
-
-            def install_workflow(project, *unused):
-                workflow = project / ".trellis/workflow.md"
-                workflow.parent.mkdir(parents=True)
-                workflow.write_bytes(workflow_bytes)
-                return False
-
-            def load_json(path):
-                if path.name == "guru-team-extension.json":
-                    return predecessor_extension
-                return {"extension": predecessor_extension}
-
-            with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
-                 mock.patch.object(self.matrix, "_init_git_repo"), \
-                 mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
-                 mock.patch.object(self.matrix, "_export_git_tree", side_effect=export_tree), \
-                 mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow), \
-                 mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
-                 mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
-                 mock.patch.object(self.matrix, "predecessor_capability_projection", return_value=projection), \
-                 mock.patch.object(self.matrix, "predecessor_installed_capability_projection", return_value=projection), \
-                 mock.patch.object(self.matrix, "capability_projection", return_value=projection), \
-                 mock.patch.object(self.matrix, "installed_capability_projection", return_value=projection), \
-                 mock.patch.object(self.matrix, "_load_json", side_effect=load_json), \
-                 mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
-                 mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
-                 mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
-                 mock.patch.object(self.matrix, "_assert_docs_authority"), \
-                 mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
-                 mock.patch.object(self.matrix, "_assert_projection_consistency"), \
-                 mock.patch.object(self.matrix, "validate_cell", return_value={}):
-                result = self.matrix._run_cell(
-                    repo_root=root,
-                    cell_root=root / "cell",
-                    platform="codex",
-                    scenario="existing",
-                    workflow_source="fixture",
-                    before_tag="before",
-                    before_cli="0.6.16",
-                    target_cli="0.6.17",
-                    allow_local_sample=False,
-                    fork_source=root / "fork",
-                    predecessor={"command": before},
+    def test_existing_tools_fixture_projects_tag_to_exact_owner_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, target, fork = (root / name for name in ("source", "target", "fork"))
+            workflow = source / "trellis/workflows/guru-team/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("candidate workflow\n")
+            manifest = target / ".trellis/guru-team/extension.json"
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({"install": {"selected_platforms": ["codex"]}}))
+            for package in ("cli", "core"):
+                path = fork / "packages" / package / "package.json"
+                path.parent.mkdir(parents=True)
+                path.write_text(json.dumps({"version": "0.7.0-castbox.4"}))
+            head = "a" * 40
+            responses = [
+                {"result": {"public_tools": {"files": []}}},
+                {"result": {"plan": {"operation_id": "fixture"}}},
+                {"exit_id": "tools_upgraded", "unverified": []},
+            ]
+            with mock.patch.object(self.matrix, "_git", return_value=head), \
+                 mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(x) for x in responses]):
+                self.matrix._upgrade_empty_fixture_tools(
+                    source, target, fork, "gh:castbox/guru-trellis/trellis#v0.7.0-guru.4", root, {},
                 )
-            self.assertEqual([call.args[0] for call in run.call_args_list], [
-                (*target, "update", "--dry-run"),
-                (*target, "update", "--skip-all"),
-            ])
-            self.assertEqual(
-                switch.call_args.args[5],
-                root / "cell/before-source/trellis/workflows/guru-team/workflow.md",
-            )
-            self.assertEqual(result["update_mode"], "update")
+            prepared = json.loads((root / "tools-prepare.json").read_text())
+            self.assertEqual(prepared["tools_input"]["workflow"]["provider"],
+                             "gh:castbox/guru-trellis/trellis#" + head)
+            self.assertEqual(prepared["upstream_source"]["dependency_mode"], "source_locked")
 
     def test_install_workflow_omits_task_personnel_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1440,35 +1386,6 @@ exit 23
             run_cell.assert_not_called()
             self.assertEqual(list((root / "work").iterdir()), [])
 
-    def test_matrix_executor_uses_exact_update_without_personnel_migration(self) -> None:
-        dry_run = self.matrix_text.index('(*binary, "update", "--dry-run")')
-        normal = self.matrix_text.index('(*binary, "update", "--skip-all")', dry_run)
-        workflow_call = self.matrix_text.index(
-            "_preview_and_switch_workflow(", normal
-        )
-        reapply = self.matrix_text.index(
-            "reapplied_preset = _apply_preset(", workflow_call
-        )
-        reapply_call = self.matrix_text[
-            reapply : self.matrix_text.index("\n        )", reapply) + len("\n        )")
-        ]
-        self.assertNotIn('"upgrade", "--tag"', self.matrix_text)
-        self.assertNotIn('"--migrate"', self.matrix_text)
-        self.assertLess(dry_run, normal)
-        self.assertLess(normal, workflow_call)
-        self.assertLess(workflow_call, reapply)
-        self.assertIn("previous_root=source_root", reapply_call)
-        workflow_function = self.matrix_text[
-            self.matrix_text.index("def _preview_and_switch_workflow(") :
-            self.matrix_text.index("\ndef _sidecars(")
-        ]
-        self.assertLess(
-            workflow_function.index('"--create-new"'),
-            workflow_function.index('"--force"'),
-        )
-        self.assertNotIn('input_text="y\\n"', workflow_function)
-        self.assertNotIn('"latest"', self.matrix_text)
-
     def test_managed_workflow_preview_and_force_switch_are_content_bound(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1886,11 +1803,11 @@ exit 23
         projection = self.matrix.capability_projection(REPO)
 
         self.assertRegex(projection["projection_sha256"], r"^[0-9a-f]{64}$")
-        self.assertEqual(len(projection["skill_api"]["interfaces"]), 35)
-        self.assertEqual(len(projection["workflow"]["skill_invokes"]), 33)
-        self.assertEqual(len(projection["workflow"]["skill_exits"]), 153)
-        self.assertEqual(len(projection["workflow"]["workflow_targets"]), 62)
-        self.assertEqual(len(projection["workflow"]["stop_targets"]), 36)
+        self.assertEqual(len(projection["skill_api"]["interfaces"]), len(self.matrix._active_registry_rows(REPO)))
+        self.assertEqual(len(projection["workflow"]["skill_invokes"]), 36)
+        self.assertEqual(len(projection["workflow"]["skill_exits"]), 190)
+        self.assertEqual(len(projection["workflow"]["workflow_targets"]), 84)
+        self.assertEqual(len(projection["workflow"]["stop_targets"]), 40)
         self.assertEqual(
             projection["distribution"]["platforms"],
             list(self.matrix.PLATFORM_FLAGS),
@@ -2119,7 +2036,7 @@ exit 23
         template_hashes = self.matrix._assert_template_hashes(REPO, REPO)
 
         self.assertTrue(comparison["capabilities_preserved"])
-        self.assertEqual(len(installed["skill_api"]["interfaces"]), 35)
+        self.assertEqual(len(installed["skill_api"]["interfaces"]), len(self.matrix._active_registry_rows(REPO)))
         self.assertEqual(installed["distribution"]["platforms"], ["claude", "codex", "cursor"])
         source = self.matrix.capability_projection(REPO)
         current = self.matrix.compare_capabilities(

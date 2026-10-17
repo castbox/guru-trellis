@@ -2159,6 +2159,91 @@ def validate_cell(
     return result
 
 
+def _upgrade_empty_fixture_tools(
+    repo_root: Path, target: Path, fork_source: Path, workflow_source: str,
+    cell_root: Path, env: Mapping[str, str],
+) -> dict[str, Any]:
+    """Execute the original tools owner for the verifier's empty installation.
+
+    This fixed fixture has no Task disposition to choose. Business installations
+    and legacy Task conversion still require their own semantic maintenance owner.
+    """
+    if list((target / ".trellis/tasks").rglob("task.json")):
+        raise MatrixError("existing tools fixture must not contain a Task")
+    source_ref = _git(repo_root, "rev-parse", "HEAD").strip()
+    provider, _, provider_ref = workflow_source.partition("#")
+    if (provider != "gh:castbox/guru-trellis/trellis"
+            or _git(repo_root, "rev-parse", f"{provider_ref or 'main'}^{{commit}}").strip() != source_ref):
+        raise MatrixError("existing tools fixture provider must resolve to the source candidate")
+
+    def package_digest(root: Path) -> str:
+        digest = hashlib.sha256()
+        def walk(path: Path, relative: str) -> None:
+            if path.is_dir():
+                for child in sorted(path.iterdir()):
+                    walk(child, relative + "/" + child.name)
+            elif path.is_file():
+                digest.update(relative.encode())
+                digest.update(str(stat.S_IMODE(path.stat().st_mode)).encode())
+                digest.update(path.read_bytes())
+        for name in ("package.json", "bin", "dist", "src"):
+            if (root / name).exists():
+                walk(root / name, name)
+        return digest.hexdigest()
+
+    cli = fork_source / "packages/cli"
+    core = fork_source / "packages/core"
+    descriptor = {
+        "cli_package_root": str(cli), "dependency_mode": "source_locked",
+        "expected_candidate": {
+            "cli_version": _load_json(cli / "package.json")["version"],
+            "core_version": _load_json(core / "package.json")["version"],
+            "cli_digest": package_digest(cli), "core_digest": package_digest(core),
+        },
+        "guru_source_root": str(repo_root), "fork_source_root": str(fork_source),
+    }
+    package = repo_root / "trellis/skills/guru-team/packages/guru-upgrade-tools"
+    def save(name: str, value: Any) -> Path:
+        path = cell_root / ("tools-" + name + ".json")
+        path.write_text(json.dumps(value), encoding="utf-8")
+        return path
+    public = save("input", {
+        "profile": "install", "source_ref": source_ref,
+        "dependency_mode": "source_locked", "checkout": str(target),
+    })
+    def call(script: str, *extra: str) -> dict[str, Any]:
+        output = _run(
+            (str(package / "scripts" / script), "--root", str(target),
+             "--input", str(public), *extra),
+            cwd=repo_root, env=env, capture=True,
+            log=cell_root / ("tools-" + script + ".log"),
+        )
+        return _require_dict(json.loads(output), "tools owner output")
+    preview = call("preview.sh", "--upstream-source", str(save("source", descriptor)))
+    conflicts = [row for row in preview["result"]["public_tools"]["files"]
+                 if row["status"] == "conflict"]
+    if any(row["required"] or row["path"] != ".trellis/config.yaml" for row in conflicts):
+        raise MatrixError("unexpected managed edit in the immutable predecessor fixture")
+    prepared = call("prepare.sh", "--plan", str(save("prepare", {
+        "upstream_source": descriptor,
+        "tools_input": {
+            "root": str(target),
+            "workflow": {"action": "install", "template_id": "guru-team",
+                         "provider": f"gh:castbox/guru-trellis/trellis#{source_ref}", "ownership": "custom",
+                         "content": (repo_root / "trellis/workflows/guru-team/workflow.md").read_text()},
+            "file_decisions": [{"path": row["path"], "source": row["source"],
+                                "action": "preserve"} for row in conflicts],
+        },
+        "selected_platforms": _load_json(target / ".trellis/guru-team/extension.json")["install"]["selected_platforms"],
+        "guru_decisions": [],
+    })))
+    result = call("invoke.sh", "--plan", str(save("plan", prepared["result"]["plan"])))
+    save("output", result)
+    if result.get("exit_id") != "tools_upgraded" or result.get("unverified"):
+        raise MatrixError("original tools owner did not complete a source-locked fixture upgrade")
+    return result
+
+
 def _run_cell(
     *,
     repo_root: Path,
@@ -2260,38 +2345,15 @@ def _run_cell(
         # No CLI self-upgrade: a separately validated predecessor is required.
         binary = tuple(source["command"])
         actual_after_upgrade = _assert_version(binary, target_cli, env)
-        _run(
-            (*binary, "update", "--dry-run"),
-            cwd=target,
-            env=env,
-            capture=True,
-            log=cell_root / "trellis-update-dry-run.log",
-        )
-        _run(
-            (*binary, "update", "--skip-all"),
-            cwd=target,
-            env=env,
-            log=cell_root / "trellis-update.log",
-        )
-        update_mode = "update"
-        expected_managed_workflow = (
-            source_root / "trellis/workflows/guru-team/workflow.md"
-        )
         local_sample = _workflow_source_requires_local_sample(repo_root, workflow_source)
-        if local_sample and not allow_local_sample:
+        if local_sample:
             raise MatrixError(
                 "existing cell candidate workflow is unpublished; exact remote source is required"
             )
-        _preview_and_switch_workflow(
-            target,
-            binary,
-            env,
-            workflow_source,
-            repo_root,
-            expected_managed_workflow,
-            local_sample,
-            cell_root,
+        _upgrade_empty_fixture_tools(
+            repo_root, target, fork_source, workflow_source, cell_root, env,
         )
+        update_mode = "public_tools_install"
         reapplied_preset = _apply_preset(
             repo_root,
             target,
