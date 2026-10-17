@@ -5,6 +5,13 @@ description: Bind one current session to a TaskLifecycleDTO, rebind after loss, 
 
 # Guru Bind Task Session
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 `judgment_mode=semantic`. Read the explicit TaskId and generation (including
 generation 0), current session, and the official Fixed Fork TaskId resolver.
 Review the requested profile and target lifecycle before invoking the recorder.

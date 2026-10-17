@@ -147,6 +147,10 @@ CODEX_DISPATCH_HEADER = """#----------------------------------------------------
 MANAGED_CONFIG = Path("config-template.yml")
 MANAGED_SPEC_PATHS = (
     (
+        Path("trellis/presets/guru-team/spec/workflow/clear-technical-writing.md"),
+        Path(".trellis/spec/workflow/clear-technical-writing.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/spec/workflow/bootstrap-repository-ssot.md"),
         Path(".trellis/spec/workflow/bootstrap-repository-ssot.md"),
     ),
@@ -357,6 +361,7 @@ AGENTS_AI_FIRST_BLOCK = f"""{AGENTS_AI_FIRST_START_MARKER}
 - **Digest 不是 workflow authority**：digest 只服务一个局部确定性 consumer，不绑定用户授权、semantic approval、跨 Skill handoff 或全链 freshness。
 - **交互只服务真实选择和副作用**：只有真实选择、scope/authority 变化或 Git/GitHub 副作用才询问；mapped exit、stale/re-entry/reprepare/recovery 自动承接。
 - **语义门禁与持久化解耦**：AI 语义门禁仍然必需；recorder/checker 不得替代判断，也不得为留下证明制造 tracked dirty。
+- **清晰技术写作**：首次生成实质文本前，完整读取 `.trellis/spec/workflow/clear-technical-writing.md` 并在原职责范围内执行。适用于无 Task、正式 Task、task-free、独立操作、恢复会话和子 Agent。读取成功前只输出短句进度或具体缺失诊断，说明当前动作或缺失项，不作未经验证的结论。文件缺失或读取失败时暂停实质文本；恢复后完整读取并继续原请求，不新增审批。子 Agent 不假设继承；完整且未截断的原生注入可直接使用，否则自行完整读取同一文件。
 {AGENTS_AI_FIRST_END_MARKER}
 """
 

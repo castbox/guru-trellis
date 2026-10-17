@@ -59,6 +59,26 @@ current installed-runtime preflight. It is outside business-task Intake.
 Load that package's current contract and consume only its declared exits;
 ordinary update, preset apply, and task readers remain current-only.
 
+A user request to create/open/file a GitHub Issue must explicitly load
+`guru-create-issue`, including equivalent Chinese intent such as “新建 issue”,
+“创建 Issue”, “新增 Issue”, and contextual “同意新建 issue”. The Skill owns
+its entry preconditions and creation behavior; missing upstream review enters
+the current Intake/applicable scope route and returns to that owner. Do not
+classify Issue creation as an independent manual Git/GitHub operation or
+create it directly with a CLI/provider. Preserve the requested Issue-only
+scope and existing Task/resource confirmation boundaries.
+
+An explicit GitHub Issue review request must load its semantic owner:
+“审核 Issue” / “评审 Issue” / requirements-completeness checks load
+`guru-clarify-requirements` for the existing independent review profile;
+explicit readiness or independent-deliverability review loads
+`guru-review-change-request`; explicit wording review loads
+`guru-review-contract-wording`. Each Skill owns its prerequisites and review
+behavior; use the existing entry/context graph when prerequisites are missing.
+Review-only intent is distinct from a status lookup or a request to implement
+or revise the Issue. It grants no mutation or Task/resource-creation authority;
+keep existing profile consumers and side-effect boundaries.
+
 Explicit independent Git/GitHub requests use
 [Manual Git/GitHub Operations](#manual-gitgithub-operations), not task-mode
 selection or an inferred lifecycle continuation.
@@ -657,6 +677,21 @@ block this candidate contract or cause a substitute completion owner.
 
 ## Phase Index
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full. This applies to no-Task, formal Task, task-free, independent Git/GitHub,
+standalone Skill, resumed and compacted sessions. Until loading succeeds, use
+only short progress messages or concrete missing-dependency diagnostics. State
+the current action or missing item; make no unverified claim. If reading fails,
+pause substantive output. When available, read it and resume the original
+request without an additional approval. The writing owner self-checks output;
+review owners apply the same standard only within their existing review scope.
+
+For child dispatch, provide that installed path and include it in the selected
+Delivery's implementation/check context manifests. A child must not assume
+inherited context. It may consume complete, untruncated native injection;
+otherwise it reads the full file itself before substantive output. On resume
+or context loss, read it again if its complete current text is unavailable.
+
 ```text
 Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
 Phase 1: Plan    -> Author requirements, candidate Architecture, Author solution, Wording, final Architecture, Approval, presentation, Delivery activation
@@ -696,6 +731,11 @@ Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycl
 
 [trellis-continuation]
 ### Guru caller continuation
+
+Before substantive output on continuation, load the full
+`.trellis/spec/workflow/clear-technical-writing.md` under the Phase Index loading
+contract. If the complete current text is unavailable after resume or compaction,
+read it again. Short progress and missing-file diagnostics follow that contract.
 
 For start, ordinary continuation, a resumed/new chat, and explicit
 `trellis-continue`, first read the actual current-chat binding in this Git
@@ -796,6 +836,14 @@ When a unique, complete, current side-effect plan is already displayed, `确认�
 [workflow-state:no_task]
 For actual upstream `trellis-continue:no_current_task`, consume the Guru caller
 continuation above before taking this route; it is not a Task-creation gate.
+For Issue creation intent (新建 / 创建 / 新增 Issue, including contextual
+confirmation), explicitly load `guru-create-issue` and follow its entry contract;
+do not bypass it as a manual GitHub operation.
+For general Issue review intent (审核 / 评审 Issue), explicitly load
+`guru-clarify-requirements`. Explicit readiness review loads
+`guru-review-change-request`; wording review loads `guru-review-contract-wording`.
+Follow the selected Skill's entry contract and preserve review-only scope.
+A status lookup remains an information query.
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
 Every change-intent request first resolves task identity for the current

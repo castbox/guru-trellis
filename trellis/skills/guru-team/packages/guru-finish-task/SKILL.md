@@ -5,6 +5,13 @@ description: Persist Completion and Closure into one reviewed task archive and t
 
 # Guru Finish Task
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 `judgment_mode=semantic`: review current Closure and terminal bookkeeping,
 complete the AI Review Gate, confirm each actual mutation boundary in the
 current dialogue, then invoke the executor/validator and return one typed exit.

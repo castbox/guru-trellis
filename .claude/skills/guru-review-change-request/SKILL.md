@@ -1,9 +1,34 @@
 ---
 name: guru-review-change-request
-description: Review whether a current change request is one independently deliverable unit through linked prerequisite evidence, an AI readiness gate, and five typed exits.
+description: Use when the user asks to review GitHub Issue readiness, including 审核 Issue 是否可以开工、评审 Issue 是否可独立交付, or to assess a change request as one independently deliverable unit. Preserve linked prerequisite evidence, the AI readiness gate and declared typed exits.
 ---
 
 # Guru Review Change Request
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+## Intent Entry
+
+Load this Skill for an explicit Issue readiness or independent-deliverability
+review, including “审核 Issue 是否可以开工” and “评审 Issue 是否可独立交付”.
+General “审核 Issue” without that purpose enters `guru-clarify-requirements`
+for requirements review. A status lookup or discussion of these trigger
+phrases does not itself request readiness review.
+
+Loading is distinct from a valid public invocation. Obtain missing current
+Discovery, Clarify and Wording evidence through the existing workflow and
+original owners before invoking this review; never synthesize their results
+or treat a prior informal review as current prerequisite evidence.
+
+Review-only scope does not authorize Issue mutation, Task/resource creation
+or implementation. Preserve the existing typed exits and their consumers;
+`ready` is a readiness conclusion, not authorization for downstream creation.
+Any later mutation retains its owning Skill's current-dialogue boundary.
 
 The current executing AI is this Skill's semantic owner. Read the complete
 contract and perform its review yourself before authoring the current owner

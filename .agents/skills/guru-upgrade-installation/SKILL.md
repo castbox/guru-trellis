@@ -3,6 +3,13 @@ name: guru-upgrade-installation
 description: Upgrade a supported Guru 0.6.x or 0.7.0 family installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.
 ---
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.

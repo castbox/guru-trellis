@@ -3,6 +3,9 @@
 This repository is the public source for the reusable `guru-team` Trellis
 workflow and preset. It is not a product backend/frontend application.
 
+Read [clear-technical-writing.md](./clear-technical-writing.md) before substantive
+output. The installed document owns writing rules; this index is a locator.
+
 ## Scope
 
 Use these specs when changing:

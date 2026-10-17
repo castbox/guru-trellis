@@ -1,9 +1,38 @@
 ---
 name: guru-clarify-requirements
-description: Clarify initial requirements, active-task scope changes, or explicit review requests through an evidence-first semantic loop with dialogue-local choices and typed exits.
+description: Use when the user asks to review a GitHub Issue or its requirements, including 审核 Issue、评审 Issue、检查 Issue 需求是否完整, or asks for requirements clarification or active-task scope changes. Use the existing evidence-first semantic loop and standalone review contract.
 ---
 
 # Guru Clarify Requirements
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+## Intent Entry
+
+Load this Skill for a general request to review a GitHub Issue, including
+“审核 issue”, “评审 Issue”, “检查 Issue 需求是否完整”, and equivalent intent.
+Use the existing `standalone_review` profile for an independent requirements
+review, preserving its declared caller and actual context prerequisites.
+If current Discovery evidence is missing, load the existing workflow entry
+and obtain it before the semantic loop; do not invent prerequisite outputs.
+An actual active-task scope change retains its existing owner/profile.
+
+Review requirements, scope and acceptance against live Issue authority. A
+request only to read Issue status is an information query, not this review.
+Quoting trigger phrases to discuss routing does not request an Issue review.
+An explicit readiness request belongs to `guru-review-change-request`; an
+explicit wording request belongs to `guru-review-contract-wording`.
+
+Review-only scope permits findings and proposed revisions; it does not
+authorize an Issue edit/comment, Task/resource creation or implementation.
+Preserve existing confirmation and typed-exit contracts. Return through the
+standalone caller when that profile completes; do not turn review completion
+into initial Task intake without a request for that work.
 
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action

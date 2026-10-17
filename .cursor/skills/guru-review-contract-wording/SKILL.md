@@ -1,9 +1,35 @@
 ---
 name: guru-review-contract-wording
-description: Review controlled contract wording through fixed change-request, planning-artifact, or explicit-path scope, semantic revision and classification, deterministic evidence, and typed exits.
+description: Use when the user asks to review Issue wording, including 审核 Issue 措辞、评审 Issue 表述是否明确, or controlled wording in change requests, planning artifacts and explicit Markdown paths. Preserve fixed scope, semantic classification and declared typed exits.
 ---
 
 # Guru Review Contract Wording
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+## Intent Entry
+
+Load this Skill for an explicit Issue wording review, including “审核 Issue
+措辞” and “评审 Issue 表述是否明确”. A live Issue uses the existing
+`change_request` profile; `explicit_paths` applies only to explicitly selected
+repository Markdown files and cannot substitute for a live Issue review.
+Obtain the profile's actual prerequisites through their existing owners before
+public invocation; loading alone does not satisfy them.
+
+General requirements review belongs to `guru-clarify-requirements`; readiness
+belongs to `guru-review-change-request`. A status lookup or discussion of the
+trigger phrases does not itself request wording review.
+
+For review-only requests, report findings and proposed revisions without
+editing Issue title/body, posting comments or rewriting files. If a repair
+is needed for pass, retain the actual finding and existing blocked/revision
+contract until that concrete mutation is authorized; do not silently rewrite
+or claim pass. Preserve fixed-scope rereads, semantic gates and typed exits.
 
 The current executing AI is this Skill's semantic owner. Read the complete
 contract and perform its review yourself before authoring the current owner

@@ -5,6 +5,13 @@ description: Select standard Guru Team intake or a bounded task-free route throu
 
 # Guru Select Workflow Mode
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
@@ -22,6 +29,14 @@ Use `task_free` immediately when the user explicitly requests that semantic;
 the shortest public expression is `这次走 task-free`. Recognize equivalent
 multilingual wording semantically rather than through a keyword table. Neither
 `帮我改一下` nor `不要开 Issue` is explicit task-free intent.
+
+A request whose outcome is creating a GitHub Issue requires the existing
+standard Intake draft/readiness review before `guru-create-issue` can mutate.
+Select `standard_intake` for that requested publication scope; a short draft
+or “只创建 Issue” does not make it a task-free file edit. Preserve Issue-only
+scope and do not infer permission to create a Task or execution resources.
+A request only to edit a local draft remains subject to the ordinary scope
+and risk decision below.
 
 Without explicit intent, read only the limited live repository and Issue facts
 needed for the decision:

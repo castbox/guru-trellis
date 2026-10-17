@@ -1,6 +1,6 @@
 # #589 D7 公开不可变摘要消费收敛
 
-identity=architecture-contribution-589-public-git-content-v1；state=proposed；Task589-git-object-performance/gen0/D7；change_path=dedicated_refactor_slice。适用baseline=current-main-0.6.17-guru.94，constitution=guru-trellis-design-constitution-v1/current，change-contract=guru-trellis-architecture-change-contract-v1。贡献尚未晋升；晋升时由原owner fresh读取live expected-current，不预置未来identity。
+identity=architecture-contribution-589-public-git-content-v1；state=reviewed_promoted；Task589-git-object-performance/gen0/D7；change_path=dedicated_refactor_slice。适用baseline=current-main-0.6.17-guru.94，constitution=guru-trellis-design-constitution-v1/current，change-contract=guru-trellis-architecture-change-contract-v1。首次内容评估阶段适用 baseline 为 `.94`。原 Architecture owner 后续 fresh 读取本地及 live main `.95`，按 expected `.95/active` 晋升 `.96`；共享长期贡献见 docs/architecture/contributions/589-git-object-performance.md。
 
 Before：manual recovery与history query2通过Guru CandidateObjects读取并物化临时snapshot，再交上游filesystem candidate_content_ref；相同blob在路径间重复读取/hash，history还有准备预读。After目标：同一操作直接调用Fork9f40公开GitCandidateContent，其仅负责不可变对象读取与摘要复用；原业务owner逐输入保留结构、身份、关系、祖先、expected摘要、PR/merge/cutoff及恢复判断。摘要字节/公开结果不改。完整.4来源由原source_locked维护消费，版本current断言与能力检测一致；原历史来源支持不变。
 
@@ -19,3 +19,7 @@ Before：manual recovery与history query2通过Guru CandidateObjects读取并物
 项目check采用guru-trellis-architecture-convergence:repository:1，入口docs/architecture/06-governance/change-contract.md，id/version=guru-trellis-architecture-convergence/1，result-contract=guru-project-architecture-check-result-2.0；范围为九concern、原writer/资源生命周期、before/after、旧路径删除、完整来源及review/promotion；绑定ARCH-GOV-006..009、ADR-005/009及ARCH-GAP-006/008并按ADR-028阶段适用解释。Planning审查真实设计/贡献，Phase2检查实际差额和证据，完整Review独立检查B...H，不能由脚本pass替代。
 
 回滚仅通过原维护owner采用完整匹配旧source/pair并恢复相应canonical consumer，不混装版本；原Delivery事实不改。后继正式安装、最终盘点及整体Completion是明确剩余consumer，本贡献不能替代其交付或#575矩阵。
+
+## 实际晋升边界
+
+首次独立完整 committed Review 为 `865f4a9576eabc85cb3b91e74ecd856785095510..f168092b2783d8c09ee416fb850ecaa1c694d65c`，Architecture 与 Branch Review 已分别经正式 wrapper 返回 `baseline_current/reviewed_candidate`、`passed`。Publication eligibility 实际返回 `sync_required(promotion_required)` 后，由同一原 Architecture owner 维护 shared-current `.96`；`.95/599` 全部保留。此次新增差额尚须 fresh Phase2、TaskCommit 和独立完整 Review；不表示正式目标工具采用、native/live 链、D7 Publication 或整体 Completion。

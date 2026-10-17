@@ -1,5 +1,16 @@
 # Guru Trellis
 
+[清晰技术写作规范](trellis/presets/guru-team/spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
+`.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
+Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
+加载要求覆盖无 Task、Task、task-free、独立操作、恢复和子 Agent；写作 owner 自检，
+审核 owner 保持原范围。源码和投影检查不证明实际平台加载与输出行为。
+
+已有安装须更新匹配的 workflow 并完整 reapply preset。Trellis update/upgrade 后，
+先按官方 marketplace `--create-new` 预览，再显式 `--force` 应用 workflow，最后
+reapply preset。现有受管哈希与 `.new`/`.bak` 机制保留用户修改；AGENTS 用户区块
+保持原样。源码更新不会自动更新旧安装；完整升级与 Release 矩阵仍由专门 Issue 承担。
+
 Guru Team GitHub operations require an installed and authenticated GitHub CLI.
 All platform reads and mutations are explicitly repository-bound `gh` or
 `gh api` operations; GitHub App, MCP, connector, and browser UI fallback are
