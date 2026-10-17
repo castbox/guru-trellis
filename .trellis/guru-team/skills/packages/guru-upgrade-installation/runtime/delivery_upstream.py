@@ -30,17 +30,39 @@ if(request.action==='templates') {
 
 
 def packages(fork: Path) -> tuple[Path, Path]:
-    for directory in fork.parents:
+    for directory in fork.resolve().parents:
         manifest = directory / "package.json"
         if not manifest.is_file():
             continue
-        value = json.loads(manifest.read_text())
-        if value.get("name") == "@mindfoldhq/trellis":
-            core = directory.parent / "trellis-core"
-            other = json.loads((core / "package.json").read_text())
-            if value.get("version") != "0.7.0-castbox.4" or other.get("version") != value["version"]:
-                raise MigrationError("Delivery migration requires the matching installed CLI/Core candidate")
-            return directory, core
+        try:
+            value = json.loads(manifest.read_text())
+        except (OSError, ValueError) as exc:
+            raise MigrationError("Cannot read the selected CLI package manifest") from exc
+        if value.get("name") != "@mindfoldhq/trellis":
+            continue
+        # Resolve the dependency used by this CLI in both workspace and npm layouts.
+        try:
+            resolved = subprocess.run([
+                "node", "--input-type=module", "-e",
+                "import {createRequire} from 'node:module';"
+                "const require=createRequire(process.argv[1]);"
+                "process.stdout.write(require.resolve('@mindfoldhq/trellis-core/package.json'));",
+                str(manifest),
+            ], text=True, capture_output=True)
+        except OSError as exc:
+            raise MigrationError("Cannot run Node to resolve the selected CLI's Core dependency") from exc
+        if resolved.returncode:
+            raise MigrationError("Cannot resolve matching Core from the selected CLI dependency layout")
+        try:
+            core_manifest = Path(resolved.stdout.strip())
+            other = json.loads(core_manifest.read_text())
+        except (OSError, ValueError) as exc:
+            raise MigrationError("Cannot read the selected CLI's matching Core package") from exc
+        if (value.get("version") != "0.7.0-castbox.4"
+                or other.get("name") != "@mindfoldhq/trellis-core"
+                or other.get("version") != value["version"]):
+            raise MigrationError("Delivery migration requires the matching installed CLI/Core candidate")
+        return directory, core_manifest.parent
     raise MigrationError("Use the reviewed installed CLI entrypoint and its matching Core package")
 
 
