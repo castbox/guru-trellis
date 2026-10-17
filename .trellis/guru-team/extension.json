@@ -1167,11 +1167,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-17T16:32:05Z",
+  "installed_at": "2026-10-17T17:23:47Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e",
-    "commit": "ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e",
+    "ref": "36db1a206c3021f65accfdbc846e2151289f319e",
+    "commit": "36db1a206c3021f65accfdbc846e2151289f319e",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -19339,7 +19339,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/identity.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
-        "sha256": "3c9eda3478067f2fed916c6d199e4e19344d779d9ae94986236ef0013a53ab04",
+        "sha256": "95c98b068e30769ea591417dbad9b80da76f7fa2badd47b8ddebf57060bf334d",
         "executable": false,
         "action": "installed"
       },

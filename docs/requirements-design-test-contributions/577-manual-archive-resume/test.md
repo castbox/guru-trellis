@@ -57,3 +57,15 @@ Dogfood 原tools operation `7d3ec616-96df-43a9-a1d6-1f321d202edb` 正式返回 `
 语法检查：当前20个canonical Python模块AST/内存compile、32个JSON parse、相关bash -n、diff --check通过；触及非生成源码均不超过3000行。仓库无适用的专用ruff/mypy/TypeScript等lint/typecheck配置，不把语法检查称为独立类型检查。
 
 两处工具操作均明确 `unverified=[formal_fork_source_lock]`。正式pin、source_locked mode校验、全局CLI和node_modules未修改。真实CMS恢复、正式Fork采用、软件发布、完整官方update及多平台Release矩阵均未验证，分别保留原业务/来源/发布owner边界；这些不属于本Issueaccepted交付范围。
+
+
+## 恢复后正式归档与 Reactivate
+
+公共恢复保留旧来源，原 Finish 后会出现历史来源与正式归档并存。原身份解析对全部归档计数，导致正式 Reactivate 在读取 Completion/Closure/Finish 资格前报 `task_id_casefold_collision`。修复在原身份 consumer 中读取公共 `migration/archive-resume.json` 与 `migration/source-task.json`，仅排除明确匹配的历史来源。创建 reservation、真正重复归档冲突及原 Reactivate 资格保持。
+
+新增 fixture 实际调用匹配公共 prepare/apply、Completion/Closure writer 和原 `Finish.project_archive`，生成两种旧来源恢复后的合法正式归档。未修时，legacy/schema1 × TaskId/显式 locator 的四项身份解析均报 collision；Reactivate 场景也在同处失败。修复后 identity 23 项、完整 Reactivate 4 项、原 Reactivate 工程合同 25 项通过。完整重开覆盖 legacy generation 0→1 和 schema1 generation 2→3，并验证原 seal 拒绝/接受、实际事务执行和同事务重试。无关联历史来源及两份正式归档仍报真实重复；旧人工归档仍不可直接 Reactivate。这些是非生产 unit/public-maintenance fixture 证据，不代表真实 CMS 恢复。
+
+最终修复经原 tools owner 再应用到同一 dogfood checkout 和同一隔离样本，公共操作分别为 `41ac24f5-321a-4861-ba20-4006e253b6be` 与 `3cc67040-7654-4d2c-ae93-f74d75273165`，均正式返回 `tools_upgraded`。两处 installed identity 与 canonical 字节一致；执行前记录的 2567/53 个 Task、历史、控制或配置文件 bytes/modes 比较无差异。目标自身 managed resolver、原生 `task.py current` 和 continuation 入口均 exit0，分别仍指向本 Task 与样本原 Task。样本已实际通过的 Clarify 结果及其 accepted scope 保持，未重复创建 Delivery。两处仍明确 `unverified=[formal_fork_source_lock]`；未扩大原代表样本或 Release 验证边界。
+
+
+修复后独立质量检查重新执行完整 lifecycle 165、Delivery projection 16、Bind 13、公共恢复后正式 Finish→Reactivate 4、Reactivate 工程合同 25，均通过且无 skip。source、dogfood installed 和同代表样本 installed 各通过 40 packages/124 commands；dogfood drift、三平台投影、identity bytes/modes、零 sidecar 和完整 B 至 dirty 候选的 diff hygiene 通过。23 个 Python 文件 AST/内存 compile、32 个 JSON parse、44 个 bash -n 通过。未受影响的 maintenance 9、六原 owner 23、Plan2 合同 34 和 dirty-source 3 采用定义、参数、环境及依赖仍适用的原真实 stdout；未把采用结果称为本轮执行。没有适用的独立 linter 或 type checker，语法检查不作为类型检查。原完整 Plan2 安装 20 项仍为 SKIP，其他未验证边界保持。
