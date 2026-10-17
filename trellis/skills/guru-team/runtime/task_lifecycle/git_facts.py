@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import subprocess
+import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 from typing import Iterable, Sequence
 
+from ..git_object_batch import GitObjectBatch, GitObjectBatchError
 from .errors import LifecycleContractError
 
 
@@ -272,6 +274,121 @@ def commit_path_bytes(repository: RepositoryFacts, commit: str, path: str) -> by
     return None
 
 
+class TaskObjectReader:
+    """One invocation's immutable path metadata and unique object spool."""
+    def __init__(self, repository: RepositoryFacts):
+        self.repository = repository
+        self.objects = GitObjectBatch(repository.context_path, git_dir=repository.common_dir)
+        self.paths = {}
+        self.subtrees = {}
+        self.fallback_paths = set()
+        self.failed_objects = set()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self.objects.__exit__()
+
+    def _commit(self, value):
+        if re.fullmatch(r"[0-9a-f]{40}", value):
+            return value
+        result = _git(["rev-parse", "--verify", value + "^{commit}"],
+                      common_dir=self.repository.common_dir, check=False)
+        if result.returncode:
+            raise LifecycleContractError("git_fact_unavailable", "commit",
+                                         "Use one live commit identity from the selected repository.")
+        return result.stdout.strip()
+
+    def _tree(self, commit, paths, *, recursive=False):
+        command = ["git", f"--git-dir={self.repository.common_dir}", "ls-tree", "-z"]
+        if recursive:
+            command.append("-r")
+        result = subprocess.run([*command, commit, "--", *paths], capture_output=True)
+        if result.returncode:
+            return None
+        rows = {}
+        for entry in result.stdout.split(b"\0"):
+            if not entry:
+                continue
+            metadata, path = entry.split(b"\t", 1)
+            mode, kind, oid = metadata.decode("ascii").split()
+            locator = path.decode("utf-8")
+            rows[locator] = (mode, kind, oid)
+            self.paths[commit, locator] = rows[locator]
+        return rows
+
+    def paths_under(self, commit, prefix):
+        commit = self._commit(commit)
+        key = (commit, prefix)
+        if key not in self.subtrees:
+            rows = self._tree(commit, [prefix], recursive=True)
+            if rows is None:
+                # Preserve the original creation subtree inspection failure.
+                subprocess.run(["git", f"--git-dir={self.repository.common_dir}", "ls-tree",
+                                "-r", "--name-only", commit, "--", prefix],
+                               capture_output=True, text=True, check=True)
+            self.subtrees[key] = tuple(rows)
+        return self.subtrees[key]
+
+    def prepare(self, commit, paths):
+        """Prepare only immutable metadata and offsets, never a batch of bytes."""
+        if not paths:
+            return commit
+        commit = self._commit(commit)
+        pending = list(dict.fromkeys(path for path in paths if (commit, path) not in self.paths
+                                     and (commit, path) not in self.fallback_paths))
+        fixed_size = sum(len(arg.encode("utf-8")) + 1 for arg in
+                         ["git", f"--git-dir={self.repository.common_dir}", "ls-tree", "-z", commit, "--"])
+        chunk, size = [], fixed_size
+        chunks = []
+        for path in pending:
+            cost = len(path.encode("utf-8")) + 1
+            if chunk and size + cost > 64 * 1024:
+                chunks.append(chunk)
+                chunk, size = [], fixed_size
+            chunk.append(path)
+            size += cost
+        if chunk:
+            chunks.append(chunk)
+        for chunk in chunks:
+            rows = self._tree(commit, chunk)
+            if rows is None:
+                self.fallback_paths.update((commit, path) for path in chunk)
+            else:
+                for path in chunk:
+                    self.paths[commit, path] = rows.get(path)
+        blobs = dict.fromkeys(row[2] for path in paths if (commit, path) not in self.fallback_paths
+                              and (row := self.paths[commit, path]) is not None and row[1] == "blob")
+        try:
+            self.objects.ensure(blobs)
+        except GitObjectBatchError as exc:
+            if not exc.git_failed:
+                raise LifecycleContractError("git_fact_unavailable", "git", str(exc)) from exc
+            # Only the original scalar reader owns show-failure compatibility.
+            # Keep a technical marker, not all fallback content, until consumed.
+            self.failed_objects.update(blobs)
+        else:
+            self.failed_objects.difference_update(blobs)
+        return commit
+
+    def read_path(self, commit, path):
+        commit = self.prepare(commit, [path])
+        if (commit, path) in self.fallback_paths:
+            return commit_path_bytes(self.repository, commit, path)
+        row = self.paths[commit, path]
+        if row is None:
+            return None
+        if row[1] != "blob" or row[2] in self.failed_objects:
+            return commit_path_bytes(self.repository, commit, path)
+        if row[2] not in self.objects.entries:
+            return None
+        try:
+            return self.objects.read_bytes(row[2])
+        except GitObjectBatchError as exc:
+            raise LifecycleContractError("git_fact_unavailable", "git", str(exc)) from exc
+
+
 def is_ancestor(repository: RepositoryFacts, ancestor: str, descendant: str) -> bool:
     completed = _git(
         ["merge-base", "--is-ancestor", ancestor, descendant],
@@ -418,6 +535,7 @@ def run_common_git(repository: RepositoryFacts, args: Iterable[str]) -> subproce
 __all__ = [
     "CheckoutStateSnapshot",
     "RepositoryFacts",
+    "TaskObjectReader",
     "WorktreeFacts",
     "WorktreeRegistration",
     "branch_checked_out_paths",

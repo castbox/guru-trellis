@@ -10,7 +10,7 @@ from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_resolution import establish_branch_binding, recover_established_branch_binding, resolve_establishment
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
 from runtime.task_lifecycle.errors import LifecycleContractError
-from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.git_facts import TaskObjectReader, inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_ref
 from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 
@@ -38,22 +38,23 @@ def invoke(root: Path, data: dict) -> dict:
         if data["action"] == "recover":
             result = recover_established_branch_binding(repository, store, ownership, **args, **data["recovery"])
         else:
-            resolution = resolve_establishment(repository, store, ownership, **args)
-            if resolution.kind == "already_established":
-                result = resolution
-            elif data.get("selected_candidate_id") is None and resolution.kind == "selection_required":
-                result = resolution
-            else:
-                selected = data.get("selected_candidate_id")
-                candidates = resolution.valid_candidates
-                if selected is not None:
-                    candidates = tuple(row for row in candidates if row.candidate_id == selected)
-                head = candidates[0].head if len(candidates) == 1 else data.get("expected_candidate_head", "")
-                result = establish_branch_binding(
-                    repository, store, ownership, **args,
-                    selected_candidate_id=selected,
-                    expected_candidate_head=data.get("expected_candidate_head", head),
-                )
+            with TaskObjectReader(repository) as reader:
+                resolution = resolve_establishment(repository, store, ownership, **args, reader=reader)
+                if resolution.kind == "already_established":
+                    result = resolution
+                elif data.get("selected_candidate_id") is None and resolution.kind == "selection_required":
+                    result = resolution
+                else:
+                    selected = data.get("selected_candidate_id")
+                    candidates = resolution.valid_candidates
+                    if selected is not None:
+                        candidates = tuple(row for row in candidates if row.candidate_id == selected)
+                    head = candidates[0].head if len(candidates) == 1 else data.get("expected_candidate_head", "")
+                    result = establish_branch_binding(
+                        repository, store, ownership, **args, reader=reader,
+                        selected_candidate_id=selected,
+                        expected_candidate_head=data.get("expected_candidate_head", head),
+                    )
         if result.kind == "selection_required":
             return {
                 "exit_id": "selection_required", "task_id": key.task_id,

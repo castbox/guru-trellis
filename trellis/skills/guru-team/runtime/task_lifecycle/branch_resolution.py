@@ -15,7 +15,7 @@ from .branch_store import (
 from .errors import LifecycleContractError
 from .git_facts import (
     RepositoryFacts,
-    commit_path_bytes,
+    TaskObjectReader,
     discover_worktree_facts,
     list_local_branch_refs,
 )
@@ -133,8 +133,10 @@ def _artifact_matches(
     task_ref: str,
     key: TaskLifecycleKey,
     expected_status: str,
+    reader: TaskObjectReader,
 ) -> bool:
-    payload = commit_path_bytes(repository, head, f"{task_ref}/task.json")
+    path = f"{task_ref}/task.json"
+    payload = reader.read_path(head, path)
     if payload is None:
         return False
     try:
@@ -194,7 +196,15 @@ def discover_branch_candidates(
     expected_status: str,
     required_branch_name: str | None = None,
     allowed_current_revision: int | None = None,
+    reader: TaskObjectReader | None = None,
 ) -> tuple[BranchCandidate, ...]:
+    if reader is None:
+        with TaskObjectReader(repository) as local:
+            return discover_branch_candidates(
+                repository, store, ownership_port, key=key, task_ref=task_ref,
+                expected_status=expected_status, required_branch_name=required_branch_name,
+                allowed_current_revision=allowed_current_revision, reader=local,
+            )
     normalized_key = TaskLifecycleKey(key.task_id, key.lifecycle_generation)
     normalized_ref = normalize_task_ref(task_ref)
     required = normalize_branch_name(required_branch_name) if required_branch_name is not None else None
@@ -232,6 +242,7 @@ def discover_branch_candidates(
                 task_ref=normalized_ref,
                 key=normalized_key,
                 expected_status=expected_status,
+                reader=reader,
             )
         ):
             reason = "task_artifact_mismatch"
@@ -271,6 +282,7 @@ def discover_branch_candidates(
             task_ref=normalized_ref,
             key=normalized_key,
             expected_status=expected_status,
+            reader=reader,
         ):
             reason = "task_artifact_mismatch"
         elif store.branch_owner(branch_name, excluding=normalized_key) is not None:
@@ -329,6 +341,7 @@ def resolve_establishment(
     key: TaskLifecycleKey,
     task_ref: str,
     expected_status: str,
+    reader: TaskObjectReader | None = None,
 ) -> EstablishmentResolution:
     binding, ownership = _control_state(store, ownership_port, key)
     if binding is not None and ownership is not None:
@@ -357,6 +370,7 @@ def resolve_establishment(
         expected_status=expected_status,
         required_branch_name=required,
         allowed_current_revision=revision,
+        reader=reader,
     )
     valid = tuple(row for row in candidates if row.valid)
     if len(valid) != 1:
@@ -388,6 +402,7 @@ def establish_branch_binding(
     expected_status: str,
     expected_candidate_head: str,
     selected_candidate_id: str | None = None,
+    reader: TaskObjectReader | None = None,
 ) -> EstablishmentResolution:
     resolution = resolve_establishment(
         repository,
@@ -396,6 +411,7 @@ def establish_branch_binding(
         key=key,
         task_ref=task_ref,
         expected_status=expected_status,
+        reader=reader,
     )
     if resolution.kind == "already_established":
         return resolution

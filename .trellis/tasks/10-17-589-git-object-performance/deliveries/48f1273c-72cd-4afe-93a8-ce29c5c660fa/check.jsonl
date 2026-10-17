@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_branch_substrate.py", "reason": "核对分支/checkout/归属与每input判断等价"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "固定性能口径、依赖适用性、原公开链与安装范围"}
