@@ -51,3 +51,18 @@ Guru 语义 owner。历史交付由原 Publish/Merge 核验，当前 scope 补�
 提供逐路径历史候选。仍需可读 Git 对象、原逐路径字节检查及未知 preimage 的
 显式 preserve/replace；不以 HEAD 或 target hash 代替历史。clean mismatch、
 缺对象及正式 source_locked 合同均不放宽。
+
+## 后续正式来源采用
+
+发布准备将正式 Fork lock 更新为 PR #52 merge
+`7bcbeaad31380e7a29c97898cb947c6120a61775`，成功 main CI `39043542548`。
+CLI/Core 版本仍为 `0.7.0-castbox.4`。采用入口使用该干净源码的正常 workspace
+构建与实际依赖解析，严格比较同源 dist 的 bytes/modes；不使用历史 tarball
+冒充当前匹配包，不修改模板权限或放宽 source_locked。
+
+原 Plan2 通过所选 CLI 的 Node dependency resolution 定位实际 Core，支持
+workspace 与正常 npm 布局。公共迁移、完整 inventory、history_only 保留规则和
+来源校验保持。正式采用与定向结果由
+[本次唯一 Test](../../../docs/requirements-design-test-contributions/575-release-source-adoption/test.md)
+记录。以上不改写 #577 原 local_candidate 证明，也不宣称真实业务恢复、最终
+main candidate 或软件发布已通过。

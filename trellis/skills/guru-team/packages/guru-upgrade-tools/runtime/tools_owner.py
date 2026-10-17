@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -27,6 +28,20 @@ def legacy_owner(package):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def project_agents_target(plan, module):
+    """Compose the existing Guru block into the public writer's first target."""
+    for action in plan['actions']:
+        if action.get('kind', 'file') != 'file' or action['path'] != 'AGENTS.md':
+            continue
+        target = action['target']
+        content = None if target is None else base64.b64decode(target['content_base64'])
+        rendered = module.render_agents_ai_first_principles(content)
+        action['target'] = {'content_base64': base64.b64encode(rendered).decode('ascii'),
+                            'sha256': hashlib.sha256(rendered).hexdigest(),
+                            'mode': 0o644 if target is None else target['mode']}
+    return plan
 
 
 def selected_target(context, public):
@@ -451,7 +466,8 @@ def run(package_root, metadata, argv):
             if Path(tools['root']).resolve() != root:
                 raise ValueError('Public tools input root differs from selected checkout')
             frozen = {key: value for key, value in plan.items() if key != 'tools_input'}
-            frozen['upstream_plan'] = call(plan['upstream_source'], 'prepareToolsInstallation', tools)
+            frozen['upstream_plan'] = project_agents_target(
+                call(plan['upstream_source'], 'prepareToolsInstallation', tools), old.installer(source))
             validate_json(frozen, package_root / 'schemas/private-plan.schema.json', 'plan')
             facts = inventory(package_root, root, public, frozen['upstream_source'], frozen)
             return {'plan': frozen, 'facts': facts}

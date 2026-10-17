@@ -1,0 +1,2 @@
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upstream.py", "reason": "原Plan2唯一包定位consumer与正常workspace缺口"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py", "reason": "原tools prepare owner首次apply前合成公开AGENTS最终target，保留operation与rollback"}

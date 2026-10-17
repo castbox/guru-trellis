@@ -1523,29 +1523,18 @@ def ensure_runtime_gitignore(repo: Path) -> dict[str, str]:
     return {"action": "updated" if original else "installed", "path": ".gitignore", "rule": RUNTIME_GITIGNORE_RULE}
 
 
-def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
-    path = repo / "AGENTS.md"
-    exists = path.exists() or path.is_symlink()
-    if exists:
-        try:
-            path_stat = path.lstat()
-        except OSError as exc:
-            raise SystemExit(f"Cannot inspect target AGENTS.md: {exc}") from exc
-        if not stat.S_ISREG(path_stat.st_mode):
-            raise SystemExit("Target AGENTS.md must be a regular file")
-        try:
-            original = path.read_bytes().decode("utf-8")
-        except UnicodeDecodeError as exc:
-            raise SystemExit("Target AGENTS.md must be valid UTF-8") from exc
-    else:
-        original = ""
+def render_agents_ai_first_principles(content: bytes | None) -> bytes:
+    """Render the owned block without reading or writing the target checkout."""
+    try:
+        original = content.decode("utf-8") if content is not None else ""
+    except UnicodeDecodeError as exc:
+        raise SystemExit("Target AGENTS.md must be valid UTF-8") from exc
 
     start_count = original.count(AGENTS_AI_FIRST_START_MARKER)
     end_count = original.count(AGENTS_AI_FIRST_END_MARKER)
     if start_count == 0 and end_count == 0:
         separator = "" if not original or original.endswith("\n\n") else ("\n" if original.endswith("\n") else "\n\n")
         updated = f"{original}{separator}{AGENTS_AI_FIRST_BLOCK}"
-        action = "updated" if exists else "installed"
     else:
         if start_count != 1 or end_count != 1:
             raise SystemExit("Target AGENTS.md contains malformed or duplicate Guru Team AI-first markers")
@@ -1566,15 +1555,31 @@ def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
         end_index = end_indexes[0]
         current_block = "".join(lines[start_index : end_index + 1])
         if current_block == AGENTS_AI_FIRST_BLOCK:
-            return {
-                "action": "unchanged",
-                "path": "AGENTS.md",
-                "marker": AGENTS_AI_FIRST_START_MARKER,
-            }
+            return original.encode("utf-8")
         updated = "".join(lines[:start_index]) + AGENTS_AI_FIRST_BLOCK + "".join(lines[end_index + 1 :])
-        action = "updated"
 
-    path.write_bytes(updated.encode("utf-8"))
+    return updated.encode("utf-8")
+
+
+def ensure_agents_ai_first_principles(repo: Path) -> dict[str, str]:
+    path = repo / "AGENTS.md"
+    exists = path.exists() or path.is_symlink()
+    if exists:
+        try:
+            path_stat = path.lstat()
+        except OSError as exc:
+            raise SystemExit(f"Cannot inspect target AGENTS.md: {exc}") from exc
+        if not stat.S_ISREG(path_stat.st_mode):
+            raise SystemExit("Target AGENTS.md must be a regular file")
+        original = path.read_bytes()
+    else:
+        original = None
+    updated = render_agents_ai_first_principles(original)
+    if updated == original:
+        action = "unchanged"
+    else:
+        path.write_bytes(updated)
+        action = "updated" if exists else "installed"
     return {"action": action, "path": "AGENTS.md", "marker": AGENTS_AI_FIRST_START_MARKER}
 
 

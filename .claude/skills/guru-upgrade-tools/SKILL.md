@@ -26,3 +26,10 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 asking for a real choice or write confirmation, and
 `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10`
 for intermediate receipts. Do not use full installation migration as fallback.
+
+The original prepare owner consumes the SDK-exported PreparedMaintenancePlan
+through its public preview/apply entrypoints. Before the first apply freezes
+targets, it composes the named AGENTS target with the canonical Guru-owned
+block through the original installer's pure renderer. Core template hashes
+retain their upstream-baseline meaning. Recovery keeps the same frozen plan
+and rollback compatibility checks; it does not reproject or repair checkpoints.
