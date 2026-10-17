@@ -7,13 +7,13 @@
     "version": "0.7.0-guru.4",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
-    "target_trellis_cli": "0.7.0-castbox.3",
+    "target_trellis_cli": "0.7.0-castbox.4",
     "requires": {
-      "trellis_cli": "0.7.0-castbox.3"
+      "trellis_cli": "0.7.0-castbox.4"
     },
     "tested": {
       "trellis_cli": [
-        "0.7.0-castbox.3"
+        "0.7.0-castbox.4"
       ]
     },
     "public_api": {
@@ -1165,11 +1165,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-17T07:34:03Z",
+  "installed_at": "2026-10-17T12:01:37Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ea9998c36a188f3afae1d7d6e5746edc07fa003f",
-    "commit": "ea9998c36a188f3afae1d7d6e5746edc07fa003f",
+    "ref": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
+    "commit": "1cee58a6db1b9837054c6ce8582fb6c0bf9e55b8",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1250,7 +1250,7 @@
       ".trellis/spec/workflow/data-contracts.md": "784e9a06e2e9ce836e77cc6ea0f883e8cb576312cc22c16cc7e5fe9870e78c11",
       ".trellis/spec/workflow/companion-scripts.md": "f57f2329d57ea35b0cd15acca5b51fac3b242a220664a2d75645ad268ac16b83",
       ".trellis/spec/workflow/quality-guidelines.md": "5d69b3c5e3aa5e2bafbbfcbdf3d3befdf6abe04184e999d082aeb1a551af5098",
-      ".trellis/guru-team/trellis-source.json": "6d3d834b552c90fef65557567932743556ba0fdf48821c674494e1763e7b57af"
+      ".trellis/guru-team/trellis-source.json": "8152d2918d5610baee8354f7bbcab969d55032572b7d4b5faa3a7eaecf6b3342"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -1423,7 +1423,7 @@
       {
         "id": "guru-merge-task-delivery",
         "interface_sha256": "1bb0a9edc48ee25a0c7c4557290ca821a98a233effdbc428e963ff6893bc4973",
-        "tree_sha256": "19a43e072fd5c94bc22e4cda8202e4210a82a79e4b9f6394b421f0cdee6d825a"
+        "tree_sha256": "1c3b098e83557595750a5f3b002166b898aa980f8d34e09b6dc7d27882fa445c"
       },
       {
         "id": "guru-publish-task-delivery",
@@ -1498,7 +1498,7 @@
       {
         "id": "guru-upgrade-installation",
         "interface_sha256": "13aa4657013df815d73fcd5cbd99df764c708e53927d234471a21eae4ec3f22e",
-        "tree_sha256": "e33685ad484dfde2ec19bd51fed82bc695fd41e92469a89ac2e37848a05b5c9f"
+        "tree_sha256": "1fb1550ffa3dbb06e1fa30a07a9a2344ff5d3e7c9f43cca12b74ec0c5451b886"
       },
       {
         "id": "guru-upgrade-tools",
@@ -10935,13 +10935,6 @@
         "action": "installed"
       },
       {
-        "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
-        "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
-        "sha256": "075465470bda63d5ef1445836123683def0dfaeb290b1aa1e600f58406d52717",
-        "executable": false,
-        "action": "installed"
-      },
-      {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/check.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/check.py",
         "sha256": "ed29a23f670134d2bb9cee04fcff1e8b642c7fb0c0a17b0ef1a4b4c24e51fbfb",
@@ -10958,7 +10951,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/history.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/history.py",
-        "sha256": "b221f6fa3725a7e7212fd4bd27c4b8ff4dc281e6262fbd3e3c3b95ed566c2bae",
+        "sha256": "60e8901da7966ebb18a6af60ad1d196f45a86bc12c3e7dcde4024b7f11eb2f15",
         "executable": false,
         "action": "installed"
       },
@@ -10979,7 +10972,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py",
-        "sha256": "8d330dea4071cd5fa6e80319d839de8b49ff1fe4aace58753ed4db236ca9bf3f",
+        "sha256": "7999e4491631f688b01546928bbf180ffd1e5e729674e5b88c809139ef79e872",
         "executable": false,
         "action": "installed"
       },
@@ -18063,14 +18056,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
-        "sha256": "1d7997e84218b16373d778ba5485cf4e9eac6e3d9e3eb26f276934a04349244b",
+        "sha256": "eb5c5990945748d6594b1ca19f77cc38c65f6e78149bef8bc8cef34ac57230ed",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
-        "sha256": "73ce55bcc13d79d4d36ec8c14a5ab2a58948c53a65e293f172e2a2e28de3c96f",
+        "sha256": "203f2eb1af19cc3c6fe1606192bb10afb01692ef86935d728384dffabaa947d6",
         "executable": false,
         "action": "installed"
       },
@@ -18091,7 +18084,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
         "source": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
-        "sha256": "3064037fda59481051c62889af2072fc3395c583439472c4d679fc061f8ed9e3",
+        "sha256": "ecd0c95e7599ca1756b09373ecff4ad7a0554924566d5d0ccf241afa02ef2fe8",
         "executable": false,
         "action": "installed"
       },
