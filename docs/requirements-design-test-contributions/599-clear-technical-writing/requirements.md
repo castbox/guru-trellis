@@ -1,6 +1,6 @@
 # #599 需求增量
 
-provenance=source_confirmed。唯一来源为 [#599](https://github.com/castbox/guru-trellis/issues/599) 的 R1-R5/AC1-AC8。继承 RDT .102/active 与 Architecture .94/active。本文件记录需求与责任定位；写作规则正文仅由 [canonical spec](../../../trellis/presets/guru-team/spec/workflow/clear-technical-writing.md) 拥有。
+provenance=source_confirmed。唯一来源为 [#599](https://github.com/castbox/guru-trellis/issues/599) 的 R1-R5/AC1-AC8。初始 preimage 为 RDT .102/active 与 Architecture .94/active；经独立完整 committed Review 后晋升为 RDT .103，继承 Architecture .95/active。本文件记录需求与责任定位；写作规则正文仅由 [canonical spec](../../../trellis/presets/guru-team/spec/workflow/clear-technical-writing.md) 拥有。
 
 | Identity | 来源 | 增量责任 | Design | Test |
 | --- | --- | --- | --- | --- |
