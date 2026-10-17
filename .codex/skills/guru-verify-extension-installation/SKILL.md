@@ -5,6 +5,13 @@ description: Verify a Guru Team source checkout through a clean standalone throw
 
 # Guru Verify Extension Installation
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Invoke only for explicit standalone verification from a clean
 `castbox/guru-trellis` source checkout. Read `references/contract.md` before
 use. This package is not a global workflow step and accepts no business task,

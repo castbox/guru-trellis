@@ -5,6 +5,13 @@ description: Use when the user asks to create, open, or file a GitHub Issue, inc
 
 # Create Issue
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 ## Intent Entry
 
 Load this Skill when the user requests GitHub Issue creation in natural

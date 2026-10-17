@@ -5,6 +5,13 @@ description: Discover fresh current and archived change context, run the semanti
 
 # Guru Discover Change Context
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 The current executing AI is this Skill's semantic owner. Read the complete
 contract and perform its review yourself before authoring the current owner
 result and calling record, check, and invoke. `owner_not_yet_executed` is an

@@ -168,7 +168,7 @@ class PlatformInventoryTest(unittest.TestCase):
 class InstallerPlatformCliTest(unittest.TestCase):
     def invoke(self, *arguments: str) -> tuple[int, dict[str, object], mock.Mock]:
         install = mock.Mock(
-            side_effect=lambda _src, _dst, _repo, platforms: successful_install_result(platforms)
+            side_effect=lambda _src, _dst, _repo, platforms, *, python: successful_install_result(platforms)
         )
         stdout = StringIO()
         with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", *arguments]), mock.patch.object(
