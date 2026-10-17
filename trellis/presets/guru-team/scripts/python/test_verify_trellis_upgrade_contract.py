@@ -530,7 +530,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             with mock.patch.object(self.matrix, "validate_fork_source", return_value={"command": target}), \
                  mock.patch.object(self.matrix, "_init_git_repo"), \
                  mock.patch.object(self.matrix, "_assert_version", side_effect=["0.6.5", "0.6.17"]), \
-                 mock.patch.object(self.matrix, "_export_git_tree", side_effect=export_tree), \
+                 mock.patch.object(self.matrix, "_checkout_predecessor_source", side_effect=export_tree), \
                  mock.patch.object(self.matrix, "_install_workflow", side_effect=install_workflow) as init, \
                  mock.patch.object(self.matrix, "_docs_authority_snapshot", return_value={}), \
                  mock.patch.object(self.matrix, "_apply_preset", return_value={}), \
@@ -542,7 +542,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
-                 mock.patch.object(self.matrix, "_upgrade_empty_fixture_tools") as upgrade, \
+                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture") as upgrade, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
                  mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
                  mock.patch.object(self.matrix, "_assert_projection_consistency"), \
@@ -556,7 +556,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             switch.assert_not_called()
             self.assertEqual(upgrade.call_args.args[:4],
                              (root, root / "cell/project", root / "fork", "fixture"))
-            self.assertEqual(result["update_mode"], "public_tools_install")
+            self.assertEqual(result["update_mode"], "source_locked_installation_upgrade")
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {
@@ -582,46 +582,25 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             "cursor",
         )
 
-    def test_existing_tools_fixture_rejects_business_task_before_owner_write(self) -> None:
+    def test_existing_fixture_refuses_unreviewed_task_projection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            task = root / ".trellis/tasks/business/task.json"
-            task.parent.mkdir(parents=True)
-            task.write_text('{"id":"business"}')
-            with mock.patch.object(self.matrix, "_run") as run:
-                with self.assertRaisesRegex(self.matrix.MatrixError, "must not contain a Task"):
-                    self.matrix._upgrade_empty_fixture_tools(root, root, root, "fixture", root, {})
-            run.assert_not_called()
-
-    def test_existing_tools_fixture_projects_tag_to_exact_owner_source(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            source, target, fork = (root / name for name in ("source", "target", "fork"))
-            workflow = source / "trellis/workflows/guru-team/workflow.md"
-            workflow.parent.mkdir(parents=True)
-            workflow.write_text("candidate workflow\n")
+            target = root / "project"
             manifest = target / ".trellis/guru-team/extension.json"
             manifest.parent.mkdir(parents=True)
-            manifest.write_text(json.dumps({"install": {"selected_platforms": ["codex"]}}))
-            for package in ("cli", "core"):
-                path = fork / "packages" / package / "package.json"
-                path.parent.mkdir(parents=True)
-                path.write_text(json.dumps({"version": "0.7.0-castbox.4"}))
-            head = "a" * 40
-            responses = [
-                {"result": {"public_tools": {"files": []}}},
-                {"result": {"plan": {"operation_id": "fixture"}}},
-                {"exit_id": "tools_upgraded", "unverified": []},
-            ]
-            with mock.patch.object(self.matrix, "_git", return_value=head), \
-                 mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(x) for x in responses]):
-                self.matrix._upgrade_empty_fixture_tools(
-                    source, target, fork, "gh:castbox/guru-trellis/trellis#v0.7.0-guru.4", root, {},
-                )
-            prepared = json.loads((root / "tools-prepare.json").read_text())
-            self.assertEqual(prepared["tools_input"]["workflow"]["provider"],
-                             "gh:castbox/guru-trellis/trellis#" + head)
-            self.assertEqual(prepared["upstream_source"]["dependency_mode"], "source_locked")
+            manifest.write_text(json.dumps({"extension": {"version": "0.7.0-guru.3"}}))
+            preview = {"result": {"inventory": {"workspaces": [{
+                "root": str(target), "local_sessions": [],
+                "tasks": [{"task_ref": ".trellis/tasks/business"}],
+            }], "common_sessions": [], "branch_bindings": []}}}
+            with mock.patch.object(self.matrix, "_git", return_value="a" * 40), \
+                 mock.patch.object(self.matrix, "_run", return_value=json.dumps(preview)) as run:
+                with self.assertRaisesRegex(self.matrix.MatrixError, "exactly the init-owned bootstrap"):
+                    self.matrix._upgrade_bootstrap_fixture(
+                        root, target, root, "gh:castbox/guru-trellis/trellis#" + "a" * 40, root, {},
+                    )
+            self.assertEqual(run.call_count, 1)
+            self.assertEqual(Path(run.call_args.args[0][0]).name, "preview.sh")
 
     def test_install_workflow_omits_task_personnel_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
