@@ -621,3 +621,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-069：#600 晋升时机与原 authority 的受审增量
 
 ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 与 [ADR-030](../adr/030-promotion-before-final-check.md)承接 [#600 贡献](../contributions/600-promotion-before-check.md)，原分支晋升从 expected `.95` 到 successor `.96`，保留于 `87176aea126cc9ade10f334eb379e0d35a053295`。本次与 main #589 `.96` 的真实冲突整合形成 `.97` 组合投影；原独立判断不自动覆盖新增差额。本项定位本次知识增量，不记录自引用最终 SHA、完整审查历史或授权。实际独立评估、写入、Check、committed Review、恢复和安装结果只由[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)记录。未来门禁、Delivery、Completion、Release 和业务效果不由本项预先证明。
+
+## EVD-070：#577 人工旧归档恢复的架构增量
+
+ARCH-CUR-071 / ARCH-DOM-054 / ARCH-INT-057 承接 [#577 贡献](../contributions/577-manual-archive-resume.md)。本轮比较起点为 main@`ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e` 的 `.97`；原 Architecture owner 在独立 Phase2 评估完整实现及拟写内容后，按 expected `.97` 晋升 `.98`，最终 Check 和 committed 独立完整审查仍审实际候选。ADR-024/027/030、constitution、GAP lifecycle 与原 owners 保持。本项只定位职责增量；源码、目标 native/下一 owner、历史核验、恢复、打包 mode 差额、dogfood 首次失败和 known-dirty 修复结果由 [唯一 Test](../../requirements-design-test-contributions/577-manual-archive-resume/test.md) 单写。没有自引用最终 SHA 或授权记录，也不由本项宣称正式 source-locked、真实业务恢复、软件发布、完整矩阵或整体 Task 完成。

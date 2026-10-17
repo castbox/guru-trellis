@@ -104,8 +104,13 @@ def legacy_source_commits(manifest: dict, source: Path) -> list[str]:
             extension = json.loads(command(["git", "show", commit + ":trellis/guru-team-extension.json"], source))
         except (MigrationError, ValueError):
             continue
-        if expected and (extension.get("version") != expected.get("version")
-                         or extension.get("target_trellis_cli") != expected.get("target_trellis_cli")):
+        # A dirty receipt describes uncommitted source changes. Its recorded
+        # commit remains a per-path source candidate, not whole-tree identity.
+        dirty_provenance = (manifest["source"].get("tree_state") == "dirty"
+                            and candidate == manifest["source"]["commit"])
+        if (expected and not dirty_provenance
+                and (extension.get("version") != expected.get("version")
+                     or extension.get("target_trellis_cli") != expected.get("target_trellis_cli"))):
             continue
         if commit not in result:
             result.append(commit)

@@ -37,8 +37,8 @@ def raw(path):
             "mode": stat.S_IMODE(path.stat().st_mode)}
 
 
-def inspect_controls(root, key, task_ref, refs):
-    source = path_at(root, task_ref + "/task.json")
+def inspect_controls(root, key, task_ref, refs, source_task_ref=None):
+    source = path_at(root, (source_task_ref or task_ref) + "/task.json")
     selected = json.loads(source.read_text())
     generation = selected.get("lifecycle_generation", 0)
     if (selected.get("id") != key["task_id"] or type(generation) is not int
@@ -64,20 +64,21 @@ def inspect_controls(root, key, task_ref, refs):
     return rows
 
 
-def freeze_controls(root, key, task_ref, rows, source, operation_id):
+def freeze_controls(root, key, task_ref, rows, source, operation_id, source_task_ref=None):
     if not re.fullmatch(r"[A-Za-z0-9._-]+", operation_id):
         fail("invalid_operation", "operation_id", "Use the original operation identity.")
     checkpoint = path_at(root, CHECKPOINT_ROOT + operation_id + ".json")
     state = {"owner_id": OWNER, "operation_id": operation_id, "root": str(root),
              "key": key, "task_ref": task_ref, "controls": rows, "source": source, "retired": False}
+    if source_task_ref is not None: state["source_task_ref"] = source_task_ref
     if checkpoint.exists():
         previous = json.loads(checkpoint.read_text())
         if any(previous[k] != state[k] for k in state if k != "retired"):
             fail("operation_mismatch", "recovery_ref", "Keep the same owner's original frozen preimages.")
     else:
-        if raw(path_at(root, task_ref + "/task.json")) != source:
+        if raw(path_at(root, (source_task_ref or task_ref) + "/task.json")) != source:
             fail("source_mismatch", "source", "Freeze the physically read original Task bytes and mode.")
-        if inspect_controls(root, key, task_ref, [row["path"] for row in rows]) != rows:
+        if inspect_controls(root, key, task_ref, [row["path"] for row in rows], source_task_ref) != rows:
             fail("control_changed", "controls", "Refresh the original owner inspection before maintenance.")
         checkpoint.parent.mkdir(parents=True, exist_ok=True)
         checkpoint.write_text(json.dumps(state, indent=2) + "\n")
@@ -97,6 +98,8 @@ def checkpoint_input(public):
     path, state = read_checkpoint(public["recovery_ref"])
     if any(state[k] != public[k] for k in ("root", "key", "task_ref")):
         fail("identity_mismatch", "recovery_ref", "Use the selected gate owner's Task checkpoint.")
+    if state.get("source_task_ref", state["task_ref"]) != public.get("source_task_ref", public["task_ref"]):
+        fail("identity_mismatch", "source_task_ref", "Use the exact frozen physical source.")
     if public["control_refs"] != [row["path"] for row in state["controls"]]:
         fail("control_mismatch", "control_refs", "Use the fixed original gate inventory.")
     return path, state
@@ -124,7 +127,7 @@ def restore_controls(recovery_ref):
 def execute(package_root, public):
     root = Path(public["root"])
     if public['profile']=='legacy_control_freeze':
-        return {'recovery_ref':freeze_controls(root,public['key'],public['task_ref'],public['controls'],public['source'],public['operation_id'])}
+        return {'recovery_ref':freeze_controls(root,public['key'],public['task_ref'],public['controls'],public['source'],public['operation_id'],public.get('source_task_ref'))}
     if public['profile'] in {'legacy_control_restore_check','legacy_control_restore'}:
         _,state=read_checkpoint(public['recovery_ref'])
         if Path(state['root']).resolve()!=root.resolve():fail('target_mismatch','root','Restore only the original owner selected target.')
@@ -132,7 +135,7 @@ def execute(package_root, public):
         else:restore_controls(public['recovery_ref'])
         return {'recovery_ref':public['recovery_ref']}
     if public["profile"] == "legacy_control_inspection":
-        return {"formal_exit": False, "controls": inspect_controls(root, public["key"], public["task_ref"], public["control_refs"])}
+        return {"formal_exit": False, "controls": inspect_controls(root, public["key"], public["task_ref"], public["control_refs"], public.get("source_task_ref"))}
     if public["profile"] != "legacy_control_retirement":
         fail("profile_mismatch", "profile", "Select this owner's separate legacy profile.")
     checkpoint, state = checkpoint_input(public)

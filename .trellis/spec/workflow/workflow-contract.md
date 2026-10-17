@@ -778,3 +778,8 @@ fixture resume, full installer-matrix or release qualification.
 ## Independent maintenance routing
 
 Explicit tools-only and selected legacy Task maintenance load their standalone source packages before old target preflight; they do not enter standard Intake or infer a task from inventory. The original history/control owner exits return through their unique thin selected-maintenance consumers. Only verified target-native current continuation resumes the original lifecycle owner. History-retention stops without Completion/Closure/Finish. Full Plan2 and ordinary current-only remain separate contracts.
+
+
+## Manual archive resume (#577)
+
+Manual historical archive resume enters the existing standalone maintenance owner archive_resume profile. Formal Finish archives still enter Reactivate; unfinished Closure/Finish/Finalizer work returns to its original owner. Only actual installed identity/checkout/binding/session, target-native continuation and next semantic-owner validation may resume current execution.

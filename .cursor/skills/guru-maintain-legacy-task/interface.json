@@ -3,7 +3,7 @@
   "schema_version": "1.6",
   "id": "guru-maintain-legacy-task",
   "name": "guru-maintain-legacy-task",
-  "description": "Maintain one selected legacy Task from a complete matching source through independent conversion, historical closeout and fixed recovery.",
+  "description": "Maintain one selected legacy Task from a complete matching source through independent conversion, manual archive resume, historical closeout and fixed recovery.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -81,6 +81,10 @@
     {
       "id": "invalid_public_input",
       "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "input_archive_resume",
+      "path": "examples/input-archive_resume.json"
     }
   ],
   "schemas": [
@@ -135,6 +139,10 @@
     {
       "id": "private_legacy_recovery",
       "path": "schemas/private-legacy-recovery-1.0.schema.json"
+    },
+    {
+      "id": "input_archive_resume",
+      "path": "schemas/input-archive_resume.schema.json"
     }
   ],
   "validators": [
@@ -199,7 +207,8 @@
     "stale_behavior": "fail_closed"
   },
   "tests": [
-    "tests/test_maintenance.py"
+    "tests/test_maintenance.py",
+    "tests/test_archive_controls.py"
   ],
   "platform_destinations": [
     "shared",
@@ -292,6 +301,21 @@
           "discriminator": {
             "field": "profile",
             "value": "rollback"
+          }
+        },
+        {
+          "id": "archive_resume",
+          "schema": {
+            "schema_id": "guru-maintain-legacy-task-input-archive_resume-1.0",
+            "path": "schemas/input-archive_resume.schema.json"
+          },
+          "example": {
+            "id": "input_archive_resume",
+            "path": "examples/input-archive_resume.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "archive_resume"
           }
         }
       ]

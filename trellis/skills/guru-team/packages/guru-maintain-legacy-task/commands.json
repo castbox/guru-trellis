@@ -54,7 +54,9 @@
         "invalid_arguments",
         "invalid_json",
         "schema_mismatch",
-        "internal_error"
+        "internal_error",
+        "maintenance_prerequisite_missing",
+        "resumed_identity_missing"
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
@@ -115,7 +117,9 @@
         "invalid_arguments",
         "invalid_json",
         "schema_mismatch",
-        "internal_error"
+        "internal_error",
+        "maintenance_prerequisite_missing",
+        "resumed_identity_missing"
       ],
       "side_effect": "repo_read",
       "schema_bindings": [

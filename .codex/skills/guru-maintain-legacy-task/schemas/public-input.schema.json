@@ -12,6 +12,9 @@
     },
     {
       "$ref": "input-rollback.schema.json"
+    },
+    {
+      "$ref": "input-archive_resume.schema.json"
     }
   ]
 }

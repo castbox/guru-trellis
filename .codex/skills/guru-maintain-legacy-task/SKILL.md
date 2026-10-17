@@ -1,6 +1,6 @@
 ---
 name: guru-maintain-legacy-task
-description: Maintain one selected legacy Task from a complete matching source through independent conversion, historical closeout and fixed recovery.
+description: Maintain one selected legacy Task from a complete matching source through independent conversion, manual archive resume, historical closeout and fixed recovery.
 ---
 
 Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`

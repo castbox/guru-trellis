@@ -19,15 +19,16 @@ from typing import Any
 from ..task_lifecycle.errors import LifecycleContractError
 
 
-def upstream_modules(root: Path | str) -> SimpleNamespace:
+def _installed_modules(root: Path | str, required: tuple[str, ...]) -> SimpleNamespace:
     """Load only the target installation, with separate namespaces per checkout."""
     directory = Path(root).resolve() / ".trellis/scripts/common"
     init = directory / "__init__.py"
-    required = ("delivery_schema", "delivery_operations", "delivery_store", "delivery_session", "runtime_contract")
     if not init.is_file() or any(not (directory / (name + ".py")).is_file() for name in required):
         raise LifecycleContractError("unsupported_delivery_api", "upstream.delivery_api", "Install the reviewed Fixed Fork Delivery API 1.0 candidate before using Guru Delivery profiles.")
     namespace = "guru_delivery_target_" + hashlib.sha256(str(directory).encode()).hexdigest()[:16]
+    original_bytecode = sys.dont_write_bytecode
     try:
+        sys.dont_write_bytecode = True
         if namespace not in sys.modules:
             spec = importlib.util.spec_from_file_location(namespace, init, submodule_search_locations=[str(directory)])
             if spec is None or spec.loader is None:
@@ -35,9 +36,46 @@ def upstream_modules(root: Path | str) -> SimpleNamespace:
             module = importlib.util.module_from_spec(spec)
             sys.modules[namespace] = module
             spec.loader.exec_module(module)
-        return SimpleNamespace(**{name: importlib.import_module(namespace + "." + name) for name in required})
+        return SimpleNamespace(common=sys.modules[namespace], **{name: importlib.import_module(namespace + "." + name) for name in required})
     except (ImportError, OSError, ValueError) as exc:
         raise LifecycleContractError("unsupported_delivery_api", "upstream.delivery_api", "Reapply the complete reviewed Fixed Fork candidate; no alternative model or source fallback is supported.") from exc
+    finally:
+        sys.dont_write_bytecode = original_bytecode
+
+
+def upstream_modules(root: Path | str) -> SimpleNamespace:
+    return _installed_modules(root, ("delivery_schema", "delivery_operations", "delivery_store", "delivery_session", "runtime_contract"))
+
+
+def official_session_port(root: Path | str) -> SimpleNamespace:
+    """Share the installed public session API between Identity and Bind."""
+    api = _installed_modules(root, ("session_storage",))
+    required = ("repository_facts", "session_path", "record_exists", "read_record",
+                "write_record", "resolve_task_identity")
+    if (not all(callable(getattr(api.session_storage, name, None)) for name in required)
+            or not callable(getattr(api.common, "resolve_context_key", None))):
+        raise LifecycleContractError("stale_identity", "official_session", "Install the reviewed Fixed Fork session API.")
+    return SimpleNamespace(resolve_context_key=api.common.resolve_context_key, **{
+        name: getattr(api.session_storage, name) for name in required})
+
+
+class CurrentCheckoutPort:
+    """Scope public active resolution to the already selected checkout."""
+    def __init__(self, official: Any, workspace: Path) -> None:
+        self.official = official
+        self.workspace = workspace.resolve()
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.official, name)
+
+    def resolve_task_identity(self, facts: Any, task_id: str, generation: int) -> Any:
+        if not hasattr(facts, "worktrees"):
+            return self.official.resolve_task_identity(facts, task_id, generation)
+        scoped = SimpleNamespace(**vars(facts))
+        scoped.invocation_root = self.workspace
+        scoped.git_root = self.workspace
+        scoped.worktrees = (self.workspace,)
+        return self.official.resolve_task_identity(scoped, task_id, generation)
 
 
 def authority_ref(path: Path | str, root: Path | str) -> dict[str, str]:

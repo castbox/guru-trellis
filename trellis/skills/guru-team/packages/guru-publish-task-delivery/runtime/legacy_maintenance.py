@@ -32,9 +32,9 @@ def attributed(value,key,task_ref):
     if value.get('task_ref')==task_ref and 'task_id' not in value and 'lifecycle_generation' not in value:return True
     return any(attributed(value.get(k),key,task_ref) for k in ('input','public_input','task_key','key','identity'))
 
-def inspect_controls(root,key,task_ref,refs):
+def inspect_controls(root,key,task_ref,refs,source_task_ref=None):
     import hashlib
-    selected=json.loads(path_at(root,task_ref+'/task.json').read_text())
+    selected=json.loads(path_at(root,(source_task_ref or task_ref)+'/task.json').read_text())
     if selected.get('id')!=key['task_id'] or selected.get('lifecycle_generation',0)!=key['lifecycle_generation']:fail('control_identity_mismatch','key','Inspect the exact original Task source before public writes.')
     historical=set()
     if OWNER=='guru-finish-task':
@@ -69,21 +69,24 @@ def inspect_controls(root,key,task_ref,refs):
         rows.append({'path':ref,'source':snapshot})
     return rows
 
-def freeze_controls(root,key,task_ref,rows,source,operation_id):
+def freeze_controls(root,key,task_ref,rows,source,operation_id,source_task_ref=None):
     # Same-owner checkpoint: no other producer's private format is read.
     checkpoint=path_at(root,CONTROL_ROOT+'legacy-retirement/'+operation_id+'.json')
     value={'root':str(root),'key':key,'task_ref':task_ref,'controls':rows,'source':source,'retired':False}
+    if source_task_ref is not None:value['source_task_ref']=source_task_ref
     if checkpoint.exists():
         previous=json.loads(checkpoint.read_text())
         if any(previous[k]!=value[k] for k in value if k!='retired'):fail('operation_mismatch','recovery_ref','Keep the original owner checkpoint.')
     else:
-        if inspect_controls(root,key,task_ref,[r['path'] for r in rows])!=rows:fail('control_changed','controls','Refresh original owner preimages.')
+        if source_task_ref is not None and raw(path_at(root,source_task_ref+'/task.json'))!=source:fail('source_mismatch','source','Freeze the physically read original Task bytes and mode.')
+        if inspect_controls(root,key,task_ref,[r['path'] for r in rows],source_task_ref)!=rows:fail('control_changed','controls','Refresh original owner preimages.')
         checkpoint.parent.mkdir(parents=True,exist_ok=True);checkpoint.write_text(json.dumps(value,indent=2)+'\n')
     return str(checkpoint)
 
 def checkpoint_input(public):
     path=Path(public['recovery_ref']);state=json.loads(path.read_text())
     if any(state[k]!=public[k] for k in ('root','key','task_ref')):fail('identity_mismatch','recovery_ref','Use this original owner exact checkpoint.')
+    if state.get('source_task_ref',state['task_ref'])!=public.get('source_task_ref',public['task_ref']):fail('identity_mismatch','source_task_ref','Use the exact frozen physical source.')
     if public['control_refs']!=[r['path'] for r in state['controls']]:fail('control_mismatch','control_refs','Use fixed original owner controls.')
     return path,state
 
@@ -102,7 +105,7 @@ def restore_controls(recovery_ref):
 def execute(package_root, public):
     profile=public['profile']; root=Path(public['root'])
     if profile=='legacy_control_freeze':
-        return {'recovery_ref':freeze_controls(root,public['key'],public['task_ref'],public['controls'],public['source'],public['operation_id'])}
+        return {'recovery_ref':freeze_controls(root,public['key'],public['task_ref'],public['controls'],public['source'],public['operation_id'],public.get('source_task_ref'))}
     if profile in {'legacy_control_restore_check','legacy_control_restore'}:
         state=json.loads(Path(public['recovery_ref']).read_text())
         if Path(state['root']).resolve()!=root.resolve():fail('target_mismatch','root','Restore only this original owner target.')
@@ -110,7 +113,7 @@ def execute(package_root, public):
         else:restore_controls(public['recovery_ref'])
         return {'recovery_ref':public['recovery_ref']}
     if profile=='legacy_control_inspection':
-        return {'formal_exit':False,'controls':inspect_controls(root,public['key'],public['task_ref'],public['control_refs'])}
+        return {'formal_exit':False,'controls':inspect_controls(root,public['key'],public['task_ref'],public['control_refs'],public.get('source_task_ref'))}
     if profile=='legacy_control_retirement':
         checkpoint,state=checkpoint_input(public)
         preserved=path_at(root,public['preserved_source_ref'])

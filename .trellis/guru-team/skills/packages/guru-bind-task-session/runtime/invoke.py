@@ -1,16 +1,13 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
-import importlib
-import importlib.util
 import json
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from runtime.delivery_projection.adapter import CurrentCheckoutPort, official_session_port
 from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
@@ -40,31 +37,11 @@ EXITS = {
 
 
 def official_port(root: Path) -> Any:
-    """Load the installed Fixed Fork API, never an alternate session store."""
-    init = root / ".trellis/scripts/common/__init__.py"
-    if not init.is_file():
-        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
-    package_name = "guru_bind_target_common_" + hashlib.sha256(str(init.resolve()).encode()).hexdigest()[:16]
-    spec = importlib.util.spec_from_file_location(
-        package_name, init, submodule_search_locations=[str(init.parent)]
-    )
-    if spec is None or spec.loader is None:
-        raise CommandError("stale_identity", "official_session", "Load the Fixed Fork session API.", 3)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    store = importlib.import_module(f"{package_name}.session_storage")
-    required = (
-        "repository_facts", "session_path", "record_exists", "read_record",
-        "write_record", "resolve_task_identity",
-    )
-    if not all(callable(getattr(store, name, None)) for name in required):
-        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
-    if not callable(getattr(module, "resolve_context_key", None)):
-        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork schema-3 session API.", 3)
-    return SimpleNamespace(resolve_context_key=module.resolve_context_key, **{
-        name: getattr(store, name) for name in required
-    })
+    """Load the shared target public API without another session store."""
+    try:
+        return official_session_port(root)
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", "official_session", "Install the reviewed Fixed Fork session API.", 3) from exc
 
 
 def _blocked(package: Path, code: str, ref: str) -> dict[str, Any]:
@@ -90,27 +67,8 @@ def _record(official: Any, root: Path) -> tuple[str, Any | None]:
     raise ValueError("unsupported_legacy_session_record")
 
 
-class _CurrentCheckoutPort:
-    def __init__(self, official: Any, workspace: Path) -> None:
-        self.official = official
-        self.workspace = workspace
 
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self.official, name)
-
-    def resolve_task_identity(self, facts: Any, task_id: str, generation: int) -> Any:
-        # The official resolver scans every worktree in facts. Retired branch
-        # checkouts may legitimately retain the same task artifact after rebind.
-        if not hasattr(facts, "worktrees"):
-            return self.official.resolve_task_identity(facts, task_id, generation)
-        scoped = SimpleNamespace(**vars(facts))
-        scoped.invocation_root = self.workspace
-        scoped.git_root = self.workspace
-        scoped.worktrees = (self.workspace,)
-        return self.official.resolve_task_identity(scoped, task_id, generation)
-
-
-def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> _CurrentCheckoutPort:
+def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> CurrentCheckoutPort:
     key = TaskLifecycleKey(lifecycle["task_id"], lifecycle["lifecycle_generation"])
     repository = inspect_repository(root)
     binding = BranchBindingStore(repository).read(key)
@@ -137,7 +95,7 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> 
         )
     task_ref = identity.task_ref
     task_path = workspace / task_ref
-    scoped_official = _CurrentCheckoutPort(official, workspace)
+    scoped_official = CurrentCheckoutPort(official, workspace)
     resolved = scoped_official.resolve_task_identity(official.repository_facts(root), key.task_id, key.lifecycle_generation)
     resolved_workspace = getattr(resolved, "workspace", None)
     resolved_task_path = getattr(resolved, "task_path", None)

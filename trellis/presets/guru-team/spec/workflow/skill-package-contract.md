@@ -2171,3 +2171,8 @@ pair guard command/results are retired under MIGRATION-567, without replacing
 them with a new gate or public DTO. Finish private transaction v3 removes the
 unused expected_base_head; its same-owner v2 conversion preserves operation,
 commit, payload and recovery rather than restarting or synchronizing.
+
+
+## Manual archive resume (#577)
+
+#577 adds the independent archive_resume input profile to guru-maintain-legacy-task. Original convert/history_closeout/resume/rollback and minimal typed exits retain their meaning. The original six private owners accept source_task_ref only to separate physical archived source from task_ref control attribution; omission preserves the original input. See MIGRATION-577 and the package-owned contract.

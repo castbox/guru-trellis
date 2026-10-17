@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "原审核职责内审查写作"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按AC选择定向验证并区分证据层"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与真实兼容退出"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concern和独立完整候选审查"}
