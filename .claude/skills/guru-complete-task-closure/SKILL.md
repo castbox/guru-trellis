@@ -5,6 +5,13 @@ description: Apply the exact source Issue disposition after Completion approval 
 
 # Guru Complete Task Closure
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 `judgment_mode=semantic`: review current authority and the complete action set,
 complete the AI Review Gate, obtain current-dialogue confirmation for actual
 close mutations, then invoke the executor/validator and return one typed exit.

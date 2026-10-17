@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/preset/index.md", "reason": "读取 installer、ownership 和 overlay 工程规范"}
+{"file": ".trellis/spec/workflow/index.md", "reason": "读取 workflow 和 skill 边界规范"}
+{"file": ".trellis/tasks/10-17-599-clear-technical-writing/research/asd-ste100-source.md", "reason": "核对正式来源与采用限制"}
+{"file": ".trellis/tasks/10-17-599-clear-technical-writing/research/validation-and-codex-harness.md", "reason": "按实际平台执行 AC5，区分行为与投影"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "Review changed text within current owner scope"}

@@ -1,0 +1,15 @@
+task_id: 599-clear-technical-writing
+source: https://github.com/castbox/guru-trellis/issues/599
+status: reviewed_promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.102
+promoted_version: current-main-0.6.17-guru.103
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.95
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md

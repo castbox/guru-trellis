@@ -5,6 +5,13 @@ description: Resolve an immutable TaskId and its current source relation, reques
 
 # Establish Task Identity
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Use `delivery_active_task`. Read the exact TaskId, generation and artifact
 through the installed upstream Task schema-2 parser. Current `task.json.source`
 is authoritative; this owner never changes overall scope or Delivery stage.

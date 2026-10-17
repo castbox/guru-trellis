@@ -1,8 +1,12 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.94`；状态：`active`；predecessor：`current-main-0.6.17-guru.93`；source baseline：[已晋升 #578 贡献](./contributions/578-cross-owner-validation-facts.md) + immutable `.93` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
+版本：`current-main-0.6.17-guru.95`；状态：`active`；predecessor：`current-main-0.6.17-guru.94`；source baseline：[已晋升 #599 贡献](./contributions/599-clear-technical-writing.md) + immutable `.94` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
 
-当前增量 ARCH-CUR-067 / ARCH-DOM-050 / ARCH-INT-053 与 ADR-029 承接首次独立完整审查的 #578。原 owner 独立当前判断与工程事实采用分离；当前绑定、private 退休与完整安装边界保持。[唯一 Test](../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)单写真实验证和边界。晋升新差额仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview，不表示 Delivery/Completion、软件发布或业务采用。
+当前增量 ARCH-CUR-068 / ARCH-DOM-051 / ARCH-INT-054 承接首次独立完整审查的 #599。清晰写作正文由 canonical managed-spec 单写，现有 Agent 与审核 owner 在原职责内读取和执行；不新增语言审核阶段或公共 I/O。[唯一 Test](../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有源码、投影、实际 Codex 行为和未验证边界。晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview；知识晋升不表示 Delivery、Completion、软件发布或业务采用。
+
+历史 `.94`：当时版本为 `current-main-0.6.17-guru.94`；predecessor 为 `.93`；source baseline 为[已晋升 #578 贡献](./contributions/578-cross-owner-validation-facts.md)与 immutable `.93` authority。以下保留该轮增量记录。
+
+历史 `.94` 增量 ARCH-CUR-067 / ARCH-DOM-050 / ARCH-INT-053 与 ADR-029 承接首次独立完整审查的 #578。原 owner 独立当前判断与工程事实采用分离；当前绑定、private 退休与完整安装边界保持。[唯一 Test](../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)单写真实验证和边界。晋升新差额仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 BranchReview，不表示 Delivery/Completion、软件发布或业务采用。
 
 历史 `.93`：当时版本：`current-main-0.6.17-guru.93`；状态：`active`；predecessor：`current-main-0.6.17-guru.92`；source baseline：[已晋升 #569 贡献](./contributions/569-fixed-cutoff-history-query.md) + immutable `.92` authority（Git 历史）。constitution、ADR-026/028、GAP lifecycle、原 owners 与软件四轴保持。
 

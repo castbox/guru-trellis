@@ -3,6 +3,13 @@ name: guru-upgrade-tools
 description: Upgrade tools in one selected checkout from complete matching source, preserving all Task and session state with bounded same-operation recovery.
 ---
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
 Load this standalone semantic owner from the complete reviewed canonical source,
 not the old target dispatcher. Read [the contract](references/contract.md) and
 the selected public profile in `interface.json`. The source runtime executes;

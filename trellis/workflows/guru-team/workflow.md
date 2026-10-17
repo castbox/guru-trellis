@@ -677,6 +677,21 @@ block this candidate contract or cause a substitute completion owner.
 
 ## Phase Index
 
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full. This applies to no-Task, formal Task, task-free, independent Git/GitHub,
+standalone Skill, resumed and compacted sessions. Until loading succeeds, use
+only short progress messages or concrete missing-dependency diagnostics. State
+the current action or missing item; make no unverified claim. If reading fails,
+pause substantive output. When available, read it and resume the original
+request without an additional approval. The writing owner self-checks output;
+review owners apply the same standard only within their existing review scope.
+
+For child dispatch, provide that installed path and include it in the selected
+Delivery's implementation/check context manifests. A child must not assume
+inherited context. It may consume complete, untruncated native injection;
+otherwise it reads the full file itself before substantive output. On resume
+or context loss, read it again if its complete current text is unavailable.
+
 ```text
 Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
 Phase 1: Plan    -> Author requirements, candidate Architecture, Author solution, Wording, final Architecture, Approval, presentation, Delivery activation
@@ -716,6 +731,11 @@ Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycl
 
 [trellis-continuation]
 ### Guru caller continuation
+
+Before substantive output on continuation, load the full
+`.trellis/spec/workflow/clear-technical-writing.md` under the Phase Index loading
+contract. If the complete current text is unavailable after resume or compaction,
+read it again. Short progress and missing-file diagnostics follow that contract.
 
 For start, ordinary continuation, a resumed/new chat, and explicit
 `trellis-continue`, first read the actual current-chat binding in this Git
