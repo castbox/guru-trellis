@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-17T08:55:27Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-17-599-clear-technical-writing",
+    "title": "#599 建立清晰技术写作规范并接入全流程",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-17-599-clear-technical-writing",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing"
+  },
+  "git": {
+    "base_branch": "dev",
+    "branch": "codex/599-clear-technical-writing",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "#599 建立清晰技术写作规范并接入全流程",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing",
+          ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/prd.md",
+          ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#599"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/599-clear-technical-writing"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing",
+        ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/prd.md",
+        ".trellis/tasks/archive/2026-10/10-17-599-clear-technical-writing/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#599 建立清晰技术写作规范并接入全流程；#599；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
