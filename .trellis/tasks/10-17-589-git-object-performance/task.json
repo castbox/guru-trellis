@@ -746,7 +746,7 @@
       },
       "planning_root": "deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/design.md",
         "revision": "sha256:3b31f0d61081e5f020dad0f80e063e5177d7792701b2f138bc9b4f44862493ab"
@@ -782,7 +782,7 @@
           "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
           "trellis/skills/guru-team/runtime/validate.py"
         ],
-        "head_ref": "c422692bca2d385a264da4db0030612b1b306fe1",
+        "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
         "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1"
       },
       "results": {
@@ -835,7 +835,7 @@
           ]
         },
         "check": {
-          "result_id": "check:d83e087505d01d49406377316c1ebc7427c828f6030cdbedeae0dac569d0b3b4",
+          "result_id": "check:5c022eaf4194169c2ed564fce6dca14f7676cbb9937aec4ce2f2f27a16bd3adc",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -895,7 +895,7 @@
               "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
               "trellis/skills/guru-team/runtime/validate.py"
             ],
-            "head_ref": "c422692bca2d385a264da4db0030612b1b306fe1",
+            "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
             "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1"
           },
           "predecessor_result_id": "planning-accepted:516d51cd-13bd-45e1-8524-8d66c3a55808",
@@ -912,6 +912,414 @@
             {
               "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/implement.md",
               "revision": "sha256:4f5aa6f3b952db57f43b03650a42020f57b0c107734e70afcd478e9b34d19db5"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:8dfda1c67c0fd32dc14e2d818e522052d2b940019aac9fe7767684166125c3f0",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:c5098fbc025d986074370a532da8dde8d1fdf67fa1a67ea0699e4902f411ae61"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC05",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/design.md",
+            "revision": "sha256:3b31f0d61081e5f020dad0f80e063e5177d7792701b2f138bc9b4f44862493ab"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:756083c7887b82c578ae8011da3a54dea2d9f6bfd4988cb9567de26e3e592759",
+            "paths": [
+              ".trellis/guru-team/runtime/git_object_batch.py",
+              ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              ".trellis/guru-team/runtime/task_lifecycle/composition.py",
+              ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+              ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+              ".trellis/guru-team/runtime/validate.py",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/joint_resolved_flow.py",
+              "trellis/skills/guru-team/runtime/git_object_batch.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/README.md",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/benchmark_lifecycle.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/profile_dispatcher.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/run_suite.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
+              "trellis/skills/guru-team/runtime/validate.py"
+            ],
+            "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+            "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1"
+          },
+          "predecessor_result_id": "check:5c022eaf4194169c2ed564fce6dca14f7676cbb9937aec4ce2f2f27a16bd3adc",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/implement.md",
+              "revision": "sha256:4f5aa6f3b952db57f43b03650a42020f57b0c107734e70afcd478e9b34d19db5"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:6bae6e3574ddbc4b7bdb10f96190182a4835a790171cb2e1bfeec50775116bb7",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:c5098fbc025d986074370a532da8dde8d1fdf67fa1a67ea0699e4902f411ae61"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC05",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/design.md",
+            "revision": "sha256:3b31f0d61081e5f020dad0f80e063e5177d7792701b2f138bc9b4f44862493ab"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:756083c7887b82c578ae8011da3a54dea2d9f6bfd4988cb9567de26e3e592759",
+            "paths": [
+              ".trellis/guru-team/runtime/git_object_batch.py",
+              ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              ".trellis/guru-team/runtime/task_lifecycle/composition.py",
+              ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+              ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+              ".trellis/guru-team/runtime/validate.py",
+              ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+              "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/joint_resolved_flow.py",
+              "trellis/skills/guru-team/runtime/git_object_batch.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/README.md",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/benchmark_lifecycle.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/profile_dispatcher.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/run_suite.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
+              "trellis/skills/guru-team/runtime/validate.py"
+            ],
+            "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+            "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1"
+          },
+          "predecessor_result_id": "full-review:8dfda1c67c0fd32dc14e2d818e522052d2b940019aac9fe7767684166125c3f0",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/48f1273c-72cd-4afe-93a8-ce29c5c660fa/implement.md",
+              "revision": "sha256:4f5aa6f3b952db57f43b03650a42020f57b0c107734e70afcd478e9b34d19db5"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:22d1b5fb4d15ffd3d7c86a6739e7071dfc7ce98c0bdbe372f31dc513b950326f",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/595",
+            "revision": "sha256:136f6aff8c3c2abbb25241476d96fb038be702e110bc60a5969932851107d6b9"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1",
+          "content_ref": "sha256:756083c7887b82c578ae8011da3a54dea2d9f6bfd4988cb9567de26e3e592759",
+          "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/runtime/git_object_batch.py",
+            ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            ".trellis/guru-team/runtime/task_lifecycle/composition.py",
+            ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+            ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+            ".trellis/guru-team/runtime/validate.py",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+            "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/joint_resolved_flow.py",
+            "trellis/skills/guru-team/runtime/git_object_batch.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/README.md",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/benchmark_lifecycle.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/profile_dispatcher.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/run_suite.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
+            "trellis/skills/guru-team/runtime/validate.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 595,
+        "reviewed_head": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/595",
+          "revision": "sha256:136f6aff8c3c2abbb25241476d96fb038be702e110bc60a5969932851107d6b9"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:cc4d91a9080a8c9f76984b55e67e4c373168fed6",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/595",
+            "revision": "cc4d91a9080a8c9f76984b55e67e4c373168fed6"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "c422692bca2d385a264da4db0030612b1b306fe1",
+          "content_ref": "sha256:756083c7887b82c578ae8011da3a54dea2d9f6bfd4988cb9567de26e3e592759",
+          "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/runtime/git_object_batch.py",
+            ".trellis/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            ".trellis/guru-team/runtime/task_lifecycle/composition.py",
+            ".trellis/guru-team/runtime/task_lifecycle/git_facts.py",
+            ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+            ".trellis/guru-team/runtime/validate.py",
+            ".trellis/guru-team/skills/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            ".trellis/guru-team/skills/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+            "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-establish-task-branch-binding/tests/test_contract.py",
+            "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/candidate_objects.py",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/scripts/execute-resolved-base-reconciliation.sh",
+            "trellis/skills/guru-team/packages/guru-reconcile-task-base/tests/joint_resolved_flow.py",
+            "trellis/skills/guru-team/runtime/git_object_batch.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/branch_resolution.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/composition.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/git_facts.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/README.md",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/benchmark_lifecycle.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/profile_dispatcher.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/benchmarks/run_suite.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/tests/test_git_object_reader.py",
+            "trellis/skills/guru-team/runtime/validate.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 595,
+        "reviewed_head": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+        "merge_commit": "cc4d91a9080a8c9f76984b55e67e4c373168fed6",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    },
+    {
+      "id": "24f3e16d-0e00-4ede-9290-d17c272f8785",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+          "revision": "sha256:c5098fbc025d986074370a532da8dde8d1fdf67fa1a67ea0699e4902f411ae61"
+        },
+        "anchors": [
+          "AC01",
+          "AC02",
+          "AC06",
+          "AC07",
+          "AC08",
+          "AC09",
+          "AC10",
+          "AC11",
+          "AC12",
+          "AC13",
+          "AC14",
+          "AC15"
+        ]
+      },
+      "planning_root": "deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/design.md",
+        "revision": "sha256:28d1f38d899ad34d4f66aca81d6cacf2c6eb386133d5099d8e3be1e39c87058d"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:2ef17944faf09ea466c505eb82561cafdad5147e5a7be01d5db76d75aac7e89d",
+        "paths": [
+          ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/README.md",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/analyze_volume.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/benchmark_cleanup.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/profile_cleanup.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/run_benchmarks.py",
+          "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/test_cleanup_contract.py"
+        ],
+        "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+        "base_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:c0a10ebf-4bb7-40b3-8068-efbc27b8a8c0",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:c5098fbc025d986074370a532da8dde8d1fdf67fa1a67ea0699e4902f411ae61"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/design.md",
+            "revision": "sha256:28d1f38d899ad34d4f66aca81d6cacf2c6eb386133d5099d8e3be1e39c87058d"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/prd.md",
+              "revision": "sha256:7b6cde60389c8963a60dd18952356ec8e4874d103a2b6ac5a8e334384f3bedc8"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/design.md",
+              "revision": "sha256:28d1f38d899ad34d4f66aca81d6cacf2c6eb386133d5099d8e3be1e39c87058d"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/implement.md",
+              "revision": "sha256:299668feb626a9db4f51f22ac0e6823a380eb7437033bcf021062a7b97c7a500"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:08d7f1af03a1a2bfbf6b8a4e6fb75ad0aa40122d70c7a9b8d37f9a328ee31ef7",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/prd.md",
+              "revision": "sha256:c5098fbc025d986074370a532da8dde8d1fdf67fa1a67ea0699e4902f411ae61"
+            },
+            "anchors": [
+              "AC01",
+              "AC02",
+              "AC06",
+              "AC07",
+              "AC08",
+              "AC09",
+              "AC10",
+              "AC11",
+              "AC12",
+              "AC13",
+              "AC14",
+              "AC15"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/design.md",
+            "revision": "sha256:28d1f38d899ad34d4f66aca81d6cacf2c6eb386133d5099d8e3be1e39c87058d"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:2ef17944faf09ea466c505eb82561cafdad5147e5a7be01d5db76d75aac7e89d",
+            "paths": [
+              ".trellis/guru-team/skills/packages/guru-cleanup-task-resources/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/README.md",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/analyze_volume.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/benchmark_cleanup.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/profile_cleanup.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/benchmarks/run_benchmarks.py",
+              "trellis/skills/guru-team/packages/guru-cleanup-task-resources/tests/test_cleanup_contract.py"
+            ],
+            "head_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+            "base_ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604"
+          },
+          "predecessor_result_id": "planning-accepted:c0a10ebf-4bb7-40b3-8068-efbc27b8a8c0",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/prd.md",
+              "revision": "sha256:7b6cde60389c8963a60dd18952356ec8e4874d103a2b6ac5a8e334384f3bedc8"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/design.md",
+              "revision": "sha256:28d1f38d899ad34d4f66aca81d6cacf2c6eb386133d5099d8e3be1e39c87058d"
+            },
+            {
+              "locator": ".trellis/tasks/10-17-589-git-object-performance/deliveries/24f3e16d-0e00-4ede-9290-d17c272f8785/implement.md",
+              "revision": "sha256:299668feb626a9db4f51f22ac0e6823a380eb7437033bcf021062a7b97c7a500"
             }
           ]
         },
