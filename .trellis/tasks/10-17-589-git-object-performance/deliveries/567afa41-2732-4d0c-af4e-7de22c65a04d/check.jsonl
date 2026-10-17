@@ -1,0 +1,5 @@
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "current Fork source authority"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "original tools-only write/preservation contract"}
+{"file": "trellis/skills/guru-team/runtime/maintenance_transport.py", "reason": "source_locked public API transport"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "current source mapping documentation rules"}
+{"file": "trellis/skills/guru-team/packages/guru-merge-task-delivery/runtime/manual_recovery.py", "reason": "supported PR immutable snapshot and residual boundary"}

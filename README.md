@@ -30,10 +30,11 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前未发布源码固定到 `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0`，
-对应 tree `41ff285d857036324e480e1eb64d08fffd5956e1`、成功 main CI
-`38851816688`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
-schema-1 会话元数据兼容修复。Fork CLI/core 均保持 `0.7.0-castbox.3`，
+当前未发布源码固定到 `c7bd746b42d75f73534c85e263cd6b51fe0e5287`，
+对应 tree `02c6ec8688920d8acb56d1467d6725b03012c0e0`、成功 main CI
+`38994652194`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
+schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化。
+本次仅准备精确来源，目标工具安装、Guru PR 链与性能验收仍须后续独立验证。Fork CLI/core 均保持 `0.7.0-castbox.3`，
 package manager 为 `pnpm@10.32.1`。这不是已发布 `.3` tag 的框架来源；
 稳定安装的原锁见下表，构建命令始终读取所选 `GURU_SOURCE` 自身的 lock。
 `ci_run_id` 用于核对该 run 的仓库、head SHA 与成功状态；它不证明本地 build 或 Guru
@@ -76,8 +77,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 稳定 `.3` 的原 Fork source / CI | `5c760463680ffc10a3f26957b330c57a4b0c3ff8` / `37735554354` |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.4` |
 | 当前源码 Guru extension revision | `0.7.0-guru.4`（未发布的准备源码） |
-| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.3` @ `2a6f10ba3c0a2f27e0587e49e6c2f9b6a1f9d9d0` |
-| 当前源码 Fork CI identity | `38851816688` |
+| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.3` @ `c7bd746b42d75f73534c85e263cd6b51fe0e5287` |
+| 当前源码 Fork CI identity | `38994652194` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | RDT / Architecture 分别由 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 指定 |
 
