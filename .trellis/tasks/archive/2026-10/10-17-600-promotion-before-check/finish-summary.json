@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-17T13:16:48Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-17-600-promotion-before-check",
+    "title": "#600 架构晋升前移到最终 Check",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-17-600-promotion-before-check",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/600-promotion-before-check",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "#600 架构晋升前移到最终 Check",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check",
+          ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/prd.md",
+          ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#600"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/600-promotion-before-check"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check",
+        ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/prd.md",
+        ".trellis/tasks/archive/2026-10/10-17-600-promotion-before-check/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#600 架构晋升前移到最终 Check；#600；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
