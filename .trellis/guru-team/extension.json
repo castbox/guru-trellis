@@ -1165,11 +1165,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-17T00:40:59Z",
+  "installed_at": "2026-10-17T03:45:57Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
-    "commit": "dc57fc6ed5d1229c50520d74a1f6390a52469604",
+    "ref": "f70b64b026725b27d59fed17ed710cc2f831439f",
+    "commit": "f70b64b026725b27d59fed17ed710cc2f831439f",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1248,7 +1248,7 @@
       ".trellis/spec/workflow/data-contracts.md": "784e9a06e2e9ce836e77cc6ea0f883e8cb576312cc22c16cc7e5fe9870e78c11",
       ".trellis/spec/workflow/companion-scripts.md": "f57f2329d57ea35b0cd15acca5b51fac3b242a220664a2d75645ad268ac16b83",
       ".trellis/spec/workflow/quality-guidelines.md": "5d69b3c5e3aa5e2bafbbfcbdf3d3befdf6abe04184e999d082aeb1a551af5098",
-      ".trellis/guru-team/trellis-source.json": "9127bfe251c5d7ff1cd1b453c723bcb1b8ea74d4f7441647f144b114f6e6a05e"
+      ".trellis/guru-team/trellis-source.json": "6d3d834b552c90fef65557567932743556ba0fdf48821c674494e1763e7b57af"
     },
     "new_copies": [],
     "managed_backups": [],
