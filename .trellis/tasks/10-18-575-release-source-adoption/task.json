@@ -54,7 +54,7 @@
       },
       "candidate": {
         "kind": "git",
-        "content_ref": "sha256:130c6bbee85d73abdd6c9422d0bd919604ed53ff6ad6a72f8dc84826534ce3fc",
+        "content_ref": "sha256:f26d279aca9bd1b732e4f57a1b0479ef30177f2dddcec718fd3d516bf41502dc",
         "paths": [
           ".agents/skills/guru-upgrade-tools/SKILL.md",
           ".agents/skills/guru-upgrade-tools/references/contract.md",
@@ -75,11 +75,17 @@
           ".trellis/guru-team/trellis-source.json",
           ".trellis/spec/docs/public-docs.md",
           "README.md",
+          "docs/design/README.md",
+          "docs/design/versions/current-main-0.6.17-guru.107/design-main.md",
           "docs/requirements-design-test-contributions/575-release-source-adoption/design.md",
           "docs/requirements-design-test-contributions/575-release-source-adoption/manifest.yaml",
           "docs/requirements-design-test-contributions/575-release-source-adoption/requirements.md",
           "docs/requirements-design-test-contributions/575-release-source-adoption/test.md",
           "docs/requirements-design-test-contributions/575-release-source-adoption/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/versions/current-main-0.6.17-guru.107/requirement-main.md",
+          "docs/test/README.md",
+          "docs/test/versions/current-main-0.6.17-guru.107/test-strategy.md",
           "trellis/presets/guru-team/MIGRATION-577.md",
           "trellis/presets/guru-team/README.md",
           "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -92,7 +98,7 @@
           "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_agents_target.py",
           "trellis/workflows/guru-team/README.md"
         ],
-        "head_ref": "66d31cd33f75d4a73277ec252add6e10e56ad977",
+        "head_ref": "cb33cf0cefa3899dd8a563bef8ac6520c7f7b137",
         "base_ref": "66d31cd33f75d4a73277ec252add6e10e56ad977"
       },
       "results": {
@@ -138,7 +144,7 @@
           ]
         },
         "check": {
-          "result_id": "check:fc1ddfb458d78f133509eb339f6c1d90319d6bfeeafad96f9cb3b30c2667a28b",
+          "result_id": "check:f0feec4975fff9854562beb04cba738c7e1fa78f91c1977219ee9b61ca7c71b8",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -162,7 +168,7 @@
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:130c6bbee85d73abdd6c9422d0bd919604ed53ff6ad6a72f8dc84826534ce3fc",
+            "content_ref": "sha256:f26d279aca9bd1b732e4f57a1b0479ef30177f2dddcec718fd3d516bf41502dc",
             "paths": [
               ".agents/skills/guru-upgrade-tools/SKILL.md",
               ".agents/skills/guru-upgrade-tools/references/contract.md",
@@ -183,11 +189,17 @@
               ".trellis/guru-team/trellis-source.json",
               ".trellis/spec/docs/public-docs.md",
               "README.md",
+              "docs/design/README.md",
+              "docs/design/versions/current-main-0.6.17-guru.107/design-main.md",
               "docs/requirements-design-test-contributions/575-release-source-adoption/design.md",
               "docs/requirements-design-test-contributions/575-release-source-adoption/manifest.yaml",
               "docs/requirements-design-test-contributions/575-release-source-adoption/requirements.md",
               "docs/requirements-design-test-contributions/575-release-source-adoption/test.md",
               "docs/requirements-design-test-contributions/575-release-source-adoption/traceability.md",
+              "docs/requirements/README.md",
+              "docs/requirements/versions/current-main-0.6.17-guru.107/requirement-main.md",
+              "docs/test/README.md",
+              "docs/test/versions/current-main-0.6.17-guru.107/test-strategy.md",
               "trellis/presets/guru-team/MIGRATION-577.md",
               "trellis/presets/guru-team/README.md",
               "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
@@ -200,7 +212,7 @@
               "trellis/skills/guru-team/packages/guru-upgrade-tools/tests/test_agents_target.py",
               "trellis/workflows/guru-team/README.md"
             ],
-            "head_ref": "66d31cd33f75d4a73277ec252add6e10e56ad977",
+            "head_ref": "cb33cf0cefa3899dd8a563bef8ac6520c7f7b137",
             "base_ref": "66d31cd33f75d4a73277ec252add6e10e56ad977"
           },
           "predecessor_result_id": "planning-accepted:c9359591-2a68-4228-8d9f-ed39345182cd",

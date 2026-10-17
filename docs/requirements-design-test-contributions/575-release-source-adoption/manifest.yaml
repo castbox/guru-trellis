@@ -1,6 +1,6 @@
 task_id: 575-release-source-adoption
 source: https://github.com/castbox/guru-trellis/issues/575
-status: active
+status: promoted
 strategy: delta_first
 preimage: current-main-0.6.17-guru.106
 architecture:
@@ -12,3 +12,4 @@ documents:
   design: design.md
   test: test.md
   traceability: traceability.md
+promoted_version: current-main-0.6.17-guru.107
