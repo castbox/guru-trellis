@@ -1,8 +1,14 @@
 # #600 架构晋升时机贡献
 
-状态：`reviewed_promoted`（本贡献经本轮独立 Phase2 评估并晋升到 `.96`；最终质量与交付门禁另行执行）；change_path：`target_native`。TaskId=`600-promotion-before-check`，generation=0；Delivery=`068749ef-f7d7-46b6-9715-a831441d8d35`。
+状态：`reviewed_promoted`（本贡献已在原执行分支经独立 Phase2 评估并晋升到 `.96`；后续整合门禁另行执行）；change_path：`target_native`。TaskId=`600-promotion-before-check`，generation=0；Delivery=`068749ef-f7d7-46b6-9715-a831441d8d35`。
 
 当前比较起点为 `ab854ef29448910c332faadeec3c1a5dd810901d:docs/architecture/`，Architecture `.95/active`、constitution v1、change-contract v1。expected-current 只在原 Architecture owner 写前重读，不绑定用户授权。
+
+## 与 main 的实际冲突整合
+
+main@`9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807` 已拥有 #589 D7 的 `.96`。原 #600 分支内晋升及其比较起点保留于 `87176aea126cc9ade10f334eb379e0d35a053295`，不重新晋升同一贡献。本次整合保留 #589 的 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 / EVD-068，将 #600 当前组合投影后继为 ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 / EVD-069，并使用 `.97` 组合身份。历史 `.96` 正文不回写。ADR-030 与 #589 上游内容计算、Guru 对象准备及恢复职责并存；本次不改变两项既有决定。
+
+`.97` 组合候选包含真实依赖和源码变化。原 reviewed_promoted 只记录已经发生的晋升，不代表该新候选通过；整合后的 Architecture、Check、Task Commit 和独立 Review 必须取得当前结果。两项贡献的实际验证及未验证边界分别由各自唯一 Test 拥有。
 
 ## 决策与职责
 

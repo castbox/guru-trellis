@@ -42,4 +42,33 @@ class ToolsMaintenancePrerequisiteTests(unittest.TestCase):
                 with self.assertRaises(SystemExit):require_tools_maintenance_installation(target,maintenance)
                 capabilities.assert_not_called()
 
+class InstalledContentCapabilityTests(unittest.TestCase):
+    def test_public_content_class_and_methods_are_diagnosed_before_projection(self):
+        from delivery_installation import installed_capabilities
+        with tempfile.TemporaryDirectory() as temp:
+            common = Path(temp) / "common"
+            common.mkdir()
+            (common / "__init__.py").write_text("")
+            modules = {
+                "delivery_schema": "def parse_task_v2(record): pass\n",
+                "delivery_operations": "def parse_operation(*args): pass\ndef apply_operation(*args): pass\ndef get_gate_applicability(*args): pass\n",
+                "delivery_session": "def get_current_delivery(*args): pass\ndef select_delivery(*args): pass\ndef release_delivery(*args): pass\ndef planning_directory(*args): pass\n",
+                "runtime_contract": "def read_runtime_contract(path): return {'delivery_api':'1.0','task_schema':'2.0'}\ndef validate_runtime_contract(*args): pass\n",
+            }
+            for name, body in modules.items():
+                (common / (name + ".py")).write_text(body)
+            original = "def apply_to_store(*args): pass\ndef candidate_content_ref(*args): pass\ndef verify_authority(*args): pass\ndef verify_candidate(*args): pass\n"
+            cases = (
+                ("", ["delivery_store.GitCandidateContent"]),
+                ("class GitCandidateContent:\n    def content_ref(self, *args): pass\n", ["delivery_store.GitCandidateContent.close"]),
+                ("class GitCandidateContent:\n    def close(self): pass\n", ["delivery_store.GitCandidateContent.content_ref"]),
+                ("class GitCandidateContent:\n    def content_ref(self, *args): pass\n    def close(self): pass\n", []),
+            )
+            for definition, expected in cases:
+                with self.subTest(definition=definition):
+                    (common / "delivery_store.py").write_text(original + definition)
+                    self.assertEqual(installed_capabilities(common, Path(temp) / "workflow.md", []), expected)
+            self.assertFalse((common / "__pycache__").exists())
+
+
 if __name__=='__main__':unittest.main()

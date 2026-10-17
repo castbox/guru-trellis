@@ -1,9 +1,9 @@
 task_id: 600-promotion-before-check
 source: https://github.com/castbox/guru-trellis/issues/600
 status: promoted
-promoted_version: current-main-0.6.17-guru.104
+promoted_version: current-main-0.6.17-guru.105
 strategy: delta_first
-preimage: current-main-0.6.17-guru.103
+preimage: current-main-0.6.17-guru.104
 architecture:
   locator: docs/architecture/README.md
   version: current-main-0.6.17-guru.95

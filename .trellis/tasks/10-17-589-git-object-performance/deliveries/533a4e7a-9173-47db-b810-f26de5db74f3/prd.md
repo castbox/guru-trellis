@@ -1,0 +1,13 @@
+# D7 上游公开不可变摘要能力的来源与消费准备
+
+原Task589-git-object-performance/generation0按当前Direct Source的读取工作验收口径执行，Task/Delivery身份保持。承接AC01/02/03/06/07/08/09/10/11/12/13/14/15；D1–D6已交付事实保持。上游PR50已merged9f40ec70914f98fce2619560274cc1d0619f2f7e，CLI/Core0.7.0-castbox.4配对Release与下载重装验证已交付；本Task尚未采用，不因上游Issue CLOSED而完成。
+
+本批形成可由原source_locked tools owner消费的clean committed Guru来源：固定新Fork commit/tree/ordered parents/成功mainCI与.4版本匹配，收敛当前manifest/ownership/正式安装能力诊断与公开说明；当前完整安装/升级入口的目标来源断言也须与.4同步，避免新锁在原公开入口被旧目标常量拒绝；保留原Plan2/迁移算法、旧.3稳定发布和历史来源/fixtures，不全库替换。普通source_locked工具维护和原Task/session/peer保留合同不变。
+
+原manual recovery与query2历史consumer直接消费公开GitCandidateContent。摘要算法仍由原上游模块拥有，原caller保留每份Task/Delivery结构、归属、关系、ancestor、expected digest、PR/merge/cutoff与恢复检查。一次操作只复用实际repo、完整不可变commit/blob与同规则计算事实；history准备切换真实root时关闭重建，缺对象仍走原prepare/retry，no_lazy_fetch政策保持。移除失去生产caller的旧snapshot实现及其专属重复测试，保留仍有caller的shared reader。
+
+按当前#589§6固定可比较方法：现有before与全部after/失败均保留，覆盖两档/大候选、多Delivery、完整Git/请求字节/快照读取/hash/RSS与真实计时边界。以不必要读取与同调用重复计算消除、独立检查保留及资源有界验收；不以预设耗时改善百分比阻塞或驱动无关改造。相同输入after完整复验，不以底层测试代替正式链，不挑样、不将旧指标FAIL改称PASS；D1–D6历史交付与测量结果保持事实。新增测量工具只完善实际协议观察，不改变计时行为制造收益。
+
+本批partial source/consumer准备。source端定向compatibility/正式fixture公开链、代表性candidate安装与独立Check/完整Review通过后可独立交付clean source；本Task最终完整dogfood/installed投影与receipt必须由后继原source_locked tools操作从该真实clean来源执行，不通过普通apply迁移历史archive、不手工patch上游脚本。后继负责目标自身native、平台/drift/mode/sidecar、正式受影响链和最终集成/整体Completion，不能以本批源端验证宣称所有目标已升级。
+
+未发布Guru版本、未升级业务仓；#575完整Release/upgrade矩阵保持原owner。只有整体AC06及全部accepted scope证据完成后才Closure/Finish。

@@ -129,7 +129,12 @@ class DeliveryHistoryTest(unittest.TestCase):
         return result
 
     def test_two_cross_branch_deliveries_are_reconstructed_and_bookkeeping_is_excluded(self) -> None:
-        result = self.discover()
+        with mock.patch.object(HISTORY, "git", wraps=HISTORY.git) as reads:
+            result = self.discover()
+        checked = [call.args[3] for call in reads.call_args_list
+                   if call.args[1:3] == ("cat-file", "-e")]
+        for delivery in self.deliveries:
+            self.assertIn(delivery["reviewed_head"] + "^{commit}", checked)
         self.assertEqual(len(result["deliveries"]), 2)
         self.assertEqual(
             [item["pr_number"] for item in result["deliveries"]],

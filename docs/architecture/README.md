@@ -1,10 +1,18 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.6.17-guru.96`；状态：`active`；predecessor：`current-main-0.6.17-guru.95`；source baseline：[已晋升 #600 贡献](./contributions/600-promotion-before-check.md)与 immutable `.95` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
+版本：`current-main-0.6.17-guru.97`；状态：`active`；predecessor：main@`9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807` 的 `current-main-0.6.17-guru.96`。本执行分支组合继承[已晋升 #589 D7 贡献](./contributions/589-git-object-performance.md)与[已晋升 #600 贡献](./contributions/600-promotion-before-check.md)。constitution、原 owners、ADR/GAP lifecycle 与所整合源码的软件版本轴保持；知识组合不改变发布身份。
 
-当前增量 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 与 [ADR-030](./adr/030-promotion-before-final-check.md)替代 ADR-005 及继承合同中的旧晋升时机。Phase2 独立评估与拟写审查后，原 owner 在最终 Check 前晋升并核对适用性；committed 独立判断与完整 Branch Review 继续覆盖实际文件和晋升前 authority。[唯一 Test](../requirements-design-test-contributions/600-promotion-before-check/test.md)单写实际结果与未验证边界。知识晋升不证明这些最终门禁、Delivery、Completion 或软件发布通过。
+#589 保留 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 / EVD-068；#600 当前投影使用 ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 / EVD-069，并保留 [ADR-030](./adr/030-promotion-before-final-check.md)。两项增量分别保留其职责、来源、验证事实和未验证边界；实际结果各读原唯一 Test。本次真实冲突整合形成 `.97` 组合身份，不重新执行已完成的贡献晋升。完整整合候选的 Architecture、Check、Task Commit 与独立 Review 仍须取得当前正式结果；原分支通过不覆盖新增整合差额。
 
-历史 `.95` authority：
+#600 的原比较起点仍为 `ab854ef29448910c332faadeec3c1a5dd810901d:docs/architecture/`（`.95`）；其执行分支 `.95→.96` 晋升保留于 `87176aea126cc9ade10f334eb379e0d35a053295`。该历史 `.96` 中的 #600 条目编号不回写；组合投影的后继编号只消除与 main #589 条目的重名。
+
+历史 `.96`（main@`9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807`，#589 D7）：
+
+版本：`current-main-0.6.17-guru.96`；状态：`active`；predecessor：`current-main-0.6.17-guru.95`；source baseline：[已晋升 #589 D7 贡献](./contributions/589-git-object-performance.md) + immutable `.95` authority（Git 历史）。constitution、原 owners、ADR/GAP lifecycle 与软件四轴保持。
+
+当前增量 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 承接已独立完整审查的 #589 D7。manual recovery/history 的不可变内容摘要由上游公开 owner 承担；Guru 保留对象准备、逐输入独立检查与恢复职责，旧 snapshot 实现退出。[唯一 Test](../requirements-design-test-contributions/589-git-object-performance/test.md)拥有实际结果及正式采用的未验证边界。此次晋升新增差额尚须 fresh Phase2、TaskCommit 与独立完整 Branch Review；不表示 Delivery、整体完成、正式工具采用、软件发布或业务部署。
+
+历史 `.95`：以下保留 #599 晋升时的 authority 与增量记录。
 
 版本：`current-main-0.6.17-guru.95`；状态：`active`；predecessor：`current-main-0.6.17-guru.94`；source baseline：[已晋升 #599 贡献](./contributions/599-clear-technical-writing.md) + immutable `.94` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
 

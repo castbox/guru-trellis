@@ -32,3 +32,11 @@ Architecture package使用真实npm-installed CLI/Core `0.7.0-castbox.3` 的scri
 首次installer测试从脚本子目录运行缺少当前runtime查找上下文，后从repo root运行；19项中18通过，1项既有断言仍要求Merge aggregate1.0，而base/main和现有Interface均已是2.0。本Issue未改Merge aggregate，故此为已定位的历史测试偏差，不改生产API或无关断言追绿。
 
 本轮受影响eval fixture首次缺Core版本元数据，原normal-scenario与solution-mechanism owners实际返回qualified_current后，仅补同来源版本文件。另一次facts置于被native transport排除的runtime路径而不可读，已改为既有排除内容hash、可传输的eval-only task evidence locator；没有投影private owner result。Architecture authoring adapter最终9项通过；Phase2 adapter结果由原定向运行输出承接。
+
+## main 冲突整合的定向验证
+
+PR 的实际 CONFLICTING 状态触发原 Reconcile，固定整合 main 的 #589 D7。11 个文档冲突逐项保留双方事实；Architecture 由原 owner 组合为 `.97`，RDT 保留 main `.104` 并以 `.105` 接续 #600，根需求与计划未改变。原公共结果保持历史事实，解决树和整合后的当前结果由原 Check/Reconcile/Review owners 继续承接。
+
+整合引入 Fork `.4` 公开内容读取依赖。原 tools-only owner 使用实际配对 CLI/Core `0.7.0-castbox.4` 完成成套更新，保留 Task、配置与 peer/common 状态；第一次末端 peer-pointer 相等检查未满足而返回 resume_required，读回正常状态后沿同一 recovery ref 成功恢复，没有重建操作或改写 peer 指针。该操作仍为 local_candidate，formal_fork_source_lock 未验证。
+
+在 `.4` 实际 scripts 上，Architecture package 39/39 通过。Branch 首轮因未设置公开 common 来源而跳过5项；补上同一 `.4` common 后完整58/58通过，无skip。新alignment真实wrapper和archived Task2场景因此在匹配依赖上实际执行。完整tools安装与drift通过；当前source/installed验证结果沿实际输出承接。不把这些工程结果等同于最终AI门禁或整个#589采用完成。

@@ -125,7 +125,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
     def plan(self, workspace_roots=None, deferred_workspaces=()):
         selected = workspace_roots or {"primary": self.root}
         core_plan = {"schema_version": "2.0", "source": {"version": "0.7.0-castbox.3", "task_schema": "1.0", "delivery_api": None},
-                     "target": {"version": "0.7.0-castbox.3", "task_schema": "2.0", "delivery_api": "1.0"},
+                     "target": {"version": json.loads((self.cli / "package.json").read_text())["version"], "task_schema": "2.0", "delivery_api": "1.0"},
                      "workspaces": [{"id": key, "root": str(value), "project_relative": getattr(self, "project_relative", None)} for key, value in selected.items()],
                      "installations": [], "tasks": [], "sessions": [], "workflows": [], "templates": [], "files": []}
         for workspace, target in selected.items():

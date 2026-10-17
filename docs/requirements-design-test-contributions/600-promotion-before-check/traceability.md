@@ -11,4 +11,4 @@
 | R600-07 / BEH600-07 | D600-04 / CON600-04 | T600-07 / AC7 |
 | R600-08 / BEH600-08 | D600-04 / CON600-04 | T600-08 / AC8 |
 
-本增量已由原 RDT owner 晋升为 `.104/active`；这只表示知识承接。各 owner 的行为合同留在原 package；实际证据与未验证边界只写 [test.md](./test.md)。新规则按 #600 在最终 Check 前由原 owners 晋升，不复制旧 post-Review 晋升循环。
+本增量已由原 RDT owner 晋升后经 main 冲突整合承接为 `.105/active`（保留 main 的 #589 `.104`）；这只表示知识承接。各 owner 的行为合同留在原 package；实际证据与未验证边界只写 [test.md](./test.md)。新规则按 #600 在最终 Check 前由原 owners 晋升，不复制旧 post-Review 晋升循环。

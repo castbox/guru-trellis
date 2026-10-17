@@ -15,6 +15,7 @@ import statistics
 import subprocess
 import sys
 import time
+import uuid
 from unittest.mock import patch
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -33,7 +34,7 @@ def arguments():
     parser.add_argument('--kind', choices=['duplicates', 'unique'], default='duplicates')
     parser.add_argument('--deliveries', type=int, choices=[1, 2, 4], default=1)
     parser.add_argument('--repeats', type=int, default=2)
-    parser.add_argument('--pass', dest='measurement', choices=['timing', 'rss', 'volume', 'profile'], default='timing')
+    parser.add_argument('--pass', dest='measurement', choices=['timing', 'rss', 'volume', 'profile', 'hash'], default='timing')
     args = parser.parse_args()
     if args.paths < 0 or args.repeats < 1:
         parser.error('--paths must be nonnegative and --repeats positive')
@@ -119,25 +120,26 @@ def install_observer(case, args):
     command = shlex.quote(realgit) + ' "$@"'
     if args.measurement == 'rss':
         command = '/usr/bin/time -l -a -o ' + shlex.quote(str(args.output / 'git.rss')) + ' ' + command
-    capture = ''
     if args.measurement == 'volume':
-        # Copy only regular-file stdin; never drain or introduce a pipe.
-        copier = ("import os,sys; offset=0\n"
-                  "with open(sys.argv[1], 'wb') as output:\n"
-                  " while data := os.pread(0, 1048576, offset):\n"
-                  "  output.write(data); offset += len(data)\n")
-        capture = ('case " $* " in *cat-file*--batch*)\n'
-                   'if [ -f /dev/stdin ]; then ' + shlex.quote(sys.executable) +
-                   ' -c ' + shlex.quote(copier) + ' ' + shlex.quote(str(args.output)) +
-                   '/batch-$$.requests; fi;; esac\n')
+        command = (shlex.quote(sys.executable) + ' ' +
+                   shlex.quote(str(Path(__file__).with_name('benchmark_observer.py'))) + ' ' +
+                   shlex.quote(str(args.output)) + ' ' + shlex.quote(realgit) + ' "$@"')
     (case.bin / 'git').write_text('#!/bin/sh\nexport GIT_TRACE2_EVENT=' +
-        shlex.quote(str(trace)) + '\n' + capture + 'exec ' + command + '\n')
+        shlex.quote(str(trace)) + '\nexec ' + command + '\n')
     (case.bin / 'git').chmod(0o755)
     return trace
 
 
+def profile_runtime_root(package):
+    """Locate the two supported canonical/installed shared-runtime layouts."""
+    for root in (package.parents[1], package.parents[2]):
+        if (root / 'runtime/command.py').is_file():
+            return root
+    raise ValueError('No canonical or installed shared runtime for ' + str(package))
+
+
 def instrument_wrapper(case, args, skills):
-    if args.measurement not in ('rss', 'profile'):
+    if args.measurement not in ('rss', 'profile', 'hash'):
         return
     ordinal = 0
 
@@ -152,75 +154,78 @@ def instrument_wrapper(case, args, skills):
             command_id = 'invoke-guru-merge-task-delivery' if name == 'invoke.sh' else 'discover-task-deliveries'
             command = [sys.executable, str(Path(__file__).with_name('benchmark_profile.py')),
                        str(args.output / f'profile-{ordinal}.json'), str(package), command_id]
-            env = {**os.environ, 'PYTHONPATH': str(package.parents[1])}
+            env = {**os.environ, 'PYTHONPATH': str(profile_runtime_root(package)), 'GURU_BENCH_PASS': args.measurement}
+        observation = ordinal
         ordinal += 1
         result = subprocess.run([*command, '--root', str(case.repo), *map(str, parameters)],
                                 env=env, capture_output=True, text=True)
-        value = json.loads(result.stdout or result.stderr)
+        if args.measurement in ('profile', 'hash'):
+            prefix = args.output / f'profile-{observation}'
+            prefix.with_suffix('.stdout').write_text(result.stdout)
+            prefix.with_suffix('.stderr').write_text(result.stderr)
+            prefix.with_suffix('.process.json').write_text(json.dumps({
+                'exit_code': result.returncode, 'pass': args.measurement,
+                'pythonpath': env['PYTHONPATH'],
+                'stdout': prefix.with_suffix('.stdout').name,
+                'stderr': prefix.with_suffix('.stderr').name,
+            }) + '\n')
+        try:
+            value = json.loads(result.stdout or result.stderr)
+        except json.JSONDecodeError as exc:
+            if args.measurement in ('profile', 'hash'):
+                raise RuntimeError(f'Observed wrapper returned non-JSON, exit={result.returncode}; '
+                                   f'see {prefix.with_suffix(".process.json")} and raw stdout/stderr') from exc
+            raise
         case.assertEqual(result.returncode == 0, success, value)
         return value.get('result', value)
     case.flow.wrapper = wrapper
 
 
-def volume_summary(args, scalar, case):
-    requests = Counter(scalar)
-    batch = Counter()
-    for path in args.output.glob('batch-*.requests'):
-        with path.open() as stream:
-            for line in stream:
-                oid = line.strip().split()[0]
-                batch[oid] += 1
-    requests.update(batch)
-    successful = Counter()
-    sizes = {}
-    # This post-operation probe uses the real Git, outside Trace2 and timing.
-    realgit = shutil.which('git', path=os.defpath)
-    request_path = args.output / 'size-probe.input'
-    response_path = args.output / 'size-probe.output'
-    with request_path.open('w', encoding='ascii') as stream:
-        for oid in requests:
-            stream.write(oid + '\n')
-    with request_path.open('rb') as request, response_path.open('wb') as response:
-        subprocess.run([realgit, 'cat-file', '--batch-check'], cwd=case.repo,
-                       stdin=request, stdout=response, stderr=subprocess.PIPE, check=True)
-    with response_path.open(encoding='ascii') as response:
-        for oid, line in zip(requests, response, strict=True):
-            fields = line.split()
-            if fields == [oid, 'missing']:
-                continue
-            if len(fields) != 3 or fields[0] != oid:
-                raise ValueError('Invalid post-operation object size response: ' + line.rstrip())
-            if fields[1] == 'blob':
-                sizes[oid] = int(fields[2])
-                successful[oid] = requests[oid]
-    return {'scalar_content_requests': sum(scalar.values()), 'batch_content_requests': sum(batch.values()),
-            'requested_objects': sum(requests.values()), 'unique_requested_oids': len(requests),
-            'successful_content_bytes': sum(sizes[oid] * count for oid, count in successful.items()),
-            'unique_content_bytes': sum(sizes.values()), 'largest_requested_blob': max(sizes.values(), default=0),
-            'requests_by_oid': dict(requests),
-            'scope': 'separate volume pass; blob cat-file commands and regular-file batch stdin; not physical disk IO'}
+def candidate_identity(case, output):
+    """Business-path identity only; source/install fixture trees may differ."""
+    projection = case.projection
+    record = projection.read_record()
+    values = []
+    for row in record['deliveries']:
+        publication = row.get('publication_result')
+        if publication is None:
+            continue
+        candidate = publication['candidate']
+        paths = candidate['paths']
+        tree = subprocess.run(['git', 'ls-tree', '-rz', '--full-tree', candidate['head_ref'], '--', *paths],
+                              cwd=case.repo, capture_output=True, check=True).stdout
+        values.append({'head': candidate['head_ref'], 'content_ref': candidate['content_ref'],
+                       'paths': paths, 'ls_tree': tree.decode('utf-8').split('\0')[:-1]})
+    (output / 'candidate-identities.json').write_text(json.dumps(values, indent=2) + '\n')
+    return values
 
 
 def main():
     args = arguments()
     args.output.mkdir(parents=True)
-    environment = {}
+    environment = {'GIT_AUTHOR_DATE': '2026-10-15T00:00:00+00:00',
+                   'GIT_COMMITTER_DATE': '2026-10-15T00:00:00+00:00'}
     if args.api_common:
         environment['TRELLIS_DELIVERY_API_COMMON'] = str(args.api_common.resolve())
     if args.installation:
         environment['GURU_DELIVERY_TEST_INSTALLATION'] = str(args.installation.resolve())
-    with patch.dict(os.environ, environment):
+    ordinal = iter(range(1000000))
+    def fixture_uuid():
+        return uuid.uuid5(uuid.NAMESPACE_URL, 'guru-589-benchmark-v1/' + str(next(ordinal)))
+    with patch.dict(os.environ, environment), patch('uuid.uuid4', fixture_uuid):
         start = time.perf_counter()
         case, assets, unique, skills = setup(args)
         try:
             if args.entry == 'history':
                 from benchmark_history import prepare_history
                 prepare_history(case, assets, args.deliveries)
+            identities = candidate_identity(case, args.output)
             preparation = time.perf_counter() - start
             trace = install_observer(case, args)
             instrument_wrapper(case, args, skills)
             samples, scalar = [], Counter()
             for index in range(args.repeats):
+                os.environ['GURU_BENCH_SAMPLE'] = str(index)
                 offset = trace.stat().st_size if trace.exists() else 0
                 start = time.perf_counter()
                 if args.entry == 'manual':
@@ -236,6 +241,7 @@ def main():
                 counts, current = trace_counts(trace, offset)
                 scalar.update(current)
                 sample = {'sample': index, 'seconds': elapsed, **counts,
+                          'operation_state': ('first_record' if index == 0 else 'recorded_recovery') if args.entry == 'manual' else 'recorded_history_query',
                           'exit': result.get('exit_id', 'historical_query_complete')}
                 samples.append(sample)
                 print(json.dumps(sample), flush=True)
@@ -243,14 +249,19 @@ def main():
                       'entry': args.entry, 'pass': args.measurement, 'paths': args.paths,
                       'kind': args.kind, 'deliveries': args.deliveries, 'repeats': args.repeats,
                       'preparation_seconds': preparation, 'samples': samples,
-                      'median_seconds': statistics.median(row['seconds'] for row in samples),
+                      'median_seconds': statistics.median(row['seconds'] for row in samples) if args.entry == 'history' or args.repeats == 1 else None,
+                      'medians_by_state': {state: statistics.median(row['seconds'] for row in samples if row['operation_state'] == state) for state in {row['operation_state'] for row in samples}},
+                      'candidate_identities': identities,
+                      'fixture_dates': environment['GIT_AUTHOR_DATE'],
+                      'fixture_uuid_seed': 'guru-589-benchmark-v1',
                       'candidate_paths': len(case.publication['candidate']['paths']),
                       'unique_asset_blobs': len(unique), 'asset_unique_bytes': sum(unique.values()),
                       'asset_path_bytes': args.paths * 4096 + 16777216, 'largest_asset_blob': 16777216,
                       'provider': 'local GitHub-response fixture; network waiting zero; no live GitHub or native AI semantic proof',
                       'timing_scope': 'original public wrapper including validators/store; preparation and streaming trace analysis excluded; no cold-cache claim'}
             if args.measurement == 'volume':
-                report['volume'] = volume_summary(args, scalar, case)
+                from benchmark_observer import summarize
+                report['volume'] = summarize(args.output, shutil.which('git', path=os.defpath))
             if args.measurement == 'rss':
                 def rss(name):
                     return [int(value) for value in re.findall(r'(\d+)\s+maximum resident set size',
@@ -259,7 +270,7 @@ def main():
                 git_rss = rss('git.rss')
                 report['git_maxrss_bytes'] = max(git_rss)
                 report['git_profiled_processes'] = len(git_rss)
-                report['rss_scope'] = 'BSD time per wrapper runtime and each Git process; maxima are not simultaneous process-group totals; independent profiling pass'
+                report['rss_scope'] = 'BSD time wrapper including descendants (maximum individual-process RSS, not pure Python) and each Git process; maxima are not simultaneous process-group totals; independent profiling pass'
             (args.output / 'summary.json').write_text(json.dumps(report, indent=2) + '\n')
             print(json.dumps({'summary': str(args.output / 'summary.json'),
                               'median_seconds': report['median_seconds']}), flush=True)
