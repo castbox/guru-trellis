@@ -35,6 +35,78 @@ reviews actual archived content and payload separately; it does not write a
 current Delivery gate or reset historical phase. Legacy archives remain history
 until their original migration owner resolves a public identity.
 
+### Promotion reference alignment
+
+Use `delivery_promotion_reference_alignment` only after an actual complete
+independent Branch Review has formally emitted `passed`. This is a separate
+semantic input profile. It is limited to aligning this promotion's source
+references or status wording. It is not `delivery_base_continuity` and does
+not admit general documentation changes.
+
+The input carries the actual original `prior_review` passed DTO, its fixed
+`prior_reviewed_base_head`, current `base_ref`, final committed
+`branch_review_commit`, and current `check_result_id`, with the same Task and
+Delivery identity. Recover the original public output from the current owner
+conversation, the actual public result, or readable original facts. Recover
+its reviewed HEAD and fixed base as well. Check rework may legitimately clear
+the old public full_review slot. That slot need not survive; never read,
+reconstruct or retain a retired private checkpoint. If original complete
+coverage or result cannot be recovered, stop this invocation and use the
+original recovery or affected complete-review route.
+
+The original Branch Review owner first reads the original complete range,
+formal result and applicable evidence. It then reviews **all** changes from
+that reviewed HEAD to final HEAD, together with affected dependencies. Git
+identifies this complete delta without caller-selected paths, file-suffix
+filters or reviewed-content metadata exclusions. The owner must establish
+that each change only aligns an already verifiable promotion reference or
+status. No new claim of Architecture acceptance, validation success,
+deployment or adoption is allowed. Responsibilities, behavior, compatibility,
+implementation and validation obligations must remain unchanged. Neither code
+tree equality, a file suffix nor the original passed status supplies this
+judgment. Apply the existing engineering-fact applicability rule to current
+checks. A changed semantic obligation returns to its earliest affected owner.
+
+Current Check must cover the final candidate, and the original complete Review
+plus the reviewed delta must cover the final fixed-base-to-HEAD range. The
+normal independent committed Architecture input remains required and must be
+applicable to that range. Do not repeat a completed promotion solely because
+HEAD changed. This profile does not close findings: original finding-owner
+closure, genuine unfinished-agent replacement and a distinct fresh-final
+review remain mandatory before an original complete Review can pass.
+
+After that AI gate, use the same review-branch/check-review-gate/invoke commands.
+The dedicated private `delivery-alignment-gate-1.0` schema (version
+`alignment-1.0`) binds the original public result, fixed base and full Git
+binary-delta digest to this one current checkpoint. The digest serves only the
+local checker. It does not establish semantic sufficiency or create review
+history. The current semantic summary explains original coverage, reviewed
+delta, affected dependencies and the absence of changed facts/obligations.
+The recorder/checker only validate objective identity and consistency.
+
+The only profile exits are the existing `passed` and `blocked`. On `passed`,
+the original wrapper records a new public `full_review` against final candidate
+and current Check predecessor, then returns the unchanged minimal passed-1.0
+DTO to its sole Delivery Review consumer. It never changes the old result's
+HEAD or creates a second state machine. Successful projection retires this
+checkpoint. Lost output recovers the actually recorded applicable current
+full_review through the same public invocation. A stopped/out-of-bounds
+alignment does not authorize narrow repair: resume the existing original-owner
+recovery or affected full review. Missing or stale input returns the existing
+precise fail-closed diagnostic.
+
+### Matching installation migration
+
+Delivery aggregate input 2.0 and legacy index 2.0 add this explicit profile;
+all original profile schemas and passed-1.0 output remain unchanged. Install
+the matching Interface, schema, runtime, workflow and consumers as one complete
+preset under MIGRATION-600. Do not hot-swap a few managed files in an active
+installation. Existing installations continue only on their pinned complete
+version or after that migration. No parser converts an old review checkpoint
+into the new alignment gate. Deliveries without an actual complete Review use
+`delivery_branch_review`; already-reviewed Deliveries use alignment only for
+the bounded reference/status need and otherwise continue ordinary eligibility.
+
 ### Scope withdrawal in the current stage
 
 `delivery_scope_withdrawal` is an independent semantic entry with mode,
@@ -310,11 +382,12 @@ range. That reviewer consumes the transient closure result, authors one
 `fresh_final_review`, and is the only reviewer whose compact passing gate is
 persisted. A closure reviewer never also performs the fresh final review.
 
-An Architecture promotion diff follows the same rule: it returns through fresh
-Phase 2 Architecture/check, a new task commit, and an independent complete-range
-Branch Review. Only that post-promotion review can support the later Delivery Review
-Architecture stage; no pre-promotion Branch Review or Phase 2 conclusion is
-reused.
+Required Architecture promotion completes before final Check. Independent
+committed Architecture and the complete Branch Review cover the resulting
+promotion files and before/after responsibilities. After a later change, the
+original owner judges actual impact and returns to the earliest affected
+owner. The bounded reference-alignment profile below is the only exception
+to a new complete review for the specifically described wording delta.
 
 Mapped finding-fix, stale, re-entry and final-review routes continue within the
 AI workflow. They are not user choices. A user prompt remains only for real

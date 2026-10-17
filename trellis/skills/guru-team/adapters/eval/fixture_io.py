@@ -270,6 +270,9 @@ def stage_clean_installed_owner_repo(
         source_scripts, fixture / ".trellis/scripts",
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
     )
+    source_version = source_repo / ".trellis/.version"
+    if source_version.is_file():
+        shutil.copy2(source_version, fixture / ".trellis/.version")
     shutil.copy2(source_workflow, fixture / ".trellis/workflow.md")
     canonical_workflow_path = source_repo / "trellis/workflows/guru-team/workflow.md"
     delivery_installation = canonical_workflow_path.is_file() and '"task_schema": "2.0"' in canonical_workflow_path.read_text()

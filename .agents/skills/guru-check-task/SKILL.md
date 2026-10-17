@@ -87,6 +87,15 @@ cannot be hidden as an observation or future cleanup and cannot reach `passed`.
 The Architecture owner keeps applicability and route ownership; this Skill
 consumes its current result as direct evidence in the existing adequacy review.
 
+The final candidate includes any Architecture promotion required by this
+Delivery. Consume the original Architecture owner's actual-write applicability
+result; use its public `before_authority` to reread the comparison origin and
+its `candidate` to identify the actual reviewed worktree. The promoted CURRENT
+is itself part of this change. A consistent reviewed write does not require
+another identical independent Architecture assessment. Changed obligations or
+an unavailable result return to the affected original owner. This Skill still
+performs its complete final Check and binds the actual candidate.
+
 The caller forms only candidate refs, observed behavior, locators, and minimal
 reproduction clues. `classified` returns to this owner;
 `scope_confirmation_required` routes to requirements clarification;

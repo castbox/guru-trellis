@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-input-index-4.0",
+  "oneOf": [
+    {
+      "$ref": "public-input-bootstrap.schema.json"
+    },
+    {
+      "$ref": "public-input-impact-nonplanning-4.0.schema.json"
+    },
+    {
+      "$ref": "public-input-promotion-4.0.schema.json"
+    },
+    {
+      "$ref": "public-input-repair.schema.json"
+    },
+    {
+      "$ref": "public-input-delivery-task-impact-sync-2.0.schema.json"
+    },
+    {
+      "$ref": "public-input-delivery-promotion-2.0.schema.json"
+    },
+    {
+      "$ref": "public-input-delivery-repair-1.0.schema.json"
+    },
+    {
+      "$ref": "public-input-delivery-bootstrap-foundation-1.0.schema.json"
+    }
+  ]
+}

@@ -54,6 +54,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     metadata_path = task_dir / "task.json"
     metadata = json.loads(metadata_path.read_text()) if metadata_path.is_file() else {}
     original_profile = public.get("profile")
+    alignment = original_profile == "delivery_promotion_reference_alignment"
     if metadata.get("schema_version") == "2.0" and not str(original_profile).startswith("delivery_"):
         raise CommandError("schema_mismatch", "input.profile", "Use a Delivery review input; old Task review profiles are diagnostic-only.")
     profile = original_profile.removeprefix("delivery_")
@@ -61,6 +62,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         "branch_review": "public-branch-review-input.schema.json",
         "base_continuity": "public-base-continuity-input-2.0.schema.json",
         "archived_review": "public-archived-review-input.schema.json",
+        "promotion_reference_alignment": "public-delivery-promotion-reference-alignment-input-1.0.schema.json",
     }.get(profile)
     if schema is None:
         raise CommandError(
@@ -74,10 +76,16 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         raise CommandError(
             "stale_identity", "task", "Record the review for the exact task owner.", 3
         )
-    if profile == "branch_review" and public.get("branch_review_commit") != head:
+    if profile in {"branch_review", "promotion_reference_alignment"} and public.get("branch_review_commit") != head:
         raise CommandError(
             "stale_identity", "branch_review_commit", "Review current HEAD.", 3
         )
+    alignment_facts = None
+    if alignment:
+        from alignment import facts
+        alignment_facts = facts(package_root, repo, public)
+        if args.typed_exit not in {"passed", "blocked"}:
+            raise CommandError("schema_mismatch", "typed_exit", "Alignment only passes or stops for original recovery/full Review.")
     archived_facts = None
     if profile == "archived_review":
         from archived import facts
@@ -90,7 +98,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("schema_mismatch", "typed_exit", "Archived pass requires its dedicated profile.")
         base_ref = public["new_base_head"] if profile == "base_continuity" else public["base_ref"]
     base_head = git(repo, "rev-parse", base_ref)
-    if profile == "branch_review":
+    if profile in {"branch_review", "promotion_reference_alignment"}:
         if base_ref != base_head:
             raise CommandError("stale_identity", "base_ref", "Supply the fixed content-base OID from the current Check/TaskCommit.", 3)
     if original_profile.startswith("delivery_") and profile != "archived_review":
@@ -205,13 +213,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         }
     )
     value = {
-        "schema_version": "archived-1.0" if archived_facts else "7.0",
+        "schema_version": "alignment-1.0" if alignment else "archived-1.0" if archived_facts else "7.0",
         "skill_id": "guru-review-branch",
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "task_dir": task_ref,
         "mode": public["mode"],
         "profile": profile,
-        "review_intent": "archived_review" if archived_facts else public["review_intent"],
+        "review_intent": "promotion_reference_alignment" if alignment else "archived_review" if archived_facts else public["review_intent"],
         "typed_exit": args.typed_exit,
         "review_commit": head,
         "reviewed_content_algorithm": REVIEWED_CONTENT_ALGORITHM,
@@ -226,7 +234,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if not archived_facts:
         value["delivery_review"] = (
             copy.deepcopy(auth.get("delivery_review"))
-            if profile == "branch_review"
+            if profile in {"branch_review", "promotion_reference_alignment"}
             else None
         )
     if archived_facts:
@@ -236,6 +244,8 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         value["delivery_key"] = public["delivery_key"]
         if profile != "archived_review":
             value["check_result_id"] = public["check_result_id"]
+    if alignment:
+        value["promotion_alignment"] = alignment_facts
     value["facts_sha256"] = digest(
         {
             key: copy.deepcopy(item)

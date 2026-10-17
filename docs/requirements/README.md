@@ -1,5 +1,8 @@
 # Requirements SSOT
 
+唯一 current RDT authority 为 `current-main-0.6.17-guru.104/active`；[本版入口](./versions/current-main-0.6.17-guru.104/requirement-main.md)继承 immutable `.103` 的有效合同并承接 [#600 唯一增量](../requirements-design-test-contributions/600-promotion-before-check/traceability.md)。本 Task 适用 Architecture `.95` 为比较起点；其后继由原 Architecture owner 单独晋升。[唯一 Test](../requirements-design-test-contributions/600-promotion-before-check/test.md)保留真实结果和边界。旧版及其历史验证不构成本候选通过。
+历史 `.103` authority：
+
 唯一 current RDT authority 为 `current-main-0.6.17-guru.103/active`；[本版入口](./versions/current-main-0.6.17-guru.103/requirement-main.md)继承 immutable `.102` 并承接 [#599 唯一增量](../requirements-design-test-contributions/599-clear-technical-writing/traceability.md)。Architecture 继承 `.95/active`；规则正文保持单一来源，[唯一 Test](../requirements-design-test-contributions/599-clear-technical-writing/test.md)记录实际结果与未验证边界。晋升差额须 fresh Phase2、TaskCommit 和不同 fresh reviewer 完整 Branch Review。
 
 历史 `.102` authority：唯一 current RDT authority 为 `current-main-0.6.17-guru.102/active`；[本版入口](./versions/current-main-0.6.17-guru.102/requirement-main.md)完整继承 immutable `.101` 的有效合同并承接 [#575 准备贡献](../requirements-design-test-contributions/575-release-preparation/traceability.md)的 S2/S3/S4/S5 增量，继续继承 Architecture `.94/active`。原 owners、#575 S1 及 #578 工程事实适用性保持；[唯一 Test](../requirements-design-test-contributions/575-release-preparation/test.md)单写实际结果、首次失败与未验证边界。晋升差额须 fresh Phase2、TaskCommit 与不同评估者完整 Branch Review；知识晋升不表示整个准备任务完成、软件发布或业务采用。

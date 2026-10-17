@@ -37,7 +37,7 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "planning-purpose-specific 3.0 input or nonplanning 2.0 input",
+      "evidence": "Planning 3.0, current nonplanning 4.0 or Delivery 2.0 input; bootstrap and repair retain their fixed contracts.",
       "binding": "the exact caller, mode, profile, stage, task, and continuation",
       "freshness": "fresh for every stage judgment"
     },
@@ -131,7 +131,7 @@
       "path": "schemas/project-architecture-check-result.schema.json"
     },
     {
-      "id": "architecture_contribution",
+      "id": "architecture_contribution_legacy_2",
       "path": "schemas/architecture-contribution.schema.json"
     },
     {
@@ -277,6 +277,50 @@
     {
       "id": "delivery_index_fitness_regression_output",
       "path": "schemas/public-output-fitness-regression-delivery-index-1.0.schema.json"
+    },
+    {
+      "id": "public_baseline_current_output_4_0_schema",
+      "path": "schemas/public-baseline-current-output-4.0.schema.json"
+    },
+    {
+      "id": "public_input_aggregate_4_0_schema",
+      "path": "schemas/public-input-aggregate-4.0.schema.json"
+    },
+    {
+      "id": "public_input_impact_nonplanning_4_0_schema",
+      "path": "schemas/public-input-impact-nonplanning-4.0.schema.json"
+    },
+    {
+      "id": "public_input_promotion_4_0_schema",
+      "path": "schemas/public-input-promotion-4.0.schema.json"
+    },
+    {
+      "id": "public_output_baseline_current_index_4_0_schema",
+      "path": "schemas/public-output-baseline-current-index-4.0.schema.json"
+    },
+    {
+      "id": "semantic_result_4_0_schema",
+      "path": "schemas/semantic-result-4.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_promotion_2_0_schema",
+      "path": "schemas/public-input-delivery-promotion-2.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_task_impact_sync_2_0_schema",
+      "path": "schemas/public-input-delivery-task-impact-sync-2.0.schema.json"
+    },
+    {
+      "id": "public_output_delivery_baseline_current_2_0_schema",
+      "path": "schemas/public-output-delivery-baseline-current-2.0.schema.json"
+    },
+    {
+      "id": "semantic_result_delivery_2_0_schema",
+      "path": "schemas/semantic-result-delivery-2.0.schema.json"
+    },
+    {
+      "id": "architecture_contribution",
+      "path": "schemas/architecture-contribution-4.0.schema.json"
     }
   ],
   "validators": [
@@ -288,7 +332,8 @@
     }
   ],
   "tests": [
-    "tests/test_contract.py"
+    "tests/test_contract.py",
+    "tests/test_promotion.py"
   ],
   "platform_destinations": [
     "shared",
@@ -382,8 +427,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-maintain-architecture-baseline-input-delivery-index-1.0",
-        "path": "schemas/public-input-aggregate-delivery-index-1.0.schema.json"
+        "schema_id": "guru-maintain-architecture-baseline-input-index-4.0",
+        "path": "schemas/public-input-aggregate-4.0.schema.json"
       },
       "profiles": [
         {
@@ -404,12 +449,12 @@
         {
           "id": "task_impact_sync",
           "schema": {
-            "schema_id": "guru-architecture-baseline-input-impact-nonplanning-2.0",
-            "path": "schemas/public-input-impact-nonplanning-2.0.schema.json"
+            "schema_id": "guru-architecture-baseline-input-impact-nonplanning-4.0",
+            "path": "schemas/public-input-impact-nonplanning-4.0.schema.json"
           },
           "example": {
-            "id": "whole_task_acceptance_input",
-            "path": "examples/public-input-whole-task-acceptance-2.0.json"
+            "id": "task_impact_sync_current_input",
+            "path": "examples/public-input-whole-task-acceptance-4.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -419,12 +464,12 @@
         {
           "id": "promotion",
           "schema": {
-            "schema_id": "guru-architecture-baseline-input-promotion-2.0",
-            "path": "schemas/public-input-promotion.schema.json"
+            "schema_id": "guru-architecture-baseline-input-promotion-4.0",
+            "path": "schemas/public-input-promotion-4.0.schema.json"
           },
           "example": {
-            "id": "promotion_input",
-            "path": "examples/public-input-promotion.json"
+            "id": "promotion_current_input",
+            "path": "examples/public-input-promotion-4.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -449,12 +494,12 @@
         {
           "id": "delivery_task_impact_sync",
           "schema": {
-            "schema_id": "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-1.0",
-            "path": "schemas/public-input-delivery-task-impact-sync-1.0.schema.json"
+            "schema_id": "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-2.0",
+            "path": "schemas/public-input-delivery-task-impact-sync-2.0.schema.json"
           },
           "example": {
-            "id": "delivery_task_impact_sync_input",
-            "path": "examples/public-input-delivery-task-impact-sync-1.0.json"
+            "id": "delivery_task_impact_sync_current_input",
+            "path": "examples/public-input-delivery-task-impact-sync-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -464,12 +509,12 @@
         {
           "id": "delivery_promotion",
           "schema": {
-            "path": "schemas/public-input-delivery-promotion-1.0.schema.json",
-            "schema_id": "guru-maintain-architecture-baseline-input-delivery-promotion-1.0"
+            "schema_id": "guru-maintain-architecture-baseline-input-delivery-promotion-2.0",
+            "path": "schemas/public-input-delivery-promotion-2.0.schema.json"
           },
           "example": {
-            "id": "delivery_promotion_input",
-            "path": "examples/public-input-delivery-promotion-1.0.json"
+            "id": "delivery_promotion_current_input",
+            "path": "examples/public-input-delivery-promotion-2.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -533,12 +578,12 @@
       {
         "exit_id": "baseline_current",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-baseline-current-delivery-index-1.0",
-          "path": "schemas/public-output-baseline-current-delivery-index-1.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-baseline-current-index-4.0",
+          "path": "schemas/public-output-baseline-current-index-4.0.schema.json"
         },
         "example": {
-          "id": "current_output",
-          "path": "examples/public-output-current.json"
+          "id": "current_output_4",
+          "path": "examples/public-output-current-4.0.json"
         },
         "consumer_use_ids": [
           "current_projection"
@@ -639,8 +684,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-baseline_current-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/maintain-architecture-baseline-baseline-current.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-baseline-current-4.0",
+          "path": "consumers/workflow/current-4.0.schema.json"
         }
       },
       {

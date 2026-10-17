@@ -53,6 +53,9 @@ nor repeats the assessment merely because the caller changed. Changed facts
 needing a new conclusion return through the existing independent assessment
 route; missing committed review/promotion keeps its existing blocking route.
 The Completion owner still judges whole-task scope and evidence separately.
+An already reviewed and promoted contribution is not promoted again at
+Completion. Missing or changed Architecture facts return to that original
+owner; knowledge acceptance does not establish merge, deployment or adoption.
 Read the one Direct Source from `source.repo_ref + number`, or the legal
 `no_issue` relation. Coordination/Related/Follow-up links neither add Closure
 targets nor change the published `exact_source`, `reference_only`, `follow_up`

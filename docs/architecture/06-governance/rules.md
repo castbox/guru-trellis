@@ -13,3 +13,7 @@
 - `ARCH-GOV-011`：一个active task可以产生多个独立Delivery；每次Delivery只使用`Refs`并在merge后保持task active。`delivered`唯一交给#436 Completion，不得表达或触发task completion、Issue closure、archive、Finish、Cleanup或Reactivate。#435只建立additive packages，#434之前不得形成第二个active production graph或兼容adapter。
 
 完整项目 change contract 与 project-check descriptor 见 [`change-contract.md`](./change-contract.md)。
+
+## #600 晋升时机后继
+
+[ADR-030](../adr/030-promotion-before-final-check.md)替代本文件及继承 authority 中“完整 committed Review 后例行晋升并重做完整 Review”的顺序片段。最终 Check 前完成受审分支晋升；不为补最终 Review pass 或最终 SHA 循环写正文。原 authority、独立性、finding lifecycle 和最终正式结果要求保持。实际完成状态只按当前事实与[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)读取。

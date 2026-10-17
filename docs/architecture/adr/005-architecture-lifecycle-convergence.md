@@ -1,5 +1,7 @@
 # ADR-005: Architecture lifecycle one-way convergence
 
+晋升时机片段由 [ADR-030](./030-promotion-before-final-check.md)后继；其余 authority、single-writer 与独立审查要求保持。以下正文保留原决策的历史边界。
+
 - 状态：`accepted`。
 - 来源：Issue #283 reviewed Architecture contribution 的 `ADR-283-CANDIDATE`。
 - predecessor：none；successor：none。

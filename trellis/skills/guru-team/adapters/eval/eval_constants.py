@@ -17,7 +17,7 @@ OWNER_INVOCATION = ".trellis/.runtime/guru-team/evals/invocation.json"
 ARCHITECTURE_SKILL = "guru-maintain-architecture-baseline"
 
 ARCHITECTURE_PUBLIC_AUTHORING_FACTS = (
-    "docs/architecture-eval/public-authoring-facts.json"
+    ".trellis/tasks/architecture-evidence/public-authoring-facts.json"
 )
 
 SEMANTIC_AUTHORING_ADAPTER = "codex"

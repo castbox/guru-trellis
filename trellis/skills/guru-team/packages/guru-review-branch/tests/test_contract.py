@@ -830,7 +830,6 @@ class BranchReviewContractTest(unittest.TestCase):
             "Delivery Review rejects missing or stale Architecture evidence",
             "reviewed_promoted",
             "current `no_change` proof",
-            "promotion-created shared-current diff returns to fresh Phase 2",
             "does not absorb Delivery publication, whole-task Completion",
         ):
             self.assertIn(phrase, normalized)
@@ -867,11 +866,11 @@ class BranchReviewContractTest(unittest.TestCase):
         self.assertNotIn("mapping", json.dumps(boundary).lower())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-review-branch-input-legacy-index-1.0",
+            "guru-review-branch-input-legacy-index-2.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
-            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement"],
+            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement", "delivery_promotion_reference_alignment"],
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(

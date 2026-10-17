@@ -46,6 +46,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         public = envelope["public_input"]
     else:
         public = load(repo, package_root, args.input, "input")
+    if public.get("profile") == "delivery_promotion_reference_alignment":
+        from alignment import facts
+        facts(package_root, repo, public)
     if public.get("profile") == "legacy_control_retirement":
         from legacy_maintenance import invoke_retirement
         return invoke_retirement(package_root, public, repo)
@@ -99,7 +102,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             raise CommandError("stale_identity", "check_result_id", "Consume fresh Check for this Delivery candidate.", 3)
         if not checkpoint(repo, task_dir, public["delivery_key"]).exists():
             stored = delivery["results"]["full_review"]
-            if (public["profile"] != "delivery_branch_review" or stored is None
+            if (public["profile"] not in {"delivery_branch_review", "delivery_promotion_reference_alignment"} or stored is None
                     or projection.gate_applicability(public["delivery_key"])["full_review"]["kind"] != "applicable"
                     or stored["predecessor_result_id"] != public["check_result_id"]
                     or stored["owner_id"] != projection.declaration()["owners"]["full_review"]

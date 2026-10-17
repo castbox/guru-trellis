@@ -16,11 +16,11 @@ PROFILES = {"bootstrap_foundation", "task_impact_sync", "promotion", "repair"} |
 PROFILE_SCHEMAS = {
     "bootstrap_foundation": "public-input-bootstrap.schema.json",
     "task_impact_sync": "public-input-impact.schema.json",
-    "delivery_task_impact_sync": "public-input-delivery-task-impact-sync-1.0.schema.json",
-    "delivery_promotion": "public-input-delivery-promotion-1.0.schema.json",
+    "delivery_task_impact_sync": "public-input-delivery-task-impact-sync-2.0.schema.json",
+    "delivery_promotion": "public-input-delivery-promotion-2.0.schema.json",
     "delivery_repair": "public-input-delivery-repair-1.0.schema.json",
     "delivery_bootstrap_foundation": "public-input-delivery-bootstrap-foundation-1.0.schema.json",
-    "promotion": "public-input-promotion.schema.json",
+    "promotion": "public-input-promotion-4.0.schema.json",
     "repair": "public-input-repair.schema.json",
 }
 ARCHIVED_READONLY_STAGES = {
@@ -389,10 +389,11 @@ def _planning_facts(public: dict) -> None:
 def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     recorded = copy.deepcopy(owner)
     delivery_profile = public["profile"] in DELIVERY_PROFILES
-    result_schema = "semantic-result-delivery-1.0.schema.json" if delivery_profile else "semantic-result.schema.json"
+    current = public.get("schema_version") in {"4.0", "delivery-2.0"}
+    result_schema = ("semantic-result-delivery-2.0.schema.json" if delivery_profile else "semantic-result-4.0.schema.json") if current else ("semantic-result-delivery-1.0.schema.json" if delivery_profile else "semantic-result.schema.json")
     validate_json(recorded, _schema(package_root, result_schema), "owner_result")
     if recorded["input_sha256"] != _digest(public):
-        raise CommandError("stale_identity", "owner_result.input_sha256", "Rerun semantic review against the exact current 2.0 input.", 3)
+        raise CommandError("stale_identity", "owner_result.input_sha256", "Rerun semantic review against the exact current profile input.", 3)
     for field in (
         "profile",
         "mode",
@@ -411,9 +412,21 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
         for field in ("delivery_key", "planning_root"):
             _bind_identity(public, recorded, field)
     if public["profile"] in {"promotion", "delivery_promotion"}:
-        for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
-            _bind_identity(public, recorded, field)
+        if recorded["typed_exit"] == "baseline_current":
+            for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
+                _bind_identity(public, recorded, field)
         _check_sync_route(public, "public_input")
+    if current:
+        for field in ("before_authority", "candidate"):
+            _bind_identity(public, recorded, field)
+        from promotion import check_current_candidate, check_promotion
+        if public["profile"] in {"promotion", "delivery_promotion"} and recorded["typed_exit"] == "baseline_current":
+            check_promotion(Path.cwd(), public, recorded)
+        elif public["profile"] not in {"promotion", "delivery_promotion"}:
+            for field in ("promotion_targets", "post_candidate", "postwrite_applicability"):
+                if field in recorded:
+                    raise CommandError("semantic_result_invalid", "owner_result." + field, "Only promotion records target writes and postwrite applicability.", 3)
+            check_current_candidate(Path.cwd(), public)
     exit_id = recorded["typed_exit"]
     readonly_stage = ARCHIVED_READONLY_STAGES.get(public["source_exit"])
     if readonly_stage is not None:
@@ -450,7 +463,7 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             _locator(container["sync_target"]["locator"], f"{name}.sync_target.locator")
     if exit_id == "baseline_current":
         _require_current_constitution(public["constitution"], "public_input.constitution")
-        expected_baseline_identity = public["baseline"]["identity"]
+        expected_baseline_identity = public["successor_baseline"]["identity"] if public["profile"] in {"promotion", "delivery_promotion"} else public["baseline"]["identity"]
         if public["profile"] in {"bootstrap_foundation", "delivery_bootstrap_foundation"}:
             successor = public["successor_baseline"]
             if successor["locator"] != public["baseline"]["locator"]:
@@ -489,17 +502,13 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
             if sync_kind == "promotion_required":
                 if recorded.get("impact_kind") != "architecture_impact" or recorded.get("promotion_state") != "reviewed_promoted":
                     raise CommandError("semantic_result_invalid", "owner_result.promotion_state", "Successful promotion must return reviewed_promoted architecture impact.", 3)
-                _check_review(
-                    recorded.get("review"),
-                    public["committed_range"],
-                    "owner_result.review",
-                )
+
                 if (
                     recorded.get("contribution_locator") != target["locator"]
                     or recorded.get("contribution_identity") != target["current_identity"]
                 ):
                     raise CommandError("stale_identity", "owner_result.contribution_identity", "Reread the current reviewed contribution before promotion.", 3)
-                if public["baseline"]["identity"] == public["expected_current_identity"]:
+                if public["successor_baseline"]["identity"] == public["expected_current_identity"]:
                     raise CommandError("semantic_result_invalid", "public_input.baseline.identity", "Successful promotion must expose a successor current baseline identity.", 3)
             elif sync_kind == "baseline_advanced":
                 if (
@@ -547,7 +556,11 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     planning = profile == "delivery_task_impact_sync" and public.get("stage") == "planning"
     if profile not in PROFILES:
         raise CommandError("schema_mismatch", "profile", "Use one declared Architecture Baseline profile.")
-    schema_name = "public-input-impact-nonplanning-2.0.schema.json" if profile == "task_impact_sync" else PROFILE_SCHEMAS[profile]
+    schema_name = "public-input-impact-nonplanning-4.0.schema.json" if profile == "task_impact_sync" else PROFILE_SCHEMAS[profile]
+    if profile in {"promotion", "delivery_promotion", "task_impact_sync", "delivery_task_impact_sync"} and not planning:
+        expected_version = "delivery-2.0" if profile in DELIVERY_PROFILES else "4.0"
+        if public.get("schema_version") != expected_version:
+            raise CommandError("schema_mismatch", "schema_version", "Re-enter the original Architecture owner with the current pre-Check contract, or retain the pinned complete old installation; legacy inputs are validation assets only.")
     validate_json(public, _schema(package_root, schema_name), "input")
     if profile == "task_impact_sync" and public["stage"] != "acceptance_finish":
         raise CommandError("schema_mismatch", "profile", "Development-stage Architecture uses delivery_task_impact_sync with the exact public DeliveryKey; task_impact_sync remains whole-task closeout only.", 3)
@@ -596,5 +609,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if profile in DELIVERY_PROFILES and (exit_id != "blocked" or planning):
         output.update(delivery_key=public["delivery_key"], planning_root=public["planning_root"])
         output_schema = ("public-blocked-output-3.0.schema.json" if exit_id == "blocked" else "public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json")
+    if public.get("schema_version") in {"4.0", "delivery-2.0"} and exit_id == "baseline_current":
+        output["before_authority"] = public["before_authority"]
+        output["candidate"] = owner.get("post_candidate", public["candidate"])
+        output_schema = "public-output-delivery-baseline-current-2.0.schema.json" if profile in DELIVERY_PROFILES else "public-baseline-current-output-4.0.schema.json"
     validate_json(output, _schema(package_root, output_schema), "stdout")
     return copy.deepcopy(output)

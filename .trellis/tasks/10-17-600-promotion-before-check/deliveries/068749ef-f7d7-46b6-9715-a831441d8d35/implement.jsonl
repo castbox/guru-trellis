@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "所有实质写作前完整读取，子 Agent 不假定继承"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 I/O、最小 DTO 与私有状态边界"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "原 owner 编排与正式结果接续"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值、工程事实适用性与最小 scope"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进、旧路径退出与复杂度边界"}

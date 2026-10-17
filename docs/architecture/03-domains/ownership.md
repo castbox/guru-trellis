@@ -151,3 +151,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-050`（#578）：原阶段 owner 独占当前完整范围、消费者、检查集合、工程事实适用性及新语义结果；原执行者只拥有原命令事实。Architecture/RDT 原 promotion owners 串行写 shared-current，原 private state consumer/retirement 不变；无跨 owner 私有状态消费或第二 ledger。
 
 `ARCH-DOM-051`（#599）：canonical managed-spec 单写清晰写作规则；当前输出 Agent、写作 owner 和独立 child 负责完整读取及自检，既有审核 owner 在原范围内判断语义与清晰度。workflow、Skill 和平台入口只承接加载定位，preset 只拥有受管分发与用户指令保护；`guru-review-contract-wording` 保留原固定范围和出口。Architecture/RDT 原 owners 继续分别晋升各自 shared-current，无新增语言审核 owner 或授权存储。
+
+`ARCH-DOM-052`（#600）：原 Architecture owner 独占拟晋升审查、expected-current 写入、恢复与实际结论适用性；Check 独占最终完整候选质量判断。Task Commit、committed 独立 Architecture、Branch Review、Delivery、Completion、Closure、Finish 和 Cleanup 保持各自职责。原 Branch Review owner 的窄引用/状态对齐只承接已验证事实，正式结果仍交原 Delivery Review；不增加审批链、store 或审查账本。具体合同见 [ADR-030](../adr/030-promotion-before-final-check.md)。

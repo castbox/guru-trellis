@@ -1,14 +1,14 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "4.0",
   "profile": "promotion",
   "source_exit": "sync_required",
   "mode": "workflow",
   "continuation_id": "eval-promotion",
-  "stage": "acceptance_finish",
+  "stage": "phase2",
   "task_locator": ".trellis/tasks/eval-task",
   "baseline": {
     "locator": "docs/architecture/README.md",
-    "identity": "current-v2",
+    "identity": "current-v1",
     "status": "active"
   },
   "constitution": {
@@ -40,24 +40,35 @@
     ]
   },
   "project_contract": {
-    "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+    "guru_contract_identity": "guru-maintain-architecture-baseline:4.0",
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"
   },
-  "committed_range": {
-    "base_ref": "origin/main",
-    "base_head": "0123456789abcdef0123456789abcdef01234567",
-    "review_head": "89abcdef0123456789abcdef0123456789abcdef"
-  },
-  "freshness_identity": "eval-promotion-fresh",
+  "freshness_identity": "promotion-fresh-v1",
   "expected_current_identity": "current-v1",
-  "current_identity": "current-v2",
-  "sync_kind": "baseline_advanced",
+  "current_identity": "current-v1",
+  "sync_kind": "promotion_required",
   "sync_target": {
-    "kind": "baseline",
+    "kind": "contribution",
+    "locator": "docs/architecture/contributions/example",
+    "expected_identity": "contribution-v1",
+    "current_identity": "contribution-v1"
+  },
+  "before_authority": {
+    "git_revision": "0123456789abcdef0123456789abcdef01234567",
+    "baseline_locator": "docs/architecture/README.md",
+    "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md"
+  },
+  "candidate": {
+    "head": "89abcdef0123456789abcdef0123456789abcdef",
+    "content_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "successor_baseline": {
     "locator": "docs/architecture/README.md",
-    "expected_identity": "current-v1",
-    "current_identity": "current-v2"
-  }
+    "identity": "current-v2",
+    "status": "active"
+  },
+  "expected_current_content_identity": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 }

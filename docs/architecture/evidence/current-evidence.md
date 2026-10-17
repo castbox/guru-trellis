@@ -613,3 +613,7 @@ EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh
 ## EVD-067：#599 清晰写作与入口读取的已审贡献
 
 首次独立完整 committed range 为 `dev@ea9998c36a188f3afae1d7d6e5746edc07fa003f...af246dc6184e6c779f2f08ab72a4ff889c6dbc0f`。原 Check 已绑定该范围的 HEAD，Architecture 与独立 Branch Review 分别通过正式入口；原 Architecture owner 按 expected `.94` 晋升 `.95`。本次新增晋升差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview。[贡献](../contributions/599-clear-technical-writing.md)拥有责任与晋升关系，[唯一 Test](../../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有实际结果、首轮遗漏、finding 修复和未验证边界；本条不复制执行记录，不证明软件发布、业务采用或 Task Completion。
+
+## EVD-068：#600 晋升时机与原 authority 的受审增量
+
+ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 与 [ADR-030](../adr/030-promotion-before-final-check.md)承接 [#600 贡献](../contributions/600-promotion-before-check.md)，expected `.95` 到 successor `.96`。本项定位本次知识增量，不记录自引用最终 SHA、完整审查历史或授权。实际独立评估、写入、Check、committed Review、恢复和安装结果只由[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)记录。未来门禁、Delivery、Completion、Release 和业务效果不由本项预先证明。

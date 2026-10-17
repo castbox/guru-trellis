@@ -1,5 +1,11 @@
 # Architecture Baseline SSOT
 
+版本：`current-main-0.6.17-guru.96`；状态：`active`；predecessor：`current-main-0.6.17-guru.95`；source baseline：[已晋升 #600 贡献](./contributions/600-promotion-before-check.md)与 immutable `.95` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
+
+当前增量 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 与 [ADR-030](./adr/030-promotion-before-final-check.md)替代 ADR-005 及继承合同中的旧晋升时机。Phase2 独立评估与拟写审查后，原 owner 在最终 Check 前晋升并核对适用性；committed 独立判断与完整 Branch Review 继续覆盖实际文件和晋升前 authority。[唯一 Test](../requirements-design-test-contributions/600-promotion-before-check/test.md)单写实际结果与未验证边界。知识晋升不证明这些最终门禁、Delivery、Completion 或软件发布通过。
+
+历史 `.95` authority：
+
 版本：`current-main-0.6.17-guru.95`；状态：`active`；predecessor：`current-main-0.6.17-guru.94`；source baseline：[已晋升 #599 贡献](./contributions/599-clear-technical-writing.md) + immutable `.94` authority（Git 历史）。constitution、原 owners、GAP lifecycle 与软件四轴保持。
 
 当前增量 ARCH-CUR-068 / ARCH-DOM-051 / ARCH-INT-054 承接首次独立完整审查的 #599。清晰写作正文由 canonical managed-spec 单写，现有 Agent 与审核 owner 在原职责内读取和执行；不新增语言审核阶段或公共 I/O。[唯一 Test](../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有源码、投影、实际 Codex 行为和未验证边界。晋升新差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview；知识晋升不表示 Delivery、Completion、软件发布或业务采用。

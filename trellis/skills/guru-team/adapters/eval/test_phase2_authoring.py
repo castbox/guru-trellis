@@ -73,8 +73,8 @@ class Phase2AuthoringTests(unittest.TestCase):
                 if not successful:
                     self.assertIn("test_singleton", evidence["stderr"])
                     self.assertIn("AssertionError", evidence["stderr"])
-                architecture = json.loads((repo / "docs/phase2-evidence/architecture-input.json").read_text())
-                validate_json(architecture, package.parent / phase2_authoring.ARCHITECTURE / "schemas/public-input-delivery-task-impact-sync-1.0.schema.json", "input")
+                architecture = json.loads((repo / phase2_authoring.ARCHITECTURE_INPUT).read_text())
+                validate_json(architecture, package.parent / phase2_authoring.ARCHITECTURE / "schemas/public-input-delivery-task-impact-sync-2.0.schema.json", "input")
                 self.assertEqual(architecture["constitution"]["identity_kind"], "version")
                 qualifier = load_package_runtime_module(target, "guru-qualify-normal-scenario", "common")
                 paths = [f"{architecture['task_locator']}/{architecture['planning_root']}/{name}" for name in ("prd.md", "design.md", "implement.md")]

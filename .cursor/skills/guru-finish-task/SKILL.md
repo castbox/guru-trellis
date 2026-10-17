@@ -82,6 +82,9 @@ Downstream eligibility entry. Completion or Branch Review output cannot be
 relabelled as Architecture; caller changes alone do not repeat assessment.
 Changed applicable Architecture facts and missing review/promotion follow the
 existing routes, while Finish retains its archive/bookkeeping responsibility.
+Do not repeat an already accepted promotion or add a baseline commit solely to
+record the final Review result or HEAD. Use the original formal results and
+Git/PR facts for those observations.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.
 

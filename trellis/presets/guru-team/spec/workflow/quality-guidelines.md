@@ -561,9 +561,22 @@ prove this behavior.
 Delivery recovery coverage must distinguish loss of Delivery Review output
 with an applicable held Branch Review DTO from loss of that DTO itself; normal
 checkpoint retirement cannot force unaffected semantic owners to rerun. New
-committed content still receives complete exact-range Branch Review. Actual
+committed content receives its first complete exact-range Branch Review. The
+original Branch Review owner's narrow promotion-reference alignment may then
+review the complete alignment delta and affected dependencies and produce a
+formal result over the final candidate, with the original full Review still
+recoverable. New facts or changed obligations cannot use that narrow path. Actual
 owner behavior and module effects are evidence; fixed-text assertions or
 host-staged semantic passes alone are not.
+
+For pre-Check Architecture promotion, targeted coverage observes the real
+independent assessment of the candidate and proposed delta, original-owner
+write, actual-write applicability, final Check, Task Commit, committed
+independent judgment and complete Review. Prove normal exact-write progress,
+changed content returning to affected assessment, expected-current mismatch,
+recoverable partial/output-loss handling, no-change, finding-fix impact and the
+three in-flight migration states. Structure and DTO tests prove their declared
+layer only; they cannot establish actual AI choices or runtime adoption.
 
 Workflow/static and semantic eval coverage must additionally prove the checked
 approved exit remains semantic adequacy only and the consumer presents all

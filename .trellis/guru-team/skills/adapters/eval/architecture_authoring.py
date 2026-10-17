@@ -12,6 +12,7 @@ from adapters.eval.eval_constants import ARCHITECTURE_PUBLIC_AUTHORING_FACTS
 from adapters.eval.fixture_io import public_input_path, run_git
 
 DELIVERY_CONTEXT = "architecture-delivery-eval"
+ARCHITECTURE_PUBLIC_INPUT = ".trellis/tasks/architecture-evidence/public-input.json"
 
 
 def stage_architecture_facts(request: dict, fixture: Path) -> None:
@@ -69,6 +70,8 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     if constraint_file:
         files[constraint_file] = constraint
         files[public["baseline"]["locator"]] += "\nProtocol identifiers are forwarded to the registered provider. Provider capability and response/lifecycle compatibility must be established for a new default selector; no required provider version is inferred from its name.\n"
+    files[public["baseline"]["locator"]] = files[public["baseline"]["locator"]].replace(
+        "Identity: current-v2.", f"Identity: {public['baseline']['identity']}.")
     for relative, content in files.items():
         target = fixture / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -130,7 +133,7 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     (evidence / "before-transport.py.txt").write_text(baseline_source)
     if public["stage"] == "branch_review":
         public["committed_range"] = {"base_ref": "origin/main", "base_head": base, "review_head": head}
-    if public.get("schema_version") == "3.0":
+    if public.get("planning_purpose") is not None or public.get("schema_version") == "3.0":
         if design is not None:
             public["candidate"] = {"design_locator": str(task / "design.md")}
             current = hashlib.sha256((fixture / task / "design.md").read_bytes()).hexdigest()
@@ -138,8 +141,21 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
             public["candidate"] = {"design_facts": ["No proposed candidate mechanism was supplied."], "constraint_refs": [public["requirement_authority"]]}
             current = hashlib.sha256(json.dumps(public["candidate"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         public["freshness_identity"] = "sha256:" + current
-    # Bind fixture-local input to real Git facts; the case file is only its seed.
-    (evidence / "public-input.json").write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n")
+    if public["stage"] != "planning" and public["profile"] in {"task_impact_sync", "delivery_task_impact_sync"}:
+        from runtime.reviewed_content import reviewed_content_identity
+        public["schema_version"] = "delivery-2.0" if public["profile"].startswith("delivery_") else "4.0"
+        public.pop("planning_purpose", None)
+        public["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:4.0"
+        public["before_authority"] = {"git_revision": base,
+            "baseline_locator": public["baseline"]["locator"],
+            "constitution_locator": public["constitution"]["authority_locator"],
+            "change_contract_locator": public["project_contract"]["change_contract_locator"]}
+        public["candidate"] = {"head": head, "content_identity": "sha256:" + reviewed_content_identity(fixture)["sha256"]}
+    # The input and its digest facts live outside reviewed content to avoid
+    # making a candidate checksum depend on the file that contains that checksum.
+    input_target = fixture / ARCHITECTURE_PUBLIC_INPUT
+    input_target.parent.mkdir(parents=True, exist_ok=True)
+    input_target.write_text(json.dumps(public, ensure_ascii=False, indent=2) + "\n")
     reads = [public["constitution"]["authority_locator"], public["baseline"]["locator"], public["project_contract"]["change_contract_locator"]]
     if design is not None:
         reads.append(str(task / "design.md"))
@@ -151,7 +167,7 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     (fixture / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).parent.mkdir(parents=True, exist_ok=True)
     (fixture / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).write_text(json.dumps({
         "schema_version": "1.0", "required_reads": reads,
-        "public_input_locator": "docs/architecture-eval/public-input.json",
+        "public_input_locator": ARCHITECTURE_PUBLIC_INPUT,
         "public_input_sha256": hashlib.sha256(json.dumps(public, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
         "candidate_inventory": "docs/architecture-eval/candidate-inventory.json",
         **({"candidate_contribution_locator": candidate_contribution} if candidate_contribution else {}),
@@ -160,10 +176,15 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
 
 def contract_paths(public: dict) -> tuple[str, ...]:
     """Select actual current public contracts without choosing a semantic route."""
-    semantic = "schemas/semantic-result-planning-3.0.schema.json" if public.get("schema_version") == "3.0" else "schemas/semantic-result.schema.json"
-    return ("SKILL.md", "references/contract.md", "interface.json", semantic,
-            "schemas/public-input-aggregate-3.0.schema.json",
-            "schemas/public-input-impact-current-3.0.schema.json")
+    if public.get("schema_version") == "delivery-2.0":
+        semantic = "schemas/semantic-result-delivery-2.0.schema.json"
+    elif public.get("schema_version") == "4.0":
+        semantic = "schemas/semantic-result-4.0.schema.json"
+    elif public.get("profile", "").startswith("delivery_"):
+        semantic = "schemas/semantic-result-delivery-1.0.schema.json"
+    else:
+        semantic = "schemas/semantic-result-planning-3.0.schema.json" if public.get("schema_version") == "3.0" else "schemas/semantic-result.schema.json"
+    return ("SKILL.md", "references/contract.md", "interface.json", semantic)
 
 
 def public_contract_reads(package: Path, public: dict | None = None) -> list[Path]:
@@ -171,10 +192,7 @@ def public_contract_reads(package: Path, public: dict | None = None) -> list[Pat
     from adapters.eval.eval_support import schema_projection_closure
     interface = json.loads((package / "interface.json").read_text())
     inputs = interface["public_contracts"]["input"]
-    assets = {Path("SKILL.md"), Path("references/contract.md"), Path("interface.json"),
-              Path("schemas/semantic-result.schema.json"), Path("schemas/semantic-result-delivery-1.0.schema.json")}
-    if public and public.get("schema_version") == "3.0":
-        assets.update(Path(path) for path in contract_paths(public))
+    assets = {Path(path) for path in contract_paths(public or {})}
     assets.add(Path(inputs["aggregate_schema"]["path"]))
     assets.update(Path(row["schema"]["path"]) for row in inputs["profiles"])
     return [package / path for path in sorted(schema_projection_closure(package, assets))]

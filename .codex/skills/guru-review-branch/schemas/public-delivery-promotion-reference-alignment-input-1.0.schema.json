@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-branch-input-delivery-promotion-reference-alignment-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "base_ref",
+    "branch_review_commit",
+    "delivery_key",
+    "check_result_id",
+    "prior_review",
+    "prior_reviewed_base_head"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_promotion_reference_alignment"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "base_ref": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "check_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prior_review": {
+      "$ref": "public-output-delivery-passed-1.0.schema.json"
+    },
+    "prior_reviewed_base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    }
+  }
+}
