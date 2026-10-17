@@ -25,6 +25,7 @@ import sys
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import BinaryIO
 
 from .config import (
     get_codex_dispatch_mode,
@@ -43,6 +44,7 @@ from .git import (
     stderr_indicates_index_lock,
 )
 from .path_boundary import require_project_path
+from .git_objects import read_blob_facts, read_tree
 from .io import describe_json_read_failure, read_json_checked, write_json, write_text_atomic
 from .log import Colors, colored
 from .paths import (
@@ -517,23 +519,34 @@ def cmd_create(args: argparse.Namespace) -> int:
             ["git", "for-each-ref", "--format=%(objectname)", "refs/heads", "refs/remotes"],
             cwd=repo_root, capture_output=True, text=True, check=False,
         )
+        def identity(payload: str) -> str | None:
+            try:
+                existing = json.loads(payload)
+            except json.JSONDecodeError:
+                return None
+            return str(existing.get("id", "")).casefold() if isinstance(existing, dict) else None
+
+        def blob_identity(stream: BinaryIO, size: int) -> str | None:
+            # Decode as text before JSON parsing: a UTF-8 BOM was historically
+            # rejected/ignored, whereas json.loads(bytes) would accept it.
+            return identity(stream.read(size).decode("utf-8"))
+
+        identities: dict[str, str | None] = {}
         for head in set(refs_result.stdout.splitlines() if refs_result.returncode == 0 else []):
-            paths = subprocess.run(
-                ["git", "ls-tree", "-r", "--name-only", head, "--", ".trellis/tasks"],
-                cwd=repo_root, capture_output=True, text=True, check=True,
-            ).stdout.splitlines()
-            for path in paths:
-                if not re.fullmatch(r"\.trellis/tasks/(?:archive/.+/)?[^/]+/task\.json", path):
-                    continue
-                payload = subprocess.run(
-                    ["git", "show", f"{head}:{path}"], cwd=repo_root,
-                    capture_output=True, text=True, check=True,
-                ).stdout
-                try:
-                    existing = json.loads(payload)
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(existing, dict) and str(existing.get("id", "")).casefold() == task_id.casefold():
+            metadata = {path: entry for path, entry in read_tree(repo_root, head, ".trellis/tasks").items()
+                        if entry.kind != "tree" and re.fullmatch(r"\.trellis/tasks/(?:archive/.+/)?[^/]+/task\.json", path)}
+            identities.update(read_blob_facts(repo_root, [entry.oid for entry in metadata.values()
+                                                        if entry.kind == "blob" and entry.oid not in identities], blob_identity))
+            for path, entry in metadata.items():
+                if entry.kind == "blob":
+                    reserved_id = identities[entry.oid]
+                else:
+                    # Historical gitlinks used git show's actual-object read;
+                    # a missing target must remain an error, not empty history.
+                    payload = subprocess.run(["git", "show", f"{head}:{path}"], cwd=repo_root,
+                                             capture_output=True, text=True, check=True).stdout
+                    reserved_id = identity(payload)
+                if reserved_id == task_id.casefold():
                     raise TaskIdentityError(f"task_id_collision: {task_id!r}: {path} at {head}")
     except (TaskIdentityError, SessionBindingError) as exc:
         print(colored(f"Error: {exc}", Colors.RED), file=sys.stderr)

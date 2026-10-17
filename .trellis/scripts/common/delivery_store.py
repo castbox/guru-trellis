@@ -6,12 +6,15 @@ import json
 import os
 import re
 import subprocess
+import tempfile
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .delivery_operations import apply_operation, parse_operation
 from .delivery_schema import DeliveryError, candidate, fail, parse_task_v2, relative_path
 from .delivery_session import apply_release_plan, plan_release_delivery, release_delivery
 from .io import read_json_checked, write_text_atomic
+from .git_objects import CHUNK_SIZE, hash_blob, read_blob_facts, read_tree, verify_blob_objects
 from .path_boundary import require_project_path
 from .runtime_contract import read_runtime_contract
 from .task_artifacts import TaskArtifactContext, artifact_context, authority_locator, canonical_operation, relocate_task_directory
@@ -19,6 +22,51 @@ from .task_artifacts import TaskArtifactContext, artifact_context, authority_loc
 
 def _digest(value: bytes) -> str:
     return "sha256:" + hashlib.sha256(value).hexdigest()
+
+
+@dataclass
+class _ContentObservation:
+    """Private to one normal local-commit operation, never a validation pass."""
+    algorithm: str
+    hashes: dict[str, str] = field(default_factory=dict)
+    aggregates: dict[str, str] = field(default_factory=dict)
+
+    def file_hash(self, path: Path) -> str:
+        # Observe every mutable file independently. Spool the very same bytes
+        # used for raw Git identity, so reuse never trusts a path/index lookup
+        # or a second filesystem read. Only the first unique blob needs SHA256.
+        with path.open("rb") as source, tempfile.SpooledTemporaryFile(max_size=1024 * 1024) as snapshot:
+            size = os.fstat(source.fileno()).st_size
+            raw = hashlib.new(self.algorithm)
+            raw.update(f"blob {size}\0".encode("ascii"))
+            observed = 0
+            while True:
+                chunk = source.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                observed += len(chunk)
+                raw.update(chunk)
+                snapshot.write(chunk)
+            if observed != size:
+                raw = hashlib.new(self.algorithm)
+                raw.update(f"blob {observed}\0".encode("ascii"))
+                snapshot.seek(0)
+                while True:
+                    chunk = snapshot.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    raw.update(chunk)
+            oid = raw.hexdigest()
+            if oid not in self.hashes:
+                snapshot.seek(0)
+                self.hashes[oid] = hash_blob(snapshot, observed)
+            return self.hashes[oid]
+
+    def content_ref(self, entries: list) -> str:
+        serialized = json.dumps(entries, ensure_ascii=False, separators=(",", ":"))
+        if serialized not in self.aggregates:
+            self.aggregates[serialized] = _digest(serialized.encode("utf-8"))
+        return self.aggregates[serialized]
 
 
 def _checked_path(path: Path, root: Path) -> Path:
@@ -57,6 +105,11 @@ def _file(root: Path, locator: str) -> Path:
 
 def candidate_content_ref(root: Path, paths: list[str], kind: str | None = None) -> str:
     """Hash Git executable modes or full Git-free permissions, paths and bytes."""
+    return _candidate_content_ref(root, paths, kind)
+
+
+def _candidate_content_ref(root: Path, paths: list[str], kind: str | None = None,
+                           observation: _ContentObservation | None = None) -> str:
     if not paths or len(set(paths)) != len(paths):
         fail("invalid_candidate", "nonempty unique paths required")
     if kind is None:
@@ -77,10 +130,19 @@ def candidate_content_ref(root: Path, paths: list[str], kind: str | None = None)
         elif path.is_file():
             mode = path.stat().st_mode
             mode = (0o755 if mode & 0o100 else 0o644) if kind == "git" else mode & 0o777
-            entries.append([locator, mode, hashlib.sha256(path.read_bytes()).hexdigest()])
+            if observation is None:
+                with path.open("rb") as stream:
+                    digest = hashlib.sha256()
+                    for chunk in iter(lambda: stream.read(CHUNK_SIZE), b""):
+                        digest.update(chunk)
+                    content_hash = digest.hexdigest()
+            else:
+                content_hash = observation.file_hash(path)
+            entries.append([locator, mode, content_hash])
         else:
             fail("invalid_candidate", f"not a file: {locator}")
-    return _digest(json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode("utf-8"))
+    return (observation.content_ref(entries) if observation is not None
+            else _digest(json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode("utf-8")))
 
 
 def _git(root: Path, *args: str, binary: bool = False) -> bytes:
@@ -95,8 +157,12 @@ def _git(root: Path, *args: str, binary: bool = False) -> bytes:
 
 
 def verify_candidate(root: Path, value: dict) -> None:
+    _verify_candidate(root, value)
+
+
+def _verify_candidate(root: Path, value: dict, observation: _ContentObservation | None = None) -> None:
     candidate(value)
-    if candidate_content_ref(root, value["paths"], value["kind"]) != value["content_ref"]:
+    if _candidate_content_ref(root, value["paths"], value["kind"], observation) != value["content_ref"]:
         fail("candidate_mismatch", "content bytes/modes changed")
     if value["kind"] == "git":
         if value["head_ref"] is not None and _git(root, "rev-parse", "HEAD").decode() != value["head_ref"]:
@@ -105,26 +171,45 @@ def verify_candidate(root: Path, value: dict) -> None:
             fail("candidate_mismatch", "base must be an exact commit")
 
 
-def _verify_commit(root: Path, result: dict) -> None:
+def _verify_commit(root: Path, result: dict, observation: _ContentObservation | None = None) -> None:
     if (_git(root, "cat-file", "-t", result["commit"]) != b"commit"
             or _git(root, "rev-parse", "--verify", result["commit"] + "^{commit}").decode() != result["commit"]):
         fail("invalid_git_fact", "local outcome must name a full actual commit object OID")
     entries = []
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith("GIT_")}
+    try:
+        tree = read_tree(root, result["commit"], env=env)
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        fail("invalid_git_fact", str(exc))
+    hashes = observation.hashes if observation is not None else {}
+    pending = []
+    reused = []
     for locator in sorted(result["candidate"]["paths"]):
         relative_path(locator)
         if _reserved(locator):
             fail("invalid_candidate", locator)
-        tree = _git(root, "ls-tree", result["commit"], "--", locator).decode()
-        if not tree:
+        entry = tree.get(locator)
+        if entry is not None:
+            if entry.kind != "blob" or entry.mode not in ("100644", "100755"):
+                fail("invalid_git_fact", locator)
+            if entry.oid not in hashes:
+                pending.append(entry.oid)
+            else:
+                reused.append(entry.oid)
+    try:
+        verify_blob_objects(root, reused, env=env)
+        hashes.update(read_blob_facts(root, pending, hash_blob, env=env))
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        fail("invalid_git_fact", str(exc))
+    for locator in sorted(result["candidate"]["paths"]):
+        entry = tree.get(locator)
+        if entry is None:
             entries.append([locator, None, None])
             continue
-        match = re.match(r"^(100644|100755) blob [a-f0-9]+\t", tree)
-        if match is None:
-            fail("invalid_git_fact", locator)
-        assert match is not None
-        contents = _git(root, "show", f"{result['commit']}:{locator}", binary=True)
-        entries.append([locator, 0o755 if match[1] == "100755" else 0o644, hashlib.sha256(contents).hexdigest()])
-    if _digest(json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode()) != result["candidate"]["content_ref"]:
+        entries.append([locator, 0o755 if entry.mode == "100755" else 0o644, hashes[entry.oid]])
+    content_ref = (observation.content_ref(entries) if observation is not None
+                   else _digest(json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode("utf-8")))
+    if content_ref != result["candidate"]["content_ref"]:
         fail("candidate_mismatch", "commit tree differs from delivered content")
 
 
@@ -155,12 +240,13 @@ def _verify_pr(root: Path, result: dict, *, delivered: bool) -> None:
             fail("candidate_mismatch", "publication URL/body differs")
 
 
-def _verify_fact(root: Path, op: dict, context: TaskArtifactContext | None = None) -> None:
+def _verify_fact(root: Path, op: dict, context: TaskArtifactContext | None = None,
+                 observation: _ContentObservation | None = None) -> None:
     if op["operation"] not in ("record_delivery", "record_publication"):
         return
     result = op["result"]
     if result["profile"] == "local_commit":
-        _verify_commit(root, result)
+        _verify_commit(root, result, observation)
     elif result["profile"] == "manual":
         artifact = result["artifact"]
         if re.match(r"[a-z][a-z0-9+.-]*://", artifact["locator"], re.I):
@@ -245,6 +331,8 @@ def apply_to_store(task_dir: Path, root: Path, request: object, expected_sha256:
         elif op["operation"] == "complete_task":
             verify_authority(root, op["result"]["accepted_scope"], context)
         historical = op["operation"] in ("record_delivery", "record_publication") and op.get("historical_success") is True
+        observation = (_ContentObservation("sha256" if len(op["result"]["commit"]) == 64 else "sha1")
+                       if not historical and op["operation"] == "record_delivery" and op["result"]["profile"] == "local_commit" else None)
         if not historical:
             if op["operation"] in ("begin_check", "record_publication", "record_delivery"):
                 delivery = next(row for row in record["deliveries"] if row["id"] == op["key"]["delivery_id"])
@@ -256,8 +344,8 @@ def apply_to_store(task_dir: Path, root: Path, request: object, expected_sha256:
             elif op["operation"] == "record_gate" and op["result"]["candidate"] is not None:
                 verify_candidate(root, op["result"]["candidate"])
             elif op["operation"] in ("record_delivery", "record_publication"):
-                verify_candidate(root, op["result"]["candidate"])
-        _verify_fact(root, op, context)
+                _verify_candidate(root, op["result"]["candidate"], observation)
+        _verify_fact(root, op, context, observation)
         if task_json.read_bytes() != previous:
             fail("stale_preimage", "Task changed during verification")
         if archived:
