@@ -45,12 +45,15 @@ the released Guru source with a later source tree's Fork lock.
 
 The next repository target is `v0.7.0-guru.4`, not yet published. Its preparation
 first adopts the canonical source lock at
-`castbox/Trellis@c7bd746b42d75f73534c85e263cd6b51fe0e5287`, reviewed main CI
-`38994652194`, retaining CLI/core `0.7.0-castbox.3` and `pnpm@10.32.1`. This
+`castbox/Trellis@9f40ec70914f98fce2619560274cc1d0619f2f7e`, reviewed main CI
+`39013710371`, using CLI/core `0.7.0-castbox.4` and `pnpm@10.32.1`. This
 source includes #40 maintenance, #43 native schema-1 session compatibility,
-and #47 Task/Delivery Git object reading improvements. This step prepares the
+and #47 Task/Delivery Git object reading improvements plus #50 public
+`GitCandidateContent` immutable-content support. This step prepares the
 exact source only; target tools installation, the Guru PR chain and performance
-acceptance still require their own subsequent verification.
+acceptance still require their own subsequent verification. The Fork `.4`
+paired tarballs are published as `castbox-v0.7.0-castbox.4`, not on npm;
+this does not publish Guru `.4` or prove target adoption.
 Current preparation source uses extension `0.7.0-guru.4` and the matching
 original maintenance target; it does not change the immutable `.3` release.
 The adopted baseline tools remain a `.3` installed graph matching their own

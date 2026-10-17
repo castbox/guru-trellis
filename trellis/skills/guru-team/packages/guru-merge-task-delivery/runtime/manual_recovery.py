@@ -4,11 +4,9 @@ No pre-merge gate, remote merge, readiness judgment or Completion decision.
 """
 from __future__ import annotations
 
+import os
 import subprocess
-import tempfile
-from pathlib import Path
 
-from candidate_objects import CandidateObjects
 from owner import archived_fact_gap, gh_json, git, require_gh
 from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.io import CommandError
@@ -55,20 +53,65 @@ def ensure_commit(root, repo_ref, sha):
             raise CommandError("stale_identity", "repository.commit", "Fetch the exact selected PR/merge commit before recovery.", 3)
 
 
-def commit_candidate(projection, publication, actual_head, *, git_root=None, objects=None):
+def candidate_read_error(root, head, paths, error):
+    """Diagnose an unsuccessful public read without reading any blob bodies.
+
+    The public API uses invalid_git_fact for unavailable objects and unsupported
+    modes alike. Only the former belongs to the history preparation owner.
+    """
+    environment = {key: value for key, value in os.environ.items()
+                   if not key.upper().startswith("GIT_")}
+    environment["GIT_NO_LAZY_FETCH"] = "1"
+    args = ["git", "--literal-pathspecs", "ls-tree", "-t", "-z", head, "--"]
+    fixed = sum(len(os.fsencode(arg)) + 1 for arg in args)
+    batches, batch, used = [], [], fixed
+    for path in paths:
+        size = len(os.fsencode(path)) + 1
+        if fixed + size > 64 * 1024:
+            return CommandError("stale_identity", "repository", error.remediation, 3)
+        if used + size > 64 * 1024:
+            batches.append(batch)
+            batch, used = [], fixed
+        batch.append(path)
+        used += size
+    if batch:
+        batches.append(batch)
+    selected = set(paths)
+    try:
+        for batch in batches:
+            result = subprocess.run([*args, *batch], cwd=root, env=environment,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            for row in result.stdout.split(b"\0"):
+                if not row:
+                    continue
+                metadata, name = row.split(b"\t", 1)
+                mode, kind, _oid = metadata.split()
+                if (os.fsdecode(name) in selected
+                        and (kind != b"blob" or mode not in (b"100644", b"100755"))):
+                    return CommandError("stale_identity", "candidate.paths",
+                                        "Use the file/mode candidate supported by the installed public API.", 3)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        pass
+    return CommandError("stale_identity", "repository", error.remediation, 3)
+
+
+def commit_candidate(projection, publication, actual_head, *, git_root=None, content=None):
     """Use the installed public hash over immutable bytes/modes/deletions."""
     candidate = publication["candidate"]
     paths = candidate["paths"]
     source = projection.root if git_root is None else git_root
-    if objects is None:
-        with CandidateObjects(source) as local:
+    if content is None:
+        with projection._call(projection.api.delivery_store.GitCandidateContent,
+                              source, no_lazy_fetch=True) as local:
             return commit_candidate(projection, publication, actual_head,
-                                    git_root=source, objects=local)
-    with tempfile.TemporaryDirectory(prefix="guru-manual-delivery-snapshot-") as temporary:
-        snapshot = Path(temporary)
-        objects.snapshot(actual_head, paths, snapshot)
-        content = projection._call(projection.api.delivery_store.candidate_content_ref, snapshot, paths, "git")
-    return {**candidate, "kind": "git", "head_ref": actual_head, "content_ref": content}
+                                    git_root=source, content=local)
+    try:
+        content_ref = projection._call(content.content_ref, actual_head, paths)
+    except LifecycleContractError as exc:
+        if exc.code != "invalid_git_fact":
+            raise
+        raise candidate_read_error(source, actual_head, paths, exc) from exc
+    return {**candidate, "kind": "git", "head_ref": actual_head, "content_ref": content_ref}
 
 
 def terminal_facts(root, public, publication):
@@ -105,8 +148,11 @@ def terminal_facts(root, public, publication):
         base_head = base["object"]["sha"]
     except (KeyError, TypeError) as exc:
         raise CommandError("github_response_incomplete", "github.base_ref", "Read the current selected target base.") from exc
+    prepared = []
     for sha in (merge, head, base_head, publication["reviewed_head"]):
-        ensure_commit(root, repo, sha)
+        if sha not in prepared:
+            ensure_commit(root, repo, sha)
+            prepared.append(sha)
     if git(root, "rev-list", "--parents", "-n", "1", merge).split() != [merge, *parents]:
         return None, "manual_merge_commit_identity_mismatch"
     if merge not in git(root, "rev-list", "--first-parent", base_head).splitlines():

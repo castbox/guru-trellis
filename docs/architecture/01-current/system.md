@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前 `.94` 的跨 owner 工程事实增量以 `ARCH-CUR-067` 为准；`.93` 固定截点查询继续由 `ARCH-CUR-066` 承接；`.92` 的固定内容与实际整合继续由 `ARCH-CUR-065` 承接，完整 active inventory 由 live registry/Interfaces 定义。保留条目中带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取，不作为本轮重新执行的证据。软件四轴继续继承当前 authority，本次知识晋升不修改发布身份。
+当前 `.95` 的清晰写作与入口读取增量以 `ARCH-CUR-068` 为准；`.94` 的跨 owner 工程事实由 `ARCH-CUR-067` 承接；`.93` 固定截点查询继续由 `ARCH-CUR-066` 承接；`.92` 的固定内容与实际整合继续由 `ARCH-CUR-065` 承接，完整 active inventory 由 live registry/Interfaces 定义。保留条目中带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取，不作为本轮重新执行的证据。软件四轴继续继承当前 authority，本次知识晋升不修改发布身份。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -331,3 +331,5 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 `ARCH-CUR-066`（#569 reviewed source）：原history owner自动准备一次B1所需完整历史；result3.0显式cutoff，原AI consumer独占适用性及有界补证。责任、迁移和边界由[已晋升贡献](../contributions/569-fixed-cutoff-history-query.md)、唯一Design/Test承接；无新owner、store或ADR，知识晋升不表示软件发布。
 
 `ARCH-CUR-067`（#578 reviewed source）：原 Architecture/Check/BranchReview 保持当前完整独立判断，按真实依赖适用性采用合法可核查工程事实；当前 project-check/freshness 仍新绑定，变化/未知/缺失只补受影响检查。ADR-029、[已晋升贡献](../contributions/578-cross-owner-validation-facts.md)与唯一 Design/Test 承接机制与边界；不新增 owner、public DTO、store 或脚本语义分类。
+
+`ARCH-CUR-068`（#599 reviewed source）：清晰写作规范由 canonical preset 的单一 managed-spec 正文维护，现有 workflow、Guru Skill 和平台入口引用安装正文。Agent 的完整读取与输出前自检归其原职责；既有审核 owner 只审原范围，脚本只验证分发与机械事实。具体规则和加载合同由[唯一正文](../../../trellis/presets/guru-team/spec/workflow/clear-technical-writing.md)单写；[已晋升贡献](../contributions/599-clear-technical-writing.md)承接责任，[唯一 Test](../../requirements-design-test-contributions/599-clear-technical-writing/test.md)区分源码、投影、实际行为及未验证边界。无新语言审核阶段、公共 I/O、runtime state 或 hook。

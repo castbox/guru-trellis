@@ -92,6 +92,37 @@ class ManualRecoveryTests(unittest.TestCase):
         return self.flow.wrapper(PACKAGE.name, "invoke.sh", "--input", self.flow.write("manual.json", self.public),
             "--review-input", self.flow.write("manual-review.json", review or self.review()), success=success)
 
+    def trace_invoke(self):
+        trace = self.flow.inputs / "manual-git-trace.jsonl"
+        trace_bin = self.flow.inputs / "manual-trace-bin"
+        trace_bin.mkdir(exist_ok=True)
+        git = trace_bin / "git"
+        git.write_text("#!" + sys.executable + "\nimport os,sys\n"
+            "os.environ['GIT_TRACE2_EVENT'] = " + repr(str(trace)) + "\n"
+            "os.execv(" + repr(shutil.which("git")) + ", ['git', *sys.argv[1:]])\n")
+        git.chmod(0o755)
+        with patch.dict(os.environ, {"PATH": str(trace_bin) + os.pathsep + os.environ["PATH"]}):
+            result = self.invoke()
+        commands = [row["argv"][1:] for row in map(json.loads, trace.read_text().splitlines())
+                    if row.get("event") == "start"]
+        return result, commands
+
+    def test_repeated_terminal_endpoints_each_prepare_once_in_real_wrapper(self):
+        result, commands = self.trace_invoke()
+        self.assertEqual("delivered", result["exit_id"])
+        checks = [command[2] for command in commands if command[:2] == ["cat-file", "-e"]]
+        self.assertCountEqual([self.merge + "^{commit}", self.actual + "^{commit}"], checks)
+
+    def test_incomplete_provider_commit_keeps_original_error_classification(self):
+        path = self.bin / "responses.json"
+        values = json.loads(path.read_text())
+        values["repos/example/repo/git/ref/heads/main"]["object"]["sha"] = []
+        path.write_text(json.dumps(values))
+        result = self.invoke(success=False)
+        self.assertEqual("github_response_incomplete", result["code"])
+        self.assertEqual("github.commit", result["field_path"])
+        self.assertIsNone(self.projection.resolve(self.flow.key)["delivery_result"])
+
     def test_all_ci_states_record_real_merge_without_synthesizing_gates(self):
         original = self.projection.resolve(self.flow.key)["results"]
         for checks in ([{"conclusion": "SUCCESS"}], [{"status": "IN_PROGRESS"}], [{"conclusion": "CANCELLED"}], [], [{"conclusion": "FAILURE"}]):
@@ -144,8 +175,15 @@ class ManualRecoveryTests(unittest.TestCase):
         tree = self.flow.git("merge-tree", "--write-tree", self.base, self.actual).splitlines()[0]
         self.merge = self.flow.git("commit-tree", tree, "-p", self.base, "-p", self.actual, "-m", "Merge pull request #9").strip()
         self.flow.git("update-ref", "refs/heads/main", self.merge)
+        tree = self.flow.git("rev-parse", "main^{tree}").strip()
+        advanced = self.flow.git("commit-tree", tree, "-p", self.merge, "-m", "base advance").strip()
+        self.flow.git("update-ref", "refs/heads/main", advanced)
         self.responses()
-        self.assertEqual("delivered", self.invoke()["exit_id"])
+        result, commands = self.trace_invoke()
+        self.assertEqual("delivered", result["exit_id"])
+        checks = [command[2] for command in commands if command[:2] == ["cat-file", "-e"]]
+        self.assertCountEqual([sha + "^{commit}" for sha in
+                               (self.merge, self.actual, advanced, self.flow.head)], checks)
         delivery = self.projection.resolve(self.flow.key)
         self.assertEqual(self.actual, delivery["delivery_result"]["candidate"]["head_ref"])
         self.assertEqual(self.flow.head, delivery["publication_result"]["candidate"]["head_ref"])
@@ -170,6 +208,9 @@ class ManualRecoveryTests(unittest.TestCase):
         git.chmod(0o755)
         with patch.dict(os.environ, {"PATH": str(trace_bin) + os.pathsep + os.environ["PATH"]}):
             out = self.flow.wrapper(PACKAGE.name, "discover-task-deliveries.sh", "--input", self.flow.write("history.json", query))
+        rows = [json.loads(line) for line in trace.read_text().splitlines()]
+        self.assertFalse(any(row.get("event") == "start" and row.get("argv", [])[1:] ==
+                             ["cat-file", "-e", self.actual + "^{commit}"] for row in rows))
         with trace.open() as events:
             message_reads = sum(
                 row.get("event") == "start"

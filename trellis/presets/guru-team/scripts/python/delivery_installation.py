@@ -29,6 +29,13 @@ def installed_capabilities(common: Path, workflow: Path, records: list[tuple[str
         modules = {name: importlib.import_module(namespace + "." + name) for name in required}
         missing = [name + "." + function for name, functions in required.items()
                    for function in functions if not callable(getattr(modules[name], function, None))]
+        content = getattr(modules["delivery_store"], "GitCandidateContent", None)
+        if not isinstance(content, type):
+            missing.append("delivery_store.GitCandidateContent")
+        else:
+            missing.extend("delivery_store.GitCandidateContent." + method
+                           for method in ("content_ref", "close")
+                           if not callable(getattr(content, method, None)))
         if missing:
             return missing
         declaration = modules["runtime_contract"].read_runtime_contract(workflow)
@@ -122,7 +129,7 @@ def diagnose_delivery_installation(source: Path, target: Path) -> dict:
     if invalid:
         return {"status": "blocked", "code": "invalid_task_inventory", "task_refs": invalid,
                 "remediation": "Resolve the actual Task records with their existing owner before installation."}
-    if missing or version != "0.7.0-castbox.3":
+    if missing or version != "0.7.0-castbox.4":
         return {"status": "blocked", "code": "unsupported_delivery_api", "installed_core": version, "missing_modules": missing,
                 "remediation": "Install the explicitly reviewed Core/CLI Delivery API 1.0 candidate as a complete package before Guru projection. Matching version text alone is not candidate qualification."}
     missing_capabilities = installed_capabilities(common, workflow, records)
