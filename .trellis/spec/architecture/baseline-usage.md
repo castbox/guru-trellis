@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.95`
+- version：`current-main-0.6.17-guru.96`
 - status：`active`
-- source binding：`docs/architecture/contributions/599-clear-technical-writing.md` + immutable `.94` inheritance；ARCH-CUR-068 / ARCH-DOM-051 / ARCH-INT-054 / EVD-067。既有 ADR、软件四轴和 GAP lifecycle 保持；实际结果只读唯一 RDT Test，晋升差额须 fresh gates。
+- source binding：`docs/architecture/contributions/589-git-object-performance.md` + immutable `.95` inheritance；ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 / EVD-068。`.95` 与 #599 的有效 authority 继续继承。既有 ADR、软件四轴和 GAP lifecycle 保持；实际结果只读唯一 RDT Test，晋升差额须 fresh gates。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
