@@ -183,7 +183,7 @@
     ".claude/agents/trellis-implement.md": "71e0033f59e7e9a7a0457a86895fde06139d9e12581098f046a06f5765d575a9",
     ".claude/agents/trellis-research.md": "add4aa4259ded425b04ec992802c646490352bb4eb3730a7ab450beea87d4faa",
     ".trellis/.gitignore": "97df642174ce8ce99725241dc080fbeae11beed6545e17c5fdfe2ef45b4554d4",
-    "AGENTS.md": "ca0c2f683dd0dbecc3679b7537802c43188a461d14f141f0c4c1bf36f46046f1",
+    "AGENTS.md": "a965ff4068fb4026ce900e7cd932e88d9ac141057d1c1fe5f8a6e441af7c5fe5",
     ".claude/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".cursor/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".agents/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
@@ -196,7 +196,7 @@
     ".trellis/scripts/common/delivery_schema.py": "efec4f29be5fca19a62195fe3f3ba3add3152945130e7c2f385b9d59bc0221b0",
     ".trellis/scripts/common/delivery_operations.py": "0d22737a1f32554179e7577a3aeb1a508593c1923df4a0cb43d6b787b220b50d",
     ".trellis/scripts/common/delivery_session.py": "8b5533722907810665958c3feba48b4c8c32d7d97d842b2d36f920b70bb71f5f",
-    ".trellis/scripts/common/delivery_store.py": "53a9e9d7e272f9b7b4abe354929c6d6ba42777393ed2a3d0e1a62f5e44d914bb",
+    ".trellis/scripts/common/delivery_store.py": "038d98832a8359b697a5b3757589f9f1461b26d548fc04d29ad2b4e50d082171",
     ".trellis/scripts/common/task_artifacts.py": "ba36d8fff2b3d4304361add69ca519fa7e7ad280b4559cd2c9dd1e47241cbf05",
     ".trellis/scripts/delivery.py": "8c40c05f10d5ba6ca99d8c5cfb46b2d3a637e3ff7dc267d007705ec2bb5c802c",
     ".trellis/delivery-contract.md": "c3ef6ee039283f2d3e12b649a3b00f47e624c18e1514ce59bad99e7898c55d75",
@@ -209,6 +209,6 @@
     ".agents/skills/trellis-complete-task/SKILL.md": "f8b95b3b9162ef5bf8e38926b6385814133f23f5aa0f3ca4e900a64413335492",
     ".agents/skills/trellis-deliver/SKILL.md": "bc9a2347d12ae366b0d8255e6f45eb07965e6c1dc41867dff04a756f8ec6e161",
     ".agents/skills/trellis-review-delivery/SKILL.md": "d03f2f2d6f56711a0b8f362bdce543d0c2e75c583f33680b92a621838ccd2781",
-    ".trellis/scripts/common/git_objects.py": "4c0060614bce692e6cf6ac5a3eef5c9f6361d0c95db114331d5862ba5df94597"
+    ".trellis/scripts/common/git_objects.py": "2ddaa8736bbca4ddcba07efc2443173f3df615c52d471001ba273b0f828847c8"
   }
 }

@@ -38,7 +38,7 @@ def packages(fork: Path) -> tuple[Path, Path]:
         if value.get("name") == "@mindfoldhq/trellis":
             core = directory.parent / "trellis-core"
             other = json.loads((core / "package.json").read_text())
-            if value.get("version") != "0.7.0-castbox.3" or other.get("version") != value["version"]:
+            if value.get("version") != "0.7.0-castbox.4" or other.get("version") != value["version"]:
                 raise MigrationError("Delivery migration requires the matching installed CLI/Core candidate")
             return directory, core
     raise MigrationError("Use the reviewed installed CLI entrypoint and its matching Core package")
