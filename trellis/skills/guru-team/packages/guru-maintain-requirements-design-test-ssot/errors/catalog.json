@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-maintain-requirements-design-test-ssot",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Missing, repeated, conflicting, or unsupported command arguments.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use the exact command help contract."
+    },
+    {
+      "code": "conflicting_arguments",
+      "trigger": "Conflicting transports were supplied together.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Provide exactly one invocation or public input transport."
+    },
+    {
+      "code": "invalid_json",
+      "trigger": "A JSON argument or input is not one object.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Provide one valid JSON object."
+    },
+    {
+      "code": "schema_mismatch",
+      "trigger": "Input or output violates its declared profile schema.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair the value to match the declared schema."
+    },
+    {
+      "code": "semantic_result_invalid",
+      "trigger": "The AI gate, selected exit, or unique consumer binding is inconsistent.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Repeat the semantic review and use its declared consumer."
+    },
+    {
+      "code": "unsafe_path",
+      "trigger": "A JSON or authority locator is unsafe.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Use a safe regular JSON file."
+    },
+    {
+      "code": "stale_identity",
+      "trigger": "The profile or continuation changed after semantic review.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Rerun the profile from current authority facts."
+    },
+    {
+      "code": "unknown_typed_exit",
+      "trigger": "The semantic owner returned an undeclared exit.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Return one declared Requirements Design Test SSOT exit."
+    },
+    {
+      "code": "environment_unavailable",
+      "trigger": "A required runtime fact is unavailable.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair the repository installation and retry."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "An unexpected package runtime failure occurred.",
+      "exit_status": 70,
+      "locator": "path",
+      "remediation": "Inspect the package-local runtime and retry."
+    }
+  ]
+}

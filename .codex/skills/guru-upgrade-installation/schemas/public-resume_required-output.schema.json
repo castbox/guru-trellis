@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-public-resume_required-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "profile",
+    "recovery_ref"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "resume_required"
+    },
+    "profile": {
+      "const": "resume"
+    },
+    "recovery_ref": {
+      "type": "string",
+      "pattern": "^[a-f0-9-]{36}$"
+    }
+  }
+}

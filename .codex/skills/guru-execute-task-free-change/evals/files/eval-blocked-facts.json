@@ -1,0 +1,1 @@
+{"scenario":"Required local checkout evidence is unavailable, so the Skill fails closed without writing.","owner_staging":{"recipe":"task-free-blocked"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

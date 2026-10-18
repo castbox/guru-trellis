@@ -1,0 +1,1682 @@
+# Historical Guru Team Preset (pre-#434)
+
+This file describes the old task-workspace and Finalizer-era installation.
+It is retained for version-scoped diagnosis only. The current preset contract
+is `README.md`; old-chain tasks require a pinned compatible version or an
+individually reviewed manual disposition, not an old/new DTO adapter.
+
+## GitHub CLI-only contract
+
+Installed Guru Team surfaces use authenticated `gh`/`gh api` only for GitHub
+platform reads and writes. Every high-level Issue/PR/run operation includes
+`--repo owner/repo`; REST operations use complete
+`repos/<owner>/<repo>/...` endpoints. App, MCP, connector and browser UI
+fallbacks are unsupported. Package-owned runtime distinguishes CLI, auth,
+repository-access, permission, API-availability and incomplete-response
+failures. `git` continues to own fetch, push, ls-remote and local worktrees.
+
+The preset installs companion assets, Guru Skill packages, and descriptor-bound
+Guru finish entries for the `guru-team` Trellis workflow into an existing
+Trellis project.
+
+The package graph includes archived read-only re-review through the existing
+Merge, Branch Review, Publication and Finalizer owners. Dedicated profiles and
+three direct typed edges keep completed tasks, archive history and remote PR
+state unchanged. Architecture is checked separately at all three stages; new
+review A, original archive review H, reviewed base B and the PR snapshot are
+not interchangeable. Install the complete compatible package set and reapply
+the preset; old released copies do not gain these profiles from documentation.
+
+Independent Git/GitHub requests after an automatic Guru failure follow
+[Manual Git/GitHub Operations](../../workflows/guru-team/workflow.md#manual-gitgithub-operations).
+The preset keeps those entry references aligned without adding a recovery
+workflow or treating a manual result as lifecycle completion.
+
+The installed workflow follows the canonical subtraction-first compatibility
+contract in `.trellis/spec/workflow/subtraction-first-compatibility.md`.
+Existing semantic owners review direct deletion/modification/reuse first,
+retire affected assets without supported consumers, and independently check
+`code_subtraction` and `docs_ssot_subtraction` in Phase 2 and Branch Review.
+Non-server compatibility added, widened, or extended requires a concrete
+current-dialogue approval before coding, compatibility tests, or self-fixing;
+the approval is never persisted in package artifacts, checkpoints, gates,
+schemas, or public DTOs.
+Task execution also rejects complexity without a named direct consumer,
+including incidental fields, persistence, retries, locks, fallbacks, and
+parallel or formal-idempotency paths outside the accepted contract. Long-term
+decoupling and Architecture convergence are reviewed alongside the immediate
+task target. For future changes, a touched non-generated code file at or above
+3000 lines requires an AI-reviewed mechanical split or small decoupling refactor;
+untouched historical large files remain outside the task.
+
+It does not run `trellis init` and does not modify Trellis upstream files.
+The framework source is pinned by `source/trellis-source.json` to the
+`castbox/Trellis` Fork. Preset installation projects that record to
+`.trellis/guru-team/trellis-source.json` using the existing managed-file
+provenance rules. It is an expected-source record, not proof of a completed CLI
+build. Use the existing Fork checkout's `packages/cli/bin/trellis.js` after
+checking HEAD and running its own locked dependency install/build commands;
+see the repository README for executable commands. Do not use stock npm
+`trellis upgrade`, copy dist, or create another CLI launcher.
+After the successful normal build, the documented preparation writes actual
+HEAD to `packages/cli/dist/.guru-source-commit` (or root `dist/` for the flat
+predecessor layout). Source validation requires this build origin to match the
+locked checkout, so a same-version checkout with stale compiled output fails.
+The marker is local build metadata, not semantic approval or authentication.
+The current source record also carries `ci_run_id=35621578090` for reviewed
+Fork lifecycle primitive commit `eb370008c7689d4e272ae626bd002190ecbb3296`. Source validation binds that
+upstream run's repository, head and successful result independently from local
+build and installed-runtime proof. Both packages remain `0.6.17`; no upstream
+`v0.6.18` dependency or publication is introduced.
+It is idempotent: identical files are skipped, missing files are installed,
+Guru-managed companion assets are upgraded in place with `.bak` backups,
+and existing `.trellis/guru-team/config.yml` is preserved. Current-only
+ownership schema 4.0 defines 22 platform descriptors, 43 derived managed
+claims, and 22 additive finish overlays. Official Trellis paths are outside
+that contract. A non-current ownership or installed manifest fails closed
+before mutation; unknown edits to current Guru-owned assets are preserved with
+deterministic `.new` remediation.
+
+The current config template includes `middle_platform_knowledge.mode:
+optional_warn`. Existing target repo configs are not overwritten just to add
+this key; if it is absent, the workflow interprets it as `optional_warn`.
+`required` is opt-in only, and `off` is opt-out only.
+
+The preset also materializes the project-level `.trellis/config.yaml`
+`codex.dispatch_mode` default. Missing, commented-out, legacy `sub-agent`, or invalid values are
+updated to `auto` so Codex can dispatch `trellis-implement` /
+`trellis-check` and satisfy Branch Review Gate by default. In that default mode
+implementation, Phase 2 check, and post-commit Branch Review are three separate
+sub-agent evidence boundaries: `trellis-implement` / channel `implement`
+returns one concise terminal result, `trellis-check` / channel `check` uses
+that result with live repository evidence to produce the compact final Phase 2
+semantic result, and an independent review sub-agent reviews
+the full committed branch diff before the main session records Branch Review
+Gate. An explicit `codex.dispatch_mode: inline` value is preserved as a
+user-selected downgrade or debug mode; missing sub-agent evidence must fail
+closed unless explicit inline/self-exemption artifact evidence exists.
+
+The normal path creates no `implementation-handoff.md`, no
+`implementation_handoff` checkpoint field, and no periodic liveness journal.
+Implementation terminal output remains ephemeral input to the semantic check
+owner; only its compact final schema 5.0 result is recorded in ignored runtime.
+
+The preset installs the complete public
+`guru-qualify-normal-scenario` package and matching Shared/Codex/Claude/Cursor
+public projections. Its ten profile inputs and four typed exits are additive
+public API. Platform entries load the installed Skill and consume the declared
+workflow route; they do not copy qualification reasoning.
+
+The preset also installs the independent public
+`guru-qualify-solution-mechanism` package and matching Shared/Codex/Claude/Cursor
+public projections. It uses the same ten profile boundaries but owns mechanism
+qualification separately from scenario qualification. Its four typed exits are
+`classified`, `scope_confirmation_required`, `mechanism_revision_required`, and
+`blocked`; the first and third return to the original profile owner through
+`guru-solution-mechanism-classified-router` or
+`guru-solution-mechanism-mechanism-router`, scope confirmation goes only to
+`guru-clarify-requirements:solution_mechanism_scope_confirmation`, and blocked
+stops at `solution-mechanism-qualification-blocked`.
+
+The ten profiles are `task_free_pre_write`, `task_free_evolution`,
+`requirements_scope_set`, `change_request_candidate_set`,
+`planning_scenario_set`, `implementation_discovery`,
+`base_impact_candidate_set`, `phase2_candidate_set`,
+`branch_review_candidate_set`, and `publication_candidate_set`. Each profile
+uses its fixed caller and returns `classified` or
+`mechanism_revision_required` to that caller after the declared route; scope
+confirmation and blocked use the two consumers above.
+
+The package exposes three declared commands: `record-solution-mechanism-qualification`,
+`check-solution-mechanism-qualification`, and
+`invoke-guru-qualify-solution-mechanism`. The first two are deterministic
+recorder/checker commands; the public invocation emits one call-local typed exit.
+The package has no qualification artifact, report, persistent state, handoff, checkpoint,
+or cross-process result locator. A forbidden OS/kernel/process/descriptor
+mechanism returns `mechanism_revision_required` and never enters scope
+confirmation.
+
+Qualification decisions and the typed result remain current-process
+memory/stdout only. The installer must not create or claim a tracked, ignored,
+or temporary qualification result/report/checkpoint, candidate/rejection
+persistent decision store, handoff, or cross-process result locator. Canonical installer tests scan
+the complete target inventory before and after all ten profiles and require
+zero qualification residue. The only persistent related data is the terminal
+classification/witness directly authored into the existing schema 5.0 Phase 2,
+Branch Review, or Publication owner gate for that gate's own consumer.
+
+The preset manages the canonical workflow specifications from
+`trellis/presets/guru-team/spec/workflow/` into `.trellis/spec/workflow/`:
+`workflow-contract.md`, `skill-package-contract.md`, `data-contracts.md`,
+`companion-scripts.md`, `quality-guidelines.md`,
+`requirements-design-test-ssot.md`, `semantic-retrieval.md`, and
+`subtraction-first-compatibility.md`. The canonical preset files are the distribution
+source; installed/dogfood copies are projections. Exact previously managed
+bytes upgrade with an adjacent `.bak`, unknown local edits are preserved with
+an adjacent `.new`, and either unresolved sidecar blocks activation.
+
+The active-task base evolution capability is installed as the
+`guru-reconcile-task-base` package plus its declared package-local commands,
+schemas, examples, and selected-platform public projections. Its tests remain
+in the canonical source package for source validation. The
+installer derives that inventory from the active registry and package tree; it
+does not reconstruct semantic routes or maintain a second command list. The
+marketplace workflow supplies the guarded boundaries and single router, while
+the preset supplies the complete runtime needed by Shared, Codex, Claude,
+Cursor, and OpenCode discovery.
+
+The preset also maintains one bounded AI-first principles block in the target
+root `AGENTS.md`. Missing files are created, existing user content outside the
+stable markers is preserved byte-for-byte, a single older block is refreshed,
+and repeated apply is idempotent. Duplicate, unbalanced, embedded, or reversed
+markers fail closed before target activation. The JSON result reports
+`agents_principles`; root `AGENTS.md` remains user-owned and is not listed in
+`install.managed_assets`.
+
+Trellis-owned sub-agent, hook, command, prompt, bundled Skill, and channel-runtime
+agent files remain owned by official `trellis init` / `trellis update` / version
+upgrade. The preset does not replace those files. Guru-specific semantic behavior
+lives in the active marketplace workflow and additive `guru-*` Skill packages;
+the preset only configures the supported Codex dispatch mode needed to invoke the
+official Trellis agents.
+
+Platform distribution is selectable. Shared `.agents/skills/guru-*` public
+projections are always installed; selected platforms receive matching public
+projections and the additive finish entry. Complete package runtime, internal
+tests and error implementation remain only below `.trellis/guru-team/`.
+The canonical `public_api.platform_capabilities` inventory in
+`trellis/guru-team-extension.json` is the machine-readable platform authority.
+It binds the pinned upstream `AI_TOOLS` registry source/version/digest, all 22
+upstream platform rows, their projection descriptors, and the
+Claude/Codex/Cursor default set. Source,
+installed, installer, and compatibility-matrix validation consume this same
+inventory; a platform directory name alone never grants support.
+Defaults are Claude, Codex, and Cursor. Repeat `--platform <cli-flag>` to select
+an exact upstream subset. There is no full-inventory convenience option; a truly
+unknown platform name fails argument validation. Business-repository upgrades
+read the current target manifest and replay its exact selection with repeated
+`--platform` arguments. This repository dogfoods only Claude/Codex/Cursor.
+
+The installed manifest records the selected additive entries in a separate
+top-level `overlays` provenance domain with closed fields
+`schema_version/status/selected_platforms/files/removals/conflicts/sidecars`.
+Missing entries install, canonical-equal entries remain unchanged, and only a
+target matching its exact previous managed hash is upgraded after writing
+`.bak`. Unknown or invalid provenance is preserved with deterministic `.new`
+and blocks staged activation. Platform shrink deletes only previous-hash-equal
+entries; unknown edits remain in place and block.
+
+A fresh target may omit the installed manifest. An existing manifest must use
+the complete current schema 2.0 and contain the complete current `overlays`
+domain. A non-current schema, missing or extra top-level field, or malformed
+overlay provenance fails current-contract validation; the installer
+does not recover ownership from `install.managed_assets`, entry markers, or
+`Guru Team` text. Current installed validation reconstructs the selected
+platform inventory and checks hashes, modes, removals, unselected paths, and
+exact `.new/.bak` state independently of the flat managed-assets list.
+
+The preset records the installed Guru Team extension version and source
+provenance in `.trellis/guru-team/extension.json`. The canonical extension
+version lives in `trellis/guru-team-extension.json`; it is separate from the
+official Trellis CLI version and from the marketplace index schema version in
+`trellis/index.json`.
+
+Normal apply records the current UTC install time. A deterministic recovery or
+fixture may set `GURU_TEAM_INSTALLED_AT` to one timezone-aware ISO-8601 value;
+the installer validates it and normalizes it to UTC before writing provenance.
+If a reapply performs no managed install, restore, update, removal, sidecar,
+configuration, or guidance mutation and reconstructs the same stable installed
+state after omitting top-level `installed_at` / `source` and per-file
+`installed` / `unchanged` action labels, it preserves the previous manifest
+bytes. Any other managed install fact or action change records the current
+timestamp and source. The raw `apply.sh`
+entrypoint and shared managed-Python resolver also disable Python bytecode
+writes for themselves and inherited validators, so a clean source/target
+checkout does not gain `__pycache__`, `.pyc`, or `.pyo` residue.
+
+The preset also normalizes known Trellis-generated English documentation
+language rules in target business repositories. It deterministically replaces
+the fixed `All documentation ... English` template lines in `.trellis/spec/**` and
+`.trellis/tasks/00-bootstrap-guidelines/**/*.md` with the Guru Team Chinese
+documentation rule. It does not scan `.trellis/workspace/**`, ordinary task history, or translate
+business `docs/**`; those documents are governed by the workflow's AI-facing
+Chinese documentation contract.
+
+Stable workflow marketplace installs pin the latest released repo tag, currently
+`gh:castbox/guru-trellis/trellis#v0.6.16-guru.1`. That released tag carries
+extension revision `0.6.16-guru.41`; it is a separate axis from the current
+main/source checkout, whose fixed framework source is
+`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296`, CI `35621578090`, CLI `0.6.17`, and
+package manager `pnpm@10.32.1`. The released tag does not prove or contain this
+unreleased framework-source adoption. Workflow marketplace and preset sources
+for one stable installation must use the same immutable tag. Unpinned
+`gh:castbox/guru-trellis/trellis` is a latest/canary source and should be
+reported as mutable provenance.
+
+Before the Fork migration, `main` carried extension candidate `0.6.15-guru.40`
+targeting official Trellis `0.6.15`. This is historical release-plan context,
+not the current framework source contract. Issue #332 established predecessor
+`v0.6.15-guru.6`, and Issue #392 released `v0.6.16-guru.1`. Issue #410 is the
+current release candidate for `v0.6.17-guru.1`; until its exact-candidate gate,
+tag-pinned smoke, and GitHub Release complete, the target is not a released fact.
+
+## Current Ownership Contract
+
+The current-only schema 4.0 inventory and schema live at:
+
+- `trellis/presets/guru-team/ownership/upstream-ownership.json`
+- `trellis/presets/guru-team/ownership/upstream-ownership.schema.json`
+
+The inventory describes only assets Guru Team owns now. It binds 22 upstream
+platform descriptors and derives 43 current managed claims without claiming
+any official Trellis namespace.
+
+The canonical overlay tree contains exactly the 22 entry paths declared by
+those descriptors. The active dogfood checkout materializes only the three
+entries selected by its installed manifest. No claim covers an upstream
+Trellis namespace.
+
+Before any target activation, the installer validates the source inventory,
+schema, exact managed claims, overlay tree, `MANAGED_ASSET_PATHS`, active Skill
+ids, canonical package set, and anchored Guru discovery namespaces. A fresh
+target may omit `.trellis/guru-team/extension.json`; once present, that file
+must satisfy the complete current installed-manifest schema 2.0. Non-current
+schemas, missing or extra top-level fields, unknown claims, unexpected
+overlays, malformed provenance, and unresolved sidecars fail closed before
+target mutation. Only current schema 4.0 is valid ownership input.
+
+For current Guru-owned assets, missing paths install, canonical-equal bytes stay
+unchanged, an exact previous managed hash creates `.bak` before replacement,
+and an unknown local edit is preserved with canonical bytes in `.new` when
+safe. Conflicts prevent staged activation.
+
+Maintainers can run the read-only ownership gate directly:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
+python3 ./trellis/presets/guru-team/scripts/python/test_upstream_ownership.py
+```
+
+The validator reports schema 4.0, 22 descriptors, 43 derived managed claims,
+22 additive overlays, and the current registry/package facts. These bindings provide normal
+version and drift detection, not semantic ownership judgment; AI review still
+owns whether a proposed current owner is valid.
+
+## Commit Message Helpers
+
+The preset installs objective helpers for the Guru Team Chinese Conventional
+Commits contract:
+
+```bash
+.trellis/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-path>
+```
+
+The helper validates work-commit subject/body shape only. It does not decide
+whether implementation, Phase 2 check, Branch Review Gate, or PR readiness is
+sufficient. Issue-backed work commits may include a current-authority Issue
+reference; no-Issue tasks must not manufacture one. Commit messages must not use close keywords such as
+`Closes`, `Fixes`, `Resolves`, `Close`, `Fix`, or `Resolve`; Trellis metadata commits use an empty body; publish
+payloads use the Publication-reviewed PR title/body, while merge commit metadata
+is PR-native and does not require an Issue number.
+
+## Apply
+
+```bash
+git clone --depth 1 --branch v0.6.16-guru.1 \
+  https://github.com/castbox/guru-trellis.git /path/to/guru-trellis
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project
+```
+
+Examples:
+
+```bash
+# Shared Guru packages plus Claude packages and finish entry.
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project \
+  --platform claude
+
+# Shared Guru packages plus an explicit platform subset.
+/path/to/guru-trellis/trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo /path/to/project \
+  --platform claude \
+  --platform codex \
+  --platform cursor
+```
+
+### Managed Python runtime
+
+Preset apply uses the selected PATH Python only to bootstrap an OS-user-scoped
+immutable runtime cache. The default roots are
+`~/Library/Caches/guru-team/python/` on macOS,
+`${XDG_CACHE_HOME:-~/.cache}/guru-team/python/` on Linux, and
+`%LOCALAPPDATA%\GuruTeam\python\` on Windows. Tests and isolated automation may
+set `GURU_TEAM_PYTHON_CACHE_ROOT`; normal users do not need to configure it.
+The current runtime contract supports CPython 3.12 and 3.14. It installs the
+complete dependency set from the
+hash-locked `.trellis/guru-team/runtime/requirements.lock`, validates the pinned
+versions and Draft 2020-12 behavior, and only then activates that runtime.
+
+Each Git repository stores its default active pointer under the Git common-dir at
+`<git-common-dir>/guru-team/python/active.json`. A new linked worktree inherits
+that default without copying a venv or requiring per-worktree bootstrap. When a
+linked checkout applies a different runtime contract, it writes a small override
+below its Git worktree metadata and resolves that override before the common
+default. The pointers remain inside the repository's private Git metadata while
+different checkout identities can coexist without changing the user-cache
+ownership model. Git-less archive fixtures retain a private checkout-local
+pointer fallback.
+
+All public Guru Team wrappers execute with the active managed interpreter. They
+do not fall back to PATH Python, an active virtual environment, user
+site-packages, or global packages. Runtime identity binds the runtime API, lock
+digest, Python implementation and minor version, OS, architecture, Python ABI,
+platform tag, and venv layout. Reapplying the
+preset reuses a healthy matching identity or rebuilds a known managed but damaged
+identity. Different identities coexist, and each checkout keeps selecting the
+identity activated for its own contract. A failed candidate install preserves
+the previously active pointer and runtime. Older checkout-local runtime directories
+are not deleted and cease to be authority only after the shared cache activates.
+
+Bootstrap or resolver failure returns one stable JSON object. A missing pointer
+uses `runtime_not_bootstrapped`, a missing/stale cache entry uses
+`managed_runtime_missing`, and a failed dependency capability probe uses
+`runtime_dependency_missing`. Each includes the runtime identity when known and
+this remediation command:
+
+```bash
+trellis/presets/guru-team/scripts/bash/apply.sh --repo .
+```
+
+The user cache and Git pointer state are untracked private state and are not
+part of the installed extension manifest. The manifest does include the
+canonical runtime contract, lock,
+bootstrap, probe, resolver, and launcher bytes used to reproduce it.
+
+Maintainers can run the focused #219 boundary without the complete extension
+verification matrix:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-managed-python-runtime.sh
+```
+
+This source-only runner prepares independent source and installed checkouts with
+a PATH Python that has neither pip nor `jsonschema`, applies each checkout's real
+preset, then executes source/installed validation, contract discovery, eval
+discovery, eval execution, and compatibility wrappers through each checkout's
+managed runtime. It also invokes the installed target wrapper in source mode
+while the source runtime pointer is unavailable, proving execution stays bound
+to the target checkout. It does not run marketplace, official update, platform
+matrix, business-repository upgrade, or the full capability verifier.
+
+## Throwaway Install Verification
+
+Maintainers can verify the current extension's non-interactive install path with:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
+For one release-scoped historical predecessor, run one independent existing
+target with an explicit immutable tag, CLI, predecessor checkout, and commit:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh \
+  --mode existing \
+  --before-tag v0.6.16-guru.1 \
+  --before-cli 0.6.16 \
+  --platform codex \
+  --predecessor-source /path/to/pinned/predecessor-trellis \
+  --predecessor-commit <exact-commit> \
+  --fork-source /path/to/pinned-candidate-trellis
+```
+
+Each predecessor requires a separate work root and invocation. This bounded
+mode proves only that exact existing-install path; it does not claim the full
+six-cell matrix or arbitrary historical-version support.
+
+When the immutable predecessor predates the requested target platform, the
+existing-install verifier derives a supported seed platform from the
+predecessor manifest instead of requiring current platform-capability fields.
+It installs that predecessor projection first, records both `seed_platform`
+and `target_platform`, then migrates to and strictly validates the requested
+current projection. A predecessor with no supported seed platform fails closed;
+legacy projection handling is limited to the pre-update snapshot and never
+weakens current source or installed validation.
+
+For OpenCode, compatibility verification performs two native catalog probes,
+each with a new isolated HOME and XDG state. The default probe accepts
+OpenCode's native, shared, or Claude-compatible Skill selection only when the
+loaded bytes equal `.opencode`; the second sets
+`OPENCODE_DISABLE_EXTERNAL_SKILLS=1` and requires every active Guru Skill to
+load from `.opencode/skills`. Both probes require the exact active Skill set and
+the installed `guru-finish-work` command template. Missing OpenCode, stale
+catalog state, unexpected roots, byte drift, or incomplete discovery blocks
+the matrix cell.
+
+That command has exactly one direct PATH Python bootstrap seed. It consumes the
+seed result through the canonical source managed runner, then routes every
+source or installed Python subprocess through the corresponding
+`resolve-python.sh`. Runtime checkpoints verify the normalized managed launch
+path while preserving the final `venv/bin/python` symlink, its separately
+resolved physical interpreter identity, the active runtime/cache identity, and
+the dependency-lock SHA-256 at initial, update/reapply, change-request,
+linked-worktree, closeout, Phase 0, task-workspace, and no-developer boundaries.
+A source-owned bidirectional caller inventory rejects new bare `python3`, PATH
+Python shebangs, unmanaged Python subprocesses in the current caller shapes, and
+source/installed helper routing drift before and after the business matrix.
+
+After the managed bootstrap succeeds, the verifier creates a temporary
+`python3` PATH bridge ahead of the caller's PATH. The bridge directly execs the
+canonical source `resolve-python.sh`, so Trellis's own version probe and other
+official CLI Python subprocesses use the source managed interpreter while the
+platform-default `python3` command name remains unchanged. The verifier pins
+`TRELLIS_PYTHON_CMD=python3` after activating the bridge, so an inherited
+override cannot bypass it. Static validation
+requires the bridge after poison activation and before managed bootstrap-result
+consumption or any Trellis call, and rejects bridge resolver or activation
+drift.
+
+That inventory also scans every canonical `packages/*/runtime/**/*.py` file.
+Package-local Python second hops in the real `run`, `run_stdout`,
+`subprocess.run`, and `owner.run` call shapes must use the resolver-selected
+`sys.executable` and remain explicit inventory entries. The current dynamic
+validation helper is registered explicitly, and a newly added runtime file is
+scanned automatically so ordinary maintenance cannot silently omit a real
+caller from review.
+
+The inventory begins with every workflow, preset, package, or platform shell
+wrapper actually executed by the verifier, then classifies each wrapper that
+enters Python. Package and platform entries bind the real invocation path to the
+canonical package wrapper, its fixed `commands.json` command, the installed
+`runtime/launch.sh`, and `resolve-python.sh`. Installed `finish-work.sh`,
+compatibility `prepare-task.sh`, package validators, and platform `invoke.sh`
+therefore cannot reopen PATH Python before entering their package runtime. The
+source `check-dogfood-overlay-drift.sh` to `check-upstream-ownership.sh` route
+is also followed recursively to its source resolver.
+
+The inventory also follows eval execution transitively. Adapter shells enter
+`native_adapter.py` through the checkout-local resolver; that adapter starts the
+shebang-free `guru-team-shared-eval` with its current managed `sys.executable`.
+When source eval fixtures stage a clean owner repository, the adapter invokes
+the canonical Python preset installer with the same interpreter instead of
+executing `apply.sh` and reopening PATH Python.
+
+Maintainers can run the same raw README command in both required PATH Python
+environments with the non-invasive temporary harness:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/test-verify-throwaway-python-routing-matrix.sh
+```
+
+The harness first supplies a temporary Python with neither pip nor
+`jsonschema`. It then supplies a Python that imports `jsonschema`, activates a
+poison sentinel after the seed, and fails if PATH Python is invoked again. In
+both cases the harness changes only environment variables and temporary files;
+the command executed from the repository root remains exactly:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/verify-throwaway-install.sh
+```
+
+The script creates a temporary Git repo, runs `trellis init -y` with the
+`guru-team` marketplace workflow, applies the preset for the selected
+`--platform` (`codex` by default), checks that `.trellis/workflow.md`
+exists, verifies that the active workflow requires the three Guru Team planning
+artifacts, verifies that `check-env.sh` and `version.sh` are executable,
+asserts `.trellis/guru-team/extension.json` satisfies the complete current
+installed-manifest schema 2.0, derives its managed inventory from canonical
+current assets, and verifies the selected Guru finish entry matches its
+canonical additive overlay. Source ownership validation must report schema
+4.0 with 22 descriptors, 43 managed claims, and 22 overlays before and after
+the dry-run-selected `trellis update --force --migrate --assignee <owner> --skip-all` or
+`trellis update --skip-all` plus workflow/preset reapply.
+It also asserts target `.trellis/spec/**` and
+`00-bootstrap-guidelines` do not retain known English documentation language
+requirements, and runs `check-env --json` plus `version.sh --json`. Trellis CLI accepts
+`gh:user/repo/path#ref` workflow marketplace sources; the script defaults to
+`TRELLIS_WORKFLOW_SOURCE=gh:castbox/guru-trellis/trellis#main` as an explicit
+mutable canary baseline. The unpinned source and `#main` both fail closed on non-`main` branches
+or dirty marketplace workflow files unless
+`TRELLIS_ALLOW_PUBLIC_MARKETPLACE_SAMPLE=1` is set. This prevents public remote
+sampling from being reported as current-branch marketplace verification. When
+validating a feature branch or release, set `TRELLIS_WORKFLOW_SOURCE` to the exact
+existing branch/tag ref; only that run is evidence for that ref. When
+it does run, it also exercises the existing-project `trellis workflow
+--create-new` preview, verifies the current workflow against the exact managed
+before-candidate and the preview against the expected marketplace candidate,
+then consumes that preview and runs the active switch with explicit `--force`.
+Unknown or user-modified workflow bytes and pre-existing `.new` / `.bak`
+sidecars stop before replacement. The verifier then runs the dry-run-selected
+non-interactive update with `--skip-all`, workflow reapply, and preset reapply.
+It records ownership-gate JSON at three checkpoints: before the initial preset
+apply, after `trellis update` before workflow/preset reapply, and after preset
+reapply before final drift/sidecar checks. The installer itself repeats the
+pre-mutation gate for both apply operations. The expected clean result
+is a current ownership pass, complete installed-manifest provenance, zero
+conflicts, and zero sidecars.
+The verifier also proves all six managed workflow specifications exist after
+initial install and after update/reapply. Base-evolution distribution checks
+must additionally discover the installed reconciliation package and commands,
+exercise an unchanged pair without semantic or external reads, exercise one
+new-pair route through its real wrapper, and verify the bounded Branch Review
+and Finalizer base-only routes remain present after update/reapply.
+A controlled bare remote and fake GitHub adapter drive the already-installed
+`finish-work.sh` through dry-run digest, formal draft binding, official archive,
+three-way HEAD equality, ready transition, and clean-tree assertions once after
+install and once after update/reapply. The fixture uses installed wrappers,
+companion, schemas, config, workflow, and official `task.py`; it does not copy
+canonical runtime assets into the target. It also executes the installed
+`test_finish_family_integration.py` before and after update/reapply, covering
+the 13 Finish exits, six route groups, Guru entries, terminal evals, and
+public/private boundary. A final recursive scan must find no `.new` or `.bak`
+sidecars. It intentionally lives in this
+source repository and is not copied into target business repos as a managed
+companion asset.
+
+## Dogfood Overlay Drift Check
+
+Only the 22 descriptor-bound Guru finish entries remain under
+`trellis/presets/guru-team/overlays/`. For a current installation, use this
+sequence:
+
+1. validate the supplied `castbox/Trellis` checkout against `source/trellis-source.json`
+   and build it with its own locked install/build commands as described in the root README;
+2. invoke `node "$FORK_SOURCE/packages/cli/bin/trellis.js" update --dry-run`, then
+   the same Node entry with `update --force --migrate --assignee <owner> --skip-all`
+   when dry-run reports `MIGRATION REQUIRED` or `Retirement conflicts:` and the
+   managed replacements were reviewed,
+   or `update --skip-all` otherwise; never use a PATH-selected CLI;
+3. preview and switch the `guru-team` marketplace workflow from the selected
+   immutable release tag;
+4. reapply the Guru preset from that same tag for the selected platforms;
+5. preserve unknown local edits and inspect every `.new` / `.bak` sidecar;
+6. run ownership, installed-package, dogfood drift, and recursive sidecar checks.
+
+For this source repository, the final preset/drift commands are:
+
+```bash
+./trellis/presets/guru-team/scripts/bash/apply.sh \
+  --repo . \
+  --platform claude --platform codex --platform cursor
+./trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh
+```
+
+`check-dogfood-overlay-drift.sh` is read-only. It first validates current
+ownership schema 4.0, 22 descriptors, 43 managed claims, and the 22-entry
+canonical overlay tree. It then compares the exact three selected additive
+entries with same-path installed dogfood copies and exits non-zero for
+ownership failure, missing copies, or changed bytes. It never treats an
+upstream-owned path as a dogfood overlay.
+
+A passing drift check is not a replacement for AI review or the Branch Review
+Gate.
+
+## Installed Files
+
+Preset 还安装唯一的版本化语义检索合同
+`.trellis/spec/workflow/semantic-retrieval.md`。它不声明或替换其余
+`.trellis/spec/**`；semantic owners 只引用这一份 SSOT，不在 workflow 或平台
+entry 复制中英文概念族规则。
+
+Preset 是完整 Guru Team extension configurator。除 companion assets、
+Guru Skill packages 和 descriptor-selected additive finish entries 外，它验证
+`trellis/skills/guru-team/registry.json`，将
+registry/schema/active packages 安装到 `.trellis/guru-team/skills/`，并把
+active package 分发到 shared root 与明确选择的平台 descriptor Skill roots。
+Test fixtures 永不安装，未选择的平台 root 不因 skill 分发
+而创建。
+
+Preset 安装 current Interface 1.4/1.5/1.6 schemas 与 registry 1.4。现有
+integrated active rows 选择 `guru-team-skill-interface-1.4`，三个 Delivery packages
+以 `workflow_integration_state=deferred` 完整分发但不取得 production workflow edge，normal-scenario 与
+solution-mechanism qualification 选择 `guru-team-skill-interface-1.6`，standalone verifier 选择
+`guru-team-skill-interface-1.5`。Live Intake 合同为
+六包/23 exits；current registry、discovery DTO、invocation 与安装 provenance 不接受
+历史 manifest、schema、example 或 eval。`production-current-v4` 是唯一 current
+manifest，精确绑定 planning/check/commit 与 normal-scenario qualification 四包、20
+profiles、15 exits、current output schemas、四条 authoring-seed edges、private
+artifact ids、examples、160 x 5 production control 与 eval cases；不存在 alternate
+production projector 或 fixture。当前 active closure 为 32 packages / 142 exits /
+102 commands；
+live Intake 合同为 6/23。Preset 在一次 staging
+transaction 中安装 current registry、
+Interface 1.4/1.5/1.6、production-current manifest/schema、32 包 public
+contracts/wrappers/corpora、registry、extension 和 selected-platform copies；mixed graph
+失败关闭。Representative fixture schema ids 和 fixture wrapper 不进入
+production registry、extension inventory、installed files 或 selected-platform copies。
+其中 `production-current-2.0.json` 与 `production-current-3.0.json` 严格保持 immutable
+legacy bytes；只有 `production-current.json` / v4 参与 current membership 与执行。
+同一 transaction 还安装 Interface 1.4 additive
+`skill_input_authoring_seed` shape、planning self-reentry、check passed 到 initial commit、
+commit self-reentry、commit-to-Branch-Review、Branch-Review-to-publication 与
+finalization family、归档只读复审与 task-free execution family 的 target-owned
+authoring examples 与 partition/no-overwrite/full-target-schema probes。该 kind 不增加第五种
+projection operation；完整 handoff 集合以 active registry 所指各 package 的
+`interface.json:public_contracts.consumer_inputs` 中声明的
+`skill_input_authoring_seed` 为准。部分 edge、缺失 authoring example 或 canonical/installed/platform
+字节不一致均视为 mixed production graph。
+Interface 1.4 scalar `required` 为显式 boolean；preset 安装的 `guru-sync-base` 将
+`base_branch` 标为 optional，省略调用继续复用 formal resolver。
+Fixture source validation 强制 Skill consumer 使用 active registry exact canonical path 与
+相同 target id 的 target-owned input，对非 direct projection 与 direct 到 scalar CLI 做
+required 与映射/normalizer 后全域兼容证明，分别检查 public/private
+schema id/path 互斥，并要求 wrapper 完整匹配 dispatcher-only template。
+
+Current ownership schema 4.0 声明 22 个平台 descriptors、43 条 derived managed
+claims 与 22 个 additive overlays。Preset 不安装或更新任何 `trellis-continue`、`trellis-start`、
+`trellis-finish-work`、agent、hook 或 runtime-agent payload。Branch Review `passed`
+后的 publication/finalization
+路由由 active marketplace workflow 的 mandatory Skill markers 与 additive
+`guru-review-task-publication` / `guru-finalize-task` packages 承接。Installer
+只验证 current ownership、provenance 与 Guru namespace，不复制 owner Skill 的
+semantic 结论。
+
+新增 additive active `guru-verify-extension-installation` package 安装单一
+`source_repository_verification` standalone input、`verified|blocked` 两个 per-exit
+contracts、source-session private result schema、两例 production corpus 与 thin wrappers。
+它不修改 live Intake 6/23 或 production-current-v4 4/15 合同。Active
+`guru-finalize-task` 另行安装五个 distinct profiles：原四个普通 profiles 加只读
+`archived_review_refresh`；六个 `exit_id` outputs 保持不变，并安装 private gate、
+Interface 声明的 production eval cases 与 finalization runtime wrappers。独立
+`guru-merge-task-pr` 安装三个 profiles：原 active 2.0 workflow/standalone inputs 加
+只读 `archived_review_request`、private gate，保留 immutable 1.0 compatibility assets，
+并安装五个 exits（原四个加 `review_refresh_required`）与五个 merge runtime
+wrappers。新增 `guru-restore-archived-task` 安装 archive-to-active 恢复 runtime、
+`restored_to_phase2|restore_blocked` 两个 exits 与 manifest-selected discovery projection。
+Requirements/Design/Test SSOT package 另提供
+四个 semantic profiles、五个 typed exits 和 isolated contribution boundary。
+Source/installed package closure 为 32 Skills / 142 exits / 102 commands；business global workflow
+marker closure 为 22 invokes / 98 exits / 59 combined targets（35 workflow + 24 stop）。
+1.3 closed schema 的 `pattern` 只接受 durable spec 定义的 printable-ASCII portable
+grammar，并按 ECMA-262 Unicode-mode search 语义执行；Python-only regex、Unicode source
+pattern 和未声明 shorthand 会在 source/installed validation 中 fail closed。
+
+Managed executable
+`.trellis/guru-team/scripts/bash/discover-skill-contract.sh` 提供 exact discovery：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-sync-base --json
+```
+
+`1.3` 返回 input/invocation/per-exit output/consumer/projection/private-artifact
+locators。Missing/drift/version mismatch 使用 stable
+`code`、repo-relative `field_path` 与 `remediation` fail closed。
+
+Active `guru-approve-task-plan` package 随 registry-driven install 分发到 shared root 与所选
+平台 descriptor discovery roots，并依赖同一 preset 安装的 schema
+`guru-planning-approval-3.0`、shared dispatcher 和
+`record-planning-approval` / `check-planning-approval` runtime commands。该分发是
+Guru-owned additive content，不扩展当前 22 个 descriptor-bound entry 的
+`trellis/presets/guru-team/overlays/**` 集合。
+
+每个 active package 的 `SKILL.md` 必须有与 stable id/interface 一致的唯一
+`name`/`description` frontmatter；`tests[]` 必须定位 package-local
+`tests/<file>` regular file。Test evidence 属于 canonical source package，随
+source validation 执行，但不进入 installed package 或所选平台副本；installed
+validation 会拒绝 package-local `tests/` 文件和空目录。标签、虚构、越界、重复或
+symlink-backed test evidence 会在 mutation 前被 source validator 阻断。
+
+Skill 文件按 installed manifest 中的 previous managed hash 更新：missing
+直接安装，canonical-equal 保持 unchanged，known upgrade 先写 `.bak` 再替换，
+unknown/invalid provenance 保留原文件并写 `.new` 后阻塞。完成安装或
+`trellis update` 后重放时，必须处理所有 sidecar，再运行 source/installed
+`check-skill-packages` 和 dogfood drift 检查。
+
+Known upgrade 的 conflict manifest 只在 `conflicts=[]` 且 `sidecars[]` 全部是与
+当前 managed `files[]` 相邻的 `.bak` 时可用于恢复。未删除的 backup 会在重放时
+继续保留并阻塞；全部删除后再次 apply 才能转为 `status=ok`。`.new`、未知编辑、
+异常路径、未绑定 backup 或实际 conflict 不得走此恢复分支。
+
+Manifest 的 `files[]` 是当前完整 inventory；平台选择缩减时，known managed
+旧副本安全删除并进入 `removals[]`，unknown/invalid 副本保留并进入
+`conflicts[]`，`sidecars[]` 必须与磁盘 `.new/.bak` 精确一致。任何 conflict
+都会令 `status=conflict`。所有 skill 路径在读写/删除前逐组件 `lstat`；target
+或 ancestor 的 regular/dangling/internal/external/multilevel symlink 一律拒绝，
+不会沿链接读写 repo 外内容。
+
+Managed Guru Team assets are installed under `.trellis/guru-team/` regardless of
+platform selection:
+
+- `.trellis/guru-team/config.yml`
+- `.trellis/guru-team/config-template.yml`
+- `.trellis/guru-team/extension.json`
+- `.trellis/guru-team/schemas/finish-summary.schema.json`
+- `.trellis/guru-team/scripts/bash/check-env.sh`
+- `.trellis/guru-team/scripts/bash/version.sh`
+- `.trellis/guru-team/scripts/bash/prepare-task.sh`
+- `.trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh`
+- `.trellis/guru-team/scripts/bash/start-task.sh`
+- `.trellis/guru-team/scripts/bash/check-skill-packages.sh`
+- `.trellis/guru-team/scripts/bash/discover-skill-contract.sh`
+- `.trellis/guru-team/scripts/bash/discover-skill-evals.sh`
+- `.trellis/guru-team/scripts/bash/run-skill-evals.sh`
+- `.trellis/guru-team/scripts/bash/run-skill-command.sh`
+- `.trellis/guru-team/scripts/bash/invoke-stage0-skill.sh`
+- `.trellis/guru-team/scripts/bash/sync-base.sh`
+- `.trellis/guru-team/scripts/bash/check-base-sync.sh`
+- `.trellis/guru-team/scripts/bash/preview-change-context-history.sh`
+- `.trellis/guru-team/scripts/bash/record-context-discovery.sh`
+- `.trellis/guru-team/scripts/bash/check-context-discovery.sh`
+- `.trellis/guru-team/scripts/bash/record-requirements-clarification.sh`
+- `.trellis/guru-team/scripts/bash/check-requirements-clarification.sh`
+- `.trellis/guru-team/scripts/bash/record-contract-wording-review.sh`
+- `.trellis/guru-team/scripts/bash/check-contract-wording-review.sh`
+- `.trellis/guru-team/scripts/bash/record-change-request-review.sh`
+- `.trellis/guru-team/scripts/bash/check-change-request-review.sh`
+- `.trellis/guru-team/scripts/bash/record-task-workspace-plan.sh`
+- `.trellis/guru-team/scripts/bash/create-task-workspace.sh`
+- `.trellis/guru-team/scripts/bash/check-task-workspace-result.sh`
+- `.trellis/guru-team/scripts/bash/resolve-human-artifacts.sh`
+- `.trellis/guru-team/scripts/bash/record-planning-approval.sh`
+- `.trellis/guru-team/scripts/bash/check-planning-approval.sh`
+- `.trellis/guru-team/scripts/bash/record-phase2-check.sh`
+- `.trellis/guru-team/scripts/bash/check-phase2-check.sh`
+- `.trellis/guru-team/scripts/bash/record-agent-recovery.sh`
+- `.trellis/guru-team/scripts/bash/check-agent-recovery.sh`
+- `.trellis/guru-team/scripts/bash/prepare-task-commit.sh`
+- `.trellis/guru-team/scripts/bash/check-commit-messages.sh`
+- `.trellis/guru-team/scripts/bash/create-task-commit.sh`
+- `.trellis/guru-team/scripts/bash/review-branch.sh`
+- `.trellis/guru-team/scripts/bash/check-review-gate.sh`
+- `.trellis/guru-team/scripts/bash/record-task-publication-review.sh`
+- `.trellis/guru-team/scripts/bash/check-task-publication-review.sh`
+- `.trellis/guru-team/scripts/bash/execute-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/record-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/check-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/invoke-extension-verification.sh`
+- `.trellis/guru-team/scripts/bash/preview-finalization.sh`
+- `.trellis/guru-team/scripts/bash/record-finalization-gate.sh`
+- `.trellis/guru-team/scripts/bash/check-finalization-gate.sh`
+- `.trellis/guru-team/scripts/bash/execute-finalization-transition.sh`
+- `.trellis/guru-team/scripts/bash/preview-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/record-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/check-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/execute-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/watch-task-pr-checks.sh`
+- `.trellis/guru-team/scripts/bash/invoke-task-pr-merge.sh`
+- `.trellis/guru-team/scripts/bash/finish-work.sh`
+- `.trellis/guru-team/runtime/` (minimal shared kernel)
+- `.trellis/guru-team/skills/packages/<skill-id>/commands.json`
+- `.trellis/guru-team/skills/packages/<skill-id>/errors/catalog.json`
+- `.trellis/guru-team/skills/packages/<skill-id>/runtime/`
+
+The shared kernel file inventory is closed to command dispatch, discovery,
+evaluation, installed/source validation, schema and JSON I/O primitives. The
+compatibility commands `show-extension-version`, `check-workflow-environment`,
+and `resolve-planning-artifacts` are owned respectively by
+`guru-verify-extension-installation`, `guru-select-workflow-mode`, and
+`guru-approve-task-plan`; their top-level wrappers only forward to declared
+package validators.
+
+Production skill registry 包含 active `guru-create-task-workspace`、`guru-sync-base`、
+`guru-discover-change-context`、`guru-clarify-requirements`、
+`guru-review-contract-wording`、`guru-review-change-request`、
+`guru-approve-task-plan`、`guru-check-task`、`guru-create-task-commit`、
+`guru-finalize-task`、`guru-merge-task-pr`、`guru-review-branch`、
+`guru-review-task-publication`、`guru-select-workflow-mode`、
+`guru-execute-task-free-change`、`guru-qualify-normal-scenario`、`guru-qualify-solution-mechanism`、
+`guru-reconcile-task-base`、`guru-maintain-architecture-baseline`、
+`guru-maintain-requirements-design-test-ssot`、
+`guru-verify-extension-installation`。二十二个 integrated business packages 加一个
+standalone-only verifier 共声明 100 个 external exits。
+`guru-finalize-task` 的
+`workflow_integration_state=integrated`，package 可直接发现且拥有唯一 global
+invoke 与六个 exit marker。Current main/source checkout 的 canonical extension version 为
+`0.6.17-guru.42`，固定 Fork 为
+`castbox/Trellis@eb370008c7689d4e272ae626bd002190ecbb3296` / CI `35621578090` / CLI `0.6.17` /
+`pnpm@10.32.1`。前序 released stable source 为 `v0.6.16-guru.1`；目标
+`v0.6.17-guru.1` 的 exact-candidate gate、tag-pinned smoke 与 GitHub Release 尚未在本候选
+之外得到证明。Repo release tag、extension revision、CLI/source commit 是独立版本轴；
+同一次 stable install 的 workflow 与 preset 必须 pin 同一 immutable tag。
+本发布未取得 live GPT-5.6 Sol production semantic evidence；deterministic/no-model/
+fake-production 结果不能证明 pressure matrix、模型稳定性或未来模型行为。
+Preset 将 active package
+（含 interface、artifact schema、commands、error catalog、runtime、thin wrappers 与 tests）
+完整安装到 `.trellis/guru-team/skills/`。Shared root 和所选 Codex/Cursor/Claude/OpenCode
+skill roots 仅接收 public projection，不包含 private runtime、tests 或 error
+implementation；planned id 不安装。升级后必须处理
+`.new`/`.bak`，再通过 source/installed package validation 与 dogfood drift。
+
+Interface 1.4 中 `workflow` 表示 global mandatory routing，`standalone` 表示
+所选平台 direct discovery。两种 mode 都依赖完整 current Guru Team runtime；单独
+复制 Skill 目录不是 self-contained/portable 安装。Preset 因此同时安装
+`.trellis/guru-team/scripts/bash/run-skill-command.sh`、extension runtime capability、
+audited package inventory 与 discovery copies。Wrapper 只能经过该 dispatcher；non-current runtime、
+缺失 manifest/dispatcher、API/command mismatch 或 managed drift 会在 companion command
+之前 fail closed，并提示安装/升级完整 preset、处理 `.new` / `.bak`、重跑验证。
+
+Phase 0 的六包、23 个既有 exits、`base_current` / `context_current` /
+`clarity_current` / `wording_current` / `readiness_current` 五阶段 closed transition、
+call-local invocation envelopes、consumer projections、package runtimes、minimal shared kernel、registry/extension
+inventory 与 activation manifest 是一个 versioned activation unit。Apply 必须先在 staging
+校验完整 unit，再一次发布；任一 mixed old/new graph、缺失 asset、manifest mismatch 或 sidecar
+都保留上一完整安装并阻断。
+
+既有 closed 1.0 public schema/example path、`$id` 和 bytes 保持 immutable legacy；新增
+transition/provenance required fields 使用新 versioned path，并由 current Interface 显式选择。
+Installer 同时校验 current graph 与兼容合同要求保留的 legacy inventory，不会把旧路径原地替换
+成新 shape。旧 DTO 无法建立 current transition 时 fail closed 并重跑 producer，不能从 ambient
+live state 补字段。
+
+`guru-maintain-architecture-baseline` 是该通用兼容规则的显式例外：其 public contract
+按 Issue #283 原子切换为 closed 2.0，旧 Architecture 1.0 schema、example、selector、
+dual-read 与 adapter 不保留，缺失或旧 `schema_version` 直接 fail closed。stable Skill id、
+四个 profile、七个 exit 与 consumer id 保持不变；canonical、installed、Shared、
+Codex、Claude、Cursor 和全部 stage consumer 必须在同一 candidate 中一致选择 2.0。
+
+Architecture 2.0 让每个 standard task 在 Planning、qualified implementation discovery、
+Phase 2、committed full-diff Branch Review、Publication 与 Acceptance/Finish mandatory
+消费项目 Architecture Baseline、设计宪法 identity 与 task-local Architecture change
+contract。项目 check 结果显式携带 AI 根据 applicability 和任务真实依赖判断的
+`blocking`；runtime 只校验 shape、freshness 与 route consistency。`unverified` /
+`evidence_gap` 不会被虚构为通过，只有被判断为 blocking 时才机械阻断 current route，
+非 blocking 缺口也不得用于关闭 GAP、批准例外或声明架构完成。
+
+Installed normal path 只调用一次 `guru-sync-base` public wrapper，并让 producer actual stdout
+逐 edge 进入下一 `--invocation -` call-local envelope。五个 semantic owner results 仅供当前
+wrapper 复验，不写
+repo-local owner/prerequisite/transition 文件，也不进入 downstream DTO。Compatibility locator 与
+`prepare-task` 不得出现在 workflow、production eval 或 clean-install happy path。
+
+`guru-verify-extension-installation` 的 standalone discovery 仍依赖完整 preset：
+
+```bash
+.trellis/guru-team/scripts/bash/discover-skill-contract.sh \
+  --root . --mode installed --skill guru-verify-extension-installation --json
+```
+
+Package wrapper 在 AI 完成 source capability profile、adequacy、findings review 后才调用
+executor、recorder、checker 与 public invocation。它只接受
+`source_repository_verification`，不接受 task-bearing input，不写 task-local owner result
+或 repo cache/index。Production eval 覆盖 `verified|blocked`；真实 clean source
+checkout 的 throwaway install 另行证明 init/preview/switch/update/reapply/ownership/
+sidecar/README/redaction。两者互不替代。
+
+Verifier public repo/ref 固定指向 `castbox/guru-trellis` source repository。Runtime 在任何
+clone、tempdir、installer 或 artifact write 前校验 canonical source assets、origin、
+requested ref、resolved commit、HEAD 与 clean tree；失败不执行外部动作。通过后只使用
+隔离的 source checkout 和 clean throwaway target。Source clone locator 必须为
+credential-free canonical GitHub HTTPS。Current public contract 只有一个 input profile、
+两个 exits 与 ignored source-session private state。
+Current semantic input 固定 `applicability.status=required`，private result 使用独立
+5.0 schema identity；public invocation 成功消费 `verified|blocked` 后删除 source-session
+owner checkpoint，校验失败则保留。
+Matrix 失败由 runner 在 cleanup 前输出 closed terminal，包含
+`pre-matrix|matrix-cell|post-matrix`、适用 cell、稳定 command label、exit code 与
+bounded credential-safe tail。Outer verifier 在 temporary lifecycle 内解析；失败输出不可解析时
+记录 `unparseable_failure_output`，不得只保留 stdout/stderr hash/size。
+
+`guru-discover-change-context` package 同时安装
+active `guru-stage0-discover-change-context-input-pre-task-2.0` 与
+`guru-change-context-owner-result-3.0` schema/example、immutable legacy input 1.0 /
+owner-result 2.0 bytes、public schemas/examples、contract、
+tests 与三个 executable thin wrappers。Direct discovery 与 workflow route 使用相同
+fresh-base/change-input/evidence freshness preconditions。Runtime 只读取 archived
+`finish-summary.json:index.*`，使用 `guru-context-history-score-1.0`，不读取 workspace/runtime
+或 repo-level archive index/cache。Record/check/public invoke 均以 `--invocation -`
+接收一次完整 envelope，经 stdin/stdout 串联；public input、独立 `base_current` 与
+owner result 不需要预写输入文件。Record/check 的旧 `--input`、`--public-input`、
+`--transition` 和 recorder `--mode` 参数直接退出，调用方随完整 preset 一起迁移；
+精确 envelope/schema 与迁移规则以 Discovery package interface/contract 为准。正常
+pre-task/standalone 不写 task、workspace 或 runtime artifact。Zero candidate 固定 empty
+selection/deep reads 与 `mem_review=not_needed`，不触发
+其它历史源。Installed/throwaway gates 覆盖 zero/candidate preview、真实 feature-worktree
+record/check、invalid mem shape、`trellis update`、workflow/preset reapply 和最终 zero sidecar。
+Source issue 的 live state 可为 normalized `open` / `closed`，但 duplicate candidates 与
+draft-created issue binding 仍 open-only。40 位 current evidence Git identity 必须解析为
+exact blob；tree、gitlink commit、tag、missing object 或 identity drift 不能满足
+Docs、code/contracts、tests evidence。Deep-read locator 分别绑定 selected task artifact、
+canonical GitHub issue/PR 或 exact Git object/ref；closed schema 与结构化 locator 不保存
+raw source payload，只做 field-specific validation。
+Duplicate candidate 的 managed schema/runtime 使用 repo、number、`#number` identity、
+canonical issue URL、open state 与 update time 的 canonical digest projection，并在 fresh
+base 后从同一次 search 返回字段重算 identity、URL 与 digest，不进行第二次 search 或
+candidate re-read。Managed schema/runtime 同时强制 `blocked` exit
+与 blocked AI Review Gate 双向一致。
+正常 mapped active-task 调用以 ephemeral task identity 绑定 task branch/current worktree 并允许普通
+task edits，不写 checkpoint；只有真实 active-task owner recovery 才以额外 continuation 惰性写入
+ignored current checkpoint。stale 删除后从 live authority 完整重跑，成功 public projection 后
+consume-and-clean owner input/result/checkpoint 与空目录。Preset、selected platform copies、
+fresh install 和 current update/reapply 必须保持这些 schema/runtime/wrapper/test bytes 与
+executable modes 一致。`context_ready` 只交付 Clarify 所需的 route、mode、target locator 与
+continuation identity，不携带 private artifact locator；其 actual stdout 形成 workflow-owned
+`context_current`，而不是 repo-local prerequisite bundle。
+Discovery public input 与 Sync actual `base_current` 独立传入；runtime 先 live-read authority
+生成 owner-private `base_observation`。正常 HEAD advance 返回 `refresh_base`，invalid authority
+返回 `blocked`，任何路径都不重建 Sync private result/facts digest。
+`context_ready` 指向 active `guru-clarify-requirements`；source/installed validator 要求
+active Skill consumer 与唯一 workflow/stop target marker 均可解析。
+
+`guru-clarify-requirements` package additive 安装
+`guru-requirements-clarification-2.0` schema、example、contract、tests和两个 executable
+dispatcher wrappers。Runtime assets 是
+`.trellis/guru-team/scripts/bash/record-requirements-clarification.sh` 与
+`check-requirements-clarification.sh`；不存在 mutation executor。Workflow/standalone
+preconditions相同；answered evidence、question lifecycle与objective payload/live mutation均
+fail-closed验证。Pre-task/standalone stdout-only，
+active-task Scope Change Gate mandatory invoke本Skill，并由caller-aware clear router恢复planning或
+exact interrupted progression；只验证 compact owner result 与当前 live owner linkage，不创建专用 clarification artifact。Throwaway initial install、
+`trellis update`、workflow re-selection与preset reapply均执行 standalone record/check probe，
+并验证 `clear` / `needs_context` / `refresh_context` / `retarget_context` / `new_task` /
+`blocked` consumers。只接受 closed 2.0 artifact；其他 schema version 在 normalization 前
+fail closed，recorder/checker 不执行迁移或投影。
+
+Active-task `clear`/`new_task` 必须携带非空 terminal proposal set，并 exact 绑定 compact
+owner-result `decision_trail`。该 trail 只含 `trail_id`、proposal id/digest/decision 与 live
+GitHub authority kind/URL/content checksum。planning/context/review/stale/interrupted/re-entry
+evidence 由 checker 从 owner 与 live facts 重读。Result、trail、runtime、checkpoint、
+archive、schema 和 public DTO 均不得保存用户授权状态、原话、ref、时间或 digest。
+`mechanism_removed/replaced` 使用 optional origin，不进入 trail/action mutation。GitHub authority mutation
+必须返回 `refresh_context`；context 时间覆盖 live authority 后 task update preimage 绑定当前 context digest，
+不要求第二次 refresh；`new_task` 只向 #112
+传递 side-effect-free draft，不在本 package 创建 issue/task。
+
+`guru-review-contract-wording` package 安装
+`guru-contract-wording-review-1.0` schema、example、contract、tests 和两个
+executable dispatcher wrappers。Workflow/standalone preconditions 相同；固定 profiles
+为 `change_request`、`planning_artifacts`、`explicit_paths`，typed exits 为 `pass`、
+`content_changed`、`blocked`。Vocabulary、classification semantics、AI rewrite/review
+loop 和 interaction policy 只存在于 canonical package contract；runtime 只负责固定 scope、
+scan、hash/digest、unchecked、schema/freshness 与 Gate/exit 结构校验。Installed runtime
+同时拒绝 selected comment 缺 author/updated time，并为 live issue revision 校验 exact
+proposed payload bytes、preimage 和 current reread mutation-result identity；它不接收或校验授权 digest。
+All profiles emit stdout-only owner-private results. A mapped same-profile
+re-entry discards the prior result, rebuilds current scope/scan, and creates no
+task-local replacement or supersession digest chain. `planning_artifacts:pass`
+is consumed immediately by its typed-exit router; it is not written as
+`contract-wording-review.json`. It must still contain the canonical contract's exact
+`semantic_review.ai_review_gate.planning_checked_dimensions`，全部显式 AI-reviewed 为 true
+才能成功。Runtime 只验证该 planning-only 字段的 shape/value；the planning owner rereads
+the current three planning files and never imports wording history. 其它 profile 禁止该字段。
+Fresh install、三平台 dogfood、manifest-selected discovery copies 与
+update/reapply 必须同时包含 package、commands、schema 和 route markers。
+
+`guru-review-change-request` package additive 安装
+`guru-change-request-review-2.0` schema、deidentified `issue-review.json` example、contract、
+tests 和两个 executable dispatcher wrappers。Runtime assets 是
+`.trellis/guru-team/scripts/bash/record-change-request-review.sh` 与
+`check-change-request-review.sh`。Workflow/standalone preconditions 相同；三类 target、current
+context/clarity/wording linkage、十项 dimensions、findings、scope conclusion、AI Gate 与五出口
+由 canonical semantic package 拥有。Runtime 只重建 portable projection/linkage/facts 并校验
+schema/hash/ref/freshness/consumer/ready invariant，不生成 readiness、finding、delivery unit 或
+route。Pre-task/standalone stdout-only；#112 直接消费 checked exit，不持久化
+`issue-review.json` 或 Issue 分类 aggregate。Record/check/invoke 统一以
+`--invocation -` 传入原始 public transition；#386 直接退出旧分离参数与完整 producer-private
+result/flat projection 输入，调用方和完整 preset 同步迁移。正常路径使用 `wording_current`；
+缺失前序重入使用真实保存的较早 transition，精确合同由 Readiness package 拥有。
+
+五出口固定为 `ready` -> active `guru-create-task-workspace`、
+`clarify_requirements` -> `guru-clarify-requirements`、`review_wording` ->
+`guru-review-contract-wording`、`refresh_context` -> `guru-sync-base`、`blocked` ->
+`change-request-review-blocked`。Fresh install、selected platform discovery、installed validation
+与 update/reapply 必须证明 active workspace package 存在、`ready` 只路由到该 package，
+并覆盖三类 target、五出口和 zero cache/sidecar residue。
+
+Clean throwaway 的 Phase 0 harness 必须使用安装后的 production wrappers，把每个 producer 的
+actual stdout 直接投影给下一 consumer，覆盖 existing Issue、draft create/refresh、duplicate
+retain/retarget、wording change、readiness/workspace 与 stop/re-entry families；不得手写 transition、
+隐藏 prerequisite locator 或 import shared runtime。Official `trellis update`、workflow
+preview/switch、preset reapply、dogfood drift、声明平台 byte/mode parity、managed provenance 和
+recursive zero `.new`/`.bak` 必须作为同一分发门禁通过。
+其中 Sync edge 必须执行 real Sync wrapper -> declared projection -> Discovery input 2.0 + actual
+`base_current` -> real Discovery wrapper -> Clarify projection；不得调用低层 Sync executor、读取
+private stdout transport、伪造 digest 或 import private package runtime。普通 #295 验证只要求一个
+代表性 clean throwaway，不扩张为完整多平台/Release matrix。所有产品 Python tests 与 wrappers
+经 checkout-local managed resolver；PATH Python 是否能 import `jsonschema` 不代表产品依赖通过。
+
+`guru-create-task-workspace` package 安装
+ignored-runtime `guru-task-workspace-plan-2.0`、`guru-task-workspace-result-3.0`、contract、examples、tests
+和三个 executable dispatcher wrappers。Draft invocation 创建 exact issue 后固定
+`refresh_review`；open issue invocation 使用独立 workspace/task confirmation。Assignee 按
+explicit、single issue assignee、zero issue assignees/current login、multiple/unresolved user
+choice 顺序解析。成功后只写 official `task.json` 与 ignored
+`.trellis/.runtime/guru-team/**` mappings，不创建 task-local Issue aggregate。
+
+Draft create 前使用 exact open title/body/labels 与 creation time执行 0/1/>1 recovery；
+唯一匹配被恢复，零匹配才创建，多个匹配阻断。完整 Intake重入时，workflow-created issue
+携带完整 checker-passed created-issue result，并与 fresh context 的 canonical live
+existing-issue identity一致；该 context使用`kind=issue`与 null `issue_binding`。
+
+Guru Skill packages are distributed independently of overlays:
+
+- canonical registry/schema/packages are installed under `.trellis/guru-team/skills/`;
+- package-private tests remain in the canonical source tree and are used only by
+  source validation;
+- active packages are always copied to `.agents/skills/guru-*/`;
+- each selected upstream platform receives matching copies under its
+  descriptor-declared Skill root.
+
+The canonical overlay tree has exactly 22 files. Each descriptor-bound entry is
+installed only when its platform is selected. OpenCode remains available for
+explicit selection, but is absent from active dogfood.
+
+Official Trellis owns every `trellis-*` Skill, command, prompt, hook, platform
+agent, bundled reference, and `.trellis/agents/*` runtime file. The preset never
+installs, replaces, or managed-upgrades those paths. Official update/upgrade
+manages them independently; preset reapply validates only current Guru-owned
+paths.
+
+`install.managed_assets` is derived from the current deterministic
+companion/additive inventory, including the selected Guru finish entries.
+Distributed Skill-package files are recorded separately in
+`skill_packages.files`; README text does not duplicate a numeric inventory.
+
+The active `.trellis/workflow.md` is installed or switched through the official
+Trellis workflow marketplace, using the verified `FORK_SOURCE` checkout and the
+same reviewed `GURU_WORKFLOW_SOURCE` as the preset source:
+
+```bash
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
+  --template guru-team --create-new
+```
+
+先检查 `.trellis/workflow.md.new` 与当前 workflow 的字节、sidecar、用户修改状态和 live
+identity；确认预览可安全应用后，再使用同一 provider 显式替换 active workflow：
+
+```bash
+node "$FORK_SOURCE/packages/cli/bin/trellis.js" workflow \
+  --marketplace "$GURU_WORKFLOW_SOURCE" \
+  --template guru-team --force
+```
+
+`--create-new` 只生成预览，不是 active workflow 的应用确认；未通过上述 preflight 时不得使用
+`--force`，无 flag replacement 不属于支持路径。
+
+## Spec Bootstrap
+
+`trellis init` may create `.trellis/tasks/00-bootstrap-guidelines/`. That task is
+a one-time repository-level prompt to replace generic `.trellis/spec/` templates
+with the target repository's real conventions.
+
+The Guru Team preset must not silently complete that task as an install or
+upgrade side effect. An AI installer may report that the task exists and explain
+what spec files it would inspect or modify, but it should ask the user whether
+to complete bootstrap now or leave it for a separate follow-up. If the user does
+not explicitly confirm, preserve the task and do not rewrite `.trellis/spec/`
+template content.
+
+When the user does confirm bootstrap in a target business repository, generated
+or refreshed `.trellis/spec/**` prose and any docs SSOT files created or
+completed under `docs/**` must use Chinese human-readable prose by default.
+Literal commands, paths, config keys, GitHub keywords, external API names, and
+code symbols may remain English.
+
+The reusable `guru-bootstrap-repository-ssot` Skill owns this confirmed
+orchestration. It supports `new_repository`, `existing_repository`, and
+`repair`, calls the upstream spec bootstrap plus the active #263/#264 Skills,
+and projects only canonical locators, versions, statuses, traceability and
+freshness into `.trellis/spec`. Preset installation, upgrade, update, workflow
+switch and reapply only report its state; they never run or archive Bootstrap.
+
+The daily user-facing entry points are natural-language task requests, issue
+URLs or issue numbers, official Trellis platform entries that load the active
+workflow, and additive `guru-finish-work` (Codex prompt, Claude
+`/guru:finish-work`, Cursor `/guru-finish-work`). The preset does not patch
+`trellis-start`, `trellis-continue`, or `trellis-finish-work`; stable mandatory
+Guru routing is defined by `.trellis/workflow.md`.
+
+Planning, check, review, and publish helpers are internal companion script
+subcommands used by the workflow; they are not daily user-facing entries.
+`guru-approve-task-plan` owns the semantic review and the single ignored-runtime
+`planning-approval.json` checkpoint. It consumes current live authority,
+wording, planning, Docs SSOT, and issue scope, reviews eight semantic
+dimensions, and returns one of four typed exits. The installed
+`record-planning-approval.sh` and `check-planning-approval.sh` commands preserve
+and validate the compact `guru-planning-approval-3.0` result; they do not create
+semantic conclusions or persist authorization. Every non-3.0 input fails closed;
+the owner accepts only a newly checked current invocation. Task identity and
+requirement authority use the same issue-category
+projection. The checker revalidates the invocation base/HEAD/dirty snapshot
+while the task is still planning; after activation freshness is based on
+planning, Docs SSOT, authority and wording content, not later implementation
+HEAD drift, metadata tail, or unrelated dirty paths. `task.py start` remains
+only a status transition. The Planning public wrapper deletes its checkpoint
+after the checked typed output passes schema validation; activation and Phase 2
+consume only the DTO and current live facts.
+The checked `approved` DTO establishes semantic adequacy only. The live workflow
+then presents `prd.md`, `design.md`, and `implement.md` links plus the AI
+conclusion, key choices, alternatives, trade-offs, and unverified boundaries,
+and waits for a clear post-presentation affirmative before activation. Questions
+and revisions remain in Phase 1; material changes require wording/semantic
+re-review and a new presentation. Phase 0 or old-plan replies are not reusable.
+Explicit autonomous execution omits only the ordinary unchanged-plan pause;
+scope, authority, material design, or risk changes still pause. The reply is
+never installed, recorded, validated, or persisted. Existing Open Issue and
+new-Issue happy paths contain four and five confirmation boundaries respectively.
+`resolve-human-artifacts.sh` is the deterministic fact layer for phase replies:
+before a planning stop, Phase 2 completion, Branch Review Gate result,
+finish-work dry-run reply, or final archive/publish reply, the AI runs it and
+renders a `Markdown 产物 review 表` with only `prd.md`, `design.md`,
+and `implement.md` when those files exist. Missing files are shown without
+Markdown links, and JSON gate/evidence is not part of the standard table.
+`record-phase2-check.sh` records the AI-authored closed `guru-check-task`
+result before commit, including `phase2_capture_commit`,
+`reviewed_content_sha256`, and the pre-commit `dirty_paths`; validation
+commands are evidence inside that report, not a substitute for the semantic
+check. `phase2-check.json` is the single ignored-runtime `guru-phase2-check-5.0` artifact owned
+by active `guru-check-task`. Official unchanged `trellis-check` is evidence-only;
+the Skill owns scope-before-severity, adequacy, findings, full rerun, Docs SSOT
+review, its AI Gate, and four typed exits. Coverage flags, worker output, or
+script recorder/validator success cannot replace that loop. The preset
+distributes the additive Guru package to shared and exact selected descriptor roots
+without modifying any upstream-owned `trellis-check` file; current ownership
+remains limited to schema 4.0's anchored Guru namespaces.
+The Phase 2 public wrapper emits only `task_ref + phase2_commit_anchor` for
+`passed`, retains that one checkpoint for Task Commit, and deletes the other
+three exit checkpoints after output-schema validation. Task Commit rereads the
+retained checkpoint, current reviewed-content identity, and commit parent, then
+deletes the checkpoint after successful publication or recovery. Branch Review
+consumes only the committed DTO and live Git.
+Schema 4.0 keeps only the current commit anchor, reviewed-content identity, nine
+adequacy dimensions, finding lifecycle, Docs SSOT
+judgment, and actual validation evidence with direct Gate consumers. Routine
+assignment, handoff, liveness, raw worker payload, and review rounds are not
+persisted. Only a real unfinished-to-replacement event uses
+`record-agent-recovery.sh` / `check-agent-recovery.sh` and the ignored
+`.trellis/.runtime/guru-team/agent-recovery/<task-key>.json` checkpoint. That
+checkpoint stores one minimal `unfinished`/`replacement` chain and never enters
+the task tree, public DTO, commit, or archive.
+
+Active `guru-review-branch` is the sole Phase 3.5 semantic owner. The global
+workflow mandatory-invokes its
+six-field public input (`profile`, `mode`, `task_ref`, `base_ref`,
+`branch_review_commit`, `review_intent`) for `branch_review` and consumes that profile's
+four typed exits (`passed`,
+`implementation_required`, `scope_confirmation_required`, `blocked`).
+The complete Interface has three profiles and six exits: `base_continuity` adds
+`continuity_passed`, and read-only `archived_review` adds `archived_review_passed`;
+both retain `blocked` as their stop.
+Reviewer lifecycle, finding qualification, Docs SSOT Gate, recovery checkpoint,
+private artifacts and re-entry remain package-owned step-local contracts.
+
+Its `passed` exit proceeds through the same entries to active
+`guru-review-task-publication`: the owner authors and reviews the exact Chinese
+PR title/body inside its semantic loop and returns the five-field Publication
+ready 4.0 DTO (`exit_id`, `task_ref`, `branch_review_commit`, `pr_title`,
+`pr_body`). The normal deterministic entry remains the original
+`invoke-guru-review-task-publication` command through the wrapper declared by
+its Interface; the caller does not decide publication sufficiency or readiness.
+The later `guru-finalize-task` consumer accepts that exact payload directly;
+machine recovery routes are auto-consumed.
+Branch Review and Publication each delete their own checkpoint after validating
+their selected DTO. Neither downstream Skill reads or deletes upstream private
+state.
+
+`review-branch.sh` and `check-review-gate.sh` are package-owned deterministic
+recorder/validator implementation details. They run only after the AI Review
+Gate exists and cannot decide scope, finding qualification, sufficiency, pass,
+or route. Platform entries and this installer do not duplicate those semantic
+rules or expose private artifacts as public handoff data.
+`finish-work.sh` rejects ordinary direct calls, so an ordinary continuation
+cannot chain closeout, commit review metadata, push, or create a PR before the
+explicit `guru-finish-work` entrypoint. That entry is
+a thin live-workflow router: it runs Phase 3.6 through
+`guru-review-task-publication`, then invokes `guru-finalize-task` only from
+`ready`. The finalizer alone may call the private deterministic finalization engine
+after its semantic review and exact plan confirmation. It automatically routes
+verification, stale publication evidence, same-plan recovery, and reprepare;
+every interruption resumes through the same semantic owner loop.
+
+The closeout command surface keeps the original package public entries: Commit
+uses `prepare-task-commit` followed by confirmed
+`invoke-guru-create-task-commit`; Publication uses
+`invoke-guru-review-task-publication`; Finalizer uses one preview followed by
+confirmed `invoke-guru-finalize-task`; Merge uses at most one
+expected-head-bound `watch-task-pr-checks` and then confirmed
+`invoke-task-pr-merge`. Each command runs through the package's
+Interface-declared public wrapper. Older argument shapes select compatibility
+branches inside those same commands; component helpers remain package-private
+tests, diagnosis, and bounded-recovery surfaces. Every Merge exit is terminal
+for the current Skill.
+Finalizer never invokes or consumes extension verification. Business task,
+Publication, Finalizer, finish-work, re-entry, and recovery do not read a
+verifier DTO, owner checkpoint, verification ref, or task-local verification
+artifact. Publication's own `return_to_task_work` route remains unchanged.
+
+Pre-PR provenance reprepare uses two independent temporary checkouts. The
+business repository is checked out detached at `reviewed_content_head` and is
+the only `--repo` target, manifest mutation owner, and tail commit parent. A
+separate clean detached extension source checkout supplies the canonical preset
+entry. Self-hosted targets bind source to reviewed HEAD; installed targets read
+the current manifest's clean immutable canonical repo/ref/commit, configure
+canonical `origin`, fetch the exact full OID, and verify detached HEAD and clean
+state. Source and target remain distinct even in self-hosted mode. Missing,
+mutable, dirty, malformed, mismatched, or drifting source state stops before
+apply, push, PR, archive, or Ready and never falls back to a local/global copy.
+Shared prepare lexically `lstat`s each existing archive root, month, and final
+destination component, rejects every symlink including dangling and
+repo-internal targets without following it, and requires the final locator to
+be absent. The identical preflight repeats immediately before official move.
+Missing `task.json.children` means an empty list; otherwise
+it must be `list[str]`. Official active-task exact/suffix lookup blocks only a
+child whose active `task.json` would be rewritten, while an archived child does
+not block its parent.
+
+After a passed gate, finish-work accepts only Trellis metadata tail. Durable
+docs, `.trellis/spec/`, source, tests, schema, config, scripts, preset, overlay,
+CI/CD, deployment, migration, or Makefile drift after the gate must return to
+Phase 2/3; dry-run and formal finish do not perform a first Docs SSOT merge.
+
+The finalizer's private preview is a side-effect-free readiness step. It
+validates the gate, dirty state, Publication ready 4.0 title/body payload, and
+live facts, then prints exact side effects, future archive mapping, transaction
+stage, and transitions without moving or writing task files, creating commits,
+pushing, or creating a PR. Current Finalizer persists
+`finalization-transaction.json` only for same-owner re-entry. Retired task-local
+plan schemas, examples, readers, and recovery paths are not installed.
+After dry-run, the AI should render the active-task `Markdown 产物 review 表`;
+after formal archive, it must rerun the resolver and render the archive-path
+table because active task links are no longer the final review entry points.
+
+Before finish-work publishes, Publication must generate and review the exact PR
+title/body for GitHub reviewers who do not know the Trellis task. The body uses concrete
+Chinese sections for `变更摘要`, `影响范围`, `验证结果`, `Review Gate`,
+`Issue 关闭范围`, `安全说明`, and `Docs SSOT` / `文档同步`. The Docs SSOT section
+states the plan strategy, durable docs updates or no-update reason, task deltas
+merged back, task-history-only content, and any follow-up or current PR
+limitation. Low-information summaries such as
+`当前 Trellis task`, `已提交实现与文档更新`, or `详见 artifact` are blocked for
+non-draft publish. Publication records schema 5.0 `pr-readiness.json` only as an
+ignored-runtime owner checkpoint and deletes it after its public DTO validates.
+Finalizer neither reads nor deletes that checkpoint and no task-local body or
+index handoff is created. The current transaction binds the exact title/body.
+After the draft PR is bound, Finalizer generates schema 2
+`finish-summary.json` once from the reviewed PR body and live Git/task/PR
+facts, validates it in the active task, and commits it only with the archive
+metadata transaction. Historical schema 1 finish summaries remain readable by
+Discovery. The preset installs no alternate summary command.
+
+## Workflow Guardrails
+
+For every file-changing request that has not already entered an active-task
+route, tool-free classification first mandatory invokes semantic
+`guru-select-workflow-mode`, whether or not an Issue exists or task-free was
+mentioned. The shortest explicit expression is `这次走 task-free`. Without
+explicit intent, high-confidence bounded, reversible, low-risk work selects
+`task_free` automatically; likely but insufficient evidence opens one mode
+question; clearly complex or high-risk work selects `standard_intake`.
+Issue presence, file count, paths, and keywords do not independently classify
+the mode.
+
+Only `standard_intake` is followed by mandatory `guru-sync-base`, not bare
+`task.py create`. The Skill resolves explicit `--base`, scalar
+`base_branch`, the first existing branch in configured `base_branch_candidates`
+order (default `dev`, `develop`, `main`, `master`), then remote default when no
+candidate exists; the current branch is never an implicit base. Multiple existing
+candidates are ordered, not ambiguous. The deterministic Skill performs
+digest-bound execution without a selected-base or post-execution AI gate. A
+`synced` result requires a clean checkout and equal decision/local/remote HEADs;
+`skipped` returns to the original request, while `blocked` stops fail closed.
+Only `synced` enters the mandatory
+`guru-discover-change-context -> guru-clarify-requirements ->
+guru-review-contract-wording -> guru-review-change-request ->
+guru-create-task-workspace` chain. The following command is a current query-only
+diagnostic and is not a workflow hop:
+
+After task planning and a current `planning_artifacts:pass`, Phase 1 mandatory
+invokes `guru-approve-task-plan`. Only `approved` enters
+`phase-1-task-activation`; `revision_required` re-enters the Skill,
+`clarify_scope` routes to the three-field workflow target
+`guru-task-plan-clarify-scope-router`, and `blocked` stops at
+`task-plan-approval-blocked`. The router establishes scope context and mandatory
+invokes `guru-clarify-requirements:active_task_scope_change`; the caller AI
+authors the complete semantic input from fresh live context. The preset
+distributes this route's package and v2 deterministic runtime; it does not move
+the Skill review loop or workflow-owned plan pause into a platform overlay.
+
+```bash
+.trellis/guru-team/scripts/bash/check-env.sh --json
+```
+
+`prepare-task.sh --json` is a compatibility-only local diagnostic whose exact
+CLI is defined by current runtime help. Its deterministic implementation is
+owned by `guru-create-task-workspace/runtime/prepare.py`, not the shared kernel.
+It is never a workflow hop:
+
+```bash
+BASE_PROVENANCE_JSON='<exact base_current.base JSON>'
+.trellis/guru-team/scripts/bash/prepare-task.sh --json \
+  --reviewed-base-provenance "$BASE_PROVENANCE_JSON" \
+  "<user request or issue URL>"
+```
+
+The flag accepts one JSON scalar, not a file locator. The closed object contains
+exactly `source`, `selected_base`, `remote`, `ordered_candidates`,
+`decision_head`, `local_base_head`, `remote_base_head`, and
+`post_sync_resolution_sha256`; optional `--base-branch` is equality-only and
+does not reconstruct source. The query may read
+an explicit issue and search duplicates, but it does not create a GitHub issue,
+worktree, branch, Trellis task, or task-local artifact. Freeform
+requests without a source issue return `proposed_issue`, duplicate candidates,
+selected-base facts, naming suggestions, and `naming_quality` in stdout JSON.
+They return no authorization/handoff state, absolute workspace path, task-create
+command, or task/runtime write. Before `gh auth status`, issue reads, fetch, or duplicate search,
+`prepare-task` requires complete reviewed provenance: source, selected base,
+remote, ordered candidates, decision/local/remote HEADs and post-sync digest.
+Missing provenance returns `missing_reviewed_base_provenance` locally; whether
+an absent remote ref is valid comes only from the formal schema/runtime state
+matrix. After that validation, it reuses the same strict resolution/sync core used by
+`guru-sync-base`; `fetch_performed: false` or unequal decision/local/remote HEADs
+cannot be `fresh: true`. A behind local base advances only on the selected-base
+checkout via `git merge --ff-only`; wrong checkout, dirty state, missing refs,
+fetch failure, divergence, resolution drift, or post-sync mismatch fail closed.
+Prepare requires the complete preceding reviewed provenance, not only its
+post-sync resolution digest. It preserves explicit/config/config-candidate/remote-default provenance.
+Resolution and result facts are stdout-only. Neither standalone nor workflow
+mode creates resolution/result evidence files, leases, release commands, or
+cleanup state. The current query consumes the current post-sync digest
+and reruns the shared core before its reads. Workspace mutation freshness is
+owned and revalidated by `guru-create-task-workspace`; identity/digest drift
+requires a fresh Skill invocation.
+Issue, branch, worktree, task, artifact, and runtime mutations belong
+exclusively to active `guru-create-task-workspace`.
+
+The AI should read the issue and provide a semantic English short-name through
+`--short-name`, `--workspace-slug`, and `--task-slug` when the title is Chinese,
+non-ASCII, or too generic; use `--branch` only when a special explicit branch
+name is needed. Recommended worktree/task slug format is
+`NNN-business-capability`; when `--branch` is omitted, recommended branch format
+is `<branch-type>/NNN-business-capability`, for example
+`feat/052-resume-detail-inline-attachment-preview`. `prepare-task` does not
+perform Chinese transliteration or pinyin conversion; it deterministically
+infers a supported branch type, assembles the name, checks conflicts, and blocks
+low-information names before executor side effects.
+Active `guru-create-task-workspace` uses one package-local resolver for planner
+diagnostics, execution, checking, and exact reuse/recovery. With
+`workspace_mode: worktree`, an empty `worktree_root` means
+`<repo-parent>/<repo-name>-worktrees`, an absolute value is the normalized root,
+and a relative value resolves from repository root. With
+`workspace_mode: current`, `worktree_root` must be empty, the current checkout is
+the workspace, and no `git worktree add` is run. Missing/unsupported modes,
+unsafe paths, object conflicts, and stale mappings fail before branch, worktree,
+task, artifact, or mapping writes. Public DTOs and tracked task artifacts omit
+machine-local absolute paths; only ignored runtime mappings carry the exact
+normalized `workspace_path` checked against live Git facts.
+
+Create the execution workspace and task through active
+`guru-create-task-workspace`. Task creation consent is not approval to run bare
+`python3 ./.trellis/scripts/task.py create ...` in the source checkout.
+Executor paths also enforce `naming_quality` and fail closed before creating a
+worktree, branch, or Trellis task if the generated or overridden name is low
+information, such as `issue-52`, `52-issue-52`, a bare number, or only generic
+tokens like `bug`, `fix`, `task`, `work`, `update`, or `change`.
+
+Only passed Gate plus confirmed active scope may mutate. Refusal stops before
+the recorder/executor and produces no plan, result, or DTO. `reroute` and
+`blocked` produce checker-validated zero-write `refresh_review` and `blocked`
+results. Public result stdout omits the absolute
+workspace path; the checker derives it from current config, reviewed slug, and
+live Git facts, while local absolute mappings remain ignored runtime only.
+
+In worktree mode, derive and validate task identity and the machine-local
+worktree only from current `task.json`, the current checkout,
+`.trellis/.runtime/guru-team/**`, `git worktree list`, and
+`check-task-checkout-boundary.sh --task`. Before writing or validating
+`planning-approval.json`, `phase2-check.json`, or `review-gate.json`, run:
+
+```bash
+.trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh --json --task <task-path>
+```
+
+The helper reports expected workspace, actual repo root, source checkout
+status, task worktree status, and suspicious current-task artifacts or review
+metadata in the source checkout. It is a deterministic validator/fact snapshot,
+not stale judgment, cleanup, or patch migration. Editing tools without an
+explicit `workdir` must use absolute paths under the task worktree confirmed by the
+boundary helper. The boundary is a deterministic source/task fact layer; it
+does not decide sub-agent progress, liveness, or stale state.
+
+`create-task-workspace` reconstructs the reviewed resolution, revalidates the
+local decision/base/remote-tracking facts, and reads the current remote base HEAD
+with `git ls-remote --heads` before GitHub or worktree/task mutation. Planner
+evidence never replaces this mutation-time guard, preventing new task branches
+from starting from a stale local base.
+
+The plan binds the initial checker-passed `post_sync_resolution_sha256`. The
+executor guard never calls `execute_base_sync`, fetches, fast-forwards, or
+updates local refs before the first confirmed business mutation; confirmation
+remains only in the current dialogue and is never passed to or persisted by
+runtime. A newly advanced remote returns `refresh_review` with the decision HEAD,
+local base, and remote-tracking ref unchanged, before issue/workspace/task/artifact
+or runtime writes. The next complete Intake round invokes the sole authoritative
+`guru-sync-base`; an unchanged identity continues normally.
+
+The active package uses ignored-runtime schemas `guru-task-workspace-plan-2.0`
+and `guru-task-workspace-result-3.0` plus runtime commands
+`record-task-workspace-plan`, `create-task-workspace`, and
+`check-task-workspace-result`. It keeps workflow/standalone preconditions
+identical, uses mutually exclusive issue/workspace confirmations, and exposes
+only `created`, `refresh_review`, and `blocked` exits. A draft
+issue creation invocation always stops at `refresh_review`; branch/worktree/task
+creation happens only after full Intake re-entry.
+
+Guru preset apply/update/reapply and the workspace executor do not read,
+create, copy, initialize, restore, or delete `.trellis/.developer` or
+`.trellis/workspace/**`; retired identity/session commands are not normal entry
+points. Trellis `0.6.17` leaves existing identity/journal/agent-trace bytes
+untouched and no longer consumes those roots. In an isolated subprocess, the
+executor calls official `common.task_store.cmd_create` with explicit reviewed
+creator and assignee values. `task.json.assignee` and `task.json.creator` therefore
+both equal the reviewed login, while existing historical bytes remain unchanged.
+Here, Guru task workspace and `workspace_slug` mean the isolated task checkout/
+worktree and its ignored runtime mapping, not a legacy journal workspace. The
+executor writes only official task metadata plus ignored runtime mappings. The real local A/B
+fixture verifies both merge orders without a remote PR or concurrent process.
+
+The installer manages current `schemas/finalization-transaction.schema.json`
+in the Finalizer package plus
+`schemas/finish-summary.schema.json`. It writes top-level
+`task_auto_commit: false` into `.trellis/config.yaml`. It does not add a legacy
+workspace ignore, provision journal merge attributes, or create/rewrite/index
+workspace journals. Shared start and installed Codex/Cursor SessionStart hooks
+resolve current task from task/Git/worktree facts and do not open, enumerate,
+read, count, or output historical workspace journals. Before
+archive, current recovery validates the owner-private transaction, active
+locator, repo/base/head, current/remote HEAD, minimal marketplace owner result
+when applicable, and exact PR identity. Prepare parses `.trellis/config.yaml` with the installed official
+parser and supports only missing/empty `hooks.after_archive`; invalid or
+non-empty hook configuration is rejected without execution. Immediately before
+official move it also checks the live archive month, empty index, exact
+untracked set, regular-file/mode contract, and tracked source blob bytes. A
+stale archive month returns the mapped `reprepare_required` route and rebuilds
+the archive mapping from the current transaction plus live facts; it does not
+create a finalization plan, readiness/evidence commit, history rewrite, or directory
+migration. After the official move but before the exact archive commit exists,
+current recovery first completes idempotent compact-archive pruning, then
+requires the exact retained working-tree layout, dirty/staged paths, blob
+continuity, and official `task.json` delta.
+
+The current Finalizer transaction is 3.0. Its explicit
+`existing_pr_recovery` mode may reuse only the unique non-fork Open PR on the
+exact repository/head/base when PR and remote HEAD agree and are a strict
+ancestor of the reviewed publication HEAD. Equality is accepted only after the
+same recovery transaction binds and pushes that exact pre-push HEAD. It binds original
+Draft/Ready state and pre-push HEAD before mutation, performs only an exact
+fast-forward push, converges current reviewed title/body, and preserves Ready
+or follows Draft-to-Ready.
+
+At `archive`, `push_archive`, or `mark_ready`, that exact transaction is
+validated before any pre-PR provenance inference, so an external extension
+source commit need not equal the business reviewed-content commit.
+
+When a pre-PR tail is required, the apply executable comes from the resolved
+extension source checkout but receives the target reviewed checkout through
+`--repo`. Apply must leave source HEAD/clean state unchanged and may dirty only
+the target `.trellis/guru-team/extension.json`. The tail remains a single
+direct child of target reviewed HEAD. Self-hosted postimage ref/commit equal
+that reviewed HEAD; installed postimage repo/ref/commit retain the manifest-
+bound immutable Guru Trellis source identity instead of the business HEAD.
+
+The current retained set contains exactly 5 durable files: `task.json`,
+`prd.md`, `design.md`, `implement.md`, and `finish-summary.json`; there is no optional verifier artifact. Publication readiness,
+Finalizer transaction/gate/request, intake snapshots, assignments,
+commit plans, raw review rounds and rollups, PR preparation, and other
+reconstructible checkpoints remain ignored runtime and do not enter the
+archive.
+
+Once current `HEAD` is the exact archive commit, current recovery reads the
+committed `task.json` and `finish-summary.json` blobs together with Git
+parent/path/tree/blob lineage; it never selects a committed finalization plan.
+Missing or tampered archived working-tree files do not block exact push, remote
+title/body checks, HEAD alignment, or draft-to-ready when the immutable commit
+facts remain valid. Exact recovery uses the committed
+`finish-summary.json` blob to recover and verify the original PR number/URL;
+missing, closed, or replacement PRs fail closed. Ordinary task discovery and
+commands continue to require `task.json`, and worktree boundaries derive from
+the current task, ignored runtime mapping, current checkout, and live Git
+facts.
+
+Task-local plan lookup, committed-plan-blob recovery, and plan migration are not
+part of the installed package. Current recovery uses only the ignored current
+transaction plus committed `task.json` and `finish-summary.json` authority.
+Installed final projection, incomplete recovery, and exact recovery share one
+strict PR URL parser. GitHub owner/repository identity is case-insensitive,
+while the canonical summary URL preserves the exact valid casing returned by
+the remote PR (for example `microsoft/PowerToys`). A different repository,
+transport, invalid number, extra path, query, or fragment remains fail closed.
+Current locator resolution preserves explicit `task.json`, active task, and
+normal archived `task.json` precedence. Path-like input is checked
+component-by-component with `lstat`; internal/external, relative/absolute,
+ancestor/final, multilevel, dangling, and loop symlinks fail closed before
+resolution. Only the verified Darwin `/var` -> `/private/var` system mapping
+may re-anchor an outer path; arbitrary `samefile` and user aliases are never
+trusted.
+
+The selector's minimal `task_free` DTO invokes semantic
+`guru-execute-task-free-change` through a target-owned authoring seed; checkout
+facts never expand the selector output. The execution Skill owns local
+checkout suitability, bounded editing, risk-matched targeted checks, and
+post-write scope/risk review. Its `completed` result requires AI-authored
+pre-write suitability, actual edited paths, at least one passed targeted check
+with no failed check, and passed post-write review; deterministic runtime only
+validates that evidence. The workflow completion DTO reports only actual edited
+paths, concise check results, and unverified boundaries. Scope/risk expansion
+after a real partial edit records the expanded fact, stopped remaining writes,
+and applicable targeted checks. Automatically selected task-free is
+re-evaluated, while explicit task-free waits for the user to narrow scope or
+choose `standard_intake`. It never authorizes
+Issue/task/worktree/branch creation, commit, push, PR, merge, tag, release,
+installation, cleanup, or Issue closure; those remain independent later
+side-effect boundaries.
+
+The installed `guru-execute-task-free-change` package exposes
+`selected_route|interaction_resume`, seven exits
+`completed|resume_active_task|scope_change|location_required|reselect_mode|explicit_choice_required|blocked`,
+and runtime commands `record-task-free-change`, `check-task-free-change`, and
+`invoke-guru-execute-task-free-change`. It requires the complete preset and is
+not a portable standalone directory.
+
+The installed workflow tells AI sessions to run a Middle-platform Knowledge Gate
+when a task may touch Guru Team SDKs or frameworks. If `guru-knowledge-center`
+MCP is available, the AI queries `project_domain=middle-platform` and persists
+citations in task artifacts. If the MCP is unavailable, the default
+`optional_warn` mode warns and continues.
+
+The workflow also requires a Phase 1 `Docs SSOT Plan`. Task artifacts should
+record task-scoped deltas and links, while durable requirements, designs, test
+plans, deploy / operations guides, versioned docs, or equivalent repo docs
+remain the long-term source when they exist. The plan is preferably authored in
+`design.md`; `prd.md` records docs state and requirements impact, and
+`implement.md` records the checklist / checkpoint.
+
+The plan records docs state (`complete_docs`, `partial_docs`, `stale_docs`, or
+`no_docs`) and strategy (`ssot_first`, `delta_first`,
+`bootstrap_or_repair_docs`, or `no_docs_update_needed`). It also records
+evidence paths, affected durable docs or checked no-update paths, task artifact
+deltas to merge back, and any required merge checkpoint, minimum repair scope,
+follow-up limit, or no-update reason. Finish and Branch Review Gate evidence
+must later record the reconciliation outcome, but the strategy choice belongs
+in Phase 1 planning.
+
+Official upstream-owned implement/check agents consume that plan during Phase 2
+under the active Guru workflow. The preset does not replace their files. The
+implementation agent reports the outcome and changed paths once. The Phase 2
+semantic owner uses that ephemeral result plus live repository facts directly
+and records only its compact final Docs SSOT, validation, semantic, and route
+result in ignored runtime; no independent or embedded handoff is created. The
+Phase 2 check agent then verifies durable
+docs, task artifacts, code/schema/config/deploy/test, and validation/test
+coverage against the same strategy. `delta_first` must merge durable docs
+before final Phase 2 check; `ssot_first` uses revised durable docs as primary
+input; `bootstrap_or_repair_docs` must complete the minimum repair or name a
+bounded follow-up and PR limitation; `no_docs_update_needed` must still have a
+concrete reason after the final diff is reviewed.
+
+
+## Source-owned Standalone Installation Verification
+
+业务 changed path、installed manifest 或 Finalizer plan 从不触发
+`guru-verify-extension-installation`。该 package 只可从 clean
+`castbox/guru-trellis` source checkout 以 `source_repository_verification`
+standalone profile 显式调用，并只返回 `verified|blocked`。Source identity mismatch、
+task-bearing field 或 dirty checkout 必须在 clone、tempdir、installer、artifact write 与
+mutation 前 fail closed；owner state 只在 source session ignored runtime 中短暂存在。
+
+Finalizer 的 current recovery 只接受自身 transaction 合同。pre-PR provenance reprepare
+可以消费 reviewed target manifest 的 immutable source identity 并创建唯一 metadata tail，
+但绝不因此创建 verifier route；post-bind transaction 仍先于该 inference。任意 sidecar、
+managed byte drift 或业务安装副本问题由 installer/ownership owner 处理，不转交 standalone verifier。
+
+## Eval 安装与升级清单
+
+Preset 管理 eval schemas、`discover-skill-evals.sh`、`run-skill-evals.sh`、
+shared/Codex/Claude/Cursor descriptor、可执行 wrapper、preset-managed shared native runtime，
+以及 package-local `evals/**` 的
+installed/selected-platform byte 与 executable mode。升级后重新 apply preset，
+运行 source/installed eval smoke、platform byte/mode、dogfood drift 和递归零
+`.new`/`.bak` 检查。Adapter wrapper 必须从 descriptor 路径执行；shared 从 adapter root
+解析 managed executor，Codex/Claude/Cursor 从 `PATH` 解析 documented native command，
+installer 不写本机 executable override。普通 Skill invocation
+不加载这些 eval assets。Preset 同时管理 `guru-team-skill-eval-native-trace-1.0`
+schema、adapter response 与 shared runtime；native CLI 只有通过 repo 外 trace helper
+读取 public-only projection 的 exact Skill、调用 exact wrapper，且 receipt 绑定最小 request、
+projection、Skill/wrapper digest 与 output 时，trace assertion 才有效。Canonical corpus/private
+runtime 留在 native execution 外；本仓只对声明的代表性 adapter projection 验证对应
+raw read 必须真实失败，不重复上游 22 客户端 native matrix。
+`guru-team-skill-evals-1.0` 中缺省/显式 `post_owner` case 使用 host 已准备并经 checker
+通过的 owner result，且在任意 adapter 的 full run 中都属于适用 case；只有同时声明
+adapter/model 的 `semantic_authoring` case 才按 adapter 过滤，并由合同指定 Agent 自行判断、
+author envelope 后调用正式 wrapper。Focused adapter mismatch 返回 `unsupported`。Source 与
+installed full eval 的 aggregate 必须校验 declared applicable 与 actual case ids 完全一致，任何
+missing、duplicate、unknown 或 unexpected case 都失败。
+
+安装后的 `guru-check-task` 必须保持当前 AI owner 的执行合同和 native authoring
+资产。验证要区分真实 clean/finding authoring（`passed` / `implementation_required`）
+与原四类 `post_owner` 确定性路由；host 不预填 Phase 2 结果，原 recorder/checker/wrapper
+处理 AI 的实际内容。Shared/Codex/Claude/Cursor 投影 parity 不代表四个平台的 native
+模型均已运行通过；缺失模型或登录能力应明确标注未验证。
+
+`semantic_authoring` 的闭合 `native_authoring_flow=standard_intake` 扩展同一 installed
+eval 路径，不新增生产 wrapper。必须分发四个 Intake Skill 的完整公共合同与现有命令，
+并验证同一 native Agent 从无 owner result 的事实 fixture 完成 author/record/check/invoke。
+成功链在 workspace mutation 前停止；需求冲突按真实 terminal producer 的 schema 验证，
+不伪装成另一个 Skill 的输出。模型输入不含 expected result，不能用 post_owner fixture、
+静态词句断言或缺失 native capability 代替真实 authoring 证明。安装验证覆盖 source/installed、
+Shared/Codex/Claude/Cursor 声明投影、preset reapply、dogfood drift、sidecar 和 bytecode residue；
+这些定向证据不是完整多平台升级或 Release Gate。
+
+分发检查与模型可见资产检查是两个边界：安装包仍完整，standard Intake 的模型投影只
+暴露声明的合同、Interface、必要 schema、命令边界和源事实，不能由整目录复制或
+Interface example 引用带入 owner/pass 样例。读取 examples/evals/private runtime 必须被拒绝。
+同次 completed-run 补评分仅更新声明 `standard_intake` 的 case 行。
+执行时可使用 `--adapter codex --codex-model gpt-5.6-sol` 为未固定模型的 case 选择模型；
+固定的 corpus 模型保持不变，未传参数保持原默认行为，不改变评分或生命周期。
+完整 full/mixed run 先验证完整 case/side identity，仅接收 Intake assertions，non-flow 行及原始执行证据不变，
+最后重算 aggregate。纯 Architecture、Phase 2、post_owner、qualification 保持原执行语义。
+两个 case 的 semantic assertions 必须保留；缺少独立 transcript 评分的 raw run 为
+`evaluation_failed`。对同一次完成执行，原 runner 通过既有 `--semantic-grading` 做后续
+聚合，保持原始 transcript/trace/receipts 不变且不再次调用模型。不得预填评分或手改结果。
+
+当前入口使用已验证的固定 Fork checkout，直接运行其 Node CLI：clean initial
+workflow/preset install -> target throwaway project 的 `update --dry-run` ->
+仅当输出包含 `MIGRATION REQUIRED` 或 `Retirement conflicts:`、managed replacement 已审查且提供显式 assignee 时执行
+`update --force --migrate --assignee <owner> --skip-all`，否则执行 `update --skip-all` -> marketplace `--create-new` preview/active switch -> canonical
+preset reapply。之后重新验证 32 Skills/142 package exits/102 commands、22 invokes/98 workflow
+exits、35 workflow targets、24 stop targets、全部已声明 profile real installed entry、
+ownership、platform parity、dogfood drift 与 recursive zero `.new`/`.bak`。该流程不修改
+开发机 global npm，也不升级真实业务仓。
+历史 predecessor 到当前版本的完整升级矩阵仍是独立证据，不使用原发行源作为隐式
+fallback，也不把同一固定候选的重复 update/reapply 称为 predecessor 升级通过。

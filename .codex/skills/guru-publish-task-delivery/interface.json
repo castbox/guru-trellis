@@ -1,0 +1,1156 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-publish-task-delivery",
+  "name": "guru-publish-task-delivery",
+  "description": "Publish one reviewed active-task Delivery through a semantic gate and an idempotent push, PR binding, metadata, and Ready transaction.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "delivery_review",
+        "remote_identity",
+        "invocation_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "delivery_review",
+        "remote_identity",
+        "invocation_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension, dispatcher, package, schemas and publication commands",
+      "binding": "complete current Guru Team preset",
+      "freshness": "validated before every command"
+    },
+    {
+      "id": "active_task",
+      "evidence": "task.json plus current branch and HEAD",
+      "binding": "public Task identity, Delivery key, exact active worktree, branch and base; no Task development status",
+      "freshness": "reread before every transition"
+    },
+    {
+      "id": "delivery_review",
+      "evidence": "guru-review-task-delivery ready DTO",
+      "binding": "Delivery key, current Readiness result, reviewed candidate, exact Chinese title/body and remaining-work state",
+      "freshness": "reviewed HEAD and payload remain current"
+    },
+    {
+      "id": "remote_identity",
+      "evidence": "origin branch plus same-repository Open PR facts",
+      "binding": "one repository/base/head branch and at most one current PR",
+      "freshness": "reread before every mutation and terminal projection"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "semantic gate, private transaction and exact live postconditions",
+      "binding": "one exact Delivery key and private publication transaction; same-plan recovery only",
+      "freshness": "same-plan recovery only"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "review_ready_input",
+      "path": "examples/public-review-ready-input.json"
+    },
+    {
+      "id": "same_plan_resume_input",
+      "path": "examples/public-same-plan-resume-input.json"
+    },
+    {
+      "id": "reprepare_publication_input",
+      "path": "examples/public-reprepare-publication-input.json"
+    },
+    {
+      "id": "semantic_review",
+      "path": "examples/semantic-review.json"
+    },
+    {
+      "id": "ready_for_merge_output",
+      "path": "examples/public-ready-for-merge-output.json"
+    },
+    {
+      "id": "review_stale_output",
+      "path": "examples/public-review-stale-output.json"
+    },
+    {
+      "id": "resume_publication_output",
+      "path": "examples/public-resume-publication-output.json"
+    },
+    {
+      "id": "reprepare_required_output",
+      "path": "examples/public-reprepare-required-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_input",
+      "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
+    },
+    {
+      "id": "delivery_stopped_output",
+      "path": "examples/public-delivery-stopped-output-1.0.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "examples/public-delivery-scope-revision-input-1.0.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "examples/public-delivery-scope-revised-output-1.0.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "examples/legacy_control_inspection-input-1.0.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "examples/legacy_control_retirement-input-1.0.json"
+    },
+    {
+      "id": "legacy_history_verification_input",
+      "path": "examples/legacy_history_verification-input-1.0.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "examples/legacy_controls_retired-output-1.0.json"
+    },
+    {
+      "id": "verified_legacy_history_output",
+      "path": "examples/verified_legacy_history-output-1.0.json"
+    },
+    {
+      "id": "unverified_legacy_history_output",
+      "path": "examples/unverified_legacy_history-output-1.0.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "review_ready_input",
+      "path": "schemas/public-review-ready-input.schema.json"
+    },
+    {
+      "id": "same_plan_resume_input",
+      "path": "schemas/public-same-plan-resume-input.schema.json"
+    },
+    {
+      "id": "reprepare_publication_input",
+      "path": "schemas/public-reprepare-publication-input.schema.json"
+    },
+    {
+      "id": "aggregate_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "ready_for_merge_output",
+      "path": "schemas/public-ready-for-merge-output.schema.json"
+    },
+    {
+      "id": "review_stale_output",
+      "path": "schemas/public-review-stale-output.schema.json"
+    },
+    {
+      "id": "resume_publication_output",
+      "path": "schemas/public-resume-publication-output.schema.json"
+    },
+    {
+      "id": "reprepare_required_output",
+      "path": "schemas/public-reprepare-required-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "semantic_review",
+      "path": "schemas/semantic-review.schema.json"
+    },
+    {
+      "id": "publication_preview",
+      "path": "schemas/publication-preview.schema.json"
+    },
+    {
+      "id": "publication_transaction",
+      "path": "schemas/publication-transaction.schema.json"
+    },
+    {
+      "id": "publication_gate",
+      "path": "schemas/publication-gate.schema.json"
+    },
+    {
+      "id": "blocked_stop_consumer",
+      "path": "consumers/stop/production/publish-task-delivery-blocked.schema.json"
+    },
+    {
+      "id": "delivery_review_ready_input",
+      "path": "schemas/public-delivery-review-ready-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_same_plan_resume_input",
+      "path": "schemas/public-delivery-same-plan-resume-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_reprepare_publication_input",
+      "path": "schemas/public-delivery-reprepare-publication-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate",
+      "path": "schemas/public-input-delivery-1.0.schema.json"
+    },
+    {
+      "id": "ready_for_merge_delivery_output",
+      "path": "schemas/public-output-delivery-ready-for-merge-1.0.schema.json"
+    },
+    {
+      "id": "review_stale_delivery_output",
+      "path": "schemas/public-output-delivery-review-stale-1.0.schema.json"
+    },
+    {
+      "id": "resume_publication_delivery_output",
+      "path": "schemas/public-output-delivery-resume-publication-1.0.schema.json"
+    },
+    {
+      "id": "reprepare_required_delivery_output",
+      "path": "schemas/public-output-delivery-reprepare-required-1.0.schema.json"
+    },
+    {
+      "id": "blocked_delivery_output",
+      "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_input",
+      "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_review",
+      "path": "schemas/delivery-scope-withdrawal-review-1.0.schema.json"
+    },
+    {
+      "id": "delivery_stopped_output",
+      "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+    },
+    {
+      "id": "private_delivery_migration_input_1_0",
+      "path": "schemas/private-delivery-migration-input-1.0.schema.json"
+    },
+    {
+      "id": "private_delivery_migration_review_1_0",
+      "path": "schemas/private-delivery-migration-review-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_revision_review_1_0",
+      "path": "schemas/delivery-scope-revision-review-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "schemas/legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_history_verification_input",
+      "path": "schemas/legacy_history_verification-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+    },
+    {
+      "id": "verified_legacy_history_output",
+      "path": "schemas/verified_legacy_history-output-1.0.schema.json"
+    },
+    {
+      "id": "unverified_legacy_history_output",
+      "path": "schemas/unverified_legacy_history-output-1.0.schema.json"
+    },
+    {
+      "id": "legacy_maintenance_input",
+      "path": "schemas/legacy-maintenance-input-1.0.schema.json"
+    },
+    {
+      "id": "private_legacy_recovery",
+      "path": "schemas/private-legacy-recovery-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_freeze_input",
+      "path": "schemas/legacy_control_freeze-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_check_input",
+      "path": "schemas/legacy_control_restore_check-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_input",
+      "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "publication_previewer",
+      "command": "scripts/preview-task-delivery-publication.sh",
+      "runtime_command": "preview-task-delivery-publication",
+      "objective_scope": "Read-only exact task/Git/GitHub classification and immutable confirmation identity"
+    },
+    {
+      "id": "publication_gate_recorder",
+      "command": "scripts/record-task-delivery-publication-gate.sh",
+      "runtime_command": "record-task-delivery-publication-gate",
+      "objective_scope": "Record the completed semantic review without user authorization"
+    },
+    {
+      "id": "publication_gate_checker",
+      "command": "scripts/check-task-delivery-publication-gate.sh",
+      "runtime_command": "check-task-delivery-publication-gate",
+      "objective_scope": "Validate gate identity against the current publication plan"
+    },
+    {
+      "id": "publication_executor",
+      "command": "scripts/execute-task-delivery-publication.sh",
+      "runtime_command": "execute-task-delivery-publication",
+      "objective_scope": "Advance the checked push, binding, metadata, Ready transaction with exact recovery"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-publish-task-delivery",
+      "objective_scope": "Sole public semantic invocation and one typed-exit projection"
+    },
+    {
+      "id": "private_delivery_migration",
+      "command": "scripts/migrate-delivery-transaction.sh",
+      "runtime_command": "migrate-task-delivery-publication",
+      "objective_scope": "Same-cycle private publication transaction migration; historical facts never become current readiness."
+    },
+    {
+      "id": "legacy_maintenance",
+      "command": "scripts/legacy-maintenance.sh",
+      "runtime_command": "legacy-maintenance-guru-publish-task-delivery",
+      "objective_scope": "Exact legacy original-owner facts, attribution and fixed preimage retirement; no current lifecycle or publication/merge/Finish action."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "ready_for_merge",
+      "evidence": "unique Ready PR exactly matches reviewed head and payload",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-merge-task-delivery"
+      }
+    },
+    {
+      "id": "review_stale",
+      "evidence": "reviewed head or Delivery authority changed",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-delivery"
+      }
+    },
+    {
+      "id": "resume_publication",
+      "evidence": "same private transaction can continue after a transient external interruption",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-publish-task-delivery"
+      }
+    },
+    {
+      "id": "reprepare_required",
+      "evidence": "private plan or current binding must be rebuilt before mutation",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-publish-task-delivery"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "ambiguous, foreign, terminal, unrelated, or unsupported remote state",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-delivery-publication-blocked"
+      }
+    },
+    {
+      "id": "delivery_stopped",
+      "evidence": "Current stage owner reviewed withdrawal, recorded public stop and released selection.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-completion"
+      }
+    },
+    {
+      "id": "delivery_scope_revised",
+      "evidence": "Current stage owner reviewed actual accepted scope; public same-Delivery rework succeeded or its exact output was recovered.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-delivery-scope-revised-router"
+      }
+    },
+    {
+      "id": "legacy_controls_retired",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired"
+      }
+    },
+    {
+      "id": "verified_legacy_history",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-verified-legacy-history"
+      }
+    },
+    {
+      "id": "unverified_legacy_history",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task, delivery cycle, reviewed head, exact PR payload, repository/base/head branches and private transaction reference",
+    "freshness": "live Git/GitHub facts and every mutation pre/postimage are reread",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_transaction.py",
+    "tests/test_legacy_maintenance.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-1.0",
+        "path": "schemas/public-input-delivery-1.0.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "delivery_review_ready",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-review-ready-1.0",
+            "path": "schemas/public-delivery-review-ready-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_review_ready_input",
+            "path": "examples/public-delivery-review-ready-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_review_ready"
+          }
+        },
+        {
+          "id": "delivery_same_plan_resume",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-same-plan-resume-1.0",
+            "path": "schemas/public-delivery-same-plan-resume-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_same_plan_resume_input",
+            "path": "examples/public-delivery-same-plan-resume-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_same_plan_resume"
+          }
+        },
+        {
+          "id": "delivery_reprepare_publication",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-reprepare-publication-1.0",
+            "path": "schemas/public-delivery-reprepare-publication-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_reprepare_publication_input",
+            "path": "examples/public-delivery-reprepare-publication-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_reprepare_publication"
+          }
+        },
+        {
+          "id": "delivery_scope_withdrawal",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-scope-withdrawal-1.0",
+            "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_scope_withdrawal_input",
+            "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_withdrawal"
+          }
+        },
+        {
+          "id": "delivery_scope_revision",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-scope-revision-1.0",
+            "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "public_delivery_scope_revision_input_1_0",
+            "path": "examples/public-delivery-scope-revision-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_revision"
+          }
+        },
+        {
+          "id": "legacy_control_retirement",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-legacy_control_retirement-1.0",
+            "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_control_retirement_input",
+            "path": "examples/legacy_control_retirement-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_control_retirement"
+          }
+        },
+        {
+          "id": "legacy_history_verification",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-legacy_history_verification-1.0",
+            "path": "schemas/legacy_history_verification-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_history_verification_input",
+            "path": "examples/legacy_history_verification-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_history_verification"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "delivery_review_ready"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-publish-task-delivery-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-review-ready-input.json",
+        "--review-input",
+        "examples/semantic-review.json",
+        "--confirmed-preview-sha256",
+        "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "ready_for_merge",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-ready-for-merge-1.0",
+          "path": "schemas/public-output-delivery-ready-for-merge-1.0.schema.json"
+        },
+        "example": {
+          "id": "ready_for_merge_delivery_output",
+          "path": "examples/public-output-delivery-ready-for-merge-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_ready_for_merge"
+        ]
+      },
+      {
+        "exit_id": "review_stale",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-review-stale-1.0",
+          "path": "schemas/public-output-delivery-review-stale-1.0.schema.json"
+        },
+        "example": {
+          "id": "review_stale_delivery_output",
+          "path": "examples/public-output-delivery-review-stale-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_review_stale"
+        ]
+      },
+      {
+        "exit_id": "resume_publication",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-resume-publication-1.0",
+          "path": "schemas/public-output-delivery-resume-publication-1.0.schema.json"
+        },
+        "example": {
+          "id": "resume_publication_delivery_output",
+          "path": "examples/public-output-delivery-resume-publication-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_resume_publication"
+        ]
+      },
+      {
+        "exit_id": "reprepare_required",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-reprepare-required-1.0",
+          "path": "schemas/public-output-delivery-reprepare-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "reprepare_required_delivery_output",
+          "path": "examples/public-output-delivery-reprepare-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_reprepare_required"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-blocked-1.0",
+          "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+        },
+        "example": {
+          "id": "blocked_delivery_output",
+          "path": "examples/public-output-delivery-blocked-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      },
+      {
+        "exit_id": "delivery_stopped",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-stopped-1.0",
+          "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "delivery_stopped_output",
+          "path": "examples/public-delivery-stopped-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_stopped"
+        ]
+      },
+      {
+        "exit_id": "delivery_scope_revised",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-scope-revised-1.0",
+          "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "public_delivery_scope_revised_output_1_0",
+          "path": "examples/public-delivery-scope-revised-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_scope_revised"
+        ]
+      },
+      {
+        "exit_id": "legacy_controls_retired",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-legacy_controls_retired-1.0",
+          "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "legacy_controls_retired_output",
+          "path": "examples/legacy_controls_retired-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_legacy_controls_retired"
+        ]
+      },
+      {
+        "exit_id": "verified_legacy_history",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-verified_legacy_history-1.0",
+          "path": "schemas/verified_legacy_history-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "verified_legacy_history_output",
+          "path": "examples/verified_legacy_history-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_verified_legacy_history"
+        ]
+      },
+      {
+        "exit_id": "unverified_legacy_history",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-unverified_legacy_history-1.0",
+          "path": "schemas/unverified_legacy_history-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "unverified_legacy_history_output",
+          "path": "examples/unverified_legacy_history-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_unverified_legacy_history"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "ready_for_merge_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-merge-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-merge-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_ready_for_merge",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "repo_ref",
+            "pr_number",
+            "expected_head_sha",
+            "publication_body_sha256",
+            "publication_result_id"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "ready_for_merge_delivery_authoring",
+            "path": "examples/authoring-delivery-ready-for-merge-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "review_stale_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_readiness_refresh",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "reentry_reason"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "review_stale_delivery_authoring",
+            "path": "examples/authoring-delivery-review-stale-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "resume_publication_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-publish-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-publish-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_same_plan_resume",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "transaction_ref"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "resume_publication_delivery_authoring",
+            "path": "examples/authoring-delivery-resume-publication-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "reprepare_publication_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-publish-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-publish-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_reprepare_publication",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "reason_code"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "reprepare_required_delivery_authoring",
+            "path": "examples/authoring-delivery-reprepare-required-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-delivery-publication-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-publish-task-delivery-blocked-delivery-1.0",
+          "path": "consumers/stop/delivery-1.0/publish-task-delivery-blocked.schema.json"
+        }
+      },
+      {
+        "id": "delivery_stopped_seed",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-completion"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-completion/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_completion",
+          "seed_fields": [
+            "task_ref",
+            "task_key"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "delivery_stopped_delivery_authoring",
+            "path": "examples/authoring-delivery-delivery-stopped-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "scope_revised_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-delivery-scope-revised-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-publish-task-delivery-scope-revised-1.0",
+          "path": "consumers/workflow/delivery-1.0/publish-task-delivery-scope-revised.schema.json"
+        }
+      },
+      {
+        "id": "legacy_controls_retired_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-legacy-controls-retired-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-legacy-controls-retired.schema.json"
+        }
+      },
+      {
+        "id": "verified_legacy_history_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-verified-legacy-history"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-verified-legacy-history-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-verified-legacy-history.schema.json"
+        }
+      },
+      {
+        "id": "unverified_legacy_history_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-unverified-legacy-history.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_ready_for_merge",
+        "exit_id": "ready_for_merge",
+        "consumer_input_id": "ready_for_merge_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          },
+          {
+            "source": "expected_head_sha",
+            "target": "expected_head_sha"
+          },
+          {
+            "source": "publication_body_sha256",
+            "target": "publication_body_sha256"
+          },
+          {
+            "source": "publication_result_id",
+            "target": "publication_result_id"
+          }
+        ]
+      },
+      {
+        "id": "project_review_stale",
+        "exit_id": "review_stale",
+        "consumer_input_id": "review_stale_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "stale_reason",
+            "target": "reentry_reason"
+          }
+        ]
+      },
+      {
+        "id": "project_resume_publication",
+        "exit_id": "resume_publication",
+        "consumer_input_id": "resume_publication_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "transaction_ref",
+            "target": "transaction_ref"
+          }
+        ]
+      },
+      {
+        "id": "project_reprepare_required",
+        "exit_id": "reprepare_required",
+        "consumer_input_id": "reprepare_publication_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "reason_code",
+            "target": "reason_code"
+          }
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_delivery_stopped",
+        "exit_id": "delivery_stopped",
+        "consumer_input_id": "delivery_stopped_seed",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "task_key",
+            "target": "task_key"
+          }
+        ]
+      },
+      {
+        "id": "project_delivery_scope_revised",
+        "exit_id": "delivery_scope_revised",
+        "consumer_input_id": "scope_revised_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_legacy_controls_retired",
+        "exit_id": "legacy_controls_retired",
+        "consumer_input_id": "legacy_controls_retired_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_verified_legacy_history",
+        "exit_id": "verified_legacy_history",
+        "consumer_input_id": "verified_legacy_history_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_unverified_legacy_history",
+        "exit_id": "unverified_legacy_history",
+        "consumer_input_id": "unverified_legacy_history_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "publication_transaction",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-transaction-1.0",
+          "path": "schemas/publication-transaction.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "publication_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-gate-1.0",
+          "path": "schemas/publication-gate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "private_legacy_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-private-legacy-recovery-1.0",
+          "path": "schemas/private-legacy-recovery-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

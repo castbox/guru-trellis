@@ -1,0 +1,16 @@
+{
+  "scenario": "The standalone owner validates the same preconditions and completes the full current review with no actual candidate; it records an empty classification set while satisfying every remaining gate condition.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true
+  },
+  "owner_staging": {
+    "recipe": "review-passed"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json"
+    ]
+  }
+}

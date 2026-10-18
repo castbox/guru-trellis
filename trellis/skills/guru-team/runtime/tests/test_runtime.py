@@ -1,0 +1,2748 @@
+from __future__ import annotations
+
+import ast
+import argparse
+import copy
+import hashlib
+import json
+import os
+import shutil
+import stat
+import subprocess
+import tempfile
+import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
+from pathlib import Path
+from runtime.io import project_intermediate_receipt
+import sys
+from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from runtime.validate import _package_paths
+from runtime.io import CommandError
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SKILLS = ROOT.parent
+def bootstrap_runtime(repo: Path, runtime_assets: Path = ROOT) -> dict[str, object]:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(runtime_assets / "bootstrap.py"),
+            "--repo",
+            str(repo),
+            "--runtime-assets",
+            str(runtime_assets),
+            "--python",
+            sys.executable,
+            "--json",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result)
+    return json.loads(result.stdout)
+
+
+def copy_runtime_assets(destination: Path) -> None:
+    shutil.copytree(ROOT, destination)
+    for name in ("packages", "schemas"):
+        target = destination.parent / name
+        if not target.exists():
+            shutil.copytree(SKILLS / name, target)
+
+
+def copy_active_runtime(repo: Path) -> None:
+    bootstrap_runtime(repo)
+
+
+class SharedRuntimeTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.cache = tempfile.TemporaryDirectory()
+        cls.repo_directory = tempfile.TemporaryDirectory()
+        cls.repo = Path(cls.repo_directory.name) / "repo"
+        cls.repo.mkdir()
+        cls.cache_environment = mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": cls.cache.name},
+        )
+        cls.cache_environment.start()
+        cls.runtime_result = bootstrap_runtime(cls.repo)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.cache_environment.stop()
+        cls.repo_directory.cleanup()
+        cls.cache.cleanup()
+
+    def test_managed_runtime_reuses_same_identity_and_probes_draft_2020_12(self) -> None:
+        self.assertEqual(self.runtime_result["status"], "ok")
+        self.assertIn(self.runtime_result["action"], {"installed", "reused", "repaired"})
+        second = bootstrap_runtime(self.repo)
+        self.assertEqual(second["action"], "reused")
+        self.assertEqual(second["runtime_identity"], self.runtime_result["runtime_identity"])
+
+        from runtime.bootstrap import active_pointer_path
+
+        active = json.loads(active_pointer_path(self.repo).read_text())
+        managed_python = Path(str(self.runtime_result["interpreter"]))
+        self.assertEqual(active["cache_scope"], "user")
+        self.assertEqual(active["runtime_id"], self.runtime_result["runtime_identity"])
+        probe = subprocess.run(
+            [str(managed_python), str(ROOT / "probe.py"), "--manifest", str(ROOT / "python-runtime.json"), "--json"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(probe.returncode, 0, probe)
+        self.assertEqual(json.loads(probe.stdout)["draft"], "2020-12")
+
+    def test_lock_change_changes_runtime_identity(self) -> None:
+        from runtime.bootstrap import runtime_identity
+
+        with tempfile.TemporaryDirectory() as tmp:
+            assets = Path(tmp)
+            shutil.copy2(ROOT / "python-runtime.json", assets / "python-runtime.json")
+            shutil.copy2(ROOT / "requirements.lock", assets / "requirements.lock")
+            original, _ = runtime_identity(assets, Path(sys.executable))
+            with (assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# identity drift\n")
+            changed, _ = runtime_identity(assets, Path(sys.executable))
+        self.assertNotEqual(original, changed)
+
+    def test_runtime_identity_binds_platform_architecture_and_abi(self) -> None:
+        from runtime.bootstrap import runtime_identity
+
+        _, identity = runtime_identity(ROOT, Path(sys.executable))
+        self.assertEqual(
+            {
+                "os_name",
+                "machine",
+                "python_abi_tag",
+                "python_platform_tag",
+            },
+            set(identity) & {
+                "os_name",
+                "machine",
+                "python_abi_tag",
+                "python_platform_tag",
+            },
+        )
+        self.assertTrue(all(identity[key] for key in ("os_name", "machine", "python_abi_tag", "python_platform_tag")))
+
+    def test_user_cache_root_follows_supported_os_conventions(self) -> None:
+        from runtime.bootstrap import user_cache_root
+
+        home = Path("/Users/example")
+        self.assertEqual(
+            user_cache_root({}, system_name="Darwin", home=home),
+            home / "Library/Caches/guru-team/python",
+        )
+        self.assertEqual(
+            user_cache_root({}, system_name="Linux", home=Path("/home/example")),
+            Path("/home/example/.cache/guru-team/python"),
+        )
+        self.assertEqual(
+            user_cache_root({"XDG_CACHE_HOME": "/cache"}, system_name="Linux", home=Path("/home/example")),
+            Path("/cache/guru-team/python"),
+        )
+        self.assertEqual(
+            user_cache_root({"LOCALAPPDATA": "C:/Local"}, system_name="Windows", home=Path("C:/Users/example")),
+            Path("C:/Local/GuruTeam/python"),
+        )
+
+    def test_different_repositories_reuse_same_immutable_runtime(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            first_repo = Path(tmp) / "first"
+            second_repo = Path(tmp) / "second"
+            first_repo.mkdir()
+            second_repo.mkdir()
+            first = bootstrap_runtime(first_repo)
+            second = bootstrap_runtime(second_repo)
+            self.assertEqual(first["runtime_identity"], second["runtime_identity"])
+            self.assertEqual(first["interpreter"], second["interpreter"])
+            self.assertEqual(second["action"], "reused")
+
+    def test_damaged_managed_runtime_is_repaired(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            installed = bootstrap_runtime(repo)
+            damaged_python = Path(str(installed["interpreter"]))
+            damaged_python.unlink()
+            repaired = bootstrap_runtime(repo)
+            self.assertEqual(repaired["action"], "repaired")
+            self.assertEqual(repaired["runtime_identity"], installed["runtime_identity"])
+            self.assertTrue(damaged_python.is_file())
+
+    def test_failed_candidate_preserves_active_runtime(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            pointer = managed.active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_text("prior\n")
+            before = pointer.read_bytes()
+            runtime_root = managed.user_cache_root()
+            real_run = managed.subprocess.run
+
+            def fail_venv(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+                if argv[1:3] == ["-m", "venv"]:
+                    return subprocess.CompletedProcess(argv, 1, "", "failed")
+                return real_run(argv, **kwargs)
+
+            with mock.patch.object(managed.subprocess, "run", side_effect=fail_venv):
+                with self.assertRaises(managed.BootstrapError):
+                    managed.bootstrap(repo, ROOT, Path(sys.executable))
+            self.assertEqual(pointer.read_bytes(), before)
+            self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
+
+    def test_failed_hash_locked_install_preserves_active_runtime(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            pointer = managed.active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_text("prior\n")
+            before = pointer.read_bytes()
+            runtime_root = managed.user_cache_root()
+            real_run = managed.subprocess.run
+
+            def fail_install(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+                if argv[1:3] == ["-m", "venv"]:
+                    venv_dir = Path(argv[3])
+                    python = managed.venv_python(venv_dir)
+                    python.parent.mkdir(parents=True)
+                    shutil.copy2(sys.executable, python)
+                    python.chmod(0o755)
+                    return subprocess.CompletedProcess(argv, 0, "", "")
+                if argv[1:4] == ["-m", "pip", "--version"]:
+                    return subprocess.CompletedProcess(argv, 0, "pip test", "")
+                if argv[1:3] == ["-m", "pip"] and "install" in argv:
+                    return subprocess.CompletedProcess(argv, 1, "", "network unavailable")
+                return real_run(argv, **kwargs)
+
+            with mock.patch.object(managed.subprocess, "run", side_effect=fail_install):
+                with self.assertRaisesRegex(managed.BootstrapError, "hash-locked"):
+                    managed.bootstrap(repo, ROOT, Path(sys.executable))
+            self.assertEqual(pointer.read_bytes(), before)
+            self.assertEqual(list(runtime_root.glob(".*.candidate-*")), [])
+
+    def test_prepared_new_identity_preserves_active_until_explicit_activation(self) -> None:
+        from runtime import bootstrap as managed
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            assets = Path(tmp) / "assets"
+            repo.mkdir()
+            copy_runtime_assets(assets)
+            first = managed.bootstrap(repo, assets, Path(sys.executable))
+            active_path = managed.active_pointer_path(repo)
+            before = active_path.read_bytes()
+            with (assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# staged identity change\n")
+            prepared = managed.bootstrap(repo, assets, Path(sys.executable), activate=False)
+            self.assertNotEqual(prepared["runtime_identity"], first["runtime_identity"])
+            self.assertEqual(active_path.read_bytes(), before)
+            activated = managed.bootstrap(repo, assets, Path(sys.executable), activate=True)
+            self.assertEqual(activated["action"], "reused")
+            self.assertEqual(activated["runtime_identity"], prepared["runtime_identity"])
+            self.assertNotEqual(active_path.read_bytes(), before)
+
+    def test_bootstrap_failure_reports_computed_runtime_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shim = root / "python"
+            shim.write_text(
+                "#!/bin/sh\n"
+                "if [ \"$1\" = \"-c\" ]; then\n"
+                "  echo '{\"implementation\":\"CPython\",\"major\":3,\"minor\":12,\"os_name\":\"TestOS\",\"machine\":\"test-arch\",\"abi_tag\":\"cpython-312\",\"platform_tag\":\"test-platform\"}'\n"
+                "  exit 0\n"
+                "fi\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            shim.chmod(0o755)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "bootstrap.py"),
+                    "--repo",
+                    str(root),
+                    "--runtime-assets",
+                    str(ROOT),
+                    "--python",
+                    str(shim),
+                    "--json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        self.assertRegex(payload["runtime_identity"], r"^[0-9a-f]{24}$")
+
+    def test_resolver_failure_is_stable_json_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        payload = json.loads(result.stderr)
+        self.assertEqual(
+            set(payload),
+            {"code", "field_path", "dependency", "runtime_identity", "remediation"},
+        )
+        self.assertEqual(payload["code"], "runtime_not_bootstrapped")
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_resolver_distinguishes_missing_shared_cache_entry(self) -> None:
+        from runtime.bootstrap import active_pointer_path, canonical_json
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            pointer = active_pointer_path(repo)
+            pointer.parent.mkdir(parents=True)
+            pointer.write_bytes(canonical_json({
+                "schema_version": "2.0",
+                "cache_scope": "user",
+                "runtime_id": "0" * 24,
+                "interpreter": "venv/bin/python",
+            }) + b"\n")
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["code"], "managed_runtime_missing")
+        self.assertEqual(payload["runtime_identity"], "0" * 24)
+
+    def test_linked_worktree_uses_git_common_pointer_and_shared_runtime(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            worktree = Path(tmp) / "worktree"
+            repo.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            installed = bootstrap_runtime(repo)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/worktree", str(worktree)], cwd=repo, check=True)
+            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(worktree), str(ROOT), "-c", "import jsonschema;print(jsonschema.__version__)"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertTrue(result.stdout.strip())
+            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
+    def test_linked_worktree_resolves_common_pointer_without_git_on_path(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            worktree = Path(tmp) / "worktree"
+            command_bin = Path(tmp) / "commands"
+            repo.mkdir()
+            command_bin.mkdir()
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            installed = bootstrap_runtime(repo)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/no-git-path", str(worktree)], cwd=repo, check=True)
+            for command in ("bash", "sed", "tr"):
+                command_path = shutil.which(command)
+                self.assertIsNotNone(command_path)
+                (command_bin / command).symlink_to(str(command_path))
+            environment = os.environ.copy()
+            environment["PATH"] = str(command_bin)
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(worktree), str(ROOT), "-c", "import jsonschema;print('ok')"],
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertEqual(result.stdout.strip(), "ok")
+            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
+    def test_linked_worktrees_with_different_contracts_keep_independent_runtime_selection(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "repo"
+            first_worktree = root / "worktree-a"
+            second_worktree = root / "worktree-b"
+            first_assets = root / "assets-a"
+            second_assets = root / "assets-b"
+            repo.mkdir()
+            copy_runtime_assets(first_assets)
+            copy_runtime_assets(second_assets)
+            with (second_assets / "requirements.lock").open("a", encoding="utf-8") as handle:
+                handle.write("\n# second checkout identity\n")
+            subprocess.run(["git", "init", "-q", "-b", "main"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.name", "Runtime Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "runtime@example.invalid"], cwd=repo, check=True)
+            (repo / "README.md").write_text("runtime test\n")
+            subprocess.run(["git", "add", "README.md"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/runtime-a", str(first_worktree)], cwd=repo, check=True)
+            subprocess.run(["git", "worktree", "add", "-q", "-b", "test/runtime-b", str(second_worktree)], cwd=repo, check=True)
+
+            first = bootstrap_runtime(first_worktree, first_assets)
+            second = bootstrap_runtime(second_worktree, second_assets)
+
+            self.assertNotEqual(first["runtime_identity"], second["runtime_identity"])
+            self.assertNotEqual(active_pointer_path(first_worktree), active_pointer_path(second_worktree))
+            self.assertEqual(first["runtime_identity"], json.loads(active_pointer_path(first_worktree).read_text())["runtime_id"])
+            self.assertEqual(second["runtime_identity"], json.loads(active_pointer_path(second_worktree).read_text())["runtime_id"])
+            for worktree, assets, expected in (
+                (first_worktree, first_assets, first["runtime_identity"]),
+                (second_worktree, second_assets, second["runtime_identity"]),
+            ):
+                result = subprocess.run(
+                    [str(assets / "resolve-python.sh"), str(worktree), str(assets), "-c", "import jsonschema;print('ok')"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                self.assertEqual(result.stdout.strip(), "ok")
+                self.assertEqual(expected, json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+
+    def test_resolver_preserves_validator_error_classification(self) -> None:
+        from runtime.bootstrap import active_pointer_path
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
+        ):
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            bootstrap_runtime(repo)
+            pointer_path = active_pointer_path(repo)
+            pointer = json.loads(pointer_path.read_text())
+            pointer["cache_scope"] = "checkout"
+            pointer_path.write_text(json.dumps(pointer, sort_keys=True, separators=(",", ":")) + "\n")
+            result = subprocess.run(
+                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stderr)
+        self.assertEqual(payload["code"], "managed_runtime_missing")
+        self.assertEqual(payload["dependency"], "python-runtime")
+
+    def test_public_wrapper_uses_managed_runtime_when_path_python_has_no_jsonschema(self) -> None:
+        no_site_packages = subprocess.run(
+            [sys.executable, "-S", "-c", "import importlib.util; assert importlib.util.find_spec('jsonschema') is None"],
+            check=False,
+        )
+        self.assertEqual(no_site_packages.returncode, 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
+            shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
+            package = SKILLS / "packages/guru-select-workflow-mode"
+            shutil.copytree(package, installed_root / "skills/packages/guru-select-workflow-mode")
+            projected = repo / ".agents/skills/guru-select-workflow-mode"
+            shutil.copytree(package, projected)
+            shim_dir = repo / "path-bin"
+            shim_dir.mkdir()
+            shim = shim_dir / "python3"
+            shim.write_text(f"#!/bin/sh\nexec {sys.executable} -S \"$@\"\n", encoding="utf-8")
+            shim.chmod(0o755)
+            result = subprocess.run(
+                [
+                    str(projected / "scripts/invoke.sh"),
+                    "--input",
+                    str(projected / "examples/public-input.json"),
+                    "--owner-result",
+                    str(projected / "examples/workflow-mode-selection.json"),
+                    "--json",
+                ],
+                cwd=repo,
+                env={**os.environ, "PATH": f"{shim_dir}:/usr/bin:/bin"},
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload, {"exit_id": "task_free"})
+
+    def test_command_runtime_consumes_one_global_json_flag(self) -> None:
+        from runtime.command import _consume_global_json_flag, _validate_argument_cardinality
+        from runtime.io import CommandError
+
+        self.assertEqual(
+            _consume_global_json_flag(["--root", ".", "--json", "--input", "value"]),
+            ["--root", ".", "--input", "value"],
+        )
+        with self.assertRaises(CommandError) as raised:
+            _consume_global_json_flag(["--json", "--json"])
+        self.assertEqual(raised.exception.code, "conflicting_arguments")
+        command = {
+            "arguments": [
+                {"flag": "--profile", "repeatable": False, "conflicts": []},
+                {"flag": "--path", "repeatable": True, "conflicts": []},
+                {"flag": "--resolve-only", "repeatable": False, "conflicts": ["--execute"]},
+                {"flag": "--execute", "repeatable": False, "conflicts": ["--resolve-only"]},
+            ]
+        }
+        with self.assertRaises(CommandError) as repeated:
+            _validate_argument_cardinality(command, ["--profile", "one", "--profile=two"])
+        self.assertEqual(repeated.exception.code, "conflicting_arguments")
+        _validate_argument_cardinality(command, ["--path", "one", "--path=two"])
+        with self.assertRaises(CommandError) as conflicting:
+            _validate_argument_cardinality(command, ["--resolve-only", "--execute"])
+        self.assertEqual(conflicting.exception.code, "conflicting_arguments")
+
+    def test_command_error_can_preserve_declared_private_stderr_payload(self) -> None:
+        from runtime.io import CommandError, fail
+
+        stdout = StringIO()
+        stderr = StringIO()
+        error = CommandError(
+            "finalization_stale",
+            "finalization",
+            "Reprepare.",
+            3,
+            response={"status": "error", "stage": "archive-path-preflight"},
+            response_stream="stderr",
+        )
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            self.assertEqual(fail(error), 3)
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertEqual(
+            json.loads(stderr.getvalue()),
+            {"status": "error", "stage": "archive-path-preflight"},
+        )
+
+    def test_kernel_inventory_is_closed_and_contains_no_business_cli(self) -> None:
+        from runtime.validate import APPROVED_KERNEL_FILES
+
+        actual = {path.name for path in ROOT.iterdir() if path.is_file()}
+        self.assertEqual(actual, APPROVED_KERNEL_FILES)
+        self.assertNotIn("utility.py", actual)
+
+    def test_contract_discovery_projects_every_active_public_contract(self) -> None:
+        from runtime.discovery import discover
+
+        registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
+        active = [row for row in registry["skills"] if row["state"] == "active"]
+        manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(active), 38)
+        active_ids = {row["id"] for row in active}
+        self.assertIn("guru-create-delivery", active_ids)
+        self.assertIn("guru-activate-delivery", active_ids)
+        self.assertNotIn("guru-activate-task", active_ids)
+        self.assertEqual({row["id"] for row in active}, set(manifest["public_api"]["skill_contracts"]["active_skill_ids"]))
+        for row in active:
+            with self.subTest(skill=row["id"]):
+                payload = discover(SKILLS, row["id"])
+                interface = json.loads((SKILLS / row["interface"]).read_text(encoding="utf-8"))
+                contracts = interface["public_contracts"]
+                self.assertEqual(payload, {
+                    "status": "ok",
+                    "skill_id": row["id"],
+                    "interface_schema_id": row["interface_schema_id"],
+                    "input": contracts["input"],
+                    "invocation": contracts["invocation"],
+                    "outputs": contracts["outputs"],
+                    "consumer_inputs": contracts["consumer_inputs"],
+                    "projections": contracts["projections"],
+                    "private_artifacts": contracts["private_artifacts"],
+                })
+
+    def test_contract_discovery_wrapper_and_unknown_skill_error(self) -> None:
+        wrapper = Path(__file__).resolve().parents[4] / "workflows/guru-team/scripts/bash/discover-skill-contract.sh"
+        root = Path(__file__).resolve().parents[5]
+        current_checkout_environment = os.environ.copy()
+        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
+        success = subprocess.run(
+            [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-sync-base", "--json"],
+            env=current_checkout_environment,
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(success.returncode, 0, success)
+        self.assertEqual(json.loads(success.stdout)["skill_id"], "guru-sync-base")
+        failure = subprocess.run(
+            [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-missing-skill", "--json"],
+            env=current_checkout_environment,
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+        )
+        self.assertEqual(failure.returncode, 2, failure)
+        self.assertEqual(failure.stdout, "")
+        self.assertEqual(set(json.loads(failure.stderr)), {"code", "field_path", "remediation"})
+
+    def test_launcher_direct_contract_and_missing_arguments(self) -> None:
+        launcher = ROOT / "launch.sh"
+        package = SKILLS / "packages/guru-sync-base"
+        current_checkout_environment = os.environ.copy()
+        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
+        direct = subprocess.run(
+            [str(launcher), str(package), "sync-base", "--help"],
+            env=current_checkout_environment,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(direct.returncode, 0, direct)
+        self.assertIn("usage: sync-base", direct.stdout)
+        self.assertEqual(direct.stderr, "")
+
+        missing = subprocess.run(
+            [str(launcher)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(missing.returncode, 2, missing)
+        payload = json.loads(missing.stdout)
+        self.assertEqual(payload["code"], "invalid_arguments")
+        self.assertNotIn("unbound variable", missing.stdout + missing.stderr)
+
+    def test_platform_projection_routes_to_installed_package(self) -> None:
+        skill_id = "guru-sync-base"
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
+            shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
+            shutil.copytree(
+                SKILLS / "packages" / skill_id,
+                installed_root / "skills/packages" / skill_id,
+            )
+            for platform in (".agents", ".claude", ".codex", ".cursor"):
+                projection = repo / platform / "skills" / skill_id
+                (projection / "scripts").mkdir(parents=True)
+                shutil.copy2(
+                    SKILLS / "packages" / skill_id / "scripts/invoke.sh",
+                    projection / "scripts/invoke.sh",
+                )
+                result = subprocess.run(
+                    [str(projection / "scripts/invoke.sh"), "--help"],
+                    cwd=repo,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result)
+                self.assertIn("usage: invoke-guru-sync-base", result.stdout)
+                self.assertEqual(result.stderr, "")
+
+    def test_platform_projection_uses_installed_repo_as_default_root(self) -> None:
+        skill_id = "guru-discover-change-context"
+        with tempfile.TemporaryDirectory() as tmp:
+            outside = Path(tmp)
+            repo = outside / "repo"
+            repo.mkdir()
+            subprocess.run(
+                ["git", "init", "-q", "-b", "feat/context", str(repo)],
+                check=True,
+            )
+            (repo / ".gitignore").write_text(".trellis/.runtime/\n", encoding="utf-8")
+            installed_root = repo / ".trellis/guru-team"
+            copy_active_runtime(repo)
+            shutil.copytree(ROOT, installed_root / "runtime")
+            shutil.copytree(SKILLS / "schemas", installed_root / "skills/schemas")
+            shutil.copytree(
+                SKILLS / "packages" / skill_id,
+                installed_root / "skills/packages" / skill_id,
+            )
+            shutil.copytree(
+                SKILLS / "consumers",
+                installed_root / "skills/consumers",
+            )
+            projection = repo / ".agents" / "skills" / skill_id
+            (projection / "scripts").mkdir(parents=True)
+            shutil.copy2(
+                SKILLS / "packages" / skill_id / "scripts/invoke.sh",
+                projection / "scripts/invoke.sh",
+            )
+            shutil.copy2(SKILLS.parents[1] / "workflows/guru-team/workflow.md", repo / ".trellis/workflow.md")
+            from adapters.eval.delivery_production import installed_task
+            task = installed_task(repo, "context-runtime-test", task_id="context")
+            task_ref = task.relative_to(repo).as_posix()
+            subprocess.run(["git", "config", "user.name", "Kernel Test"], cwd=repo, check=True)
+            subprocess.run(["git", "config", "user.email", "kernel@example.invalid"], cwd=repo, check=True)
+            subprocess.run(["git", "add", "."], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "test: add installed runtime"], cwd=repo, check=True)
+            from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+            BranchBindingStore(inspect_repository(repo)).establish(
+                TaskLifecycleKey("context", 0), "feat/context"
+            )
+            subprocess.run(["git", "remote", "add", "origin", "https://github.com/example/guru-extension.git"], cwd=repo, check=True)
+            subprocess.run(["git", "branch", "main"], cwd=repo, check=True)
+            authority = outside / "authority"
+            subprocess.run(["git", "worktree", "add", "-q", str(authority), "main"], cwd=repo, check=True)
+            head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=authority, text=True, stdout=subprocess.PIPE, check=True).stdout.strip()
+            subprocess.run(["git", "update-ref", "refs/remotes/origin/main", head], cwd=repo, check=True)
+            owner = json.loads((
+                installed_root
+                / "skills/packages"
+                / skill_id
+                / "examples/change-context-owner-result-3.0.json"
+            ).read_text())
+            public_output = json.loads((
+                installed_root
+                / "skills/packages"
+                / skill_id
+                / "examples/public-context-ready-output-4.0.json"
+            ).read_text())
+            owner["mode"] = "workflow"
+            public_input = {"clarify_profile": "standard_intake",
+                "profile": "pre_task",
+                "source_exit": "synced",
+                "mode": "workflow",
+                "change_input": owner["change_input"],
+                "continuation_id": "outside-cwd",
+            }
+            transition = {
+                "schema_version": "1.0",
+                "transition_id": "base_current:outside-cwd",
+                "stage": "base_current",
+                "mode": "workflow",
+                "repo_locator": str(authority),
+                "base": {
+                    **public_output["transition"]["base"],
+                    "decision_head": head,
+                    "local_base_head": head,
+                    "remote_base_head": head,
+                },
+            }
+            envelope = {
+                "schema_version": "1.0", "public_input": public_input,
+                "transition": transition, "owner_context": {}, "owner_result": owner,
+            }
+            recorded = subprocess.run(
+                [
+                    str(installed_root / "skills/packages" / skill_id / "scripts/record-context-discovery.sh"),
+                    "--root", str(repo), "--invocation", "-",
+                    "--active-task", task_ref,
+                ],
+                cwd=outside, input=json.dumps(envelope), text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(recorded.returncode, 0, recorded)
+            invocation = outside / "invocation.json"
+            invocation.write_text(json.dumps({
+                "schema_version": "1.0",
+                "public_input": public_input,
+                "transition": transition,
+                "owner_context": {},
+                "owner_result": project_intermediate_receipt(json.loads(recorded.stdout), SKILLS / "schemas"),
+            }))
+            result = subprocess.run(
+                [
+                    str(projection / "scripts/invoke.sh"),
+                    "--invocation",
+                    str(invocation),
+                    "--active-task",
+                    task_ref,
+                ],
+                cwd=outside,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            self.assertEqual(json.loads(result.stdout)["exit_id"], "context_ready")
+            self.assertEqual(result.stderr, "")
+
+    def test_source_and_installed_layouts(self) -> None:
+        source = _package_paths(Path("/repo"), "source")
+        self.assertEqual(source[0], Path("/repo/trellis/skills/guru-team"))
+        self.assertEqual(source[3], Path("/repo/trellis/skills/guru-team/runtime"))
+        installed = _package_paths(Path("/repo"), "installed")
+        self.assertEqual(installed[0], Path("/repo/.trellis/guru-team/skills"))
+        self.assertEqual(installed[3], Path("/repo/.trellis/guru-team/runtime"))
+
+    def test_command_and_error_contracts_for_pilots(self) -> None:
+        from jsonschema import Draft202012Validator
+        command_schema = json.loads((SKILLS / "schemas/skill-commands-1.1.schema.json").read_text())
+        error_schema = json.loads((SKILLS / "schemas/skill-error-catalog.schema.json").read_text())
+        for package_id in ("guru-sync-base", "guru-clarify-requirements"):
+            package = SKILLS / "packages" / package_id
+            commands = json.loads((package / "commands.json").read_text())
+            errors = json.loads((package / "errors/catalog.json").read_text())
+            self.assertEqual(list(Draft202012Validator(command_schema).iter_errors(commands)), [])
+            self.assertEqual(list(Draft202012Validator(error_schema).iter_errors(errors)), [])
+            codes = {item["code"] for item in errors["errors"]}
+            self.assertEqual(len(codes), len(errors["errors"]))
+            for command in commands["commands"]:
+                self.assertEqual(command["owner"], package_id)
+                self.assertTrue((package / command["entrypoint"]).is_file())
+                self.assertLessEqual(set(command["errors"]), codes)
+
+    def test_kernel_has_no_skill_specific_branching(self) -> None:
+        forbidden = ("guru-sync-base", "guru-clarify-requirements", "typed_exit", "profile")
+        forbidden_functions = {"prepare", "reviewed_base_freshness", "_reviewed_base_freshness"}
+        for path in ROOT.glob("*.py"):
+            if path.name == "validate.py":
+                continue
+            source = path.read_text()
+            tree = ast.parse(source)
+            from runtime.validate import _fold_string
+            folded = {value for node in ast.walk(tree) if (value := _fold_string(node)) is not None}
+            self.assertFalse(set(forbidden) & folded, path)
+            functions = {node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+            self.assertFalse(forbidden_functions & functions, path)
+
+    def test_kernel_guard_folds_concatenated_skill_ids(self) -> None:
+        from runtime.validate import _fold_string
+        tree = ast.parse('SKILL = "guru-" + "sync-base"')
+        values = [_fold_string(node) for node in ast.walk(tree)]
+        self.assertIn("guru-sync-base", values)
+
+    def test_compat_dispatch_resolves_validator_metadata(self) -> None:
+        package = SKILLS / "packages/guru-sync-base"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "runtime.compat",
+                "--package-root",
+                str(package),
+                "--validator",
+                "sync_executor",
+                "--",
+                "--help",
+            ],
+            cwd=SKILLS,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("usage: sync-base", result.stdout)
+
+
+class QualificationNativeIsolationTests(unittest.TestCase):
+    def architecture_semantic_request(self, root: Path) -> dict[str, object]:
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        workdir = root / "case/execution/workdir"
+        workdir.mkdir(parents=True)
+        files = [
+            "evals/files/impact-current-input.json",
+            "evals/files/planning-semantic-authoring-facts.json",
+        ]
+        for relative in files:
+            target = workdir / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((package / relative).read_bytes())
+        return {
+            "schema_version": "1.0",
+            "adapter_id": "codex",
+            "platform": "codex",
+            "skill_id": "guru-maintain-architecture-baseline",
+            "package_root": str(package),
+            "interface": {
+                "public_invocation": interface["public_contracts"]["invocation"],
+            },
+            "case_id": "planning-semantic-authoring",
+            "prompt": "Review the current Planning Architecture facts.",
+            "files": files,
+            "workdir": str(workdir),
+            "corpus_path": str(package / "evals/evals.json"),
+            "corpus_sha256": hashlib.sha256(
+                (package / "evals/evals.json").read_bytes()
+            ).hexdigest(),
+            "runtime_target": str(
+                Path(__file__).resolve().parents[5]
+                / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+            ),
+            "native_execution_mode": "semantic_authoring",
+            "native_execution_adapter": "codex",
+            "model_id": "gpt-5.6-sol",
+        }
+
+    def test_architecture_semantic_authoring_stages_facts_without_owner_result(self) -> None:
+        from adapters.eval import eval_constants, native_adapter, owner_staging
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            package, target, _ = owner_staging.stage_owner_execution(
+                request,
+                Path(request["workdir"]).parent,
+                Path(request["runtime_target"]),
+            )
+            owner_repository = target.parents[4]
+            self.assertEqual(package.name, "guru-maintain-architecture-baseline")
+            self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+            self.assertFalse((owner_repository / ".trellis/.runtime/guru-team/owner-checkpoints").exists())
+            facts = json.loads(
+                (
+                    owner_repository
+                    / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                ).read_text(encoding="utf-8")
+            )
+            self.assertEqual(facts["schema_version"], "1.0")
+            self.assertFalse(any(
+                Path(path).name in {"prd.md", "implement.md", "task.json"}
+                for path in facts["required_reads"]
+            ))
+            public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+            design_locator = public["task_locator"] + "/" + public["planning_root"] + "/design.md"
+            self.assertIn(design_locator, facts["required_reads"])
+            self.assertNotIn(".trellis/tasks/eval-task/design.md", facts["required_reads"])
+            self.assertTrue((owner_repository / design_locator).is_file())
+            for caller in ("transport.py", "import_pipeline.py", "query_summary.py"):
+                self.assertIn(caller, facts["required_reads"])
+                self.assertTrue((owner_repository / caller).is_file())
+            self.assertIn("docs/architecture/06-governance/change-contract.md", facts["required_reads"])
+            self.assertNotIn("expected", json.dumps(facts).lower())
+            self.assertNotIn("typed_exit", json.dumps(facts).lower())
+
+    def test_architecture_semantic_context_and_trace_fail_closed(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            values = native_adapter.build_context(request, "codex")
+            (
+                context, _, wrapper, trace, protocol_path, native_request_path,
+                request_sha256, _, boundary_thread, boundary_stop, _,
+            ) = values
+            try:
+                protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+                native_request = json.loads(native_request_path.read_text(encoding="utf-8"))
+                self.assertEqual(native_request["native_execution_mode"], "semantic_authoring")
+                self.assertEqual(request["native_execution_adapter"], "codex")
+                self.assertEqual(request["model_id"], "gpt-5.6-sol")
+                self.assertNotIn("expected_exit", native_request)
+                self.assertNotIn("owner_result", json.dumps(native_request).lower())
+                self.assertIn("references/contract.md", context)
+                self.assertIn("schemas/semantic-result-delivery-1.0.schema.json", context)
+                owner_repository = Path(protocol["owner_repository"])
+                self.assertFalse((owner_repository / eval_constants.OWNER_RESULT).exists())
+
+                projection = Path(protocol["projection_root"])
+                repository = Path(protocol["repository_projection_root"])
+                case_root = Path(protocol["model_root"]) / "evidence/case"
+                facts_path = repository / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
+                facts = json.loads(facts_path.read_text(encoding="utf-8"))
+                from adapters.eval.architecture_authoring import public_contract_reads
+                public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+                public_reads = public_contract_reads(projection, public)
+                case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
+                owner_reads = [
+                    facts_path,
+                    *(repository / relative for relative in facts["required_reads"]),
+                ]
+                events = []
+                for kind, paths in (
+                    ("skill_contract", public_reads),
+                    ("case_file", case_reads),
+                    ("owner_file", owner_reads),
+                ):
+                    for path in paths:
+                        events.append({
+                            "kind": "read",
+                            "target_kind": kind,
+                            "path": str(path.resolve()),
+                            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                            "request_sha256": request_sha256,
+                        })
+                public_stdout = '{"exit_id":"baseline_current"}'
+                events.append({
+                    "kind": "invoke",
+                    "wrapper_path": str(wrapper.resolve()),
+                    "argv": [str(wrapper.resolve()), "--invocation", "-"],
+                    "returncode": 0,
+                    "stdout_sha256": hashlib.sha256(public_stdout.encode()).hexdigest(),
+                    "stderr_sha256": hashlib.sha256(b"").hexdigest(),
+                    "request_sha256": request_sha256,
+                })
+                payload = {
+                    "schema_version": "1.0",
+                    "request_sha256": request_sha256,
+                    "projection_root": str(projection.resolve()),
+                    "skill_sha256": protocol["skill_sha256"],
+                    "wrapper_sha256": protocol["wrapper_sha256"],
+                    "events": events,
+                }
+                trace.write_text(json.dumps(payload), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                extra_authority = repository / ".trellis/workflow.md"
+                source_extra_authority = owner_repository / ".trellis/workflow.md"
+                self.assertTrue(extra_authority.is_file())
+                self.assertEqual(
+                    extra_authority.read_bytes(), source_extra_authority.read_bytes()
+                )
+                self.assertNotIn(
+                    extra_authority.relative_to(repository).as_posix(),
+                    facts["required_reads"],
+                )
+                extra_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(extra_authority.resolve()),
+                    "sha256": hashlib.sha256(extra_authority.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                extra_evidence = copy.deepcopy(payload)
+                extra_evidence["events"].insert(-1, extra_event)
+                trace.write_text(json.dumps(extra_evidence), encoding="utf-8")
+                self.assertEqual(
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    ),
+                    ["public_invocation", "evals_not_loaded", "private_runtime_not_read"],
+                )
+                package_runtime = (
+                    repository
+                    / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py"
+                )
+                package_runtime.parent.mkdir(parents=True, exist_ok=True)
+                package_runtime.write_text("raise SystemExit(0)\n", encoding="utf-8")
+                runtime_event = {
+                    "kind": "read",
+                    "target_kind": "owner_file",
+                    "path": str(package_runtime.resolve()),
+                    "sha256": hashlib.sha256(package_runtime.read_bytes()).hexdigest(),
+                    "request_sha256": request_sha256,
+                }
+                private_package_read = copy.deepcopy(payload)
+                private_package_read["events"].insert(-1, runtime_event)
+                trace.write_text(json.dumps(private_package_read), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "undeclared file read"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+                missing_authority = copy.deepcopy(payload)
+                omitted = str((repository / facts["required_reads"][0]).resolve())
+                missing_authority["events"] = [
+                    event for event in missing_authority["events"]
+                    if event.get("path") != omitted
+                ]
+                trace.write_text(json.dumps(missing_authority), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "omitted required authority reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+                missing_contract = copy.deepcopy(payload)
+                missing_contract["events"] = [
+                    event for event in missing_contract["events"]
+                    if event.get("path") != str((projection / "references/contract.md").resolve())
+                ]
+                trace.write_text(json.dumps(missing_contract), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "required public contract reads"):
+                    native_adapter.validate_native_trace(
+                        trace, request_sha256, request, wrapper,
+                        public_stdout, protocol_path,
+                    )
+            finally:
+                boundary_stop.set()
+                boundary_thread.join(timeout=5)
+
+    def test_architecture_semantic_authoring_uses_case_model_identity(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            model_root = root / "model-root"
+            model_root.mkdir()
+            request = self.architecture_semantic_request(root)
+            request["model_id"] = "architecture-eval-model"
+            request["_model_root"] = str(model_root)
+            argv, output = native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                root / "private/native-request.json",
+                model_root / "public-package",
+            )
+
+        self.assertIn("--strict-config", argv)
+        self.assertNotIn("--ignore-user-config", argv)
+        self.assertNotIn("--sandbox", argv)
+        self.assertEqual(
+            argv[argv.index("--model") + 1],
+            "architecture-eval-model",
+        )
+        self.assertEqual(
+            output,
+            (model_root / "output/native-last-message.txt").resolve(),
+        )
+
+    def test_eval_runner_propagates_closed_native_execution_mode(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        observed: dict[str, str] = {}
+        observed_environment: dict[str, dict[str, str] | None] = {}
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+            host_environment: dict[str, str] | None = None,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            observed[request["case_id"]] = request["native_execution_mode"]
+            observed_environment[request["case_id"]] = host_environment
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "unsupported",
+                "public_stdout": "",
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            for case_id in ("planning-semantic-authoring", "no-impact"):
+                args = argparse.Namespace(
+                    adapter="codex",
+                    case=case_id,
+                    comparison_package=None,
+                    current_package=None,
+                    human_feedback=None,
+                    mode="source",
+                    run_root=str(Path(temporary) / case_id),
+                    semantic_grading=None,
+                    skill="guru-maintain-architecture-baseline",
+                )
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(observed["planning-semantic-authoring"], "semantic_authoring")
+        self.assertEqual(observed["no-impact"], "post_owner")
+        self.assertEqual(
+            observed_environment["planning-semantic-authoring"],
+            {"GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(repo_root.resolve())},
+        )
+        self.assertIsNone(observed_environment["no-impact"])
+
+    def test_semantic_authoring_is_codex_only_and_shared_skips_adapter(self) -> None:
+        from adapters.eval import native_adapter
+        from runtime import eval_runner
+
+        with tempfile.TemporaryDirectory() as request_root:
+            request = self.architecture_semantic_request(Path(request_root))
+            self.assertTrue(native_adapter.semantic_authoring_supported(request, "codex"))
+            for adapter in ("shared", "claude", "cursor"):
+                self.assertFalse(native_adapter.semantic_authoring_supported(request, adapter))
+
+        repo_root = SKILLS.parents[2]
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "call_adapter",
+        ) as call_adapter:
+            args = argparse.Namespace(
+                adapter="shared",
+                case="planning-semantic-authoring",
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+        self.assertEqual(result["status"], "unsupported")
+        self.assertEqual(result["cases"][0]["status"], "unsupported")
+        call_adapter.assert_not_called()
+
+    def test_shared_full_eval_excludes_codex_only_semantic_authoring(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        expected_case_ids = {
+            "bootstrap-foundation-current",
+            "no-impact",
+            "target-native",
+            "legacy-boundary-convergence",
+            "dedicated-refactor-slice",
+            "scope-expansion",
+            "fitness-regression",
+            "parallel-stale",
+            "unpromoted-contribution",
+            "next-task-consumption",
+            "missing-external-evidence",
+            "repair-current-contract",
+            "whole-task-acceptance-current",
+            "delivery-task-impact-sync-identity",
+            "delivery-promotion-identity",
+            "delivery-repair-identity",
+            "delivery-bootstrap-foundation-identity",
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            {case["case_id"] for case in result["cases"]},
+            expected_case_ids,
+        )
+        self.assertNotIn(
+            "planning-semantic-authoring",
+            {case["case_id"] for case in result["cases"]},
+        )
+        self.assertTrue(all(case["status"] == "passed" for case in result["cases"]))
+
+    def test_shared_full_eval_runs_schema_valid_post_owner_case(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        post_owner = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        post_owner["native_execution_mode"] = "post_owner"
+        corpus["evals"] = [post_owner]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            result = eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(result["status"], "passed", result)
+        self.assertEqual(
+            [case["case_id"] for case in result["cases"]],
+            ["no-impact"],
+        )
+
+    def test_eval_case_identity_fails_closed_for_incomplete_or_invalid_results(self) -> None:
+        from runtime import eval_runner
+
+        expected = ["alpha", "beta"]
+        valid = [
+            {"comparison_side": "current", "case_id": "alpha"},
+            {"comparison_side": "current", "case_id": "beta"},
+        ]
+        eval_runner.validate_eval_case_identity(expected, ["current"], valid)
+
+        invalid_results = {
+            "missing": valid[:1],
+            "duplicate": [valid[0], valid[0]],
+            "unknown": [valid[0], {"comparison_side": "current", "case_id": "gamma"}],
+            "unexpected-side": [
+                valid[0],
+                {"comparison_side": "comparison", "case_id": "beta"},
+            ],
+        }
+        for label, results in invalid_results.items():
+            with self.subTest(label=label), self.assertRaises(CommandError) as raised:
+                eval_runner.validate_eval_case_identity(expected, ["current"], results)
+            self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
+        with self.assertRaises(CommandError) as raised:
+            eval_runner.validate_eval_case_identity(
+                ["alpha", "alpha"], ["current"], valid
+            )
+        self.assertEqual(raised.exception.code, "eval_declared_case_identity_invalid")
+
+    def test_full_run_completeness_does_not_trust_execution_selection(self) -> None:
+        from runtime import eval_runner
+
+        repo_root = SKILLS.parents[2]
+        package = SKILLS / "packages/guru-maintain-architecture-baseline"
+        corpus = json.loads((package / "evals/evals.json").read_text(encoding="utf-8"))
+        first = copy.deepcopy(
+            next(case for case in corpus["evals"] if case["id"] == "no-impact")
+        )
+        second = copy.deepcopy(first)
+        second["id"] = "second-post-owner"
+        corpus["evals"] = [first, second]
+        corpus_bytes = json.dumps(corpus, separators=(",", ":")).encode()
+
+        def fake_corpus(
+            _skills: Path,
+            _package: Path,
+            _interface: dict[str, object],
+        ) -> tuple[dict[str, object], bytes]:
+            return corpus, corpus_bytes
+
+        def fake_adapter(
+            _skills: Path,
+            _descriptor: dict[str, object],
+            request_path: Path,
+        ) -> dict[str, object]:
+            request = json.loads(request_path.read_text(encoding="utf-8"))
+            transcript = request_path.parent / "adapter-transcript.json"
+            transcript.write_text("{}\n", encoding="utf-8")
+            public_output = json.loads(
+                (package / "examples/public-output-current.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            return {
+                "corpus_sha256": request["corpus_sha256"],
+                "capability_status": "executed",
+                "public_stdout": json.dumps(public_output),
+                "public_stderr": "",
+                "trace_events": [],
+                "transcript_locator": str(transcript),
+                "native_trace_locator": str(request_path.parent / "native-trace.json"),
+                "timing_ms": 0,
+            }
+
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.object(
+            eval_runner, "corpus", side_effect=fake_corpus,
+        ), mock.patch.object(
+            eval_runner, "applicable_eval_cases", return_value=[first],
+        ), mock.patch.object(
+            eval_runner, "call_adapter", side_effect=fake_adapter,
+        ):
+            args = argparse.Namespace(
+                adapter="shared",
+                case=None,
+                comparison_package=None,
+                current_package=None,
+                human_feedback=None,
+                mode="source",
+                run_root=str(Path(temporary) / "shared"),
+                semantic_grading=None,
+                skill="guru-maintain-architecture-baseline",
+            )
+            with self.assertRaises(CommandError) as raised:
+                eval_runner.run(repo_root, SKILLS, args)
+
+        self.assertEqual(raised.exception.code, "eval_result_case_identity_mismatch")
+
+    def test_architecture_semantic_authoring_uses_isolated_permissions_and_probe(self) -> None:
+        from adapters.eval import eval_constants, native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            codex_home = auth_root / "codex-home"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            fake_codex = auth_root / "fake-codex"
+            sentinel = auth_root / "model-called"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            probe = {
+                "argv": [str(fake_codex), "sandbox"],
+                "returncode": 0,
+                "stdout": '{"positive":true,"denied":[]}',
+                "stderr": "",
+                "result": {"positive": True, "denied": []},
+            }
+            environment = {
+                "CODEX_HOME": str(codex_home),
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            with mock.patch.dict(os.environ, environment, clear=False), mock.patch.object(
+                native_adapter.sys,
+                "argv",
+                [
+                    "native_adapter.py",
+                    "--adapter", "codex",
+                    "--native-command", str(fake_codex),
+                    "--request", str(request_path),
+                ],
+            ), mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe,
+            ) as run_probe, mock.patch.object(
+                native_adapter,
+                "emit",
+                side_effect=lambda payload: emitted.append(payload) or 0,
+            ):
+                self.assertEqual(native_adapter.main(), 0)
+
+            self.assertEqual(len(emitted), 1)
+            self.assertEqual(emitted[0]["capability_status"], "execution_error")
+            self.assertTrue(sentinel.is_file())
+            run_probe.assert_called_once()
+            config = (codex_home / "config.toml").read_text(encoding="utf-8")
+            transcript = json.loads(
+                (request_path.parent / "adapter-transcript.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            protocol = json.loads(
+                Path(transcript["protocol_path"]).read_text(encoding="utf-8")
+            )
+            required_denied = {
+                codex_home.resolve(),
+                SKILLS.parents[2].resolve(),
+                Path(protocol["private_root"]).resolve(),
+                Path(protocol["owner_repository"]).resolve(),
+                Path(request["workdir"]).resolve(),
+                Path(request["package_root"]).resolve(),
+                (Path(request["package_root"]) / "evals/evals.json").resolve(),
+                Path("/tmp").resolve(),
+                Path("/private/tmp").resolve(),
+            }
+            self.assertEqual(
+                transcript["environment"]["CODEX_HOME"],
+                str(codex_home.resolve()),
+            )
+            self.assertEqual(transcript["permission_probe"], probe)
+            for denied in required_denied:
+                self.assertIn(json.dumps(str(denied)), config)
+            self.assertIn(
+                f'default_permissions = "{eval_constants.QUALIFICATION_PERMISSION_PROFILE}"',
+                config,
+            )
+
+    def test_architecture_semantic_authoring_permission_setup_and_probe_fail_closed(self) -> None:
+        from adapters.eval import native_adapter
+
+        def invoke(
+            root: Path,
+            auth_root: Path,
+            *,
+            include_codex_home: bool,
+            probe_result: object,
+        ) -> tuple[dict[str, object], Path, mock.Mock]:
+            codex_home = auth_root / f"codex-home-{root.name}"
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}\n", encoding="utf-8")
+            auth.chmod(0o600)
+            sentinel = auth_root / f"model-called-{root.name}"
+            fake_codex = auth_root / f"fake-codex-{root.name}"
+            fake_codex.write_text(
+                "#!/bin/sh\n"
+                f"printf called > {str(sentinel)!r}\n"
+                "exit 1\n",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            request = self.architecture_semantic_request(root)
+            request_path = root / "current/planning-semantic-authoring/adapter-request.json"
+            request_path.parent.mkdir(parents=True)
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            emitted: list[dict[str, object]] = []
+            environment = {
+                "GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE": str(SKILLS.parents[2]),
+                "PATH": os.defpath,
+            }
+            if include_codex_home:
+                environment["CODEX_HOME"] = str(codex_home)
+            probe_patch = mock.patch.object(
+                native_adapter,
+                "run_codex_permission_probe",
+                return_value=probe_result,
+            )
+            with mock.patch.dict(os.environ, environment, clear=False):
+                if not include_codex_home:
+                    os.environ.pop("CODEX_HOME", None)
+                with mock.patch.object(
+                    native_adapter.sys,
+                    "argv",
+                    [
+                        "native_adapter.py",
+                        "--adapter", "codex",
+                        "--native-command", str(fake_codex),
+                        "--request", str(request_path),
+                    ],
+                ), probe_patch as run_probe, mock.patch.object(
+                    native_adapter,
+                    "emit",
+                    side_effect=lambda payload: emitted.append(payload) or 0,
+                ):
+                    self.assertEqual(native_adapter.main(), 0)
+            self.assertEqual(len(emitted), 1)
+            self.assertFalse(sentinel.exists())
+            return emitted[0], request_path, run_probe
+
+        with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as auth_temporary:
+            root = Path(temporary)
+            auth_root = Path(auth_temporary)
+            missing_home, missing_home_request, missing_home_probe = invoke(
+                root / "missing-home",
+                auth_root,
+                include_codex_home=False,
+                probe_result={"returncode": 0},
+            )
+            self.assertEqual(missing_home["capability_status"], "execution_error")
+            self.assertIn("isolated Codex authoring setup failed", missing_home["public_stderr"])
+            self.assertIn(
+                "requires one external isolated CODEX_HOME",
+                json.loads(
+                    (missing_home_request.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )["error"],
+            )
+            missing_home_probe.assert_not_called()
+
+            for name, probe_result in (
+                ("missing-probe", {}),
+                ("failed-probe", {"returncode": 1, "result": {"positive": False}}),
+            ):
+                response, request_path, run_probe = invoke(
+                    root / name,
+                    auth_root,
+                    include_codex_home=True,
+                    probe_result=probe_result,
+                )
+                self.assertEqual(response["capability_status"], "execution_error")
+                self.assertEqual(
+                    response["public_stderr"],
+                    "isolated Codex authoring permission probe failed",
+                )
+                run_probe.assert_called_once()
+                transcript = json.loads(
+                    (request_path.parent / "adapter-transcript.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(transcript["permission_probe"], probe_result)
+
+    def test_semantic_authoring_adapter_guard_rejects_shared_direct_call(self) -> None:
+        from adapters.eval import native_adapter
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = self.architecture_semantic_request(root)
+            request["adapter_id"] = "shared"
+            request["platform"] = "shared"
+            request_path = root / "adapter-request.json"
+            request_path.write_text(json.dumps(request), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(Path(native_adapter.__file__).resolve()),
+                    "--adapter",
+                    "shared",
+                    "--native-command",
+                    "guru-team-shared-eval",
+                    "--request",
+                    str(request_path),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        response = json.loads(result.stdout)
+        self.assertEqual(response["capability_status"], "unsupported")
+        self.assertEqual(response["public_stderr"], "")
+
+    def test_semantic_authoring_schema_requires_adapter_and_model(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        case_schema = json.loads(
+            (SKILLS / "schemas/skill-evals.schema.json").read_text(encoding="utf-8")
+        )
+        request_schema = json.loads(
+            (SKILLS / "schemas/skill-eval-adapter-request.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        corpus = json.loads(
+            (
+                SKILLS
+                / "packages/guru-maintain-architecture-baseline/evals/evals.json"
+            ).read_text(encoding="utf-8")
+        )
+        semantic_case = next(
+            case for case in corpus["evals"]
+            if case["id"] == "planning-semantic-authoring"
+        )
+        self.assertEqual(
+            list(Draft202012Validator(case_schema).iter_errors(corpus)), []
+        )
+        for field in ("native_execution_adapter", "model_id"):
+            invalid = copy.deepcopy(corpus)
+            target = next(
+                case for case in invalid["evals"]
+                if case["id"] == "planning-semantic-authoring"
+            )
+            target.pop(field)
+            self.assertTrue(list(Draft202012Validator(case_schema).iter_errors(invalid)))
+
+        for mode in (None, "post_owner"):
+            invalid = copy.deepcopy(corpus)
+            target = next(case for case in invalid["evals"] if case["id"] == "no-impact")
+            if mode is not None:
+                target["native_execution_mode"] = mode
+            target["native_execution_adapter"] = "codex"
+            target["model_id"] = "gpt-5.6-sol"
+            self.assertTrue(
+                list(Draft202012Validator(case_schema).iter_errors(invalid))
+            )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            request = self.architecture_semantic_request(Path(temporary))
+            self.assertEqual(
+                list(Draft202012Validator(request_schema).iter_errors(request)), []
+            )
+            for field in ("native_execution_adapter", "model_id"):
+                invalid = dict(request)
+                invalid.pop(field)
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
+
+            for mode in (None, "post_owner"):
+                invalid = dict(request)
+                if mode is None:
+                    invalid.pop("native_execution_mode")
+                else:
+                    invalid["native_execution_mode"] = mode
+                self.assertTrue(
+                    list(Draft202012Validator(request_schema).iter_errors(invalid))
+                )
+
+    def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+        from jsonschema import Draft202012Validator
+
+        class FixtureRuntime:
+            @staticmethod
+            def read_json(_path: Path) -> dict[str, str]:
+                return {"base_branch": "main"}
+
+            @staticmethod
+            def diff_base_ref(_fixture: Path, _base: str) -> str:
+                return "origin/main"
+
+            @staticmethod
+            def changed_files(_fixture: Path, _range: str) -> list[str]:
+                return ["src/production-eval.txt"]
+
+            @staticmethod
+            def git_status_paths(_fixture: Path) -> list[str]:
+                return []
+
+            @staticmethod
+            def write_json(path: Path, payload: dict[str, object]) -> None:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(payload), encoding="utf-8")
+
+        schema = json.loads(
+            (
+                SKILLS
+                / "packages/guru-check-task/schemas/phase2-check.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "passed": (None, None),
+            "implementation_required": (
+                "candidate:phase2:defect",
+                "qualified_current",
+            ),
+            "planning_stale": (
+                "candidate:phase2:scope",
+                "qualified_approved_expansion",
+            ),
+            "blocked": (None, None),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = Path(temporary)
+            task = fixture / ".trellis/tasks/phase2-eval"
+            package = SKILLS / "packages/guru-check-task"
+            for exit_id, (candidate_ref, decision) in expected.items():
+                with self.subTest(exit_id=exit_id):
+                    path = production_fixtures.production_phase2_input(
+                        FixtureRuntime(), fixture, task, package, exit_id
+                    )
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                    current = {
+                        "schema_version": "5.0",
+                        "skill_id": "guru-check-task",
+                        "task_ref": ".trellis/tasks/phase2-eval",
+                        "phase2_capture_commit": "1" * 40,
+                        "reviewed_content_sha256": "2" * 64,
+                        **payload,
+                    }
+                    errors = list(Draft202012Validator(schema).iter_errors(current))
+                    self.assertEqual([], errors)
+                    self.assertEqual(
+                        [(candidate_ref, decision)] if candidate_ref else [],
+                        [
+                            (row["candidate_ref"], row["decision"])
+                            for row in payload["candidate_classifications"]
+                        ],
+                    )
+                    linked_refs = {
+                        row["candidate_ref"]
+                        for key in ("scope_decisions", "findings")
+                        for row in payload["semantic_review"][key]
+                    }
+                    self.assertLessEqual(
+                        linked_refs, {candidate_ref} if candidate_ref else set()
+                    )
+
+    def test_production_branch_review_inputs_close_schema_6_for_every_exit(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads(
+            (
+                SKILLS
+                / "packages/guru-review-branch/schemas/review-gate-6.0.schema.json"
+            ).read_text(encoding="utf-8")
+        )
+        expected = {
+            "passed": ["rejected_not_reproduced"] * 3,
+            "implementation_required": ["qualified_current"],
+            "scope_confirmation_required": ["rejected_no_authority"],
+            "blocked": ["rejected_not_reproduced"] * 3,
+        }
+        for exit_id, decisions in expected.items():
+            with self.subTest(exit_id=exit_id):
+                candidates = production_fixtures.production_review_candidate(
+                    exit_id,
+                    "1" * 40,
+                )
+                classifications = [
+                    production_fixtures.production_review_classification(item)
+                    for item in candidates
+                ]
+                semantic_candidates = [
+                    production_fixtures.production_review_semantic_candidate(item)
+                    for item in candidates
+                ]
+                semantic = {
+                    "qualified_findings": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "qualified_finding"
+                    ],
+                    "scope_proposals": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "scope_proposal"
+                    ],
+                    "observations": [],
+                    "followup_candidates": [],
+                    "rejected_candidates": [
+                        item for item in semantic_candidates
+                        if item["disposition"] == "rejected_candidate"
+                    ],
+                    "ai_review_gate": {
+                        "status": exit_id,
+                        "summary": "Reviewed the complete current range.",
+                    },
+                }
+                payload = {
+                    "schema_version": "6.0",
+                    "skill_id": "guru-review-branch",
+                    "generated_at": "2026-08-16T00:00:00Z",
+                    "task_dir": ".trellis/tasks/branch-review-eval",
+                    "mode": "workflow",
+                    "profile": "branch_review",
+                    "review_intent": "initial_review",
+                    "typed_exit": exit_id,
+                    "review_commit": "1" * 40,
+                    "reviewed_content_algorithm": "guru-reviewed-content-1.0",
+                    "reviewed_content_sha256": "2" * 64,
+                    "base_ref": "origin/main",
+                    "base_head": "3" * 40,
+                    "integration_pair": None,
+                    "candidate_classifications": classifications,
+                    "semantic_review": semantic,
+                    "verification_evidence": {
+                        "reviewer": "independent-reviewer",
+                        "review_source": "independent-agent",
+                        "evidence": ["Reviewed the complete current range."],
+                    },
+                    "facts_sha256": "4" * 64,
+                }
+                errors = list(Draft202012Validator(schema).iter_errors(payload))
+                self.assertEqual([], errors)
+                self.assertEqual(decisions, [row["decision"] for row in classifications])
+                classified_refs = {row["candidate_ref"] for row in classifications}
+                semantic_refs = {
+                    row["candidate_ref"]
+                    for key in (
+                        "qualified_findings",
+                        "scope_proposals",
+                        "observations",
+                        "followup_candidates",
+                        "rejected_candidates",
+                    )
+                    for row in semantic[key]
+                }
+                self.assertEqual(classified_refs, semantic_refs)
+
+    def test_current_delivery_publication_inputs_match_active_interface(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        package = SKILLS / "packages/guru-publish-task-delivery"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
+        active = {row["id"] for row in registry["skills"] if row["state"] == "active"}
+        self.assertIn("guru-publish-task-delivery", active)
+        self.assertNotIn("guru-review-task-publication", active)
+        for profile in interface["public_contracts"]["input"]["profiles"]:
+            with self.subTest(profile=profile["id"]):
+                schema = json.loads((package / profile["schema"]["path"]).read_text(encoding="utf-8"))
+                example = json.loads((package / profile["example"]["path"]).read_text(encoding="utf-8"))
+                self.assertEqual(list(Draft202012Validator(schema).iter_errors(example)), [])
+
+    def test_qualification_public_projection_contains_declared_contracts(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        package = SKILLS / "packages/guru-qualify-normal-scenario"
+        interface = json.loads((package / "interface.json").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as tmp:
+            projection, _, _, _, _ = eval_support.stage_public_projection(
+                {
+                    "skill_id": eval_constants.QUALIFICATION_SKILL,
+                    "package_root": str(package),
+                    "interface": {
+                        "public_invocation": interface["public_contracts"]["invocation"],
+                    },
+                },
+                Path(tmp),
+            )
+            contract = projection / "references/contract.md"
+            envelope_relative = Path(
+                interface["public_contracts"]["invocation"]["call_local"]["envelope"]["path"]
+            )
+            envelope = projection / envelope_relative
+            self.assertEqual(contract.read_bytes(), (package / "references/contract.md").read_bytes())
+            self.assertEqual(envelope.read_bytes(), (SKILLS / envelope_relative).read_bytes())
+            for relative in (
+                Path("schemas/semantic-result.schema.json"),
+                Path("examples/semantic-result.json"),
+                Path("examples/public-invocation.json"),
+            ):
+                self.assertEqual(
+                    (projection / relative).read_bytes(),
+                    (package / relative).read_bytes(),
+                )
+            self.assertFalse((projection / "evals").exists())
+            self.assertFalse((projection / "runtime").exists())
+
+    def test_qualification_boundary_uses_owner_managed_runtime(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        package = SKILLS / "packages/guru-qualify-normal-scenario"
+        repository = Path(__file__).resolve().parents[5]
+        runtime_target = repository / ".trellis/guru-team/scripts/bash/run-skill-command.sh"
+        with tempfile.TemporaryDirectory() as tmp:
+            execution_root = Path(tmp)
+            cache_root = execution_root / "managed-cache"
+            with mock.patch.dict(
+                os.environ,
+                {"GURU_TEAM_PYTHON_CACHE_ROOT": str(cache_root)},
+            ):
+                installed_package, installed_target, environment = owner_staging.stage_owner_execution(
+                    {
+                        "skill_id": eval_constants.QUALIFICATION_SKILL,
+                        "package_root": str(package),
+                        "package_sha256": eval_support.package_tree_sha256(package),
+                    },
+                    execution_root,
+                    runtime_target,
+                )
+            owner_repository = installed_target.parents[4]
+            active = json.loads(
+                (owner_repository / ".git/guru-team/python/active.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                environment,
+                {"GURU_TEAM_PYTHON_CACHE_ROOT": str(cache_root.resolve())},
+            )
+            self.assertEqual(Path(active["interpreter"]).parents[3], cache_root.resolve())
+            request_fifo = execution_root / "qualification-request"
+            response_fifo = execution_root / "qualification-response"
+            stop = native_adapter.threading.Event()
+            binding: dict[str, str] = {}
+            thread = native_adapter.start_qualification_runtime_boundary(
+                request_fifo,
+                response_fifo,
+                stop,
+                owner_repository,
+                installed_package,
+                environment,
+                binding,
+            )
+            try:
+                with request_fifo.open("w", encoding="utf-8") as handle:
+                    json.dump(
+                        {"arguments": ["--invocation", "-"], "stdin": "{}"},
+                        handle,
+                        separators=(",", ":"),
+                    )
+                with response_fifo.open("r", encoding="utf-8") as handle:
+                    response = json.load(handle)
+            finally:
+                stop.set()
+                thread.join(timeout=5)
+            self.assertFalse(thread.is_alive())
+            self.assertNotEqual(response["returncode"], 0)
+            combined_output = response["stdout"] + response["stderr"]
+            self.assertNotIn("managed_runtime_missing", combined_output)
+            self.assertIn('"code":"schema_mismatch"', combined_output)
+
+    def test_model_request_uses_protocol_2_and_hides_control_identity(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        request = {
+            "skill_id": eval_constants.QUALIFICATION_SKILL,
+            "case_id": "case-secret-identity",
+            "invocation_id": "1" * 64,
+            "invocation_index": 4,
+            "input_profile_id": "implementation_discovery",
+            "pair_id": "pair-secret-identity",
+            "pressure_framing": "severity",
+            "expected_exit": "classified",
+            "expected_decisions": [{"decision": "qualified_current"}],
+            "prompt": "Review one call-local candidate against current authority.",
+            "interface": {
+                "public_invocation": {
+                    "wrapper": "scripts/invoke.sh",
+                    "input_binding": {
+                        "kind": "structured_json",
+                        "profile_selector": {
+                            "source": "aggregate_public_input",
+                            "field": "profile",
+                        },
+                    },
+                    "example_argv": ["--invocation", "-"],
+                },
+            },
+        }
+        hashes = set()
+        for root_name in ("first-random-root", "second-random-root"):
+            with tempfile.TemporaryDirectory() as tmp:
+                model_root = Path(tmp) / root_name
+                projection = model_root / "public-package"
+                repository = model_root / "evidence/repository"
+                evidence = model_root / "evidence/case/evidence-01.json"
+                projection.mkdir(parents=True)
+                repository.mkdir(parents=True)
+                evidence.parent.mkdir(parents=True, exist_ok=True)
+                evidence.write_text("{}", encoding="utf-8")
+                repository_identity = {
+                    "repo_locator": ".",
+                    "current_head": "3" * 40,
+                }
+                payload = eval_support.qualification_model_request(
+                    request,
+                    model_root=model_root,
+                    projection_root=projection,
+                    repository_root=repository,
+                    evidence_paths=[evidence],
+                    repository_identity=repository_identity,
+                )
+                encoded = json.dumps(payload, sort_keys=True)
+                self.assertEqual(payload["schema_version"], "3.0")
+                self.assertEqual(
+                    payload["protocol"],
+                    "guru-qualification-production-prompt-2.0",
+                )
+                self.assertEqual(payload["public_package_root"], "public-package")
+                self.assertEqual(
+                    payload["repository_evidence_root"],
+                    "evidence/repository",
+                )
+                self.assertEqual(
+                    payload["public_repository_identity"],
+                    repository_identity,
+                )
+                self.assertEqual(
+                    payload["public_invocation"]["input_binding"]["profile_selector"],
+                    {"source": "aggregate_public_input", "field": "profile"},
+                )
+                for forbidden in (
+                    "case_id",
+                    "case-secret-identity",
+                    "invocation_id",
+                    "invocation_index",
+                    "input_profile_id",
+                    "pair_id",
+                    "pair-secret-identity",
+                    "pressure_framing",
+                    "expected_exit",
+                    "expected_decisions",
+                ):
+                    self.assertNotIn(forbidden, encoded)
+                hashes.add(
+                    eval_support.qualification_prompt_sha256(
+                        payload,
+                        "2" * 64,
+                        "gpt-5.6-sol",
+                    )
+                )
+        self.assertEqual(len(hashes), 1)
+
+    def test_qualification_public_repository_identity_uses_fresh_owner_head(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            owner = Path(tmp) / "owner"
+            owner.mkdir()
+            subprocess.run(["git", "init", "-q"], cwd=owner, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "eval@example.invalid"],
+                cwd=owner,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Qualification Eval"],
+                cwd=owner,
+                check=True,
+            )
+            (owner / "README.md").write_text("fresh owner identity\n", encoding="utf-8")
+            subprocess.run(["git", "add", "README.md"], cwd=owner, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "owner fixture"], cwd=owner, check=True)
+            head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=owner,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+
+            self.assertEqual(
+                eval_support.qualification_public_repository_identity(owner),
+                {"repo_locator": ".", "current_head": head},
+            )
+
+    def test_qualification_public_authoring_fixture_closes_all_profile_targets(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+        from jsonschema import Draft202012Validator
+
+        callers = {
+            "task_free_pre_write": "guru-execute-task-free-change",
+            "task_free_evolution": "guru-execute-task-free-change",
+            "requirements_scope_set": "guru-clarify-requirements",
+            "change_request_candidate_set": "guru-review-change-request",
+            "planning_scenario_set": "guru-approve-task-plan",
+            "implementation_discovery": "guru-phase2-implementation-coordinator",
+            "base_impact_candidate_set": "guru-reconcile-task-base",
+            "phase2_candidate_set": "guru-check-task",
+            "branch_review_candidate_set": "guru-review-branch",
+            "publication_candidate_set": "guru-review-task-delivery",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            owner = Path(tmp) / "owner"
+            owner.mkdir()
+            subprocess.run(["git", "init", "-q"], cwd=owner, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "eval@example.invalid"],
+                cwd=owner,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Qualification Eval"],
+                cwd=owner,
+                check=True,
+            )
+            facts_path = eval_support.stage_qualification_public_authoring_fixture(owner)
+            subprocess.run(["git", "add", "."], cwd=owner, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "owner fixture"], cwd=owner, check=True)
+            head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=owner,
+                text=True,
+                stdout=subprocess.PIPE,
+                check=True,
+            ).stdout.strip()
+            facts = json.loads(facts_path.read_text(encoding="utf-8"))
+            self.assertEqual(set(facts), {"schema_version", "targets"})
+            self.assertEqual(facts["schema_version"], "1.0")
+            self.assertEqual(set(facts["targets"]), set(callers))
+            planning_paths = [
+                ".trellis/tasks/current/prd.md",
+                ".trellis/tasks/current/design.md",
+                ".trellis/tasks/current/implement.md",
+            ]
+            planning_rows = [
+                {
+                    "path": path,
+                    "content_sha256": hashlib.sha256(
+                        (owner / path).read_bytes()
+                    ).hexdigest(),
+                }
+                for path in sorted(planning_paths)
+            ]
+            expected_planning_identity = hashlib.sha256(
+                json.dumps(
+                    planning_rows,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode()
+            ).hexdigest()
+            for profile in (
+                "planning_scenario_set",
+                "implementation_discovery",
+                "phase2_candidate_set",
+            ):
+                self.assertEqual(
+                    facts["targets"][profile]["target"]["planning_identity"],
+                    expected_planning_identity,
+                )
+            authority = (owner / "docs/qualification-eval/authority.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("deliberate workflow bypass", authority)
+            self.assertIn("explicit-exclusion precedence", authority)
+            self.assertIn("unsupported-entry or non-reproduction fallbacks", authority)
+            self.assertIn("recorders and executors to return values", authority)
+            self.assertIn("real callers to select the intended runtime", authority)
+            self.assertIn("stale or mismatched identities to fail closed", authority)
+            self.assertIn("canonical package and platform projections", authority)
+            self.assertIn("secret and credential redaction", authority)
+            self.assertIn("permission or destructive-action confirmation", authority)
+            self.assertNotIn("rejected_out_of_scope", authority)
+            self.assertNotIn("qualified_current", authority)
+            self.assertNotIn("qualified_explicit_nonstandard", authority)
+            self.assertNotIn("candidate-issue-236-wrapper-scanner", authority)
+            self.assertFalse(any(profile in authority for profile in callers))
+            for profile, caller in callers.items():
+                row = facts["targets"][profile]
+                target = dict(row["target"])
+                for field in row["current_head_fields"]:
+                    target[field] = head
+                public_input = {
+                    "profile": profile,
+                    "mode": "workflow",
+                    "caller": caller,
+                    "target_locator": row["target_locator"],
+                    "target": target,
+                    "candidate_refs": ["candidate-1"],
+                    "candidate_locators": [{
+                        "candidate_ref": "candidate-1",
+                        "locators": ["path:docs/qualification-eval/authority.md"],
+                    }],
+                }
+                schema_path = (
+                    SKILLS
+                    / "packages/guru-qualify-normal-scenario/schemas"
+                    / f"public-{profile.replace('_', '-')}-input.schema.json"
+                )
+                schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                errors = list(Draft202012Validator(schema).iter_errors(public_input))
+                self.assertEqual(errors, [], (profile, errors))
+                for field in row["current_head_fields"]:
+                    self.assertEqual(target[field], head)
+                for field, value in target.items():
+                    if field.endswith("_identity") and profile != "requirements_scope_set":
+                        self.assertEqual(len(value), 64, (profile, field, value))
+
+    def test_codex_argv_uses_one_neutral_root_without_add_dir(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            model_root = Path(tmp) / "model-root"
+            model_root.mkdir()
+            request = {
+                "schema_version": "3.0",
+                "skill_id": eval_constants.QUALIFICATION_SKILL,
+                "model_id": "gpt-5.6-sol",
+                "workdir": str(Path(tmp) / "private-workdir"),
+                "_model_root": str(model_root),
+            }
+            argv, output = native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                Path(tmp) / "private/native-request.json",
+                model_root / "public-package",
+            )
+        self.assertNotIn("--add-dir", argv)
+        self.assertNotIn("--ignore-user-config", argv)
+        self.assertIn("--strict-config", argv)
+        self.assertEqual(argv.count("--skip-git-repo-check"), 1)
+        self.assertEqual(
+            argv.index("--skip-git-repo-check"),
+            argv.index("--strict-config") + 1,
+        )
+        self.assertEqual(argv.index("--cd"), argv.index("--skip-git-repo-check") + 1)
+        self.assertEqual(argv[argv.index("--cd") + 1], str(model_root.resolve()))
+        self.assertEqual(argv[argv.index("--model") + 1], "gpt-5.6-sol")
+        self.assertEqual(output, (model_root / "output/native-last-message.txt").resolve())
+        request.pop("skill_id")
+        request["model_id"] = "gpt-5.6"
+        with self.assertRaisesRegex(ValueError, "model identity"):
+            native_adapter.native_argv(
+                "codex",
+                "/usr/bin/codex",
+                request,
+                "model-visible-context",
+                model_root / "native-context.txt",
+                Path(tmp) / "private/native-request.json",
+                model_root / "public-package",
+            )
+
+    def test_native_environment_is_explicit_and_secret_free(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model_root = root / "model"
+            temporary_root = model_root / "output"
+            temporary_root.mkdir(parents=True)
+            environment = eval_support.minimal_native_environment(
+                {
+                    "PATH": "/usr/bin:/bin",
+                    "HOME": "/example/home",
+                    "LANG": "C.UTF-8",
+                    "GITHUB_PERSONAL_TOKEN": "must-not-leak",
+                    "OPENAI_API_KEY": "must-not-leak",
+                    "UNRELATED_PARENT_VALUE": "must-not-inherit",
+                },
+                cwd=model_root,
+                codex_home=root / "private/codex-home",
+                temporary_root=temporary_root,
+                control={"GURU_TEAM_NATIVE_REQUEST": str(root / "private/request.json")},
+            )
+        self.assertEqual(
+            set(environment),
+            {
+                "PATH",
+                "HOME",
+                "LANG",
+                "PWD",
+                "PYTHONDONTWRITEBYTECODE",
+                "TMPPREFIX",
+                "TMPDIR",
+                "CODEX_HOME",
+                "GURU_TEAM_NATIVE_REQUEST",
+            },
+        )
+        self.assertEqual(environment["TMPDIR"], str(temporary_root.resolve()))
+        self.assertEqual(
+            environment["TMPPREFIX"],
+            str(temporary_root.resolve() / "zsh"),
+        )
+        self.assertNotIn("must-not-leak", json.dumps(environment))
+        self.assertEqual(
+            eval_support.recorded_native_environment(environment),
+            dict(sorted(environment.items())),
+        )
+
+    def test_native_environment_rejects_temporary_root_outside_cwd(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model_root = root / "model"
+            model_root.mkdir()
+            outside = root / "outside"
+            outside.mkdir()
+            with self.assertRaisesRegex(ValueError, "temporary root must be inside cwd"):
+                eval_support.minimal_native_environment(
+                    {},
+                    cwd=model_root,
+                    temporary_root=outside,
+                )
+
+    def test_external_codex_home_is_owner_private_and_outside_run_root(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_root = root / "run"
+            codex_home = root / "auth-home"
+            run_root.mkdir()
+            codex_home.mkdir(mode=0o700)
+            auth = codex_home / "auth.json"
+            auth.write_text("{}", encoding="utf-8")
+            auth.chmod(0o600)
+            selected = eval_support.external_codex_home(
+                {"CODEX_HOME": str(codex_home)},
+                run_root,
+            )
+            self.assertEqual(selected, codex_home.resolve())
+            eval_support.write_codex_permission_profile(
+                selected,
+                run_root / "model-root",
+                [selected, run_root],
+            )
+            self.assertEqual(stat.S_IMODE(selected.stat().st_mode), 0o700)
+            self.assertEqual(stat.S_IMODE(auth.stat().st_mode), 0o600)
+            self.assertEqual(
+                stat.S_IMODE((selected / "config.toml").stat().st_mode),
+                0o600,
+            )
+            self.assertEqual(list(run_root.rglob("auth.json")), [])
+            with self.assertRaisesRegex(ValueError, "outside"):
+                eval_support.external_codex_home(
+                    {"CODEX_HOME": str(run_root / "nested-home")},
+                    run_root,
+                )
+
+    def test_permission_profile_allows_model_root_and_denies_private_roots(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        codex = shutil.which("codex")
+        if codex is None:
+            self.skipTest("Codex CLI is unavailable for the no-model sandbox probe")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model_root = root / "model-root"
+            private_root = root / "private-control"
+            real_worktree = root / "real-worktree"
+            corpus = root / "corpus.json"
+            auth = root / "auth.json"
+            for directory in (model_root, private_root, real_worktree):
+                directory.mkdir()
+            (private_root / "control.json").write_text("{}", encoding="utf-8")
+            (real_worktree / "README.md").write_text("private", encoding="utf-8")
+            corpus.write_text("{}", encoding="utf-8")
+            auth.write_text("{}", encoding="utf-8")
+            codex_home = private_root / "codex-home"
+            denied = [
+                private_root,
+                real_worktree,
+                corpus,
+                auth,
+                Path("/tmp"),
+                Path("/private/tmp"),
+            ]
+            eval_support.write_codex_permission_profile(
+                codex_home,
+                model_root,
+                denied,
+            )
+            environment = eval_support.minimal_native_environment(
+                dict(os.environ),
+                cwd=model_root,
+                codex_home=codex_home,
+            )
+            result = eval_support.run_codex_permission_probe(
+                codex,
+                environment,
+                model_root,
+                eval_support.canonical_permission_paths(denied),
+            )
+        self.assertEqual(result["returncode"], 0, result)
+        self.assertTrue(result["result"]["positive"])
+        self.assertEqual(
+            set(result["result"]["denied"]),
+            {str(path) for path in eval_support.canonical_permission_paths(denied)},
+        )
+
+    def test_permission_profile_allows_zsh_quoted_heredoc_in_model_tmp(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        codex = shutil.which("codex")
+        if codex is None:
+            self.skipTest("Codex CLI is unavailable for the zsh heredoc sandbox probe")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model_root = root / "model-root"
+            output_root = model_root / "output"
+            private_root = root / "private-control"
+            output_root.mkdir(parents=True)
+            private_root.mkdir()
+            (private_root / "control.json").write_text("{}", encoding="utf-8")
+            codex_home = private_root / "codex-home"
+            denied = [private_root, Path("/tmp"), Path("/private/tmp")]
+            eval_support.write_codex_permission_profile(
+                codex_home,
+                model_root,
+                denied,
+            )
+            environment = eval_support.minimal_native_environment(
+                dict(os.environ),
+                cwd=model_root,
+                codex_home=codex_home,
+                temporary_root=output_root,
+            )
+            heredoc_output = output_root / "quoted-heredoc.txt"
+            process = subprocess.run(
+                [
+                    codex,
+                    "sandbox",
+                    "-P",
+                    eval_constants.QUALIFICATION_PERMISSION_PROFILE,
+                    "-C",
+                    str(model_root),
+                    "/bin/zsh",
+                    "-f",
+                    "-c",
+                    "payload=$(cat <<'GURU_EOF'\nquoted $literal payload\nGURU_EOF\n) || exit $?\n"
+                    "[[ $payload == 'quoted $literal payload' ]] || exit 91\n"
+                    "print -r -- $payload > $1",
+                    "guru-zsh-heredoc",
+                    str(heredoc_output),
+                ],
+                cwd=model_root,
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(process.returncode, 0, process)
+            self.assertEqual(
+                heredoc_output.read_text(encoding="utf-8"),
+                "quoted $literal payload\n",
+            )
+            self.assertEqual(list(output_root.glob("zsh*")), [])
+
+    def test_permission_probe_uses_resolved_base_interpreter(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            denied_root = root / "managed-cache"
+            managed_python = denied_root / "runtime/venv/bin/python"
+            base_interpreter = Path(str(sys._base_executable)).resolve()
+            with (
+                mock.patch.object(native_adapter.sys, "_base_executable", str(base_interpreter)),
+                mock.patch.object(native_adapter.sys, "executable", str(managed_python)),
+            ):
+                argv = eval_support.permission_probe_argv(
+                    "/usr/bin/codex",
+                    root / "model-root",
+                    root / "model-root/permission-probe.py",
+                    [denied_root, Path("/tmp"), Path("/private/tmp")],
+                )
+        self.assertEqual(Path(argv[6]), base_interpreter)
+        self.assertNotEqual(argv[6], str(managed_python))
+
+    def test_qualification_trace_helper_uses_resolved_base_interpreter(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        base_interpreter = Path(str(sys._base_executable)).resolve()
+        managed_python = Path("/tmp/guru-managed/venv/bin/python")
+        with (
+            mock.patch.object(native_adapter.sys, "_base_executable", str(base_interpreter)),
+            mock.patch.object(native_adapter.sys, "executable", str(managed_python)),
+        ):
+            helper_source = eval_support.qualification_trace_helper_source()
+        self.assertEqual(helper_source.splitlines()[0], f"#!{base_interpreter}")
+        self.assertNotIn(str(managed_python), helper_source.splitlines()[0])
+
+    def test_qualification_trace_helper_rejects_invalid_base_interpreter(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / "missing-python"
+            with mock.patch.object(native_adapter.sys, "_base_executable", str(missing)):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "^qualification trace helper base interpreter is unavailable$",
+                ):
+                    eval_support.qualification_trace_helper_source()
+
+    def test_permission_probe_rejects_invalid_base_interpreter(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with (
+                mock.patch.object(native_adapter.sys, "_base_executable", str(root / "missing-python")),
+                mock.patch.object(native_adapter.sys, "executable", str(root / "managed/venv/bin/python")),
+            ):
+                with self.assertRaisesRegex(ValueError, "base interpreter is unavailable"):
+                    eval_support.permission_probe_argv(
+                        "/usr/bin/codex",
+                        root / "model-root",
+                        root / "model-root/permission-probe.py",
+                        [root / "managed", Path("/tmp"), Path("/private/tmp")],
+                    )
+
+    def test_permission_probe_rejects_base_interpreter_inside_denied_path(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        base_interpreter = Path(str(sys._base_executable)).resolve()
+        self.assertTrue(base_interpreter.is_file())
+        self.assertTrue(os.access(base_interpreter, os.X_OK))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with (
+                mock.patch.object(
+                    native_adapter.sys,
+                    "_base_executable",
+                    str(base_interpreter),
+                ),
+                mock.patch.object(
+                    native_adapter.sys,
+                    "executable",
+                    str(root / "managed/venv/bin/python"),
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "^permission probe base interpreter is inside a denied path$",
+                ):
+                    eval_support.permission_probe_argv(
+                        "/usr/bin/codex",
+                        root / "model-root",
+                        root / "model-root/permission-probe.py",
+                        [base_interpreter, Path("/tmp"), Path("/private/tmp")],
+                    )
+
+    def test_permission_probe_from_tmp_managed_venv_denies_private_roots(self) -> None:
+        codex = shutil.which("codex")
+        if codex is None:
+            self.skipTest("Codex CLI is unavailable for the managed-venv no-model sandbox probe")
+        base_interpreter = Path(str(sys._base_executable)).resolve()
+        with tempfile.TemporaryDirectory(prefix="guru-permission-probe-", dir="/tmp") as tmp:
+            root = Path(tmp)
+            venv = root / "managed/venv"
+            created = subprocess.run(
+                [str(base_interpreter), "-m", "venv", "--without-pip", str(venv)],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(created.returncode, 0, created)
+            managed_python = venv / "bin/python"
+            child_code = """
+import importlib.util,json,os,subprocess,sys
+from pathlib import Path
+from runtime.io import project_intermediate_receipt
+adapter_path,codex,root_value=sys.argv[1:]
+root=Path(root_value)
+spec=importlib.util.spec_from_file_location("managed_venv_native_adapter",adapter_path)
+module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+from adapters.eval import eval_support, eval_constants
+model_root=root/"model-root";private_root=root/"private-control";worktree=root/"source-worktree"
+corpus=root/"corpus.json";auth=root/"auth.json";codex_home=private_root/"codex-home"
+for directory in (model_root,private_root,worktree): directory.mkdir(parents=True)
+(private_root/"control.json").write_text("{}",encoding="utf-8")
+(worktree/"README.md").write_text("private",encoding="utf-8")
+corpus.write_text("{}",encoding="utf-8");auth.write_text("{}",encoding="utf-8")
+denied=[private_root,worktree,corpus,auth,Path("/tmp"),Path("/private/tmp")]
+eval_support.write_codex_permission_profile(codex_home,model_root,denied)
+environment=eval_support.minimal_native_environment(dict(os.environ),cwd=model_root,codex_home=codex_home)
+canonical=eval_support.canonical_permission_paths(denied)
+result=eval_support.run_codex_permission_probe(codex,environment,model_root,canonical)
+projection=model_root/"public-package";repository=model_root/"evidence/repository"
+projection.mkdir(parents=True);repository.mkdir(parents=True)
+skill=projection/"SKILL.md";skill.write_text("contract\\n",encoding="utf-8")
+helper=model_root/"bin/native-trace-helper.py";helper.parent.mkdir()
+helper.write_text(eval_support.qualification_trace_helper_source(),encoding="utf-8");helper.chmod(0o755)
+trace=model_root/"native-trace.json";request_fifo=model_root/".invoke-request";response_fifo=model_root/".invoke-response"
+helper_process=subprocess.run([
+    codex,"sandbox","-P",eval_constants.QUALIFICATION_PERMISSION_PROFILE,"-C",str(model_root),str(helper),
+    "--trace",str(trace),"--request-sha256","a"*64,"--projection-root",str(projection),
+    "--repository-root",str(repository),"--sandbox-root",str(model_root),
+    "--request-fifo",str(request_fifo),"--response-fifo",str(response_fifo),
+    "--skill-sha256","b"*64,"--wrapper-sha256","c"*64,
+    "read","--kind","skill_contract","--path",str(skill),
+],cwd=model_root,env=environment,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
+payload={"sys_executable":sys.executable,"sys_base_executable":sys._base_executable,"selected_interpreter":result["argv"][6],"canonical_denied":[str(path) for path in canonical],"probe":result,"helper_shebang":helper.read_text(encoding="utf-8").splitlines()[0],"helper_returncode":helper_process.returncode,"helper_stdout":helper_process.stdout,"helper_stderr":helper_process.stderr,"trace_exists":trace.is_file()}
+print(json.dumps(payload,sort_keys=True));raise SystemExit(0 if result["returncode"]==0 else 1)
+"""
+            environment = os.environ.copy()
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            result = subprocess.run(
+                [
+                    str(managed_python),
+                    "-c",
+                    child_code,
+                    str(SKILLS / "adapters/eval/native_adapter.py"),
+                    codex,
+                    str(root),
+                ],
+                env=environment,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result)
+            payload = json.loads(result.stdout)
+        self.assertEqual(
+            Path(payload["sys_executable"]),
+            root.resolve() / "managed/venv/bin/python",
+        )
+        self.assertEqual(Path(payload["sys_base_executable"]).resolve(), base_interpreter)
+        self.assertEqual(Path(payload["selected_interpreter"]), base_interpreter)
+        self.assertFalse(str(base_interpreter).startswith(("/tmp/", "/private/tmp/")))
+        self.assertTrue(payload["probe"]["result"]["positive"])
+        self.assertEqual(
+            set(payload["probe"]["result"]["denied"]),
+            set(payload["canonical_denied"]),
+        )
+        self.assertEqual(payload["helper_shebang"], f"#!{base_interpreter}")
+        self.assertEqual(payload["helper_returncode"], 0, payload["helper_stderr"])
+        self.assertEqual(payload["helper_stdout"], "contract\n")
+        self.assertTrue(payload["trace_exists"])
+
+    def test_repository_projection_omits_control_auth_corpus_and_runtime(self) -> None:
+        from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "owner"
+            destination = root / "projection"
+            (source / ".git").mkdir(parents=True)
+            (source / ".trellis/.runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/adapters/eval").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime").mkdir(parents=True)
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime").mkdir(parents=True)
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime").mkdir(parents=True)
+            (source / "package/evals").mkdir(parents=True)
+            (source / "package/tests").mkdir(parents=True)
+            (source / ".git/config").write_text("private", encoding="utf-8")
+            (source / ".trellis/.runtime/result.json").write_text("{}", encoding="utf-8")
+            (source / ".trellis/guru-team/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/adapters/eval/native.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/packages/guru-qualify-normal-scenario/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py").write_text("pass\n", encoding="utf-8")
+            (source / "trellis/skills/guru-team/packages/guru-example-action/runtime/private.py").write_text("pass\n", encoding="utf-8")
+            (source / "package/evals/evals.json").write_text("{}", encoding="utf-8")
+            (source / "package/tests/test_contract.py").write_text("pass\n", encoding="utf-8")
+            (source / "auth.json").write_text("{}", encoding="utf-8")
+            (source / ".env").write_text("SECRET=value", encoding="utf-8")
+            eval_support.stage_repository_projection(source, destination)
+            files = {
+                path.relative_to(destination).as_posix()
+                for path in destination.rglob("*")
+                if path.is_file()
+            }
+        self.assertEqual(files, {"package/tests/test_contract.py"})
+
+
+if __name__ == "__main__":
+    unittest.main()

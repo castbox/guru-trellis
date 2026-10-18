@@ -1,0 +1,193 @@
+# Design Traceability
+
+当前 .53 来源：`castbox/Trellis@db4ca1dfbb5abaf9be62b2a01b70dda3f80df0f0` / CI `34838784963` / CLI/core `0.6.17`；Guru manifest `0.6.17-guru.42`；repository release target `v0.6.17-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.17-guru.53` / `active`。
+完整继承 immutable `.52` 业务合同，当前增量为 #418；旧 pin、release mapping、计数及 promotion/evidence 叙述只绑定其明确历史版本。当前 graph 见 Design inventory，旧验证不证明本次 candidate。
+
+`.53` 完整继承 `.52` 与 reviewed #418 contribution；Architecture 与 RDT 共享 `.53/active` current identity。promotion-created diff 必须重新通过 fresh Phase 2、Task Commit、完整 Branch Review 后才能进入 Publication；本文不声明下游门禁已通过。
+
+| Design / Contract | Requirements | Test |
+| --- | --- | --- |
+| `DES-001`, `DES-006` | `REQ-002`, `REQ-006`, `REQ-046`, `NFR-001` | `TST-002`, `TST-005`, `SCN-005` |
+| `DES-002`, `CON-001` | `REQ-003`, `REQ-008` | `TST-002`, `CASE-001` |
+| `DES-003`, `CON-002..003` | `REQ-004`, `NFR-002..003` | `TST-003`, `CASE-002` |
+| `DES-004`, `DES-005` | `REQ-001`, `REQ-005`, `BEH-001..006` | `TST-001`, `TST-004` |
+| `DES-007` | `REQ-007`, `BEH-007` | `TST-006`, `SCN-006` |
+| `DES-008` | `REQ-009`, `NFR-004` | `TST-001`, `TST-008` |
+| `DES-009` | `REQ-011`, `BEH-008` | `TST-010`, `SCN-003` |
+| `DES-010` | `REQ-013`, `REQ-046`, `BEH-009`, `NFR-001..003` | `TST-005`, `TST-007`, `SCN-005` |
+| `DES-011` | `REQ-012` | `TST-011`, `SCN-004` |
+| `DES-012`, `CON-004` | `REQ-014`, `BEH-010` | `TST-012`, `SCN-009` |
+| `DES-013` | `REQ-015` | `TST-013`, `SCN-010` |
+| `DES-014`, `DES-015`, `DES-017` | `REQ-016`, `REQ-017`, `BEH-011` | `TST-014`, `SCN-011..012` |
+| `DES-016` | `REQ-018` | `TST-015`, `SCN-013` |
+| `DES-018` | `REQ-020` | `TST-017`, `SCN-015..016` |
+| `DES-019` | `REQ-006`, `REQ-018` | `TST-014`, `SCN-011`, `SCN-013` |
+| `DES-026`, `DES-027`, `DES-032` | `REQ-027`, `REQ-028` | `TST-018`, `SCN-028`, `SCN-031..032` |
+| `DES-028` | `REQ-029` | `TST-019`, `SCN-024` |
+| `DES-029` | `REQ-030` | `TST-020`, `SCN-024..027` |
+| `DES-030`, `DES-033` | `REQ-031`, `REQ-033`, `REQ-034` | `TST-021`, `TST-023..024`, `SCN-025..032` |
+| `DES-031`, `DES-032` | `REQ-032` | `TST-018`, `TST-022`, `SCN-029`, `SCN-033` |
+| `DES-034` | `REQ-035` | `TST-025..026`, `SCN-024..033` |
+| `DES-035`, `DES-036` | `REQ-036`, `REQ-037` | `TST-027`, `SCN-034..035` |
+| `DES-037..039` | `REQ-038..040` | `TST-027..028`, `SCN-034..037` |
+| `DES-040`, `DES-041` | `REQ-041`, `REQ-042` | `TST-028..029`, `SCN-038..039` |
+| `DES-042` | `REQ-043`, `REQ-046` | `TST-030`, `SCN-040` |
+| `DES-043` | `REQ-044` | `TST-029`, `SCN-039` |
+| `DES-044` | `REQ-045` | `TST-007`, `TST-029`, `SCN-039` |
+| `DES-045` | `REQ-047`, `REQ-049` | `TST-031..032`, `SCN-041..043` |
+| `DES-046` | `REQ-047..049`, `BEH-008`, `BEH-010` | `TST-031..032`, `SCN-041..044` |
+| `DES-047` | `REQ-049..050` | `TST-033..034`, `SCN-045`, `SCN-047` |
+| `DES-048` | `REQ-051` | `TST-035`, `SCN-046` |
+| `DES-049` | `REQ-052`, `REQ-054..055` | `TST-036`, `TST-038..039` |
+| `DES-050` | `REQ-052`, `REQ-054` | `TST-036`, `TST-038` |
+| `DES-051` | `REQ-052..054` | `TST-037..038` |
+| `DES-052` | `REQ-053`, `REQ-055` | `TST-039` |
+| `DES-053`, `CON-005` | `REQ-056` | `TST-040`, `SCN-053` |
+| `DES-054` | `REQ-057`, `REQ-061` | `TST-041`, `CASE-003` |
+| `DES-055`, `CON-006` | `REQ-058`, `BEH-012`, `NFR-006` | `TST-041..042`, `SCN-049..050` |
+| `DES-056` | `REQ-057`, `REQ-061..062`, `BEH-012` | `TST-041`, `TST-045`, `CASE-003` |
+| `DES-057` | `REQ-059..060`, `NFR-006` | `TST-043..044`, `SCN-051` |
+| `DES-058` | `REQ-060`, `NFR-006` | `TST-042..043`, `SCN-050..052` |
+| `DES-059`, `CON-006` | `REQ-061..062`, `BEH-012` | `TST-044..045`, `CASE-004` |
+| `DES-060` | `REQ-063`, `REQ-065` | `TST-046`, `TST-048`, `SCN-054` |
+| `DES-061` | `REQ-064`, `REQ-066`, `BEH-013` | `TST-047`, `TST-049`, `SCN-054` |
+| `DES-062` | `REQ-065..066` | `TST-046..048`, `SCN-054` |
+| `DES-063` | `REQ-066..067`, `BEH-013` | `TST-049..050`, `SCN-054`, `CASE-003` |
+| `DES-064`, `CON-006` | `REQ-068`, `BEH-013` | `TST-050`, `CASE-004` |
+| `DES-065` | `REQ-069`, `REQ-073`, `BEH-014` | `TST-051..052`, `SCN-055..056` |
+| `DES-066` | `REQ-069..070`, `BEH-014` | `TST-052`, `SCN-055..056` |
+| `DES-067`, `CON-007` | `REQ-071..073`, `BEH-015` | `TST-051`, `TST-053`, `TST-055`, `SCN-057..058` |
+| `DES-068`, `CON-007` | `REQ-072`, `BEH-015` | `TST-054`, `SCN-057..058` |
+| `DES-069..072` | `REQ-074..077` | `TST-056..058`, `TST-061`, `SCN-059..060` |
+| `DES-073..076` | `REQ-077..080` | `TST-056`, `TST-059..060`, `SCN-061` |
+| `DES-077..078` | `REQ-081` | `TST-057..058`, `TST-061`, `SCN-062..063` |
+| `DES-079` | `REQ-082` | `TST-062`, `SCN-064..065` |
+| `DES-080` | `REQ-083` | `TST-063`, `SCN-066` |
+| `DES-081` | `REQ-084` | `TST-064`, `SCN-067` |
+| `DES-082` | `REQ-085` | `TST-065`, `SCN-068` |
+| `DES-083` | `REQ-086` | `TST-066`, `SCN-069` |
+| `DES-084` | `REQ-087..088`, `BEH-016` | `TST-067..068`, `SCN-070..071` |
+| `DES-085..086` | `REQ-089`, `REQ-092` | `TST-067`, `TST-069`, `SCN-071..072` |
+| `DES-087`, `CON-008` | `REQ-088`, `REQ-090`, `BEH-016` | `TST-068`, `TST-070`, `SCN-073` |
+| `DES-088`, `CON-008` | `REQ-090..091`, `BEH-016` | `TST-070..071`, `SCN-074..075` |
+| `DES-089` | `REQ-092` | `TST-072..073`, `SCN-076` |
+
+## #378 Trace
+
+| Design | Requirements | Test |
+| --- | --- | --- |
+| D378-01 | R378-01 | T378-01, T378-04 |
+| D378-02 | R378-02 | T378-02 |
+| D378-03 | R378-03 | T378-03, T378-04 |
+| D378-04 | R378-04 | T378-05 |
+
+## #392 Trace
+
+| Design | Requirements | Test / Scenario |
+| --- | --- | --- |
+| `D392-01` | `R392-01..03` | `T392-01` |
+| `D392-02` | `R392-04` | `T392-02`, `SCN-077` |
+| `D392-03` | `R392-02..03` | `T392-01` |
+| `D392-04` | `R392-05..06`, `BEH-017` | `T392-03..05`, `SCN-077..078` |
+| `D392-05` | `R392-06..08`, `BEH-017` | `T392-05..06`, `SCN-078` |
+| `D392-06` | `R392-04`, `R392-09` | `T392-02`, `T392-06`, `SCN-077..078` |
+
+Architecture refs：`ARCH-CUR-025`、`ARCH-INT-015`、`EVD-024`。Contribution locator：
+`docs/requirements-design-test-contributions/392-release-v0616-guru1/`；其 `reviewed_promoted` 历史状态
+保持 immutable。
+
+## #329 Trace
+
+| Design | Requirements | Test / Scenario |
+| --- | --- | --- |
+| `D329-01` | `R329-01..02` | `T329-01..02`, `SCN-079..080` |
+| `D329-02` | `R329-02..03`, `R329-07`, `R329-09` | `T329-02..03`, `T329-07`, `SCN-079..080` |
+| `D329-03` | `R329-03`, `R329-05`, `BEH-018` | `T329-04`, `SCN-079`, `SCN-082..083` |
+| `D329-04` | `R329-04` | `T329-05`, `SCN-081` |
+| `D329-05` | `R329-06`, `BEH-018` | `T329-06`, `SCN-083` |
+| `D329-06` | `R329-03`, `R329-07`, `BEH-018` | `T329-03`, `T329-06`, `SCN-083` |
+| `D329-07` | `R329-09..10`, `BEH-018` | `T329-01..07`, `SCN-079..084` |
+| `D329-08` | `R329-08`, `R329-10` | `T329-08`, `SCN-084` |
+
+Architecture refs：`ARCH-CUR-026`、`ARCH-INT-016`、`EVD-025`。Contribution locator：
+`docs/requirements-design-test-contributions/329-adopt-developer-free-trellis/`；状态为
+`reviewed_promoted`，`.48` 是 immutable predecessor，`.49` 是 #329 promotion 建立的 immutable
+superseded authority。
+
+## #247 Trace
+
+| Design | Requirements | Test / Scenario |
+| --- | --- | --- |
+| `D247-01` | `R247-01..03` | `T247-01..02`, `T247-07` |
+| `D247-02` | `R247-04` | `T247-03`, `SCN-087` |
+| `D247-03` | `R247-05..06`, `BEH-020` | `T247-04`, `SCN-085..087` |
+| `D247-04` | `R247-06`, `BEH-020` | `T247-04..05`, `SCN-085..086`, `SCN-089..090` |
+| `D247-05` | `R247-06..07`, `BEH-020` | `T247-04..05`, `SCN-085..087`, `SCN-089` |
+| `D247-06` | `R247-01..02`, `R247-10` | `T247-01`, `T247-07..08`, `SCN-090` |
+| `D247-07` | `R247-10` | `T247-08`, `SCN-090` |
+| `D247-08` | `R247-08..09`, `BEH-019` | `T247-06..07`, `SCN-088` |
+
+Architecture refs：`ARCH-CUR-027`、`ARCH-DOM-015`、`ARCH-INT-017`、`ARCH-GOV-009`、
+`ARCH-GAP-008`、`ADR-009`、`EVD-026`。Contribution locator：
+`docs/requirements-design-test-contributions/247-remove-issue-scope-ledger/`；状态为
+`reviewed_promoted`，`.49` 是 immutable predecessor，`.50` 是 #247 建立的 immutable superseded authority。
+
+## #408 Trace
+
+| Design | Requirements | Test |
+| --- | --- | --- |
+| `D408-01` | `R408-01` | `T408-01` |
+| `D408-02` | `R408-02`, `R408-03` | `T408-02`, `T408-03` |
+| `D408-03` | `R408-04`, `R408-05`, `R408-06`, `R408-07` | `T408-04`, `T408-05`, `T408-06`, `T408-07` |
+| `D408-04` | `R408-02`, `R408-03`, `R408-04`, `R408-08` | `T408-02`, `T408-03`, `T408-04`, `T408-08` |
+| `D408-05` | `R408-03`, `R408-04` | `T408-03`, `T408-04` |
+
+状态：`.51` immutable superseded history，implements/verifies。责任定义：[design-main.md](./design-main.md)；
+需求与验收定义分别见 [Requirements](../../../requirements/versions/current-main-0.6.17-guru.53/requirement-main.md)
+及 [Test](../../../test/versions/current-main-0.6.17-guru.53/test-strategy.md)。反向索引为
+[Requirements trace](../../../requirements/versions/current-main-0.6.17-guru.53/traceability.md) 和
+[Test trace](../../../test/versions/current-main-0.6.17-guru.53/traceability.md)。
+Architecture historical inheritance：`.51` / `superseded`；current public identity 为
+[`README.md`](../../../architecture/README.md) / `current-main-0.6.17-guru.53` / `active`；
+`ARCH-CUR-028`、`ARCH-DOM-015`、`ARCH-INT-014/016`、`EVD-027`。历史来源保留于
+[#408 contribution](../../../requirements-design-test-contributions/408-nightly-session-binding-manual-fallback/design.md)，
+不形成第二 current 正文或新的 owner。
+
+## #410 Trace
+
+| Design | Requirements | Test |
+| --- | --- | --- |
+| `D410-01` | `R410-01..02`, `R410-04` | `T410-01`, `T410-05` |
+| `D410-02` | `R410-02..03` | `T410-01..02` |
+| `D410-03` | `R410-04..05`, `BEH-018` | `T410-02..03` |
+| `D410-04` | `R410-06`, `BEH-018` | `T410-04..05`, `T410-07..08` |
+| `D410-05` | `R410-04`, `R410-07`, `BEH-018` | `T410-05..06`, `T410-08` |
+| `D410-06` | `R410-06..07`, `BEH-018` | `T410-04`, `T410-06..08` |
+
+Architecture refs：`ARCH-CUR-029`、`ARCH-INT-014..016`。Contribution locator：
+`docs/requirements-design-test-contributions/410-release-v0617-guru1/`；状态为
+`reviewed_promoted`，`.51` 是 immutable predecessor，`.52` 是 #410 建立的 immutable superseded authority。
+
+## #418 Trace
+
+| Design | Requirements | Test |
+| --- | --- | --- |
+| D418-01 | R418-01, R418-02, R418-06 | T418-01, T418-02, T418-03 |
+| D418-02 | R418-03, R418-06, R418-07 | T418-04, T418-07 |
+| D418-03 | R418-02, R418-04, R418-05, R418-06, R418-07 | T418-05, T418-06, T418-07, T418-08, T418-09, T418-10, T418-11 |
+| D418-04 | R418-02, R418-04, R418-05, R418-06 | T418-08, T418-09, T418-14 |
+| D418-05 | R418-04, R418-05, R418-06 | T418-06, T418-10, T418-13, T418-14 |
+| D418-06 | R418-04, R418-05, R418-06 | T418-12 |
+
+定义：[Requirements](../../../requirements/versions/current-main-0.6.17-guru.53/requirement-main.md)、
+[Design](../../../design/versions/current-main-0.6.17-guru.53/design-main.md)、
+[Test](../../../test/versions/current-main-0.6.17-guru.53/test-strategy.md)。
+反向索引：[Requirements trace](../../../requirements/versions/current-main-0.6.17-guru.53/traceability.md)、
+[Design trace](../../../design/versions/current-main-0.6.17-guru.53/traceability.md)、
+[Test trace](../../../test/versions/current-main-0.6.17-guru.53/traceability.md)。
+关系为 implements/verifies；来源为 [#418 contribution](../../../requirements-design-test-contributions/418-closeout-identity-recovery/manifest.yaml)，
+predecessor .52 -> successor .53；Architecture inheritance 为 .53/active，仅引用
+[ADR-010](../../../architecture/adr/010-archived-review-authority.md)、
+[ARCH-CUR-030](../../../architecture/01-current/system.md)、
+[ARCH-INT-018](../../../architecture/04-integrations/distribution.md)、
+[EVD-028](../../../architecture/evidence/current-evidence.md)，不复制正文。

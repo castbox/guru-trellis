@@ -1,0 +1,137 @@
+"""Regression coverage for documented preparation and stale same-version builds."""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+import test_verify_trellis_upgrade_contract as upgrade_tests
+
+ROOT = Path(__file__).resolve().parents[5]
+
+
+class ForkPreparationTests(unittest.TestCase):
+    def test_installed_session_reader_requires_missing_guru_binding(self):
+        script = r'''
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from common.session_storage import RepositoryFacts, SessionBindingError, _bound_task_workspace
+root = Path(sys.argv[2])
+common = root / ".git"
+common.mkdir()
+(root / ".trellis/guru-team").mkdir(parents=True)
+facts = RepositoryFacts(root, common, (root,), root)
+assert _bound_task_workspace(facts, "task-454", 0, (root,)) is None
+(root / ".trellis/guru-team/extension.json").write_text("{}")
+try:
+    _bound_task_workspace(facts, "task-454", 0, (root,))
+except SessionBindingError as exc:
+    assert "binding_required" in str(exc), exc
+else:
+    raise AssertionError("installed Guru reader fell back without TaskBranchBinding")
+'''
+        with tempfile.TemporaryDirectory(prefix="guru-binding-loss-") as tmp:
+            result = subprocess.run(
+                [sys.executable, "-c", script, str(ROOT / ".trellis/scripts"), tmp],
+                capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_release_readmes_match_canonical_source_identity(self):
+        lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
+        for relative_path in (
+            "README.md",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/presets/guru-team/README.md",
+        ):
+            with self.subTest(path=relative_path):
+                content = (ROOT / relative_path).read_text()
+                self.assertIn(lock["commit"], content)
+                self.assertIn(str(lock["ci_run_id"]), content)
+                self.assertNotIn("34838784963", content)
+
+    def test_readme_stops_on_each_preparation_failure(self):
+        snippet = (ROOT / "README.md").read_text().split("```bash\n", 1)[1].split("```", 1)[0]
+        lock = json.loads((ROOT / "trellis/presets/guru-team/source/trellis-source.json").read_text())
+        for failure in ("status", "dirty", "fetch", "checkout", "sha", "install", "build", ""):
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory(prefix="fork-prepare-") as tmp:
+                work = Path(tmp)
+                fork, commands = work / "fork", work / "bin"
+                fork.mkdir()
+                commands.mkdir()
+                node_marker = work / "node-ran"
+                bodies = {
+                    "git": '''#!/bin/sh
+case "$*" in
+  *"status --porcelain"*)
+    [ "$FAILURE" != status ] || exit 9
+    [ "$FAILURE" != dirty ] || echo " M ordinary-local-edit"
+    ;;
+  *fetch*) [ "$FAILURE" != fetch ] || exit 9 ;;
+  *checkout*) [ "$FAILURE" != checkout ] || exit 9 ;;
+  *"rev-parse HEAD"*)
+    if [ "$FAILURE" = sha ]; then echo wrong; else echo "$EXPECTED_SHA"; fi
+    ;;
+esac
+exit 0
+''',
+                    "pnpm": '''#!/bin/sh
+[ "$FAILURE" != "$1" ] || exit 7
+if [ "$1" = build ]; then mkdir -p packages/cli/dist; fi
+exit 0
+''',
+                    "node": '#!/bin/sh\nprintf ran > "$NODE_MARKER"\n',
+                }
+                for name, body in bodies.items():
+                    path = commands / name
+                    path.write_text(body)
+                    path.chmod(0o755)
+                result = subprocess.run(["bash", "-c", snippet], capture_output=True, text=True, env={
+                    **os.environ, "PATH": str(commands) + os.pathsep + os.environ["PATH"],
+                    "GURU_SOURCE": str(ROOT), "FORK_SOURCE": str(fork),
+                    "TARGET_REPO": str(work / "target"), "EXPECTED_SHA": lock["commit"],
+                    "FAILURE": failure, "NODE_MARKER": str(node_marker),
+                })
+                origin = fork / "packages/cli/dist/.guru-source-commit"
+                if failure:
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(node_marker.exists())
+                    self.assertFalse(origin.exists())
+                else:
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertTrue(node_marker.exists())
+                    self.assertEqual(origin.read_text().strip(), lock["commit"])
+
+    def test_same_version_checkout_without_rebuild_is_rejected(self):
+        matrix = upgrade_tests.load_matrix_helper()
+        with tempfile.TemporaryDirectory(prefix="stale-build-") as tmp:
+            repo, fork = upgrade_tests.VerifyTrellisUpgradeContractTests().fork_fixture(Path(tmp))
+            with upgrade_tests.mock_fork_ci(matrix):
+                matrix.validate_fork_source(repo, fork)
+            source = fork / "packages/cli/src/cli/index.ts"
+            source.parent.mkdir(parents=True)
+            source.write_text('console.log("changed behavior, unchanged release version");\n')
+            subprocess.run(["git", "add", "."], cwd=fork, check=True)
+            subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "same-version behavior change"], cwd=fork, check=True)
+            lock_path = repo / "trellis/presets/guru-team/source/trellis-source.json"
+            lock = json.loads(lock_path.read_text())
+            lock["commit"] = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=fork, text=True).strip()
+            lock["parents"] = subprocess.check_output(
+                ["git", "show", "-s", "--format=%P", "HEAD"], cwd=fork, text=True
+            ).strip().split()
+            lock["tree"] = subprocess.check_output(
+                ["git", "rev-parse", "HEAD^{tree}"], cwd=fork, text=True
+            ).strip()
+            lock_path.write_text(json.dumps(lock))
+            # A normal checkout/lock advance left the prior successful build.
+            with self.assertRaisesRegex(matrix.MatrixError, "stale fork build origin"):
+                matrix.validate_fork_source(repo, fork)
+
+
+if __name__ == "__main__":
+    unittest.main()

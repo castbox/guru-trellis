@@ -1,0 +1,15 @@
+{
+  "profile": "delivery_review_ready",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "交付：Active Task Delivery",
+  "pr_body": "## 变更摘要\n\n- Delivery publication eval。\n\nRefs #435\n",
+  "remaining_work_state": "remaining",
+  "delivery_key": {
+    "task_id": "09-18-435-active-task-delivery-loop",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  },
+  "readiness_result_id": "readiness:eval-current"
+}

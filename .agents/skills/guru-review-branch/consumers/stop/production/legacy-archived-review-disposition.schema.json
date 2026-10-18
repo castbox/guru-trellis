@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-legacy-archived-review-disposition-input-1.0",
+  "type": "object",
+  "required": ["exit_id", "task_ref", "branch_review_commit"],
+  "properties": {
+    "exit_id": {"const": "archived_review_passed"},
+    "task_ref": {"type": "string", "minLength": 1},
+    "branch_review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  }
+}

@@ -1,0 +1,27 @@
+task_id: 531-task-delivery-lifecycle
+source: https://github.com/castbox/guru-trellis/issues/531
+status: reviewed_promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.89
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.87
+  status: active
+upstream:
+  repository: castbox/Trellis
+  product_commit: 1e40014023de53ddfd9368b3fb4d0a7a31e92293
+  local_snapshot_fingerprint: 17ea37fbfcfe81a7e2c43f223cacdeee6ebd4c90cd28fff74c143a75bebd1a50
+  predecessor_cli_tar_sha256: 185ed1db6865b72138bb10b6d799225721bf50fddfb370f84d8ec330558f472d
+  cli_tar_sha256: 5aeeb81ca72508081b7dd94ddb7a19f69444714f78b3a38858d908196cc77916
+  candidate_kind: reviewed_local_mixed_candidate
+  formal_source_lock: unverified
+  core_tar_sha256: 45bbfee507ed4964649610f703a90ba01c5f5cea21fb95d0845f92ed45302967
+  delivery_api: '1.0'
+  task_schema: '2.0'
+  migration_plan: '2'
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+promoted_rdt: current-main-0.6.17-guru.90

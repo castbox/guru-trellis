@@ -1,0 +1,1 @@
+{"schema_version":"1.0","skill_id":"guru-publish-task-delivery","review":{"status":"passed","summary":"Reviewed head, PR payload, remaining work, repository binding, and exact remote mutations are current."},"route":{"typed_exit":"ready_for_merge"}}

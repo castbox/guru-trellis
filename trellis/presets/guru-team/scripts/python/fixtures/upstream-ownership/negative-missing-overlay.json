@@ -1,0 +1,8 @@
+{
+  "mutation": {
+    "type": "remove_overlay",
+    "path": ".cursor/commands/guru-finish-work.md"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["missing_finish_overlay"]
+}

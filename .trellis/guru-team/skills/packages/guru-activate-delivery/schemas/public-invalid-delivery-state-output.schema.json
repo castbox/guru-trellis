@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-activate-delivery-output-delivery-invalid-delivery-state-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "reason_code"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "invalid_delivery_state"
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-action-input-aggregate-1.0",
+  "oneOf": [
+    {"$ref": "action-initial-input.schema.json"},
+    {"$ref": "action-reentry-input.schema.json"}
+  ]
+}

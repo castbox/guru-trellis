@@ -1,0 +1,10 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-normal-scenario-input-change-request-candidate-set-1.0","type":"object","additionalProperties":false,
+  "required":["profile","mode","caller","target_locator","target","candidate_refs","candidate_locators"],
+  "properties":{
+    "profile":{"const":"change_request_candidate_set"},"mode":{"enum":["workflow","standalone"]},"caller":{"const":"guru-review-change-request"},"target_locator":{"type":"string","minLength":1},
+    "target":{"type":"object","additionalProperties":false,"required":["repo_locator","request_locator","request_identity","readiness_locators"],"properties":{"repo_locator":{"type":"string","minLength":1},"request_locator":{"type":"string","minLength":1},"request_identity":{"type":"string","minLength":1},"readiness_locators":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}}}},
+    "candidate_refs":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}},"candidate_locators":{"$ref":"#/$defs/candidateLocators"}
+  },
+  "$defs":{"candidateLocators":{"type":"array","minItems":1,"items":{"type":"object","additionalProperties":false,"required":["candidate_ref","locators"],"properties":{"candidate_ref":{"type":"string","minLength":1},"locators":{"type":"array","minItems":1,"uniqueItems":true,"items":{"type":"string","minLength":1}}}}}}
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-public-resume-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "recovery_ref"
+  ],
+  "properties": {
+    "profile": {
+      "const": "resume"
+    },
+    "recovery_ref": {
+      "type": "string",
+      "pattern": "^[a-f0-9-]{36}$"
+    }
+  }
+}

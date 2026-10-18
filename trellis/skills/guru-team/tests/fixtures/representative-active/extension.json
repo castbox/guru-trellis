@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "extension_id": "guru-team",
+  "version": "fixture",
+  "public_api": {
+    "skill_contracts": {
+      "canonical_root": "trellis/skills/guru-team/",
+      "installed_root": ".trellis/guru-team/skills/",
+      "registry_schema_id": "guru-team-skill-registry-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_ids": [
+        "guru-team-skill-interface-1.4",
+        "guru-team-skill-interface-1.5"
+      ],
+      "public_input_schema_ids": [
+        "guru-fixture-action-initial-input-1.0",
+        "guru-fixture-action-reentry-input-1.0"
+      ],
+      "typed_output_schema_ids": [
+        "guru-fixture-action-blocked-output-1.0",
+        "guru-fixture-action-completed-output-1.0",
+        "guru-fixture-action-forwarded-output-1.0",
+        "guru-fixture-action-repeat-output-1.0",
+        "guru-fixture-sync-blocked-output-1.0",
+        "guru-fixture-sync-output-1.0"
+      ],
+      "legacy_typed_output_schema_ids": [],
+      "private_artifact_schema_ids": [
+        "guru-fixture-action-checkpoint-1.0",
+        "guru-fixture-action-gate-evidence-1.0",
+        "guru-fixture-sync-checkpoint-1.0"
+      ],
+      "artifact_schema_ids": [],
+      "active_skill_ids": [
+        "guru-example-action",
+        "guru-example-sync"
+      ],
+      "planned_skill_ids": [],
+      "registry_lifecycle": ["planned", "active"],
+      "contract_manifests": [],
+      "workflow_markers": {
+        "invokes": 2,
+        "exits": 6,
+        "targets": 4
+      }
+    },
+    "skill_runtime": {
+      "api_version": "1.0",
+      "dispatcher": "run-skill-command",
+      "manifest_path": ".trellis/guru-team/extension.json"
+    },
+    "skill_evals": {
+      "schema_id": "guru-team-skill-evals-1.0",
+      "schema_version": "1.0",
+      "schema_path": "schemas/skill-evals.schema.json",
+      "native_trace_schema_id": "guru-team-skill-eval-native-trace-1.0",
+      "native_trace_schema_path": "schemas/skill-eval-native-trace.schema.json",
+      "adapter_root": "adapters/eval",
+      "adapter_ids": ["shared", "codex", "claude", "cursor"],
+      "run_statuses": ["passed", "evaluation_failed", "execution_error", "unsupported"]
+    },
+    "companion_scripts": [
+      "discover-skill-contract",
+      "discover-skill-evals",
+      "fixture-runtime-command",
+      "run-skill-evals",
+      "run-skill-command"
+    ]
+  }
+}

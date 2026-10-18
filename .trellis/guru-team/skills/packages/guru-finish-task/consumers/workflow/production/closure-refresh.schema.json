@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-finish-task-closure-refresh-route-2.0","type":"object","additionalProperties":false,"required":["task_id","lifecycle_generation","result_id"],"properties":{"task_id":{"type":"string","minLength":1},"lifecycle_generation":{"type":"integer","minimum":0},"result_id":{"type":"string","minLength":1}}}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "delivery-2.0",
+  "profile": "delivery_task_impact_sync",
+  "source_exit": "implementation_discovery",
+  "mode": "workflow",
+  "continuation_id": "eval-scope-expansion",
+  "stage": "implementation_discovery",
+  "task_locator": ".trellis/tasks/eval-task",
+  "baseline": {
+    "locator": "docs/architecture/README.md",
+    "identity": "current-v1",
+    "status": "active"
+  },
+  "constitution": {
+    "authority_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "authority_status": "current",
+    "identity_kind": "content",
+    "identity": "constitution-v1",
+    "principles": [
+      {
+        "id": "mature-practice-applicability",
+        "short_name": "成熟实践与适用性"
+      },
+      {
+        "id": "concept-semantic-completeness",
+        "short_name": "概念与语义完整性"
+      },
+      {
+        "id": "cohesion-change-isolation",
+        "short_name": "职责内聚与变化隔离"
+      },
+      {
+        "id": "minimum-necessary-complexity",
+        "short_name": "最小必要复杂度"
+      },
+      {
+        "id": "debt-one-way-convergence",
+        "short_name": "技术债务单向收敛"
+      }
+    ]
+  },
+  "project_contract": {
+    "guru_contract_identity": "guru-maintain-architecture-baseline:4.0",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
+    "change_contract_identity": "project-change-contract-v1",
+    "required_concern_set_identity": "project-concerns-v1"
+  },
+  "freshness_identity": "eval-scope-expansion-fresh",
+  "requirement_authority": "docs/requirements/README.md",
+  "behavior_authority": "docs/design/README.md",
+  "delivery_key": {
+    "task_id": "current",
+    "lifecycle_generation": 0,
+    "delivery_id": "11111111-1111-4111-8111-111111111111"
+  },
+  "planning_root": "deliveries/11111111-1111-4111-8111-111111111111",
+  "before_authority": {
+    "git_revision": "0123456789abcdef0123456789abcdef01234567",
+    "baseline_locator": "docs/architecture/README.md",
+    "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+    "change_contract_locator": "docs/architecture/06-governance/change-contract.md"
+  },
+  "candidate": {
+    "head": "89abcdef0123456789abcdef0123456789abcdef",
+    "content_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

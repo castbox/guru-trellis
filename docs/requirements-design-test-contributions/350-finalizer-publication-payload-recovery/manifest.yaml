@@ -1,0 +1,23 @@
+schema_version: "1.0"
+task_ref: "350-finalizer-publication-payload-recovery"
+task_locator: ".trellis/tasks/09-03-350-finalizer-publication-payload-recovery"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/350"
+source_version: "current-main-0.6.5-guru.43"
+expected_current_version: "current-main-0.6.5-guru.43"
+target_version: "current-main-0.6.5-guru.43"
+status: "task_current"
+implementation_status: "focused_runtime_and_execution_complete"
+verification_status: "implementation_and_targeted_validation_passed_branch_review_pending"
+authority_scope: "isolated_contribution"
+architecture_impact: "no_architecture_impact"
+change_path: "target_native"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.5-guru.43"
+  status: "active"
+public_contracts:
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
+  finalizer_owner: "guru-finalize-task"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+promotion_decision: "no_shared_promotion"
+shared_current_write: false

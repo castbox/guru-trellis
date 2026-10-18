@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-output-delivery-reprepare-required-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "reason_code",
+    "delivery_key"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "reprepare_required"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_key": {
+      "type": "object"
+    }
+  }
+}

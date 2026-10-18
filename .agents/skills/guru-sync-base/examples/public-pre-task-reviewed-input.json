@@ -1,0 +1,31 @@
+{
+  "change_input": {
+    "issue_refs": [
+      "#295"
+    ],
+    "pr_refs": [],
+    "branches": [],
+    "paths": [
+      "trellis/skills/guru-team/packages/guru-discover-change-context"
+    ],
+    "commands": [],
+    "config_keys": [],
+    "schema_fields": [
+      "base_current"
+    ],
+    "symbols": [
+      "observe_base_current"
+    ],
+    "terms": [
+      "public handoff"
+    ],
+    "queries": []
+  },
+  "clarify_profile": "reviewed_plan_intake",
+  "source_locators": [
+    {
+      "locator": "https://github.com/example/guru-extension/issues/145",
+      "section": "Accepted design"
+    }
+  ]
+}

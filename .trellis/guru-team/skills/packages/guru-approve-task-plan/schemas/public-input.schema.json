@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-approve-task-plan-input-delivery-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-delivery-initial-review-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-revision-reentry-input.schema.json"
+    },
+    {
+      "$ref": "public-delivery-clarification-reentry-input.schema.json"
+    }
+  ]
+}

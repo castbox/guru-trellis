@@ -1,0 +1,1 @@
+{"scenario":"An explicit standalone invocation from the clean canonical source checkout passes every selected installation capability.","owner_staging":{"recipe":"extension-source-verified"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result","-"]}}

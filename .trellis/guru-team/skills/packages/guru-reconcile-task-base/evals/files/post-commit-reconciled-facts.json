@@ -1,0 +1,14 @@
+{
+  "scenario": "Compatible post-commit base advance requires a committed integration HEAD and a fresh Phase 2 cycle.",
+  "owner_staging": {
+    "recipe": "pre-review-compatible-reconciled",
+    "expected_resume_target": "phase2",
+    "forbidden_exit": "review_continuity_required"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

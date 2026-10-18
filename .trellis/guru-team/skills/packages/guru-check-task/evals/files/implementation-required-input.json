@@ -1,0 +1,16 @@
+{
+  "profile": "delivery_finding_fix_rerun",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "source_exit": "implementation_required",
+  "rerun_reason": "finding_fix",
+  "finding_refs": [
+    "F0"
+  ],
+  "delivery_key": {
+    "task_id": "delivery-example",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "planning_accepted_result_id": "planning:check-example"
+}

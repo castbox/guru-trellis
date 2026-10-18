@@ -1,0 +1,22 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"guru-reconcile-task-base-resolved-result-1.0",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema_version","status","task_ref","branch","phase2_commit_anchor","old_base_head","new_base_head","merge_head","stage0_tree","index_tree_sha256","parent_order","commit_message","reconciled_task_head"],
+  "properties":{
+    "schema_version":{"const":"1.0"},
+    "status":{"enum":["committed","recovered"]},
+    "task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "branch":{"type":"string","minLength":1},
+    "phase2_commit_anchor":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "old_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "new_base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "merge_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "stage0_tree":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "index_tree_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "parent_order":{"type":"array","minItems":2,"maxItems":2,"items":{"type":"string","pattern":"^[0-9a-f]{40}$"}},
+    "commit_message":{"type":"string","minLength":1,"maxLength":500,"pattern":"^[^\\r\\n]+$"},
+    "reconciled_task_head":{"type":"string","pattern":"^[0-9a-f]{40}$"}
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "schema_version": "1.0",
+  "items": [{"case_id": "complete-normal", "comparison_side": "current", "feedback": "Representative human feedback remains separate from grading."}]
+}

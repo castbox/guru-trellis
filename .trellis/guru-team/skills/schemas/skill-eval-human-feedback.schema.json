@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-eval-human-feedback-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "items"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "items": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["case_id", "comparison_side", "feedback"], "properties": {"case_id": {"type": "string", "minLength": 1}, "comparison_side": {"enum": ["current", "comparison"]}, "feedback": {"type": "string", "minLength": 1}}}}
+  }
+}

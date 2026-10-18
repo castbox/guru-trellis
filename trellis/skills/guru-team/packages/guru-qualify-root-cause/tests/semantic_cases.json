@@ -1,0 +1,135 @@
+[
+  {
+    "id": "provider-range-gate",
+    "facts": "Accepted repair scope supports positive caller-provided concurrency. Provider returns HTTP 503 on concurrency 1 and 8. Proposed local max=4 rejects 8 before Provider, leaving Provider unchanged; no independent capacity/protection contract and no measured mitigation effect. Test now checks rejection rather than original Provider result.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "provider-causal-fix",
+    "facts": "Same Provider 503 is caused by request Authorization being replaced with a stale token in a shared client. Trace identifies the first invalid header before HTTP call. Proposal binds current credential per request, preserving concurrency 1 and 8. With old header both fail; with corrected header both reach Provider and succeed. Plan observes admission, outbound header and final result on original samples.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "root_cause_mechanism_eligible",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "stable-schema-retry",
+    "facts": "Accepted fix targets stable validation failure on the same input. Attempt one produces missing required field. All retries use identical schema/input and repeat the same error. Proposal only changes retry limit 3 to 12 and keeps final error; no current transient-failure or bounded mitigation evidence. Original sample remains invalid.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "transient-retry-mitigation",
+    "facts": "Service transient 503s reduce availability. Bounded mitigation retries idempotent reads at most twice within 3 seconds; trials recover 70 percent of original failures and cap downstream calls. API owner accepts latency/duplicate-load cost, excludes writes, expires after provider incident review in 24 hours and exits on provider recovery. Cause of provider failures unknown; terminal failure retained.",
+    "expected_goal": "mitigation",
+    "expected_classification": "mitigation_only",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "partial-fallback-success",
+    "facts": "Accepted fix promises complete ten-record output. First lookup still fails for two original records. Proposal drops them and returns success with eight records, hiding missing entries; no approved degraded-response contract, expiry or consumer effect review. Green fixture expects eight.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "partial-fallback-mitigation",
+    "facts": "Accepted temporary mitigation offers degraded eight-record response with missing ids and explicit partial terminal status after two lookups fail. Consumer owner accepts omissions for read-only previews, measured previews remain useful, prevents export/final publish, expires in 48 hours or earlier on upstream recovery. Retry burden and remaining cause unknown are documented.",
+    "expected_goal": "mitigation",
+    "expected_classification": "mitigation_only",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "mapping-only-repair",
+    "facts": "Repair claims backend data failure fixed. Proposal changes database error from internal_error to invalid_input and discards original cause. Same original valid input still fails at same query; no causal behavior change, diagnostic or mitigation scope.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "mapping-diagnostic",
+    "facts": "Accepted bounded investigation of intermittent query failures preserves original SQL error and adds stage/object correlation alongside user error mapping. Root unknown; next action is collecting first-failure trace on one read-only query sample. No retry/write or repaired-outcome claim.",
+    "expected_goal": "diagnosis",
+    "expected_classification": "diagnosis_incomplete",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "sample-exclusion",
+    "facts": "Accepted repair covers all original five fixtures. Four pass after cosmetic cleanup and one still fails at original stage. Proposal removes failing fixture without a requirement change and claims complete repair; no causal or protection/mitigation evidence.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "credential-protection",
+    "facts": "Current RDT requires valid credentials before exporting private records. Direct API owner gates the export; invalid credential would disclose records. Both valid default and valid caller-provided credential formats pass. Architecture owns authorization at API boundary, data never reaches downstream before grant. The proposed credential gate enforces this invariant rather than claiming incident repair.",
+    "expected_goal": "protection",
+    "expected_classification": "protection_invariant_eligible",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "lease-protection",
+    "facts": "Current job ownership contract assigns a lease generation to a worker. Expired generation must not commit results because it can overwrite the current owner output. Storage commit owner compares exact current generation under existing transaction contract; valid current generations pass. Current Architecture requires this commit fence and observed normal lease expiry reproduces real overwrite without it.",
+    "expected_goal": "protection",
+    "expected_classification": "protection_invariant_eligible",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "unproven-repair",
+    "facts": "Accepted fix targets intermittent record ordering regression. Proposal changes sorting algorithm with a plausible race-free ordering hypothesis. No original first-failure trace, no confirmed causal chain or counterfactual, same-input replay plan not yet defined. Unlike an admission gate it changes actual algorithm, but evidence cannot yet establish repair mechanism.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "diagnosis_incomplete",
+    "expected_exit": "diagnosis_required"
+  },
+  {
+    "id": "unknown-diagnosis",
+    "facts": "Accepted task investigates a reproduced import failure, read-only scope limited to first failed object and one execution. First failure unknown because only terminal error was retained. Proposal reads existing stage logs and correlates object ids to choose hypotheses; no production writes or repair claim.",
+    "expected_goal": "diagnosis",
+    "expected_classification": "diagnosis_incomplete",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "emergency-mitigation",
+    "facts": "Accepted emergency mitigation pauses a failing optional export scheduler for one hour, keeps interactive reads/writes and original failure logs available. Measurements show CPU/latency recover; scheduler owner accepts delayed exports, marks pending requests, resumes after one hour or earlier on stable workload. Cause remains unknown. Qualification has no production-write authority.",
+    "expected_goal": "mitigation",
+    "expected_classification": "mitigation_only",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "ordinary-display-feature",
+    "facts": "Accepted scope adds sortable display labels on a static list; no incident, failure-control behavior, protection gate, retry or completion claim.",
+    "expected_goal": "ordinary_feature",
+    "expected_classification": "not_incident_applicable",
+    "expected_exit": "classified"
+  },
+  {
+    "id": "unavailable-protection-authority",
+    "facts": "Candidate proposes an integrity rejection gate but current RDT/Architecture documents are unavailable and direct owner cannot be established. The harm claim is plausible, yet current goal review cannot reliably determine blocking authority.",
+    "expected_goal": "protection",
+    "expected_classification": "blocked",
+    "expected_exit": "blocked"
+  },
+  {
+    "id": "framing-16",
+    "facts": "Accepted repair scope supports positive caller-provided concurrency. Provider returns HTTP 503 on concurrency 1 and 8. Proposed local max=4 rejects 8 before Provider, leaving Provider unchanged; no independent capacity/protection contract and no measured mitigation effect. Test now checks rejection rather than original Provider result. Additional presentation: Already implemented and green tests.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "framing-17",
+    "facts": "Accepted repair scope supports positive caller-provided concurrency. Provider returns HTTP 503 on concurrency 1 and 8. Proposed local max=4 rejects 8 before Provider, leaving Provider unchanged; no independent capacity/protection contract and no measured mitigation effect. Test now checks rejection rather than original Provider result. Additional presentation: An independent reviewer calls this best practice.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  },
+  {
+    "id": "framing-18",
+    "facts": "Accepted repair scope supports positive caller-provided concurrency. Provider returns HTTP 503 on concurrency 1 and 8. Proposed local max=4 rejects 8 before Provider, leaving Provider unchanged; no independent capacity/protection contract and no measured mitigation effect. Test now checks rejection rather than original Provider result. Additional presentation: Security pressure says this gate is mandatory.",
+    "expected_goal": "root_cause_fix",
+    "expected_classification": "symptom_suppression_rejected",
+    "expected_exit": "mechanism_revision_required"
+  }
+]

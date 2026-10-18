@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-architecture-baseline-input-aggregate-3.0",
+  "oneOf": [
+    {
+      "$ref": "public-input-bootstrap.schema.json"
+    },
+    {
+      "$ref": "public-input-impact-current-3.0.schema.json"
+    },
+    {
+      "$ref": "public-input-promotion.schema.json"
+    },
+    {
+      "$ref": "public-input-repair.schema.json"
+    }
+  ]
+}

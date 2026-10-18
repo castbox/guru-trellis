@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-delivery-pending-public-operation-1.0",
+  "type": "object",
+  "description": "Opaque installed upstream API operation for this owner pending interval. The installed parser validates its full shape; not a Guru model or authority."
+}

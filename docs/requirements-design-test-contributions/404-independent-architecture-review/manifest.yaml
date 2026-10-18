@@ -1,0 +1,21 @@
+schema_version: "1.0"
+task_ref: "404-independent-architecture-review"
+task_locator: ".trellis/tasks/10-10-404-independent-architecture-review"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/404"
+status: "promoted"
+source_version: "current-main-0.6.17-guru.77"
+expected_current_version: "current-main-0.6.17-guru.77"
+promoted_version: "current-main-0.6.17-guru.78"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+shared_current_write: true
+contribution:
+  requirements: "docs/requirements-design-test-contributions/404-independent-architecture-review/requirements.md"
+  design: "docs/requirements-design-test-contributions/404-independent-architecture-review/design.md"
+  test: "docs/requirements-design-test-contributions/404-independent-architecture-review/test.md"
+  traceability: "docs/requirements-design-test-contributions/404-independent-architecture-review/traceability.md"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.78"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/404-independent-architecture-review.md"

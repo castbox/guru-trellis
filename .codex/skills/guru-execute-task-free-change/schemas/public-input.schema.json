@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-task-free-change-input-aggregate-1.0","oneOf":[{"$ref":"public-selected-route-input.schema.json"},{"$ref":"public-interaction-resume-input.schema.json"}]}

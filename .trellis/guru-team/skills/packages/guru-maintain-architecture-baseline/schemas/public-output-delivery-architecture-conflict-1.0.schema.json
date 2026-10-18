@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-delivery-architecture-conflict-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "conflict_refs",
+        "return_route",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "architecture_conflict"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "enum": [
+            "planning",
+            "implementation_discovery",
+            "phase2",
+            "branch_review",
+            "publication",
+            "acceptance_finish"
+          ]
+        },
+        "conflict_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "return_route": {
+          "const": "planning"
+        },
+        "delivery_key": {
+          "type": "object"
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "conflict_refs",
+        "return_route",
+        "planning_purpose",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "architecture_conflict"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "conflict_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "return_route": {
+          "const": "planning"
+        },
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "conflict_refs",
+        "return_route",
+        "planning_purpose",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "architecture_conflict"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "conflict_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "return_route": {
+          "const": "planning"
+        },
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ]
+}

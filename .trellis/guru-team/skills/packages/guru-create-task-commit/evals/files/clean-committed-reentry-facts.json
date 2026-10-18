@@ -1,0 +1,14 @@
+{
+  "scenario": "The original exact dirty commit succeeded; a fresh Check binds its clean HEAD before committed reentry. No second commit is created.",
+  "owner_staging": {
+    "recipe": "commit-clean-reentry"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--owner-result",
+      ".trellis/.runtime/guru-team/evals/owner-result.json"
+    ]
+  }
+}

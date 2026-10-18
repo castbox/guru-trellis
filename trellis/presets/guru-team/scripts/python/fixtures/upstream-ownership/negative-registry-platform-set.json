@@ -1,0 +1,9 @@
+{
+  "mutation": {
+    "type": "set_registry_platforms",
+    "skill_id": "guru-check-task",
+    "platforms": ["shared", "codex"]
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["skill_platform_set_mismatch"]
+}

@@ -1,0 +1,8 @@
+{
+  "profile": "delivery_revision_reentry",
+  "mode": "workflow",
+  "reentry_reason": "task_local_revision",
+  "revision_actions": [
+    "修订实际来源设计处置与受影响规划。"
+  ]
+}

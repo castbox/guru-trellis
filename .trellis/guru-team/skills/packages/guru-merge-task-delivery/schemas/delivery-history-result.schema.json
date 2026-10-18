@@ -1,0 +1,29 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"guru-merge-task-delivery-history-result-1.0",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["schema_version","status","task_identity","repo_ref","base_ref","deliveries"],
+  "properties":{
+    "schema_version":{"const":"1.0"},
+    "status":{"const":"discovered"},
+    "task_identity":{"type":"string","minLength":1},
+    "repo_ref":{"type":"string","minLength":1},
+    "base_ref":{"type":"string","minLength":1},
+    "deliveries":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "additionalProperties":false,
+        "required":["task_identity","reviewed_head","pr_number","merge_commit_sha","base_ref"],
+        "properties":{
+          "task_identity":{"type":"string","minLength":1},
+          "reviewed_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+          "pr_number":{"type":"integer","minimum":1},
+          "merge_commit_sha":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+          "base_ref":{"type":"string","minLength":1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-contract-wording-input-delivery-planning-artifacts-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "planning_artifacts",
+    "continuation_id",
+    "task_ref",
+    "delivery_key"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_planning_artifacts"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "planning_artifacts": {
+      "const": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque public DeliveryKey; the target upstream API validates it."
+    }
+  }
+}

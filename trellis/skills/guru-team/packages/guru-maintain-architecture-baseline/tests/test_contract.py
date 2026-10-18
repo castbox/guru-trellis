@@ -1,0 +1,1557 @@
+import copy
+import hashlib
+import importlib.util
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+from jsonschema import Draft202012Validator
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1].parent / "guru-create-delivery/tests"))
+from support import installed_fixture
+
+
+class ArchitectureBaselineContractTest(unittest.TestCase):
+    def setUp(self):
+        self.package = Path(__file__).resolve().parents[1]
+        self.repo_root = next(
+            parent
+            for parent in (self.package, *self.package.parents)
+            if (parent / "trellis/guru-team-extension.json").is_file()
+        )
+        self.upstream = installed_fixture(self)
+        self.delivery_key = self.upstream.create()
+        self.fixture = self.upstream.temporary
+        self.repository = self.upstream.root
+        subprocess.run(
+            ["git", "init", "-q"],
+            cwd=self.repository,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        common_dir_raw = subprocess.run(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=self.repo_root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.strip()
+        common_dir = Path(common_dir_raw)
+        if not common_dir.is_absolute():
+            common_dir = self.repo_root / common_dir
+        source_runtime_state = common_dir / "guru-team/python/active.json"
+        fixture_runtime_state = (
+            self.repository / ".git/guru-team/python/active.json"
+        )
+        fixture_runtime_state.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_runtime_state, fixture_runtime_state)
+        fixture_skills_root = self.repository / ".trellis/guru-team"
+        shutil.copytree(
+            self.repo_root / "trellis/skills/guru-team/runtime",
+            fixture_skills_root / "runtime",
+        )
+        self.fixture_package = (
+            fixture_skills_root
+            / "skills/packages/guru-maintain-architecture-baseline"
+        )
+        shutil.copytree(self.package, self.fixture_package)
+        shutil.copytree(self.package.parents[1] / "schemas", fixture_skills_root / "skills/schemas")
+        self.constitution_path = (
+            self.repository
+            / "docs/architecture/00-foundation/design-constitution.md"
+        )
+        self.write_current_constitution()
+        for locator in ("docs/architecture/README.md", "docs/architecture/06-governance/change-contract.md"):
+            path = self.repository / locator
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# Current fixture authority\n")
+        subprocess.run(["git", "add", "."], cwd=self.repository, check=True, capture_output=True)
+        subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "Architecture authority"], cwd=self.repository, check=True, capture_output=True)
+        self.authority_revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=self.repository, check=True, text=True, capture_output=True).stdout.strip()
+        sys.path.insert(0, str(self.package.parents[1]))
+        spec = importlib.util.spec_from_file_location("architecture_candidate_fixture", self.package / "runtime/promotion.py")
+        self.candidate_runtime = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.candidate_runtime)
+
+    def tearDown(self):
+        self.fixture.cleanup()
+
+    def write_current_constitution(self):
+        self.constitution_path.parent.mkdir(parents=True, exist_ok=True)
+        self.constitution_path.write_text(
+            "# Design Constitution\n\nCurrent project authority fixture.\n",
+            encoding="utf-8",
+        )
+
+    @staticmethod
+    def digest(value):
+        return hashlib.sha256(
+            json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    def load(self, name):
+        value = json.loads((self.package / "examples" / name).read_text())
+        if name in {"public-input-candidate-assessment-3.0.json", "public-input-final-plan-3.0.json"}:
+            value.update(schema_version="delivery-1.0", profile="delivery_task_impact_sync",
+                         task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
+                         planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            if "design_locator" in value:
+                value["design_locator"] = value["task_locator"] + "/" + value["planning_root"] + "/design.md"
+        return value
+
+    def schema(self, name):
+        return json.loads((self.package / "schemas" / name).read_text())
+
+    def assert_schema_valid(self, schema, value):
+        errors = list(Draft202012Validator(schema).iter_errors(value))
+        self.assertEqual(errors, [], [error.message for error in errors])
+
+    def assert_schema_invalid(self, schema, value):
+        self.assertTrue(list(Draft202012Validator(schema).iter_errors(value)))
+
+    def project_check(self, public_input, *, descriptor=None, blocking=True, status="pass"):
+        descriptor = descriptor or self.project_check_descriptor()
+        check = {
+            "schema_version": "2.0",
+            "descriptor_identity": descriptor["descriptor_identity"],
+            "check_id": descriptor["check_id"],
+            "check_version": descriptor["check_version"],
+            "applicability": "applicable",
+            "blocking": blocking,
+            "applicable_scope": copy.deepcopy(descriptor["applicable_scope"]),
+            "rule_refs": copy.deepcopy(descriptor["rule_refs"]),
+            "decision_refs": copy.deepcopy(descriptor["decision_refs"]),
+            "gap_refs": copy.deepcopy(descriptor["gap_refs"]),
+            "before": {"state": "one owner and one open GAP"},
+            "after": {"state": "one owner and no worsened deviation"},
+            "status": status,
+            "freshness_identity": public_input["freshness_identity"],
+        }
+        if status == "unverified":
+            check["unavailable_reason"] = "External evidence is unavailable."
+        else:
+            check["evidence_locator"] = "docs/architecture/evidence/example.md"
+        return check
+
+    def project_check_descriptor(self):
+        return {
+            "schema_version": "2.0",
+            "descriptor_identity": "project-architecture:target-boundary:1",
+            "check_id": "project-architecture",
+            "check_version": "1",
+            "entrypoint": "scripts/check-architecture.sh",
+            "applicable_scope": ["target-boundary"],
+            "rule_refs": ["RULE-owner"],
+            "decision_refs": ["ADR-example"],
+            "gap_refs": ["GAP-example"],
+            "result_contract_identity": "guru-project-architecture-check-result-2.0",
+            "freshness_source": "current task candidate",
+        }
+
+    @staticmethod
+    def committed_range():
+        return {
+            "base_ref": "origin/main",
+            "base_head": "0123456789abcdef0123456789abcdef01234567",
+            "review_head": "89abcdef0123456789abcdef0123456789abcdef",
+        }
+
+    def architecture_selection(self, public_input, **overrides):
+        descriptor = self.project_check_descriptor()
+        selected = {
+            "typed_exit": "baseline_current",
+            "task_locator": public_input["task_locator"],
+            "baseline_identity": public_input["baseline"]["identity"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "impact_kind": "architecture_impact",
+            "impact_reason": "The reviewed task changes an Architecture boundary.",
+            "change_path": "target_native",
+            "promotion_state": "reviewed_candidate",
+            "contribution_locator": "docs/architecture/contributions/example",
+            "contribution_identity": "contribution-v1",
+            "project_check_descriptors": [descriptor],
+            "project_checks": [self.project_check(public_input, descriptor=descriptor)],
+        }
+        selected.update(overrides)
+        return selected
+
+    def contribution(self, public_input, **overrides):
+        contribution = {
+            "schema_version": "2.0",
+            "task_locator": public_input["task_locator"],
+            "requirement_authority": "#283",
+            "behavior_authority": ".trellis/tasks/example/prd.md",
+            "guru_contract_identity": "guru-maintain-architecture-baseline:2.0",
+            "baseline_locator": public_input["baseline"]["locator"],
+            "baseline_identity": public_input["baseline"]["identity"],
+            "baseline_status": "active",
+            "constitution_authority_locator": public_input["constitution"]["authority_locator"],
+            "constitution_authority_status": public_input["constitution"]["authority_status"],
+            "constitution_identity_kind": public_input["constitution"]["identity_kind"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "change_contract_locator": public_input["project_contract"]["change_contract_locator"],
+            "change_contract_identity": public_input["project_contract"]["change_contract_identity"],
+            "required_concern_set_identity": public_input["project_contract"]["required_concern_set_identity"],
+            "contribution_identity": "contribution-v1",
+            "change_path": "target_native",
+            "domain_refs": ["DOMAIN-target"],
+            "integration_refs": [],
+            "decision_refs": ["ADR-example"],
+            "gap_refs": ["GAP-example"],
+            "required_concerns": [{
+                "id": "single-writer",
+                "applicability": "applicable",
+                "rationale": "The target boundary retains one writer.",
+            }],
+            "owner_transition": {
+                "current": "target-owner",
+                "target": "target-owner",
+                "single_writer": "target-owner",
+            },
+            "compatibility": {
+                "required": False,
+                "owner": "target-owner",
+                "exit_condition": "No compatibility layer is introduced.",
+            },
+            "parallel_scope": {
+                "allowed": ["task-owned contribution"],
+                "forbidden": ["shared current authority"],
+            },
+            "deviations": {"closed": [], "retained": ["GAP-example"], "new": []},
+            "legacy_deletion_conditions": ["No legacy implementation is introduced."],
+            "design_responsibility": {
+                "overview": "Keep the public Architecture contract project-neutral.",
+                "detailed": "Bind the exact 2.0 schema and runtime projection.",
+            },
+            "before_plan": "One target owner with one retained GAP.",
+            "after_candidate": "The candidate keeps the same owner and does not worsen the GAP.",
+            "project_check_descriptors": [self.project_check_descriptor()],
+            "project_checks": [self.project_check(public_input)],
+            "evidence": {
+                "test_refs": ["tests/test_contract.py"],
+                "runtime_refs": ["runtime/invoke.py"],
+                "external_refs": [],
+                "external_status": "not_applicable",
+            },
+            "expected_current_identity": public_input["baseline"]["identity"],
+            "adr": {
+                "required": False,
+                "locator": "",
+                "reason": "The candidate does not create or change an Architecture decision.",
+            },
+            "review": {
+                "status": "pending",
+                "independent": False,
+                "committed_range": None,
+            },
+            "promotion": {"state": "required", "promoted_identity": ""},
+        }
+        contribution.update(overrides)
+        return contribution
+
+    def delivery_entry(self, public_input, selected):
+        public_input, selected = copy.deepcopy(public_input), copy.deepcopy(selected)
+        # Existing semantic cases now enter their real Delivery stage on schema 2.
+        if public_input.get("profile") == "task_impact_sync" and public_input.get("stage") != "acceptance_finish":
+            public_input["profile"] = "delivery_task_impact_sync"
+            if public_input.get("schema_version") == "2.0":
+                public_input["schema_version"] = "delivery-1.0"
+            original = public_input["task_locator"]
+            public_input["task_locator"] = self.upstream.task_ref
+            public_input.update(delivery_key=self.delivery_key, planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            if selected.get("task_locator") == original:
+                selected["task_locator"] = public_input["task_locator"]
+        # Test authoring projects historical fixture seeds onto the current
+        # contract. Production runtime never performs this migration.
+        if public_input.get("profile") in {"task_impact_sync", "delivery_task_impact_sync"} and public_input.get("stage") != "planning" and public_input.get("schema_version") in {"2.0", "delivery-1.0"}:
+            public_input["schema_version"] = "delivery-2.0" if public_input["profile"].startswith("delivery_") else "4.0"
+            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:4.0"
+            public_input["before_authority"] = {"git_revision": self.authority_revision,
+                "baseline_locator": "docs/architecture/README.md",
+                "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
+                "change_contract_locator": "docs/architecture/06-governance/change-contract.md"}
+            public_input["candidate"] = self.candidate_runtime.capture_candidate(self.repository)
+            if "committed_range" in public_input:
+                original_range = copy.deepcopy(public_input["committed_range"])
+                public_input["committed_range"].update(base_head=self.authority_revision, review_head=public_input["candidate"]["head"])
+                if selected.get("review", {}).get("committed_range") == original_range:
+                    selected["review"]["committed_range"] = copy.deepcopy(public_input["committed_range"])
+        return public_input, selected
+
+    def invoke(self, public_input, selected):
+        public_input, selected = self.delivery_entry(public_input, selected)
+        exit_id = selected["typed_exit"]
+        owner = {
+            "schema_version": public_input.get("schema_version", "invalid"),
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "continuation_id": public_input["continuation_id"],
+            "stage": public_input["stage"],
+            "task_locator": public_input["task_locator"],
+            "input_sha256": self.digest(public_input),
+            "baseline": public_input["baseline"],
+            "constitution": public_input["constitution"],
+            "project_contract": public_input["project_contract"],
+            "freshness_identity": public_input["freshness_identity"],
+            "ai_review_gate": {
+                "status": "blocked" if exit_id == "blocked" else "passed",
+                "reviewed_scope": "Current Architecture authority and task-local change contract.",
+                "evidence_summary": "Baseline, constitution, task scope, checks, evidence, and stage identity were reread.",
+                "findings": [],
+                "conclusion": "The selected typed route is semantically justified.",
+            },
+            "typed_exit": exit_id,
+            "consumer": {
+                "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
+                "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
+                "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
+                "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                "fitness_regression": {"kind": "workflow", "id": "guru-architecture-baseline-check-router"},
+                "blocked": {"kind": "stop", "id": "architecture-baseline-blocked"},
+            }[exit_id],
+            **selected,
+        }
+        if "planning_purpose" in public_input:
+            owner["planning_purpose"] = public_input["planning_purpose"]
+        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+            owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
+        if public_input["profile"].startswith("delivery_"):
+            owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
+        if public_input["profile"] in {"promotion", "delivery_promotion"}:
+            for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
+                owner[field] = copy.deepcopy(public_input[field])
+        return subprocess.run(
+            [str(self.fixture_package / "scripts/invoke.sh"), "--invocation", "-"],
+            input=json.dumps({"public_input": public_input, "owner_result": owner}),
+            text=True,
+            capture_output=True,
+            check=False,
+            cwd=self.repository,
+        )
+
+    def invoke_canonical(self, public_input, selected):
+        public_input, selected = self.delivery_entry(public_input, selected)
+        exit_id = selected["typed_exit"]
+        owner = {
+            "schema_version": public_input.get("schema_version", "invalid"),
+            "profile": public_input["profile"],
+            "mode": public_input["mode"],
+            "continuation_id": public_input["continuation_id"],
+            "stage": public_input["stage"],
+            "task_locator": public_input["task_locator"],
+            "input_sha256": self.digest(public_input),
+            "baseline": public_input["baseline"],
+            "constitution": public_input["constitution"],
+            "project_contract": public_input["project_contract"],
+            "freshness_identity": public_input["freshness_identity"],
+            "ai_review_gate": {
+                "status": "blocked" if exit_id == "blocked" else "passed",
+                "reviewed_scope": "Current Architecture authority and task-local change contract.",
+                "evidence_summary": "Baseline, constitution, task scope, checks, evidence, and stage identity were reread.",
+                "findings": [],
+                "conclusion": "The selected typed route is semantically justified.",
+            },
+            "typed_exit": exit_id,
+            "consumer": {
+                "baseline_current": {"kind": "workflow", "id": "guru-architecture-baseline-current-router"},
+                "sync_required": {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"},
+                "baseline_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"},
+                "architecture_conflict": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                "contract_incomplete": {"kind": "workflow", "id": "guru-architecture-baseline-planning-router"},
+                "fitness_regression": {"kind": "workflow", "id": "guru-architecture-baseline-check-router"},
+                "blocked": {"kind": "stop", "id": "architecture-baseline-blocked"},
+            }[exit_id],
+            **selected,
+        }
+        if "planning_purpose" in public_input:
+            owner["planning_purpose"] = public_input["planning_purpose"]
+        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+            owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
+        if public_input["profile"].startswith("delivery_"):
+            owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
+        if public_input["profile"] in {"promotion", "delivery_promotion"}:
+            for field in ("expected_current_identity", "current_identity", "sync_kind", "sync_target"):
+                owner[field] = copy.deepcopy(public_input[field])
+        environment = os.environ.copy()
+        skills_root = self.package.parents[1]
+        if not (skills_root / "runtime/compat.py").is_file():
+            source_roots = (Path.cwd().resolve(), *self.package.resolve().parents)
+            skills_root = next(
+                (
+                    root / "trellis/skills/guru-team"
+                    for root in source_roots
+                    if (root / "trellis/skills/guru-team/runtime/compat.py").is_file()
+                ),
+                None,
+            )
+        if skills_root is None:
+            return None
+        current_pythonpath = environment.get("PYTHONPATH")
+        environment["PYTHONPATH"] = str(skills_root) + (
+            os.pathsep + current_pythonpath if current_pythonpath else ""
+        )
+        return subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "runtime.compat",
+                "--package-root",
+                str(self.package),
+                "--validator",
+                "public_invocation",
+                "--",
+                "--invocation",
+                "-",
+            ],
+            input=json.dumps({"public_input": public_input, "owner_result": owner}),
+            text=True,
+            capture_output=True,
+            check=False,
+            env=environment,
+            cwd=self.repository,
+        )
+
+    def test_preserves_nonplanning_2_0_and_selects_purpose_bound_planning_3_0(self):
+        interface = json.loads((self.package / "interface.json").read_text())
+        aggregate = interface["public_contracts"]["input"]["aggregate_schema"]
+        self.assertEqual(
+            aggregate,
+            {
+                "schema_id": "guru-maintain-architecture-baseline-input-index-4.0",
+                "path": "schemas/public-input-aggregate-4.0.schema.json",
+            },
+        )
+        self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
+        self.assertEqual(
+            {item["id"] for item in interface["public_contracts"]["input"]["profiles"]},
+            {"bootstrap_foundation", "task_impact_sync", "promotion", "repair", "delivery_task_impact_sync", "delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"},
+        )
+        self.assertEqual(
+            {item["id"] for item in interface["external_exits"]},
+            {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
+        )
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
+        architecture_input_ids = {
+            interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+            *(
+                item["schema"]["schema_id"]
+                for item in interface["public_contracts"]["input"]["profiles"]
+            ),
+        }
+        architecture_output_ids = {
+            item["schema"]["schema_id"]
+            for item in interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(len(architecture_input_ids), 9)
+        self.assertEqual(len(architecture_output_ids), 7)
+        for manifest_path in (
+            self.repo_root / "trellis/guru-team-extension.json",
+            # Installed parity is asserted only after matching preset apply.
+        ):
+            with self.subTest(manifest=manifest_path):
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                extension = manifest.get("extension", manifest)
+                inventory = extension["public_api"]["skill_contracts"]
+                self.assertTrue(
+                    architecture_input_ids.issubset(
+                        inventory["public_input_schema_ids"]
+                    )
+                )
+                self.assertTrue(
+                    architecture_output_ids.issubset(
+                        inventory["typed_output_schema_ids"]
+                    )
+                )
+        for path in (self.package / "schemas").glob("*.json"):
+            self.assertNotIn("architecture-baseline-input-aggregate-1.0", path.read_text())
+            self.assertNotIn("architecture-baseline-output-current-1.0", path.read_text())
+
+    def test_missing_and_old_schema_versions_are_rejected(self):
+        current = self.load("public-input-impact.json")
+        for version in (None, "1.0"):
+            candidate = json.loads(json.dumps(current))
+            if version is None:
+                candidate.pop("schema_version")
+            else:
+                candidate["schema_version"] = version
+            result = self.invoke(candidate, {
+                "typed_exit": "baseline_current",
+                "task_locator": candidate["task_locator"],
+                "baseline_identity": candidate["baseline"]["identity"],
+                "constitution_identity": candidate["constitution"]["identity"],
+                "impact_kind": "no_architecture_impact",
+                "promotion_state": "no_change",
+            })
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+
+    def test_archived_readonly_sources_preserve_current_and_blocked_without_writes(self):
+        sources = {
+            "review_refresh_required": "branch_review",
+            "archived_review_passed": "publication",
+            "archived_ready": "acceptance_finish",
+        }
+        for source, stage in sources.items():
+            with self.subTest(source=source):
+                public = self.load("public-input-impact.json")
+                public.update(source_exit=source, stage=stage)
+                if stage == "branch_review":
+                    public["committed_range"] = self.committed_range()
+                selected = {
+                    "typed_exit": "baseline_current",
+                    "task_locator": public["task_locator"],
+                    "baseline_identity": public["baseline"]["identity"],
+                    "constitution_identity": public["constitution"]["identity"],
+                    "impact_kind": "no_architecture_impact",
+                    "impact_reason": "The archived task preserves current Architecture authority.",
+                    "promotion_state": "no_change",
+                }
+                before = {p.relative_to(self.repository): p.read_bytes()
+                          for p in self.repository.rglob("*") if p.is_file()}
+                current = self.invoke(public, selected)
+                self.assertEqual(current.returncode, 0, current.stdout + current.stderr)
+                self.assertEqual(json.loads(current.stdout)["exit_id"], "baseline_current")
+                blocked = self.invoke(public, {
+                    "typed_exit": "blocked", "reason_code": "readonly_authority_incomplete",
+                    "remediation": "Current evidence is incomplete; stop this read-only invocation.",
+                })
+                self.assertEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
+                self.assertEqual(json.loads(blocked.stdout)["exit_id"], "blocked")
+                after = {p.relative_to(self.repository): p.read_bytes()
+                         for p in self.repository.rglob("*") if p.is_file()}
+                self.assertEqual(before, after)
+
+    def test_archived_readonly_rejects_writing_routes_and_pending_promotion(self):
+        public = self.load("public-input-impact.json")
+        public.update(source_exit="archived_review_passed", stage="publication")
+        for exit_id in ("sync_required", "baseline_incomplete", "architecture_conflict",
+                        "contract_incomplete", "fitness_regression"):
+            with self.subTest(exit_id=exit_id):
+                result = self.invoke(public, {"typed_exit": exit_id})
+                self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+                self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.typed_exit")
+        pending = self.invoke(public, self.architecture_selection(public))
+        self.assertEqual(pending.returncode, 3, pending.stdout + pending.stderr)
+        self.assertEqual(json.loads(pending.stdout)["field_path"], "owner_result.promotion_state")
+        public["stage"] = "acceptance_finish"
+        mismatch = self.invoke(public, {"typed_exit": "blocked", "reason_code": "missing",
+                                        "remediation": "Stop for current evidence."})
+        self.assertEqual(mismatch.returncode, 3, mismatch.stdout + mismatch.stderr)
+        self.assertEqual(json.loads(mismatch.stdout)["field_path"], "public_input.source_exit")
+
+    def test_no_impact_is_lightweight_and_creates_no_contribution_or_adr(self):
+        public_input = self.load("public-input-impact.json")
+        self.assertNotIn("impact", public_input)
+        result = self.invoke(public_input, {
+            "typed_exit": "baseline_current",
+            "task_locator": public_input["task_locator"],
+            "baseline_identity": public_input["baseline"]["identity"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "The bounded change preserves all Architecture decisions and owners.",
+            "promotion_state": "no_change",
+        })
+        self.assertEqual(result.returncode, 0, result.stderr)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["source_profile"], "delivery_task_impact_sync")
+        self.assertEqual(output["constitution_status"], "current")
+        self.assertNotIn("project_check_descriptors", public_input)
+        self.assertNotIn("contribution_locator", output)
+        self.assertNotIn("project_checks", output)
+
+        no_impact_selection = {
+            "typed_exit": "baseline_current",
+            "task_locator": public_input["task_locator"],
+            "baseline_identity": public_input["baseline"]["identity"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "The bounded change preserves all Architecture decisions and owners.",
+            "promotion_state": "no_change",
+        }
+        owner_descriptor_copy = copy.deepcopy(no_impact_selection)
+        owner_descriptor_copy["project_check_descriptors"] = [
+            self.project_check_descriptor()
+        ]
+        result = self.invoke(public_input, owner_descriptor_copy)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(json.loads(result.stdout)["code"], "semantic_result_invalid")
+
+    def test_architecture_impact_rejects_no_change_promotion_state(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(public_input, promotion_state="no_change"),
+        )
+        self.assertEqual(result.returncode, 3)
+        error = json.loads(result.stdout)
+        self.assertEqual(error["code"], "semantic_result_invalid")
+        self.assertEqual(error["field_path"], "owner_result.promotion_state")
+
+        current_output = {
+            "exit_id": "baseline_current",
+            "source_profile": "task_impact_sync",
+            "task_locator": public_input["task_locator"],
+            "stage": public_input["stage"],
+            "baseline_identity": public_input["baseline"]["identity"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "constitution_status": "current",
+            "impact_kind": "architecture_impact",
+            "promotion_state": "no_change",
+            "contribution_locator": "docs/architecture/contributions/example",
+            "contribution_identity": "contribution-v1",
+            "freshness_identity": public_input["freshness_identity"],
+        }
+        output_schema = self.schema("public-baseline-current-output.schema.json")
+        consumer_schema = json.loads(
+            (self.package / "consumers/workflow/current.schema.json").read_text()
+        )
+        self.assert_schema_invalid(output_schema, current_output)
+        self.assert_schema_invalid(consumer_schema, current_output)
+        for promotion_state in ("reviewed_candidate", "reviewed_promoted"):
+            with self.subTest(promotion_state=promotion_state):
+                candidate = {**current_output, "promotion_state": promotion_state}
+                self.assert_schema_valid(output_schema, candidate)
+                self.assert_schema_valid(consumer_schema, candidate)
+
+    def test_three_architecture_paths_are_mutually_exclusive(self):
+        public_schema = json.loads((self.package / "schemas/public-input-impact.schema.json").read_text())
+        semantic_schema = json.loads((self.package / "schemas/semantic-result.schema.json").read_text())
+        contribution_schema = json.loads((self.package / "schemas/architecture-contribution.schema.json").read_text())
+        self.assertNotIn("impact_kind", public_schema["properties"])
+        self.assertNotIn("change_path", public_schema["properties"])
+        paths = semantic_schema["properties"]["change_path"]["enum"]
+        self.assertEqual(paths, ["target_native", "legacy_boundary_convergence", "dedicated_refactor_slice"])
+        self.assertEqual(contribution_schema["properties"]["change_path"]["enum"], paths)
+        self.assertNotIn("no_architecture_impact", paths)
+
+    def test_architecture_contribution_binds_both_contract_authorities(self):
+        contribution = self.schema("architecture-contribution.schema.json")
+        authority_fields = {
+            "guru_contract_identity",
+            "baseline_locator",
+            "baseline_identity",
+            "baseline_status",
+            "constitution_authority_locator",
+            "constitution_authority_status",
+            "constitution_identity_kind",
+            "constitution_identity",
+            "change_contract_locator",
+            "change_contract_identity",
+            "required_concern_set_identity",
+        }
+        self.assertTrue(authority_fields.issubset(contribution["required"]))
+        self.assertTrue(authority_fields.issubset(contribution["properties"]))
+        self.assertEqual(
+            contribution["properties"]["guru_contract_identity"]["const"],
+            "guru-maintain-architecture-baseline:2.0",
+        )
+        self.assertEqual(
+            contribution["properties"]["baseline_status"]["enum"],
+            ["draft", "active", "superseded"],
+        )
+        self.assertEqual(
+            contribution["properties"]["constitution_identity_kind"]["enum"],
+            ["version", "content"],
+        )
+        self.assertEqual(
+            contribution["properties"]["constitution_authority_status"]["enum"],
+            ["current", "pending_reviewed_promotion"],
+        )
+
+    def test_constitution_is_exactly_five_identity_name_pairs_without_checklist_fields(self):
+        public_input = self.load("public-input-impact.json")
+        principles = public_input["constitution"]["principles"]
+        self.assertEqual([item["id"] for item in principles], [
+            "mature-practice-applicability",
+            "concept-semantic-completeness",
+            "cohesion-change-isolation",
+            "minimum-necessary-complexity",
+            "debt-one-way-convergence",
+        ])
+        package_text = "\n".join(path.read_text() for path in (self.package / "schemas").glob("*.json"))
+        self.assertNotIn('"score"', package_text)
+        self.assertNotIn('"verdict"', package_text)
+        self.assertNotIn('"principle_prose"', package_text)
+        self.assertNotIn('"prefixItems"', package_text)
+        self.assertNotIn('"items": false', package_text)
+
+        profile_contracts = [
+            ("public-input-bootstrap.schema.json", "public-input-bootstrap.json"),
+            ("public-input-impact.schema.json", "public-input-impact.json"),
+            ("public-input-promotion.schema.json", "public-input-promotion.json"),
+            ("public-input-repair.schema.json", "public-input-repair.json"),
+        ]
+        for schema_name, example_name in profile_contracts:
+            with self.subTest(schema=schema_name):
+                schema = self.schema(schema_name)
+                example = self.load(example_name)
+                reordered = copy.deepcopy(example)
+                reordered["constitution"]["principles"].reverse()
+                self.assert_schema_valid(schema, reordered)
+
+                duplicate = copy.deepcopy(example)
+                duplicate["constitution"]["principles"][-1] = copy.deepcopy(
+                    duplicate["constitution"]["principles"][0]
+                )
+                self.assert_schema_invalid(schema, duplicate)
+
+                missing = copy.deepcopy(example)
+                missing["constitution"]["principles"].pop()
+                self.assert_schema_invalid(schema, missing)
+
+                mismatched_name = copy.deepcopy(example)
+                mismatched_name["constitution"]["principles"][0]["short_name"] = "错误短名称"
+                self.assert_schema_invalid(schema, mismatched_name)
+
+        semantic_schema = self.schema("semantic-result.schema.json")
+        semantic_principles = copy.deepcopy(
+            semantic_schema["$defs"]["constitution"]["properties"]["principles"]
+        )
+        semantic_principles["$defs"] = semantic_schema["$defs"]
+        self.assert_schema_valid(semantic_principles, list(reversed(principles)))
+        self.assert_schema_invalid(semantic_principles, [*principles[:-1], copy.deepcopy(principles[0])])
+        self.assert_schema_invalid(semantic_principles, principles[:-1])
+        mismatched_semantic_name = copy.deepcopy(principles)
+        mismatched_semantic_name[0]["short_name"] = "错误短名称"
+        self.assert_schema_invalid(semantic_principles, mismatched_semantic_name)
+
+    def test_task_locator_is_bound_and_bootstrap_current_uses_active_successor(self):
+        public_input = self.load("public-input-bootstrap.json")
+        selected = {
+            "typed_exit": "baseline_current",
+            "task_locator": public_input["task_locator"],
+            "baseline_identity": public_input["successor_baseline"]["identity"],
+            "constitution_identity": public_input["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "Bootstrap preserves the caller task identity.",
+            "promotion_state": "no_change",
+        }
+        result = self.invoke(public_input, selected)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["task_locator"], public_input["task_locator"])
+        self.assertEqual(
+            json.loads(result.stdout)["baseline_identity"],
+            public_input["successor_baseline"]["identity"],
+        )
+
+        selected["task_locator"] = ".trellis/tasks/wrong-task"
+        result = self.invoke(public_input, selected)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
+
+        wrong_locator = copy.deepcopy(public_input)
+        wrong_locator["successor_baseline"]["locator"] = "docs/architecture/other.md"
+        selected["task_locator"] = public_input["task_locator"]
+        result = self.invoke(wrong_locator, selected)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(
+            json.loads(result.stdout)["field_path"],
+            "public_input.successor_baseline.locator",
+        )
+
+        reused_identity = copy.deepcopy(public_input)
+        reused_identity["successor_baseline"]["identity"] = reused_identity["baseline"]["identity"]
+        selected["baseline_identity"] = reused_identity["baseline"]["identity"]
+        result = self.invoke(reused_identity, selected)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(
+            json.loads(result.stdout)["field_path"],
+            "public_input.successor_baseline.identity",
+        )
+
+        repair = self.load("public-input-repair.json")
+        repair_schema = self.schema("public-input-repair.schema.json")
+        self.assert_schema_valid(repair_schema, repair)
+        for status in ("missing", "draft", "superseded"):
+            with self.subTest(repair_status=status):
+                invalid_repair = copy.deepcopy(repair)
+                invalid_repair["baseline"]["status"] = status
+                self.assert_schema_invalid(repair_schema, invalid_repair)
+
+        repair["stage"] = "branch_review"
+        repair_current = {
+            "typed_exit": "baseline_current",
+            "task_locator": repair["task_locator"],
+            "baseline_identity": repair["baseline"]["identity"],
+            "constitution_identity": repair["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "The bounded repair restored the declared authority.",
+            "promotion_state": "no_change",
+        }
+        result = self.invoke(repair, repair_current)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        repair_output = json.loads(result.stdout)
+        self.assertEqual(repair_output["source_profile"], "repair")
+        self.assertEqual(repair_output["stage"], "branch_review")
+        self.assertEqual(repair_output["constitution_status"], "current")
+        for contract_path in (
+            self.repo_root / "trellis/workflows/guru-team/workflow.md",
+            self.repo_root / "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+        ):
+            contract_text = contract_path.read_text(encoding="utf-8")
+            self.assertIn("source_profile=task_impact_sync", contract_text)
+            self.assertIn("delivery_bootstrap_foundation|delivery_repair", contract_text)
+            self.assertIn("Task-only `bootstrap_foundation|repair` reruns the matching", contract_text)
+            self.assertIn("source_profile=delivery_task_impact_sync", contract_text)
+            self.assertIn("source_profile=delivery_promotion|promotion", contract_text)
+
+        pending = self.load("public-input-impact.json")
+        pending["constitution"]["authority_status"] = "pending_reviewed_promotion"
+        pending_current = {
+            "typed_exit": "baseline_current",
+            "task_locator": pending["task_locator"],
+            "baseline_identity": pending["baseline"]["identity"],
+            "constitution_identity": pending["constitution"]["identity"],
+            "impact_kind": "no_architecture_impact",
+            "impact_reason": "Pending authority is not current.",
+            "promotion_state": "no_change",
+        }
+        result = self.invoke(pending, pending_current)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(
+            json.loads(result.stdout)["field_path"],
+            "public_input.constitution.authority_status",
+        )
+
+        current = self.load("public-input-impact.json")
+        self.constitution_path.unlink()
+        result = self.invoke(current, {
+            **pending_current,
+            "task_locator": current["task_locator"],
+            "baseline_identity": current["baseline"]["identity"],
+            "constitution_identity": current["constitution"]["identity"],
+            "impact_reason": "A missing authority cannot be current.",
+        })
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["code"], "unsafe_path")
+        self.write_current_constitution()
+
+        current["constitution"]["authority_locator"] = "."
+        result = self.invoke(current, {
+            **pending_current,
+            "task_locator": current["task_locator"],
+            "baseline_identity": current["baseline"]["identity"],
+            "constitution_identity": current["constitution"]["identity"],
+            "impact_reason": "A directory cannot be constitution authority.",
+        })
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["code"], "unsafe_path")
+
+    def test_applicable_unverified_check_cannot_return_current(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        check = self.project_check(public_input, blocking=True, status="unverified")
+        result = self.invoke(public_input, self.architecture_selection(
+            public_input,
+            project_checks=[check],
+        ))
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(json.loads(result.stdout)["code"], "semantic_result_invalid")
+
+    def test_nonblocking_unverified_check_preserves_evidence_gap(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        check = self.project_check(public_input, blocking=False, status="unverified")
+        check["unavailable_reason"] = "External evidence is unavailable and is not required by this task."
+        result = self.invoke(public_input, self.architecture_selection(
+            public_input,
+            project_checks=[check],
+        ))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_branch_review_requires_independent_committed_full_diff(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        public_input["stage"] = "branch_review"
+        public_input["committed_range"] = self.committed_range()
+        selected = self.architecture_selection(public_input)
+        result = self.invoke(public_input, selected)
+        self.assertEqual(result.returncode, 3)
+        selected["review"] = {
+            "status": "reviewed",
+            "independent": True,
+            "committed_range": copy.deepcopy(public_input["committed_range"]),
+        }
+        result = self.invoke(public_input, selected)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+        mismatched_range = copy.deepcopy(selected)
+        mismatched_range["review"]["committed_range"]["review_head"] = (
+            "fedcba9876543210fedcba9876543210fedcba98"
+        )
+        result = self.invoke(public_input, mismatched_range)
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.review")
+
+    def test_sync_kinds_use_their_actual_stale_identity(self):
+        public_input = self.load("public-input-impact.json")
+        cases = [
+            {
+                "sync_kind": "baseline_advanced",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v2",
+                "sync_target": {"kind": "baseline", "locator": "docs/architecture/README.md", "expected_identity": "current-v1", "current_identity": "current-v2"},
+            },
+            {
+                "sync_kind": "constitution_advanced",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "constitution", "locator": "docs/architecture/00-foundation/design-constitution.md", "expected_identity": "constitution-v1", "current_identity": "constitution-v2"},
+            },
+            {
+                "sync_kind": "contribution_stale",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "contribution", "locator": "docs/architecture/contributions/example", "expected_identity": "contribution-v1", "current_identity": "contribution-v2"},
+            },
+            {
+                "sync_kind": "repair",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "project_contract", "locator": "docs/architecture/06-governance/change-contract.md", "expected_identity": "project-change-contract-v1", "current_identity": "project-change-contract-v1"},
+            },
+        ]
+        for case in cases:
+            with self.subTest(sync_kind=case["sync_kind"]):
+                selected = {
+                    "typed_exit": "sync_required",
+                    "task_locator": public_input["task_locator"],
+                    **case,
+                }
+                result = self.invoke(public_input, selected)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                output = json.loads(result.stdout)
+                self.assertEqual(output["sync_target"], case["sync_target"])
+                self.assertNotIn("contribution_locator", output)
+                from runtime.schema import validate_json
+                validate_json(output, self.package / "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json", "consumer")
+
+    def test_sync_kind_mismatches_fail_closed(self):
+        public_input = self.load("public-input-impact.json")
+        invalid = [
+            {
+                "sync_kind": "baseline_advanced",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "baseline", "locator": "docs/architecture/README.md", "expected_identity": "current-v1", "current_identity": "current-v1"},
+            },
+            {
+                "sync_kind": "constitution_advanced",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "constitution", "locator": "docs/architecture/00-foundation/design-constitution.md", "expected_identity": "constitution-v1", "current_identity": "constitution-v1"},
+            },
+            {
+                "sync_kind": "contribution_stale",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "baseline", "locator": "docs/architecture/README.md", "expected_identity": "contribution-v1", "current_identity": "contribution-v2"},
+            },
+            {
+                "sync_kind": "repair",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "baseline", "locator": "docs/architecture/README.md", "expected_identity": "current-v1", "current_identity": "current-v1"},
+            },
+            {
+                "sync_kind": "repair",
+                "expected_current_identity": "current-v1",
+                "current_identity": "current-v1",
+                "sync_target": {"kind": "project_contract", "locator": "docs/architecture/06-governance/other-contract.md", "expected_identity": "project-change-contract-v1", "current_identity": "project-change-contract-v1"},
+            },
+        ]
+        for case in invalid:
+            with self.subTest(sync_kind=case["sync_kind"]):
+                result = self.invoke(public_input, {
+                    "typed_exit": "sync_required",
+                    "task_locator": public_input["task_locator"],
+                    **case,
+                })
+                self.assertEqual(result.returncode, 3)
+
+    def test_legacy_committed_promotion_requires_current_owner_reentry(self):
+        for name, schema in (("public-input-promotion.json", "public-input-promotion.schema.json"),
+                             ("public-input-delivery-promotion-1.0.json", "public-input-delivery-promotion-1.0.schema.json")):
+            public = self.load(name)
+            self.assert_schema_valid(self.schema(schema), public)
+            result = self.invoke(public, self.architecture_selection(public))
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "schema_version")
+
+    def test_sync_router_preserves_current_output_without_reconstructing_a_promotion(self):
+        interface = json.loads((self.package / "interface.json").read_text())
+        exit_row = next(row for row in interface["external_exits"] if row["id"] == "sync_required")
+        self.assertEqual(exit_row["consumer"], {"kind": "workflow", "id": "guru-architecture-baseline-sync-router"})
+        public = self.load("public-input-impact.json")
+        for kind, target in (("promotion_required", {"kind": "contribution", "locator": "docs/architecture/contributions/example", "expected_identity": "contribution-v1", "current_identity": "contribution-v1"}),
+                             ("repair", {"kind": "project_contract", "locator": public["project_contract"]["change_contract_locator"], "expected_identity": public["project_contract"]["change_contract_identity"], "current_identity": public["project_contract"]["change_contract_identity"]})):
+            result = self.invoke(public, {"typed_exit": "sync_required", "task_locator": public["task_locator"],
+                                         "sync_kind": kind, "expected_current_identity": public["baseline"]["identity"],
+                                         "current_identity": public["baseline"]["identity"], "sync_target": target})
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            output = json.loads(result.stdout)
+            self.assertEqual(output["delivery_key"], self.delivery_key)
+            self.assertEqual(output["planning_root"], self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            self.assertEqual(output["sync_kind"], kind)
+
+    def test_delivery_recovery_profiles_preserve_original_identity(self):
+        for profile in ("delivery_repair", "delivery_bootstrap_foundation"):
+            public = self.load("public-input-" + profile.replace("_", "-") + "-1.0.json")
+            public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
+                          planning_root=self.upstream.projection.resolve(self.delivery_key)["planning_root"])
+            selected = {"typed_exit": "baseline_current", "task_locator": public["task_locator"],
+                        "baseline_identity": public.get("successor_baseline", public["baseline"])["identity"],
+                        "constitution_identity": public["constitution"]["identity"], "impact_kind": "no_architecture_impact",
+                        "impact_reason": "Current baseline recovery satisfies the original stage.", "promotion_state": "no_change"}
+            before = self.upstream.projection.read_record()
+            result = self.invoke(public, selected)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            output = json.loads(result.stdout)
+            self.assertEqual(output["delivery_key"], self.delivery_key)
+            self.assertEqual(output["source_profile"], profile)
+            self.assertEqual(self.upstream.projection.read_record(), before)
+
+
+    def test_review_and_project_check_conditions_are_closed_and_duplicated_consistently(self):
+        semantic = self.schema("semantic-result.schema.json")
+        contribution = self.schema("architecture-contribution.schema.json")
+        descriptor = self.schema("project-architecture-check-descriptor.schema.json")
+        project_check = self.schema("project-architecture-check-result.schema.json")
+        self.assertEqual(semantic["properties"]["review"], contribution["properties"]["review"])
+        self.assertIn("project_check_descriptors", semantic["properties"])
+        for public_schema in (
+            self.schema("public-input-impact.schema.json"),
+            self.schema("public-input-promotion.schema.json"),
+        ):
+            self.assertNotIn("project_check_descriptors", public_schema["required"])
+            self.assertNotIn("project_check_descriptors", public_schema["properties"])
+            self.assertNotIn("projectCheckDescriptor", public_schema["$defs"])
+        descriptor_copies = [
+            semantic["$defs"]["projectCheckDescriptor"],
+            contribution["$defs"]["projectCheckDescriptor"],
+        ]
+        for candidate in descriptor_copies:
+            self.assertEqual(candidate["required"], descriptor["required"])
+            self.assertEqual(candidate["anyOf"], descriptor["anyOf"])
+            self.assertEqual(candidate["properties"], descriptor["properties"])
+        self.assert_schema_valid(
+            descriptor,
+            self.load("project-architecture-check-descriptor.json"),
+        )
+        self.assert_schema_valid(
+            project_check,
+            self.load("project-architecture-check-result.json"),
+        )
+        project_check_copies = [semantic["$defs"]["projectCheck"], contribution["$defs"]["projectCheck"], project_check]
+        for candidate in project_check_copies:
+            self.assertEqual(candidate["required"], project_check["required"])
+            self.assertEqual(candidate["anyOf"], project_check["anyOf"])
+            self.assertEqual(candidate["allOf"], project_check["allOf"])
+            for field in ("status", "evidence_locator", "unavailable_reason", "applicability", "blocking"):
+                self.assertEqual(candidate["properties"][field], project_check["properties"][field])
+
+        review_schema = copy.deepcopy(semantic["properties"]["review"])
+        review_schema["$defs"] = semantic["$defs"]
+        pending_review = {"status": "pending", "independent": False, "committed_range": None}
+        self.assert_schema_valid(review_schema, pending_review)
+        invalid_pending = {
+            "status": "pending",
+            "independent": True,
+            "committed_range": self.committed_range(),
+        }
+        self.assert_schema_invalid(review_schema, invalid_pending)
+
+        public_input = self.load("public-input-impact-architecture.json")
+        legal_checks = [
+            self.project_check(public_input, status="pass"),
+            self.project_check(public_input, blocking=False, status="fail"),
+            self.project_check(public_input, blocking=False, status="unverified"),
+            {
+                **self.project_check(public_input, blocking=False, status="pass"),
+                "applicability": "not_applicable",
+            },
+        ]
+        for check in legal_checks:
+            self.assert_schema_valid(project_check, check)
+
+        invalid_checks = []
+        missing_evidence = self.project_check(public_input, status="pass")
+        missing_evidence.pop("evidence_locator")
+        invalid_checks.append(missing_evidence)
+        mixed_evidence = self.project_check(public_input, status="fail")
+        mixed_evidence["unavailable_reason"] = "Unavailable."
+        invalid_checks.append(mixed_evidence)
+        unverified_with_evidence = self.project_check(public_input, blocking=False, status="unverified")
+        unverified_with_evidence["evidence_locator"] = "docs/architecture/evidence/example.md"
+        invalid_checks.append(unverified_with_evidence)
+        not_applicable_blocking = self.project_check(public_input, blocking=True, status="pass")
+        not_applicable_blocking["applicability"] = "not_applicable"
+        invalid_checks.append(not_applicable_blocking)
+        not_applicable_failed = self.project_check(public_input, blocking=False, status="fail")
+        not_applicable_failed["applicability"] = "not_applicable"
+        invalid_checks.append(not_applicable_failed)
+        not_applicable_unverified = self.project_check(public_input, blocking=False, status="unverified")
+        not_applicable_unverified["applicability"] = "not_applicable"
+        invalid_checks.append(not_applicable_unverified)
+        for check in invalid_checks:
+            self.assert_schema_invalid(project_check, check)
+
+    def test_project_check_descriptors_and_results_are_bound_one_to_one(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        descriptor = self.project_check_descriptor()
+        check = self.project_check(public_input, descriptor=descriptor)
+        selection = self.architecture_selection(
+            public_input,
+            project_check_descriptors=[descriptor],
+            project_checks=[check],
+        )
+
+        self.assertNotIn("project_check_descriptors", public_input)
+        result = self.invoke_canonical(public_input, selection)
+        if result is not None:
+            self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.invoke(public_input, selection)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+        public_with_owner_field = copy.deepcopy(public_input)
+        public_with_owner_field["project_check_descriptors"] = [descriptor]
+        for invoke in (self.invoke_canonical, self.invoke):
+            result = invoke(public_with_owner_field, selection)
+            if result is None:
+                continue
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+
+        mismatch_cases = [
+            ("descriptor_identity", "unregistered-descriptor"),
+            ("check_id", "unregistered-check"),
+            ("check_version", "999"),
+            ("applicable_scope", ["legacy-boundary"]),
+            ("rule_refs", ["RULE-other"]),
+            ("decision_refs", ["ADR-other"]),
+            ("gap_refs", ["GAP-other"]),
+        ]
+        for field, value in mismatch_cases:
+            with self.subTest(field=field):
+                mismatched = copy.deepcopy(check)
+                mismatched[field] = value
+                result = self.invoke(
+                    public_input,
+                    self.architecture_selection(
+                        public_input,
+                        project_check_descriptors=[descriptor],
+                        project_checks=[mismatched],
+                    ),
+                )
+                self.assertEqual(result.returncode, 3)
+                self.assertEqual(json.loads(result.stdout)["code"], "semantic_result_invalid")
+
+        duplicate_descriptor = copy.deepcopy(descriptor)
+        duplicate_descriptor["check_id"] = "project-architecture-duplicate"
+        duplicate_descriptor["entrypoint"] = "scripts/check-architecture-again.sh"
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(
+                public_input,
+                project_check_descriptors=[descriptor, duplicate_descriptor],
+                project_checks=[check],
+            ),
+        )
+        self.assertEqual(result.returncode, 3)
+
+        extra_descriptor = copy.deepcopy(descriptor)
+        extra_descriptor["descriptor_identity"] = "project-architecture:legacy-boundary:1"
+        extra_descriptor["check_id"] = "project-architecture-extra"
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(
+                public_input,
+                project_check_descriptors=[descriptor, extra_descriptor],
+                project_checks=[check],
+            ),
+        )
+        self.assertEqual(result.returncode, 3)
+
+        duplicate_check = copy.deepcopy(check)
+        duplicate_check["after"] = {"state": "same identity with a second result"}
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(public_input, project_checks=[check, duplicate_check]),
+        )
+        self.assertEqual(result.returncode, 3)
+
+        second_descriptor = copy.deepcopy(descriptor)
+        second_descriptor["descriptor_identity"] = "project-architecture:legacy-boundary:1"
+        second_descriptor["entrypoint"] = "scripts/check-legacy-architecture.sh"
+        second_descriptor["applicable_scope"] = ["legacy-boundary"]
+        second_descriptor["rule_refs"] = ["RULE-legacy-owner"]
+        second_check = self.project_check(public_input, descriptor=second_descriptor)
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(
+                public_input,
+                project_check_descriptors=[descriptor, second_descriptor],
+                project_checks=[check, second_check],
+            ),
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+        unsafe_descriptor = copy.deepcopy(descriptor)
+        unsafe_descriptor["entrypoint"] = "../scripts/check-architecture.sh"
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(
+                public_input,
+                project_check_descriptors=[unsafe_descriptor],
+                project_checks=[self.project_check(public_input, descriptor=unsafe_descriptor)],
+            ),
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["code"], "unsafe_path")
+
+    def test_not_applicable_requires_non_blocking_passed_evidence(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        descriptor = self.project_check_descriptor()
+
+        accepted = self.project_check(
+            public_input,
+            descriptor=descriptor,
+            blocking=False,
+            status="pass",
+        )
+        accepted["applicability"] = "not_applicable"
+        accepted_selection = self.architecture_selection(
+            public_input,
+            project_check_descriptors=[descriptor],
+            project_checks=[accepted],
+        )
+        for invoke in (self.invoke_canonical, self.invoke):
+            result = invoke(public_input, accepted_selection)
+            if result is None:
+                continue
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+        for status in ("fail", "unverified"):
+            with self.subTest(status=status):
+                rejected = self.project_check(
+                    public_input,
+                    descriptor=descriptor,
+                    blocking=False,
+                    status=status,
+                )
+                rejected["applicability"] = "not_applicable"
+                rejected_selection = self.architecture_selection(
+                    public_input,
+                    project_check_descriptors=[descriptor],
+                    project_checks=[rejected],
+                )
+                for invoke in (self.invoke_canonical, self.invoke):
+                    result = invoke(public_input, rejected_selection)
+                    if result is None:
+                        continue
+                    self.assertEqual(result.returncode, 2)
+                    self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+
+    def test_project_checks_require_at_least_one_authority_reference_everywhere(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        empty_refs = self.project_check(public_input)
+        empty_refs["rule_refs"] = []
+        empty_refs["decision_refs"] = []
+        empty_refs["gap_refs"] = []
+
+        self.assert_schema_invalid(
+            self.schema("project-architecture-check-result.schema.json"),
+            empty_refs,
+        )
+
+        descriptor = self.project_check_descriptor()
+        descriptor["rule_refs"] = []
+        descriptor["decision_refs"] = []
+        descriptor["gap_refs"] = []
+        self.assert_schema_invalid(
+            self.schema("project-architecture-check-descriptor.schema.json"),
+            descriptor,
+        )
+
+        contribution = self.contribution(public_input)
+        contribution["project_checks"] = [empty_refs]
+        self.assert_schema_invalid(
+            self.schema("architecture-contribution.schema.json"),
+            contribution,
+        )
+
+        result = self.invoke(
+            public_input,
+            self.architecture_selection(public_input, project_checks=[empty_refs]),
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+
+    def test_contribution_closes_adr_promotion_and_review_conditions(self):
+        public_input = self.load("public-input-impact-architecture.json")
+        schema = self.schema("architecture-contribution.schema.json")
+        contribution = self.contribution(public_input)
+        self.assert_schema_valid(schema, contribution)
+
+        adr_required_without_locator = copy.deepcopy(contribution)
+        adr_required_without_locator["adr"]["required"] = True
+        self.assert_schema_invalid(schema, adr_required_without_locator)
+
+        adr_not_required_with_locator = copy.deepcopy(contribution)
+        adr_not_required_with_locator["adr"]["locator"] = "docs/architecture/adr/283.md"
+        self.assert_schema_invalid(schema, adr_not_required_with_locator)
+
+        adr_required = copy.deepcopy(contribution)
+        adr_required["adr"] = {
+            "required": True,
+            "locator": "docs/architecture/adr/283.md",
+            "reason": "The contribution changes an Architecture decision.",
+        }
+        self.assert_schema_valid(schema, adr_required)
+
+        required_with_promoted_identity = copy.deepcopy(contribution)
+        required_with_promoted_identity["promotion"]["promoted_identity"] = "current-v2"
+        self.assert_schema_invalid(schema, required_with_promoted_identity)
+
+        promoted_without_identity = copy.deepcopy(contribution)
+        promoted_without_identity["promotion"]["state"] = "reviewed_promoted"
+        self.assert_schema_invalid(schema, promoted_without_identity)
+
+        promoted_with_pending_review = copy.deepcopy(contribution)
+        promoted_with_pending_review["promotion"] = {
+            "state": "reviewed_promoted",
+            "promoted_identity": "current-v2",
+        }
+        self.assert_schema_invalid(schema, promoted_with_pending_review)
+
+        reviewed_promoted = copy.deepcopy(promoted_with_pending_review)
+        reviewed_promoted["review"] = {
+            "status": "reviewed",
+            "independent": True,
+            "committed_range": self.committed_range(),
+        }
+        self.assert_schema_valid(schema, reviewed_promoted)
+
+    def test_stale_authority_binding_fails_closed(self):
+        public_input = self.load("public-input-impact.json")
+        selected = {
+            "typed_exit": "blocked",
+            "reason_code": "stale_identity",
+            "remediation": "Reread.",
+        }
+        result = self.invoke(public_input, selected)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        envelope, _ = self.delivery_entry(public_input, {})
+        owner_baseline = dict(envelope["baseline"])
+        owner_baseline["identity"] = "stale"
+        owner = {
+            "schema_version": envelope["schema_version"], "profile": envelope["profile"], "mode": envelope["mode"],
+            "continuation_id": envelope["continuation_id"], "stage": envelope["stage"],
+            "task_locator": envelope["task_locator"],
+            "input_sha256": self.digest(envelope), "baseline": owner_baseline,
+            "constitution": envelope["constitution"], "project_contract": envelope["project_contract"],
+            "freshness_identity": envelope["freshness_identity"],
+            "ai_review_gate": {"status": "blocked", "reviewed_scope": "authority", "evidence_summary": "live", "findings": ["stale"], "conclusion": "blocked"},
+            "typed_exit": "blocked", "consumer": {"kind": "stop", "id": "architecture-baseline-blocked"},
+            "reason_code": "stale_identity", "remediation": "Reread.",
+        }
+        owner.update(delivery_key=envelope["delivery_key"], planning_root=envelope["planning_root"], before_authority=envelope["before_authority"], candidate=envelope["candidate"])
+        result = subprocess.run(
+            [str(self.package / "scripts/invoke.sh"), "--invocation", "-"],
+            input=json.dumps({"public_input": envelope, "owner_result": owner}),
+            text=True, capture_output=True, check=False,
+            cwd=self.repository,
+        )
+        self.assertEqual(result.returncode, 3)
+        self.assertEqual(json.loads(result.stdout)["code"], "stale_identity")
+
+    def test_eval_inventory_covers_all_profiles_and_approved_project_neutral_scenarios(self):
+        evals = json.loads((self.package / "evals/evals.json").read_text())["evals"]
+        self.assertEqual([item["id"] for item in evals], [
+            "bootstrap-foundation-current", "no-impact", "planning-semantic-authoring", "target-native",
+            "legacy-boundary-convergence",
+            "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
+            "parallel-stale", "unpromoted-contribution", "next-task-consumption",
+            "missing-external-evidence", "repair-current-contract",
+            "implementation-discovery-independent-native", "phase2-independent-native",
+            "branch-review-independent-native", "planning-business-default-native",
+            "planning-missing-candidate-native", "planning-inherited-business-default-native",
+            "planning-constraint-sufficient-native", "planning-constraint-insufficient-native",
+            "delivery-task-impact-sync-identity", "delivery-promotion-identity", "delivery-repair-identity", "delivery-bootstrap-foundation-identity", "whole-task-acceptance-current",
+        ])
+        interface = json.loads((self.package / "interface.json").read_text())
+        declared_profiles = {
+            item["id"]
+            for item in interface["public_contracts"]["input"]["profiles"]
+        }
+        covered_profiles = {item["input_profile_id"] for item in evals}
+        self.assertEqual(covered_profiles, declared_profiles)
+        self.assertEqual(
+            covered_profiles,
+            {"bootstrap_foundation", "task_impact_sync", "promotion", "repair", "delivery_task_impact_sync", "delivery_promotion", "delivery_repair", "delivery_bootstrap_foundation"},
+        )
+        semantic_case = next(
+            item for item in evals if item["id"] == "planning-semantic-authoring"
+        )
+        self.assertEqual(semantic_case["native_execution_mode"], "semantic_authoring")
+        self.assertNotIn("owner_staging", json.dumps(semantic_case))
+        semantic_facts = json.loads(
+            (self.package / "evals/files/planning-semantic-authoring-facts.json").read_text()
+        )
+        self.assertNotIn("expected", json.dumps(semantic_facts).lower())
+        self.assertNotIn("owner_result", json.dumps(semantic_facts).lower())
+        text = json.dumps(evals).lower()
+        for private_term in ("afizzy", "flutter", "viewmodel", "controller"):
+            self.assertNotIn(private_term, text)
+        input_statuses = {
+            path.name: json.loads(path.read_text(encoding="utf-8"))["constitution"][
+                "authority_status"
+            ]
+            for path in (self.package / "evals/files").glob("*-input.json")
+        }
+        self.assertEqual(
+            input_statuses.pop("impact-unpromoted-input.json"),
+            "pending_reviewed_promotion",
+        )
+        self.assertEqual(set(input_statuses.values()), {"current"})
+        unpromoted = next(
+            item for item in evals if item["id"] == "unpromoted-contribution"
+        )
+        self.assertIn("sync_required(promotion_required)", unpromoted["prompt"])
+        unpromoted_facts = json.loads(
+            (self.package / "evals/files/unpromoted-contribution-facts.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIn("pending_reviewed_promotion", unpromoted_facts["scenario"])
+
+    def test_skill_contract_requires_current_ai_owner_authoring_sequence(self):
+        skill = (self.package / "SKILL.md").read_text(encoding="utf-8")
+        contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
+        for phrase in (
+            "Load [references/contract.md](references/contract.md) completely before acting.",
+            "Planning 3.0, nonplanning 4.0, or matching Delivery schema",
+            "scripts/invoke.sh --invocation -",
+            "owner_not_yet_executed",
+            "platform truly cannot provide the contract-required",
+            "report the exact error and stop the current invocation",
+            "not a retry within the same semantic round",
+            "`no_architecture_impact` owner result uses `promotion_state=no_change` and omits",
+            "optional schema properties are not universally valid",
+        ):
+            self.assertIn(phrase, skill)
+        for phrase in (
+            "owner_not_yet_executed",
+            "true execution-capability gap",
+            "`project_check_descriptors`, `project_checks`, and `review`",
+            "schema properties belong only to the architecture-impact branches",
+            "semantic owner round with a newly authored envelope",
+            "not a retry within",
+        ):
+            self.assertIn(phrase, contract)
+
+    def test_prewrite_current_assesses_real_facts_without_future_contribution(self):
+        public = self.load("public-input-candidate-assessment-3.0.json")
+        selected = self.architecture_selection(public)
+        for field in ("promotion_state", "contribution_locator", "contribution_identity"):
+            selected.pop(field)
+        selected["decision_refs"] = ["source:Design A planning owner"]
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        output = json.loads(result.stdout)
+        self.assertEqual(output["planning_purpose"], "candidate_assessment")
+        self.assertEqual(output["change_path"], "target_native")
+        self.assertNotIn("promotion_state", output)
+        self.assertNotIn("contribution_locator", output)
+        self.assertFalse((self.repository / public["task_locator"] / "design.md").exists())
+
+    def test_final_current_requires_actual_wording_current_design_and_contribution(self):
+        public = self.load("public-input-final-plan-3.0.json")
+        path = self.repository / public["design_locator"]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("Current design and real task-local contribution; necessary ADR decision.")
+        public["freshness_identity"] = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        selected = self.architecture_selection(public, contribution_locator=public["design_locator"], contribution_identity=public["freshness_identity"])
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["planning_purpose"], "final_plan")
+        path.write_text("Normally revised Wording-current design")
+        stale = self.invoke(public, selected)
+        self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
+        self.assertEqual(json.loads(stale.stdout)["field_path"], "input.freshness_identity")
+
+    def test_final_plan_keeps_existing_project_owned_contribution_locator(self):
+        public = self.load("public-input-final-plan-3.0.json")
+        design = self.repository / public["design_locator"]
+        design.parent.mkdir(parents=True, exist_ok=True)
+        design.write_text("Current Wording design references the isolated project contribution.")
+        public["freshness_identity"] = "sha256:" + hashlib.sha256(design.read_bytes()).hexdigest()
+        locator = "docs/architecture/contributions/example/change-contract.json"
+        contribution = self.repository / locator
+        contribution.parent.mkdir(parents=True, exist_ok=True)
+        contribution.write_text('{"task_id":"example","expected_current":"current-v1"}')
+        selected = self.architecture_selection(public, contribution_locator=locator,
+            contribution_identity="sha256:" + hashlib.sha256(contribution.read_bytes()).hexdigest())
+        result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertFalse((self.repository / public["task_locator"] / "change-contract.json").exists())
+        contribution.write_text('{"task_id":"example","expected_current":"current-v2"}')
+        stale = self.invoke(public, selected)
+        self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
+        self.assertEqual(json.loads(stale.stdout)["field_path"], "owner_result.contribution_identity")
+
+    def test_planning_other_exits_preserve_both_purposes(self):
+        cases = {
+            "sync_required": {"sync_kind":"baseline_advanced", "expected_current_identity":"current-v0", "current_identity":"current-v1", "sync_target":{"kind":"baseline","locator":"docs/architecture/README.md","expected_identity":"current-v0","current_identity":"current-v1"}},
+            "baseline_incomplete": {"authority_locator":"docs/architecture/README.md", "missing_refs":["authority:missing"], "repair_profile":"repair"},
+            "architecture_conflict": {"conflict_refs":["source:Design A"], "return_route":"planning"},
+            "contract_incomplete": {"missing_refs":["source:current concern"], "return_route":"planning"},
+            "fitness_regression": {"regression_refs":["design:owner expansion"], "return_route":"check"},
+            "blocked": {"reason_code":"authority_missing", "remediation":"Read current authority."},
+        }
+        for purpose in ("candidate_assessment", "final_plan"):
+            public = self.load(f"public-input-{purpose.replace('_', '-')}-3.0.json")
+            if purpose == "final_plan":
+                path = self.repository / public["design_locator"]
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("Current design")
+                public["freshness_identity"] = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+            for exit_id, fields in cases.items():
+                with self.subTest(purpose=purpose, exit=exit_id):
+                    result = self.invoke(public, {"typed_exit":exit_id, **fields})
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    output = json.loads(result.stdout)
+                    self.assertEqual(output["planning_purpose"], purpose)
+                    self.assertEqual(output["task_locator"], public["task_locator"])
+                    if exit_id == "sync_required":
+                        from runtime.schema import validate_json
+                        validate_json(output, self.package / "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json", "consumer")
+
+    def test_retired_purpose_less_planning_2_0_requires_fresh_producer(self):
+        public = self.load("public-input-impact.json")
+        public["stage"] = "planning"
+        result = self.invoke(public, {"typed_exit":"blocked", "reason_code":"missing_current_input", "remediation":"Freshly enter Author."})
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stdout)["field_path"], "input")
+
+    def test_eval_schema_closes_native_execution_mode(self):
+        schema = json.loads(
+            (self.package.parents[1] / "schemas/skill-evals.schema.json").read_text()
+        )
+        corpus = json.loads((self.package / "evals/evals.json").read_text())
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(corpus)))
+        explicit_post_owner = copy.deepcopy(corpus)
+        explicit_post_owner["evals"][0]["native_execution_mode"] = "post_owner"
+        self.assertEqual([], list(Draft202012Validator(schema).iter_errors(explicit_post_owner)))
+        invalid = copy.deepcopy(corpus)
+        invalid["evals"][0]["native_execution_mode"] = "external_owner"
+        self.assertTrue(list(Draft202012Validator(schema).iter_errors(invalid)))
+
+
+if __name__ == "__main__":
+    unittest.main()

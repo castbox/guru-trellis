@@ -1,0 +1,5 @@
+{
+  "code": "missing_argument",
+  "field_path": "arguments.item",
+  "remediation": "Provide --item with a non-empty value."
+}

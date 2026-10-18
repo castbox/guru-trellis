@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-review-change-request",
+  "evals": [
+    {
+      "id": "standard-intake-authoring-complete",
+      "prompt": "Review the issue in the supplied source evidence through the current standard Intake owners. Use the current repository authority and the formal installed commands, and return the resulting public output without creating a workspace.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "expected_exit": "ready",
+      "expected_output": "The same native Agent authors all four semantic owners and the actual Readiness wrapper returns ready, using real predecessor outputs.",
+      "files": ["evals/files/standard-intake-source.json"],
+      "assertions": {"deterministic": [
+        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ], "semantic": [
+        {"id": "native-four-owner-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The same native AI actually performs Discovery, Clarification, Wording and Readiness semantic review from the authority before authoring each result; it neither waits for an external owner nor refuses or defers its own responsibility. Actual public outputs are consumed in sequence as context_ready, clear, pass and ready, without invented predecessors or workspace execution. Command order alone is not semantic evidence."}
+      ]}
+    },
+    {
+      "id": "standard-intake-authoring-scope-conflict",
+      "prompt": "Review the issue in the supplied source evidence through the current standard Intake owners. Use the current repository authority and the formal installed commands, and return the resulting public output without creating a workspace.",
+      "native_execution_mode": "semantic_authoring",
+      "native_authoring_flow": "standard_intake",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "expected_exit": "blocked",
+      "expected_output": "Clarification identifies the unresolved mutually exclusive delivery scope, emits its actual blocked DTO, and no downstream owner or workspace command runs.",
+      "files": ["evals/files/standard-intake-conflicting-source.json"],
+      "assertions": {"deterministic": [
+        {"id": "public-invocation-only", "kind": "trace", "invariant": "public_invocation_only"},
+        {"id": "evals-not-loaded", "kind": "trace", "invariant": "evals_not_loaded_by_skill"},
+        {"id": "private-runtime-not-read", "kind": "trace", "invariant": "private_runtime_not_read_by_agent"}
+      ], "semantic": [
+        {"id": "native-conflict-review", "evidence_selector": "transcript", "criterion": "Independently read this run's full native transcript, source facts and command receipts. The native AI identifies the actual mutually exclusive delivery requirements and unresolved product choice, authors the Clarification blocker and returns its actual blocked public output. It does not invent a user answer, refuse or defer its own review, wait for an external owner, or execute Wording, Readiness or workspace after the blocker. A blocked DTO or command order alone is not semantic evidence."}
+      ]}
+    },
+    {
+      "id": "ready-route",
+      "prompt": "Review the staged current issue whose ten readiness dimensions are current, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
+      "expected_exit": "ready",
+      "expected_output": "The public DTO is the declared ready route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "ready"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-ready-input.json", "evals/files/eval-ready-facts.json"],
+      "input_profile_id": "current_issue"
+    },
+    {
+      "id": "clarify-requirements-route",
+      "prompt": "Review the staged proposed draft with unresolved load-bearing requirements, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
+      "expected_exit": "clarify_requirements",
+      "expected_output": "The public DTO is the declared clarify_requirements route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "clarify_requirements"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-clarify-requirements-input.json", "evals/files/eval-clarify-requirements-facts.json"],
+      "input_profile_id": "proposed_draft"
+    },
+    {
+      "id": "review-wording-route",
+      "prompt": "Review the staged standalone request whose controlled wording still needs review, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
+      "expected_exit": "review_wording",
+      "expected_output": "The public DTO is the declared review_wording route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "review_wording"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-review-wording-input.json", "evals/files/eval-review-wording-facts.json"],
+      "input_profile_id": "standalone_request"
+    },
+    {
+      "id": "refresh-context-route",
+      "prompt": "Review the staged current issue with stale context linkage, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
+      "expected_exit": "refresh_context",
+      "expected_output": "The public DTO is the declared refresh_context route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "refresh_context"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-refresh-context-input.json", "evals/files/eval-refresh-context-facts.json"],
+      "input_profile_id": "current_issue"
+    },
+    {
+      "id": "blocked-route",
+      "prompt": "Review the staged current issue whose semantic gate cannot pass safely, complete this Skill's semantic owner result, and invoke guru-review-change-request through scripts/invoke.sh --invocation - with the staged call-local envelope. Use the same --invocation envelope for record and check, then add the checker receipt only for invoke. Return the AI-selected, objectively checked route.",
+      "expected_exit": "blocked",
+      "expected_output": "The public DTO is the declared blocked route.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      },
+      "files": ["evals/files/eval-blocked-input.json", "evals/files/eval-blocked-facts.json"],
+      "input_profile_id": "current_issue"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+description = "Guru Team: finish-work"
+
+prompt = """
+<!-- guru-team-overlay: v1 -->
+# Guru Finish Work
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+confirmation, choice or clarification; the invoked Skill owns the exact action
+and its confirmation boundary.
+
+On an automatic context/route failure or an explicit independent manual request,
+read `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub
+Operations). That global owner defines the boundary; this entry adds no recovery
+steps and does not turn a manual result into Guru completion.
+
+Read the sole continuation in `.trellis/workflow.md` and current public
+Task/Delivery availability through the installed context helpers. Follow its
+Phase 3.6/3.7 route and mandatory load the applicable owners by stable Skill id:
+
+This is the exclusive finish entry for a Guru task. The upstream-owned
+`trellis-finish-work` Skill is not applicable to Guru tasks and must not be
+loaded or invoked. Do not archive before the current Closure and Finish owners
+complete their declared transitions.
+
+All GitHub platform operations use authenticated, explicitly repo-bound
+`gh`/`gh api` only. Do not use or fall back to App, MCP, connector, or browser
+UI; keep Git transport on `git`.
+
+- `guru-review-task-delivery`
+- `guru-publish-task-delivery`
+- `guru-merge-task-delivery`
+- `guru-review-task-completion`
+- `guru-complete-task-closure`
+- `guru-finish-task`
+- `guru-cleanup-task-resources`
+
+Consume only current public typed exits and their mapped workflow consumers:
+
+- Delivery Review `ready` enters publication; a checked `ready_for_merge`
+  enters the expected-head Delivery merge. `delivered` enters Completion,
+  never directly closes the Issue or archives the task.
+- Completion `remaining_work` retains the active task; `additional_delivery_required`
+  enters explicit Delivery Creation and its own Planning under the same TaskId.
+  No-current Delivery can enter validation/Completion without an empty slice.
+  Only `completed` enters Closure.
+- Closure `closed` or `no_mutation` enters Finish. Finish `success` enters
+  Cleanup; Cleanup `cleaned` ends the route, while remaining resources stay
+  with the Cleanup owner.
+
+Missing, stale, unknown, multiple, or unmapped exits fail closed. Mapped
+stale, resume, and reprepare transitions are internal workflow
+routes, not user choices. Do not add a routine confirmation between them.
+When the user gives a clear affirmative such as `确认继续` for the exact action
+just displayed, consume it for that action without asking them to repeat its
+SHA, digest, PR, or plan identity. Continue mapped internal exits automatically.
+Each independent Git/GitHub or resource mutation keeps its own exact
+dialogue-local confirmation; new external authority or a material scope decision
+may also pause the route. Old Finalizer/PR residue is not a current Delivery
+DTO. Follow the workflow installation-migration boundary and original transaction
+owner; unsupported migration preserves the complete old installation and stops.
+Historical success cannot replace any current gate.
+
+Do not call deterministic closeout scripts directly, reproduce package
+internals or artifact schemas, or create a handoff artifact. Return the
+current task state or the concrete declared blocker.
+"""

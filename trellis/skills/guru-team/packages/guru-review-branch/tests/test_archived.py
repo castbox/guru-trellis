@@ -1,0 +1,290 @@
+"""Deterministic wrapper fixtures, not evidence of an AI semantic review."""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import test_contract
+from jsonschema import Draft202012Validator
+
+
+class ArchivedContractTest(unittest.TestCase):
+    def test_closed_examples_and_legacy_disposition_stop(self):
+        package = test_contract.PACKAGE
+        interface = json.loads((package / "interface.json").read_text())
+        skills = package.parents[1]
+        Draft202012Validator(json.loads((skills / "schemas/skill-interface-1.4.schema.json").read_text())).validate(interface)
+        for name in ("public-archived-review-input", "public-archived-review-passed-output"):
+            schema = json.loads((package / "schemas" / (name + ".schema.json")).read_text())
+            value = json.loads((package / "examples" / (name + ".json")).read_text())
+            Draft202012Validator.check_schema(schema)
+            Draft202012Validator(schema).validate(value)
+            self.assertEqual(set(value), set(schema["required"]))
+        output = json.loads((package / "examples/public-output-delivery-archived-review-passed-1.0.json").read_text())
+        projection = next(p for p in interface["public_contracts"]["projections"] if p["exit_id"] == "archived_review_passed")
+        self.assertEqual(projection["operation"], "direct")
+        consumer = next(item for item in interface["public_contracts"]["consumer_inputs"]
+                        if item["id"] == projection["consumer_input_id"])
+        self.assertEqual(consumer["consumer"], {
+            "kind": "stop", "id": "legacy-archived-review-disposition-required",
+        })
+        Draft202012Validator(json.loads((package / consumer["contract"]["path"]).read_text())).validate(output)
+
+
+class ArchivedReviewTest(unittest.TestCase):
+    git = test_contract.BranchReviewWrapperLifecycleTest.git
+    write = test_contract.BranchReviewWrapperLifecycleTest.write
+    run_wrapper = test_contract.BranchReviewWrapperLifecycleTest.run_wrapper
+    auth = test_contract.BranchReviewWrapperLifecycleTest.auth
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.parent = Path(self.tmp.name).resolve()
+        self.repo = self.parent / "repo"
+        self.inputs = self.parent / "inputs"
+        self.inputs.mkdir()
+        subprocess.run(["git", "init", "-q", "-b", "main", str(self.repo)], check=True)
+        self.git("config", "user.name", "Test")
+        self.git("config", "user.email", "test@example.invalid")
+        (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
+        (self.repo / "app.txt").write_text("base\n")
+        self.git("add", ".")
+        self.git("commit", "-qm", "base")
+        self.base = self.git("rev-parse", "HEAD")
+        self.git("switch", "-qc", "feat/archive")
+        self.task_ref = ".trellis/tasks/archive/2026-09/09-16-example"
+        archive = self.repo / self.task_ref
+        archive.mkdir(parents=True)
+        metadata = {"id": "example", "status": "completed", "branch": "feat/archive", "base_branch": "main"}
+        summary = {
+            "task": {"slug": archive.name, "status": "completed", "archive_dir": self.task_ref, "artifact_dir": ".trellis/tasks/09-16-example"},
+            "git": {"branch": "feat/archive", "base_branch": "main", "commits": [self.base]},
+            "github": {"pr_url": "https://github.com/example/repo/pull/12"},
+        }
+        (archive / "task.json").write_text(json.dumps(metadata))
+        (archive / "finish-summary.json").write_text(json.dumps(summary))
+        for name in ("prd.md", "design.md", "implement.md"):
+            (archive / name).write_text("Archived planning\n")
+        (self.repo / "app.txt").write_text("feature\n")
+        if getattr(self, "config_text", None) is not None:
+            config = self.repo / ".trellis/guru-team/config.yml"
+            config.parent.mkdir(parents=True)
+            config.write_text(self.config_text)
+        self.git("add", ".")
+        self.git("commit", "-qm", "completed archive fixture")
+        self.head = self.git("rev-parse", "HEAD")
+        self.git("update-ref", "refs/remotes/origin/main", self.base)
+        remote = self.parent / "remote.git"
+        subprocess.run(["git", "init", "--bare", "-q", str(remote)], check=True)
+        self.git("remote", "add", "origin", "https://github.com/example/repo.git")
+        self.git("config", f"url.{remote}.insteadOf", "https://github.com/example/repo.git")
+        self.git("push", "-q", "origin", "feat/archive")
+        # get-url expands insteadOf; expose the unchanged GitHub URL only for that read.
+        self.bin = self.parent / "bin"
+        self.bin.mkdir()
+        import shutil
+        real_git = shutil.which("git")
+        (self.bin / "git").write_text(
+            '#!/bin/sh\nif [ "$1 $2 $3" = "remote get-url origin" ]; then printf "%s\\n" "https://github.com/example/repo.git"; else exec '
+            + str(real_git) + ' "$@"; fi\n'
+        )
+        (self.bin / "git").chmod(0o755)
+        self.pr = {"number": 12, "url": "https://github.com/example/repo/pull/12", "state": "OPEN", "isDraft": False, "headRefName": "feat/archive", "baseRefName": "main", "headRefOid": self.head, "headRepository": {"nameWithOwner": "example/repo"}, "isCrossRepository": False, "title": "Current title", "body": "Current body\n"}
+        self.provider_base = self.base
+        self.provider_files()
+        (self.bin / "gh").write_text(
+            '#!/bin/sh\nprintf "%s\\n" "$*" >> "' + str(self.parent / "gh.log") + '"\n'
+            'case "$1 $2" in\n'
+            '  "auth status") exit 0;;\n'
+            '  "api repos/example/repo") printf "%s\\n" \'{"full_name":"example/repo"}\';;\n'
+            '  "api repos/example/repo/git/ref/heads/main") cat "' + str(self.inputs / "base.json") + '";;\n'
+            '  "pr list") cat "' + str(self.inputs / "pr.json") + '";;\n'
+            '  *) exit 1;;\nesac\n'
+        )
+        (self.bin / "gh").chmod(0o755)
+        self.env = patch.dict(os.environ, {"PATH": str(self.bin) + os.pathsep + os.environ["PATH"]})
+        self.env.start()
+        self.public = {"profile": "archived_review", "mode": "workflow", "task_ref": self.task_ref, "branch_review_commit": self.head, "pr_payload_snapshot_sha256": self.snapshot()}
+        self.public_file = self.write("public.json", self.public)
+
+    def tearDown(self):
+        self.env.stop()
+        self.tmp.cleanup()
+
+    def snapshot(self):
+        value = {key: self.pr[key] for key in ("title", "body")}
+        return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+    def provider_files(self):
+        self.write("pr.json", [self.pr])
+        self.write("base.json", {"ref": "refs/heads/main", "object": {"sha": self.provider_base, "type": "commit"}})
+
+    def record(self, exit_id="archived_review_passed", semantic=None, ok=True):
+        return self.run_wrapper("review-branch.sh", "--task", self.task_ref, "--skill-input", self.public_file, "--semantic-review-file", self.write("semantic.json", semantic or self.auth(exit_id)), "--typed-exit", exit_id, ok=ok)
+
+    def check(self, ok=True):
+        return self.run_wrapper("check-review-gate.sh", "--task", self.task_ref, ok=ok)
+
+    def invoke(self, ok=True):
+        return self.run_wrapper("invoke.sh", "--task", self.task_ref, "--input", self.public_file, ok=ok)
+
+    def checkpoint(self):
+        return self.repo / ".trellis/.runtime/guru-team/owner-checkpoints/09-16-example/review-gate.json"
+
+    def test_record_check_project_retires_without_content_or_ref_mutation(self):
+        before = self.git("show-ref")
+        tree = self.git("rev-parse", "HEAD^{tree}")
+        self.record()
+        self.assertEqual("archived_review_passed", self.check()["typed_exit"])
+        self.assertEqual({
+            "exit_id": "archived_review_passed", "task_ref": self.task_ref,
+            "branch_review_commit": self.head, "reviewed_base_head": self.base,
+            "pr_payload_snapshot_sha256": self.snapshot(),
+        }, self.invoke())
+        self.assertFalse(self.checkpoint().exists())
+        self.assertEqual(before, self.git("show-ref"))
+        self.assertEqual(tree, self.git("rev-parse", "HEAD^{tree}"))
+        self.assertEqual("", self.git("status", "--porcelain"))
+        self.assertEqual("stale_identity", self.invoke(ok=False)["code"])
+
+    def test_schema2_archived_delivery_reviews_closure_and_own_plan(self):
+        import copy, importlib.util, shutil, sys
+        source=os.environ.get('TRELLIS_DELIVERY_API_COMMON')
+        if not source: self.skipTest('Set the reviewed candidate common directory.')
+        skills=test_contract.PACKAGE.parents[1]
+        spec=importlib.util.spec_from_file_location('archive_task_v2_fixture',skills/'packages/guru-check-task/tests/test_delivery_flow.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        fixture=module.DeliveryFlow();fixture.setUp()
+        try:
+            record=fixture.projection.read_record();record.update(deliveries=[],completion_results=[],closure_results=[])
+            (self.repo/'requirements.md').write_text('R1 archive current scope.\n')
+            sys.path.insert(0,str(skills))
+            from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+            scope=authority_ref(self.repo/'requirements.md',self.repo);record['accepted_scope']=scope
+            archive=self.repo/self.task_ref
+            active_ref='.trellis/tasks/09-16-example';active=self.repo/active_ref
+            active.mkdir(parents=True);(active/'task.json').write_text(json.dumps(record))
+            shutil.copytree(source,self.repo/'.trellis/scripts/common')
+            (self.repo/'.trellis/workflow.md').write_bytes((fixture.repo/'.trellis/workflow.md').read_bytes())
+            projection=DeliveryProjection(self.repo,active_ref);key=fixture.key
+            projection.apply({'api_version':'1.0','operation':'create_delivery','key':key,'owner_role':'creation','owner_id':'guru-test-creation','scope_ref':{'authority':scope,'anchors':['R1']},'profile':'local_commit'})
+            plan=projection.planning_directory(key);plan.mkdir(parents=True,exist_ok=True)
+            for name in ('prd.md','design.md','implement.md'):(plan/name).write_text('R1 archived Delivery plan.\n')
+            projection.apply({'api_version':'1.0','operation':'stop','key':key,'owner_role':'planning','owner_id':'guru-test-planning','expected_phase':'planning','result':{'result_id':'stop:archive','owner_id':'guru-test-planning','reason':scope,'scope_decision':scope,'evidence':[scope]}})
+            task_key={'task_id':key['task_id'],'lifecycle_generation':0}
+            projection.apply({'api_version':'1.0','operation':'complete_task','key':task_key,'owner_role':'completion','owner_id':'guru-test-completion','result':{'result_id':'complete:archive','owner_id':'guru-test-completion','evidence':[scope],'lifecycle_generation':0,'accepted_scope':scope,'delivery_result_ids':[],'outcome':'completed'}})
+            projection.apply({'api_version':'1.0','operation':'close_task','key':task_key,'owner_role':'closure','owner_id':'guru-test-closure','result':{'result_id':'close:archive','owner_id':'guru-test-closure','evidence':[scope],'lifecycle_generation':0,'completion_result_id':'complete:archive','disposition':'no_mutation','source_result':None}})
+            for name in ('task.json','deliveries'):
+                target=archive/name
+                if target.is_dir():shutil.rmtree(target)
+                elif target.exists():target.unlink()
+                shutil.move(str(active/name),str(target))
+            active.rmdir();projection=DeliveryProjection(self.repo,self.task_ref)
+            self.git('add','.');self.git('commit','-qm','archive public Task and Delivery')
+            self.head=self.git('rev-parse','HEAD');self.git('push','-q','origin','feat/archive')
+            self.pr['headRefOid']=self.head;self.provider_files()
+            self.public.update(profile='delivery_archived_review',delivery_key=key,branch_review_commit=self.head)
+            self.write('public.json',self.public)
+            before=copy.deepcopy(projection.read_record())
+            self.record()
+            result=self.invoke();self.assertEqual('archived_review_passed',result['exit_id'])
+            self.assertEqual(before,projection.read_record());self.assertNotIn('status',projection.read_record())
+            self.assertEqual('',self.git('status','--porcelain'))
+        finally: fixture.doCleanups()
+
+    def test_archived_review_does_not_read_retired_mappings(self):
+        self.assertFalse((self.repo / ".trellis/.runtime/guru-team/tasks").exists())
+        self.assertFalse((self.repo / ".trellis/.runtime/guru-team/workspaces").exists())
+        self.assertEqual("archived_review_passed", self.record()["typed_exit"])
+
+    def test_title_body_and_ready_state_drift_preserve_checkpoint(self):
+        self.record()
+        original = dict(self.pr)
+        for key, value in (("title", "Revised title"), ("body", "Changed body"), ("isDraft", True), ("state", "CLOSED"), ("headRefOid", self.base)):
+            with self.subTest(key=key):
+                self.pr = {**original, key: value}
+                self.provider_files()
+                self.assertEqual("stale_identity", self.check(ok=False)["code"])
+                self.assertTrue(self.checkpoint().exists())
+
+    def test_live_and_local_base_advance_preserves_fixed_review(self):
+        self.record()
+        self.provider_base = self.head
+        self.provider_files()
+        self.assertEqual("archived_review_passed", self.check()["typed_exit"])
+        self.git("update-ref", "refs/remotes/origin/main", self.head)
+        self.assertEqual("archived_review_passed", self.check()["typed_exit"])
+
+    def test_dirty_archived_metadata_is_not_excluded(self):
+        self.record()
+        (self.repo / self.task_ref / "prd.md").write_text("Changed scope\n")
+        self.assertEqual("worktree", self.check(ok=False)["field_path"])
+
+    def test_open_finding_remains_truthful_blocked_and_retires(self):
+        semantic = self.auth("blocked")
+        semantic["semantic_review"]["qualified_findings"] = [{
+            "candidate_ref": "candidate:missing-behavior", "disposition": "qualified_finding",
+            "affected_behavior": "Current documented behavior is absent.", "path": "app.txt",
+            "evidence_refs": ["diff:app.txt"], "finding_ref": "finding:missing-behavior",
+            "severity": "P2", "introduced_head": self.head, "fix_head": None,
+            "closure_head": None, "status": "open", "closure_evidence": [],
+        }]
+        semantic["candidate_classifications"] = [{
+            "candidate_ref": "candidate:missing-behavior", "decision": "qualified_current",
+            "witness": {
+                "requirement_refs": ["archived PRD required behavior"],
+                "supported_entry_refs": ["entry:archived-review"],
+                "existing_caller_refs": ["caller:guru-review-branch"],
+                "honest_action_sequence": ["Review current archive content against its required behavior."],
+                "defect_observation": "Current documented behavior is absent from app.txt.",
+                "excluded_assumptions": [],
+            },
+            "consumer_use": "branch_review_route_checker",
+        }]
+        self.record("blocked", semantic)
+        self.assertEqual("open", json.loads(self.checkpoint().read_text())["semantic_review"]["qualified_findings"][0]["status"])
+        self.assertEqual({"exit_id": "blocked"}, self.invoke())
+        self.assertFalse(self.checkpoint().exists())
+
+    def test_archived_profile_rejects_task_work_route(self):
+        self.assertEqual("schema_mismatch", self.record("implementation_required", ok=False)["code"])
+        self.assertFalse(self.checkpoint().exists())
+
+    def test_standalone_uses_same_readonly_entry_and_retirement(self):
+        self.public["mode"] = "standalone"
+        self.write("public.json", self.public)
+        self.record()
+        self.assertEqual("archived_review_passed", self.invoke()["exit_id"])
+        self.assertFalse(self.checkpoint().exists())
+
+
+class ArchivedConfigDefaultsTest(unittest.TestCase):
+    def test_empty_runtime_root_and_publish_remote_preserve_readonly_state(self):
+        for empty in ('""', "''", ""):
+            with self.subTest(empty=empty):
+                fixture = ArchivedReviewTest()
+                fixture.config_text = f"runtime_root: {empty}\npublish:\n  remote: {empty}\n"
+                fixture.setUp()
+                try:
+                    paths = [
+                        fixture.repo / ".trellis/guru-team/config.yml",
+                        fixture.inputs / "pr.json",
+                        *sorted((fixture.repo / fixture.task_ref).iterdir()),
+                    ]
+                    before = {path: path.read_bytes() for path in paths}
+                    remote_refs = fixture.git("ls-remote", "--heads", "origin")
+                    fixture.test_record_check_project_retires_without_content_or_ref_mutation()
+                    self.assertEqual(before, {path: path.read_bytes() for path in paths})
+                    self.assertEqual(remote_refs, fixture.git("ls-remote", "--heads", "origin"))
+                finally:
+                    fixture.tearDown()
+
+
+if __name__ == "__main__":
+    unittest.main()

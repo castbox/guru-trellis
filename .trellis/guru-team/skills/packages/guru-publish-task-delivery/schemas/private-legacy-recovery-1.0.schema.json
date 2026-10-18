@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-private-legacy-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "root",
+    "key",
+    "task_ref",
+    "controls",
+    "source",
+    "retired"
+  ],
+  "properties": {
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "source"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "content_base64",
+              "mode"
+            ],
+            "properties": {
+              "content_base64": {
+                "type": "string"
+              },
+              "mode": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 511
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content_base64",
+        "mode"
+      ],
+      "properties": {
+        "content_base64": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 511
+        }
+      }
+    },
+    "retired": {
+      "type": "boolean"
+    }
+  }
+}

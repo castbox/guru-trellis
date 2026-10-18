@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+
+# Guru Team local runtime cache
+.trellis/.runtime/
+
+# Guru Team excludes upstream workspace journals
+.trellis/workspace/

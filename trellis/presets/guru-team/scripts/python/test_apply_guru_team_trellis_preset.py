@@ -1,0 +1,2966 @@
+#!/usr/bin/env python3
+"""Focused tests for Guru Team preset installer behavior."""
+
+from __future__ import annotations
+
+import json
+import hashlib
+import importlib.util
+import os
+import shutil
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+import sys
+from io import StringIO
+from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import apply_guru_team_trellis_preset as preset
+import validate_upstream_ownership as ownership
+from installer_test_support import (
+    GURU_FINISH_ENTRIES, PLANNED_SKILL_IDS, PLANNED_SKILL_ROWS,
+    RUNTIME_RESULT as _RUNTIME_RESULT, copy_canonical_source, install_reviewed_delivery_candidate,
+    prepare_raw_apply_source,
+    setUpModule, tearDownModule,
+)
+from retired_script_reapply_tests import RetiredScriptReapplyTests
+
+
+_ensure_managed_python_runtime = preset.ensure_managed_python_runtime
+
+
+class CanonicalPlannedIdOwnershipTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.repo = preset.guru_root_from_script()
+
+    def copy_source(self, target: Path) -> None:
+        copy_canonical_source(self.repo, target)
+
+    def test_activation_registers_all_canonical_packages(self) -> None:
+        payload = ownership.validate_repository(self.repo)
+        self.assertEqual(payload["status"], "ok", payload["errors"])
+        registry = json.loads(
+            (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
+        )
+        active_count = sum(entry["state"] == "active" for entry in registry["skills"])
+        self.assertEqual(payload["active_skill_count"], active_count)
+        self.assertEqual(payload["planned_skill_count"], 0)
+        self.assertEqual(payload["planned_skill_ids"], PLANNED_SKILL_IDS)
+        self.assertEqual(payload["canonical_package_count"], active_count)
+
+        registry = json.loads(
+            (self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text(encoding="utf-8")
+        )
+        planned = [entry for entry in registry["skills"] if entry.get("state") == "planned"]
+        self.assertEqual(planned, PLANNED_SKILL_ROWS)
+        for skill_id in ("guru-create-issue", "guru-ensure-task-checkout"):
+            self.assertTrue((self.repo / ownership.SKILL_PACKAGE_ROOT_RELATIVE / skill_id / "interface.json").is_file())
+
+    def test_retired_consumer_schemas_are_not_in_current_install(self) -> None:
+        retired = (
+            "workflow/production/review-task-publication-return-to-task-work.schema.json",
+            "workflow/production/finalize-task-published.schema.json",
+            "workflow/production/merge-task-pr-merged.schema.json",
+            "workflow/stage0/create-task-workspace-created.schema.json",
+            "workflow/stage0/invocations/workspace-mutation.schema.json",
+            "stop/production/finalize-task-blocked.schema.json",
+            "stop/production/merge-task-pr-closure-mismatch.schema.json",
+            "stop/production/review-task-publication-blocked.schema.json",
+            "stop/production/merge-task-pr-blocked.schema.json",
+        )
+        manifest = json.loads((self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8"))
+        installed_paths = {item["path"] for item in manifest["skill_packages"]["files"]}
+        for suffix in retired:
+            with self.subTest(path=suffix):
+                self.assertFalse((self.repo / "trellis/skills/guru-team/consumers" / suffix).exists())
+                installed = f".trellis/guru-team/skills/consumers/{suffix}"
+                self.assertFalse((self.repo / installed).exists())
+                self.assertNotIn(installed, installed_paths)
+
+    def test_planned_canonical_package_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            registry_path = repo / ownership.SKILL_REGISTRY_RELATIVE
+            registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            row = next(item for item in registry["skills"] if item["id"] == "guru-ensure-task-checkout")
+            row.clear()
+            row.update({"id": "guru-ensure-task-checkout", "state": "planned", "reason": "Fixture pending package"})
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "planned_skill_package_present",
+            {row["code"] for row in payload["errors"]},
+        )
+
+    def test_extra_unregistered_canonical_package_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            self.copy_source(repo)
+            extra = (
+                repo
+                / ownership.SKILL_PACKAGE_ROOT_RELATIVE
+                / "guru-unregistered-package"
+            )
+            extra.mkdir()
+            (extra / "SKILL.md").write_text("# Unregistered package\n", encoding="utf-8")
+            payload = ownership.validate_repository(repo)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn(
+            "canonical_package_set_mismatch",
+            {row["code"] for row in payload["errors"]},
+        )
+
+
+class InstalledCloseoutFixtureTest(unittest.TestCase):
+    def setUp(self) -> None:
+        module_path = Path(__file__).with_name("verify_installed_closeout.py")
+        spec = importlib.util.spec_from_file_location(
+            "verify_installed_closeout_fixture", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        self.closeout = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.closeout)
+
+    def test_generated_fake_gh_is_valid_python(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_bin = Path(tmp) / "bin"
+            self.closeout.install_fake_commands(fake_bin)
+            fake_gh = fake_bin / "gh"
+            compile(fake_gh.read_text(encoding="utf-8"), str(fake_gh), "exec")
+
+    def test_manifest_update_preserves_historical_removal_provenance(self) -> None:
+        removal = {
+            "path": ".trellis/guru-team/skills/packages/guru-example-action/tests/test_contract.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": "a" * 64,
+        }
+        previous = {
+            "skill_packages": {"removals": [removal]},
+            "overlays": {"removals": []},
+        }
+        candidate = {
+            "skill_packages": {"removals": [], "files": []},
+            "overlays": {"removals": [], "files": []},
+        }
+        result = {
+            "updated_managed": [".trellis/spec/workflow/quality-guidelines.md"],
+            "skill_packages": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "overlays": {"removals": [], "conflicts": [], "sidecars": [], "files": []},
+            "agents_principles": {"action": "unchanged"},
+            "codex_dispatch": {"action": "unchanged"},
+            "runtime_gitignore": {"action": "unchanged"},
+            "language_guidance": {"updated_paths": []},
+        }
+
+        retained = preset.retain_previous_manifest_for_noop(previous, candidate, result)
+
+        self.assertEqual(retained["skill_packages"]["removals"], [removal])
+
+    def test_preflight_uses_each_entrypoints_error_contract(self) -> None:
+        public_payload = {
+            "code": "finalization_stale",
+            "field_path": "finalization",
+            "remediation": "Reprepare from current publication authority.",
+        }
+        for stage in ("archive-path-preflight", "after-archive-hook-preflight"):
+            with self.subTest(stage=stage):
+                private_payload = {"status": "error", "stage": stage}
+                preview = subprocess.CompletedProcess(
+                    ["preview"], 2, "", json.dumps(private_payload) + "\n"
+                )
+                invoked = subprocess.CompletedProcess(
+                    ["invoke"], 2, json.dumps(public_payload) + "\n", ""
+                )
+                self.assertEqual(
+                    self.closeout.preflight_error(preview, stage, public=False),
+                    private_payload,
+                )
+                self.assertEqual(
+                    self.closeout.preflight_error(invoked, stage, public=True),
+                    public_payload,
+                )
+
+    def test_preflight_does_not_accept_unrelated_invocation_failure(self) -> None:
+        payload = {
+            "code": "internal_error",
+            "field_path": "runtime",
+            "remediation": "Inspect the package runtime and retry.",
+        }
+        result = subprocess.CompletedProcess(["invoke"], 2, json.dumps(payload) + "\n", "")
+        with self.assertRaisesRegex(RuntimeError, "declared public preflight error"):
+            self.closeout.preflight_error(result, "archive preflight", public=True)
+
+    def test_client_failure_keeps_payload_for_verifier_fixture(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            client = self.closeout.InstalledPackageClient(root, "guru-create-task-commit")
+            wrapper = client.package / "scripts/invoke.sh"
+            wrapper.parent.mkdir(parents=True)
+            payload = {"code": "commit_stale", "field_path": "candidate", "remediation": "Reprepare."}
+            self.closeout.write_executable(
+                wrapper, "#!/bin/sh\nprintf '%s\\n' '" + json.dumps(payload) + "'\nexit 2\n"
+            )
+            with self.assertRaises(client.WorkflowError) as raised:
+                client._call("invoke.sh")
+            self.assertEqual(raised.exception.payload, payload)
+            self.assertEqual(raised.exception.exit_code, 2)
+
+            with mock.patch.object(client, "git_status_paths", return_value=[]):
+                with mock.patch.object(client, "build_task_commit_candidate", side_effect=raised.exception):
+                    with self.assertRaises(client.WorkflowError) as forwarded:
+                        self.closeout.commit_fixture_for_review(
+                            client, root, root / "task", {
+                                "task_ref": "task", "exit_id": "passed",
+                                "phase2_commit_anchor": "a" * 40,
+                            },
+                        )
+                    self.assertIs(forwarded.exception, raised.exception)
+
+    def test_linked_target_is_rejected_before_shared_config_or_ref_mutation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            repo = root / "source"
+            repo.mkdir()
+            real_git = shutil.which("git")
+            assert real_git is not None
+            git = self.closeout.git
+            git(repo, real_git, "init", "-q", "-b", "main")
+            git(repo, real_git, "config", "user.name", "Fixture")
+            git(repo, real_git, "config", "user.email", "fixture@example.com")
+            git(repo, real_git, "commit", "--allow-empty", "-qm", "fixture")
+            candidate = root / "candidate"
+            git(repo, real_git, "worktree", "add", "--detach", str(candidate))
+            config_before = (repo / ".git/config").read_bytes()
+            refs_before = git(repo, real_git, "show-ref")
+            candidate_head = git(candidate, real_git, "rev-parse", "HEAD")
+            remote = root / "unexpected-remote.git"
+            with self.assertRaisesRegex(RuntimeError, "standalone throwaway"):
+                self.closeout.ensure_baseline(candidate, real_git, remote, False)
+            self.assertEqual((repo / ".git/config").read_bytes(), config_before)
+            self.assertEqual(git(repo, real_git, "show-ref"), refs_before)
+            self.assertEqual(git(candidate, real_git, "rev-parse", "HEAD"), candidate_head)
+            self.assertEqual(git(candidate, real_git, "status", "--porcelain"), "")
+            self.assertFalse(remote.exists())
+
+
+class ManagedPythonBootstrapBoundaryTest(unittest.TestCase):
+    def test_helper_returns_success_payload(self) -> None:
+        completed = subprocess.CompletedProcess(
+            ["bootstrap"],
+            0,
+            json.dumps(_RUNTIME_RESULT),
+            "",
+        )
+        with mock.patch.object(preset.subprocess, "run", return_value=completed):
+            with tempfile.TemporaryDirectory() as tmp:
+                result = _ensure_managed_python_runtime(
+                    Path(tmp),
+                    preset.guru_root_from_script(),
+                )
+        self.assertEqual(result, _RUNTIME_RESULT)
+
+    def test_helper_preserves_stable_failure_json_without_traceback(self) -> None:
+        failure = {
+            "code": "runtime_dependency_missing",
+            "field_path": "runtime",
+            "dependency": "jsonschema",
+            "runtime_identity": "0123456789abcdef01234567",
+            "remediation": "trellis/presets/guru-team/scripts/bash/apply.sh --repo .",
+            "detail": "network unavailable",
+        }
+        completed = subprocess.CompletedProcess(
+            ["bootstrap"],
+            2,
+            json.dumps(failure),
+            "",
+        )
+        with mock.patch.object(preset.subprocess, "run", return_value=completed):
+            with tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(SystemExit) as raised:
+                    _ensure_managed_python_runtime(
+                        Path(tmp),
+                        preset.guru_root_from_script(),
+                    )
+        payload = json.loads(str(raised.exception))
+        self.assertEqual(set(payload), {"code", "field_path", "dependency", "runtime_identity", "remediation"})
+        self.assertEqual(payload["runtime_identity"], failure["runtime_identity"])
+        self.assertNotIn("detail", payload)
+
+STAGE0_SKILL_IDS = (
+    "guru-sync-base",
+    "guru-discover-change-context",
+    "guru-clarify-requirements",
+    "guru-review-contract-wording",
+    "guru-review-change-request",
+    "guru-create-task",
+)
+
+
+def assert_thin_guru_finish_entry(testcase: unittest.TestCase, path: Path) -> None:
+    text = path.read_text(encoding="utf-8")
+    testcase.assertIn("<!-- guru-team-overlay: v1 -->", text, path)
+    testcase.assertIn("`.trellis/workflow.md`", text, path)
+    for skill_id in (
+        "guru-review-task-delivery",
+        "guru-publish-task-delivery",
+        "guru-merge-task-delivery",
+        "guru-review-task-completion",
+        "guru-complete-task-closure",
+        "guru-finish-task",
+        "guru-cleanup-task-resources",
+    ):
+        testcase.assertIn(skill_id, text, path)
+    for exit_id in (
+        "ready",
+        "remaining_work",
+        "additional_delivery_required",
+        "ready_for_merge",
+        "delivered",
+        "closed",
+        "no_mutation",
+        "success",
+        "cleaned",
+    ):
+        testcase.assertIn(exit_id, text, path)
+    testcase.assertIn("not user choices", text, path)
+    testcase.assertIn("Do not add a routine confirmation", text, path)
+    testcase.assertIn("exclusive finish entry", text, path)
+    testcase.assertIn("`trellis-finish-work` Skill is not applicable", text, path)
+    testcase.assertIn("Do not archive before the current Closure and Finish owners", text, path)
+    testcase.assertIn("clear affirmative such as `确认继续`", text, path)
+    testcase.assertIn("Continue mapped internal exits automatically", text, path)
+    for forbidden in (
+        "guru-review-task-publication",
+        "guru-finalize-task",
+        "guru-merge-task-pr",
+        "guru-verify-extension-installation",
+        "verification_required",
+        "not_required",
+        "finish-work.sh",
+        "--expected-plan-digest",
+        "artifact schema field",
+    ):
+        testcase.assertNotIn(forbidden, text, path)
+
+
+def install_canonical_workflow(repo: Path) -> None:
+    install_reviewed_delivery_candidate(repo)
+    source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
+    target = repo / ".trellis/workflow.md"
+    target.write_bytes(source.read_bytes())
+
+
+class CanonicalWorkflowBaseEvolutionTest(unittest.TestCase):
+
+    def test_installed_workflow_is_exact_canonical_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            repo = Path(raw)
+            (repo / ".trellis").mkdir()
+            install_canonical_workflow(repo)
+            source = preset.guru_root_from_script() / "trellis/workflows/guru-team/workflow.md"
+            self.assertEqual(source.read_bytes(), (repo / ".trellis/workflow.md").read_bytes())
+
+    def test_base_reconciliation_eval_staging_uses_current_task_identity(self) -> None:
+        adapter = (
+            preset.guru_root_from_script()
+            / "trellis/skills/guru-team/adapters/eval/production_fixtures.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn('"task_artifact_dir": task_ref', adapter)
+        self.assertIn('"workspace_path": str(fixture.resolve())', adapter)
+        self.assertIn('"branch_name": "eval/base-reconciliation"', adapter)
+        self.assertIn('hashlib.sha256(task_ref.encode()).hexdigest()[:12]', adapter)
+        self.assertNotIn(
+            'owner-checkpoints/current"\n        / "guru-reconcile-task-base',
+            adapter,
+        )
+
+    def test_eval_adapters_use_checkout_local_managed_python(self) -> None:
+        root = preset.guru_root_from_script()
+        for adapter_id in ("shared", "codex", "claude", "cursor"):
+            with self.subTest(adapter=adapter_id):
+                adapter = (
+                    root / f"trellis/skills/guru-team/adapters/eval/{adapter_id}.sh"
+                ).read_text(encoding="utf-8")
+                self.assertIn('REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"', adapter)
+                self.assertIn('$SCRIPT_DIR/../../runtime/resolve-python.sh', adapter)
+                self.assertIn('$SCRIPT_DIR/../../../runtime/resolve-python.sh', adapter)
+                self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', adapter)
+                self.assertNotIn("exec python3", adapter)
+
+        native_adapter_path = (
+            root / "trellis/skills/guru-team/adapters/eval/native_adapter.py"
+        )
+        native_adapter = native_adapter_path.read_text(encoding="utf-8")
+        fixture_io = (
+            root / "trellis/skills/guru-team/adapters/eval/fixture_io.py"
+        ).read_text(encoding="utf-8")
+        shared_eval_path = (
+            root / "trellis/skills/guru-team/adapters/eval/guru-team-shared-eval"
+        )
+        shared_eval = shared_eval_path.read_text(encoding="utf-8")
+
+        self.assertFalse(native_adapter.startswith("#!"))
+        self.assertFalse(shared_eval.startswith("#!"))
+        self.assertTrue(os.access(shared_eval_path, os.X_OK))
+        self.assertIn(
+            'return [sys.executable, command, "--request"',
+            native_adapter,
+        )
+        self.assertIn(
+            'source_repo / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"',
+            fixture_io,
+        )
+        self.assertIn(
+            '[sys.executable, str(apply_script), "--repo", str(fixture)]',
+            fixture_io,
+        )
+        self.assertNotIn(
+            '[str(apply_script), "--repo", str(fixture)]',
+            fixture_io,
+        )
+
+    def test_verifier_shell_second_hops_use_checkout_local_managed_python(self) -> None:
+        root = preset.guru_root_from_script()
+        for script_name in ("check-task-checkout-boundary.sh", "record-agent-recovery.sh", "check-agent-recovery.sh"):
+            with self.subTest(script=script_name):
+                script = (
+                    root
+                    / f"trellis/workflows/guru-team/scripts/bash/{script_name}"
+                ).read_text(encoding="utf-8")
+                self.assertIn(
+                    '$RUNTIME_ASSETS/resolve-python.sh',
+                    script,
+                )
+                self.assertIn(
+                    '$REPO_ROOT/.trellis/guru-team/runtime',
+                    script,
+                )
+                self.assertIn('exec "$RUNTIME_ASSETS/resolve-python.sh"', script)
+                self.assertNotIn("python3", script)
+
+    def test_dogfood_spec_and_current_finish_contract_are_explicit(self) -> None:
+        root = preset.guru_root_from_script()
+        spec = (root / ".trellis/spec/workflow/index.md").read_text(encoding="utf-8")
+        interface = json.loads(
+            (root / "trellis/skills/guru-team/packages/guru-finish-task/interface.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+        self.assertEqual(5, len(interface["external_exits"]))
+        self.assertIn("guru-finalize-task", spec)  # Archived spec text remains until serialized promotion.
+
+
+class Phase0TranscriptOwnerBindingTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        guru_root = preset.guru_root_from_script()
+        module_path = (
+            guru_root
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "guru_phase0_transcript_verifier_test", module_path
+        )
+        assert spec is not None and spec.loader is not None
+        cls.verifier = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.verifier)
+
+    @staticmethod
+    def clarity_owner() -> dict[str, object]:
+        return {
+            "mode": "workflow",
+            "invocation_context": {"kind": "initial_issue"},
+            "review_target": {
+                "kind": "issue",
+                "url": "https://github.com/example/guru-extension/issues/145",
+            },
+        }
+
+    def test_rejects_clear_transcript_owner_mode_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner mode"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {"profile": "standard_intake", "mode": "workflow"},
+                {**self.clarity_owner(), "mode": "standalone"},
+            )
+
+    def test_rejects_clear_transcript_owner_profile_mismatch(self) -> None:
+        owner = self.clarity_owner()
+        owner["invocation_context"] = {"kind": "standalone_review"}
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "standard_intake",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/145",
+                },
+                owner,
+            )
+
+    def test_rejects_clear_transcript_owner_live_target_mismatch(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "owner profile"):
+            self.verifier.assert_owner_binding(
+                "guru-clarify-requirements",
+                {
+                    "profile": "standard_intake",
+                    "mode": "workflow",
+                    "target_locator": "https://github.com/example/guru-extension/issues/146",
+                },
+                self.clarity_owner(),
+            )
+
+    def test_rejects_forbidden_private_runtime_material_recursively(self) -> None:
+        cases = (
+            ".trellis/.runtime/guru-team/evals/owner-result.json",
+            ".trellis/.runtime/guru-team/phase0-transcript/change-request.json",
+            ".trellis/.runtime/guru-team/checkpoints/owner-plan.json",
+            ".trellis/.runtime/guru-team/checkpoints/current-transition.json",
+        )
+        for relative in cases:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as raw:
+                root = Path(raw)
+                target = root / relative
+                target.parent.mkdir(parents=True)
+                target.write_text("{}\n", encoding="utf-8")
+                with self.assertRaisesRegex(RuntimeError, "forbidden private runtime"):
+                    self.verifier.assert_forbidden_runtime_absent(root)
+
+    def test_allows_only_workspace_and_task_runtime_mappings(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            for relative in (
+                ".trellis/.runtime/guru-team/workspaces/145-phase0.json",
+                ".trellis/.runtime/guru-team/tasks/145-phase0.json",
+            ):
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("{}\n", encoding="utf-8")
+            self.verifier.assert_forbidden_runtime_absent(root)
+
+    def test_phase0_transcript_does_not_inject_private_typed_output(self) -> None:
+        transcript = (
+            preset.guru_root_from_script()
+            / "trellis/presets/guru-team/scripts/python/verify_installed_phase0_transcript.py"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn('envelope["typed_output"]', transcript)
+        self.assertNotIn('envelope[\'typed_output\']', transcript)
+
+    def test_projects_live_issue_for_wording_recorder(self) -> None:
+        source = self.verifier.wording_change_request_source({
+            "number": 145,
+            "url": "https://github.com/example/repo/issues/145",
+            "state": "OPEN",
+            "title": "Current title",
+            "body": "Current body",
+            "updatedAt": "2026-08-12T00:00:00Z",
+        })
+
+        self.assertEqual(source, {
+            "source_kind": "issue",
+            "identity": "https://github.com/example/repo/issues/145",
+            "title": "Current title",
+            "body": "Current body",
+            "updated_at": "2026-08-12T00:00:00Z",
+        })
+
+    def test_failed_transcript_command_reports_json_stdout(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            script = Path(raw) / "fail.py"
+            script.write_text(
+                "#!/usr/bin/env python3\n"
+                "print('{\"code\":\"schema_mismatch\"}')\n"
+                "raise SystemExit(2)\n",
+                encoding="utf-8",
+            )
+            script.chmod(0o755)
+
+            with self.assertRaisesRegex(RuntimeError, "schema_mismatch"):
+                self.verifier.run([script], cwd=Path(raw))
+
+
+class CodexDispatchModeInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_missing_config_installs_auto_default(self) -> None:
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "installed")
+        text = (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8")
+        self.assertIn("codex:", text)
+        self.assertIn("dispatch_mode: auto", text)
+
+    def test_commented_default_is_materialized_as_auto(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text(
+            "# codex:\n#   dispatch_mode: inline\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(payload["mode"], "auto")
+        text = config.read_text(encoding="utf-8")
+        self.assertIn("codex:", text)
+        self.assertIn("dispatch_mode: auto", text)
+
+    def test_explicit_inline_is_preserved(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("codex:\n  dispatch_mode: inline\n", encoding="utf-8")
+
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "unchanged")
+        self.assertEqual(payload["mode"], "inline")
+        self.assertEqual(config.read_text(encoding="utf-8"), "codex:\n  dispatch_mode: inline\n")
+
+    def test_invalid_value_is_replaced_with_auto(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("codex:\n  dispatch_mode: disabled\n", encoding="utf-8")
+
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(payload["previous"], "disabled")
+        self.assertIn("dispatch_mode: auto", config.read_text(encoding="utf-8"))
+
+    def test_legacy_sub_agent_alias_is_normalized_to_auto(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        config.write_text("codex:\n  dispatch_mode: sub-agent\n", encoding="utf-8")
+
+        payload = preset.ensure_codex_dispatch_mode(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(payload["previous"], "sub-agent")
+        self.assertEqual(payload["mode"], "auto")
+        self.assertEqual(config.read_text(encoding="utf-8"), "codex:\n  dispatch_mode: auto\n")
+
+
+class FinishSummaryPresetPolicyTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_legacy_session_config_and_workspace_ignore_are_untouched(self) -> None:
+        config = self.repo / ".trellis/config.yaml"
+        gitignore = self.repo / ".gitignore"
+        config.write_text("session_auto_commit: true\n", encoding="utf-8")
+        gitignore.write_text(".trellis/workspace/\n", encoding="utf-8")
+        before = (config.read_bytes(), gitignore.read_bytes())
+        preset.ensure_runtime_gitignore(self.repo)
+        self.assertEqual(config.read_bytes(), before[0])
+        self.assertTrue(gitignore.read_bytes().startswith(before[1]))
+
+
+class AgentsAiFirstPrinciplesInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_missing_agents_file_is_created(self) -> None:
+        payload = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(payload["action"], "installed")
+        self.assertEqual(payload["path"], "AGENTS.md")
+        text = (self.repo / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertEqual(text, preset.AGENTS_AI_FIRST_BLOCK)
+        for principle in (
+            "AI-first，不模拟人类审批流",
+            "只保留不可重新推导且有直接 consumer 的最小结果",
+            "任何阶段都不持久化用户授权信息或授权过程",
+            "Digest 不是 workflow authority",
+            "交互只服务真实选择和副作用",
+            "语义门禁与持久化解耦",
+        ):
+            self.assertIn(principle, text)
+
+    def test_existing_content_is_preserved_and_reapply_is_idempotent(self) -> None:
+        path = self.repo / "AGENTS.md"
+        original = b"# Local instructions\r\n\r\nKeep this byte-for-byte.\r\n"
+        path.write_bytes(original)
+
+        first = preset.ensure_agents_ai_first_principles(self.repo)
+        first_bytes = path.read_bytes()
+        second = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(first["action"], "updated")
+        self.assertEqual(second["action"], "unchanged")
+        self.assertTrue(first_bytes.startswith(original))
+        self.assertEqual(path.read_bytes(), first_bytes)
+        self.assertEqual(first_bytes.count(preset.AGENTS_AI_FIRST_START_MARKER.encode()), 1)
+        self.assertEqual(first_bytes.count(preset.AGENTS_AI_FIRST_END_MARKER.encode()), 1)
+
+    def test_single_old_block_is_refreshed_without_touching_surrounding_bytes(self) -> None:
+        path = self.repo / "AGENTS.md"
+        prefix = b"# Local prefix\r\n"
+        suffix = b"Local suffix remains.\r\n"
+        old_block = (
+            f"{preset.AGENTS_AI_FIRST_START_MARKER}\nold principles\n"
+            f"{preset.AGENTS_AI_FIRST_END_MARKER}\n"
+        ).encode("utf-8")
+        path.write_bytes(prefix + old_block + suffix)
+
+        payload = preset.ensure_agents_ai_first_principles(self.repo)
+
+        self.assertEqual(payload["action"], "updated")
+        self.assertEqual(path.read_bytes(), prefix + preset.AGENTS_AI_FIRST_BLOCK.encode("utf-8") + suffix)
+
+    def test_malformed_or_duplicate_markers_fail_closed(self) -> None:
+        path = self.repo / "AGENTS.md"
+        cases = (
+            f"{preset.AGENTS_AI_FIRST_START_MARKER}\nmissing end\n",
+            (
+                f"{preset.AGENTS_AI_FIRST_START_MARKER}\n"
+                f"{preset.AGENTS_AI_FIRST_START_MARKER}\n"
+                f"{preset.AGENTS_AI_FIRST_END_MARKER}\n"
+            ),
+            f"prefix {preset.AGENTS_AI_FIRST_START_MARKER}\n{preset.AGENTS_AI_FIRST_END_MARKER}\n",
+            f"{preset.AGENTS_AI_FIRST_END_MARKER}\n{preset.AGENTS_AI_FIRST_START_MARKER}\n",
+        )
+        for content in cases:
+            with self.subTest(content=content):
+                original = content.encode("utf-8")
+                path.write_bytes(original)
+                with self.assertRaises(SystemExit):
+                    preset.ensure_agents_ai_first_principles(self.repo)
+                self.assertEqual(path.read_bytes(), original)
+
+
+class LanguageGuidanceInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
+        self.guru_root = preset.guru_root_from_script()
+        self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
+        self.install_dst = self.repo / ".trellis/guru-team"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_spec_index_english_language_rule_is_replaced_with_chinese(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        spec_index.parent.mkdir(parents=True)
+        spec_index.write_text(
+            "# Backend\n\n**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 1)
+        self.assertEqual(payload["updated_paths"], [{"path": ".trellis/spec/backend/index.md", "replacements": 1}])
+        self.assertIn(".trellis/spec/backend/index.md", payload["checked_paths"])
+        text = spec_index.read_text(encoding="utf-8")
+        self.assertIn("业务项目人类可读文档默认使用**中文**", text)
+        self.assertNotIn("All documentation must be written in **English**", text)
+
+    def test_workspace_indexes_are_not_scanned_or_rewritten(self) -> None:
+        root_index = self.repo / ".trellis/workspace/index.md"
+        user_index = self.repo / ".trellis/workspace/wumengye/index.md"
+        user_index.parent.mkdir(parents=True)
+        root_index.write_text(
+            "**Language**: All documentation should be written in **English**.\n",
+            encoding="utf-8",
+        )
+        user_index.write_text(
+            "**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 0)
+        self.assertEqual(payload["updated_paths"], [])
+        self.assertNotIn(".trellis/workspace/index.md", payload["checked_paths"])
+        self.assertIn("All documentation should be written in **English**", root_index.read_text(encoding="utf-8"))
+        self.assertIn("All documentation must be written in **English**", user_index.read_text(encoding="utf-8"))
+
+    def test_bootstrap_guidelines_language_rule_is_replaced_with_chinese(self) -> None:
+        bootstrap_prd = self.repo / ".trellis/tasks/00-bootstrap-guidelines/prd.md"
+        bootstrap_prd.parent.mkdir(parents=True)
+        bootstrap_prd.write_text(
+            "# Bootstrap\n\n**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["replacement_count"], 1)
+        self.assertEqual(
+            payload["updated_paths"],
+            [{"path": ".trellis/tasks/00-bootstrap-guidelines/prd.md", "replacements": 1}],
+        )
+        self.assertIn(".trellis/tasks/00-bootstrap-guidelines/**/*.md", payload["scope"])
+        text = bootstrap_prd.read_text(encoding="utf-8")
+        self.assertIn("业务项目人类可读文档默认使用**中文**", text)
+        self.assertNotIn("All documentation must be written in **English**", text)
+
+    def test_files_without_known_language_rule_remain_unchanged_and_docs_are_not_scanned(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        docs_file = self.repo / "docs/requirements/index.md"
+        spec_index.parent.mkdir(parents=True)
+        docs_file.parent.mkdir(parents=True)
+        spec_text = "# Backend\n\nWrite examples with precise command names.\n"
+        docs_text = "**Language**: All documentation must be written in **English**.\n"
+        spec_index.write_text(spec_text, encoding="utf-8")
+        docs_file.write_text(docs_text, encoding="utf-8")
+
+        payload = preset.normalize_business_doc_language_guidance(self.repo)
+
+        self.assertEqual(payload["action"], "checked")
+        self.assertEqual(payload["replacement_count"], 0)
+        self.assertEqual(payload["updated_paths"], [])
+        self.assertIn(".trellis/spec/backend/index.md", payload["checked_paths"])
+        self.assertNotIn("docs/requirements/index.md", payload["checked_paths"])
+        self.assertEqual(spec_index.read_text(encoding="utf-8"), spec_text)
+        self.assertEqual(docs_file.read_text(encoding="utf-8"), docs_text)
+
+    def test_main_payload_reports_language_guidance(self) -> None:
+        spec_index = self.repo / ".trellis/spec/backend/index.md"
+        spec_index.parent.mkdir(parents=True)
+        spec_index.write_text(
+            "**Language**: All documentation must be written in **English**.\n",
+            encoding="utf-8",
+        )
+
+        with mock.patch(
+            "sys.argv",
+            [
+                "apply_guru_team_trellis_preset.py",
+                "--repo",
+                str(self.repo),
+                "--platform",
+                "codex",
+            ],
+        ):
+            stdout = StringIO()
+            with mock.patch("sys.stdout", stdout):
+                exit_code = preset.main()
+
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(payload["agents_principles"]["action"], "installed")
+        self.assertEqual(payload["agents_principles"]["path"], "AGENTS.md")
+        self.assertEqual(
+            (self.repo / "AGENTS.md").read_text(encoding="utf-8"),
+            preset.AGENTS_AI_FIRST_BLOCK,
+        )
+        self.assertEqual(payload["language_guidance"]["replacement_count"], 1)
+        self.assertEqual(payload["managed_transaction"]["strategy"], "managed_paths")
+        self.assertGreater(payload["managed_transaction"]["source_bytes"], 0)
+        self.assertGreater(payload["managed_transaction"]["staged_bytes"], 0)
+        self.assertGreater(payload["managed_transaction"]["staged_file_count"], 0)
+        self.assertEqual(payload["managed_transaction"]["backup_bytes"], 0)
+        self.assertEqual(payload["managed_transaction"]["sidecar_bytes"], 0)
+        self.assertEqual(payload["language_guidance"]["updated_paths"][0]["path"], ".trellis/spec/backend/index.md")
+        self.assertIn(".trellis/spec/**/*.md", payload["language_guidance"]["scope"])
+
+
+class PlatformOverlayInstallerTest(RetiredScriptReapplyTests, unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
+        self.guru_root = preset.guru_root_from_script()
+        self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
+        self.install_dst = self.repo / ".trellis/guru-team"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_source_lock_is_managed_and_preserves_unknown_local_edits(self) -> None:
+        payload = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        relative = ".trellis/guru-team/trellis-source.json"
+        target = self.repo / relative
+        canonical = self.guru_root / "trellis/presets/guru-team/source/trellis-source.json"
+        self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        self.assertEqual(
+            json.loads(target.read_text())["ci_run_id"],
+            json.loads(canonical.read_text())["ci_run_id"],
+        )
+        manifest = json.loads((self.install_dst / "extension.json").read_text())
+        self.assertIn(relative, manifest["install"]["managed_assets"])
+        self.assertEqual(manifest["install"]["managed_asset_hashes"][relative], hashlib.sha256(target.read_bytes()).hexdigest())
+        repeated = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        self.assertEqual(target.read_bytes(), canonical.read_bytes())
+        self.assertEqual(repeated["skill_installed_validation"]["returncode"], 0)
+        modified = json.loads(target.read_text())
+        modified["commit"] = "b" * 40
+        target.write_text(json.dumps(modified))
+        before = target.read_bytes()
+        conflicted = preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+        self.assertEqual(target.read_bytes(), before)
+        self.assertNotEqual(conflicted["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(target.with_name(target.name + ".new").read_bytes(), canonical.read_bytes())
+
+    def test_upstream_ownership_failure_precedes_every_target_mutation(self) -> None:
+        before = {
+            path.relative_to(self.repo).as_posix(): path.read_bytes()
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+        with mock.patch.object(
+            preset,
+            "run_upstream_ownership_validator",
+            side_effect=SystemExit("fixture ownership failure"),
+        ):
+            with self.assertRaisesRegex(SystemExit, "fixture ownership failure"):
+                preset.install_assets(
+                    self.workflow_src,
+                    self.install_dst,
+                    self.repo,
+                    {"codex", "cursor"},
+                )
+        after = {
+            path.relative_to(self.repo).as_posix(): path.read_bytes()
+            for path in self.repo.rglob("*")
+            if path.is_file()
+        }
+        self.assertEqual(after, before)
+        self.assertFalse(self.install_dst.exists())
+
+    def install(self, platforms: set[str] | None = None) -> dict[str, object]:
+        return preset.install_assets(self.workflow_src, self.install_dst, self.repo, platforms)
+
+    def test_shared_wrappers_import_runtime_from_canonical_and_installed_roots(self) -> None:
+        installed = self.install({"codex", "cursor"})
+        self.assertEqual(installed["skill_packages"]["status"], "ok", {
+            "package_conflicts": installed["skill_packages"]["conflicts"],
+            "overlay_conflicts": installed["overlays"]["conflicts"],
+            "validation": installed["skill_installed_validation"]["errors"],
+        })
+        self.assertTrue((self.install_dst / "runtime/task_lifecycle/identity.py").is_file())
+        self.assertTrue((self.install_dst / "runtime/task_lifecycle/active_checkout.py").is_file())
+        canonical_root = self.repo / "trellis"
+        canonical_wrappers = canonical_root / "workflows/guru-team/scripts/bash"
+        canonical_wrappers.mkdir(parents=True)
+        wrappers = (
+            "check-task-checkout-boundary.sh",
+            "check-agent-recovery.sh",
+            "record-agent-recovery.sh",
+        )
+        for wrapper in wrappers:
+            shutil.copy2(self.workflow_src / "scripts/bash" / wrapper, canonical_wrappers)
+        shutil.copytree(
+            self.guru_root / "trellis/skills/guru-team/runtime",
+            canonical_root / "skills/guru-team/runtime",
+        )
+        _ensure_managed_python_runtime(self.repo, self.guru_root, activate=True)
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        roots = (
+            canonical_wrappers,
+            self.install_dst / "scripts/bash",
+        )
+        for root in roots:
+            for wrapper in wrappers:
+                with self.subTest(root=root, wrapper=wrapper):
+                    process = subprocess.run(
+                        [str(root / wrapper), "--help"],
+                        cwd=self.repo,
+                        env=env,
+                        text=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        check=False,
+                    )
+                    self.assertEqual(process.returncode, 0, process.stderr)
+                    self.assertIn("usage:", process.stdout)
+                    self.assertNotIn("ModuleNotFoundError", process.stderr)
+
+    def test_managed_spec_unknown_collision_is_preserved_with_new_sidecar(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("# Local semantic contract\n", encoding="utf-8")
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, None
+        )
+
+        self.assertEqual(result["action"], "conflict")
+        self.assertEqual(target.read_text(encoding="utf-8"), "# Local semantic contract\n")
+        self.assertEqual(
+            target.with_name(f"{target.name}.new").read_bytes(),
+            (self.guru_root / source_relative).read_bytes(),
+        )
+
+    def test_managed_spec_declared_managed_upgrade_uses_backup(self) -> None:
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        old = b"# Prior managed semantic contract\n"
+        target.write_bytes(old)
+        previous = {
+            "install": {
+                "managed_assets": [target_relative.as_posix()],
+                "managed_asset_hashes": {
+                    target_relative.as_posix(): hashlib.sha256(old).hexdigest(),
+                },
+            }
+        }
+
+        result = preset.copy_managed_spec(
+            self.guru_root / source_relative, target, self.repo, previous
+        )
+
+        self.assertEqual(result["action"], "updated_managed")
+        self.assertEqual(target.read_bytes(), (self.guru_root / source_relative).read_bytes())
+        self.assertEqual(target.with_name(f"{target.name}.bak").read_bytes(), old)
+
+    def test_managed_spec_user_edit_is_preserved_on_reapply(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        _, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        local = target.read_bytes() + b"\n# Local semantic extension\n"
+        target.write_bytes(local)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        second = self.install({"codex", "cursor"})
+
+        sidecar = target.with_name(f"{target.name}.new")
+        self.assertEqual(second["skill_packages"]["status"], "conflict")
+        self.assertEqual(target.read_bytes(), local)
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (self.guru_root / preset.MANAGED_SPEC_PATHS[0][0]).read_bytes(),
+        )
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+        self.assertEqual(
+            [item["reason"] for item in second["skill_packages"]["conflicts"]],
+            ["unknown_local_spec_edit"],
+        )
+
+    def test_managed_spec_equal_legacy_manifest_reapply_backfills_hash(self) -> None:
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
+        target = self.repo / target_relative
+        canonical = (self.guru_root / source_relative).read_bytes()
+        self.assertEqual(target.read_bytes(), canonical)
+        manifest_path = self.install_dst / "extension.json"
+        legacy = json.loads(manifest_path.read_text(encoding="utf-8"))
+        legacy["install"].pop("managed_asset_hashes")
+        manifest_path.write_text(
+            json.dumps(legacy, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        second = self.install({"codex", "cursor"})
+
+        self.assertEqual(second["skill_packages"]["status"], "ok")
+        self.assertEqual(second["skill_installed_validation"]["status"], "passed")
+        self.assertIn(target_relative.as_posix(), second["unchanged"])
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                target.as_posix(): hashlib.sha256(
+                    (self.guru_root / source).read_bytes()
+                ).hexdigest()
+                for source, target in preset.MANAGED_SPEC_PATHS + preset.MANAGED_SOURCE_PATHS
+            },
+        )
+        self.assertEqual(
+            sorted(
+                path.relative_to(self.repo).as_posix()
+                for path in self.repo.rglob("*")
+                if path.is_file() and path.suffix in {".new", ".bak"}
+            ),
+            [],
+        )
+
+    def test_legacy_runtime_absence_is_a_clean_initial_install(self) -> None:
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        self.assertEqual(removals, [])
+        self.assertEqual(conflicts, [])
+        self.assertEqual(sidecars, [])
+
+    def test_stale_managed_kernel_file_is_removed_by_previous_hash(self) -> None:
+        target = self.install_dst / "runtime/retired.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("retired kernel\n", encoding="utf-8")
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+
+        removal, conflict, sidecar = preset.remove_stale_skill_path(
+            self.repo,
+            ".trellis/guru-team/runtime/retired.py",
+            {".trellis/guru-team/runtime/retired.py": digest},
+            True,
+        )
+
+        self.assertEqual(removal, {
+            "path": ".trellis/guru-team/runtime/retired.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": digest,
+        })
+        self.assertIsNone(conflict)
+        self.assertIsNone(sidecar)
+        self.assertFalse(target.exists())
+
+    def test_stale_edited_kernel_file_is_preserved_and_blocks(self) -> None:
+        target = self.install_dst / "runtime/retired.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("local edit\n", encoding="utf-8")
+
+        removal, conflict, sidecar = preset.remove_stale_skill_path(
+            self.repo,
+            ".trellis/guru-team/runtime/retired.py",
+            {".trellis/guru-team/runtime/retired.py": "0" * 64},
+            True,
+        )
+
+        self.assertIsNone(removal)
+        self.assertEqual(conflict["reason"], "stale_unknown_local_edit")
+        self.assertEqual(sidecar, ".trellis/guru-team/runtime/retired.py.new")
+        self.assertEqual(target.read_text(encoding="utf-8"), "local edit\n")
+        self.assertTrue(target.with_name("retired.py.new").is_file())
+
+    def test_known_dot_five_legacy_runtime_is_removed(self) -> None:
+        target = self.install_dst / "scripts/python/guru_team_trellis.py"
+        target.parent.mkdir(parents=True)
+        legacy = subprocess.run(
+            [
+                "git",
+                "show",
+                "v0.6.5-guru.5:trellis/workflows/guru-team/scripts/python/guru_team_trellis.py",
+            ],
+            cwd=self.guru_root,
+            check=True,
+            stdout=subprocess.PIPE,
+        ).stdout
+        target.write_bytes(legacy)
+
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        self.assertFalse(target.exists())
+        self.assertEqual(conflicts, [])
+        self.assertEqual(sidecars, [])
+        self.assertEqual(removals, [{
+            "path": ".trellis/guru-team/scripts/python/guru_team_trellis.py",
+            "action": "removed_managed",
+            "previous_managed_sha256": hashlib.sha256(legacy).hexdigest(),
+        }])
+
+    def test_unknown_legacy_runtime_is_preserved_and_blocks_with_sidecar(self) -> None:
+        target = self.install_dst / "scripts/python/guru_team_trellis.py"
+        target.parent.mkdir(parents=True)
+        target.write_text("local runtime edit\n", encoding="utf-8")
+
+        removals, conflicts, sidecars = preset.remove_legacy_managed_assets(
+            self.repo, self.install_dst
+        )
+
+        sidecar = target.with_name("guru_team_trellis.py.new")
+        self.assertEqual(removals, [])
+        self.assertEqual(target.read_text(encoding="utf-8"), "local runtime edit\n")
+        self.assertTrue(sidecar.is_file())
+        self.assertEqual(sidecars, [
+            ".trellis/guru-team/scripts/python/guru_team_trellis.py.new"
+        ])
+        self.assertEqual(conflicts[0]["reason"], "legacy_unknown_local_edit")
+        self.assertIn("package-local", sidecar.read_text(encoding="utf-8"))
+
+    def test_preset_ignores_retired_upstream_trellis_platform_assets(self) -> None:
+        upstream = self.repo / ".agents/skills/trellis-meta/references/local-architecture/workspace-memory.md"
+        upstream.parent.mkdir(parents=True, exist_ok=True)
+        upstream.write_text("upstream-managed workspace memory\n", encoding="utf-8")
+
+        result = preset.install_assets(
+            self.workflow_src,
+            self.install_dst,
+            self.repo,
+            platforms={"codex"},
+        )
+
+        self.assertEqual(
+            upstream.read_text(encoding="utf-8"),
+            "upstream-managed workspace memory\n",
+        )
+        self.assertFalse(upstream.with_name("workspace-memory.md.new").exists())
+        self.assertNotIn(
+            upstream.relative_to(self.repo).as_posix(),
+            {row["path"] for row in result["skill_packages"]["removals"]},
+        )
+
+    def test_skill_manifest_file_order_is_stable_across_hash_seeds_and_reapply(self) -> None:
+        module_path = Path(preset.__file__).resolve()
+        guru_root = preset.guru_root_from_script()
+        script = """
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+module_path = Path(sys.argv[1])
+repo = Path(sys.argv[2])
+guru_root = Path(sys.argv[3])
+spec = importlib.util.spec_from_file_location("guru_preset_seeded", module_path)
+module = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(module)
+repo.mkdir(parents=True, exist_ok=True)
+dst = repo / ".trellis/guru-team"
+manifest_path = repo / "previous-extension.json"
+previous = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else None
+result = module.install_skill_packages(
+    repo,
+    guru_root,
+    dst,
+    {"claude", "codex", "cursor"},
+    previous,
+)
+manifest_path.write_text(
+    json.dumps({"skill_packages": result}, ensure_ascii=False, indent=2) + "\\n",
+    encoding="utf-8",
+)
+sys.stdout.write(json.dumps(result["files"], ensure_ascii=False, separators=(",", ":")))
+"""
+
+        outputs: list[tuple[bytes, bytes]] = []
+        for first_seed, second_seed in (("1", "2"), ("777", "999")):
+            repo = self.repo / f"seed-{first_seed}"
+            seeded: list[bytes] = []
+            for seed in (first_seed, second_seed):
+                process = subprocess.run(
+                    [sys.executable, "-c", script, str(module_path), str(repo), str(guru_root)],
+                    check=True,
+                    capture_output=True,
+                    env={**os.environ, "PYTHONHASHSEED": seed},
+                )
+                seeded.append(process.stdout)
+            outputs.append((seeded[0], seeded[1]))
+
+        self.assertEqual(outputs[0][0], outputs[1][0])
+        self.assertEqual(outputs[0][1], outputs[1][1])
+        fresh_paths = [record["path"] for record in json.loads(outputs[0][0])]
+        reapplied_paths = [record["path"] for record in json.loads(outputs[0][1])]
+        self.assertEqual(fresh_paths, reapplied_paths)
+        registry = json.loads(
+            (
+                guru_root
+                / "trellis/skills/guru-team/registry.json"
+            ).read_text(encoding="utf-8")
+        )
+        active_package_count = sum(
+            entry.get("state") == "active"
+            for entry in registry["skills"]
+        )
+        group_order: list[str] = []
+        for path in fresh_paths:
+            group = next(
+                label
+                for prefix, label in (
+                    (".trellis/guru-team/runtime/", "installed"),
+                    (".trellis/guru-team/skills/", "installed"),
+                    (".agents/skills/", "shared"),
+                    (".codex/skills/", "codex"),
+                    (".claude/skills/", "claude"),
+                    (".cursor/skills/", "cursor"),
+                )
+                if path.startswith(prefix)
+            )
+            if not group_order or group_order[-1] != group:
+                group_order.append(group)
+        self.assertEqual(
+            group_order,
+            [
+                "installed",
+                *(
+                    ["shared", "codex", "claude", "cursor"]
+                    * active_package_count
+                ),
+            ],
+        )
+
+    def test_default_platforms_install_claude_codex_cursor_and_shared_overlays(self) -> None:
+        payload = self.install()
+
+        self.assertEqual(payload["platforms"], ["claude", "codex", "cursor"])
+        self.assertIn(Path("scripts/bash/check-task-checkout-boundary.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/start-task.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/discover-skill-contract.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/discover-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/run-skill-evals.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/run-skill-command.sh"), preset.MANAGED_ASSET_PATHS)
+        for retired in ("prepare-task.sh", "finish-work.sh", "preview-finalization.sh",
+                        "record-task-workspace-plan.sh", "record-task-publication-review.sh",
+                        "invoke-task-pr-merge.sh"):
+            self.assertNotIn(Path("scripts/bash") / retired, preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/sync-base.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-base-sync.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/preview-change-context-history.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-context-discovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-requirements-clarification.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-contract-wording-review.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-change-request-review.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/resolve-human-artifacts.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/record-agent-recovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-agent-recovery.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/record-agent-assignment.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/check-agent-assignment.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/record-subagent-liveness-event.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertNotIn(Path("scripts/bash/check-subagent-liveness.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("scripts/bash/check-commit-messages.sh"), preset.MANAGED_ASSET_PATHS)
+        self.assertIn(Path("schemas/finish-summary.schema.json"), preset.MANAGED_ASSET_PATHS)
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-task-checkout-boundary.sh").is_file())
+        start_task = self.repo / ".trellis/guru-team/scripts/bash/start-task.sh"
+        self.assertFalse(start_task.exists())
+        for relative in preset.LEGACY_MANAGED_ASSET_HASHES:
+            if relative.parts[:2] == ("scripts", "bash"):
+                self.assertNotIn(relative, preset.MANAGED_ASSET_PATHS)
+                self.assertFalse((self.install_dst / relative).exists(), relative)
+        installed_manifest = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertNotIn(".trellis/guru-team/scripts/bash/start-task.sh", installed_manifest["install"]["managed_assets"])
+        self.assertEqual(installed_manifest["skill_packages"]["status"], "ok")
+        self.assertEqual(installed_manifest["skill_packages"]["sidecars"], [])
+        self.assertEqual(installed_manifest["skill_packages"]["conflicts"], [])
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-contract.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/discover-skill-evals.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-evals.sh", os.X_OK))
+        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/record-task-publication-review.sh").exists())
+        self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash/check-task-publication-review.sh").exists())
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/run-skill-command.sh", os.X_OK))
+        for name in (
+            "preview-finalization.sh",
+            "record-finalization-gate.sh",
+            "check-finalization-gate.sh",
+            "execute-finalization-transition.sh",
+            "preview-task-pr-merge.sh",
+            "record-task-pr-merge.sh",
+            "check-task-pr-merge.sh",
+            "execute-task-pr-merge.sh",
+            "invoke-task-pr-merge.sh",
+        ):
+            self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / name).exists())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/sync-base.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-base-sync.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/preview-change-context-history.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/record-context-discovery.sh", os.X_OK))
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-context-discovery.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/record-agent-recovery.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/record-agent-recovery.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-agent-recovery.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-agent-recovery.sh", os.X_OK))
+        for obsolete in (
+            "record-agent-assignment.sh",
+            "check-agent-assignment.sh",
+            "record-subagent-liveness-event.sh",
+            "check-subagent-liveness.sh",
+        ):
+            self.assertFalse((self.repo / ".trellis/guru-team/scripts/bash" / obsolete).exists())
+        self.assertTrue((self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh").is_file())
+        self.assertTrue(os.access(self.repo / ".trellis/guru-team/scripts/bash/check-commit-messages.sh", os.X_OK))
+        self.assertTrue((self.repo / ".trellis/guru-team/schemas/finish-summary.schema.json").is_file())
+        self.assertNotIn("session_auto_commit", (self.repo / ".trellis/config.yaml").read_text(encoding="utf-8"))
+        self.assertNotIn(".trellis/workspace/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+        self.assertNotIn("session_auto_commit", payload)
+        self.assertNotIn("workspace_gitignore", payload)
+        self.assertEqual(payload["replaced_overlays"], [])
+        self.assertFalse((self.repo / ".agents/skills/trellis-start/SKILL.md").exists())
+        self.assertFalse((self.repo / ".trellis/agents/implement.md").exists())
+        self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
+        self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
+        assert_thin_guru_finish_entry(self, self.repo / ".codex/prompts/guru-finish-work.md")
+        assert_thin_guru_finish_entry(self, self.repo / ".cursor/commands/guru-finish-work.md")
+        assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
+
+    def test_repeated_default_apply_keeps_all_three_default_overlays(self) -> None:
+        self.install()
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
+
+        second_payload = self.install()
+
+        self.assertEqual(second_payload["platforms"], ["claude", "codex", "cursor"])
+        self.assertEqual(second_payload["new_copies"], [])
+        for relative in (
+            ".claude/commands/guru/finish-work.md",
+            ".codex/prompts/guru-finish-work.md",
+            ".cursor/commands/guru-finish-work.md",
+        ):
+            self.assertEqual(
+                (self.repo / relative).read_bytes(),
+                (self.guru_root / "trellis/presets/guru-team/overlays" / relative).read_bytes(),
+            )
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task/SKILL.md").is_file())
+
+    def test_non_current_installed_manifest_fails_before_reapply(self) -> None:
+        self.install()
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["schema_version"] = "not-current"
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        before = manifest_path.read_bytes()
+
+        with self.assertRaisesRegex(SystemExit, "does not match the current contract"):
+            self.install()
+
+        self.assertEqual(manifest_path.read_bytes(), before)
+
+    def test_default_reapply_restores_removed_selected_claude_guru_entry(self) -> None:
+        self.install({"claude", "codex", "cursor"})
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        claude_entry.unlink()
+
+        self.install()
+
+        self.assertTrue(claude_entry.exists())
+
+    def test_unknown_local_guru_finish_edit_gets_new_copy(self) -> None:
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        target.parent.mkdir(parents=True)
+        target.write_text("# Local custom finish command\n", encoding="utf-8")
+
+        payload = self.install({"codex"})
+
+        sidecar = target.with_name("guru-finish-work.md.new")
+        self.assertIn(".codex/prompts/guru-finish-work.md.new", payload["new_copies"])
+        self.assertEqual(target.read_text(encoding="utf-8"), "# Local custom finish command\n")
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (self.guru_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md").read_bytes(),
+        )
+
+    def test_marker_preserving_selected_overlay_edit_is_not_overwritten(self) -> None:
+        self.install({"codex"})
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        local_bytes = target.read_bytes() + b"\n# Local project finish customization\n"
+        target.write_bytes(local_bytes)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        payload = self.install({"codex"})
+
+        sidecar = target.with_name("guru-finish-work.md.new")
+        self.assertEqual(payload["overlays"]["status"], "conflict")
+        self.assertEqual(
+            [item["reason"] for item in payload["overlays"]["conflicts"]],
+            ["unknown_local_edit"],
+        )
+        self.assertIn(".codex/prompts/guru-finish-work.md.new", payload["new_copies"])
+        self.assertEqual(target.read_bytes(), local_bytes)
+        self.assertEqual(
+            sidecar.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            ).read_bytes(),
+        )
+        self.assertFalse(target.with_name("guru-finish-work.md.bak").exists())
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+
+    def test_explicit_claude_platform_installs_only_shared_and_claude_overlays(self) -> None:
+        payload = self.install({"claude"})
+
+        self.assertEqual(payload["platforms"], ["claude"])
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".claude/skills/guru-create-task/SKILL.md").is_file())
+        installed_finish_integration = (
+            self.repo
+            / ".trellis/guru-team/skills/tests/test_finish_family_integration.py"
+        )
+        self.assertTrue(installed_finish_integration.is_file())
+        self.assertEqual(
+            installed_finish_integration.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/tests/test_finish_family_integration.py"
+            ).read_bytes(),
+        )
+        self.assertFalse((self.repo / ".trellis/guru-team/skills/tests/test_base_continuity_integration.py").exists())
+        self.assertTrue((self.repo / ".claude/commands/guru/finish-work.md").is_file())
+        assert_thin_guru_finish_entry(self, self.repo / ".claude/commands/guru/finish-work.md")
+        self.assertFalse((self.repo / ".claude/commands/trellis/continue.md").exists())
+        self.assertFalse((self.repo / ".claude/agents/trellis-check.md").exists())
+        self.assertFalse((self.repo / ".agents/skills/trellis-meta").exists())
+        self.assertFalse((self.repo / ".codex").exists())
+        self.assertFalse((self.repo / ".cursor").exists())
+
+    def test_explicit_opencode_platform_installs_only_shared_and_opencode_overlays(self) -> None:
+        payload = self.install({"opencode"})
+
+        self.assertEqual(payload["platforms"], ["opencode"])
+        self.assertTrue((self.repo / ".agents/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".opencode/skills/guru-create-task/SKILL.md").is_file())
+        entry = self.repo / ".opencode/commands/guru-finish-work.md"
+        self.assertTrue(entry.is_file())
+        assert_thin_guru_finish_entry(self, entry)
+        self.assertFalse((self.repo / ".codex").exists())
+        self.assertFalse((self.repo / ".claude").exists())
+        self.assertFalse((self.repo / ".cursor").exists())
+
+    def test_review_branch_current_gate_schema_closes_every_platform_interface_reference(self) -> None:
+        payload = self.install({"claude", "codex", "cursor", "opencode"})
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        canonical_root = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-branch"
+        )
+        schema_relative = Path("schemas/review-gate-7.0.schema.json")
+        canonical_bytes = (canonical_root / schema_relative).read_bytes()
+        package_roots = (
+            self.repo / ".trellis/guru-team/skills/packages/guru-review-branch",
+            self.repo / ".agents/skills/guru-review-branch",
+            self.repo / ".codex/skills/guru-review-branch",
+            self.repo / ".claude/skills/guru-review-branch",
+            self.repo / ".cursor/skills/guru-review-branch",
+            self.repo / ".opencode/skills/guru-review-branch",
+        )
+        legacy_schema_paths = (
+            Path("schemas/review-gate.schema.json"),
+            Path("schemas/review-gate-4.0.schema.json"),
+            Path("schemas/review-gate-5.0.schema.json"),
+            Path("schemas/review-gate-6.0.schema.json"),
+        )
+        for package_root in package_roots:
+            with self.subTest(package_root=package_root):
+                interface = json.loads(
+                    (package_root / "interface.json").read_text(encoding="utf-8")
+                )
+                referenced = {
+                    Path(str(item["path"]))
+                    for item in interface["schemas"]
+                    if str(item["id"]) == "review_gate_schema"
+                }
+                self.assertEqual(referenced, {schema_relative})
+                self.assertEqual(
+                    (package_root / schema_relative).read_bytes(), canonical_bytes
+                )
+                self.assertEqual(
+                    (package_root / schema_relative).stat().st_mode & 0o777,
+                    0o644,
+                )
+                for legacy_relative in legacy_schema_paths:
+                    self.assertEqual(
+                        (package_root / legacy_relative).read_bytes(),
+                        (canonical_root / legacy_relative).read_bytes(),
+                    )
+
+    def test_completion_current_evidence_authoring_is_managed_and_loadable_in_every_projection(self) -> None:
+        package_result = preset.install_skill_packages(
+            self.repo, self.guru_root, self.install_dst,
+            {"claude", "codex", "cursor"}, None,
+        )
+
+        self.assertEqual(package_result["status"], "ok")
+        skill_id = "guru-review-task-completion"
+        relative = Path("examples/authoring-delivery-evidence-pending-1.0.json")
+        canonical_root = self.guru_root / "trellis/skills/guru-team/packages" / skill_id
+        expected = json.loads((canonical_root / relative).read_text(encoding="utf-8"))
+        roots = (
+            self.repo / ".trellis/guru-team/skills/packages" / skill_id,
+            self.repo / ".agents/skills" / skill_id,
+            self.repo / ".codex/skills" / skill_id,
+            self.repo / ".claude/skills" / skill_id,
+            self.repo / ".cursor/skills" / skill_id,
+        )
+        managed = {record["path"] for record in package_result["files"]}
+        projections = preset.managed_source_projections(
+            self.repo, self.install_dst, {"claude", "codex", "cursor"}
+        )
+        for root in roots:
+            with self.subTest(root=root):
+                interface = json.loads((root / "interface.json").read_text(encoding="utf-8"))
+                consumer = next(
+                    item for item in interface["public_contracts"]["consumer_inputs"]
+                    if item["id"] == "evidence"
+                )
+                authoring = consumer["contract"]
+                self.assertEqual(authoring["profile_id"], "delivery_evidence_refresh")
+                self.assertEqual(authoring["authoring_example"]["path"], relative.as_posix())
+                projected = root / authoring["authoring_example"]["path"]
+                self.assertEqual(json.loads(projected.read_text(encoding="utf-8")), expected)
+                self.assertEqual(set(expected), set(authoring["authoring_fields"]))
+                self.assertIn(projected.relative_to(self.repo).as_posix(), managed)
+                self.assertEqual(projections[projected.relative_to(self.repo)], canonical_root / relative)
+
+    def test_merge_private_gate_generations_stay_out_of_every_platform_projection(self) -> None:
+        payload = self.install({"claude", "codex", "cursor", "opencode"})
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        package_relative = Path("guru-merge-task-delivery")
+        canonical_root = (
+            self.guru_root / "trellis/skills/guru-team/packages" / package_relative
+        )
+        installed_root = (
+            self.repo / ".trellis/guru-team/skills/packages" / package_relative
+        )
+        private_paths = (
+            Path("schemas/merge-gate.schema.json"),
+            Path("examples/private-merge-gate.json"),
+        )
+        platform_roots = (
+            self.repo / ".agents/skills" / package_relative,
+            self.repo / ".codex/skills" / package_relative,
+            self.repo / ".claude/skills" / package_relative,
+            self.repo / ".cursor/skills" / package_relative,
+            self.repo / ".opencode/skills" / package_relative,
+        )
+        for relative in private_paths:
+            with self.subTest(relative=relative, location="canonical-installed"):
+                self.assertTrue((canonical_root / relative).is_file())
+                self.assertEqual(
+                    (installed_root / relative).read_bytes(),
+                    (canonical_root / relative).read_bytes(),
+                )
+            for platform_root in platform_roots:
+                with self.subTest(relative=relative, platform_root=platform_root):
+                    self.assertFalse((platform_root / relative).exists())
+
+        retired_paths = (
+            Path("schemas/task-pr-merge-gate.schema.json"),
+            Path("examples/task-pr-merge-gate.json"),
+        )
+        for platform_root in platform_roots:
+            for relative in retired_paths:
+                with self.subTest(platform_root=platform_root, retired=relative):
+                    self.assertFalse((platform_root / relative).exists())
+
+    def test_explicit_selection_to_subset_removes_clean_managed_overlay(self) -> None:
+        self.install({"claude", "codex", "cursor", "opencode"})
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        self.assertTrue(claude_entry.is_file())
+
+        payload = self.install({"codex", "cursor"})
+
+        self.assertEqual(payload["overlays"]["status"], "ok")
+        self.assertFalse(claude_entry.exists())
+        self.assertEqual(
+            payload["overlays"]["removals"],
+            [
+                {
+                    "path": ".claude/commands/guru/finish-work.md",
+                    "action": "removed_managed",
+                    "previous_managed_sha256": hashlib.sha256(
+                        (
+                            self.guru_root
+                            / "trellis/presets/guru-team/overlays/.claude/commands/guru/finish-work.md"
+                        ).read_bytes()
+                    ).hexdigest(),
+                },
+                {
+                    "path": ".opencode/commands/guru-finish-work.md",
+                    "action": "removed_managed",
+                    "previous_managed_sha256": hashlib.sha256(
+                        (
+                            self.guru_root
+                            / "trellis/presets/guru-team/overlays/.opencode/commands/guru-finish-work.md"
+                        ).read_bytes()
+                    ).hexdigest(),
+                },
+            ],
+        )
+        installed_manifest = json.loads(
+            (self.install_dst / "extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed_manifest["overlays"]["selected_platforms"], ["codex", "cursor"])
+        self.assertNotIn(
+            ".claude/commands/guru/finish-work.md",
+            installed_manifest["install"]["managed_assets"],
+        )
+
+    def test_platform_reselection_prunes_empty_unselected_skill_directories(self) -> None:
+        self.install({"claude", "codex", "cursor", "opencode"})
+        retired_root = self.repo / ".codex/skills/guru-review-branch"
+        empty_nested = retired_root / "empty/nested"
+        empty_nested.mkdir(parents=True)
+
+        payload = self.install({"opencode"})
+
+        self.assertEqual(payload["skill_packages"]["status"], "ok")
+        self.assertFalse(retired_root.exists())
+        self.assertFalse(any((self.repo / ".codex/skills").glob("guru-*")))
+        self.assertFalse(any((self.repo / ".cursor/skills").glob("guru-*")))
+        self.assertFalse(any((self.repo / ".claude/skills").glob("guru-*")))
+        self.assertTrue(any((self.repo / ".opencode/skills").glob("guru-*")))
+
+    def test_reselecting_removed_platform_clears_restored_removal_provenance(self) -> None:
+        platforms = {"claude", "codex", "cursor", "opencode"}
+        self.install(platforms)
+        self.install({"codex", "cursor"})
+
+        payload = self.install(platforms)
+
+        self.assertEqual(payload["skill_installed_validation"]["returncode"], 0)
+        manifest = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        for section_name in ("skill_packages", "overlays"):
+            with self.subTest(section=section_name):
+                section = manifest[section_name]
+                restored = {item["path"] for item in section["files"] if item["path"].startswith(".claude/")}
+                self.assertTrue(restored)
+                self.assertTrue(all((self.repo / path).is_file() for path in restored))
+                self.assertFalse(restored & {item["path"] for item in section["removals"]})
+
+    def test_explicit_selection_to_subset_preserves_edited_overlay_and_blocks_activation(self) -> None:
+        self.install({"claude", "codex", "cursor", "opencode"})
+        claude_entry = self.repo / ".claude/commands/guru/finish-work.md"
+        local_bytes = claude_entry.read_bytes() + b"\n# Claude project customization\n"
+        claude_entry.write_bytes(local_bytes)
+        manifest_before = (self.install_dst / "extension.json").read_bytes()
+
+        payload = self.install({"codex", "cursor"})
+
+        sidecar = claude_entry.with_name("finish-work.md.new")
+        self.assertEqual(payload["overlays"]["status"], "conflict")
+        self.assertEqual(
+            [item["reason"] for item in payload["overlays"]["conflicts"]],
+            ["stale_unknown_local_edit"],
+        )
+        self.assertEqual(claude_entry.read_bytes(), local_bytes)
+        self.assertEqual(sidecar.read_bytes(), preset.GURU_OVERLAY_REMOVAL_SIDECAR)
+        self.assertIn(".claude/commands/guru/finish-work.md.new", payload["new_copies"])
+        self.assertEqual((self.install_dst / "extension.json").read_bytes(), manifest_before)
+
+    def test_known_overlay_hash_upgrade_uses_backup_and_recovers(self) -> None:
+        self.install({"codex"})
+        target = self.repo / ".codex/prompts/guru-finish-work.md"
+        old_bytes = b"<!-- guru-team-overlay: v0 -->\n# Previous managed finish entry\n"
+        target.write_bytes(old_bytes)
+        manifest_path = self.install_dst / "extension.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        record = manifest["overlays"]["files"][0]
+        record["sha256"] = hashlib.sha256(old_bytes).hexdigest()
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        upgraded = self.install({"codex"})
+
+        backup = target.with_name("guru-finish-work.md.bak")
+        self.assertEqual(upgraded["overlays"]["status"], "conflict")
+        self.assertEqual(upgraded["overlays"]["conflicts"], [])
+        self.assertEqual(upgraded["overlays"]["sidecars"], [
+            ".codex/prompts/guru-finish-work.md.bak"
+        ])
+        self.assertEqual(backup.read_bytes(), old_bytes)
+        self.assertEqual(
+            target.read_bytes(),
+            (
+                self.guru_root
+                / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            ).read_bytes(),
+        )
+        self.assertNotEqual(upgraded["skill_installed_validation"]["returncode"], 0)
+        self.assertEqual(upgraded["skill_activation_validation"]["returncode"], 0)
+
+        recovered = self.install({"codex"})
+
+        self.assertEqual(recovered["overlays"]["status"], "ok")
+        self.assertEqual(recovered["overlays"]["sidecars"], [])
+        self.assertFalse(backup.exists())
+        installed_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(installed_manifest["overlays"]["status"], "ok")
+
+    def test_main_accepts_repeated_platform_arguments(self) -> None:
+        with mock.patch(
+            "sys.argv",
+            [
+                "apply_guru_team_trellis_preset.py",
+                "--repo",
+                str(self.repo),
+                "--platform",
+                "codex",
+                "--platform",
+                "cursor",
+            ],
+        ):
+            with mock.patch("sys.stdout", new_callable=StringIO):
+                exit_code = preset.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue((self.repo / ".codex/prompts/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".cursor/commands/guru-finish-work.md").is_file())
+        self.assertTrue((self.repo / ".codex/skills/guru-create-task/SKILL.md").is_file())
+        self.assertTrue((self.repo / ".cursor/skills/guru-create-task/SKILL.md").is_file())
+        self.assertFalse((self.repo / ".codex/prompts/trellis-start.md").exists())
+        self.assertFalse((self.repo / ".cursor/commands/trellis-continue.md").exists())
+        self.assertFalse((self.repo / ".claude").exists())
+
+    def test_throwaway_verifier_cleans_preview_and_scans_sidecars_after_reapply(self) -> None:
+        import verify_trellis_compatibility_matrix as matrix
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, before, source = (root / name for name in ("target", "before", "source"))
+            relative = "trellis/workflows/guru-team/workflow.md"
+            for tree, content in ((before, "before\n"), (source, "candidate\n")):
+                path = tree / relative
+                path.parent.mkdir(parents=True)
+                path.write_text(content)
+            workflow = target / ".trellis/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("before\n")
+            preview = workflow.with_name("workflow.md.new")
+            operations = []
+
+            def run(argv, **kwargs):
+                if "--create-new" in argv:
+                    operations.append("preview")
+                    preview.write_text("candidate\n")
+                elif "--force" in argv:
+                    operations.append("switch")
+                    self.assertFalse(preview.exists())
+                    workflow.write_text("candidate\n")
+                else:
+                    self.fail(f"unexpected workflow operation: {argv}")
+                return ""
+
+            with mock.patch.object(matrix, "_run", side_effect=run):
+                matrix._preview_and_switch_workflow(
+                    target, ("node", "trellis.js"), {}, "fixture-source",
+                    source, before / relative, False, root,
+                )
+            self.assertEqual(operations, ["preview", "switch"])
+            self.assertEqual(workflow.read_text(), "candidate\n")
+            self.assertEqual(matrix._sidecars(target), [])
+
+            success = subprocess.CompletedProcess([], 0, stdout='{"status":"ok"}')
+            with mock.patch.object(matrix.subprocess, "run", return_value=success):
+                result = matrix._apply_preset(source, target, "codex", root / "apply.log")
+                self.assertEqual(result["status"], "passed")
+                for suffix in (".new", ".bak"):
+                    with self.subTest(sidecar=suffix):
+                        sidecar = target / ".trellis/guru-team/nested" / ("asset" + suffix)
+                        sidecar.parent.mkdir(parents=True, exist_ok=True)
+                        sidecar.write_text("unresolved\n")
+                        with self.assertRaisesRegex(matrix.MatrixError, "sidecar-free"):
+                            matrix._apply_preset(source, target, "codex", root / "reapply.log")
+                        self.assertEqual(sidecar.read_text(), "unresolved\n")
+                        sidecar.unlink()
+
+    def test_dogfood_drift_checks_ownership_before_payload_bytes(self) -> None:
+        checker_path = (
+            self.guru_root
+            / "trellis/presets/guru-team/scripts/bash/check-dogfood-overlay-drift.sh"
+        )
+        checker = checker_path.read_text(encoding="utf-8")
+
+        ownership_gate = checker.index('"$OWNERSHIP_CHECK" --repo "$REPO_ROOT" --json')
+        workflow_check = checker.index('cmp -s "$workflow_source" "$workflow"')
+        payload_loop = checker.index('"$DOGFOOD_CHECK"')
+        self.assertLess(ownership_gate, workflow_check)
+        self.assertLess(ownership_gate, payload_loop)
+        self.assertIn("Missing executable ownership validator", checker)
+        self.assertIn("current Guru-owned claims", checker)
+        self.assertIn("selected platform projections", checker)
+
+        fixture = self.repo / "dogfood-drift"
+        ownership_check = (
+            fixture
+            / "trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh"
+        )
+        ownership_check.parent.mkdir(parents=True)
+        ownership_check.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        ownership_check.chmod(0o755)
+        dogfood_check = (
+            fixture
+            / "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py"
+        )
+        dogfood_check.parent.mkdir(parents=True)
+        dogfood_check.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+        resolver = fixture / "trellis/skills/guru-team/runtime/resolve-python.sh"
+        resolver.parent.mkdir(parents=True)
+        resolver.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+        resolver.chmod(0o755)
+        (fixture / "trellis/presets/guru-team/overlays").mkdir(parents=True)
+
+        workflow_source = fixture / "trellis/workflows/guru-team/workflow.md"
+        workflow_source.parent.mkdir(parents=True)
+        workflow_source.write_text("canonical workflow\n", encoding="utf-8")
+        workflow = fixture / ".trellis/workflow.md"
+        workflow.parent.mkdir(parents=True)
+        workflow.write_bytes(workflow_source.read_bytes())
+
+        semantic_source = (
+            fixture
+            / "trellis/presets/guru-team/spec/workflow/semantic-retrieval.md"
+        )
+        semantic_source.parent.mkdir(parents=True)
+        semantic_source.write_text("semantic retrieval\n", encoding="utf-8")
+        semantic = fixture / ".trellis/spec/workflow/semantic-retrieval.md"
+        semantic.parent.mkdir(parents=True)
+        semantic.write_bytes(semantic_source.read_bytes())
+
+        subtraction_source = (
+            fixture
+            / "trellis/presets/guru-team/spec/workflow/subtraction-first-compatibility.md"
+        )
+        subtraction_source.write_text("subtraction first\n", encoding="utf-8")
+        subtraction = fixture / ".trellis/spec/workflow/subtraction-first-compatibility.md"
+        subtraction.write_bytes(subtraction_source.read_bytes())
+
+        matched = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(matched.returncode, 0, matched.stderr)
+
+        workflow.write_text("stale workflow\n", encoding="utf-8")
+        drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(drifted.returncode, 1)
+        self.assertIn("CHANGED .trellis/workflow.md", drifted.stdout)
+        self.assertIn("Dogfood workflow/overlay drift detected", drifted.stderr)
+        self.assertIn("official Trellis workflow marketplace", drifted.stderr)
+        self.assertIn("preset apply does not manage this path", drifted.stderr)
+        self.assertNotIn("scripts/bash/apply.sh", drifted.stderr)
+
+        workflow.write_bytes(workflow_source.read_bytes())
+        semantic.write_text("stale semantic retrieval\n", encoding="utf-8")
+        preset_drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(preset_drifted.returncode, 1)
+        self.assertIn(
+            "CHANGED .trellis/spec/workflow/semantic-retrieval.md",
+            preset_drifted.stdout,
+        )
+        self.assertIn("Guru preset-owned overlay/spec copies", preset_drifted.stderr)
+        self.assertIn("scripts/bash/apply.sh", preset_drifted.stderr)
+        self.assertNotIn("official Trellis workflow marketplace", preset_drifted.stderr)
+
+        semantic.write_bytes(semantic_source.read_bytes())
+        subtraction.write_text("stale subtraction first\n", encoding="utf-8")
+        second_preset_drifted = subprocess.run(
+            [str(checker_path), "--repo", str(fixture)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(second_preset_drifted.returncode, 1)
+        self.assertIn(
+            "CHANGED .trellis/spec/workflow/subtraction-first-compatibility.md",
+            second_preset_drifted.stdout,
+        )
+
+class ExtensionManifestInstallerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.tmp.name)
+        (self.repo / ".trellis").mkdir()
+        install_canonical_workflow(self.repo)
+        self.guru_root = preset.guru_root_from_script()
+        self.workflow_src = self.guru_root / "trellis/workflows/guru-team"
+        self.install_dst = self.repo / ".trellis/guru-team"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_skill_package_projection_excludes_pytest_cache(self) -> None:
+        package = self.repo / "package"
+        package.mkdir()
+        (package / "SKILL.md").write_text("skill", encoding="utf-8")
+        cache = package / ".pytest_cache/v/cache"
+        cache.mkdir(parents=True)
+        (cache / "nodeids").write_text("[]", encoding="utf-8")
+
+        self.assertEqual(
+            preset.skill_package_installed_files(package),
+            [package / "SKILL.md"],
+        )
+        self.assertTrue(preset.transaction_path_ignored(Path(".agents/skills/example/.pytest_cache/v/cache/nodeids")))
+
+    def test_activated_managed_removal_prunes_only_its_empty_skill_directory(self) -> None:
+        retired = self.repo / ".agents/skills/guru-retired/consumers"
+        unrelated = self.repo / ".agents/skills/guru-unrelated/consumers"
+        retired.mkdir(parents=True)
+        unrelated.mkdir(parents=True)
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": ".agents/skills/guru-retired/consumers/old.schema.json",
+                "action": "removed_managed",
+            }]}
+        })
+        self.assertFalse(retired.parent.exists())
+        self.assertTrue(unrelated.is_dir())
+
+    def test_retired_skill_cleanup_prunes_sibling_directories_after_all_removals(self) -> None:
+        root = self.repo / ".agents/skills/guru-retired"
+        (root / "consumers/first").mkdir(parents=True)
+        removed = root / "runtime/second/old.py"
+        removed.parent.mkdir(parents=True)
+        removed.write_text("old", encoding="utf-8")
+        removed.unlink()
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": removed.relative_to(self.repo).as_posix(),
+                "action": "removed_managed",
+            }]}
+        })
+
+        self.assertFalse(root.exists())
+
+    def test_retired_skill_cleanup_preserves_user_file(self) -> None:
+        root = self.repo / ".agents/skills/guru-retired"
+        removed = root / "consumers/old.schema.json"
+        user_file = root / "notes.txt"
+        removed.parent.mkdir(parents=True)
+        user_file.write_text("local notes", encoding="utf-8")
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {"removals": [{
+                "path": removed.relative_to(self.repo).as_posix(),
+                "action": "removed_managed",
+            }]}
+        })
+
+        self.assertEqual(user_file.read_text(encoding="utf-8"), "local notes")
+        self.assertFalse(removed.parent.exists())
+
+    def test_active_skill_cleanup_keeps_untracked_empty_directories(self) -> None:
+        root = self.repo / ".agents/skills/guru-active"
+        empty = root / "consumers/keep"
+        empty.mkdir(parents=True)
+        removed = root / "runtime/old.py"
+        removed.parent.mkdir()
+
+        preset.prune_empty_activated_skill_removals(self.repo, {
+            "skill_packages": {
+                "active_ids": ["guru-active"],
+                "removals": [{
+                    "path": removed.relative_to(self.repo).as_posix(),
+                    "action": "removed_managed",
+                }],
+            }
+        })
+
+        self.assertTrue(empty.is_dir())
+
+    def test_install_assets_writes_installed_extension_manifest(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-08-19T08:00:00+08:00"},
+        ):
+            payload = preset.install_assets(
+                self.workflow_src,
+                self.install_dst,
+                self.repo,
+                {"codex", "cursor"},
+            )
+
+        manifest_path = self.repo / ".trellis/guru-team/extension.json"
+        self.assertTrue(manifest_path.is_file())
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(installed["schema_version"], preset.INSTALLED_EXTENSION_SCHEMA_VERSION)
+        self.assertEqual(installed["installed_at"], "2026-08-19T00:00:00Z")
+        self.assertEqual(set(installed), preset.INSTALLED_EXTENSION_KEYS)
+        self.assertEqual(installed["extension"]["extension_id"], "guru-team")
+        self.assertEqual(installed["extension"]["version"], payload["guru_team_extension"]["version"])
+        self.assertEqual(installed["extension"]["target_trellis_cli"], "0.7.0-castbox.4")
+        public_api = installed["extension"]["public_api"]
+        canonical = json.loads(
+            (self.guru_root / "trellis/guru-team-extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed["extension"]["version"], canonical["version"])
+        self.assertIn(
+            "contract-wording-review.json",
+            canonical["public_api"]["artifact_contracts"],
+        )
+        self.assertIn("contract-wording-review.json", public_api["artifact_contracts"])
+        self.assertIn("issue-review.json", public_api["artifact_contracts"])
+        self.assertNotIn("agent-assignment.json", public_api["artifact_contracts"])
+        self.assertNotIn("reviews/*.md", public_api["artifact_contracts"])
+        self.assertNotIn("review.md", public_api["artifact_contracts"])
+        self.assertIn("record-agent-recovery", public_api["companion_scripts"])
+        self.assertIn("check-agent-recovery", public_api["companion_scripts"])
+        self.assertNotIn("record-agent-assignment", public_api["companion_scripts"])
+        self.assertNotIn("check-agent-assignment", public_api["companion_scripts"])
+        self.assertNotIn("record-subagent-liveness-event", public_api["companion_scripts"])
+        self.assertNotIn("check-subagent-liveness", public_api["companion_scripts"])
+        self.assertIn("check-commit-messages", public_api["companion_scripts"])
+        self.assertIn("create-task-commit", public_api["companion_scripts"])
+        self.assertIn("discover-skill-contract", public_api["companion_scripts"])
+        self.assertIn("discover-skill-evals", public_api["companion_scripts"])
+        self.assertIn("run-skill-evals", public_api["companion_scripts"])
+        self.assertIn("run-skill-command", public_api["companion_scripts"])
+        self.assertIn("record-planning-approval", public_api["companion_scripts"])
+        self.assertIn("check-planning-approval", public_api["companion_scripts"])
+        self.assertIn("record-task-delivery-review", public_api["companion_scripts"])
+        self.assertIn("check-task-delivery-review", public_api["companion_scripts"])
+        self.assertIn("execute-extension-verification", public_api["companion_scripts"])
+        self.assertIn("record-extension-verification", public_api["companion_scripts"])
+        self.assertIn("check-extension-verification", public_api["companion_scripts"])
+        self.assertIn("invoke-extension-verification", public_api["companion_scripts"])
+        for command_id in (
+            "execute-base-candidate",
+            "record-base-reconciliation",
+            "check-base-reconciliation",
+            "invoke-guru-reconcile-task-base",
+        ):
+            self.assertIn(command_id, public_api["companion_scripts"])
+        approval_interface = json.loads((
+            self.guru_root / "trellis/skills/guru-team/packages/guru-approve-task-plan/interface.json"
+        ).read_text(encoding="utf-8"))
+        approval_schema_id = next(
+            artifact["schema"]["schema_id"]
+            for artifact in approval_interface["public_contracts"]["private_artifacts"]
+            if artifact["id"] == "planning_approval"
+        )
+        self.assertIn(
+            approval_schema_id,
+            public_api["skill_contracts"]["private_artifact_schema_ids"],
+        )
+
+        self.assertIn(
+            "guru-phase2-check-5.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        task_interface = json.loads((
+            self.guru_root / "trellis/skills/guru-team/packages/guru-create-task/interface.json"
+        ).read_text(encoding="utf-8"))
+        task_created_schema_id = next(
+            output["schema"]["schema_id"]
+            for output in task_interface["public_contracts"]["outputs"]
+            if output["exit_id"] == "created"
+        )
+        for manifest in (canonical, installed["extension"]):
+            skill_contracts = manifest["public_api"]["skill_contracts"]
+            self.assertIn(
+                task_created_schema_id,
+                skill_contracts["typed_output_schema_ids"],
+            )
+            self.assertNotIn(
+                "https://github.com/castbox/guru-trellis/schemas/guru-task-workspace-result-3.0.json",
+                skill_contracts["private_artifact_schema_ids"],
+            )
+            self.assertNotIn(
+                "guru-task-workspace-result-3.0",
+                skill_contracts["artifact_schema_ids"],
+            )
+        self.assertEqual(public_api["skill_contracts"]["registry_schema_id"], "guru-team-skill-registry-1.4")
+        self.assertEqual(
+            set(public_api["skill_contracts"]),
+            {
+                "canonical_root",
+                "installed_root",
+                "registry_schema_id",
+                "interface_schema_id",
+                "interface_schema_ids",
+                "public_input_schema_ids",
+                "typed_output_schema_ids",
+                "legacy_typed_output_schema_ids",
+                "private_artifact_schema_ids",
+                "artifact_schema_ids",
+                "active_skill_ids",
+                "planned_skill_ids",
+                "registry_lifecycle",
+                "contract_manifests",
+                "workflow_markers",
+            },
+        )
+        self.assertEqual(
+            public_api["skill_contracts"]["private_artifact_schema_ids"],
+            canonical["public_api"]["skill_contracts"]["private_artifact_schema_ids"],
+        )
+        for field in ("public_input_schema_ids", "typed_output_schema_ids"):
+            declared_ids = set(public_api["skill_contracts"][field])
+            self.assertEqual(len(declared_ids), len(public_api["skill_contracts"][field]))
+            interface_ids = set()
+            for skill_id in public_api["skill_contracts"]["active_skill_ids"]:
+                interface = json.loads((
+                    self.guru_root / "trellis/skills/guru-team/packages" / skill_id / "interface.json"
+                ).read_text(encoding="utf-8"))
+                contracts = interface["public_contracts"]
+                if field == "public_input_schema_ids":
+                    input_contract = contracts["input"]
+                    if "aggregate_schema" in input_contract:
+                        interface_ids.add(input_contract["aggregate_schema"]["schema_id"])
+                    interface_ids.update(
+                        profile["schema"]["schema_id"]
+                        for profile in input_contract.get("profiles", [])
+                    )
+                else:
+                    interface_ids.update(
+                        output["schema"]["schema_id"] for output in contracts["outputs"]
+                    )
+            self.assertEqual(declared_ids, interface_ids)
+        public_input_schema_ids = public_api["skill_contracts"]["public_input_schema_ids"]
+        architecture_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        architecture_input_schema_ids = {
+            architecture_interface["public_contracts"]["input"]["aggregate_schema"][
+                "schema_id"
+            ],
+            *(
+                item["schema"]["schema_id"]
+                for item in architecture_interface["public_contracts"]["input"][
+                    "profiles"
+                ]
+            ),
+        }
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in public_input_schema_ids
+                if schema_id.startswith(("guru-architecture-baseline-input-", "guru-maintain-architecture-baseline-input-"))
+            },
+            architecture_input_schema_ids,
+        )
+        self.assertIn(
+            "guru-normal-scenario-input-implementation-discovery-1.0",
+            public_input_schema_ids,
+        )
+        solution_mechanism_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-qualify-solution-mechanism/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        solution_mechanism_input_ids = {
+            solution_mechanism_interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
+            *(
+                profile["schema"]["schema_id"]
+                for profile in solution_mechanism_interface["public_contracts"]["input"]["profiles"]
+            ),
+        }
+        self.assertTrue(solution_mechanism_input_ids <= set(public_input_schema_ids))
+        self.assertIn(
+            "guru-stage0-clarify-requirements-input-standard-intake-1.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-stage0-clarify-requirements-input-initial-change-request-1.0",
+            public_input_schema_ids,
+        )
+        self.assertIn("guru-merge-task-delivery-input-delivery-aggregate-1.0", public_input_schema_ids)
+        self.assertNotIn(
+            "guru-merge-task-pr-input-ready-for-merge-1.0",
+            public_input_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-merge-task-pr-input-standalone-merge-1.0",
+            public_input_schema_ids,
+        )
+        private_artifact_schema_ids = public_api["skill_contracts"][
+            "private_artifact_schema_ids"
+        ]
+        self.assertIn("guru-merge-task-delivery-private-gate-1.0", private_artifact_schema_ids)
+        self.assertIn("guru-merge-task-delivery-private-gate-2.0", private_artifact_schema_ids)
+        self.assertIn("guru-merge-task-delivery-private-gate-delivery-2.0", private_artifact_schema_ids)
+        self.assertNotIn("guru-task-pr-merge-gate-1.0", private_artifact_schema_ids)
+        typed_output_schema_ids = public_api["skill_contracts"]["typed_output_schema_ids"]
+        architecture_output_schema_ids = {
+            item["schema"]["schema_id"]
+            for item in architecture_interface["public_contracts"]["outputs"]
+        }
+        self.assertEqual(len(architecture_output_schema_ids), 7)
+        self.assertEqual(
+            {
+                schema_id
+                for schema_id in typed_output_schema_ids
+                if schema_id.startswith(("guru-architecture-baseline-output-", "guru-maintain-architecture-baseline-output-"))
+            },
+            architecture_output_schema_ids,
+        )
+        solution_mechanism_output_ids = {
+            output["schema"]["schema_id"]
+            for output in solution_mechanism_interface["public_contracts"]["outputs"]
+        }
+        self.assertTrue(solution_mechanism_output_ids <= set(typed_output_schema_ids))
+        self.assertIn(
+            "guru-stage0-discover-change-context-output-context-ready-4.0",
+            typed_output_schema_ids,
+        )
+        self.assertNotIn(
+            "guru-stage0-discover-change-context-output-context-ready-2.0",
+            typed_output_schema_ids,
+        )
+        discovery_interface = json.loads(
+            (
+                self.guru_root
+                / "trellis/skills/guru-team/packages/guru-discover-change-context/interface.json"
+            ).read_text(encoding="utf-8")
+        )
+        artifact_by_path = {
+            artifact["path"]: artifact["id"] for artifact in discovery_interface["artifacts"]
+        }
+        self.assertEqual(
+            artifact_by_path["examples/public-context-ready-output-4.0.json"],
+            "public_output_context_ready_example_3_0",
+        )
+        self.assertEqual(public_api["skill_evals"]["schema_id"], "guru-team-skill-evals-1.0")
+        self.assertEqual(
+            public_api["skill_evals"]["schema_ids"],
+            ["guru-team-skill-evals-1.0", "guru-team-skill-evals-2.0"],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["production_schema_id"],
+            "guru-team-skill-evals-2.0",
+        )
+        self.assertEqual(
+            public_api["skill_contracts"]["contract_manifests"],
+            canonical["public_api"]["skill_contracts"]["contract_manifests"],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_request_schema_ids"],
+            [
+                "guru-team-skill-eval-adapter-request-1.0",
+                "guru-team-skill-eval-adapter-request-2.0",
+                "guru-team-skill-eval-adapter-request-3.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["adapter_response_schema_ids"],
+            [
+                "guru-team-skill-eval-adapter-response-1.0",
+                "guru-team-skill-eval-adapter-response-2.0",
+                "guru-team-skill-eval-adapter-response-3.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["run_schema_ids"],
+            [
+                "guru-team-skill-eval-run-1.0",
+                "guru-team-skill-eval-run-2.0",
+                "guru-team-skill-eval-run-3.0",
+                "guru-team-skill-eval-run-4.0",
+            ],
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["control_map_schema_id"],
+            "guru-team-skill-eval-control-map-1.0",
+        )
+        self.assertEqual(
+            public_api["skill_evals"]["control_map_schema_path"],
+            "schemas/skill-eval-control-map-1.0.schema.json",
+        )
+        self.assertEqual(public_api["skill_evals"]["adapter_ids"], ["shared", "codex", "claude", "cursor"])
+        for relative in (
+            "contracts/production-current.json",
+            "contracts/production-current-2.0.json",
+            "contracts/production-current-3.0.json",
+            "contracts/production-current-5.0.json",
+            "schemas/production-contract-manifest-4.0.schema.json",
+            "schemas/skill-evals-2.0.schema.json",
+            "schemas/skill-evals.schema.json",
+            "schemas/skill-eval-adapter-request-3.0.schema.json",
+            "schemas/skill-eval-adapter-request-2.0.schema.json",
+            "schemas/skill-eval-adapter-request.schema.json",
+            "schemas/skill-eval-adapter-response-3.0.schema.json",
+            "schemas/skill-eval-adapter-response-2.0.schema.json",
+            "schemas/skill-eval-adapter-response.schema.json",
+            "schemas/skill-eval-control-map-1.0.schema.json",
+            "schemas/skill-eval-native-trace.schema.json",
+            "schemas/skill-eval-run-4.0.schema.json",
+            "schemas/skill-eval-run-3.0.schema.json",
+            "schemas/skill-eval-run.schema.json",
+            "adapters/eval/shared.json",
+            "adapters/eval/codex.json",
+            "adapters/eval/claude.json",
+            "adapters/eval/cursor.json",
+        ):
+            self.assertTrue((self.repo / ".trellis/guru-team/skills" / relative).is_file(), relative)
+        installed_contracts = self.repo / ".trellis/guru-team/skills/contracts"
+        selected_manifest = canonical["public_api"]["skill_contracts"]["contract_manifests"][0]
+        installed_selected_manifest = self.repo / ".trellis/guru-team/skills" / selected_manifest["path"]
+        self.assertEqual(
+            installed_selected_manifest.read_bytes(),
+            (self.guru_root / "trellis/skills/guru-team" / selected_manifest["path"]).read_bytes(),
+        )
+        self.assertEqual(
+            (installed_contracts / "production-current.json").read_bytes(),
+            installed_selected_manifest.read_bytes(),
+        )
+        self.assertIn("sync-base", public_api["companion_scripts"])
+        self.assertIn("check-base-sync", public_api["companion_scripts"])
+        self.assertIn("preview-change-context-history", public_api["companion_scripts"])
+        self.assertIn("record-context-discovery", public_api["companion_scripts"])
+        self.assertIn("check-context-discovery", public_api["companion_scripts"])
+        self.assertIn("record-requirements-clarification", public_api["companion_scripts"])
+        self.assertIn("check-requirements-clarification", public_api["companion_scripts"])
+        self.assertIn("record-contract-wording-review", public_api["companion_scripts"])
+        self.assertIn("check-contract-wording-review", public_api["companion_scripts"])
+        self.assertIn("record-change-request-review", public_api["companion_scripts"])
+        self.assertIn("check-change-request-review", public_api["companion_scripts"])
+        self.assertIn("record-solution-mechanism-qualification", public_api["companion_scripts"])
+        self.assertIn("check-solution-mechanism-qualification", public_api["companion_scripts"])
+        self.assertIn("invoke-guru-qualify-solution-mechanism", public_api["companion_scripts"])
+        self.assertEqual(
+            public_api["skill_runtime"],
+            {
+                "api_version": "1.0",
+                "dispatcher": "run-skill-command",
+                "manifest_path": ".trellis/guru-team/extension.json",
+            },
+        )
+        self.assertNotIn("task-commit-plans/*.json", public_api["artifact_contracts"])
+        installed_registry = json.loads(
+            (self.install_dst / "skills/registry.json").read_text(encoding="utf-8")
+        )
+        active_skill_ids = sorted(
+            str(entry["id"])
+            for entry in installed_registry["skills"]
+            if entry.get("state") == "active"
+        )
+        self.assertEqual(
+            public_api["skill_contracts"]["active_skill_ids"],
+            active_skill_ids,
+        )
+        self.assertEqual(
+            public_api["skill_contracts"]["planned_skill_ids"],
+            PLANNED_SKILL_IDS,
+        )
+        installed_planned = [
+            entry
+            for entry in installed_registry["skills"]
+            if entry.get("state") == "planned"
+        ]
+        self.assertEqual(installed_planned, PLANNED_SKILL_ROWS)
+        for skill_id in PLANNED_SKILL_IDS:
+            for planned_path in (
+                self.guru_root / "trellis/skills/guru-team/packages" / skill_id,
+                self.install_dst / "skills/packages" / skill_id,
+                self.repo / ".agents/skills" / skill_id,
+                self.repo / ".codex/skills" / skill_id,
+                self.repo / ".cursor/skills" / skill_id,
+            ):
+                self.assertFalse(planned_path.exists(), planned_path)
+        self.assertIn(
+            "guru-base-sync-result-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-change-context-owner-result-3.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertNotIn(
+            "guru-change-context-owner-result-2.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-requirements-clarification-3.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-contract-wording-review-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-change-request-review-3.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        self.assertIn(
+            "guru-publish-task-delivery-gate-1.0",
+            public_api["skill_contracts"]["artifact_schema_ids"],
+        )
+        schema_relative = Path("schemas/contract-wording-review.schema.json")
+        canonical_schema_path = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-contract-wording"
+            / schema_relative
+        )
+        canonical_schema_bytes = canonical_schema_path.read_bytes()
+        canonical_schema = json.loads(canonical_schema_bytes)
+        planning_dimensions = canonical_schema["$defs"]["planningCheckedDimensions"]
+        self.assertFalse(planning_dimensions["additionalProperties"])
+        self.assertEqual(
+            set(planning_dimensions["required"]),
+            {
+                "no_requirement_weakening",
+                "source_issue_semantics_preserved",
+                "conditional_paths_have_conditions",
+                "no_parallel_implementation_paths",
+                "gates_have_machine_verifiable_conditions",
+                "acceptance_criteria_are_deterministic",
+                "external_quotes_are_labeled_non_contract",
+            },
+        )
+        installed_wording = self.repo / ".trellis/guru-team/skills/packages/guru-review-contract-wording"
+        self.assertEqual(
+            (installed_wording / schema_relative).read_bytes(),
+            canonical_schema_bytes,
+        )
+        for package_root in (
+            self.repo / ".agents/skills/guru-review-contract-wording",
+            self.repo / ".codex/skills/guru-review-contract-wording",
+            self.repo / ".cursor/skills/guru-review-contract-wording",
+        ):
+            self.assertFalse((package_root / schema_relative).exists())
+        readiness_schema_relative = Path("schemas/change-request-review-3.0.schema.json")
+        readiness_canonical_root = (
+            self.guru_root
+            / "trellis/skills/guru-team/packages/guru-review-change-request"
+        )
+        readiness_schema_bytes = (readiness_canonical_root / readiness_schema_relative).read_bytes()
+        installed_readiness = self.repo / ".trellis/guru-team/skills/packages/guru-review-change-request"
+        self.assertEqual(
+            (installed_readiness / readiness_schema_relative).read_bytes(),
+            readiness_schema_bytes,
+        )
+        for package_root in (
+            self.repo / ".agents/skills/guru-review-change-request",
+            self.repo / ".codex/skills/guru-review-change-request",
+            self.repo / ".cursor/skills/guru-review-change-request",
+        ):
+            self.assertFalse((package_root / readiness_schema_relative).exists())
+            self.assertFalse((package_root / "schemas/change-request-review.schema.json").exists())
+        self.assertEqual(public_api["skill_contracts"]["interface_schema_id"], "guru-team-skill-interface-1.4")
+        self.assertEqual(
+            public_api["skill_contracts"]["interface_schema_ids"],
+            [
+                "guru-team-skill-interface-1.4",
+                "guru-team-skill-interface-1.5",
+                "guru-team-skill-interface-1.6",
+                "guru-team-skill-interface-1.7",
+                "guru-team-skill-interface-1.8",
+            ],
+        )
+        self.assertIn("check-skill-packages", public_api["companion_scripts"])
+        self.assertEqual(public_api["skill_contracts"]["canonical_root"], "trellis/skills/guru-team/")
+        self.assertEqual(payload["guru_team_extension"]["target_trellis_cli"], "0.7.0-castbox.4")
+        self.assertEqual(payload["guru_team_extension"]["tested_trellis_cli"], ["0.7.0-castbox.4"])
+        self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+        self.assertEqual(
+            installed["install"]["managed_asset_hashes"],
+            {
+                target.as_posix(): hashlib.sha256(
+                    (self.guru_root / source).read_bytes()
+                ).hexdigest()
+                for source, target in preset.MANAGED_SPEC_PATHS + preset.MANAGED_SOURCE_PATHS
+            },
+        )
+        self.assertIn("observed at apply time", installed["notes"])
+        self.assertIn("not a claim", installed["notes"])
+        self.assertEqual(payload["extension_manifest"], ".trellis/guru-team/extension.json")
+        self.assertEqual(payload["runtime_gitignore"]["rule"], ".trellis/.runtime/")
+        self.assertIn(".trellis/.runtime/", (self.repo / ".gitignore").read_text(encoding="utf-8"))
+
+    def test_equivalent_reapply_preserves_previous_manifest_bytes_across_source_heads(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        manifest_path = self.install_dst / "extension.json"
+        before = manifest_path.read_bytes()
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T01:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        self.assertEqual(manifest_path.read_bytes(), before)
+
+    def test_changed_platform_projection_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(self.workflow_src, self.install_dst, self.repo, {"codex"})
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T01:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        self.assertEqual(installed["installed_at"], "2026-09-18T01:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        self.assertEqual(installed["install"]["selected_platforms"], ["codex", "cursor"])
+
+    def test_restored_managed_file_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        restored_path = self.repo / ".trellis/guru-team/skills/registry.json"
+        restored_path.unlink()
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T02:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+        self.assertTrue(restored_path.is_file())
+        self.assertEqual(installed["installed_at"], "2026-09-18T02:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        registry = next(
+            item
+            for item in installed["skill_packages"]["files"]
+            if item["path"] == ".trellis/guru-team/skills/registry.json"
+        )
+        self.assertEqual(registry["action"], "installed")
+
+    def test_repaired_managed_executable_mode_refreshes_manifest_provenance(self) -> None:
+        first_source = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "a" * 40,
+            "commit": "a" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+        second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+        with mock.patch.object(preset, "source_provenance", return_value=first_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"},
+        ):
+            preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+        manifest_path = self.install_dst / "extension.json"
+        installed_before = json.loads(manifest_path.read_text(encoding="utf-8"))
+        executable_record = next(
+            item for item in installed_before["skill_packages"]["files"] if item["executable"]
+        )
+        target = self.repo / executable_record["path"]
+        target.chmod(0o644)
+
+        with mock.patch.object(preset, "source_provenance", return_value=second_source), mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-09-18T03:00:00Z"},
+        ):
+            result = preset.install_assets(
+                self.workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+            )
+
+        installed = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertEqual(target.stat().st_mode & 0o777, 0o755)
+        self.assertEqual(installed["installed_at"], "2026-09-18T03:00:00Z")
+        self.assertEqual(installed["source"], second_source)
+        repaired = next(
+            item for item in result["skill_packages"]["files"]
+            if item["path"] == executable_record["path"]
+        )
+        self.assertEqual(repaired["action"], "updated_managed")
+
+    def test_changed_canonical_managed_bytes_refresh_manifest_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as source_tmp:
+            source_root = Path(source_tmp) / "source"
+            shutil.copytree(
+                self.guru_root,
+                source_root,
+                ignore=shutil.ignore_patterns(
+                    ".git", ".runtime", "__pycache__", "*.pyc", "*.pyo", ".DS_Store"
+                ),
+            )
+            workflow_src = source_root / "trellis/workflows/guru-team"
+            first_source = {
+                "repo": "https://github.com/castbox/guru-trellis.git",
+                "ref": "a" * 40,
+                "commit": "a" * 40,
+                "tree_state": "clean",
+                "is_mutable_ref": False,
+            }
+            second_source = {**first_source, "ref": "b" * 40, "commit": "b" * 40}
+            with mock.patch.object(preset, "guru_root_from_script", return_value=source_root), mock.patch.object(
+                preset, "source_provenance", return_value=first_source
+            ), mock.patch.dict(os.environ, {"GURU_TEAM_INSTALLED_AT": "2026-09-18T00:00:00Z"}):
+                preset.install_assets(
+                    workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+                )
+
+            canonical = source_root / "trellis/presets/guru-team/overlays/.codex/prompts/guru-finish-work.md"
+            canonical.write_bytes(canonical.read_bytes() + b"\n<!-- canonical fixture change -->\n")
+            with mock.patch.object(preset, "guru_root_from_script", return_value=source_root), mock.patch.object(
+                preset, "source_provenance", return_value=second_source
+            ), mock.patch.dict(os.environ, {"GURU_TEAM_INSTALLED_AT": "2026-09-18T04:00:00Z"}):
+                result = preset.install_assets(
+                    workflow_src, self.install_dst, self.repo, {"codex", "cursor"}
+                )
+
+            installed = json.loads((self.install_dst / "extension.json").read_text(encoding="utf-8"))
+            self.assertEqual(installed["installed_at"], "2026-09-18T04:00:00Z")
+            self.assertEqual(installed["source"], second_source)
+            self.assertIn(".codex/prompts/guru-finish-work.md", result["updated_managed"])
+            changed = next(
+                item
+                for item in installed["overlays"]["files"]
+                if item["path"] == ".codex/prompts/guru-finish-work.md"
+            )
+            self.assertEqual(changed["action"], "updated_managed")
+
+    def test_raw_apply_keeps_fresh_git_fixture_clean_without_residue(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repo = Path(temporary) / "repo"
+            prepare_raw_apply_source(self.guru_root, repo)
+            initial = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
+            )
+            self.assertIn(initial.returncode, (0, 2), initial.stderr + initial.stdout[-2000:])
+            prepared = json.loads(initial.stdout)
+            self.assertEqual(prepared["skill_packages"]["conflicts"], [])
+            self.assertEqual(prepared["overlays"]["conflicts"], [])
+            # Ordinary managed updates retain backups and correctly block
+            # installed validation until their exact declared backups resolve.
+            # Do not discard unknown sidecars or user modifications.
+            for relative in prepared["managed_backups"]:
+                (repo / relative).unlink()
+            resolved = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(resolved.returncode, 0, resolved.stderr + resolved.stdout[-2000:])
+            prepared = json.loads(resolved.stdout)
+            self.assertEqual(prepared["skill_installed_validation"]["returncode"], 0,
+                             prepared["skill_installed_validation"])
+            for command in (
+                ["git", "init", "-b", "main"],
+                ["git", "config", "user.name", "Guru Release Fixture"],
+                ["git", "config", "user.email", "fixture@example.invalid"],
+                ["git", "add", "-A"],
+                ["git", "commit", "-m", "test: stage clean reapply fixture"],
+                ["git", "checkout", "--detach"],
+            ):
+                subprocess.run(command, cwd=repo, check=True, capture_output=True, text=True)
+            # Git initialization changes archive-source provenance. Establish
+            # that first real Git source snapshot before testing equivalent
+            # reapply's no-change behavior.
+            baseline = subprocess.run(
+                [str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"), "--repo", str(repo)],
+                cwd=repo, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(baseline.returncode, 0, baseline.stderr + baseline.stdout[-2000:])
+            subprocess.run(["git", "add", ".trellis/guru-team/extension.json"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "--allow-empty", "-m", "test: bind actual Git fixture provenance"],
+                           cwd=repo, check=True, capture_output=True, text=True)
+            symbolic_head = subprocess.run(
+                ["git", "symbolic-ref", "-q", "HEAD"],
+                cwd=repo,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertNotEqual(symbolic_head.returncode, 0)
+            environment = os.environ.copy()
+            environment.pop("PYTHONDONTWRITEBYTECODE", None)
+            completed = subprocess.run(
+                [
+                    str(repo / "trellis/presets/guru-team/scripts/bash/apply.sh"),
+                    "--repo",
+                    str(repo),
+                ],
+                cwd=repo,
+                env=environment,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            payload = json.loads(completed.stdout)
+            self.assertEqual(completed.returncode, 0, {
+                "package_conflicts": payload["skill_packages"]["conflicts"],
+                "package_sidecars": payload["skill_packages"]["sidecars"],
+                "overlay_conflicts": payload["overlays"]["conflicts"],
+                "overlay_sidecars": payload["overlays"]["sidecars"],
+                "validation": payload["skill_installed_validation"]["errors"],
+            })
+            self.assertEqual(payload["status"], "ok")
+            status = subprocess.run(
+                ["git", "status", "--short", "--untracked-files=all"],
+                cwd=repo,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(status.stdout, "")
+            subprocess.run(["git", "diff", "--check"], cwd=repo, check=True)
+            residue = sorted(
+                path.relative_to(repo).as_posix()
+                for path in repo.rglob("*")
+                if path.name == "__pycache__"
+                or (path.is_file() and path.suffix in {".pyc", ".pyo", ".new", ".bak"})
+            )
+            self.assertEqual(residue, [])
+
+    def test_install_timestamp_override_requires_timezone(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {"GURU_TEAM_INSTALLED_AT": "2026-08-19T05:30:35"},
+        ):
+            with self.assertRaisesRegex(SystemExit, "timezone-aware ISO-8601"):
+                preset.now_iso()
+
+    def test_runtime_gitignore_is_idempotent(self) -> None:
+        first = preset.ensure_runtime_gitignore(self.repo)
+        second = preset.ensure_runtime_gitignore(self.repo)
+        self.assertEqual(first["action"], "installed")
+        self.assertEqual(second["action"], "unchanged")
+        self.assertEqual((self.repo / ".gitignore").read_text().count(".trellis/.runtime/"), 1)
+
+    def test_python_entrypoints_disable_bytecode_writes(self) -> None:
+        apply_entry = (
+            self.guru_root / "trellis/presets/guru-team/scripts/bash/apply.sh"
+        ).read_text(encoding="utf-8")
+        resolver = (
+            self.guru_root / "trellis/skills/guru-team/runtime/resolve-python.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn("export PYTHONDONTWRITEBYTECODE=1", apply_entry)
+        self.assertIn("export PYTHONDONTWRITEBYTECODE=1", resolver)
+
+    def test_main_version_prints_canonical_extension_version(self) -> None:
+        with mock.patch("sys.argv", ["apply_guru_team_trellis_preset.py", "--version"]):
+            stdout = StringIO()
+            with mock.patch("sys.stdout", stdout):
+                exit_code = preset.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertRegex(stdout.getvalue().strip(), r"^\d+\.\d+\.\d+")
+
+    def test_source_provenance_reports_archive_without_git_metadata(self) -> None:
+        with mock.patch.object(preset, "run_git") as run_git:
+            run_git.return_value = mock.Mock(returncode=1, stdout="", stderr="not a git repo")
+
+            provenance = preset.source_provenance(self.guru_root)
+
+        self.assertEqual(provenance["tree_state"], "archive")
+        self.assertIsNone(provenance["commit"])
+
+    def test_source_provenance_reports_dirty_git_tree(self) -> None:
+        source_commit = "a" * 40
+
+        def fake_git(args: list[str], cwd: Path) -> mock.Mock:
+            command = " ".join(args)
+            if command == "rev-parse --show-toplevel":
+                return mock.Mock(returncode=0, stdout=str(self.guru_root), stderr="")
+            if command == "remote get-url origin":
+                return mock.Mock(returncode=0, stdout="https://github.com/castbox/guru-trellis.git\n", stderr="")
+            if command == "rev-parse --abbrev-ref HEAD":
+                return mock.Mock(returncode=0, stdout="main\n", stderr="")
+            if command == "rev-parse HEAD":
+                return mock.Mock(returncode=0, stdout=f"{source_commit}\n", stderr="")
+            if command == "describe --tags --exact-match HEAD":
+                return mock.Mock(returncode=1, stdout="", stderr="")
+            if command == "status --short":
+                return mock.Mock(returncode=0, stdout=" M README.md\n", stderr="")
+            return mock.Mock(returncode=1, stdout="", stderr="")
+
+        with mock.patch.object(preset, "run_git", side_effect=fake_git):
+            provenance = preset.source_provenance(self.guru_root)
+
+        self.assertEqual(provenance["tree_state"], "dirty")
+        self.assertFalse(provenance["is_mutable_ref"])
+        self.assertEqual(provenance["ref"], source_commit)
+        self.assertEqual(provenance["commit"], source_commit)
+
+    def test_install_manifest_keeps_apply_time_source_snapshot_separate_from_manifest(self) -> None:
+        source_snapshot = {
+            "repo": "https://github.com/castbox/guru-trellis.git",
+            "ref": "b" * 40,
+            "commit": "b" * 40,
+            "tree_state": "clean",
+            "is_mutable_ref": False,
+        }
+
+        with mock.patch.object(preset, "source_provenance", return_value=source_snapshot):
+            preset.install_assets(
+                self.workflow_src,
+                self.install_dst,
+                self.repo,
+                {"codex", "cursor"},
+            )
+
+        installed = json.loads(
+            (self.repo / ".trellis/guru-team/extension.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(installed["source"], source_snapshot)
+        self.assertIn(
+            "not a claim that this installed manifest is contained in that commit",
+            installed["notes"],
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-sync-base",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Missing, repeated, conflicting, or unsupported command arguments.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use the exact command help contract."
+    },
+    {
+      "code": "conflicting_arguments",
+      "trigger": "A non-repeatable flag is repeated or a declared conflict set is present.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Use each scalar flag at most once and remove conflicting flags."
+    },
+    {
+      "code": "invalid_json",
+      "trigger": "A JSON argument or stdin is not one object.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Provide one valid JSON object."
+    },
+    {
+      "code": "schema_mismatch",
+      "trigger": "Input or output does not match its bound schema.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Repair the value to match the declared schema."
+    },
+    {
+      "code": "unsafe_path",
+      "trigger": "Repository or Git identity is missing, outside the requested root, or unsafe.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Use an existing Git repository and safe ref names."
+    },
+    {
+      "code": "stale_identity",
+      "trigger": "Resolution or live Git facts changed after review.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Resolve again from current Git state."
+    },
+    {
+      "code": "git_failed",
+      "trigger": "A required Git inspection, fetch, or fast-forward failed.",
+      "exit_status": 4,
+      "locator": "path",
+      "remediation": "Resolve the reported Git state and rerun the command."
+    },
+    {
+      "code": "missing_contract",
+      "trigger": "A declared package contract file is absent.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Restore the compatible package installation."
+    },
+    {
+      "code": "runtime_dependency_missing",
+      "trigger": "A required runtime dependency is unavailable.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Install the complete compatible preset runtime."
+    },
+    {
+      "code": "missing_entrypoint",
+      "trigger": "The declared package entrypoint is absent or unsafe.",
+      "exit_status": 2,
+      "locator": "path",
+      "remediation": "Restore the package-local runtime entrypoint."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "An unexpected package runtime failure occurred.",
+      "exit_status": 70,
+      "locator": "path",
+      "remediation": "Inspect the package runtime and retry."
+    }
+  ]
+}

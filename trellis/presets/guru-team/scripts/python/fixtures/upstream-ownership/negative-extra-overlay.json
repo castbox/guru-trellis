@@ -1,0 +1,9 @@
+{
+  "mutation": {
+    "type": "add_overlay",
+    "path": ".codex/prompts/guru-finish-work.md.copy",
+    "content": "undeclared current overlay\n"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["undeclared_overlay"]
+}

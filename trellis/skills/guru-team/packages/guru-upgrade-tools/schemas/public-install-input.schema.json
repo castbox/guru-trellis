@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-tools-public-install-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_ref",
+    "dependency_mode"
+  ],
+  "properties": {
+    "profile": {
+      "const": "install"
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependency_mode": {
+      "enum": [
+        "source_locked",
+        "local_candidate"
+      ]
+    },
+    "checkout": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remote": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

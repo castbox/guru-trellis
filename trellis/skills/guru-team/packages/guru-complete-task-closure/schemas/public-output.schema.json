@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "guru-complete-task-closure-output-aggregate-2.0",
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+    "key": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}},
+    "result": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "result_id"],
+      "properties": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "result_id": {"$ref": "#/$defs/id"}}},
+    "transaction": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "transaction_id", "result_id"],
+      "properties": {"task_id": {"type": "string", "minLength": 1}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "transaction_id": {"$ref": "#/$defs/id"}, "result_id": {"$ref": "#/$defs/id"}}},
+    "reason": {"type": "object", "additionalProperties": false, "required": ["reason_code", "reason_refs"],
+      "properties": {"reason_code": {"$ref": "#/$defs/id"}, "reason_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "closed": {"type": "object", "additionalProperties": false, "required": ["exit_id", "result_ref"],
+      "properties": {"exit_id": {"enum": ["closed", "no_mutation"]}, "result_ref": {"$ref": "#/$defs/result"}}},
+    "resume": {"type": "object", "additionalProperties": false, "required": ["exit_id", "transaction_ref"],
+      "properties": {"exit_id": {"const": "resume_closure"}, "transaction_ref": {"$ref": "#/$defs/transaction"}}},
+    "conflict": {"type": "object", "additionalProperties": false, "required": ["exit_id", "transaction_ref", "reason"],
+      "properties": {"exit_id": {"const": "external_change_conflict"}, "transaction_ref": {"$ref": "#/$defs/transaction"}, "reason": {"$ref": "#/$defs/reason"}}},
+    "blocked": {"type": "object", "additionalProperties": false, "required": ["exit_id", "reason"],
+      "properties": {"exit_id": {"const": "blocked"}, "reason": {"$ref": "#/$defs/reason"}}}
+  },
+  "oneOf": [{"$ref": "#/$defs/closed"}, {"$ref": "#/$defs/resume"}, {"$ref": "#/$defs/conflict"}, {"$ref": "#/$defs/blocked"}]
+}

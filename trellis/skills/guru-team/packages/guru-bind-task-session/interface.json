@@ -1,0 +1,581 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-bind-task-session",
+  "name": "guru-bind-task-session",
+  "description": "Bind, rebind, switch and resume one TaskLifecycleDTO through the Fixed Fork schema-2 session API.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "task_identity",
+        "session_identity",
+        "lifecycle_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "task_identity",
+        "session_identity",
+        "lifecycle_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "task_identity",
+      "evidence": "official TaskId/generation resolver",
+      "binding": "one TaskLifecycleDTO",
+      "freshness": "read before each invocation"
+    },
+    {
+      "id": "session_identity",
+      "evidence": "Fixed Fork context key or explicit-task mode",
+      "binding": "one current session when available",
+      "freshness": "resolved on each invocation"
+    },
+    {
+      "id": "lifecycle_freshness",
+      "evidence": "official TaskId/generation resolution and current route",
+      "binding": "one lifecycle generation",
+      "freshness": "old generation fails closed"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "public_input",
+      "path": "examples/public-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    },
+    {
+      "id": "public_output",
+      "path": "examples/public-output.json"
+    },
+    {
+      "id": "public_explicit_output",
+      "path": "examples/public-explicit-output.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "public_output",
+      "path": "schemas/public-output.schema.json"
+    },
+    {
+      "id": "public_explicit_output",
+      "path": "schemas/public-explicit-output.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "delivery_resume_current_task_input",
+      "path": "schemas/public-delivery-resume-current-task-input.schema.json"
+    },
+    {
+      "id": "delivery_rebind_missing_session_input",
+      "path": "schemas/public-delivery-rebind-missing-session-input.schema.json"
+    },
+    {
+      "id": "delivery_switch_task_input",
+      "path": "schemas/public-delivery-switch-task-input.schema.json"
+    },
+    {
+      "id": "delivery_reactivate_rebind_input",
+      "path": "schemas/public-delivery-reactivate-rebind-input.schema.json"
+    },
+    {
+      "id": "delivery_manual_recovery_input",
+      "path": "schemas/public-delivery-manual-recovery-input.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-bind-task-session",
+      "objective_scope": "Validate the semantic route and fresh TaskLifecycleDTO via the official resolver; write only the schema-2 session pointer."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "session_resumed",
+      "evidence": "current exact binding was validated and resumed",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bind-task-session-resume-router"
+      }
+    },
+    {
+      "id": "session_rebound",
+      "evidence": "missing session pointer was recreated for the exact lifecycle",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bind-task-session-rebind-router"
+      }
+    },
+    {
+      "id": "task_switched",
+      "evidence": "current session switched between independently resolved lifecycle identities",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bind-task-session-switch-router"
+      }
+    },
+    {
+      "id": "reactivate_rebound",
+      "evidence": "new lifecycle generation received a fresh binding",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bind-task-session-reactivate-router"
+      }
+    },
+    {
+      "id": "session_manually_recovered",
+      "evidence": "only the schema-2 session pointer was recovered",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-bind-task-session-manual-recovery-router"
+      }
+    },
+    {
+      "id": "explicit_task_mode",
+      "evidence": "context key unavailable; lifecycle was resolved without a session write",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-current-phase-router"
+      }
+    },
+    {
+      "id": "binding_blocked",
+      "evidence": "identity, session, route or lifecycle freshness could not be proven",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-session-binding-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "profile, TaskId, lifecycle generation and current session pointer",
+    "freshness": "reread official TaskId and session state before every binding write",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_runtime.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-bind-task-session-input-delivery-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "delivery_resume_current_task",
+          "schema": {
+            "schema_id": "guru-bind-task-session-input-delivery-resume-current-task-1.0",
+            "path": "schemas/public-delivery-resume-current-task-input.schema.json"
+          },
+          "example": {
+            "id": "input_resume_current_task",
+            "path": "examples/public-resume-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_resume_current_task"
+          }
+        },
+        {
+          "id": "delivery_rebind_missing_session",
+          "schema": {
+            "schema_id": "guru-bind-task-session-input-delivery-rebind-missing-session-1.0",
+            "path": "schemas/public-delivery-rebind-missing-session-input.schema.json"
+          },
+          "example": {
+            "id": "input_rebind_missing_session",
+            "path": "examples/public-rebind-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_rebind_missing_session"
+          }
+        },
+        {
+          "id": "delivery_switch_task",
+          "schema": {
+            "schema_id": "guru-bind-task-session-input-delivery-switch-task-1.0",
+            "path": "schemas/public-delivery-switch-task-input.schema.json"
+          },
+          "example": {
+            "id": "input_switch_task",
+            "path": "examples/public-switch-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_switch_task"
+          }
+        },
+        {
+          "id": "delivery_reactivate_rebind",
+          "schema": {
+            "schema_id": "guru-bind-task-session-input-delivery-reactivate-rebind-1.0",
+            "path": "schemas/public-delivery-reactivate-rebind-input.schema.json"
+          },
+          "example": {
+            "id": "input_reactivate_rebind",
+            "path": "examples/public-reactivate-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_reactivate_rebind"
+          }
+        },
+        {
+          "id": "delivery_manual_recovery",
+          "schema": {
+            "schema_id": "guru-bind-task-session-input-delivery-manual-recovery-1.0",
+            "path": "schemas/public-delivery-manual-recovery-input.schema.json"
+          },
+          "example": {
+            "id": "input_manual_recovery",
+            "path": "examples/public-manual-recovery-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_manual_recovery"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "delivery_rebind_missing_session"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-bind-task-session-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-input.json",
+        "--owner-result",
+        "examples/semantic-result.json"
+      ],
+      "error_example": {
+        "id": "public_invocation_error",
+        "path": "examples/public-invocation-error.json"
+      }
+    },
+    "outputs": [
+      {
+        "exit_id": "session_resumed",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-2.0",
+          "path": "schemas/public-output.schema.json"
+        },
+        "example": {
+          "id": "public_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "resume"
+        ]
+      },
+      {
+        "exit_id": "session_rebound",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-2.0",
+          "path": "schemas/public-output.schema.json"
+        },
+        "example": {
+          "id": "public_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "rebind"
+        ]
+      },
+      {
+        "exit_id": "task_switched",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-2.0",
+          "path": "schemas/public-output.schema.json"
+        },
+        "example": {
+          "id": "public_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "switch"
+        ]
+      },
+      {
+        "exit_id": "reactivate_rebound",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-2.0",
+          "path": "schemas/public-output.schema.json"
+        },
+        "example": {
+          "id": "public_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "reactivate"
+        ]
+      },
+      {
+        "exit_id": "session_manually_recovered",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-2.0",
+          "path": "schemas/public-output.schema.json"
+        },
+        "example": {
+          "id": "public_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "manual_recovery"
+        ]
+      },
+      {
+        "exit_id": "explicit_task_mode",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-explicit-2.0",
+          "path": "schemas/public-explicit-output.schema.json"
+        },
+        "example": {
+          "id": "public_explicit_output",
+          "path": "examples/public-explicit-output.json"
+        },
+        "consumer_use_ids": [
+          "explicit_task_mode"
+        ]
+      },
+      {
+        "exit_id": "binding_blocked",
+        "schema": {
+          "schema_id": "guru-bind-task-session-output-blocked-2.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "public_blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "resume",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bind-task-session-resume-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-route-2.0",
+          "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "rebind",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bind-task-session-rebind-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-route-2.0",
+          "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "switch",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bind-task-session-switch-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-route-2.0",
+          "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "reactivate",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bind-task-session-reactivate-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-route-2.0",
+          "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "manual_recovery",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-bind-task-session-manual-recovery-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-route-2.0",
+          "path": "consumers/workflow/production/session-binding-route.schema.json"
+        }
+      },
+      {
+        "id": "explicit_task_mode",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-current-phase-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-explicit-route-2.0",
+          "path": "consumers/workflow/production/explicit-task-route.schema.json"
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-session-binding-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-bind-task-session-blocked-route-2.0",
+          "path": "consumers/stop/production/session-binding-blocked.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "resume",
+        "exit_id": "session_resumed",
+        "consumer_input_id": "resume",
+        "operation": "direct"
+      },
+      {
+        "id": "rebind",
+        "exit_id": "session_rebound",
+        "consumer_input_id": "rebind",
+        "operation": "direct"
+      },
+      {
+        "id": "switch",
+        "exit_id": "task_switched",
+        "consumer_input_id": "switch",
+        "operation": "direct"
+      },
+      {
+        "id": "reactivate",
+        "exit_id": "reactivate_rebound",
+        "consumer_input_id": "reactivate",
+        "operation": "direct"
+      },
+      {
+        "id": "manual_recovery",
+        "exit_id": "session_manually_recovered",
+        "consumer_input_id": "manual_recovery",
+        "operation": "direct"
+      },
+      {
+        "id": "explicit_task_mode",
+        "exit_id": "explicit_task_mode",
+        "consumer_input_id": "explicit_task_mode",
+        "operation": "direct"
+      },
+      {
+        "id": "blocked",
+        "exit_id": "binding_blocked",
+        "consumer_input_id": "blocked",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": []
+  }
+}

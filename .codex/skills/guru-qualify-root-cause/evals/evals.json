@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-qualify-root-cause",
+  "evals": [
+    {
+      "id": "ordinary-feature",
+      "prompt": "Run only the pre-reviewed ordinary display-feature structural smoke through the exact public wrapper. This post-owner smoke proves transport, not causal cognition; the focused native matrix separately authors causal judgments.",
+      "expected_exit": "classified",
+      "expected_output": "A display feature without incident/protection behavior is not_incident_applicable.",
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "ordinary-disposition",
+            "kind": "json_path",
+            "pointer": "/candidate_dispositions/0/classification",
+            "operation": "equals",
+            "expected": "not_incident_applicable"
+          }
+        ]
+      },
+      "files": [
+        "evals/files/ordinary-feature.json"
+      ],
+      "native_execution_mode": "post_owner"
+    }
+  ]
+}

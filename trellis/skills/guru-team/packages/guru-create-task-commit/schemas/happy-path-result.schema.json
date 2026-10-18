@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "skill_id", "candidate_artifact", "task_ref", "base_ref", "branch_ref", "pre_commit_head", "commit_sha", "commit_tree", "message_sha256"],
+  "properties": {
+    "$schema": {"const": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json"},
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-create-task-commit"},
+    "candidate_artifact": {"type": "string", "pattern": "^\\.trellis/\\.runtime/guru-team/task-commit-plans/[^/]+/[0-9]{3}\\.json$"},
+    "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/[^/]+$"},
+    "base_ref": {"type": "string", "minLength": 1},
+    "branch_ref": {"type": "string", "pattern": "^refs/heads/.+$"},
+    "pre_commit_head": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "commit_sha": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "commit_tree": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "message_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

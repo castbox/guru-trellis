@@ -1,0 +1,250 @@
+# 当前测试策略
+
+当前 .48 来源：`castbox/Trellis@ad332e3fe5a19d7274cb03e7c2f3e2128f8de291` / CLI/core `0.6.16`；Guru manifest `0.6.16-guru.41`；repository release target `v0.6.16-guru.1`。Architecture public inheritance：`docs/architecture/README.md` / `current-main-0.6.5-guru.48` / `active`。
+继承段落中的旧版本映射、矩阵及历史 promotion 只绑定其原版本，不声明当前 Fork 的完整兼容或 Release；当前 #392 增量见本文件末节及同版本 traceability。
+
+
+版本：`current-main-0.6.5-guru.48`；状态：`active`；predecessor：`current-main-0.6.5-guru.47`；source baseline：reviewed #392 contribution + inherited immutable `.47` authority；精确 revision 由 containing Git object/tree identity 绑定。
+
+## Evidence 分层
+
+| ID | 层级 | 能证明 | 不能替代 |
+| --- | --- | --- | --- |
+| `TST-001` | static/docs | 格式、链接、结构、scope、context 可加载 | runtime 行为 |
+| `TST-002` | package/unit | interface/schema/runtime 局部合同 | installed graph 与外部服务 |
+| `TST-003` | semantic eval/review | normal-path 语义、finding 与 route 充分性 | deterministic side effect |
+| `TST-004` | integration | producer -> consumer、task/history/recovery 数据流 | 多平台安装 |
+| `TST-005` | distribution/throwaway | canonical/installed/platform/preset 实际一致 | 未执行的 upgrade/release candidate |
+| `TST-006` | SSOT | RDT/Architecture/Bootstrap locator、traceability、freshness | 产品 runtime |
+| `TST-007` | compatibility | public id/schema/exit/command closure | 未来版本兼容，除非 exact matrix |
+| `TST-008` | live/external/release | GitHub、tag、Release、exact candidate 与目标环境 | static/unit 或 skipped test |
+| `TST-009` | business parallel matrix | 两个 task 的 worktree/contribution/Finish/cleanup 隔离 | 单 task package test |
+| `TST-010` | history/acceptance | task index、archive、finish-summary、retained ref 与查询可发现性 | PR body 声明 |
+| `TST-011` | recovery | base/provider stale、partial recovery、re-entry 与零重复副作用 | happy-path static check |
+| `TST-012` | terminal projection | retired locator + archive summary + current ready facts 的正向投影与 stale 负例 | pre-archive Publication authority |
+| `TST-013` | inventory derivation | canonical registry/interface-derived ids/commands/complete packages 与 installed equality | 固定 magic count |
+| `TST-014` | full platform matrix | live-derived platform × clean/existing 的 official install/update 与 installed behavior | representative single-repo throwaway |
+| `TST-015` | capability preservation | before/after `workflow`、`task_data`、`docs_authority` equality | Skill API/schema/distribution/install consistency 检查 |
+| `TST-016` | installed SSOT contracts | RDT/Architecture/Bootstrap profiles 与双 SSOT projection 保持 | package discovery 或 `--help` |
+| `TST-017` | A/B lifecycle and live provider | 独立 Finish routes、recovery、merge order、reachability 与真实 GitHub expected-head merge/closure | fake provider 单独结论 |
+| `TST-018` | architecture stage lifecycle | Planning/discovery/Phase 2/Branch Review/Publication/Acceptance invocation、freshness、unique consumer 与 post-promotion re-entry | 任一旧阶段结果或测试数量 |
+| `TST-019` | design constitution | unique locator + current version/content identity + exactly five stable identity/short names；正文 authority 隔离 | score、required verdict 或公共 checklist |
+| `TST-020` | architecture path | `target_native|legacy_boundary_convergence|dedicated_refactor_slice` 互斥，no-impact 独立 | 文件路径/数量分类 |
+| `TST-021` | task-local change contract | 双维 authority、required concern applicability、owner/single-writer、compatibility exit、parallel scope、deviation、evidence、review/promotion 完整 | optional 空字段或默认 route |
+| `TST-022` | project architecture check | current descriptor/result 一一绑定、before/after、blocking、evidence/unavailable reason、freshness 与 regression route | generic runtime 代替项目语义 |
+| `TST-023` | contribution and ADR | task-owned contribution 隔离、ADR trigger、independent review 与 expected-current-bound serialized promotion | implementation tests 代替 promotion |
+| `TST-024` | parallel stale | 独立 contribution scope、shared current/GAP/owner 禁止竞争、successor 后旧 task re-entry | 锁、shared ledger 或 TOCTOU 协议 |
+| `TST-025` | Architecture 2.0 atomic projection | schema/runtime/canonical/dogfood/installed/platform/consumers 无 legacy selector 或 dual-read | 部分投影或隐式 migration |
+| `TST-026` | #283 targeted validation | package/runtime/eval、十场景、preset reapply/drift/sidecar 与一个代表性 clean install | 重构前稳定版 exact-candidate matrix/tag/Release/smoke |
+| `TST-027` | base selection and binding | explicit/config/ordered/remote-default precedence、same-common-dir exact checkout、missing/dirty/mismatch blocked | public publication 或多平台 release proof |
+| `TST-028` | authority synchronization | detached/current session、remote-ahead fast-forward、post-sync three-way equality 与 locator continuity | non-fast-forward recovery |
+| `TST-029` | downstream provenance | producer transition 到 workspace consumer 的 source/base/full-candidates exact freshness | producer private runtime 或历史 checkpoint |
+| `TST-030` | #290 distribution | canonical/installed/platform parity、inventory、reapply/drift/mode/sidecar-zero 与代表性 Codex detached wrapper | 独立的重构前稳定版 Release matrix/tag/Release |
+| `TST-031` | Finalizer source/target binding | closed mode、双 checkout、immutable source、apply target、tail lineage 与 postimage | 真实 GitHub fixture 或生产结果 |
+| `TST-032` | Initial reprepare and fail-close | existing-PR precedence、prepared-state inference、absent/exact remote 与 pre-mutation failure | archive 后 terminal live facts |
+| `TST-033` | Installed distribution isolation | canonical/installed package、verifier-zero dependency、preset projection、mode/drift/sidecar | release-wide matrix |
+| `TST-034` | Representative installed closeout | release-installed business repo 从 ready 到 Ready PR/terminal projection | 未 fresh 重试时保持 `unverified` |
+| `TST-035` | Structured verifier failure | stage/cell/command/exit/bounded safe tail、outer parse 与 postcheck classification | Finalizer lifecycle authority |
+| `TST-036` | historical #267 authority uniqueness | #267 `.41 -> .42` promotion 后 RDT/Architecture 只存在一个 active `.42`，`.41` 为 superseded，predecessor/successor 一致；`.43` 是后续 successor history，当时后续 active 为 `.44` | runtime behavior |
+| `TST-037` | historical release identity mapping | #267 历史 authority 只声明 `.3/.39/CLI 0.6.15` target，历史 `.37` 仅存在于明确 superseded/released evidence；当前 `.44` 的 `.5/.40/CLI 0.6.15` target 由 `TST-046` 独立覆盖 | tag、Release 或 smoke 已完成 |
+| `TST-038` | historical fact-only semantic diff | #267 `.41...42` 不新增 behavior、public API、Architecture decision、owner、GAP、compatibility exit 或 ADR | downstream Phase 2/Branch Review |
+| `TST-039` | historical promotion lifecycle freshness | #267 contribution review、RDT/Architecture serialized promotion、fresh Phase 2/commit/Branch Review 与 closure boundary | 任一旧 gate 或 package PASS |
+| `TST-040` | repo-private projection boundary | Shared/Codex/Claude/Cursor private definitions parity，public package/marketplace/preset/installed inventory zero inclusion | 公共 Skill installation |
+| `TST-041` | invocation and owner composition | 六项输入、fresh authority、两阶段 classification、既有 lifecycle owner composition 与 unsupported route fail closed | 复制 owner internal procedure |
+| `TST-042` | honest-path and reconciliation | production preview/recorder/checker/public wrappers 的稳定计划、promotion 前后两次 content review 路径，以及 planless base reconciliation | 实际 PR/merge/release |
+| `TST-043` | reviewed-content freshness | lifecycle checkpoint 创建/替换/退休不改 identity；Skill/docs/config/schema/script/test delivery drift 使 gate stale | malicious tamper model |
+| `TST-044` | live payload and action boundary | PR/Release payload 即时 authoring、forbidden tracked artifacts、每项外部动作独立 confirmation | payload 或 mutation 已发布 |
+| `TST-045` | scoped post-merge contract | exact candidate、minimum gates、sidecar/residue、FAIL/SKIP/stale/cross-SHA stop 与零真实 release mutation | 累计 Release Gate matrix |
+| `TST-046` | release identity and authority | `.44` unique current、latest stable `.4/.39`、target `.5/.40/CLI 0.6.15` 与历史 facts 保留 | tag/Release 已创建 |
+| `TST-047` | merged prerequisite consumption | fresh candidate 重新消费 #311/#333/#339/#358/#361 与 installed business-repository contract | 历史 Issue/PR 自述替代 fresh proof |
+| `TST-048` | serialized RDT promotion | Architecture `.44/current` inheritance、expected `.43`、完整 RDT version/navigation/traceability 与 post-promotion re-entry | promotion runtime 代替 Phase 2/Review |
+| `TST-049` | exact-candidate pre-tag gate | predecessor full diff、版本面、package/registry/ownership、四平台与 install/update/reapply 绑定同一 candidate | cross-SHA、SKIP 或 focused package result |
+| `TST-050` | immutable release lifecycle | installed business-repository chain、secret/residue、annotated tag、tag-pinned smoke、Release/closure/cleanup 独立 transaction | 任一 mutation 的预授权或推定成功 |
+| `TST-051` | current graph closure | registry/interface/workflow/preset exact 派生 23 Skills / 97 exits / 78 commands，22 integrated + 1 standalone | 历史固定计数替代 current inventory |
+| `TST-052` | solution mechanism qualification | paired semantic cases 覆盖 OS primitive replace、普通 file/state qualified、DB/application state qualified 与 pressure framing 不改变结论 | keyword/import/path scanner 替代 AI judgment |
+| `TST-053` | merge Phase 2 re-entry routing | current-scope task-work finding 唯一进入 `phase2_reentry_required`，external blocker 保持 `merge_blocked` 且无 GitHub mutation | 把 CI/provider blocker 伪装为 task work |
+| `TST-054` | archived-task restore transaction | 原 identity 恢复、status/mapping/pointer/stale authority cleanup、idempotent retry 与 dirty/duplicate/stale/merged zero-write negatives | 创建替代 task/branch/worktree/PR |
+| `TST-055` | reviewed contribution promotion | PR #346/#351 independent review、merge/Issue closure、ADR-008 与 `.44` RDT/Architecture traceability 闭合 | 旧 pending 文案或 PR 自述单独冒充 post-promotion gate |
+| `TST-056` | original-entry identity | 四阶段原 wrapper/command 是唯一 public invocation，四个 facade 在 canonical/installed/manifest/platform 为零 | 把新增 facade 当成稳定 API |
+| `TST-057` | Happy/compatibility equivalence | 同一 fixture 比较两种参数模式的 exit、DTO、mutation、blocker、recovery 与 lifecycle | 正常路径先执行 compatibility primitive |
+| `TST-058` | closeout boundary preservation | Commit/Publication/Finalizer/Merge 的 stale、recovery、watcher、expected-head、Issue disposition 与 output-loss cases | 性能指标替代语义测试 |
+| `TST-059` | Interface wrapper variation | `restore-archived-task.sh` 通过 source/installed/matrix/throwaway/runtime/eval/platform actual-load | generic consumer 硬编码 `invoke.sh` |
+| `TST-060` | shared asset closure | README、manifest、ownership、installed disk 一致且 private facade 与 recursive sidecar 为零 | 在 shared scripts 补建私有 wrapper |
+| `TST-061` | operation budget | Happy mode command invocation 降低至少 50%，重复完整事实读取降低至少 70%，terminal 后 operation 为零 | 减少检查但削弱 mutation gate |
+| `TST-062` | `.45` serialized promotion | expected `.44`、reviewed contribution、唯一 active `.45`、23/97/77 与完整 RDT/Architecture traceability | promotion 前 review 复用到 promotion 后 |
+| `TST-063` | fresh release candidate | preparation merge 后从 fresh main 重建 exact candidate并从零执行完整 #332 Release Gate | 复用旧 candidate evidence |
+| `TST-064` | exclusive Guru finish | source/installed finish-family 只加载 `guru-finish-work`，Finalizer 前 archive/journal 为零，incomplete closeout 不进入 `no_task` | upstream finish 抢占或直接归档 |
+| `TST-065` | review visibility and pass timing | dispatch/return 可见性、checker + wrapper 同 identity 双 pass、唯一 Publication route | checker-only 或隐藏 reviewer 结论 |
+| `TST-066` | displayed-action confirmation continuity | 三平台 canonical/installed 连续 actual-load 中普通确认单次消费已展示动作、mapped exit 自动推进 | 重复确认或授权未展示动作 |
+| `TST-067` | integration/authority clock separation | Reconcile 对 base-only advance 与 Issue/scope/approved-assumption/task-content drift 形成互斥 route，并验证 package-private expected-head executor | base 前进一律重置 Planning 或 caller assertion 替代 owner judgment |
+| `TST-068` | bounded continuity contract | Review Branch 分离 prior full-review commit 与 current reconciled HEAD，绑定 exact pair/tree/paths/resume target | 将 continuity 描述成完整 Branch Review |
+| `TST-069` | local commit and recovery | clean/dirty、expected heads、ancestry、candidate tree、already-committed recovery 与零写入 negative cases | push、provider mutation 或授权持久化 |
+| `TST-070` | strict Publication continuity | continuity-reviewed current HEAD 进入真实 Publication recorder/checker/wrapper 并保持 reviewed-content strictness | 放宽 schema 或复用 stale gate |
+| `TST-071` | Finalizer projection integration | 从 Finalizer output example 与 Interface projection 生成 Reconcile DTO，确认 `branch_review_commit` 到达 required consumer input | 手工构造 DTO 的局部单元假阳性 |
+| `TST-072` | direct-evolution and graph closure | current-only schemas、旧 checkpoint stale、23 Skills / 97 exits / 78 commands、canonical/installed/platform parity | legacy dual-read、compatibility wrapper 或固定 magic count |
+| `TST-073` | `.46` serialized promotion | expected `.45`、reviewed #376 contribution、唯一 active `.46`、predecessor lifecycle 和 promotion-created diff fresh re-entry | promotion 前 Branch Review 复用到 promotion 后 |
+
+## 核心场景
+
+- `SCN-001`：标准 Intake 从 current base/context 到唯一 workspace，无 pre-task tracked residue。
+- `SCN-002`：Planning/Phase 2/commit/review 对 content freshness fail closed，并支持 finding fix + fresh final review。
+- `SCN-003`：Finalization/merge 使用 expected HEAD，archive/history 可发现且 close issues 精确。
+- `SCN-004`：base/provider evolution 自动进入唯一 reconcile/recovery route，不复用 stale evidence。
+- `SCN-005`：canonical、dogfood、installed、Shared/Codex/Claude/Cursor byte/mode/graph 一致；preset reapply 不留未知 sidecar。
+- `SCN-006`：RDT 与 Architecture version/status/traceability 对齐；Bootstrap projection 最小且不形成第三 authority。
+- `SCN-007`：同一 clean base 的 A/B task 使用独立 worktree、branch、task 与 contribution；
+  Planning/Check/Review/Finish/cleanup 不读写对方 tracked state，也不要求合并对方 bookkeeping commit。
+- `SCN-008`：provider failure、stale evidence 与 partial finalization 由 exact owner 恢复；已发生副作用
+  不重复，unsupported/mismatch fail closed。
+- `SCN-009`：task 已归档且 owner state 正常退休后，精确 retired locator 可重建 schema-valid `ready_for_merge`；缺 locator、archive/head/PR/scope drift 继续 fail closed。
+- `SCN-010`：新增或移除 active Skill 时 verifier 从 registry/interface 自动取得 inventory，并与 installed projection 做 exact equality。
+- `SCN-011`：`claude|codex|cursor × clean|existing` 六个独立 cell 全部使用 Trellis `0.6.15` 结束，sidecar 与 unknown template drift 为零；matrix `source_state` 绑定 HEAD、tracked/untracked candidate bytes/modes 与 candidate tree，run 前后 identity 一致。
+- `SCN-012`：existing cell 从 official `0.6.5` + `v0.6.5-guru.10` 运行 upgrade/update dry-run、条件式 migrate、workflow preview/switch 与 preset reapply。
+- `SCN-013`：before/after `workflow`、`task_data`、`docs_authority` 三组无未审查
+  capability loss；active id、interface/schema/exit/command/consumer/route、Skill package、
+  ordinary managed asset、overlay executable mode、template hash、sidecar 与 extension identity
+  另由 consistency/installation gate exact 验证，任一漂移仍独立阻塞。
+- `SCN-014`：每个 cell 运行 RDT、Architecture、Bootstrap 全 profile installed eval，并保持 #266 docs authority 与最小 spec projection。
+- `SCN-015`：local A/B 完成两种 merge order、零 metadata intersection、task-local archive、Finish/provider/cleanup 同 owner recovery 与 cleanup 后 reachability；B 的 GitHub 调用为零；A archive 后 history query 返回唯一 `PR #301` finish-summary candidate。
+- `SCN-016`：真实 A disposable repo 的 PR #2 在 expected source head 上 rebase merge，Issue #1 在 merge 后关闭；remote branch/repo cleanup 后 retained-ref proof仍成立。
+- `SCN-024 no-impact`：fresh minimal current result，不创建 contribution/ADR/project-check burden。
+- `SCN-025 target-native`：直接建立 target boundary 与唯一 owner；新增 legacy authority、dual-read 或 adapter 被阻断。
+- `SCN-026 legacy-boundary convergence`：decision/GAP、remaining debt、compatibility owner/exit 与 forbidden scope 完整且只收敛局部旧边界。
+- `SCN-027 dedicated refactor slice`：行为/API/规则不变，单一主写，小切片可验证、观测、回滚并有旧实现删除条件。
+- `SCN-028 scope expansion`：persistence/SDK/owner/boundary 等材料扩大使 Planning result stale 并 re-entry。
+- `SCN-029 fitness regression`：第二 authority、legacy owner 扩大、无退出双写或 closed GAP 重现返回 `fitness_regression`。
+- `SCN-030 parallel stale`：task A promotion 后，task B 的旧 current identity 返回 `sync_required`。
+- `SCN-031 unpromoted contribution`：实现/测试通过但 contribution/ADR/review/promotion 缺失时 Publication/Finish 阻断。
+- `SCN-032 next-task consumption`：successor baseline/constitution/decision/GAP/owner 是下一次 Planning 唯一 current input。
+- `SCN-033 missing external evidence`：保持 `evidence_gap|unverified`，不虚构 pass、GAP closure、排期或发布。
+- `SCN-034 explicit/config selection`：显式或 config `release/1.3.0` 在 clean main checkout 存在时仍只绑定 release authority。
+- `SCN-035 ordered no-fallback`：`dev -> main` 同时存在时选择 dev；dev checkout 缺失或 dirty 时 blocked，不回退 main。
+- `SCN-036 detached authority`：detached session 与 clean selected-base authority 同处 common-dir 时完成同步，handoff/transition locator 指向 authority。
+- `SCN-037 identity mismatch`：missing、ambiguous、dirty、inventory HEAD/branch/ref mismatch 分别稳定 fail closed。
+- `SCN-038 fast-forward continuity`：remote advance 只前进 authority checkout，detached session 不变，post-sync decision/local/remote heads 相等。
+- `SCN-039 source-aware freshness`：explicit/config/config-candidate/remote-default 的 source、selected base 与完整 candidates exact 匹配时通过，任一 drift 在 workspace preparation 前拒绝。
+- `SCN-040 distribution boundary`：canonical/installed/package/platform/reapply/drift/sidecar 和代表性 installed detached wrapper 通过，但不声明重构前稳定版 release-wide proof。
+- `SCN-041 self-hosted binding`：source repository identity 等于 target 时，extension source 固定为
+  reviewed head；apply 仍只修改独立 target checkout。
+- `SCN-042 installed no-source-tree`：business target 不含 `trellis/presets/**`，Finalizer 从 manifest
+  immutable source commit 建立 clean detached extension checkout，并生成唯一 manifest tail。
+- `SCN-043 invalid source`：missing/malformed/dirty/mutable/mismatched source 或 postimage 在任何
+  push/PR/archive/Ready/Issue mutation 前 fail closed。
+- `SCN-044 initial publication`：无 existing PR/remote/tail 的 `prepared` 输入返回 provenance
+  reprepare；absent 或 exact reviewed remote 可执行，非空 drift 继续拒绝。
+- `SCN-045 installed projection`：canonical/installed/平台 package 与 reapply bytes/mode 相同，
+  Finalizer 对 verifier lifecycle 保持零依赖。
+- `SCN-046 verifier failure evidence`：matrix 与 postcheck failure 在 cleanup 前形成 closed structured
+  facts，credential-safe tail 有界，failed + null 被拒绝。
+- `SCN-047 representative live closeout`：现有真实 fixture fresh reinstall 后完成 Publication/
+  Finalizer/Ready/terminal flow；在该复跑实际完成前状态为 `unverified`。
+- `SCN-048 historical release authority promotion`：#267 Architecture owner 先激活统一 `.42`
+  baseline，RDT owner 后建立 `.42` versioned authority；任一 expected `.41` mismatch、multiple active、
+  active `.37` 残留或 traceability 缺失均 fail closed，promotion diff 重新进入 Phase 2/commit/Branch
+  Review；该场景是 `.43` 继承的历史合同与证据。
+- `SCN-049 repo-private preparation honest path`：稳定 planning 与最终 delivery commit 后执行唯一一次
+  complete-range Branch Review，再进入 Publication 与 Finalizer，不产生 tracked release-status metadata commit。
+- `SCN-050 planless base reconciliation`：Finalizer 前发生正常 base 前进时，exact base facts 先得到
+  `base_reconciliation_required`，不因通用 plan identity 为空而误拒绝，也不执行 closeout mutation。
+- `SCN-051 lifecycle checkpoint stability`：owner-private checkpoint 创建、替换和退休不改变
+  reviewed-content identity 或 delivery commit。
+- `SCN-052 delivery drift staleness`：修改 Skill、durable docs、配置、schema、script 或 test bytes 时，
+  受影响的 Phase 2/Review/Publication/Finalizer/exact-candidate gate stale。
+- `SCN-053 private inventory isolation`：四个 project-local projection 存在且一致，但公共 registry、
+  marketplace、preset、overlay、extension manifest 与 installed inventories 均不存在该 Skill ID。
+- `SCN-054 v0.6.15-guru.5 exact candidate`：`.44` authority 只投影 `.5/.40/CLI 0.6.15` current
+  target；preparation merge 后从 fresh main 冻结同一 candidate，完成 `v0.6.15-guru.4..candidate`
+  full diff、四平台/install/update/reapply、installed business-repository Publication/Finalizer、secret 与
+  residue gate。tag、immutable-tag smoke、GitHub Release、#332 closure 与 cleanup 分别 fresh 确认并回读。
+- `SCN-055 forbidden mechanism`：已资格化正常问题拟使用 OS lock、`/proc`、PID/FD/signals 等承接
+  业务 authority 时返回 `mechanism_revision_required`，已实现、已测试、P0/P1、race/TOCTOU 或
+  fail-closed framing 不改变结论。
+- `SCN-056 ordinary state exception`：普通文件/目录保存 state/artifact/log/cache/config，或数据库
+  事务/durable state machine 承接业务身份与并发时 qualified；文件存在/inode/FD/lock-file 互斥不 qualified。
+- `SCN-057 archived task work recovery`：Open same-head PR 的 current-scope finding 经 Merge 最小 DTO
+  恢复原 task 到 Phase 2，清理旧下游 authority，并强制重跑 Phase 2 到 Merge。
+- `SCN-058 archived recovery blocked`：external blocker、scope/head/branch/PR/archive drift、dirty worktree、
+  duplicate active task、merged PR 或不安全路径均 fail closed 且零业务写入。
+- `SCN-059 original wrapper Happy Path`：四个既有 `invoke.sh` 直接完成各自 transaction，返回稳定
+  typed DTO，且不调用 facade 或 compatibility preflight。
+- `SCN-060 old-argument compatibility`：同一原 wrapper 检测旧参数后进入唯一 compatibility branch，
+  保持行为和恢复合同，不创建第二 public identity。
+- `SCN-061 non-invoke wrapper projection`：Interface 声明 `restore-archived-task.sh` 时，generic
+  installer/validator/matrix/eval 正确发布和加载它，并拒绝其它 private scripts。
+- `SCN-062 linked-worktree closeout rejection`：installed closeout 在任何 shared Git config/ref mutation
+  前拒绝 linked worktree；支持的 standalone fixture保持通过。
+- `SCN-063 restore current identity`：restore 使用 current task/workspace mapping 与 committed archive，
+  精确 interrupted-move recovery 可恢复，歧义或 stale fail closed。
+- `SCN-064 promotion freshness`：`.44` 与 reviewed contribution 精确匹配时生成唯一 `.45`；任一 current
+  identity 漂移返回 `sync_required`，不覆盖 shared current。
+- `SCN-065 post-promotion re-entry`：promotion-created diff 使旧 Phase 2/Branch Review 失效，并依序重跑
+  check、commit 与 full-diff review。
+- `SCN-066 candidate reset`：merge 后 candidate 绑定 fresh `origin/main`；旧 candidate path、SHA、tree、
+  matrix 和 review evidence 均不参与新 Release Gate。
+- `SCN-067 exclusive finish routing`：active Guru task 仅由 `guru-finish-work` 推进；archived incomplete
+  closeout 在任何 Intake/archive/journal 写入前返回 invalid state，且不能由 upstream finish 接管。
+- `SCN-068 visible Branch Review`：dispatch 前展示 reviewer/range/target，return 后展示 findings/owner；
+  checker 或 wrapper 任一非 `passed`、缺失或 identity 不同都阻止正式 pass 与 Publication。
+- `SCN-069 confirmation continuation`：一个精确动作已展示后，普通“确认继续”立即消费该动作一次；
+  mapped exit 自动到唯一 consumer，后续新的副作用动作仍需先展示并取得独立确认。
+- `SCN-070 base-only post-plan continuity`：unrelated base advance 且 authority/task content unchanged 时，
+  Reconcile 保留 `task_activation` 或原 resume target，不返回 `planning_stale`。
+- `SCN-071 real authority drift`：Issue、scope、approved assumptions 或 task content 任一变化时，base clock
+  分离不得掩盖真实 stale，结果进入原 Planning/Implementation/full-review owner。
+- `SCN-072 expected-head reconciliation commit`：clean branch-bound worktree 与 exact task/base/tree/ancestry
+  生成唯一 local commit；dirty、head drift、tree mismatch、non-ancestor 或重复不一致均零写入失败。
+- `SCN-073 bounded review pair`：prior full-review commit 与 current reconciled HEAD 分离绑定，Review Branch
+  只审查 base pair、resolution、tree、relevant paths 与受影响验证，并投影 current HEAD。
+- `SCN-074 Publication strictness`：未经 continuity review 的 merge、scope/content/authority drift 或 stale
+  checkpoint 不能 ready；合法 continuity current HEAD 经真实 recorder/checker/wrapper 返回 `ready`。
+- `SCN-075 Finalizer-to-Reconcile projection`：Finalizer `base_reconciliation_required` output 经声明的 seed
+  与 mapping 把 `branch_review_commit` 送入 Reconcile `finalizer_base_mismatch`，integration 不手工补字段。
+- `SCN-076 promotion freshness`：reviewed #376 contribution 与 expected `.45` 生成唯一 active `.46`，旧 `.45`
+  只增加 lifecycle locator并修正 Design manifest 历史 command count `81 -> 77`；promotion delta 重新进入
+  fresh Phase 2、Task Commit 与完整 Branch Review。
+- `CASE-001`：每个 active interface 的 external exit 恰有唯一 consumer 或 stop，registry/interface/workflow 闭包。
+- `CASE-002`：semantic gate 发生在 recorder/validator 前，脚本不接收或持久化授权。
+- `CASE-003`：missing/multiple input、live mismatch、cross-candidate、lineage gap、FAIL、SKIP、stale
+  或 unsupported exit 均在 mutation 前失败，不存在 fallback。
+- `CASE-004`：merge、tag、tag-pinned validation、Release、Issue closure 与 cleanup 的 action-local
+  confirmation 互不授权，旧确认不能跨动作复用或持久化。
+
+## 选择规则
+
+先读取 `.trellis/spec/workflow/quality-guidelines.md` 的 `Validation Scope Ownership`。普通 feature/docs/spec Issue 运行与 accepted scope 相关的最小可靠集合；完整多平台 Throwaway 只属于专项兼容/upgrade/release Issue。任何 SKIP、未配置 live 环境或历史 PR 声明都明确写成 `unverified`。
+
+完整矩阵只证明其绑定 candidate 的 compatibility。历史 `.44` knowledge identity、
+`v0.6.15-guru.4` / extension `0.6.15-guru.39` 与 #332 target `v0.6.15-guru.5` /
+extension `0.6.15-guru.40` 是独立的历史 release axes，不替代 #392 current exact-candidate gate。
+
+## #378 定向验证策略
+
+| ID | 验证对象 | 不可替代的边界 |
+| --- | --- | --- |
+| `T378-01` | 固定 Fork HEAD、remote、version、成功构建标记及 prepare/source mismatch 无 fallback | build 不等于独立 TypeCheck 或 npm 发布 |
+| `T378-02` | canonical/installed resolver 与主 hook；零/一/多 session、missing/unmatched/exact/stale、显式 child、两个真实临时 worktree；non-owner bytes/path set 不变 | fixture 不等于业务 #31/#127 接续 |
+| `T378-03` | source-record 受管投影、conflict preservation、source/installed inventory、三平台集合、#388/#389 前置、ownership/reapply/drift/sidecar | 三平台 worktree reapply 不是三平台 clean/update 矩阵 |
+| `T378-04` | 原 shell 入口的 representative focused clean 与两次同候选 Fork update/reapply | 不证明历史 predecessor 升级或远端 workflow release |
+| `T378-05` | standalone/full dispatcher compatibility、predecessor 缺失明确失败、实际 installed closeout public entries | full 调度与 fake GitHub closeout 不证明 full historical matrix/remote Release |
+
+当前受控安装/更新来源由 R378-01 与 D378-01 定义；前述 official 0.6.5/0.6.15 场景保留为对应历史版本验证。
+`.47` 是 immutable predecessor；当前 promotion 校验三层唯一 `.48` 导航、完整 `.47` 历史快照与
+R392 -> D392 -> T392 trace。promotion-created Docs diff 仍需 fresh Phase 2/commit/Branch Review。
+
+## #392 current release strategy
+
+| ID | 验证对象 | 不可替代边界 |
+| --- | --- | --- |
+| `T392-01` | 四个 release identity 轴、current surfaces、historical-only predecessor references | 不证明 tag 或 Release 已创建 |
+| `T392-02` | `.47 -> .48` predecessor/successor、三层唯一 active、Architecture inheritance、contribution 与 trace closure | promotion 不替代 post-promotion review |
+| `T392-03` | source/installed package、managed byte/mode、四平台 projection、ownership/reapply/drift、sidecar 与 diff hygiene | Stage 1 checks 不替代 exact candidate Release Gate |
+| `T392-04` | pre-promotion 与 post-promotion 各自 fresh Phase 2/Task Commit/full Branch Review，P0-P3 open findings zero | 第一次 review 不覆盖 promotion-created diff |
+| `T392-05` | merge 后 fresh `origin/main` exact candidate 的 lineage/full diff、version、install/update/switch、Fork build、business smoke、secret scan、residue | 历史 #378 或 preparation SHA 不可复用 |
+| `T392-06` | merge、tag、tag-pinned smoke、GitHub Release、Issue close、cleanup 的独立 live authority 与 action boundary | 一个动作的确认或结果不授权另一个动作 |
+
+- `SCN-077 Stage 1 serialized promotion`：pre-promotion committed review 通过前 `.47` 保持唯一 active；
+  serialized promotion 建立 `.48` 后，promotion-created diff 必须完成 fresh Phase 2/commit/full Branch Review，
+  第二次 review 通过前 Publication/Finish 不可达。
+- `SCN-078 exact-candidate release`：preparation merge 后只接受 fresh `origin/main` exact candidate；同一
+  candidate 完成全部 required gate 后，才可依序进入独立 tag、smoke、Release、Issue close 与 cleanup
+  boundary；任一 FAIL、SKIP、stale、cross-SHA 或未映射 exit 立即停止。

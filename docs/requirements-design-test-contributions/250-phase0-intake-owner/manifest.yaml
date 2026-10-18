@@ -1,0 +1,20 @@
+schema_version: "1.0"
+task_ref: "250-phase0-intake-owner"
+task_locator: ".trellis/tasks/10-11-250-phase0-intake-owner"
+task_id: "250-phase0-intake-owner"
+lifecycle_generation: 0
+issue_ref: "https://github.com/castbox/guru-trellis/issues/250"
+source_contract: "2026-10-10-r19"
+source_version: "current-main-0.6.17-guru.83"
+expected_current_version: "current-main-0.6.17-guru.83"
+status: "reviewed_promoted"
+authority_scope: "isolated_contribution"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.83"
+  status: "active"
+architecture_contribution: "docs/architecture/contributions/250-phase0-intake-owner.md"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false
+promoted_version: "current-main-0.6.17-guru.84"
+promotion_preimage: "current-main-0.6.17-guru.83"

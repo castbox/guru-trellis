@@ -1,0 +1,14 @@
+{
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  },
+  "exit_id": "remaining_work",
+  "reason": {
+    "reason_code": "remaining_work",
+    "reason_refs": [
+      "scope:current"
+    ]
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-root-cause-invocation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "semantic_result"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "semantic_result": {
+      "type": "object"
+    },
+    "validation_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "skill_id",
+        "input_sha256",
+        "result_sha256",
+        "typed_exit",
+        "consumer",
+        "receipt_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "skill_id": {
+          "const": "guru-qualify-root-cause"
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "result_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "typed_exit": {
+          "enum": [
+            "classified",
+            "mechanism_revision_required",
+            "diagnosis_required",
+            "blocked"
+          ]
+        },
+        "consumer": {
+          "type": "object"
+        },
+        "receipt_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

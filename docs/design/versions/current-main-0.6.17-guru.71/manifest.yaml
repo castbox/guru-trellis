@@ -1,0 +1,20 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.71
+status: active
+predecessor: current-main-0.6.17-guru.70
+source_binding: "reviewed #490 reference-only/source-adoption contribution + explicit immutable .70 inheritance + Architecture .71/active + containing Git identity"
+inheritance_locator: docs/design/versions/current-main-0.6.17-guru.70/design-main.md
+extension_manifest_version: 0.7.0-guru.1
+target_trellis_cli: 0.7.0-castbox.1
+release_target: v0.6.17-guru.2
+released_baseline: v0.6.17-guru.1
+framework_source: castbox/Trellis@9c36002a324c16a09a85b6aa5a380b74aabf801f
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.71/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.71/test-strategy.md
+architecture_locator: docs/architecture/README.md
+registry_locator: trellis/skills/guru-team/registry.json
+active_skill_count: 34
+external_exit_count: 155
+command_count: 104
+provenance: "Local sample/projection-parity installation and scoped regressions only; release/native-host/remote/full matrix remain #489; promotion-created diff requires fresh Phase 2, commit and independent complete Branch Review"

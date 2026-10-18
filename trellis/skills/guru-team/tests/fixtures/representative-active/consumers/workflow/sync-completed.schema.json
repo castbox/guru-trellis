@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-fixture-workflow-sync-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["exit_id", "item"],
+  "properties": {
+    "exit_id": {"const": "synced"},
+    "item": {"type": "string", "minLength": 1}
+  }
+}

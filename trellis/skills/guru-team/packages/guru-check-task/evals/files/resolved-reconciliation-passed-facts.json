@@ -1,0 +1,18 @@
+{
+  "scenario": "The current owner consumes an actual installed checking stage for resolved-reconciliation-passed.",
+  "owner_evidence": {
+    "semantic_gate": "passed",
+    "checker_required": true
+  },
+  "owner_staging": {
+    "recipe": "check-resolved-reconciliation-passed"
+  },
+  "public_invocation": {
+    "arguments": [
+      "--input",
+      ".trellis/.runtime/guru-team/evals/public-input.json",
+      "--owner-result",
+      ".trellis/.runtime/guru-team/evals/owner-result.json"
+    ]
+  }
+}

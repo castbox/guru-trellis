@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-delivery-sync-required-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "sync_kind",
+        "expected_current_identity",
+        "current_identity",
+        "sync_target",
+        "freshness_identity",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "sync_required"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "enum": [
+            "planning",
+            "implementation_discovery",
+            "phase2",
+            "branch_review",
+            "publication",
+            "acceptance_finish"
+          ]
+        },
+        "sync_kind": {
+          "enum": [
+            "promotion_required",
+            "baseline_advanced",
+            "constitution_advanced",
+            "contribution_stale",
+            "repair"
+          ]
+        },
+        "expected_current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sync_target": {
+          "$ref": "#/$defs/syncTarget"
+        },
+        "freshness_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "delivery_key": {
+          "type": "object"
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "$defs": {
+        "syncTarget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "locator",
+            "expected_identity",
+            "current_identity"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "baseline",
+                "constitution",
+                "contribution",
+                "project_contract"
+              ]
+            },
+            "locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expected_identity": {
+              "type": "string",
+              "minLength": 1
+            },
+            "current_identity": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "sync_kind",
+        "expected_current_identity",
+        "current_identity",
+        "sync_target",
+        "freshness_identity",
+        "planning_purpose",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "sync_required"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "sync_kind": {
+          "enum": [
+            "promotion_required",
+            "baseline_advanced",
+            "constitution_advanced",
+            "contribution_stale",
+            "repair"
+          ]
+        },
+        "expected_current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sync_target": {
+          "$ref": "#/$defs/syncTarget"
+        },
+        "freshness_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "candidate_assessment"
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "sync_kind",
+        "expected_current_identity",
+        "current_identity",
+        "sync_target",
+        "freshness_identity",
+        "planning_purpose",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "sync_required"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "planning"
+        },
+        "sync_kind": {
+          "enum": [
+            "promotion_required",
+            "baseline_advanced",
+            "constitution_advanced",
+            "contribution_stale",
+            "repair"
+          ]
+        },
+        "expected_current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "current_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sync_target": {
+          "$ref": "#/$defs/syncTarget"
+        },
+        "freshness_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "delivery_key": {
+          "type": "object",
+          "description": "Opaque public DeliveryKey; target API validates relationship."
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "syncTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "locator",
+        "expected_identity",
+        "current_identity"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "baseline",
+            "constitution",
+            "contribution",
+            "project_contract"
+          ]
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "current_identity": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

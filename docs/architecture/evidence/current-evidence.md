@@ -1,0 +1,627 @@
+# EVIDENCE
+
+| Evidence ID | Class | Locator / identity | Supports |
+| --- | --- | --- | --- |
+| `EVD-001` | current source baseline | reviewed #332 contribution `architecture-contribution-332-release-wrapper-entry-correction-v1` + inherited `.44` authority；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD | `ARCH-CUR-001..004,006..009,013..022` |
+| `EVD-002` | stable release | annotated tag `v0.6.15-guru.4`；tag object `6e71362d9fdce5377431ba6b2923334299c7e08f`；peeled commit `40f8aa8312bfd9650f47e1fa9d6d21b4ff18d5b6`；extension `0.6.15-guru.39`；target/required/tested Trellis CLI `0.6.15`；non-draft/non-prerelease/zero-asset Release | `ARCH-CUR-005` only |
+| `EVD-003` | RDT package | Issue #263 CLOSED；reviewed `d53335a7…`；archive `eaf955e0…`；PR #279 merge `891c2147…` | `ARCH-CUR-003` |
+| `EVD-004` | Architecture package | Issue #264 CLOSED；reviewed `1cb2506b…`；PR #268 merge `37fdfe63…`；metadata head/merge `991080b6…` / `3b0f78c1…`；无 `finish-summary.json` | `ARCH-CUR-003` |
+| `EVD-005` | Bootstrap package | Issue #265 CLOSED；reviewed `f2c67098…`；archive `de1c6e26…`；PR #280 merge `3c0d4a2f…`；archive/merge tree `45e8b402…` | `ARCH-CUR-003` |
+| `EVD-006` | Bootstrap closeout | Issue #266 CLOSED；PR #281 merge `c2b1784654a95b999bbff71daf1393c22aa01048`；archive/merge tree `cb68fead327cc2cfb6ea03b8e81affcb9b7ad0e9` | active RDT/Architecture baseline |
+| `EVD-007` | replacement release | Issue #275 CLOSED/COMPLETED；PR #282 rebase merge；review/archive head `83646987…`；merge/live main `5c059f49…`；post-tag install/version/closeout smoke 与 isolated consumer proof passed | `ARCH-CUR-005,007` |
+| `EVD-008` | six-cell compatibility | `claude|codex|cursor × clean|existing` 6/6；capability comparison 覆盖 `workflow`、`task_data`、`docs_authority`；独立 consistency/installation comparison 覆盖 Skill API/schema/command、distribution/installed inventory、三类 mode、template hash、sidecar 与 extension identity；final runtime matrix 绑定完整 dirty candidate `source_state` 与 post-archive non-empty history；精确 tree/digest 不写回 tracked docs | `ARCH-CUR-008..009`, `ARCH-INT-006` |
+| `EVD-009` | real GitHub A | disposable PR #2 source `6a7b721a…` -> rebase merge `a5c73c49…`；Issue #1 merge 后 CLOSED/COMPLETED；provider recovery 与 remote cleanup/reachability passed | `ARCH-CUR-010`, `ARCH-DOM-007` |
+| `EVD-010` | focused compatibility | installed lifecycle 1/1；upgrade contract 20/20；preset/ownership 83/83；managed Python routing 44/44；RDT/Architecture/Bootstrap installed profiles passed | `ARCH-CUR-008..009` |
+| `EVD-011` | #283 reviewed task range | base `2d34abfc…` -> reviewed task head `86a2cc1a…`；5 commits / 429 paths；schema 6.0 independent Branch Review PASS，open findings zero | `ARCH-FND-006`, `ARCH-GOV-006..008`, `ARCH-DOM-008`, `ARCH-INT-007`, `ADR-005` |
+| `EVD-012` | #283 representative clean install | Trellis `0.6.15` + public marketplace bootstrap + exact local committed workflow + all-platform preset；21 packages / 72 commands / 4229 managed files，update/reapply/drift/sidecar checks passed | `ARCH-CUR-011..012`；local pre-push only，不是 formal verifier/release proof |
+| `EVD-013` | #283 reviewed promotion | Architecture/RDT contribution locators、expected `.37`、successor `.38`、design constitution/change contract/ADR/history/traceability 与 serialized owner gate | `.38` current knowledge authority；post-promotion Phase 2/commit/Branch Review 必须 fresh 绑定最终 HEAD |
+| `EVD-014` | #290 reviewed task and promotion | base `ec4df880…` -> reviewed task head `d4165f26…`；57 paths；fresh Architecture Branch Review 与 schema 6.0 independent Branch Review 均 passed，三个正常路径候选不再复现；expected `.38` -> successor `.39` serialized promotion | `ARCH-CUR-013`, `ADR-006`；post-promotion Phase 2/commit/Branch Review 必须 fresh 绑定最终 HEAD |
+| `EVD-015` | #311 reviewed task and promotion | base `d907fcc5…` -> reviewed task head `651defee…`；7 commits / 85 paths；Architecture 与 distinct fresh-final Branch Review passed，open P0-P3 zero；Finalizer 59/59、verifier 17/17、routing 44/44、ownership 7/7、upgrade 36/36、preset 81/81；expected `.40` -> `.41`，contribution digest `a6e2835e…` | `ARCH-CUR-014..015`, `ARCH-DOM-009`, `ARCH-INT-008`, `ARCH-GAP-007`, `ADR-007`；真实 fixture/Publication/Finalizer/生产发布/错误文件重试仍 `unverified`，Issue OPEN |
+| `EVD-016` | #267 reviewed release-authority alignment | base `3efcce72…` -> contribution head `d3dca74b…` -> promotion `351e61d1` -> r19 fix `490b302a` -> archive head `9ceeede2`；post-promotion fresh Phase 2、task commit、independent Branch Review、PR readiness 与 Finalizer passed；PR #315 merge/live main `a41b8a34`；RDT/Architecture contributions 绑定 expected `.41`、successor `.42`、extension `.39` 与 CLI `0.6.15` | `ARCH-CUR-004,008,016`；`a41b8a34` post-merge full-diff review 发现 P2 `BR-267-FULL-CAND-001`，修复 merge 后必须重新 freeze candidate 并 fresh review；#267 exact-candidate Release gates 与 #311 post-release proof 仍 `unverified` |
+| `EVD-017` | repository-private release orchestration source | `.agents/.codex/.claude/.cursor/skills/release-guru-trellis-version/`、repo-private contract tests、canonical/current-checkout Finalizer owner 与 `docs/requirements-design-test-contributions/335-release-guru-trellis-version/` | `ARCH-CUR-017`, `ARCH-DOM-010`, `ARCH-INT-009`；只证明 current source locator 与 owner boundary，不替代 Publication、Finalizer、tag、smoke、GitHub Release 或 Issue closure live evidence |
+| `EVD-018` | #332 release-current authority contribution and promotion | live Issue #332、`docs/architecture/contributions/332-release-v0615-guru5.md` 与 `docs/requirements-design-test-contributions/332-release-v0615-guru5/`；Architecture/RDT serialized owners 已分别完成 expected `.43` -> successor `.44` promotion，target `.5`、extension `.40`、CLI `0.6.15` | `ARCH-CUR-004,005,008,018`；只支撑 current-fact alignment 与 knowledge promotion，fresh Phase 2/commit/Branch Review、post-merge exact-candidate Release Gate、tag、Release 与 smoke 均未由本 evidence 证明 |
+| `EVD-019` | #240 reviewed mechanism owner | Issue #240 CLOSED；PR #346 merged `2bafec11…`；PR body 记录独立 Branch Review `passed`、P0-P3 open findings 0；Architecture contribution 与 accepted ADR-008 已由 #332 promotion 纳入 `.44` current | `ARCH-CUR-019`, `ARCH-DOM-011`, `ARCH-INT-010`, `ADR-008`；不替代 #332 exact-candidate Release Gate |
+| `EVD-020` | #348 reviewed archived-task recovery | Issue #348 CLOSED；PR #351 merged `5c6837b8…`；完整 `1fd63dab…0dd42063` Branch Review `passed`，fresh Architecture Branch Review `baseline_current` | `ARCH-CUR-020`, `ARCH-DOM-012`, `ARCH-INT-011`；不替代 #332 exact-candidate Release Gate |
+| `EVD-021` | #332 original-entry correction and promotion | exact committed range `8a6e04eb…014c71ac`；initial Phase 2 与 independent Branch Review passed，open P0-P3 zero；affected package 9/9、restore 23/23、installed closeout 5/5、restore shared eval 8 scenarios、preset 85/85、source/installed/all-platform/reapply/drift/sidecar checks passed；reviewed RDT/Architecture contributions bound expected `.44` and promoted `.45` | `ARCH-CUR-001,021..022`, `ARCH-DOM-013`, `ARCH-INT-012`；promotion-created diff 必须 fresh Phase 2/commit/Branch Review，且不替代 post-merge exact-candidate Release Gate |
+| `EVD-022` | #376 base-continuity contribution and promotion | exact committed range `e339d994…29ffa01b`；fresh Architecture Branch Review 与 official independent Branch Review passed，open P0-P3 zero；Reconcile、Review Branch、Finalizer、Publication、real cross-Skill integration、clean install、source/installed/platform parity 与 23/97/78 graph checks passed；reviewed RDT/Architecture contributions bound expected `.45` and promoted `.46` | `ARCH-CUR-023`, `ARCH-DOM-014`, `ARCH-INT-013`；promotion-created diff 必须 fresh Phase 2/commit/Branch Review；Issue #108 installed drift、full release/upgrade matrix 与 remote publication 均不由本 evidence 证明 |
+
+`EVD-008` 的 matrix object 保留 `external_boundaries` 与
+`real_github_verified:false`；它只证明六-cell与 local A/B。最终精确
+`source_state.candidate_tree`、source identity 与 matrix digest 留在 runtime/conversation
+evidence，避免 tracked evidence 对 candidate tree 形成自引用。
+`EVD-009` 是独立完成的真实 provider evidence。当前 authority 组合消费两类证据，
+不声称任何 matrix JSON 已被改写，也不构造伪造的 combined artifact。
+
+`EVD-023`：#378 精确 `a2b32ea8dc730eecf0507e0adfb946ce9b8c7bc8...5f7a8a9a8d6d74f35c3fce10439fda9846508c57`
+范围已通过 independent fresh-final Branch Review 及正式 checker/public wrapper。
+它支撑 `ARCH-CUR-024`、`ARCH-INT-014` 与 `.47` contribution promotion：固定 Fork 源码与
+installed 字节一致；canonical/installed isolation、#388/#389 integration、真实 focused clean
+和两次 update/reapply 通过；三平台 reapply 无漂移，备份已保留。fixture provider closeout
+不等于真实远端发布。完整历史矩阵、真实业务接续与独立 TypeCheck 未验证。
+
+`EVD-024`：#392 reviewed candidate inputs 包含 live Issue/task planning、
+`docs/architecture/contributions/392-release-v0616-guru1.md` identity
+`architecture-contribution-392-release-v0616-guru1-v2`、五文件 RDT contribution、固定 Fork source lock、
+current delivery mapping 与 pre-promotion 独立完整 Branch Review。它支撑 `ARCH-CUR-025`、
+`ARCH-INT-015` 以及 expected `.47` -> `.48` serialized promotion；只证明 promotion 输入已通过既定
+review boundary，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、merge、
+exact-candidate Release Gate、tag、tag-pinned smoke、GitHub Release、business smoke 或 Issue closure。
+
+`EVD-024` 建立的 `.48` 现为 immutable superseded authority；其 #392 promotion 与 release evidence
+边界保持历史事实，不由 #329 改写。
+
+`EVD-025`：#329 reviewed candidate inputs 包含 live Issue/task planning、
+`docs/architecture/contributions/329-adopt-developer-free-trellis.md` identity
+`architecture-contribution-329-developer-free-trellis-v1`、五文件 RDT contribution、fixed Fork source lock、
+official `0.6.17` generated adoption、focused consumer migration、legacy preservation、three-platform installed
+lifecycle、clean committed candidate provenance，以及 pre-promotion independent full Branch Review。它支撑
+`ARCH-CUR-026`、`ARCH-INT-016` 与 expected `.48` -> `.49` serialized promotion；只证明 reviewed
+promotion inputs，不证明 promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、
+PR、merge、tag、Release、remote marketplace publication、business production 或 Issue closure。
+
+`EVD-025` 建立的 `.49` 现为 immutable superseded authority；其 #329 framework source、CLI、package
+manager、extension 与 released axis保持 current inherited facts，不由 #247 改写。
+
+`EVD-026`：#247 current inputs 绑定 live Issue r24、task/RDT planning、
+`docs/architecture/contributions/247-remove-issue-scope-ledger.md` identity
+`architecture-contribution-247-remove-issue-scope-ledger-v1`、accepted `ADR-009`、active-zero ledger
+inventory、旧流程Publication/Finalizer/Merge/Restore回归、legacy inert、capability与canonical/dogfood/
+installed/platform parity。r19 target-native review range仅为历史过程证据；r24 corrective commit后必须fresh review。
+它支撑 `ARCH-CUR-027`、`ARCH-DOM-015`、`ARCH-INT-017`、`ARCH-GOV-009`、`ARCH-GAP-008`、accepted
+`ADR-009` 与 expected `.49` -> `.50` serialized promotion；只证明 reviewed promotion inputs，不证明
+promotion-created diff 的 fresh Phase 2/commit/Branch Review、Publication、push、PR、merge、tag、Release、
+完整多平台 exact-candidate matrix、business production 或 Issue closure。
+
+`EVD-027`：#408 的已审查输入绑定精确提交范围
+`8bb16516e211e9bd7b9560c025fe48a18fee0fb3...18df89680b9eae187b2b23c543ba08304212e211`、
+当前 Issue/task/RDT contribution 与固定 `db4ca1df...` / CI `34838784963` 来源。独立完整 Branch Review
+及正式 checker/public wrapper 通过；来源/build/CI、197 个构建模板、17 个官方脚本/hook 字节、
+source/dogfood/installed 投影与当前 23/97/78 图已核对。正常 authoring 经实际 wrapper 创建双端 mapping，
+脚本与文档澄清后的 native 演练均完成受控激活和双端 context/hook 检查；这些调用的 GitHub/fetch
+为 mock，不证明宿主自动 hook 分发或真实远端 mutation。它支撑 `ARCH-CUR-028`、`ARCH-INT-014/016`、
+`ARCH-DOM-015` 的 Guru/独立操作边界及 `.50 -> .51` 知识提升，不证明软件发布或完整升级矩阵。
+
+上述 #408 历史 promotion 的 knowledge successor 为 `.51`，predecessor 为 `.50`。
+旧 source pin 的证据保留历史用途，pin/CI 的来源证据由 `EVD-027` 承接；该历史范围的 CLI/core、package manager、
+23 Skills / 97 exits / 78 commands、extension `0.6.16-guru.41` 与 released `v0.6.16-guru.1` 保持独立版本轴。
+promotion-created combined diff 仍须 fresh Phase 2、
+task commit 与完整 Branch Review，后续远端动作由各 live owner 独立验证。
+
+## EVD-028: #418 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-030`、`ARCH-INT-018`、`ADR-010` 及 `.52 -> .53` 知识提升。
+提升前独立完整 Branch Review、正式 checker 和 public wrapper 已针对
+`78651e2068184e9e52a778fe33eda8b2bd7c8e0b...c30eadd6cf6fe4ba204c32c6e89f3f25f892e8f4`
+通过，四个已记录 finding 已关闭。该范围固定了当前 source contract，不是提升后新 diff 的通过证明。
+
+| 层级 | 提升前已验证事实 | 边界 |
+| --- | --- | --- |
+| package | Finalizer 108、Merge 65、Branch Review 35、Publication 67、Architecture 26，共 301 tests fresh 通过 | 包含恢复后的普通 4.0/7.0 与 additive 5.0/archived-1.0 合同测试，不以旧 pass 代替 |
+| focused installed | installed 合同 1、包/投影 14、archived fixtures 3、installed chain 3 通过 | 实际 wrappers/DTO、三段 Architecture、H/A/B、PR/base drift、checkpoint retirement 与零业务 mutation；post-owner fixtures 不证明 native 语义 |
+| distribution | 23 packages / 100 exits / 78 commands；4872 package files 与 3 overlays 的 source/hash/mode 一致，三平台投影及零 sidecar | 缓存不属于分发；不证明远端 tag-pinned 安装或完整升级矩阵 |
+| authority | source contribution `418-archived-review-refresh-v1` 与 R418/D418/T418 链完整 | shared successor 为 `.53`，不是新的软件版本 |
+
+独立检查还确认 39 份原 profile/output schema 与基线一致，普通 mutation 与旧 gate 拒绝行为不放宽。
+文档修复产生过真实合同测试失败，修复后重新执行上述测试；不能仅因 runtime 文件未变就跳过
+读取 Markdown 的合同测试。具体稳定测试入口位于 canonical package tests 和
+`trellis/skills/guru-team/tests/test_archived_review_integration.py`。
+
+Native 归档语义执行、原业务实例、完整多平台 upgrade/Release matrix 仍为 `unverified`。
+Promotion-created diff 的 fresh Phase 2、task commit、distinct complete Branch Review 以及后续
+Publication、push、PR、merge、tag、Release、Issue closure 均不由本提升前证据推定完成。
+
+## EVD-029: #419 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-031`、`ARCH-DOM-016`、`ARCH-INT-019`、`ARCH-GOV-010`、`ADR-011` 与
+`.53 -> .54` knowledge promotion。提升前独立完整Branch Review绑定
+`f5ebf9f92b0f174b48f6c8ed04038eb32a5f054e...0b46f0b0f7ae0e9a76dca22053a29d1835c09812`
+并通过正式Architecture与review wrappers；activation pre-validation、完整successor subtraction和bytecode
+residue三个findings已在同一current candidate闭合。
+
+定向证据包括 continuation/activation 13、workspace recovery 8、Phase 2 package 16、Finalizer contract 27、
+preset/ownership 158，以及exact upstream candidate identity、extractor/continuation/thin-entry tests、source/
+installed runtime、真实Git/task fixture、projection parity、ownership、dogfood drift、sidecar/residue与diff检查。
+这些结果不包含throwaway、install/update/workflow-switch/preset-reapply Release Gate matrix；该完整证明由#410
+在#419 merge后的fresh main独立建立。Promotion-created diff仍须fresh Phase 2、Task Commit和完整Branch Review。
+
+## EVD-030: #435 Reviewed Promotion Source
+
+本证据支撑`ARCH-CUR-032`、`ARCH-DOM-017`、`ARCH-INT-020`、`ARCH-GAP-009`、`ARCH-GOV-011`、
+`ADR-012`与`.54 -> .55` knowledge promotion。提升前独立完整Branch Review绑定
+`a410a97fad127b9cc9bce1680666f6149d3ba616...83909737ebb67fdc505d68e6bcb39acf759101c1`；
+review发现的Publish recovery、closing keyword、terminal recovery、closed public schema、resolved-tree
+first-parent tree与active command count问题均已在同一committed candidate闭合。
+
+定向证据包括canonical/installed Delivery Review、Publish、Merge与Reconcile package tests，重复Delivery、
+deleted-head-branch、Reactivate-style binding、bookkeeping exclusion、identity drift、#405 equal-head recovery、
+#407 resolved-tree commit及cross-package integration；preset apply/reapply、upgrade contract、ownership、package
+closure、source/installed/platform parity、dogfood drift、task validation与diff checks通过。active registry聚合为
+26 packages / 114 package exits / 96 commands；production workflow保持22 mandatory invokes / 98 exits。
+
+上述证据不激活production graph，不实现或验证#436 Completion、Closure、Finish、Cleanup、Reactivate，也不把
+继承的Finish-family失败声明为通过。完整多平台Release matrix仍为`unverified`。Promotion-created diff仍须
+fresh Phase 2、Task Commit与independent complete Branch Review；后续Publication、push、PR、merge、Release与
+Issue closure均不由本提升前证据推定完成。
+
+## EVD-031: #436 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-033`、`ARCH-DOM-018`、`ARCH-INT-021`、`ARCH-GAP-009`、`ADR-013`
+以及 `.55 -> .56` knowledge promotion。#436 contribution
+`architecture-contribution-436-post-delivery-completion-finish-v1` 已完成独立 committed full-diff
+review，RDT/Architecture promotion 绑定 expected `.55` 与 successor `.56`。
+
+candidate 的五个 lifecycle packages、closed public contracts、owner-private recovery、canonical/
+installed/platform projections、task/lifecycle SSOT 与定向 tests 已通过；live registry 为 31 packages /
+136 external exits / 101 commands，production workflow 保持 22 mandatory invokes / 98 exits。
+
+本证据不证明 #434 production graph activation、真实 Issue close、bookkeeping PR/merge、生产 Cleanup、
+完整 Release/upgrade matrix、push、PR、远端 merge、tag、Release 或 Issue closure。promotion-created
+diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
+
+## EVD-042: #434 atomic lifecycle activation candidate
+
+本证据支撑 `ADR-016`、`ARCH-CUR-044`、`ARCH-DOM-029`、`ARCH-INT-032` 与
+`ARCH-GAP-009/011` 的 current activation 子缺口。#434 在 selected
+`origin/main@bab8cfcd534692735b9240b25dd8bc63e40a5cb4` 上消费 #435/#436/#443
+与 #454 D443/D436 exact interfaces；七个 E434 packages 与 active graph/selector/manifest/
+installed/声明平台投影为同一候选。旧归档按 Issue 查找验证唯一已提交终态；旧链在途任务
+只允许 pinned-old 或人工处置，#154/PR #156 不是新 Delivery。
+
+当前 Fork 锁从历史 `eb370008`、PR #10 的 `c49ad996` 前进到合并提交
+`645c817e4830a44564b0dc43b2adf75e306b1e81`、tree
+`0845f24e9f22cbca524370887166e183b454c147`、成功 push CI `36312060945`。
+PR #11 在旧 checkout 留有同 TaskId/代次副本时使用正式绑定分支的注册 checkout；
+Fork CLI `2303/2303`、core `422 passed/1 skipped`、build/typecheck/lint 及 PR/main CI 通过。
+#434 dogfood 的官方 session resolver 已按新模板更新；组合 source/installed、preset reapply、
+零 sidecar 与本地续接场景需对新锁重验，不沿用 PR #10 的旧候选结果。
+新锁下 source/installed validator 已分别通过（34 active / 104 commands；33 invokes /
+153 production exits，零 sidecar）；本地 Codex clean/focused 样本两次 update/reapply
+及 session binding 通过，当前图/文案 28/28，现行 Stage 0 readiness 初装/reapply
+1/1。广义 installer 旧 fixture 的 Workspace `ready` consumer 与现行
+`guru-task-intake-router` 不同；旧 Workspace/Finalizer/parallel-Finish 链仅作 pinned-old
+证据或人工处置，不可凭旧测试失败恢复退役 API，也不可将其视为现行 gate 通过。
+最终组合 gate、两轮全新只读审核和正式 Phase 2/Branch Review 尚需刷新。
+首轮全新审核发现 Finish 归档仍留下当前代 session pointer，妨碍按 Issue 发现已归档原 task；该 P1 使连续无 finding 计数归零。修复在 canonical Finish 投影前精确清除当前 TaskId/代次指针，缺官方 API 时保留 active task 并阻断；其他 TaskId 指针保留，未封存投影只回到原 Finish transaction 或逐案人工处置。定向 Finish 3/3、路由文案 1/1 通过；installed 投影与完整候选门禁尚未刷新。
+修复后的投影经二次 apply 收敛，六个本轮生成的旧版 Finish `.bak` 清理后零 sidecar，workflow 字节和 dogfood drift 一致。Finish/Cleanup/Reactivate 55/20/35、图/终态/续接 97/97、runtime 88 pass/1 skip、installer/upgrade/reapply 99/99、source/installed validator、task validate 与 diff check 通过。较宽本地入口组 149 pass/2 skip/1 fail；唯一失败是 pinned-old `test_installed_closeout_owner_boundary` 的六步 Workspace/Publication fixture 在新安装中找不到已退役脚本，不当作新图失败也不声称全组通过。独立连续审核和正式后续门禁仍待刷新。
+
+后续全新审核发现无 context key 的单会话 fallback 可从另一个注册 checkout 借用 task。
+`castbox/Trellis` PR #12 已将 fallback 限定为调用工作树，合并为
+`main@80ffa4efb6040572c15e7597eb1ecc3732096c68`（tree
+`69ab91d009857735f08dffdf8190accf820da71d`，main CI `36321117001` 成功）。
+#434 安装侧 linked-worktree 回归先在旧 resolver 上失败、按新模板同步后通过；
+显式 context key 的跨 worktree 路径保持原样。本次 source lock 提升使此前组合和审核
+结果失效，须重新验证、正式 Phase 2、Task Commit 及独立 Branch Review。
+
+promotion 前组合 gate：installer/graph `118/118`、定向 runtime `132/132`、宽扫
+runtime/graph `155/155`，此前完整 runtime `333/333`；source/installed、dogfood
+drift、task validation、diff check、代表性本地 clean install、两次 reapply 和递归零
+`.new/.bak` 均通过。对同一未提交候选的两轮独立只读审核连续无 P0-P3；首个
+`origin/main...HEAD@ce8158ef4f6b99d73faa5c3e6a2b97f6a5be43c8` 的正式
+Phase 2、九维 Check 和 committed Branch Review 亦通过，但均早于此次 RDT/
+Architecture promotion-created diff，不能跨 SHA 复用。后者必须 fresh Phase 2、
+Task Commit、完整独立 Branch Review 后才可 Publication。远端 marketplace 安装
+非 #434 使用路径；完整多平台 Release matrix 和业务仓生产验证不由本证据证明。
+
+Fork PR #12 的无 key 跨工作树 fallback 修复后，当前锁为
+`80ffa4efb6040572c15e7597eb1ecc3732096c68`、tree
+`69ab91d009857735f08dffdf8190accf820da71d`、成功 main CI `36321117001`。
+T434-38 在旧 resolver 上复现借用，在新模板上通过；显式 key 路径不变。
+本地初装与二次 reapply、source/installed、dogfood drift、零 sidecar、
+生命周期 197 pass/2 skip、现行图 91 pass/1 skip、installer/upgrade 98/98、
+#434 29/29、Task Validate 与 diff check 通过。旧 predecessor 的四项失败仍为
+pinned-old 夹具与现行终态已退役合同，不纳入新图 pass；旧 #154/PR #156
+只允许兼容旧版或逐案人工处置。此条不证明新的正式 Phase 2、完整 Branch Review、
+两轮独立审核、live Delivery 或专门 Release matrix，以上均需独立取证。
+
+2026-09-27 首位新鲜只读审核指出 current RDT/Architecture 的 installed 索引仍绑定
+`.66` 与旧 Fork `eb370008`（P2）。两处索引已对齐 `.67`、34/155/104、33/153
+及 `80ffa4ef`；canonical/dogfood data contract 也统一到同一 source lock，新增四份
+current 文档、design manifest 与双 source lock 一致性回归。#434 定向候选 38/38，
+重投影后 30/30、dogfood drift、diff check 与零 `.new/.bak` 通过。先前两轮
+审核不覆盖这些编辑，连续无 finding 计数重置；正式 Phase 2/Branch Review 未复用。
+
+后续独立只读审核指出两个正常路径缺口：显式跨工作树 session 的 Phase Index 与
+continuation 从不同 workflow 读取（P2），以及新 TaskId 被旧 slug 的官方创建预检
+阻断（P3）。#434 的 `get_context.py` 现在对两种 mode 使用相同 task checkout，
+端到端双 workflow 夹具通过。Fork PR #13 合并为
+`castbox/Trellis/main@622179c2b47a022134f867433518a399f7f183db`，tree
+`e740f6b7c4de7791691e8f1d2d1d139dee7568d3`，main CI `36326723322`
+成功；官方 create 可选 `--task-id`，默认 slug 语义不变，显式 ID 在创建前验唯一。
+Fork 完整提交钩子 CLI 2305/2305，build/typecheck/lint 成功。#434 固定新锁，
+官方双脚本与合并模板字节一致，Guru Create Task 直接传入审核过的 TaskId 并验证
+初始 artifact；定向 33 pass/1 skip。一次 preset apply 产生且只产生本轮旧 Create Task
+runtime 的一个 `.bak`，逐项核对并清除后第二次 apply `ok`，source/installed
+validator、drift 和零 sidecar 通过。两轮全新独立审核、正式 Phase 2/Task Commit/
+完整 Branch Review、live Delivery 与专门 Release matrix 尚未由此证明。
+
+Fork PR #14 合并到 `castbox/Trellis/main@9d14daf4f92d28ad38b7ceb8eb0817b76aca8794`，tree
+`356035b50e35302ea7542abcbc84b89674f60a7f`，main CI `36329643951` 成功。
+显式 `--task-id` 在官方创建前拒绝与 Guru lifecycle 不兼容的 ID；通用 `task.py start`
+保留普通 Trellis 行为，Guru 安装的三平台 `trellis-meta` 入口明确使用
+`guru-activate-task`。Fork 非 marketplace CLI `2277/2277`、build/typecheck/lint
+通过；marketplace 测试不是 #434 使用路径。#434 的新 source lock、投影与 `T434-39`
+须在完整候选组合 gate 和 fresh 独立审核中重新验证；此段不证明 Phase 2、committed
+Branch Review、Delivery、专门 Release matrix 或业务生产。
+
+Fork PR #15 合并到 `castbox/Trellis/main@71f43cd8955c676f8ab8215216f61376fe9c01fe`，tree
+`c2b523b40a3bd59a715d26017cf61bfef47b3b0a`，main CI `36332562361` 成功。
+固定 Fork 的 `get_context.py --mode continuation` 与 `phase` 现从同一显式绑定
+task checkout 读取 workflow；提交钩子 CLI `2306/2306`、core `422 passed / 1 skipped`，
+build/typecheck/lint 通过。#434 的 installed 脚本与精确 Fork 模板 byte parity 和
+current Requirements source pin 回归须在修复候选组合 gate 中重验；远端 marketplace
+不在本任务使用路径。此修复不替代正式 Phase 2、committed Branch Review 或 Release matrix。
+
+## EVD-041: #454 D436 canonical package candidate
+
+来源为 [D436 contribution](../contributions/454-task-lifecycle-d436.md)、#456 `436-*` migration rows
+与 generation 6 的五个 canonical package。Finish 的真实两父 merge/PR-head resource seal、Cleanup 的
+common-dir ledger 与 machine-handoff、Reactivate generation 独立性是本增量的重点验证对象。
+本切片 fresh 五包与共享 runtime 合跑 `206/206`，package integration `20/20`，source validator
+`passed`（32 packages、102 commands），task validator 与 `git diff --check` 通过；
+本记录不以历史 #436 package tests 或 D443 result 冒充 `.66` 的提交后完整 Branch Review。
+`ARCH-CUR-043`、`ARCH-DOM-028`、`ARCH-INT-031`
+只证明非激活 source current；E434/#434 graph/selector/installed/platform 与 #410 Release matrix
+均为独立未验证边界。
+
+## EVD-040: #454 D443 reviewed source candidate
+
+来源为 [D443 contribution](../contributions/454-task-lifecycle-d443.md) 与 generation 5 的
+canonical Bind package。Fixed Fork source-lock SHA `eb370008c7689d4e272ae626bd002190ecbb3296` 的
+实际 session port/real Git fixture 下，Bind 12/12（含旧 checkout 保留后的换绑/恢复）、source package graph、Python compile 与
+`git diff --check` 已通过。全局 integration 19/20，未通过项属于 Closure relative `$ref`；
+这不能冒称 full suite 通过。`ARCH-CUR-042`、`ARCH-DOM-027`、`ARCH-INT-030` 只证明 D443
+非激活 source current；promotion-created diff 的 fresh gates、E434 installed/platform 与完整 Release
+matrix 仍须独立执行。
+
+## EVD-036: #454 C3 Checkout Acquisition Provenance Promotion
+
+本证据支撑 `ARCH-CUR-038`、`ARCH-DOM-023`、`ARCH-INT-026` 与 `.60 -> .61` promotion。
+独立完整 Branch Review 绑定
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...HEAD@b816aca8d6520bf90c52c6210ff3155174da86f3`；
+`BR454-C3-P2-010` 与 `BR454-C3-P2-011` 均 resolved，当前范围无新 P0-P3 finding。
+
+Focused evidence包括checkout substrate `27/27`、task lifecycle runtime `56/56`、Python compile、JSON parse、
+ownership `32 active + 1 planned`、task/workspace/static/line/diff checks。Package `19/20`、shared runtime
+`119/128`、lifecycle integration `38/44`、preset 272 with 2 errors/3 skips与完整Release matrix不声明通过。
+
+本证据不证明C4-C7、D443、D436、E434、production activation、push、PR、merge、tag、Release或Issue closure；
+promotion-created `.61` diff仍须fresh Phase 2、Task Commit与independent complete Branch Review。
+
+## EVD-037: #454 C4 Branch Association Promotion
+
+本证据支撑 `ARCH-CUR-039`、`ARCH-DOM-024`、`ARCH-INT-027`、`ARCH-GAP-011` 与
+`.61 -> .62` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@77fa1a2250998ad8c71f0fffedf9a99a15a76dec...HEAD@c7fab600e6e29385c23c276ac2b1828d0465fd77`，
+P0/P1/P2/P3 为 `0/0/0/0`。Admission 时，`BR454-C4-P3-001` 在 `6ab9dde1` 为可复现的
+`qualified_finding`，并由 `c7fab600` 修复闭环；随后针对修复后的 current supported path 重新执行 qualification，
+normal-scenario 返回 `classified / rejected_not_reproduced`，solution-mechanism 返回
+`classified / qualified_current`。
+
+Fresh focused evidence 为 task-lifecycle runtime `93/93`、Python compile、task validation、`git diff --check`
+与 touched non-generated file line checks。Generation 2 的真实 common-dir binding 仍不存在，因此测试没有
+写入 live task control state。Preset Python suite 的既有结果为 `85/86`，唯一错误来自 E434 前刻意未同步的
+installed task-lifecycle README/schema/registry sidecars；该 broader suite 未在 narrow finding-fix 中重跑，
+不得声明为通过。
+
+本 evidence 不证明 C5-C7、D443、D436、E434、#434 production activation、完整 Release matrix、push、PR、
+merge、tag、Release 或 Issue closure。Promotion-created `.62` diff 仍须 fresh Phase 2、Task Commit 与
+independent complete Branch Review 后才能进入 Publication。
+
+## EVD-038: #454 C5 Session And Resource Control Promotion
+
+本证据支撑 `ARCH-CUR-040`、`ARCH-DOM-025`、`ARCH-INT-028`、`ARCH-GAP-011` 与
+`.62 -> .63` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@5064292675e9dabb4c6382c9397f3469b6b38ea4...HEAD@f18a51d40f5084b514abc5c062507e926b74f783`，
+覆盖三个提交、21 个路径；C5 current 正常路径 P0/P1/P2/P3 未留下 finding。先前 remote HEAD 与
+PRD slice 两个候选已修复，normal-scenario fresh 分类为 `rejected_not_reproduced`；Architecture
+Branch Review 返回 `baseline_current / reviewed_candidate`。这些判断只绑定提升前的已提交 candidate。
+
+Focused lifecycle suite `113/113`、task validator、Draft 2020-12 schema、Python AST、行数及 diff check
+在提升前 C5 范围通过；独立只读 reviewer 没有重跑测试。Fixed Fork 实际联调、installed/platform、
+production graph activation 与完整 Release matrix 未由本证据证明。C6-C7、D443、D436、E434 与
+#434 activation 仍在后续 owner 边界；Issue #454 不因本次 C5 promotion 关闭。
+
+本次 `.63` promotion-created diff 仍须 fresh Phase 2、Task Commit 与独立完整 Branch Review，之后才可
+进入 Publication/Finalizer/Delivery。此证据不证明 push、PR、merge、Release 或 Issue closure。
+
+## EVD-039: #454 C6/C7 Nonactivated Substrate Promotion
+
+本证据支撑 `ARCH-CUR-041`、`ARCH-DOM-026`、`ARCH-INT-029`、`ARCH-GAP-011` 与
+`.63 -> .64` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@0a062919ff568a1fc0259ed7c01b5b67345fd29a...HEAD@9dab07fb0fdf47912e1d907c695feb37efb68c4a`，
+覆盖两个提交、21 个路径，正式 checker 与 public wrapper 返回 `passed`。首轮普通 selected-base drift
+候选已由 C6 input 的 live base/ref/ancestry 检查关闭；第二位独立 reviewer 报告当前 slice 无 finding。
+
+提升前 focused lifecycle `125/125`、planned inventory `3/3`、ownership、dogfood drift、task validator
+与 `git diff --check` 通过。Package integration `19/20` 的 unchanged closure schema 错误在 clean main 同样
+复现，managed verifier fixture 未通过；这两项不记作通过。Fixed Fork 本轮无新增本地 build，完整 #410
+多平台 Release matrix 未运行。六个 IDs 仅 planned，32/142/102 active inventory 与生产 22/98 graph 未变。
+
+本次 `.64` promotion-created diff 必须重新通过 fresh Phase 2、Task Commit 与独立完整 Branch Review，
+随后才可进入 Publication。D443、D436、E434、#434 activation、installed/platform 切换、push、PR、merge、
+Release、生产升级与 Issue closure 均不由本证据证明。
+
+## EVD-032: #443 Reviewed Promotion Source
+
+本证据支撑 `ARCH-CUR-034`、`ARCH-DOM-019`、`ARCH-INT-022`、`ARCH-GAP-009`、`ADR-014`
+以及 `.56 -> .57` knowledge promotion。#443 integrated committed range为
+`a74d729ed84449ce603d112e277fa567e87a7bf3..4dd9f7b7d4df2167819745565225001355adb5ee`；
+Issue #443已于2026-09-19关闭，range已进入main历史。contribution
+`architecture-contribution-443-task-identity-session-binding-v1`以该闭合capability和live package authority为promotion输入。
+
+当前fresh执行canonical package contract/runtime 26 tests，覆盖profile/route闭集、A→B→A、跨session、
+mapping locator、base provenance、manual recovery、generation/receipt invalidation与zero-write；live registry/
+interface/commands聚合为32 packages / 142 external exits / 102 commands，production workflow保持22 mandatory
+invokes / 98 exits。installed interface/runtime与canonical bytes一致；package-private tests按当前安装合同不分发。
+
+本证据不证明当前#452 OpenCode/platform combined diff的完整source/installed/platform、preset reapply、ownership、
+dogfood或representative throwaway gate，也不证明#434 production graph activation、完整Release matrix、生产binding、
+push、PR、远端merge、tag、Release或Issue closure mutation。promotion-created diff仍须fresh Phase 2、Task Commit与
+independent complete Branch Review后才能进入Publication。
+
+## EVD-033: #452 All-Platform Projection And Exact Selection Promotion
+
+本证据支撑 `ARCH-CUR-035`、`ARCH-DOM-020`、`ARCH-INT-023`、`ARCH-GAP-010` 以及
+`.57 -> .58` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@361da96327824503ffb4fb4189291b3b9b4e23ae...HEAD@b4b4ebfdd29188a36866fd832b65cc6438420acf`；
+Architecture contribution `architecture-contribution-452-all-platform-projection-v1` 已完成
+expected-current-bound serialized promotion。当前定向 evidence 覆盖 pinned 22-platform inventory、重复
+`--platform` 与旧参数拒绝、三平台默认/dogfood、manifest/provenance exact-selection upgrade、OpenCode
+representative actual-load、ownership/manifest/mode/parity、reapply/update/removal provenance、dogfood drift
+及 package-private `tests/` 排除；实现事实详见对应 RDT `.58` test contribution。
+
+本 evidence 不证明 #434 production graph activation、22-client native compatibility matrix、正式
+Release/tag/GitHub Release、业务生产升级、push、PR、merge 或 Issue closure；promotion-created diff 必须
+重新通过 fresh Phase 2、Task Commit 与 independent complete Branch Review。
+
+## EVD-034: #454 Task Lifecycle C2 And Stage-Evidence Promotion
+
+本证据支撑 `ARCH-CUR-036`、`ARCH-DOM-021`、`ARCH-INT-024`、`ARCH-GAP-011`、`ADR-015`
+以及 `.58 -> .59` Architecture knowledge promotion。提升前独立完整 Branch Review 绑定
+`origin/main@0381f4ee060398f42bd2dded6ec14d7fced21393...HEAD@4421662f17b2b3adcfd3faeec6fd782d11bc947f`，
+覆盖 193 个 changed paths，P0/P1/P2/P3 为 `0/0/0/0`；Architecture contribution
+`architecture-contribution-454-task-lifecycle-state-model-v1` 完成 expected-current-bound serialized promotion。
+
+提升前 fresh 定向证据包括 lifecycle runtime `22/22`、Reconcile package `34/34`、base-continuity integration
+`3/3`、active continuation `7/7`、Reactivate `17/17`、created-Issue provenance `1/1`，以及 selected-base
+ancestry、canonical/preset/dogfood parity、source/README identity、task validation、JSON/Python checks、zero
+`.trellis/scripts/**` diff 与 `git diff --check`。Fork source 固定为
+`eb370008c7689d4e272ae626bd002190ecbb3296`、tree `bd1f133cc55d0562ad9ec5f426bca70d1584194b`、
+CI `35621578090`。
+
+两个 base-identical 全局测试 observation 属于 #454 range 外既有问题，不写成通过，也不阻塞本次 scoped
+promotion。本证据不证明 C3-C7、D443、D436、E434、production activation、完整 installer/upgrade/
+workflow-switch 或多平台 Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。
+本 evidence 不替代 promotion-created diff 后续 fresh Phase 2、Task Commit 与 independent complete Branch Review；Publication 必须消费后续 exact-range gate 结果。
+
+## EVD-035: #454 C3 Checkout Substrate Promotion
+
+本证据支撑 `ARCH-CUR-037`、`ARCH-DOM-022`、`ARCH-INT-025`、`ARCH-GAP-011` 与
+`.59 -> .60` Architecture knowledge promotion。独立完整 Branch Review 绑定
+`origin/main@9c2238bad7e73ea4a1f23dddcb7e8e9204c244da...HEAD@e965b7e8b6850614a2cd21f899a02b3ea9da73f3`；
+原 C3 findings 已关闭，当前范围无 open P0-P3 finding。Architecture contribution
+`architecture-contribution-454-task-lifecycle-state-model-c3-v1` 完成 expected-current-bound promotion。
+
+Focused evidence 包括 lifecycle runtime `51/51`、39 named DTO/schema、live checkout discovery/acquisition、
+identifier/error contracts、planned ownership、source/installed-active、task/workspace/compile/static/line/diff checks。
+Global package suite 保持 `19/20`，preset suite 保持 `85/86`；前者是 unchanged closure relative-ref defect，
+后者是 C3 禁止同步 installed projection 后 raw apply 的预期 conflict，二者均未声明为通过。
+
+本 evidence 不证明 C4-C7、D443、D436、E434、production activation、完整 installer/upgrade/workflow-switch/
+multi-platform Release matrix、push、PR、merge、tag、GitHub Release、业务生产验证或 Issue closure。promotion-created
+diff 仍须 fresh Phase 2、Task Commit 与 independent complete Branch Review 后才能进入 Publication。
+
+## EVD-043: #454 Generation 7 TaskId Domain Candidate
+
+This records the pre-Fork-PR-21 candidate. The current source and post-fix
+validation are recorded in `EVD-044` below; this older result is not the final
+Branch Review or Delivery gate.
+
+固定 Fork 为 `castbox/Trellis@18ccbf0356ebcc61f3557e1427d1ad8a6351559a`，
+tree `933069dbda8ac02d64e1fc8e3a1c3af513c1ae17`，main CI `36460551909`
+成功。提升前候选 `origin/main@4d7cd74f3803ca924ac3802dcc12afd1f2cac06c...
+HEAD@63de89e3a47686f8b1fd505ba6fae89ce5658931` 的完整 Branch Review
+通过；34 包隔离测试为 `685 passed, 2 skipped`，installer/upgrade/Fork
+定向子集 `90 passed`，source/installed、Claude/Codex/Cursor drift、sidecar 与
+`git diff --check` 已定向检查。先前更宽 installer 运行的 `172 passed, 2 failed`
+未整体重跑，不把它计为通过。promotion-created diff 与最终同候选审查、
+远端 Delivery/merge/Closure/Finish/Cleanup 尚未在此条中证明；完整 Release matrix
+和 marketplace 不属于本次验收。
+
+## EVD-044: #454 Final Source Candidate Before Branch Review
+
+Fixed Fork PR #21 merged to `castbox/Trellis` main at
+`a9e0b5dcb40e9dd0a54f990ad4d215e427939856`, tree
+`38a2e226a03ca7899ae3504bf3763dc1aac0cb35`; main push CI
+`36486251351` succeeded. Its installed Guru Team session reader returns
+`binding_required` on a missing current TaskBranchBinding rather than using
+an old checkout copy. The official template and Guru dogfood session script
+are byte-identical. Ordinary Trellis retains its no-binding fallback.
+
+The fixed Fork checkout passed frozen install, build and `validate-source`.
+On the Guru candidate, 34 package suites passed in isolated processes with
+two scoped skips; shared lifecycle kernel 142/142, Architecture owner 26/26,
+RDT owner 9/9, and installer/Fork/preset combination 189/189 passed. The
+new installed-reader binding-loss regression passed. Source and installed
+package validators, preset reapply, selected Claude/Codex/Cursor drift,
+task validation and `git diff --check` passed; no `.new` or `.bak` sidecar
+remains. Full multi-platform Release matrix, marketplace and business-repo
+production validation were not run. This evidence does not substitute for
+fresh Phase 2, committed complete-range Branch Review, two independent
+zero-finding reviews, Delivery or terminal closeout.
+
+## EVD-045: #454 TaskId History And Manual Cleanup Finding Fix
+
+The next independent review of `origin/main@4d7cd74f...7d40f6b8` found two
+normal-path gaps: TaskId reuse after a checkout and control-state loss when
+only a remote-tracking ref retained the prior task, and manual deletion of
+another active task's remote branch after its commit was merged to main.
+Neither finding was a malicious-input or concurrency scenario; that review
+did not pass Branch Review or count toward the two zero-finding rounds.
+
+Fork PR #22 merged as `castbox/Trellis@8336e78b8fafe2a4bc4ea3d01815a61cf4f08983`,
+tree `31a83927ed215fb23c04f357e259b45a39c13b7b`; main CI run
+`36519692082` succeeded. The Fork task writer now checks visible local and
+remote-tracking task artifacts before creation, while non-Git Trellis keeps
+its prior directory-based behavior. Guru's creation preflight checks the
+same reachable refs. Terminal manual Cleanup rejects a selected local or
+remote HEAD carrying another active TaskId/generation even when its commit
+and artifact survive on main; it still does not infer historical ownership.
+
+Fork's commit hook passed 2318 tests across 100 files. The Guru finding-fix
+real-Git creation/Cleanup subset passed 56 tests; the 34 isolated package
+suites passed 689 tests with two scoped skips. The current source/installed
+package projection, preset reapply and declared Claude/Codex/Cursor drift
+passed with no sidecars. Shared lifecycle, Architecture/RDT, Phase 2, full
+committed Branch Review, two final independent reviews and live Delivery
+remain separate gates; this entry does not claim them. The legacy
+`guru-create-task-workspace` throwaway verifier is not a current package
+gate and its retired-path tests are not claimed as passing. Marketplace is
+unused and the full multi-platform Release matrix remains a dedicated gate.
+
+`EVD-045`（#467 preparation）：`origin/main@8abf52ed...728c313e` 的
+31 文件 pre-promotion committed range 经独立完整 Branch Review，零 P0-P3；
+TaskId 聚焦测试 22/22、完整 lifecycle 148/148，通过 source/installed、
+声明平台投影、preset reapply 与 drift。Architecture/RDT `.69` 晋升形成的
+新字节还须 fresh Phase 2、Task Commit 与完整 Branch Review。前一版本既有安装
+升级时退役资产的实际删除，以及最终 tag/Release，均未由本条证明。
+
+## EVD-046: #481 task-personnel retirement candidate
+
+已合并 Fork PR #24 的精确 source lock 为
+`castbox/Trellis@64fe9a15a68df1add3a2a7fd182f3d84e6eba4ac`，tree
+`a964088ffa3f8df0deafc8f042f91911e3e8ecbe`，CLI/core
+`0.7.0-castbox.1`，成功 CI `36755826713`；source validator 已通过。
+Guru 候选的 lifecycle 152/152、create-task 13/13、Reactivate 25/25、
+Finish 56/56、session 8/8（另 1 项环境 skip）、checkout 4/4、branch 3/3、
+installer 101/101、compatibility contract 73/73 通过。代表性 Codex 新装验证
+native loading、preset apply、两次 reapply、同候选 update、template hash 与
+session binding；dogfood drift 通过且无残留 `.new`/`.bak`。旧 dogfood
+`.trellis/.version=0.6.17` 的 update 被该 Fork 明确拒绝，旧版本升级不能记为通过。
+历史 `test_434_activation_candidate.py` 有 3 失败、1 跳过，不记为通过的 #481 gate。
+完整多平台 Release/前驱升级矩阵、远端 marketplace、生产安装，以及本次
+promotion-created diff 的 fresh Phase 2 和完整 committed Branch Review 尚未由本条证明。
+
+## EVD-047: #490 reference-only/source adoption
+
+已独立读取正式 creator 16/16、current lifecycle 152/152、Closure 18/18、dogfood 9/9 证据，source/installed/platform validator 与183-file official projection通过；直接 live回读 CI37179218822 success at9c36002a。Focused Codex local-workflow sample clean install、initial preset、两次 same-candidate update/reapply、session/template 与零 drift/sidecar通过，native_load=projection_parity。pre-promotion完整committed review已通过，promotion-created diff仍须fresh Phase2/commit/不同reviewer完整Branch Review。remote/native-host/full matrix、predecessor refusal/no-write、tag/Release尚未由本条证明，归#489。
+
+## EVD-048：#495迁移候选与本地证据
+
+绑定expected `.71 -> .72`知识晋升与正式Fork PR27 `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`/CI37473087582。候选core411pass/1历史SQLite skip、CLI1879pass，lint/typecheck/build通过；clean built source与183文件official投影/9tests通过。Guru installer101、upgrade73、ownership9、migration14通过；runtime64完整轮62pass/2dependency失败后原样重试2pass，不称单轮64通过。
+
+public六场景6/6证明planning/dirty未发布dev接续、mixed/deferred正式creator、普通partial recovery、无新工作实际写后精确rollback/旧runtime smoke，以及新meta/notes禁止覆盖。current `.2` dry-run/update与local canonical workflow/apply/reapply、3844hash/preservation/零drift-sidecar通过，10真实业务checkout/Fork状态保持；共享managed Python cache为bootstrap边界。上述Guru来源是local_candidate，不证明remote source_locked/provider。
+
+PR195 exact HEAD旧manifest的4896 managed来源核对、58未展开hash解析、零冲突/现存编辑、一条absent路径只关闭来源读取缺口；openPR处置与真实旧Finalizer/Finish在途完整验收仍缺，merged历史终态不能替代。ARCH-GAP012保持open，全部MIG01..09完成前禁止merge/Completion。本次promotion-generated diff必须重新fresh Phase2/TaskCommit/不同reviewer完整BranchReview；本条不声明该后续gate通过。完整矩阵/软件发布/真实业务安装未执行。
+
+## EVD-049：#495 固定来源最终验收
+
+expected `.72 -> .73` 承接 [验收增量](../../requirements-design-test-contributions/495-legacy-installation-upgrade-acceptance/test.md)，该文件是结果唯一入口。旧 source `a32ffdca61f432bc6c3e0557fe68486c1422d08f`，新远端 Guru `6a563f5f06cb1284c0935b3a2be68524d93df988`，Fork `8868c47c45fa1a9fa8f60fe30d641f70ff5c6ba1`。正式七场景首轮 5/7、exit1；两原失败样本 public same-owner 恢复/剩余断言通过，未单轮7/7。registry timeout provider重试后通过；未分类 internal/node 首次失败根因未知。source/actual installed/Shared/Codex、实际update/create-new/字节审查/force/preset reapply、3853hash与modes、零sidecar通过。
+
+真实 PR195 OPEN/deferred 的 old task/live base/head 区别、PR58/210 merged但无确认TaskRef/trailer，均只读诊断，不构造当前 MergeResult/Completion。MIG06 原始业务在途不可取得，依据 live scope 使用正式native旧task/plan/recorder/checker/writer/executor/archive、本地Git与canonical test doubles；原路径正常终态，observer仅复制正式writer已写出的push_content。新source_locked public迁移 deferred/preserve，首次失败后一次resume upgraded/unverified[]，16旧文件bytes/modes及refs保持；directold明确unsupported_legacy_task，新current neighbor正式创建后installed再次通过。
+
+EVD-048/v1/.72 为不可变前驱证据；本条不把旧首次失败删除或说成网络，不证明业务原始在途/真实GitHub发布/new文档HEAD重跑/当前旧gate/Release/真实业务安装/完整累计矩阵。晋升前 committed review 仅放行 expected-current promotion；晋升diff仍须freshPhase2/TaskCommit/不同reviewer完整BranchReview，再按正式Delivery/merge/Completion owners承接。
+
+## EVD-050：#495 版本系列本地 slice
+
+expected `.73→.74`；[唯一增量 Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md)拥有实际结果与首次失败/恢复边界。19 tag 全归组，G1..G8 actual before/preview/upgrade/实际来源回退/smoke，current linked control/session 与 lifecycle 横向覆盖；正式 Fork PR28/CI 固定 `.3`。26 package/2helper、Skill/overlay canonical-only及暂停新工作四格和 companion组合、source/installed/drift已定向验证。三个回退finding修复并关闭，`11ef591c...6cd766dd` 完整独立复审及正式 Branch Review passed；该 pass 不覆盖本次晋升 diff。REMOTE 同 Guru public/source_locked/provider/deferred 尚缺，旧 EVD-049 不代替；不声称 full-suite全通过、Release、真实业务安装或累计矩阵。
+
+## EVD-051：#495 精确后继远端验收
+
+expected `.74→.75`；来源 [PR498](https://github.com/castbox/guru-trellis/pull/498) 精确 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` clean远端fetch/bootstrap，正式Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c`/main CI `37647767799`，CLI/core `.7.0-castbox.3`。结果仅由[唯一family Test](../../requirements-design-test-contributions/495-upgrade-version-families/test.md#精确远端来源与修复后验收evd-051)拥有：G1/native G8 source_locked/provider/installed/实际来源回退与oldsmoke，native G8 inside/outside/mode新工作保护、reapply，以及native oldwriter deferred均通过。31package/2helper、两AGENTS修复closure及完整123路径正式Branch Review已通过；不代替本晋升difffresh gates。
+
+EVD-050/.74本地历史不改写，e6首次G1误阻止回退及bdf默认AGENTS新工作finding保留。当前accepted MIG-495-01..12证据齐备，ARCH-GAP-012 closed；Issue仍OPEN。后继文档HEAD不声称同源重跑；merge/Completion/Closure/Finish、软件Release、真实业务安装/原始在途及完整累计矩阵未由本条证明。
+
+## EVD-052：#503 身份职责与代表性安装
+
+实现范围 `761e8514a955239a3b14c69932c3d370ddad13ea...62c60bb0646c067e60b8dcd43ecc324975131947` 的完整初始 Branch Review 已通过；九项 concerns 无新增或恶化 GAP，ADR-017/018 与 migration owners/退出保持。执行结果仅由[唯一 Test](../../requirements-design-test-contributions/503-mixed-task-identity-reservation/test.md)拥有：runtime156、create22零 SKIP、source-lock73、projection9、平台2、source/installed validators及保全/恢复证据通过。实际 clean-installed fixture 证明候选安装行为，不证明 Backend 原仓升级或 #378 intake 恢复。
+
+expected `.75→.76` 的知识晋升 diff 仍须 fresh Phase2/TaskCommit/完整独立 Branch Review；不把旧候选执行重标为后继 HEAD 重跑。软件 Release、业务安装与部署未验证；EVD-051 历史对象及含义保持。
+
+## EVD-053：#466 已审查反投机增量
+
+独立 initial committed review 范围：`origin/main@7d20a930341dae3e7dd2d214660ce3b99e28d863...936512927f81845b9978efcda78fa31606220f0c`，完整44路径、六类语义案例和九项 concern 未发现缺陷，正式 Branch Review 已通过。[贡献](../contributions/466-no-speculative-extension.md)拥有 expected `.76→.77` 晋升绑定；[唯一 Test](../../requirements-design-test-contributions/466-no-speculative-extension/test.md)拥有实际执行结果与首次 sidecar conflict 处理。
+
+本条不重写 EVD-052/历史安装执行对象；当前知识晋升 diff 仍须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review。完整 upgrade/Release matrix、远端 marketplace、业务安装部署未验证。
+
+## EVD-054：#404 独立架构与任务必要性增量
+
+已独立审查实现范围 `origin/main@07b89e48985761035777d15fdb82476174e277a6...29db9d579e3e1638d48b8d8f04708b5dc5f244b3`，157 路径无 P0–P3 finding，Architecture 与完整 Branch Review 分别完成原 wrapper；[贡献](../contributions/404-independent-architecture-review.md)承接 expected `.77→.78` 晋升。[唯一 Test](../../requirements-design-test-contributions/404-independent-architecture-review/test.md)拥有实际行为结果、首次失败和未验证边界，不在此复制 suite/trace。
+
+EVD-053/052 仍绑定原对象。此次 knowledge promotion diff 必须 fresh Phase2/TaskCommit/不同 reviewer 完整 Branch Review；此前实现审查不替代这些新 gates。Codex native 与其它平台投影边界如 Test；官方 update、完整 Release matrix、业务安装与生产部署未验证。
+
+## EVD-055：#382 独立根因候选资格增量
+
+已独立审查实现范围 `origin/main@f4bbc68cd651237b4c16f67ead1454826aea52cf...3eb3976856cf660a491a86fd618d6248e19baca6`，373 paths；fresh generic reviewer 先完成 committed Architecture，再执行独立完整 Branch Review，两者分别真实调用正式 wrapper。Architecture 为 target_native/reviewed_candidate，Branch Review 为 passed，无开放 P0–P3 finding。[贡献](../contributions/382-root-cause-qualification.md)承接 expected `.78→.79` promotion；[唯一 Test](../../requirements-design-test-contributions/382-root-cause-qualification/test.md)拥有实际执行、首次失败和未验证边界，不在本条复制 suite/trace。
+
+EVD-054 及更早仍绑定原对象。知识 successor 的新 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review；此前实现审查不替代这些 gates。业务 native 接续、PostgreSQL/生产效果、未发布候选远端安装及完整多平台 Release matrix 未验证；#383/#468 不在本任务。
+
+## EVD-056：#383 独立因果完成语义增量
+
+已独立审查实现范围 `origin/main@ef83e6d61e3c35d966b1baf95ab4bcab8409e993...f7944544122309035bb30da4ab88b6fa442c986c`，95 paths；fresh generic reviewer 先完成 committed Architecture，再执行完整 Branch Review，各自真实调用原 wrapper，最终无 P0–P3 findings。[贡献](../contributions/383-causal-completion-semantics.md)承接 expected `.79→.80` promotion；[唯一 Test](../../requirements-design-test-contributions/383-causal-completion-semantics/test.md)拥有实际结果、首次失败和未验证边界，本文不复制 suite/trace。
+
+EVD-055 及更早仍绑定原对象；knowledge successor 的新 diff 须 fresh Phase2/TaskCommit/独立完整 Branch Review。此前实现审查不替代晋升后 gates，fixture 不证明远端 Delivery 或任一业务生产效果；官方 init/update 完整链、candidate 远端安装和完整 Release matrix 未验证。
+
+## EVD-057：#468 独立 Direct Source/活动重规划增量
+
+已独立审查实现范围 `origin/main@8dfa2a35bd2ccae236f7b8bc679f107f3ec1ffde...00102ccc5cb6a2102c6146421224962782ecd49f`，144 paths。独立 reviewer 先亲自完成 committed Architecture，再执行完整 Branch Review，各自调用原正式边界，最终无 current-scope P0–P3 findings。[贡献](../contributions/468-direct-source-replanning-compatibility.md)承接 expected `.80→.81` promotion；[唯一 Test](../../requirements-design-test-contributions/468-direct-source-replanning-compatibility/test.md)拥有实际结果、首次失败与未验证边界，本文不复制 suite/trace。
+
+EVD-056 及更早保持原执行对象；promotion 新 diff 须 fresh Phase2/TaskCommit/独立完整 Branch Review。Fixture 只证明 transport，旧 Closure missing_workspace 失败仍保留；native external eval、官方 init/update 完整链、candidate 远端安装、Backend 安装/重试/生产及完整 Upgrade/Release matrix 未验证。
+
+## EVD-058：#453 中间 transport 独立审查
+
+已独立审查完整 committed range `origin/main@a080da319147fc9ccd6f85b10df60f3ce2e07e36...49c3e11ae9ce26fa391c038b6ba351adac25ff04`，541 paths。独立评估先读取 Architecture authority、实际完整 diff 与 consumers，再执行完整 Branch Review；两者分别调用原公共 wrapper，Architecture 为 reviewed_candidate，Branch Review 实际 passed，无开放 P0–P3 finding。[贡献](../contributions/453-formal-skill-exit-boundary.md)承接 expected `.81→.82`；[唯一 Test](../../requirements-design-test-contributions/453-formal-skill-exit-boundary/test.md)拥有实际验证与未覆盖边界，本文不复制 suite/trace。
+
+历史 EVD-057 及更早保持原执行对象；新晋升 diff 必须 fresh Phase2/TaskCommit/独立完整 Branch Review。知识晋升不代表软件 Release、所有模型行为或业务生产升级。
+
+## EVD-059：#250 唯一 Intake 独立审查
+
+已独立审查完整 committed range `origin/main@6362e080a97fb3851ad3565c65a0e21abd5c49b4...fb6cd5c8a58a37bc9c9eb93b2ee46d6e1163df34`，508 paths（`--no-renames`；rename 识别后 502）。fresh generic reviewer 先执行 committed Architecture，再执行完整 Branch Review；实际 public outputs 分别为 `.82` 的 architecture_impact/reviewed_candidate 与 task/commit 匹配的 passed，原 checker receipt 为 owner_checkpoint_validated，不能替代正式出口。[贡献](../contributions/250-phase0-intake-owner.md)承接 expected `.82→.83`；[唯一 Test](../../requirements-design-test-contributions/250-phase0-intake-owner/test.md)拥有实际测试/native、首次失败/恢复和未验证边界，本文不复制 suite/trace。
+
+EVD-058 及更早仍绑定原执行对象；晋升产生的新 diff 尚须 fresh Phase2/TaskCommit/独立完整 Branch Review。完整多平台 Upgrade/Release matrix、其它 host/model、真实 external GitHub mutation、业务安装/部署和软件发布未验证，knowledge promotion 不替代 Delivery/Completion。
+
+## EVD-060：#521 隔离位置与无 Task continuation 独立审查
+
+已独立审查完整 committed range `origin/main@44a8b9c1f8495e2f811f892f248a1f2693a8bc80...5bcee456787cfb70bb6f26956a90af696083e73d`，76 paths。fresh reviewer 先读取 Architecture authority、实际差额和受影响 consumers，执行九 concern 项目协议，再完成 Branch Review；实际 Architecture 为 `.83` 的 `baseline_current / architecture_impact / reviewed_candidate`，Branch Review 原 recorder/checker/public invoke 后实际 `passed`，无开放 P0–P3。[贡献](../contributions/521-checkout-isolation.md)承接 expected `.83→.84` 和 ADR-021；[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有原生轨迹、首次失败/同输入修复和安装结果，本文不复制 suite/trace。
+
+原 review 与 evidence 仍绑定实现 commit；新晋升差额尚须 fresh Phase2/TaskCommit/独立完整 Branch Review。现有 primary recovery 保留不等于旧对象迁移完成，标准接管只到独立副作用边界。业务 #120 安装/PHX、其它 native hosts、完整矩阵、Release 与生产效应未验证；知识晋升不替代 Delivery/Completion。
+
+## EVD-061：#548 原 Task 创建与恢复独立审查
+
+首次完整 committed range 为 `origin/main@901d4f5d3b153725b7bf928427dc8663f4c0a5f2...25ae20319fae2047747da70e3be5167bb39d9a27`。Architecture 与 Branch Review 分别通过原正式入口；[已晋升贡献](../contributions/548-creation-recovery.md)承接 expected .88→.89，[唯一 Test](../../requirements-design-test-contributions/548-creation-recovery/test.md)拥有具体执行层级、首次失败及未验证边界。新晋升差额须 fresh Phase2/commit/完整独立 Review；历史 EVD 不改写，知识晋升不代表软件或业务发布。
+
+## EVD-062：#557 手动合入事实的已审贡献
+
+首次完整独立 committed range 为 `ccf67ff157dc006f236870049dda9cba0fafa73f...6bba4880362a2e0ff31b535809e4895b7fa1a84d`；Architecture/RDT 原 owners 基于该已审贡献维护 successor，新增文档差额仍须 fresh gates。架构关系由[贡献](../contributions/557-manual-merged-delivery-recovery.md)与 ADR-026 定义，实际软件/安装/真实 PR563 观察及未验证边界只由[唯一 Test](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)拥有；不证明 source Delivery、Task Closure、旧业务恢复或 Release。
+
+## EVD-063：#566 独立维护的已审贡献
+
+首次完整独立 committed range 为 `3e8b281c93894cd3df4e704901bda63ca2885f23...95bcf24334f9a4d25df3f9175af9d00b58d86915`；原 owners 按 expected Architecture .90 / RDT .96 维护 successor，新增差额仍须 fresh gates。 责任见[贡献](../contributions/566-single-checkout-upgrade.md)与 ADR-027，实际结果和边界见[唯一 Test](../../requirements-design-test-contributions/566-single-checkout-upgrade/test.md)。不表示正式依赖/业务采用、软件发布或 Task Closure。
+
+## EVD-064：#567 固定内容与实际整合的已审贡献
+
+首次通过的独立完整 committed range 为 `origin/main@3b165daef0001bd9816c0bf3bbe928bcb59de390...f2538d822dbede7ea34dc29bdad9a0f828130dad`，113路径；原 Architecture 与 BranchReview 分别完成正式入口。先前 BR567-F1/F2/F3 与修复由[唯一 Test](../../requirements-design-test-contributions/567-fixed-development-baseline/test.md)记录，未将失败或单项closure算作完整Review通过。原 owners 按 expected Architecture .91 / RDT .97 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/567-fixed-development-baseline.md)与 ADR-028 拥有责任/决策，Test拥有实际运行和未验证边界；本条不复制 suite/trace，不改写历史 EVD，不表示真实 GitHub、业务、Release 或 Task Closure 已完成。
+
+## EVD-065：#569 固定截点查询的已审贡献
+
+首次独立完整committed range为 `5391d187ae587d978b81d3af073bbaf87abb8a05...36203b09442683b4a9a53e3ed2328d8e968c2e1c`，27路径；原Architecture与BranchReview分别完成正式入口。原owners按expected Architecture .92 / RDT .98维护successor，新差额仍须fresh gates。[贡献](../contributions/569-fixed-cutoff-history-query.md)拥有责任与晋升关系，[唯一Test](../../requirements-design-test-contributions/569-fixed-cutoff-history-query/test.md)拥有实际验证和边界；本条不复制结果、不改写历史证据，不表示真实source Delivery、Completion或软件发布。
+
+## EVD-066：#578 跨 owner 工程事实的已审贡献
+
+首次独立完整 committed range 为 `404d3f4d7635b19fb2c9f0d6aa642e2f1bf925b4...5ba72ba9ca40d990d8250fbc0c174475bc3d98f4`；原 Architecture 与 BranchReview 正式出口分别为 baseline_current/reviewed_candidate 与 passed。原 owners 按 expected Architecture .93 / RDT .100 维护 successor；新晋升差额仍须 fresh gates。[贡献](../contributions/578-cross-owner-validation-facts.md)与 ADR-029 拥有责任，[唯一 Test](../../requirements-design-test-contributions/578-cross-owner-validation-facts/test.md)保留命令原始对象、失败及未验证边界；本条不复制或改写执行事实。
+
+## EVD-067：#599 清晰写作与入口读取的已审贡献
+
+首次独立完整 committed range 为 `dev@ea9998c36a188f3afae1d7d6e5746edc07fa003f...af246dc6184e6c779f2f08ab72a4ff889c6dbc0f`。原 Check 已绑定该范围的 HEAD，Architecture 与独立 Branch Review 分别通过正式入口；原 Architecture owner 按 expected `.94` 晋升 `.95`。本次新增晋升差额仍须 fresh Phase2、TaskCommit 与不同 reviewer 的完整 BranchReview。[贡献](../contributions/599-clear-technical-writing.md)拥有责任与晋升关系，[唯一 Test](../../requirements-design-test-contributions/599-clear-technical-writing/test.md)拥有实际结果、首轮遗漏、finding 修复和未验证边界；本条不复制执行记录，不证明软件发布、业务采用或 Task Completion。
+
+## EVD-068：#589 D7 公开不可变摘要消费的已审贡献
+
+首次独立完整 committed range 为 `865f4a9576eabc85cb3b91e74ecd856785095510..f168092b2783d8c09ee416fb850ecaa1c694d65c`。本轮 Architecture 正式出口为 `baseline_current/reviewed_candidate`，独立 Branch Review 正式出口为 `passed`，绑定 current Check；原 Architecture owner 随后按 live expected `.95` 晋升 `.96`。[已晋升贡献](../contributions/589-git-object-performance.md)记录职责与前后关系，[唯一 Test](../../requirements-design-test-contributions/589-git-object-performance/test.md)单写工程结果及未验证边界。晋升产生的新差额尚未 Check/TaskCommit/完整 Review；不声明正式工具采用、native/live 效果、软件发布或整体 Task 完成。
+
+## EVD-069：#600 晋升时机与原 authority 的受审增量
+
+ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 与 [ADR-030](../adr/030-promotion-before-final-check.md)承接 [#600 贡献](../contributions/600-promotion-before-check.md)，原分支晋升从 expected `.95` 到 successor `.96`，保留于 `87176aea126cc9ade10f334eb379e0d35a053295`。本次与 main #589 `.96` 的真实冲突整合形成 `.97` 组合投影；原独立判断不自动覆盖新增差额。本项定位本次知识增量，不记录自引用最终 SHA、完整审查历史或授权。实际独立评估、写入、Check、committed Review、恢复和安装结果只由[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)记录。未来门禁、Delivery、Completion、Release 和业务效果不由本项预先证明。
+
+## EVD-070：#577 人工旧归档恢复的架构增量
+
+ARCH-CUR-071 / ARCH-DOM-054 / ARCH-INT-057 承接 [#577 贡献](../contributions/577-manual-archive-resume.md)。本轮比较起点为 main@`ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e` 的 `.97`；原 Architecture owner 在独立 Phase2 评估完整实现及拟写内容后，按 expected `.97` 晋升 `.98`，最终 Check 和 committed 独立完整审查仍审实际候选。ADR-024/027/030、constitution、GAP lifecycle 与原 owners 保持。本项只定位职责增量；源码、目标 native/下一 owner、历史核验、恢复、打包 mode 差额、dogfood 首次失败和 known-dirty 修复结果由 [唯一 Test](../../requirements-design-test-contributions/577-manual-archive-resume/test.md) 单写。没有自引用最终 SHA 或授权记录，也不由本项宣称正式 source-locked、真实业务恢复、软件发布、完整矩阵或整体 Task 完成。

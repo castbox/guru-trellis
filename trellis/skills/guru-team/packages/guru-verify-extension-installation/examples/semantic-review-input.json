@@ -1,0 +1,25 @@
+{
+  "applicability": {
+    "status": "required",
+    "reason": "The reviewed change modifies the installable extension contract.",
+    "evidence_paths": ["trellis/skills/guru-team/registry.json"]
+  },
+  "verification_profile": {
+    "selected_capabilities": ["marketplace_index", "redaction"],
+    "selection_reason": "The selected capabilities cover the reviewed registry and retained evidence surfaces.",
+    "coverage": ["registry -> marketplace_index", "retained evidence -> redaction"]
+  },
+  "semantic_review": {
+    "adequacy": [
+      {"id": "profile_coverage", "status": "passed", "evidence_refs": ["capability:marketplace_index"]},
+      {"id": "redaction", "status": "passed", "evidence_refs": ["capability:redaction"]}
+    ],
+    "findings": [],
+    "conclusion": "verified"
+  },
+  "typed_exit": "verified",
+  "redaction": {
+    "status": "passed",
+    "scanned_surfaces": ["artifact", "wrapper_stdout", "eval_trace", "retained_logs"]
+  }
+}

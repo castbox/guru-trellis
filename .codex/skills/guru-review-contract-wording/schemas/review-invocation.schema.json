@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-contract-wording-review-invocation-2.0",
+  "oneOf": [
+    {
+      "$ref": "change-request-review-invocation.schema.json"
+    },
+    {
+      "$ref": "delivery-review-invocation.schema.json"
+    }
+  ]
+}

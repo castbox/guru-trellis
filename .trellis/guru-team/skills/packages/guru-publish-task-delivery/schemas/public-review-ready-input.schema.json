@@ -1,0 +1,13 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-publish-task-delivery-input-review-ready-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["profile","mode","task_ref","delivery_cycle_ref","reviewed_head","pr_title","pr_body","remaining_work_state"],
+  "properties":{
+    "profile":{"const":"review_ready"},"mode":{"enum":["workflow","standalone"]},
+    "task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "delivery_cycle_ref":{"type":"string","pattern":"^delivery-cycle:v1:[0-9a-f]{64}$"},
+    "reviewed_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "pr_title":{"type":"string","minLength":1},"pr_body":{"type":"string","minLength":1},
+    "remaining_work_state":{"enum":["none","remaining"]}
+  }
+}

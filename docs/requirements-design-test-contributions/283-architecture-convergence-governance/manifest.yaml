@@ -1,0 +1,28 @@
+schema_version: "1.0"
+task_ref: "283-architecture-convergence-governance"
+task_locator: ".trellis/tasks/08-20-283-architecture-convergence-governance"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/283"
+source_version: "current-main-0.6.5-guru.37"
+expected_current_version: "current-main-0.6.5-guru.37"
+candidate_successor_version: "assigned-by-reviewed-promotion"
+status: "candidate_pending_review"
+authority_scope: "isolated_contribution"
+architecture_impact: "architecture_impact"
+change_path: "target_native"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.5-guru.37"
+  status: "active"
+design_constitution:
+  authority_owner: "docs/architecture"
+  candidate_locator: "docs/architecture/00-foundation/design-constitution.md"
+  identity_kind: "version"
+  candidate_identity: "guru-trellis-design-constitution-v1"
+  identity_status: "pending-reviewed-promotion"
+public_contracts:
+  rdt_owner: "guru-maintain-requirements-design-test-ssot:task_impact_sync"
+  architecture_candidate: "guru-maintain-architecture-baseline:2.0"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+architecture_promotion_owner: "guru-maintain-architecture-baseline"
+promotion_decision: "pending_independent_review"
+shared_current_write: false

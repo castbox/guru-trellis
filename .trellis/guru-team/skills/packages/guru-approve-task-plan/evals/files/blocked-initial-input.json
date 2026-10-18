@@ -1,0 +1,20 @@
+{
+  "profile": "delivery_initial_review",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "source_exit": "baseline_current",
+  "delivery_key": {
+    "task_id": "current",
+    "lifecycle_generation": 0,
+    "delivery_id": "11111111-1111-4111-8111-111111111111"
+  },
+  "architecture_assessment": {
+    "planning_purpose": "final_plan",
+    "freshness_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "baseline_identity": "current-example",
+    "constitution_identity": "constitution-v1",
+    "constitution_status": "current",
+    "impact_kind": "no_architecture_impact",
+    "promotion_state": "no_change"
+  }
+}

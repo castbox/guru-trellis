@@ -1,0 +1,1 @@
+{"exit_id":"blocked","reason_code":"multiple_open_prs","remediation":"Reduce the current head branch to one same-repository Open PR."}

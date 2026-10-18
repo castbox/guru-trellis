@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-clarify-requirements-input-delivery-task-scope-revision-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "task_ref",
+    "task_key",
+    "target_locator",
+    "resume_target",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_task_scope_revision"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_key": {
+      "type": "object",
+      "description": "Opaque installed upstream API 1.0 object."
+    },
+    "target_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "resume_target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

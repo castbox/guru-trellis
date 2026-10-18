@@ -1,0 +1,720 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-finish-task",
+  "name": "guru-finish-task",
+  "description": "Persist Completion and Closure into one reviewed task archive and terminal bookkeeping result.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "closure_result",
+        "task_identity",
+        "bookkeeping_allowlist"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "closure_result",
+        "task_identity",
+        "bookkeeping_allowlist"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed finish package",
+      "binding": "Guru Team preset",
+      "freshness": "each call"
+    },
+    {
+      "id": "closure_result",
+      "evidence": "current Closure ResultRefDTO and shared terminal action-set snapshot",
+      "binding": "one task lifecycle",
+      "freshness": "current"
+    },
+    {
+      "id": "task_identity",
+      "evidence": "TaskId-resolved active or archived task and target base",
+      "binding": "one archive identity",
+      "freshness": "live reread"
+    },
+    {
+      "id": "bookkeeping_allowlist",
+      "evidence": "AI-reviewed lifecycle-only path set",
+      "binding": "one finish transaction",
+      "freshness": "before mutation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "input",
+      "path": "examples/public-input.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "examples/semantic-result.json"
+    },
+    {
+      "id": "success_output",
+      "path": "examples/public-output.json"
+    },
+    {
+      "id": "resume_finish_output",
+      "path": "examples/public-resume-finish-output.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "closure_refresh_output",
+      "path": "examples/public-closure-refresh-output.json"
+    },
+    {
+      "id": "manual_cleanup_output",
+      "path": "examples/public-manual-cleanup-output.json"
+    },
+    {
+      "id": "reentry_input",
+      "path": "examples/public-reentry-input.json"
+    },
+    {
+      "id": "manual_cleanup_authoring",
+      "path": "examples/manual-cleanup-authoring.json"
+    },
+    {
+      "id": "cleanup_authoring",
+      "path": "examples/cleanup-authoring.json"
+    },
+    {
+      "id": "self_authoring",
+      "path": "examples/self-authoring.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "examples/legacy_control_inspection-input-1.0.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "examples/legacy_control_retirement-input-1.0.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "examples/legacy_controls_retired-output-1.0.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result-2.0.schema.json"
+    },
+    {
+      "id": "public_output",
+      "path": "schemas/public-output.schema.json"
+    },
+    {
+      "id": "finish_transaction",
+      "path": "schemas/finish-transaction-3.0.schema.json"
+    },
+    {
+      "id": "closure_result_snapshot",
+      "path": "schemas/closure-result-snapshot.schema.json"
+    },
+    {
+      "id": "success_output",
+      "path": "schemas/public-success-output.schema.json"
+    },
+    {
+      "id": "resume_finish_output",
+      "path": "schemas/public-resume-finish-output.schema.json"
+    },
+    {
+      "id": "blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "closure_refresh_output",
+      "path": "schemas/public-closure-refresh-output.schema.json"
+    },
+    {
+      "id": "manual_cleanup_output",
+      "path": "schemas/public-manual-cleanup-output.schema.json"
+    },
+    {
+      "id": "legacy_control_inspection_input",
+      "path": "schemas/legacy_control_inspection-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_retirement_input",
+      "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_controls_retired_output",
+      "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+    },
+    {
+      "id": "legacy_maintenance_input",
+      "path": "schemas/legacy-maintenance-input-1.0.schema.json"
+    },
+    {
+      "id": "private_legacy_recovery",
+      "path": "schemas/private-legacy-recovery-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_freeze_input",
+      "path": "schemas/legacy_control_freeze-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_check_input",
+      "path": "schemas/legacy_control_restore_check-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_control_restore_input",
+      "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "legacy_semantic_result_1",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "legacy_finish_transaction_2",
+      "path": "schemas/finish-transaction.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-finish-task",
+      "objective_scope": "Validate closure identity and lifecycle-only bookkeeping route."
+    },
+    {
+      "id": "legacy_maintenance",
+      "command": "scripts/legacy-maintenance.sh",
+      "runtime_command": "legacy-maintenance-guru-finish-task",
+      "objective_scope": "Exact legacy original-owner facts, attribution and fixed preimage retirement; no current lifecycle or publication/merge/Finish action."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "success",
+      "evidence": "bookkeeping merge and target-baseline archive verification passed",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-cleanup-task-resources"
+      }
+    },
+    {
+      "id": "resume_finish",
+      "evidence": "same finish transaction can continue",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-finish-task"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "allowlist, identity or post-check failed",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-finish-blocked"
+      }
+    },
+    {
+      "id": "closure_refresh_required",
+      "evidence": "frozen source or required OPEN/CLOSED Issue state changed before terminal mutation",
+      "consumer": {
+        "kind": "workflow",
+        "id": "task-closure-refresh-router"
+      }
+    },
+    {
+      "id": "manual_cleanup_required",
+      "evidence": "terminal archive persisted but resource ledger is missing",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-cleanup-task-resources"
+      }
+    },
+    {
+      "id": "legacy_controls_retired",
+      "evidence": "Original owner actual selected legacy facts only.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "legacy-maintenance-finish-task-legacy-controls-retired"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task, closure, allowlist and target baseline",
+    "freshness": "rebuild lifecycle facts before every transition",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_finish_contract.py",
+    "tests/test_legacy_maintenance.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-finish-task-input-2.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "closure_completed",
+          "schema": {
+            "schema_id": "guru-finish-task-input-2.0",
+            "path": "schemas/public-input.schema.json"
+          },
+          "example": {
+            "id": "input",
+            "path": "examples/public-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "closure_completed"
+          }
+        },
+        {
+          "id": "finish_reentry",
+          "schema": {
+            "schema_id": "guru-finish-task-input-2.0",
+            "path": "schemas/public-input.schema.json"
+          },
+          "example": {
+            "id": "reentry_input",
+            "path": "examples/public-reentry-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "finish_reentry"
+          }
+        },
+        {
+          "id": "legacy_control_retirement",
+          "schema": {
+            "schema_id": "guru-finish-task-input-legacy_control_retirement-1.0",
+            "path": "schemas/legacy_control_retirement-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "legacy_control_retirement_input",
+            "path": "examples/legacy_control_retirement-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "legacy_control_retirement"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "closure_completed"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-finish-task-output-aggregate-2.0",
+        "path": "schemas/public-output.schema.json"
+      },
+      "error_example": {
+        "id": "input",
+        "path": "examples/public-input.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-input.json",
+        "--semantic-result",
+        "examples/semantic-result.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "success",
+        "schema": {
+          "schema_id": "guru-finish-task-output-success-2.0",
+          "path": "schemas/public-success-output.schema.json"
+        },
+        "example": {
+          "id": "success_output",
+          "path": "examples/public-output.json"
+        },
+        "consumer_use_ids": [
+          "cleanup"
+        ]
+      },
+      {
+        "exit_id": "resume_finish",
+        "schema": {
+          "schema_id": "guru-finish-task-output-resume-finish-2.0",
+          "path": "schemas/public-resume-finish-output.schema.json"
+        },
+        "example": {
+          "id": "resume_finish_output",
+          "path": "examples/public-resume-finish-output.json"
+        },
+        "consumer_use_ids": [
+          "self"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-finish-task-output-blocked-2.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "blocked"
+        ]
+      },
+      {
+        "exit_id": "closure_refresh_required",
+        "schema": {
+          "schema_id": "guru-finish-task-output-closure-refresh-2.0",
+          "path": "schemas/public-closure-refresh-output.schema.json"
+        },
+        "example": {
+          "id": "closure_refresh_output",
+          "path": "examples/public-closure-refresh-output.json"
+        },
+        "consumer_use_ids": [
+          "closure_refresh"
+        ]
+      },
+      {
+        "exit_id": "manual_cleanup_required",
+        "schema": {
+          "schema_id": "guru-finish-task-output-manual-cleanup-2.0",
+          "path": "schemas/public-manual-cleanup-output.schema.json"
+        },
+        "example": {
+          "id": "manual_cleanup_output",
+          "path": "examples/public-manual-cleanup-output.json"
+        },
+        "consumer_use_ids": [
+          "manual_cleanup"
+        ]
+      },
+      {
+        "exit_id": "legacy_controls_retired",
+        "schema": {
+          "schema_id": "guru-finish-task-output-legacy_controls_retired-1.0",
+          "path": "schemas/legacy_controls_retired-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "legacy_controls_retired_output",
+          "path": "examples/legacy_controls_retired-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_legacy_controls_retired"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "cleanup",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-cleanup-task-resources"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-cleanup-task-resources/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "normal",
+          "seed_fields": [
+            "task_id",
+            "lifecycle_generation",
+            "finish_result_id",
+            "inventory_id"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "cleanup_authoring",
+            "path": "examples/cleanup-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "self",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-finish-task"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-finish-task/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "finish_reentry",
+          "seed_fields": [
+            "task_id",
+            "lifecycle_generation",
+            "transaction_id",
+            "result_id"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "self_authoring",
+            "path": "examples/self-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "blocked",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-finish-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-finish-task-blocked-stop-2.0",
+          "path": "consumers/stop/production/finish-blocked.schema.json"
+        }
+      },
+      {
+        "id": "closure_refresh",
+        "consumer": {
+          "kind": "workflow",
+          "id": "task-closure-refresh-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-finish-task-closure-refresh-route-2.0",
+          "path": "consumers/workflow/production/closure-refresh.schema.json"
+        }
+      },
+      {
+        "id": "manual_cleanup",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-cleanup-task-resources"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-cleanup-task-resources/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "select_explicit_cleanup_targets",
+          "seed_fields": [
+            "task_id",
+            "lifecycle_generation",
+            "finish_result_id"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "selected_candidate_ids"
+          ],
+          "authoring_example": {
+            "id": "manual_cleanup_authoring",
+            "path": "examples/manual-cleanup-authoring.json"
+          }
+        }
+      },
+      {
+        "id": "legacy_controls_retired_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "legacy-maintenance-finish-task-legacy-controls-retired"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "legacy-maintenance-finish-task-legacy-controls-retired-input-1.0",
+          "path": "consumers/workflow/production/legacy-maintenance-finish-task-legacy-controls-retired.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "cleanup",
+        "exit_id": "success",
+        "consumer_input_id": "cleanup",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "lifecycle_generation",
+            "target": "lifecycle_generation"
+          },
+          {
+            "source": "finish_result_id",
+            "target": "finish_result_id"
+          },
+          {
+            "source": "inventory_id",
+            "target": "inventory_id"
+          }
+        ]
+      },
+      {
+        "id": "self",
+        "exit_id": "resume_finish",
+        "consumer_input_id": "self",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "lifecycle_generation",
+            "target": "lifecycle_generation"
+          },
+          {
+            "source": "transaction_id",
+            "target": "transaction_id"
+          },
+          {
+            "source": "result_id",
+            "target": "result_id"
+          }
+        ]
+      },
+      {
+        "id": "blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked",
+        "operation": "direct"
+      },
+      {
+        "id": "closure_refresh",
+        "exit_id": "closure_refresh_required",
+        "consumer_input_id": "closure_refresh",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "lifecycle_generation",
+            "target": "lifecycle_generation"
+          },
+          {
+            "source": "result_id",
+            "target": "result_id"
+          }
+        ]
+      },
+      {
+        "id": "manual_cleanup",
+        "exit_id": "manual_cleanup_required",
+        "consumer_input_id": "manual_cleanup",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "lifecycle_generation",
+            "target": "lifecycle_generation"
+          },
+          {
+            "source": "finish_result_id",
+            "target": "finish_result_id"
+          }
+        ]
+      },
+      {
+        "id": "project_legacy_controls_retired",
+        "exit_id": "legacy_controls_retired",
+        "consumer_input_id": "legacy_controls_retired_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "finish_transaction",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-finish-task-transaction-3.0",
+          "path": "schemas/finish-transaction-3.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "private_legacy_recovery",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-finish-task-private-legacy-recovery-1.0",
+          "path": "schemas/private-legacy-recovery-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

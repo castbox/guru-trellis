@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "kind": "sanitized_session_observation",
+    "observed_on": "2026-09-02",
+    "session_ref": "codex://threads/01a061d2-3d05-7170-94ee-c2a32f6d2aaa",
+    "repository": "castbox/guru-trellis",
+    "issue_number": 118,
+    "pull_request_number": 120
+  },
+  "stages": {
+    "commit": {
+      "observed_command_invocations": 14,
+      "legacy_normal_path_invocations": 4,
+      "happy_path_invocations": 2,
+      "required_full_reads": 1,
+      "legacy_full_reads": 2,
+      "happy_path_full_reads": 1
+    },
+    "publication": {
+      "observed_command_invocations": 35,
+      "legacy_normal_path_invocations": 3,
+      "happy_path_invocations": 1,
+      "required_full_reads": 1,
+      "legacy_full_reads": 4,
+      "happy_path_full_reads": 1
+    },
+    "finalizer": {
+      "observed_command_invocations": 23,
+      "legacy_normal_path_invocations": 5,
+      "happy_path_invocations": 1,
+      "required_full_reads": 1,
+      "legacy_full_reads": 5,
+      "happy_path_full_reads": 1
+    },
+    "merge": {
+      "legacy_normal_path_invocations": 4,
+      "happy_path_invocations": 1,
+      "required_full_reads": 2,
+      "legacy_full_reads": 4,
+      "happy_path_full_reads": 2,
+      "external_ci_wait_ms": 1188000
+    }
+  },
+  "terminal_observation": {
+    "exit_id": "closure_mismatch",
+    "base_branch": "dev",
+    "default_branch": "main",
+    "issue_state_after_merge": "OPEN",
+    "post_terminal_current_skill_operations_observed": true,
+    "expected_current_contract_operations_after_exit": 0
+  }
+}

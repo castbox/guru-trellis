@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-review-gate-6.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "generated_at", "task_dir", "mode", "profile", "review_intent", "typed_exit", "review_commit", "reviewed_content_algorithm", "reviewed_content_sha256", "base_ref", "base_head", "integration_pair", "candidate_classifications", "semantic_review", "verification_evidence", "facts_sha256"],
+  "properties": {
+    "schema_version": {"const": "6.0"},
+    "skill_id": {"const": "guru-review-branch"},
+    "generated_at": {"type": "string", "minLength": 1},
+    "task_dir": {"type": "string", "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "profile": {"enum": ["branch_review", "base_continuity"]},
+    "review_intent": {"enum": ["initial_review", "fresh_final_review", "base_continuity"]},
+    "typed_exit": {"enum": ["passed", "continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]},
+    "review_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "reviewed_content_algorithm": {"const": "guru-reviewed-content-1.0"},
+    "reviewed_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "base_ref": {"type": "string", "minLength": 1},
+    "base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "integration_pair": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["task_head", "old_base_head", "new_base_head", "candidate_tree_sha256", "relevant_paths", "resume_target"],
+          "properties": {
+            "task_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "old_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "new_base_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "candidate_tree_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "relevant_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "resume_target": {"enum": ["task_activation", "task_commit", "branch_review", "publication_review", "task_finalization", "finalization_resume"]}
+          }
+        }
+      ]
+    },
+    "candidate_classifications": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/candidateClassification"}
+    },
+    "semantic_review": {
+      "type": "object", "additionalProperties": false,
+      "required": ["qualified_findings", "scope_proposals", "observations", "followup_candidates", "rejected_candidates", "ai_review_gate"],
+      "properties": {
+        "qualified_findings": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/qualifiedFinding"}},
+        "scope_proposals": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/scopeProposal"}},
+        "observations": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "followup_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "rejected_candidates": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonFinding"}},
+        "ai_review_gate": {
+          "type": "object", "additionalProperties": false, "required": ["status", "summary"],
+          "properties": {"status": {"enum": ["passed", "continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}, "summary": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "verification_evidence": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reviewer", "review_source", "evidence"],
+      "properties": {
+        "reviewer": {"type": "string", "minLength": 1},
+        "review_source": {"const": "independent-agent"},
+        "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "facts_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {"if": {"properties": {"typed_exit": {"const": "passed"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "passed"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "implementation_required"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}, "ai_review_gate": {"properties": {"status": {"const": "implementation_required"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "scope_confirmation_required"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"minItems": 1}, "ai_review_gate": {"properties": {"status": {"const": "scope_confirmation_required"}}}}}}}},
+    {"if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "blocked"}}}}}}}},
+    {"if": {"properties": {"profile": {"const": "branch_review"}}}, "then": {"properties": {"integration_pair": {"type": "null"}, "typed_exit": {"enum": ["passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}},
+    {"if": {"properties": {"profile": {"const": "base_continuity"}}}, "then": {"properties": {"review_intent": {"const": "base_continuity"}, "integration_pair": {"type": "object"}, "typed_exit": {"enum": ["continuity_passed", "implementation_required", "scope_confirmation_required", "blocked"]}}}},
+    {"if": {"properties": {"typed_exit": {"const": "continuity_passed"}}, "required": ["typed_exit"]}, "then": {"properties": {"semantic_review": {"properties": {"qualified_findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}}, "scope_proposals": {"maxItems": 0}, "ai_review_gate": {"properties": {"status": {"const": "continuity_passed"}}}}}}}}
+  ],
+  "$defs": {
+    "qualificationDecision": {"enum": ["qualified_current", "qualified_explicit_nonstandard", "qualified_approved_expansion", "rejected_no_authority", "rejected_unsupported_entry", "rejected_not_reproduced", "rejected_out_of_scope"]},
+    "normalScenarioWitness": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requirement_refs", "supported_entry_refs", "existing_caller_refs", "honest_action_sequence", "defect_observation", "excluded_assumptions"],
+      "properties": {
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "supported_entry_refs": {"$ref": "#/$defs/stringList"},
+        "existing_caller_refs": {"$ref": "#/$defs/stringList"},
+        "honest_action_sequence": {"$ref": "#/$defs/nonEmptyStringList"},
+        "defect_observation": {"type": "string", "minLength": 1},
+        "excluded_assumptions": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "candidateClassification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "decision", "witness", "consumer_use"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {"$ref": "#/$defs/qualificationDecision"},
+        "witness": {"$ref": "#/$defs/normalScenarioWitness"},
+        "consumer_use": {"const": "branch_review_route_checker"}
+      }
+    },
+    "qualifiedFinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "affected_behavior", "path", "evidence_refs", "finding_ref", "severity", "introduced_head", "fix_head", "closure_head", "status", "closure_evidence"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"const": "qualified_finding"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "finding_ref": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+        "introduced_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "fix_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "closure_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "status": {"enum": ["open", "resolved"]},
+        "closure_evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "open"}}, "required": ["status"]}, "then": {"properties": {"fix_head": {"const": null}, "closure_head": {"const": null}, "closure_evidence": {"maxItems": 0}}}},
+        {"if": {"properties": {"status": {"const": "resolved"}}, "required": ["status"]}, "then": {"properties": {"fix_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "closure_evidence": {"minItems": 1}}}}
+      ]
+    },
+    "scopeProposal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "affected_behavior", "path", "evidence_refs", "proposal_ref", "proposal", "trigger_evidence", "clarification_route"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"const": "scope_proposal"},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"},
+        "proposal_ref": {"type": "string", "minLength": 1},
+        "proposal": {"type": "string", "minLength": 1},
+        "trigger_evidence": {"$ref": "#/$defs/nonEmptyStringList"},
+        "clarification_route": {"const": "guru-clarify-requirements"}
+      }
+    },
+    "nonFinding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["candidate_ref", "disposition", "affected_behavior", "path", "evidence_refs"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["observation", "followup_candidate", "rejected_candidate"]},
+        "affected_behavior": {"type": "string", "minLength": 1},
+        "path": {"type": "string"},
+        "evidence_refs": {"$ref": "#/$defs/nonEmptyStringList"}
+      },
+      "oneOf": [
+        {"properties": {"disposition": {"enum": ["observation", "followup_candidate", "rejected_candidate"]}}}
+      ]
+    },
+    "stringList": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "nonEmptyStringList": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  }
+}

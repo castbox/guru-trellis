@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-approve-task-plan-input-delivery-revision-reentry-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "source_exit",
+    "reentry_reason",
+    "delivery_key",
+    "architecture_assessment"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_revision_reentry"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "source_exit": {
+      "const": "baseline_current"
+    },
+    "reentry_reason": {
+      "const": "task_local_revision"
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; validated by the installed public API."
+    },
+    "architecture_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planning_purpose",
+        "freshness_identity",
+        "baseline_identity",
+        "constitution_identity",
+        "constitution_status",
+        "impact_kind",
+        "promotion_state"
+      ],
+      "properties": {
+        "planning_purpose": {
+          "const": "final_plan"
+        },
+        "freshness_identity": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "baseline_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constitution_identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "constitution_status": {
+          "const": "current"
+        },
+        "impact_kind": {
+          "enum": [
+            "architecture_impact",
+            "no_architecture_impact"
+          ]
+        },
+        "promotion_state": {
+          "enum": [
+            "no_change",
+            "reviewed_candidate",
+            "reviewed_promoted"
+          ]
+        }
+      }
+    }
+  }
+}

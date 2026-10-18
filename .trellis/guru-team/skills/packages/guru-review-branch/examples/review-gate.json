@@ -1,0 +1,57 @@
+{
+  "schema_version": "7.0",
+  "skill_id": "guru-review-branch",
+  "generated_at": "2026-07-30T00:00:00Z",
+  "task_dir": ".trellis/tasks/example-task",
+  "mode": "workflow",
+  "profile": "branch_review",
+  "review_intent": "fresh_final_review",
+  "typed_exit": "passed",
+  "review_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reviewed_content_algorithm": "guru-reviewed-content-1.0",
+  "reviewed_content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "base_ref": "1111111111111111111111111111111111111111",
+  "base_head": "dddddddddddddddddddddddddddddddddddddddd",
+  "integration_pair": null,
+  "delivery_review": {
+    "task_scope": [
+      "R1",
+      "R2"
+    ],
+    "delivery_slice": [
+      "R1"
+    ],
+    "remaining_work": [
+      "R2"
+    ],
+    "independent_delivery_conditions": [
+      "R1 is independently usable and verifiable."
+    ],
+    "validation_boundaries": [
+      "R1 checks passed; R2 remains disclosed future work."
+    ],
+    "current_slice_status": "passed",
+    "remaining_work_status": "disclosed",
+    "summary": "The full committed range satisfies the current slice without claiming remaining work complete."
+  },
+  "candidate_classifications": [],
+  "semantic_review": {
+    "qualified_findings": [],
+    "scope_proposals": [],
+    "observations": [],
+    "followup_candidates": [],
+    "rejected_candidates": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "The complete fresh final review found no actual candidate and satisfied all passing conditions."
+    }
+  },
+  "verification_evidence": {
+    "reviewer": "independent-reviewer",
+    "review_source": "independent-agent",
+    "evidence": [
+      "Reviewed the complete fixed base_oid..head_oid diff and current validation evidence."
+    ]
+  },
+  "facts_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

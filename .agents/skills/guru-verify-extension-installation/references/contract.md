@@ -1,0 +1,78 @@
+# Extension Installation Verification Contract
+
+## Ownership And Entry
+
+`guru-verify-extension-installation` is a source-repository-owned,
+standalone-only semantic Skill. Its single current public profile is
+`source_repository_verification` in aggregate input 4.0. The caller explicitly
+supplies `repo_ref=castbox/guru-trellis`, `remote=origin`, a requested ref, and
+`caller_intent=verify-extension-installation`. Task, plan, Publication,
+Finalizer, review, business repository, and credential-bearing locator fields
+are forbidden.
+
+Framework builds are explicit execution configuration, not Task or approval
+identity. Set `TRELLIS_FORK_SOURCE` to the already-built checkout selected by
+the candidate's `source/trellis-source.json`. Full predecessor cells additionally
+require `TRELLIS_PREDECESSOR_SOURCE` and its exact `TRELLIS_PREDECESSOR_COMMIT`;
+the predecessor version remains the matrix's declared before version. The
+existing executor passes this environment to the throwaway shell, which
+validates it and calls each checkout's own Node CLI directly. No framework
+clone/build, npm fallback, launcher synthesis or global CLI lookup occurs here.
+Each supplied build carries `.guru-source-commit` in its CLI `dist/` directory,
+written by the documented preparation only after that checkout's own build
+succeeds. Validation compares it with actual HEAD and does not write or repair
+the marker; it detects an ordinary same-version stale build, not authenticity.
+Missing predecessor inputs are a concrete full-catalog blocker, not permission
+to return `verified` from focused clean/reapply evidence. Successful full mode
+retains the original representative `install/project` and capability postcheck
+contract; focused mode is only a separately labeled maintainer diagnostic.
+
+Before any clone, install, temporary directory, artifact write, or Git/GitHub
+mutation, the runtime proves canonical source assets exist, origin normalizes to
+`castbox/guru-trellis`, the requested ref resolves to current HEAD, and the
+source checkout is clean. Failure returns a stable invocation error with zero
+executor calls and zero owner writes.
+
+## Execution And Persistence
+
+After preflight, the executor uses an isolated source checkout and clean
+throwaway target for marketplace, preset, workflow, update/reapply, platform,
+ownership, redaction, README, and zero-sidecar capabilities. It never clones or
+scans a real business task ref. Owner state is ignored source-session runtime
+only, is deleted after terminal consumption, and never appears under
+`.trellis/tasks/**`.
+
+The matrix runner owns one closed failure terminal. Before temporary cleanup it
+projects the failure stage (`pre-matrix`, `matrix-cell`, or `post-matrix`), an
+applicable cell id, stable command label, exit code, and a bounded error tail.
+The throwaway wrapper passes that terminal through, and this package parses and
+re-sanitizes it while the temporary roots still exist. Missing or malformed
+terminal output becomes `unparseable_failure_output`; it never silently falls
+back to digest/size-only evidence. Credential, token, authenticated remote, and
+environment-secret text is excluded from the tail. This evidence remains owned
+by standalone verification and is never consumed by Finalizer.
+
+A failed standalone command or a failed managed-asset inventory, ownership,
+sidecar, or capability-evidence postcheck produces one deterministic
+`postcheck_failure` with stage, stable command label, exit code, and bounded
+credential-safe tail. Current schemas reject `status=failed` with
+`failure=null`.
+
+## Semantic Gate And Exits
+
+The AI owns capability selection, adequacy, findings, and the final route.
+Explicit source verification always records `applicability.status=required`;
+the current semantic input rejects `not_required` before recorder execution.
+Deterministic commands only execute, record, and validate facts. Current exits
+are `verified` and `blocked`, both returned directly to the standalone caller;
+there is no Finalizer projection, `not_required`, or task-work route.
+
+## Migration
+
+Task-bearing 3.0 inputs, workflow profiles, `not_required`,
+`return_to_task_work`, Finalizer projections, tracked
+`marketplace-verification.json`, and their recovery contracts are retired.
+Legacy schemas/examples, including private result 4.0, remain immutable
+compatibility assets but are not in
+the current graph. Old input fails closed with remediation to rerun current
+Publication/Finalizer preparation rather than being auto-projected.

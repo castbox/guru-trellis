@@ -1,0 +1,30 @@
+{
+  "schema_version": "2.0",
+  "id": "00-bootstrap-guidelines",
+  "name": "00-bootstrap-guidelines",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "Bootstrap Guidelines",
+  "description": "Fill in project development guidelines for AI agents",
+  "dev_type": "docs",
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "createdAt": "2026-10-18",
+  "base_branch": null,
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".trellis/spec/backend/",
+    ".trellis/spec/frontend/"
+  ],
+  "notes": "First-time setup task created by trellis init (fullstack project)",
+  "meta": {},
+  "accepted_scope": null,
+  "deliveries": [],
+  "completion_results": [],
+  "closure_results": []
+}

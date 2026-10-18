@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-consumer-scope-requirements-ready-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "requirements_locator"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "scope_requirements_ready"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirements_locator": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

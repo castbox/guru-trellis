@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-base-sync-result-1.0.json",
+  "title": "Guru Team base synchronization result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "status",
+    "resolution",
+    "post_sync_resolution",
+    "post_sync_resolution_sha256",
+    "decision_checkout",
+    "git",
+    "fresh",
+    "facts_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "skill_id": {"const": "guru-sync-base"},
+    "status": {"const": "synced"},
+    "resolution": {"$ref": "#/$defs/resolution"},
+    "post_sync_resolution": {"$ref": "#/$defs/resolutionIdentity"},
+    "post_sync_resolution_sha256": {"$ref": "#/$defs/sha256"},
+    "decision_checkout": {"$ref": "#/$defs/decisionCheckout"},
+    "git": {"$ref": "#/$defs/gitFacts"},
+    "fresh": {"const": true},
+    "facts_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "branch": {"type": "string", "minLength": 1, "maxLength": 255},
+    "resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "selected_base", "remote", "candidates", "resolution_sha256"],
+      "properties": {
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
+        "selected_base": {"$ref": "#/$defs/branch"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branch"}
+        },
+        "resolution_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "resolutionIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "skill_id",
+        "status",
+        "source",
+        "selected_base",
+        "remote",
+        "candidates",
+        "decision_checkout"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "skill_id": {"const": "guru-sync-base"},
+        "status": {"const": "resolved"},
+        "source": {"enum": ["explicit", "config", "config-candidate", "remote-default"]},
+        "selected_base": {"$ref": "#/$defs/branch"},
+        "remote": {"type": "string", "minLength": 1, "maxLength": 255},
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/branch"}
+        },
+        "decision_checkout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["branch", "head", "clean"],
+          "properties": {
+            "branch": {"$ref": "#/$defs/branch"},
+            "head": {"$ref": "#/$defs/commit"},
+            "clean": {"const": true}
+          }
+        }
+      }
+    },
+    "decisionCheckout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch", "head_before", "head_after", "clean_before", "clean_after"],
+      "properties": {
+        "branch": {"$ref": "#/$defs/branch"},
+        "head_before": {"$ref": "#/$defs/commit"},
+        "head_after": {"$ref": "#/$defs/commit"},
+        "clean_before": {"const": true},
+        "clean_after": {"const": true}
+      }
+    },
+    "gitFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "local_ref",
+        "remote_ref",
+        "local_head_before",
+        "local_head_after",
+        "remote_head_after",
+        "fetch_performed",
+        "fast_forwarded"
+      ],
+      "properties": {
+        "local_ref": {"type": "string", "pattern": "^refs/heads/.+$"},
+        "remote_ref": {"type": "string", "pattern": "^refs/remotes/.+$"},
+        "local_head_before": {"$ref": "#/$defs/commit"},
+        "local_head_after": {"$ref": "#/$defs/commit"},
+        "remote_head_after": {"$ref": "#/$defs/commit"},
+        "fetch_performed": {"const": true},
+        "fast_forwarded": {"type": "boolean"}
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "exit_id": "unverified_legacy_history",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "reason_code": "history_unverified"
+}

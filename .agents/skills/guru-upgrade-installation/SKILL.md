@@ -1,0 +1,34 @@
+---
+name: guru-upgrade-installation
+description: Upgrade a supported Guru 0.6.x or 0.7.0 family installation from the complete target source with explicit reviewed projections, ordinary partial-write recovery and bounded rollback.
+---
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
+Load this standalone semantic Skill from the complete target canonical source
+checkout before asking an old installation to validate current runtime state.
+Read [the owned contract](references/contract.md), [Delivery migration](references/delivery-migration.md), and the selected public input
+and per-exit schemas in `interface.json`. Use `scripts/preview.sh` only for
+read-only owner facts; `scripts/invoke.sh` is the sole normal public entry.
+
+The source checkout's managed interpreter and complete package graph are
+required. A discovery copy is not a self-contained migration tool. `--root`
+identifies the target checkout; the wrapper still loads the target source's
+runtime. Do not route initial migration through the old target's dispatcher.
+
+Follow the exact semantic profile: forward behavior, AI Review Gate,
+conditional current-dialogue confirmation, executor/validator, one typed exit.
+Unknown versions, stale decisions, missing provenance and unmapped exits stop.
+Scripts do not decide scope, semantic sufficiency, task disposition or approval.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

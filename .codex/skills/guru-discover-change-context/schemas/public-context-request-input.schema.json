@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-discover-change-context-input-context-request-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "change_input",
+    "continuation_id",
+    "return_identity"
+  ],
+  "properties": {
+    "profile": {
+      "const": "context_request"
+    },
+    "source_exit": {
+      "const": "needs_context"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "change_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_refs",
+        "pr_refs",
+        "branches",
+        "paths",
+        "commands",
+        "config_keys",
+        "schema_fields",
+        "symbols",
+        "terms",
+        "queries"
+      ],
+      "anyOf": [
+        {
+          "properties": {
+            "issue_refs": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "pr_refs": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "branches": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "paths": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "commands": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "config_keys": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "schema_fields": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "symbols": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "terms": {
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "properties": {
+            "queries": {
+              "minItems": 1
+            }
+          }
+        }
+      ],
+      "properties": {
+        "issue_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "pr_refs": {
+          "$ref": "#/$defs/stringList"
+        },
+        "branches": {
+          "$ref": "#/$defs/stringList"
+        },
+        "paths": {
+          "$ref": "#/$defs/stringList"
+        },
+        "commands": {
+          "$ref": "#/$defs/stringList"
+        },
+        "config_keys": {
+          "$ref": "#/$defs/stringList"
+        },
+        "schema_fields": {
+          "$ref": "#/$defs/stringList"
+        },
+        "symbols": {
+          "$ref": "#/$defs/stringList"
+        },
+        "terms": {
+          "$ref": "#/$defs/stringList"
+        },
+        "queries": {
+          "$ref": "#/$defs/stringList"
+        }
+      }
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "return_identity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "target_locator",
+            "continuation_id"
+          ],
+          "properties": {
+            "profile": {
+              "const": "standard_intake"
+            },
+            "target_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "continuation_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "target_locator",
+            "continuation_id",
+            "source_locators"
+          ],
+          "properties": {
+            "profile": {
+              "const": "reviewed_plan_intake"
+            },
+            "target_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "continuation_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_locators": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "locator",
+                  "section"
+                ],
+                "properties": {
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "section": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "target_locator",
+            "continuation_id",
+            "task_locator",
+            "task_id",
+            "lifecycle_generation",
+            "resume_target"
+          ],
+          "properties": {
+            "profile": {
+              "const": "active_task_scope_change"
+            },
+            "target_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "continuation_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "task_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "task_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lifecycle_generation": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "resume_target": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "target_locator",
+            "continuation_id",
+            "resume_target"
+          ],
+          "properties": {
+            "profile": {
+              "const": "standalone_review"
+            },
+            "target_locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "continuation_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "resume_target": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

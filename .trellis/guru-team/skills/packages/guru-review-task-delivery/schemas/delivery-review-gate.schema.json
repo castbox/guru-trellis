@@ -1,0 +1,21 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"guru-review-task-delivery-gate-1.0",
+  "type":"object","additionalProperties":false,
+  "required":["schema_version","skill_id","generated_at","task_ref","profile","mode","branch_review_commit","reviewed_head","base_ref","base_head","delivery_cycle_ref","semantic_result","facts_sha256"],
+  "properties":{
+    "schema_version":{"const":"1.0"},
+    "skill_id":{"const":"guru-review-task-delivery"},
+    "generated_at":{"type":"string","format":"date-time"},
+    "task_ref":{"type":"string","pattern":"^\\.trellis/tasks/[A-Za-z0-9._/-]+$"},
+    "profile":{"const":"delivery_review"},
+    "mode":{"enum":["workflow","standalone"]},
+    "branch_review_commit":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "reviewed_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "base_ref":{"type":"string","minLength":1},
+    "base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},
+    "delivery_cycle_ref":{"type":"string","pattern":"^delivery-cycle:v1:[0-9a-f]{64}$"},
+    "semantic_result":{"type":"object"},
+    "facts_sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"}
+  }
+}

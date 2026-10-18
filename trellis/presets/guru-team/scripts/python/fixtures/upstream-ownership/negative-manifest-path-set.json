@@ -1,0 +1,8 @@
+{
+  "mutation": {
+    "type": "append_manifest_managed_path",
+    "path": ".codex/prompts/guru-extra.md"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["extension_managed_path_set_mismatch"]
+}

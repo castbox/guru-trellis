@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-tools-public-tools_upgraded-output-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "installed_version",
+    "recovery_ref",
+    "unverified"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "tools_upgraded"
+    },
+    "installed_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recovery_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unverified": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "const": "formal_fork_source_lock"
+      }
+    }
+  }
+}

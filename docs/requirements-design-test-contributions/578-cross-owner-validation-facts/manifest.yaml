@@ -1,0 +1,16 @@
+task_id: issue-578-cross-owner-validation-facts
+source: https://github.com/castbox/guru-trellis/issues/578
+status: reviewed_promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.100
+promoted_version: current-main-0.6.17-guru.101
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.94
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+

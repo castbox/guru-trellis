@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "guru-cleanup-task-resources-input-3.0",
+  "oneOf": [
+    {"$ref": "#/$defs/normal"}, {"$ref": "#/$defs/selection"}, {"$ref": "#/$defs/handoff"}
+  ],
+  "$defs": {
+    "taskId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "common": {"mode": {"enum": ["workflow", "standalone"]}, "task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}},
+    "normal": {"type": "object", "additionalProperties": false, "required": ["profile", "mode", "task_id", "lifecycle_generation", "finish_result_id", "inventory_id"], "properties": {"profile": {"const": "normal"}, "mode": {"enum": ["workflow", "standalone"]}, "task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "finish_result_id": {"type": "string", "minLength": 1}, "inventory_id": {"type": "string", "minLength": 1}}},
+    "selection": {"type": "object", "additionalProperties": false, "required": ["profile", "mode", "task_id", "lifecycle_generation", "finish_result_id", "selected_candidate_ids"], "properties": {"profile": {"const": "select_explicit_cleanup_targets"}, "mode": {"enum": ["workflow", "standalone"]}, "task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "finish_result_id": {"type": "string", "minLength": 1}, "selected_candidate_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^cleanup-candidate:[0-9a-f]{32}$"}}}},
+    "handoff": {"type": "object", "additionalProperties": false, "required": ["profile", "mode", "task_id", "lifecycle_generation", "handoff_inventory"], "properties": {"profile": {"const": "machine_handoff"}, "mode": {"enum": ["workflow", "standalone"]}, "task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "handoff_inventory": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "handoff_id", "inventory_id"], "properties": {"task_id": {"$ref": "#/$defs/taskId"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "handoff_id": {"type": "string", "minLength": 1}, "inventory_id": {"type": "string", "minLength": 1}}}}}
+  }
+}

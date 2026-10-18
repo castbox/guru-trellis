@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-task-commit-output-delivery-committed-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "base_ref",
+    "branch_review_commit",
+    "delivery_key",
+    "check_result_id"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "committed"
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch_review_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "check_result_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

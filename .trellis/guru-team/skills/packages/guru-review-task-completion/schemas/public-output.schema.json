@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-completion-output-aggregate-2.0",
+  "$defs": {
+    "artifact": {"type": "object", "additionalProperties": false, "required": ["task_id", "task_ref", "lifecycle_generation"],
+      "properties": {"task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}, "task_ref": {"type": "string", "pattern": "^\\.trellis/tasks/"}, "lifecycle_generation": {"type": "integer", "minimum": 0}}},
+    "reason": {"type": "object", "additionalProperties": false, "required": ["reason_code", "reason_refs"],
+      "properties": {"reason_code": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}, "reason_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
+    "result": {"type": "object", "additionalProperties": false, "required": ["task_id", "lifecycle_generation", "result_id"],
+      "properties": {"task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}, "lifecycle_generation": {"type": "integer", "minimum": 0}, "result_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"}}},
+    "non_complete": {"type": "object", "additionalProperties": false, "required": ["exit_id", "task_artifact", "reason"],
+      "properties": {"exit_id": {"enum": ["remaining_work", "evidence_pending", "additional_delivery_required", "requirements_revision_required", "implementation_revision_required"]}, "task_artifact": {"$ref": "#/$defs/artifact"}, "reason": {"$ref": "#/$defs/reason"}}},
+    "completed": {"type": "object", "additionalProperties": false, "required": ["exit_id", "result_ref"],
+      "properties": {"exit_id": {"const": "completed"}, "result_ref": {"$ref": "#/$defs/result"}}},
+    "blocked": {"type": "object", "additionalProperties": false, "required": ["exit_id", "reason"],
+      "properties": {"exit_id": {"const": "blocked"}, "reason": {"$ref": "#/$defs/reason"}}}
+  },
+  "oneOf": [{"$ref": "#/$defs/non_complete"}, {"$ref": "#/$defs/completed"}, {"$ref": "#/$defs/blocked"}]
+}

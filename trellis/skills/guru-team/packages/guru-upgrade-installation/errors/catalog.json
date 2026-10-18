@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-upgrade-installation",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Invalid invocation or runtime failure.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Read command help and refresh the current input."
+    },
+    {
+      "code": "invalid_json",
+      "trigger": "Invalid invocation or runtime failure.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Read command help and refresh the current input."
+    },
+    {
+      "code": "schema_mismatch",
+      "trigger": "Invalid invocation or runtime failure.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Read command help and refresh the current input."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "Invalid invocation or runtime failure.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Read command help and refresh the current input."
+    }
+  ]
+}

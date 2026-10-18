@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-semantic-result-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "public_input",
+    "output",
+    "ai_review_gate"
+  ],
+  "properties": {
+    "public_input": {
+      "type": "object"
+    },
+    "output": {
+      "oneOf": [
+        {
+          "$ref": "public-requirements-ready-output-2.0.schema.json"
+        },
+        {
+          "$ref": "public-plan-ready-output-2.0.schema.json"
+        },
+        {
+          "$ref": "public-clarify-scope-output-2.0.schema.json"
+        },
+        {
+          "$ref": "public-blocked-output-2.0.schema.json"
+        },
+        {
+          "$ref": "public-scope-requirements-ready-output.schema.json"
+        }
+      ]
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

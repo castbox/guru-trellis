@@ -1,0 +1,8 @@
+{
+  "mutation": {
+    "type": "remove_managed_claim",
+    "path": ".codex/prompts/guru-finish-work.md"
+  },
+  "expected_status": "error",
+  "expected_error_codes": ["finish_overlay_claim_mismatch", "managed_claim_set_mismatch"]
+}

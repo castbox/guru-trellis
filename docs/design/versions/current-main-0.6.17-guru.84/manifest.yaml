@@ -1,0 +1,10 @@
+schema_version: "1.0"
+authority: design
+version: current-main-0.6.17-guru.84
+status: active
+predecessor: current-main-0.6.17-guru.83
+source_binding: "reviewed #250 contribution; immutable .83 inheritance; Architecture .83/active; fresh promotion-diff gates pending"
+inheritance_locator: docs/design/versions/current-main-0.6.17-guru.83/design-main.md
+requirements_locator: docs/requirements/versions/current-main-0.6.17-guru.84/requirement-main.md
+test_locator: docs/test/versions/current-main-0.6.17-guru.84/test-strategy.md
+architecture_locator: docs/architecture/README.md

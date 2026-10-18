@@ -1,0 +1,7 @@
+{
+  "profile": "delivery_reactivate_rebind",
+  "mode": "standalone",
+  "task_id": "example",
+  "lifecycle_generation": 1,
+  "continuation_id": "reactivate-example"
+}

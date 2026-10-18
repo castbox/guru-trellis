@@ -1,0 +1,17 @@
+schema_version: "1.0"
+task_ref: "396-draft-intake-recovery"
+task_locator: ".trellis/tasks/10-11-396-draft-intake-recovery"
+issue_ref: "https://github.com/castbox/guru-trellis/issues/396"
+source_contract: "2026-10-10-r1"
+source_version: "current-main-0.6.17-guru.82"
+expected_current_version: "current-main-0.6.17-guru.82"
+status: "reviewed_promoted"
+authority_scope: "isolated_contribution"
+architecture_baseline:
+  locator: "docs/architecture/README.md"
+  version: "current-main-0.6.17-guru.82"
+  status: "active"
+promotion_owner: "guru-maintain-requirements-design-test-ssot"
+shared_current_write: false
+promoted_version: "current-main-0.6.17-guru.83"
+promotion_preimage: "current-main-0.6.17-guru.82"

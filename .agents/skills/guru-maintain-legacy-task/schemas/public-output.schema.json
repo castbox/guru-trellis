@@ -1,0 +1,20 @@
+{
+  "$id": "guru-maintain-legacy-task-output-1.0",
+  "oneOf": [
+    {
+      "$ref": "output-task_resumed.schema.json"
+    },
+    {
+      "$ref": "output-history_archived.schema.json"
+    },
+    {
+      "$ref": "output-resume_required.schema.json"
+    },
+    {
+      "$ref": "output-rolled_back.schema.json"
+    },
+    {
+      "$ref": "output-blocked.schema.json"
+    }
+  ]
+}

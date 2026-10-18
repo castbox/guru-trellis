@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-create-delivery-input-delivery-creation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "task_key",
+    "scope_ref",
+    "delivery_profile",
+    "continuation_id",
+    "action"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_creation"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_key": {
+      "type": "object",
+      "description": "Opaque upstream API 1.0 object; only the installed public parser validates this shape."
+    },
+    "scope_ref": {
+      "type": "object",
+      "description": "Opaque upstream API 1.0 object; only the installed public parser validates this shape."
+    },
+    "delivery_profile": {
+      "enum": [
+        "pull_request",
+        "local_commit",
+        "manual"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "enum": [
+        "create",
+        "recover_creation"
+      ]
+    }
+  }
+}

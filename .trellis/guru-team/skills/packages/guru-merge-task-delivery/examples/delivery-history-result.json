@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "status": "discovered",
+  "task_identity": "435-active-task-delivery-loop",
+  "repo_ref": "castbox/guru-trellis",
+  "base_ref": "main",
+  "deliveries": [
+    {
+      "task_identity": "435-active-task-delivery-loop",
+      "reviewed_head": "1111111111111111111111111111111111111111",
+      "pr_number": 512,
+      "merge_commit_sha": "4444444444444444444444444444444444444444",
+      "base_ref": "main"
+    }
+  ]
+}

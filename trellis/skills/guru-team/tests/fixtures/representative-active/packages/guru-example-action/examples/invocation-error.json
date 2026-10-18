@@ -1,0 +1,5 @@
+{
+  "code": "invalid_input",
+  "field_path": "input.profile",
+  "remediation": "Use a declared input profile and provide every required field."
+}
