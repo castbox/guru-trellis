@@ -18,6 +18,37 @@ apply the complete matching workflow, consumers and package set after public
 and private migration. A missing old gate re-enters its original semantic owner;
 mechanically adding a DeliveryKey does not create a current pass.
 
+## Profile-specific body loading
+
+Before writing, actually read [the shared body contract](planning-body.md),
+the templates selected below, and the complete applicable sources and necessary
+references. Template paths are relative to this reference. The shared contract
+owns source roles, structure, depth, trimming and stage completeness; templates
+own each body's ordered sections and specific fields. They produce Markdown,
+not a new public input/output or an Interface artifact inventory.
+
+| Profile | Templates to load and current writing boundary |
+| --- | --- |
+| task_scope_requirements | [Task PRD](../templates/task-prd.md); complete whole requirements before scope_requirements_ready, then original Clarify reviews for accept_scope. No Delivery solution is required here. |
+| delivery_initial_review | [Delivery PRD](../templates/delivery-prd.md); complete slice requirements and context before requirements_ready. |
+| delivery_active_task_scope_change | [Task PRD](../templates/task-prd.md) to read the already published whole requirements, plus [Delivery PRD](../templates/delivery-prd.md) to revise affected slice requirements. Do not republish scope here. |
+| delivery_requirements_revision | [Delivery PRD](../templates/delivery-prd.md); converge actual requirements and context before requirements_ready. |
+| delivery_solution_planning | [Delivery design](../templates/delivery-design.md) and [Delivery implement](../templates/delivery-implement.md); consume current candidate_assessment and complete applicable solution/execution/context before plan_ready. Read current PRD and its necessary references too. |
+| delivery_wording_reentry | Load each affected body's [PRD](../templates/delivery-prd.md), [design](../templates/delivery-design.md) or [implement](../templates/delivery-implement.md) template. Equivalent wording refreshes only affected gates; changed mechanism returns to candidate assessment before substantive solution writing. |
+| delivery_approval_revision | Load the templates for actual revision_actions: [PRD](../templates/delivery-prd.md), [design](../templates/delivery-design.md), [implement](../templates/delivery-implement.md). Execution-only repair may return plan_ready; requirements/design repair returns to candidate assessment. |
+| delivery_delivery_plan_revision | [Delivery implement](../templates/delivery-implement.md) for the same slice Policy; load [PRD](../templates/delivery-prd.md) and [design](../templates/delivery-design.md) when their actual context or delta changes. Preserve remaining responsibility and whole Completion conditions. |
+| delivery_architecture_conflict_resolution | [Delivery design](../templates/delivery-design.md) and [Delivery implement](../templates/delivery-implement.md), plus [Delivery PRD](../templates/delivery-prd.md) when requirements are affected. Revise only after the applicable original dependency; a real scope choice returns Clarify. |
+
+Read affected templates again on legitimate re-entry or recovery when their
+current content is unavailable. For Delivery profiles, read the actual selected
+planning_root, whole scope and prior results; do not overwrite historical plans.
+The scope-only profile requires no Delivery. Draft gaps name the
+missing content, original owner and dependent stop. Complete each body at its
+own existing boundary, rather than demanding future stages early. The complete
+[detailed](../examples/planning-body/detailed/process.md) and
+[brief](../examples/planning-body/brief/process.md) examples teach this method;
+they are not current requirements, actual user replies or behavioral test proof.
+
 ## Whole-Task requirements, without Task Planning
 
 `task_scope_requirements` consumes original Clarify source_selection and
@@ -95,13 +126,10 @@ Planning cannot promote shared authority. Preserve a rereadable pre-promotion
 authority and write the baseline's facts, decisions, sources and verification
 limits without requiring a later documentation commit for final Review or HEAD.
 
-Delivery design owns one source-design disposition matrix: concrete source,
-original commitment, retain/change/reject, real landing point, rationale,
-impact and upstream handling. Check every normative commitment. Scope choices
-return Clarify; Architecture conflicts return its owner; other technical
-constraints require their real upstream disposition. With no normative design,
-state that evidence rather than inventing an empty matrix. PRD/implement only
-reference this sole matrix.
+Use [planning-body.md §4](planning-body.md#4-delivery-与来源设计) for the
+single source-design disposition in Delivery design and the references from
+PRD/implement. Scope choices return Clarify; Architecture conflicts return its
+owner; other technical constraints require their real upstream disposition.
 
 Implement owns one Delivery Policy: full by default; partial requires an
 independent slice, remaining work and whole Completion conditions; staged
@@ -116,6 +144,12 @@ Select business context for the installed official `task.py add-context
 <task_ref> <implement|check> <file> <reason> --delivery <actual UUID>`.
 Official scripts execute, while Author judges context relevance. Context JSONL
 entries must name actual file/reason; no brainstorm second writer or hook patch.
+Include the shared body contract and the applicable current templates when
+they are necessary implement/check inputs. Select their actual installed file
+paths and reasons through the same official add-context entry; do not copy
+their rules into an official agent, generator or hook. Necessary planning
+references and their associated conditions must actually be read, not merely
+listed in JSONL.
 An existing empty official context JSONL is a valid empty selection, including
 byte-preserving migration. Require both regular files, validate every actual
 entry, and let Author judge sufficiency; do not add entries solely to pass a

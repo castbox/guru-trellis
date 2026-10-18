@@ -1,0 +1,11 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "执行唯一中文写作规范，保留完整语义与证据边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按本批范围验证真实行为和受管投影"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进原消费者，不引入无 consumer 机制"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md", "reason": "原唯一 writer 与三个接受边界"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "原 Architecture concern 与晋升顺序"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "执行当前设计原则而非机械评分"}
+{"file": "docs/architecture/contributions/154-planning-body-contract.md", "reason": "核对本批真实 architecture 差额和未验证边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "读取四类正文唯一共享合同与当前阶段完成边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核对本批场景范围、前序事实与整体Completion责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核对本批实际设计和唯一来源设计处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对可执行步骤、验证入口及唯一Policy和DocsPlan"}

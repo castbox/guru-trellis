@@ -68,6 +68,26 @@ do not impose one Baseline type on every repository.
 
 ## Causal whole-task judgment
 
+Before the whole-task judgment, actually load
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`
+and that package's `templates/task-prd.md`, `templates/delivery-prd.md`,
+`templates/delivery-design.md`, and `templates/delivery-implement.md`.
+Read the whole Task PRD/accepted scope, applicable Delivery bodies and all actual
+Delivery results across generations. Load necessary planning references and
+their associated conditions; a link or prior approval cannot replace the read.
+Apply the contract within this owner's whole-task scope. Preserve each
+Delivery's historical identity and distinguish its old acceptance from current
+obligations. Check remaining responsibility and the actual Completion
+conditions across full, partial and later Deliveries.
+
+Judge required actual Agent writing/review evidence separately from
+deterministic and installation checks. Missing required evidence retains
+`evidence_pending`; actual writing or implementation omissions use the
+existing revision/remaining-work routes to the earliest affected owner, while
+changed requirement authority uses `requirements_revision_required`.
+Technical elaboration alone does not revise product scope. Completion never
+writes planning or accepts a batch result as proof of the entire Task.
+
 Before the semantic gate, read
 `.trellis/spec/workflow/causal-completion-semantics.md`, current accepted
 completion definition, live source Issue authority, all business Deliveries

@@ -1,5 +1,9 @@
 # Requirements SSOT
 
+唯一 current RDT authority 为 `current-main-0.6.17-guru.108/active`；[本版入口](./versions/current-main-0.6.17-guru.108/requirement-main.md) 完整继承 `.107` 并承接 [#154唯一增量](../requirements-design-test-contributions/154-planning-body-contract/traceability.md)。本Task适用 Architecture `.98/active`；[唯一Test](../requirements-design-test-contributions/154-planning-body-contract/test.md) 持有实际结果与未验证边界。晋升不表示真实行为验收、软件发布或业务完成。
+
+历史 `.107` authority：
+
 唯一 current RDT authority 为 `current-main-0.6.17-guru.107/active`；[本版入口](./versions/current-main-0.6.17-guru.107/requirement-main.md) 完整继承 `.106` 并承接 [#575 正式来源采用增量](../requirements-design-test-contributions/575-release-source-adoption/traceability.md)。Architecture 继承 `.98/active`；实际结果与边界只由 [唯一 Test](../requirements-design-test-contributions/575-release-source-adoption/test.md) 维护。晋升差额仍须 fresh Check、Task Commit 和独立完整 Branch Review；不表示软件发布或业务完成。
 
 历史 `.106` authority：
@@ -50,7 +54,8 @@
 
 | 状态 | 版本 | Locator | Provenance |
 | --- | --- | --- | --- |
-| `active` | `current-main-0.6.17-guru.107` | [本版入口](./versions/current-main-0.6.17-guru.107/requirement-main.md) |
+| `active` | `current-main-0.6.17-guru.108` | [本版入口](./versions/current-main-0.6.17-guru.108/requirement-main.md) |
+| `superseded` | `current-main-0.6.17-guru.107` | [本版入口](./versions/current-main-0.6.17-guru.107/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.106` | [本版入口](./versions/current-main-0.6.17-guru.106/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.105` | [不可变前驱](./versions/current-main-0.6.17-guru.105/requirement-main.md) |
 | `superseded` | `current-main-0.6.17-guru.101` | [本版入口](./versions/current-main-0.6.17-guru.101/requirement-main.md) |

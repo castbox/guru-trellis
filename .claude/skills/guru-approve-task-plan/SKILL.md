@@ -128,6 +128,29 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 
 ## Source design and Author revision boundary
 
+Before the semantic review, actually load
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`
+and that package's `templates/delivery-prd.md`,
+`templates/delivery-design.md`, and `templates/delivery-implement.md`.
+Read the selected Delivery's three complete bodies, whole accepted scope,
+and necessary source/canonical references with their associated conditions.
+A listed reference, complete heading set, or matrix does not prove sufficient
+content. Apply the shared depth and trimming rules to the actual task.
+
+Within the existing eight dimensions, trace actual scenarios to requirements,
+design landing points, executable implementation steps, planned validation and
+observable acceptance. Check this batch's context, actual predecessor facts,
+remaining responsibility and whole-task Completion relationship for full D1
+as well as partial/later Deliveries. When accepted scope requires actual Agent
+writing/review behavior, assess that evidence separately from deterministic
+checks and installation projections. Neither template presence nor
+package/schema success proves that behavior.
+Return ordinary omissions as concrete `revision_actions` through
+`revision_required` to the earliest affected original owner. Real requirement
+choices use `clarify_scope`; technical design elaboration stays with
+Author/Architecture without changing product scope. Approval never writes the
+missing bodies or repeats Architecture's independent assessment/read order.
+
 Freshly read the actual normative source commitments and the sole disposition
 matrix in design.md, one commitment at a time. Check concrete source locators,
 original promises, retain landing points, change/reject rationale/impact and

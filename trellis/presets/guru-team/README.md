@@ -5,6 +5,20 @@ Architecture 晋升在最终 Check 前完成；committed 独立判断和完整 B
 partial/output-loss 恢复和窄引用/状态对齐见 [MIGRATION-600](MIGRATION-600.md)。
 源码更新不证明已有安装或业务采用完成。
 
+规划正文的唯一 writer 是原 `guru-author-task-plan`。其
+[正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)
+与同 package 的 `templates/` 定义整体 Task PRD 和 Delivery 三正文。原 consumers
+在各自职责内实际读取这些文件及必要引用；preset 复用现有递归 package 分发，
+不新增 loader、公共 DTO 或正文副本。`examples/planning-body/` 的去敏完整过程
+示例用于教学，不能作为实际 V1–V7 写作/审核通过证据。
+
+已有安装采用该能力时，须更新完整匹配的 marketplace workflow、preset、Author
+和原 consumers；源码修改不会自动改变业务安装。apply/reapply 后检查 installed
+和声明平台投影、drift、`.new/.bak` 及用户内容保留，按原冲突机制处理 sidecar。
+真实 Agent 写作/审核、确定性检查和安装结果分别报告；静态分发不能代替行为
+验收，一个代表平台结果也不证明其他平台实际行为。历史归档不追溯改写，完整
+多平台升级及 Release 矩阵仍归专门 Issue。
+
 [清晰技术写作规范](./spec/workflow/clear-technical-writing.md) 是唯一 canonical 正文；preset 将它安装到
 `.trellis/spec/workflow/clear-technical-writing.md`。AGENTS 有界区块、workflow
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
