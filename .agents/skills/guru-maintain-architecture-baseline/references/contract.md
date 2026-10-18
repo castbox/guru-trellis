@@ -21,6 +21,44 @@ version or content identity, and exactly these five stable identity/name pairs:
 Principle prose, scores, per-principle verdicts, and mechanical checklists are
 not public Skill data.
 
+## Complete current knowledge and two source boundaries
+
+Before every profile, read the shared current-knowledge contract at
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Its canonical source is the same `references/current-knowledge.md` in the
+canonical RDT package. It owns reusable complete-unit reading, stable
+references, revision and migration; this package owns Architecture-specific
+judgment and retains every profile, public I/O and typed route.
+
+Within Architecture, keep FOUNDATION, CURRENT, TARGET, GAP, PLAN, ADR and
+EVIDENCE semantically distinct. A current unit states the complete applicable
+decision, responsibility, conditions and compatibility limits directly.
+When a successor replaces only part of a rule, retain the surviving conditions
+and state the precise replacement range. Do not leave the current execution
+point as an obsolete instruction followed by a chain of override notes.
+Preserve ADR/Git reasons and immutable former definitions for historical
+queries; an ADR or navigation summary does not replace current baseline prose.
+
+For a technical-stack decision, read both the real versioned generic baseline
+and the project selection projection. The generic source owns shared stack
+choices and constraints. The project owns selected source/version,
+applicability, project constraints and differences. Record the exact source
+locator/version and acquisition location in project authority. A local
+selection change remains local; a needed generic change is separately
+reviewed and written within that source's ownership boundary by this same
+maintenance Skill. Do not infer generic authority from a fixture or copy its
+shared definitions into project prose.
+
+Bootstrap identifies complete units and the real generic/project sources.
+Task impact reads their applicable bodies and necessary consumers before
+judging the candidate. Promotion integrates reviewed changes into complete
+current definitions and updates necessary relationships/navigation against
+expected-current. Repair handles missing sources, broken references,
+conflicting definitions and incomplete migration through the original routes.
+Name the affected selections/conclusions and preserve uncertainty until the
+necessary source or review is available. Stage applicability and the
+independent assessment read order below continue to apply.
+
 ## Constitution applicability and existing revision owners
 
 Read the project's unique current constitution authority and apply

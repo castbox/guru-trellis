@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整加载语言与语义保留规则"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "读取当前规划正文深度及来源保留边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批实际设计结构"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行与验证及唯一Policy/DocsPlan"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/contract.md", "reason": "原RDT owner追踪晋升和阶段适用性"}
+{"file": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md", "reason": "原Architecture独立判断及晋升合同"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "当前架构原则"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "九concerns及实际project checks"}

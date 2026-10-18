@@ -1,5 +1,12 @@
 # Guru Team Workflow
 
+当前知识读写由原 RDT 与 Architecture 维护 Skills 执行。它们共同读取
+[完整单元合同](../../skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)，
+workflow 仅调用原 owners；规划、实施、Check、独立 Review 和晋升消费适用正文。
+本仓库实际迁移单元、未迁移范围、旧 Task 读取退出及 matching update/reapply 见
+[MIGRATION-331](../../presets/guru-team/MIGRATION-331.md)。原公共 I/O 保持不变。
+源码修改不代表既有安装已采用，也不证明真实 Agent 行为或成本改善。
+
 Issue 创建与修订共用原 Clarify package 的
 [Issue 内容编写规范](../../skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md)。
 四个原 Issue owners 在各自职责内实际读取同一正文及清晰写作规范；workflow

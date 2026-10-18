@@ -1,0 +1,51 @@
+# Completion、Closure 与终态责任设计
+
+知识单元：`RDT-DES-COMPLETION`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md)；测试：[RDT-TST-COMPLETION](../../test/current/completion-closure.md)。稳定 `D531-06`、`D454-D436-01..05` 与 `D547` 关系保持，公共接口以各原 package 为准。
+
+## 稳定设计身份
+
+`DES-005/009` 保留Task历史/归档/精确资源关系。旧workspace mapping及Finalizer负责整段closeout的片段，由D531-06/D454-D436与现行官方公共Task/session、Closure/Finish/Cleanup职责窄替代，历史不改写。`DES-008` 的证据分层边界保持。
+
+## Completion application owner
+
+原 `guru-review-task-completion` 拥有 whole-task causal judgment。输入为 public Task identity、accepted scope、实际跨 generations Delivery/evidence facts、适用 RDT/Architecture 与当前 source；不是某次 merge 的摘要。delivery_completion、delivery_evidence_refresh、delivery_reactivation_validation 分别承接合并/撤回后的完整判断、已知证据获取条件满足后的重判、合法新 generation 的验证。后两者不要求 current Delivery；Reactivate 消费实际 archive anchor，不制造新 business slice。
+
+Completion 实际加载四类 planning正文合同，读全 Task requirements 和适用 Delivery bodies、必要关系/条件及历史结果。它区分当前要求与旧 Delivery 当时接受范围。current evidence/fact身份属于调用期判断绑定；公共 complete_task只记录已判断结论，不是语义判定器。
+
+只有 `completed` 的现有最小 ResultRef 交 Closure。remaining_work、requirements_revision_required、implementation_revision_required、additional_delivery_required、evidence_pending、blocked 使用各自唯一 consumer；原因只说明真实缺口与路线。evidence_pending只回原 evidence_refresh，未有新证据不制造re-entry循环；实际代码遗漏不是纯pending。whole scope变更由Clarify，新的独立slice由Creation，当前修订回最早原owner。
+
+## Evidence authority 与实际内容
+
+原 [causal common spec](../../../trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md) 唯一拥有证据维度和semantic dispositions。Completion按accepted目标选择适用证明，不新增统一生产门槛、证据字段表、因果账本或审批。source/parent仍要求production/root-cause闭环时，诊断/缓解/implementation-only Task 可完成自己的scope但不能以此关闭source。严格等价证据由AI比较真实原故障条件；合法既有证据可用，不安全重放不强迫，缺口保留原 acquisition owner/condition。
+
+原 Merge recovery的terminal fact仅声明actual content/head，不是新gate。Completion独立比较原Publication→actual head、完整PR差额、accepted scope、真实CI/reviews及必要效果证据。旧gate适用性仅覆盖原candidate；新增路径不能藏在原candidate范围外。公开MERGED可可靠同时CI pending/failed，二者分开。不相关CI不添scope；scope-required gap回原owner或evidence_pending，不重复merge。
+
+原 Merge history query拥有有界Git准备和cutoff：caller不fetch、不整合Task，不按远端最新SHA作资格。actual public facts充分就不调用；需要时消费公开result3.0及显式query context，补已知缺失同Task事实，不让bookkeeping进入business lineage。结果丢失由原query产生明确新cutoff，不能猜前次截点。
+
+Architecture acceptance_finish是原owner新作当前eligibility；still-applicable独立conclusion与工程事实可用，不把Branch DTO重标为该结果。缺committed review/promotion或真实变化沿原路线；Completion另审whole scope。
+
+## Closure source disposition owner
+
+`guru-complete-task-closure`只接受当前Completion completed ResultRef。它从真实source relation、scope、target、binding和evidence形成精确action set；exact_source eligibility与close意图分离。每个action只作用本次明确Issue，不沿Related/Coordination/Follow-up链扩张。
+
+`retain_open`是正常exact_source处置，源scope仍有显式责任时保留同身份，要求provider OPEN，零close，public source_result=null。no_issue空集和非exact no_close_authority不变；source角色不为Finish改写。close/already_closed_at_review要求CLOSED，其中后者不mutation；aggregate closed仅反映动作集中有closing action。混合集的source retain与另Issue close分别投影，不能由aggregate推断source_closed。
+
+AI先review完整动作集及其真实副作用边界，executor再冻结最小原事务输入、重读provider状态、执行明确close和公共projection。blocked先返回，不创建transaction或provider mutation。loststdout/投影失败用TransactionRef恢复原动作；实际已closed不重close。authority或requiredOPEN/CLOSED状态漂移回external_change_conflict。授权和过程不进任何状态。
+
+## Finish terminal persistence owner
+
+`guru-finish-task`只消费Closure ResultRef，通过共享只读API读exact action set，检查当前source与每个应OPEN/CLOSED状态。不能接受caller另带一个不绑定的动作列表，也不能close/reopen源。漂移回Closure。archive projection、本地/远端bookkeeping、expected-head merge三项实际mutation分别保留其原语义边界。
+
+归档包含Task整体scope、所有Delivery规划及历史、证据限制；schema-2 public aggregate的status/completedAt/commit/pr_url等retired字段不写。原Fixed Fork session API仅退休exact Task/generation pointers。archive locator由finish-summary拥有。投影后未seal恢复同Finish transaction，不以archive存在冒充Reactivate。
+
+bookkeeping使用不带Issue closing关键字及business Delivery trailers的已审载荷，不产生Delivery fact，不递归Completion。local commit head与target merge commit分开：前者绑定资源seal的实际cleanup refs，后者证明archive已存在remote target且active copy已移除。普通后继target提交不使已证明可达的merge失效，也不要求Task追赶target或重跑business gates。正常原事务恢复不重复archive/PR/merge；缺terminal ownership发manual_cleanup_required，不虚构资源ledger。
+
+## Cleanup 与 Reactivate owner
+
+Cleanup消费exact当前ResourceSealRef/common-dir ledger，fresh检查所有选中ref/path、未提交内容、commit reachability、ownership及consumer；保留未知/caller-owned/peer资源。它删除资源，不撤销Completion/Closure/Finish。执行checkout位于删除目标内时转保留checkout或manual selection，禁止把自己删掉后虚报清理成功。machine-handoff和显式manual selection有各自输入，不借其它receipt。
+
+Reactivate只接normal finished/sealed终态，严格递增generation保留TaskId/source，重建当前binding/session与唯一active副本。源Issue检索读committed源/Git archive事实，summary索引不足不排除真实命中；unstructured来源要原source correction。手工历史归档由legacy owner负责；未完Finish事务由Finish恢复，不伪造终态。manual Finish需同generation/result的manual cleanup receipt。验证-only新generation直接走Completion，历史Finish/Cleanup/session都不是当前authority。
+
+## 原规格
+
+[Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 拥有完整profile、独立schema/exit/consumer及runtime事实校验。本正文替代该能力的历史拼接，不复制其细节成第二接口。各旧ID、继承条件和窄替代关系见 [traceability](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。
