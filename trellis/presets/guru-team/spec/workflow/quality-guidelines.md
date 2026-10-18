@@ -233,13 +233,42 @@ after regenerating the official projection, never to bypass the Fork's
 old-install guard. Report representative clean installation and the unrun
 remote marketplace/upgrade/Release matrix as distinct validation boundaries.
 
-Use these checks before committing workflow or preset changes:
+## Python Syntax Check
+
+For routine source-repository syntax checks, run the following command. It
+covers Guru runtime and package Python files, including their tests, and the
+preset installer. It reads source bytes and compiles them in memory without
+executing the checked modules. A syntax error fails the command and reports
+the file and reason.
+
+```bash
+python3 -B - <<'PY'
+from pathlib import Path
+
+roots = (Path("trellis/skills/guru-team/runtime"), Path("trellis/skills/guru-team/packages"))
+paths = sorted(
+    path for root in roots for path in root.rglob("*.py")
+    if path.is_file() and not path.is_symlink()
+)
+paths.append(Path("trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"))
+for path in paths:
+    compile(path.read_bytes(), str(path), "exec", dont_inherit=True)
+print(f"Syntax checked {len(paths)} Guru Python files.")
+PY
+```
+
+Check other changed Guru Python files with the same in-memory operation.
+Keep the selection within Guru-owned product paths. Routine checks must not
+use `py_compile` or `compileall`: those explicit compilation tools write
+bytecode even with `-B` or `PYTHONDONTWRITEBYTECODE=1`. Only bytecode-specific
+regressions may use them in isolated temporary directories. Do not delete or
+modify existing caches to make a routine check pass.
+
+Use the syntax check above and these checks before committing workflow or preset changes:
 
 ```bash
 python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
-python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
 trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --task <task-dir>
 trellis/workflows/guru-team/scripts/bash/check-commit-messages.sh --json --candidate-artifact <task-commit-plan>

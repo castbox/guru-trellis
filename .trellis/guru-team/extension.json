@@ -1250,8 +1250,8 @@
       ".trellis/spec/workflow/workflow-contract.md": "801a5a1672bd808c0a8995c4e2ebb3ed82e47f9b0e88ba35869cd2542f564642",
       ".trellis/spec/workflow/skill-package-contract.md": "a5d93f3d08b2f518a89b1f758838a73264ae0f8cfe14d781bceb5b16fab40ed2",
       ".trellis/spec/workflow/data-contracts.md": "43bad2cc09ab1fae19a10a1761318813e5f6db1e6cff86fb48981f748530be9e",
-      ".trellis/spec/workflow/companion-scripts.md": "32afe7704ba0d63c6d1dc865b89fba146417ffce0f7b3246accc9df36c51f801",
-      ".trellis/spec/workflow/quality-guidelines.md": "cc4f20c9f51d025d923bd8c98f1567fc9b164e5f85c2310040895c282934fff8",
+      ".trellis/spec/workflow/companion-scripts.md": "edc778db56ed27e33a63f351995847142c1b280b3af38fb5032d16f65b20af61",
+      ".trellis/spec/workflow/quality-guidelines.md": "fbf48279b71985919e10a7375ee42a575d67649fce14812f3e8038b7b4d3eb85",
       ".trellis/guru-team/trellis-source.json": "4ef08d0d582d357e0d02301108418b300e8963a4fde98cdbf12f1e0d66ebffc9"
     },
     "new_copies": [],
@@ -19234,7 +19234,7 @@
       {
         "path": ".trellis/guru-team/runtime/bootstrap_check.py",
         "source": "trellis/skills/guru-team/runtime/bootstrap_check.py",
-        "sha256": "6bc8beb007224475ba5aa86e9874bdb8b8e3d899f35d1048bcf72ad166b012ab",
+        "sha256": "89c1416c1a12861bce44be7c44ad7241bb5d292c2086c94b5b46c725a19054ee",
         "executable": false,
         "action": "installed"
       },

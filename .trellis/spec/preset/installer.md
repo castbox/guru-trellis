@@ -574,12 +574,13 @@ apply.sh --repo "$PWD" --platform codex --platform cursor
 
 ## Validation
 
-At minimum:
+Run the in-memory [Python syntax check](../workflow/quality-guidelines.md#python-syntax-check),
+which includes the preset installer, and check other changed Guru Python files
+with the same operation. Also run:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 bash -n trellis/presets/guru-team/scripts/bash/apply.sh
-python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 ```
 
 For behavioral changes, run the installer against a temporary Trellis project

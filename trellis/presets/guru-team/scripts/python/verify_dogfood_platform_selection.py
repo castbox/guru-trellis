@@ -30,7 +30,10 @@ def _tree_files(root: Path) -> dict[str, Path]:
         for skill_root in root.glob("guru-*")
         if skill_root.is_dir() and not skill_root.is_symlink()
         for path in skill_root.rglob("*")
-        if path.is_file() and not path.is_symlink() and "__pycache__" not in path.parts
+        if path.is_file()
+        and not path.is_symlink()
+        and "__pycache__" not in path.parts
+        and path.suffix not in {".pyc", ".pyo"}
     }
 
 

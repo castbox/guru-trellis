@@ -1037,12 +1037,11 @@ and unlink the file in a `finally` block. Existing example:
 
 ## Validation
 
-For any script change, run:
+For any script change, run the in-memory [Python syntax check](./quality-guidelines.md#python-syntax-check)
+over its declared Guru source range and the changed Guru Python files. Then run:
 
 ```bash
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
-python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 ```
 
 When changing `review-branch` or `finish-work`, also run dry-run

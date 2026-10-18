@@ -105,13 +105,13 @@ Before editing workflow behavior:
 
 ## Required Validation
 
-Run the narrowest reliable set for your change, and include the result in the task record:
+Run the narrowest reliable set for your change, and include the result in the task record.
+Run the in-memory [Python syntax check](./quality-guidelines.md#python-syntax-check)
+over its declared Guru source range and the changed Guru Python files, then:
 
 ```bash
 python3 -m json.tool trellis/index.json
 bash -n trellis/workflows/guru-team/scripts/bash/*.sh trellis/presets/guru-team/scripts/bash/*.sh
-find trellis/skills/guru-team/runtime trellis/skills/guru-team/packages -name '*.py' -type f -print0 | xargs -0 python3 -m py_compile
-python3 -m py_compile trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py
 python3 ./.trellis/scripts/task.py validate <task-dir>
 .trellis/guru-team/scripts/bash/discover-skill-contract.sh --root . --mode installed --skill guru-sync-base --json
 git diff --check
