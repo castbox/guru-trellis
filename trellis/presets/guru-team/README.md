@@ -1,5 +1,13 @@
 # Guru Team Preset
 
+Issue 创建与修订的共同内容正文由原 Clarify package 的
+[Issue 内容编写规范](../../skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md)
+唯一维护。四个原 Issue owners 实际读取同一安装正文及清晰写作规范，继续各自的
+写作、审核与创建职责。原递归 package 分发安装正文及 `examples/issue-content/`
+教学示例；示例和分发检查不代替实际 Agent 行为或创建、修订后的回读证据。
+已有安装须完整采用匹配的 preset 与四个原 packages，再检查 reapply、投影、drift
+及 sidecar；源码更新本身不证明旧安装已经采用。
+
 Architecture 晋升在最终 Check 前完成；committed 独立判断和完整 Branch Review
 覆盖实际晋升文件。公共入口与 consumer 必须成套更新，三类在途 Delivery、
 partial/output-loss 恢复和窄引用/状态对齐见 [MIGRATION-600](MIGRATION-600.md)。

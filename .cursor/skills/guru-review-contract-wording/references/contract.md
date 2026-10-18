@@ -56,6 +56,16 @@ not run yet.
 
 ### `change_request`
 
+Before this review, actually read the Clarify-owned
+[Issue content specification](../../guru-clarify-requirements/references/issue-content.md)
+and the installed writing specification. Use the common baseline for clarity,
+terminology, and full semantic preservation within the existing wording gate.
+Read necessary source context to assess the final complete title/body after a
+revision. Apply the common local-revision and outside-scope-gap rules without
+changing scanner scope, widening edit authority, or taking over readiness.
+Selected comments supply AI source context; the title/body-only scanner does
+not thereby scan their text. Keep the original rewrite/rescan and typed exits.
+
 The scope is one live issue or side-effect-free draft. Title and body are
 always required and cannot be excluded. The AI may select authoritative
 comments before review; every selected comment records stable identity, author,

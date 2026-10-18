@@ -1,5 +1,13 @@
 # Architecture Baseline SSOT
 
+版本：`current-main-0.6.17-guru.100`；状态：`active`；predecessor：`current-main-0.6.17-guru.99`（比较起点 main@`ed59e851b6c1257bac6316a9571274427e383c93`）。本增量承接 [#153 Issue 内容贡献](./contributions/153-issue-content-ssot.md)，完整继承下方 `.99` 的适用 authority。constitution、ADR-022/024/030、原 owners、GAP lifecycle 与软件四轴保持。
+
+当前增量为 ARCH-CUR-073 / ARCH-DOM-056 / ARCH-INT-059 / EVD-072。原 Clarify package 单写共同 Issue 内容正文与去敏过程示例；四个原 Issue owners 实际读取同源正文、语言规范和必要来源，各自保留写作、审核、创建及回读责任。具体规则只读 canonical Clarify package，实际结果和未验证边界只由 [唯一 Test](../requirements-design-test-contributions/153-issue-content-ssot/test.md) 记录。
+
+原 Architecture owner 在独立 Phase2 评估完整候选及拟写内容后，按 expected `.99` 写入本后继，并核验实际写入的适用性。最终 Check、Task Commit、committed 独立 Architecture 与完整 Branch Review 仍覆盖实际晋升候选。知识晋升不证明整体 Task 完成、正式 source-locked 采用、其他平台实际行为、软件发布或完整 Release 矩阵。
+
+## 历史 `.99` 权威
+
 版本：`current-main-0.6.17-guru.99`；状态：`active`；predecessor：`current-main-0.6.17-guru.98`（比较起点 main@`855f236850714edc4b78169218c09568c823f336`）。本增量承接 [#154 规划正文贡献](./contributions/154-planning-body-contract.md)，继承下方 `.98` 的全部适用 authority。constitution、ADR-022/024/030、原 owners、GAP lifecycle 与软件四轴保持。
 
 当前增量为 ARCH-CUR-072 / ARCH-DOM-055 / ARCH-INT-058 / EVD-071。原 Author package 单写共享正文合同、四类模板和完整去敏过程示例；原写作、审核和实施入口实际加载同源正文与必要引用。原接受边界、Task/Delivery authority、公共 I/O、seed 与官方 agents 保持。具体规则读 canonical Author package，实际验证和未验证边界只由 [唯一 Test](../requirements-design-test-contributions/154-planning-body-contract/test.md) 记录。

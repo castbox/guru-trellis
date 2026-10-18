@@ -221,6 +221,16 @@ race, fault-injection or cross-OS hardening follows this same rule.
 
 ## Source Actions And Mutation Boundary
 
+For Issue/draft writing, revision, and requirements review, actually read
+[the shared Issue content specification](issue-content.md) and the installed
+writing specification before the applicable work. That body owns content
+organization; this contract retains source actions and their execution order.
+When the user requests creation or improvement, organize necessary confirmed
+content into the final body under that specification. Ordinary discussion may
+still use comments; a comment alone does not complete requested body editing.
+Review-only requests do not acquire mutation authority. Apply the shared
+complete-body and local-revision rules within this owner's existing gate.
+
 Historical 3.0 actions are exactly `none`, `issue_comment`, `issue_body_edit`,
 `proposed_draft_update`, `new_issue_draft`, `select_existing_issue`,
 `reopen_issue`, and `active_task_scope_update`. There is no mutation executor

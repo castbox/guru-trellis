@@ -12,6 +12,20 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Issue Content
+
+For `change_request`, read the same Clarify-owned
+[Issue content specification](../guru-clarify-requirements/references/issue-content.md)
+in full before review, together with the writing specification above and
+necessary current source context. Review clarity, terminology, and semantic
+preservation across the final complete title/body. Keep the fixed scanner
+scope and original rewrite/rescan/re-entry contract. Revision language checks
+cover this round's changed text and necessary context; content completeness
+still concerns the complete revised body. Report an outside-scope gap and its
+effect without silently expanding the edit; real scope choices return to
+Clarify through the existing route. The full installed content body is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+
 ## Intent Entry
 
 Load this Skill for an explicit Issue wording review, including “审核 Issue

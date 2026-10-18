@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实质输出前完整读取唯一语言规范；不可把自动截断注入当作完整读取"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "读取来源角色/语义保留与必要引用；Issue只复用适用规则，不复制Planning格式"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-prd.md", "reason": "核对本批需求正文与上下文保持完整，不因全量D1省略"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "核对唯一来源设计处置及实际方案深度"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对唯一DeliveryPolicy/DocsPlan和可执行验证安排"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md", "reason": "原Issue草稿/正文writer及其当前入口，实施前完整读取相关contract"}
+{"file": "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md", "reason": "原Wording完整title/body及本轮语言检查职责"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md", "reason": "原需求完整性/独立单位/验收审核职责"}
+{"file": "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md", "reason": "原最终草稿创建/回读/恢复边界，不新增创建路径"}
+{"file": "trellis/presets/guru-team/scripts/python/test_planning_body_distribution.py", "reason": "复用真实preset writer方法验证引用/投影/reapply，不作为Agent行为证据"}
+{"file": "docs/architecture/contributions/153-issue-content-ssot.md", "reason": "读取真实task-owned Architecture差额及原晋升边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "读取ValidationScopeOwnership；执行普通Issue最小可靠集，区分行为/机械/安装"}
