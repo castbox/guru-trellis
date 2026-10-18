@@ -51,7 +51,7 @@
       },
       "planning_root": "deliveries/8eb3bf73-9ecf-4406-bde4-8520d37e27c7",
       "profile": "pull_request",
-      "phase": "checking",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-18-153-issue-content-ssot/deliveries/8eb3bf73-9ecf-4406-bde4-8520d37e27c7/design.md",
         "revision": "sha256:7f5d98c157c6abf363268632a3f27817fc46d54e9097580d2039911e2a9ff16b"
@@ -158,7 +158,7 @@
           "trellis/skills/guru-team/runtime/bootstrap_check.py",
           "trellis/workflows/guru-team/README.md"
         ],
-        "head_ref": "89d37d59ab1b05daae8bd52acf49294b56461882",
+        "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
         "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
       },
       "results": {
@@ -208,7 +208,7 @@
           ]
         },
         "check": {
-          "result_id": "check:dbb9e1170eba57c2770561c5225ac55f9e0ce8339263cdd8ee17d7896930b852",
+          "result_id": "check:9bdbf91dda28e43276ffedb40c80ee91d89ed01274177b16c10652d09094d4d0",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -236,7 +236,7 @@
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:452c75a095d111eac341e1c02c2d9d7f3cfbe5daa06ed28031ccd7b785e703f1",
+            "content_ref": "sha256:df57de73ed8ba0c31fb55f523da046feb6be412af040ad28d8f52aa9d9e15b7d",
             "paths": [
               ".agents/skills/guru-clarify-requirements/SKILL.md",
               ".agents/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
@@ -282,6 +282,7 @@
               ".cursor/skills/guru-review-change-request/references/contract.md",
               ".cursor/skills/guru-review-contract-wording/SKILL.md",
               ".cursor/skills/guru-review-contract-wording/references/contract.md",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -294,6 +295,10 @@
               ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
               ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
               ".trellis/spec/architecture/baseline-usage.md",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
               "docs/architecture/01-current/system.md",
               "docs/architecture/03-domains/ownership.md",
               "docs/architecture/04-integrations/distribution.md",
@@ -312,7 +317,11 @@
               "docs/test/README.md",
               "docs/test/versions/current-main-0.6.17-guru.109/test-strategy.md",
               "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
               "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -324,9 +333,10 @@
               "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
               "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
               "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py",
               "trellis/workflows/guru-team/README.md"
             ],
-            "head_ref": "89d37d59ab1b05daae8bd52acf49294b56461882",
+            "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
             "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
           },
           "predecessor_result_id": "planning-accepted:950726ca-80e5-480a-bbfa-041cbb5ff176",
@@ -347,7 +357,7 @@
           ]
         },
         "full_review": {
-          "result_id": "full-review:3bff3815d0ae4210ffa5399ac84e0bd169d24c0674627e29789b568b443d8e7c",
+          "result_id": "full-review:1dd45c12602222d3c05b77107f9855ce7f2ff5550806941f50f9c03e802578ea",
           "owner_role": "full_review",
           "owner_id": "guru-review-branch",
           "outcome": "passed",
@@ -375,7 +385,7 @@
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:452c75a095d111eac341e1c02c2d9d7f3cfbe5daa06ed28031ccd7b785e703f1",
+            "content_ref": "sha256:df57de73ed8ba0c31fb55f523da046feb6be412af040ad28d8f52aa9d9e15b7d",
             "paths": [
               ".agents/skills/guru-clarify-requirements/SKILL.md",
               ".agents/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
@@ -421,6 +431,7 @@
               ".cursor/skills/guru-review-change-request/references/contract.md",
               ".cursor/skills/guru-review-contract-wording/SKILL.md",
               ".cursor/skills/guru-review-contract-wording/references/contract.md",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
               ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -433,6 +444,10 @@
               ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
               ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
               ".trellis/spec/architecture/baseline-usage.md",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
               "docs/architecture/01-current/system.md",
               "docs/architecture/03-domains/ownership.md",
               "docs/architecture/04-integrations/distribution.md",
@@ -451,7 +466,11 @@
               "docs/test/README.md",
               "docs/test/versions/current-main-0.6.17-guru.109/test-strategy.md",
               "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
               "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
               "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -463,12 +482,13 @@
               "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
               "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
               "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py",
               "trellis/workflows/guru-team/README.md"
             ],
-            "head_ref": "89d37d59ab1b05daae8bd52acf49294b56461882",
+            "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
             "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
           },
-          "predecessor_result_id": "check:dbb9e1170eba57c2770561c5225ac55f9e0ce8339263cdd8ee17d7896930b852",
+          "predecessor_result_id": "check:9bdbf91dda28e43276ffedb40c80ee91d89ed01274177b16c10652d09094d4d0",
           "obligations": [],
           "evidence": [
             {
@@ -477,22 +497,162 @@
             }
           ]
         },
-        "readiness": null
+        "readiness": {
+          "result_id": "readiness:6d8b80755f648bee21e818e5bc5f83087aa1c1657637ad50c42b549eb469b8a0",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-153-issue-content-ssot/prd.md",
+              "revision": "sha256:717162576799e6b2cb44d93de98335bf28381c572b37a348beb80c38247dec48"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6",
+              "AC7",
+              "AC8",
+              "AC9",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-153-issue-content-ssot/deliveries/8eb3bf73-9ecf-4406-bde4-8520d37e27c7/design.md",
+            "revision": "sha256:7f5d98c157c6abf363268632a3f27817fc46d54e9097580d2039911e2a9ff16b"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:df57de73ed8ba0c31fb55f523da046feb6be412af040ad28d8f52aa9d9e15b7d",
+            "paths": [
+              ".agents/skills/guru-clarify-requirements/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              ".agents/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+              ".agents/skills/guru-create-issue/SKILL.md",
+              ".agents/skills/guru-review-change-request/SKILL.md",
+              ".agents/skills/guru-review-change-request/references/contract.md",
+              ".agents/skills/guru-review-contract-wording/SKILL.md",
+              ".agents/skills/guru-review-contract-wording/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              ".claude/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+              ".claude/skills/guru-create-issue/SKILL.md",
+              ".claude/skills/guru-review-change-request/SKILL.md",
+              ".claude/skills/guru-review-change-request/references/contract.md",
+              ".claude/skills/guru-review-contract-wording/SKILL.md",
+              ".claude/skills/guru-review-contract-wording/references/contract.md",
+              ".codex/skills/guru-clarify-requirements/SKILL.md",
+              ".codex/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              ".codex/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              ".codex/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              ".codex/skills/guru-clarify-requirements/references/contract.md",
+              ".codex/skills/guru-clarify-requirements/references/issue-content.md",
+              ".codex/skills/guru-create-issue/SKILL.md",
+              ".codex/skills/guru-review-change-request/SKILL.md",
+              ".codex/skills/guru-review-change-request/references/contract.md",
+              ".codex/skills/guru-review-contract-wording/SKILL.md",
+              ".codex/skills/guru-review-contract-wording/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              ".cursor/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+              ".cursor/skills/guru-create-issue/SKILL.md",
+              ".cursor/skills/guru-review-change-request/SKILL.md",
+              ".cursor/skills/guru-review-change-request/references/contract.md",
+              ".cursor/skills/guru-review-contract-wording/SKILL.md",
+              ".cursor/skills/guru-review-contract-wording/references/contract.md",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+              ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+              ".trellis/spec/architecture/baseline-usage.md",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/README.md",
+              "docs/architecture/contributions/153-issue-content-ssot.md",
+              "docs/architecture/evidence/current-evidence.md",
+              "docs/design/README.md",
+              "docs/design/versions/current-main-0.6.17-guru.109/design-main.md",
+              "docs/requirements-design-test-contributions/153-issue-content-ssot/design.md",
+              "docs/requirements-design-test-contributions/153-issue-content-ssot/manifest.yaml",
+              "docs/requirements-design-test-contributions/153-issue-content-ssot/requirements.md",
+              "docs/requirements-design-test-contributions/153-issue-content-ssot/test.md",
+              "docs/requirements-design-test-contributions/153-issue-content-ssot/traceability.md",
+              "docs/requirements/README.md",
+              "docs/requirements/versions/current-main-0.6.17-guru.109/requirement-main.md",
+              "docs/test/README.md",
+              "docs/test/versions/current-main-0.6.17-guru.109/test-strategy.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+              "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/revision/process.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+              "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py",
+              "trellis/workflows/guru-team/README.md"
+            ],
+            "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
+            "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
+          },
+          "predecessor_result_id": "full-review:1dd45c12602222d3c05b77107f9855ce7f2ff5550806941f50f9c03e802578ea",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-153-issue-content-ssot/deliveries/8eb3bf73-9ecf-4406-bde4-8520d37e27c7/implement.md",
+              "revision": "sha256:aa62ba3e4a707efea2bc3b931bd2345386fd9bf339dc603659becbe216edb36b"
+            }
+          ]
+        }
       },
       "publication_result": {
-        "result_id": "publication:efb00d44011f6d311a431115ee82804ae988060c3b440965b6299033d59795dc",
+        "result_id": "publication:1756486254aef9270c38b9f32c412536c50d0cb37f7ddac288e9f838359485aa",
         "owner_id": "guru-publish-task-delivery",
         "evidence": [
           {
             "locator": "https://github.com/castbox/guru-trellis/pull/622",
-            "revision": "sha256:d71546d7a25fdc7262dcaf2720ed9bb995622b8c9923ffd96349e7805791e9b9"
+            "revision": "sha256:c8ab37010e03625a0588af21547554352ccddff3faf1096755eb0738c0595262"
           }
         ],
         "profile": "pull_request",
         "candidate": {
           "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93",
-          "content_ref": "sha256:452c75a095d111eac341e1c02c2d9d7f3cfbe5daa06ed28031ccd7b785e703f1",
-          "head_ref": "89d37d59ab1b05daae8bd52acf49294b56461882",
+          "content_ref": "sha256:df57de73ed8ba0c31fb55f523da046feb6be412af040ad28d8f52aa9d9e15b7d",
+          "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
           "kind": "git",
           "paths": [
             ".agents/skills/guru-clarify-requirements/SKILL.md",
@@ -539,6 +699,7 @@
             ".cursor/skills/guru-review-change-request/references/contract.md",
             ".cursor/skills/guru-review-contract-wording/SKILL.md",
             ".cursor/skills/guru-review-contract-wording/references/contract.md",
+            ".trellis/guru-team/runtime/bootstrap_check.py",
             ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
             ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
             ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -551,6 +712,10 @@
             ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
             ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
             ".trellis/spec/architecture/baseline-usage.md",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/workflow/companion-scripts.md",
+            ".trellis/spec/workflow/index.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
             "docs/architecture/01-current/system.md",
             "docs/architecture/03-domains/ownership.md",
             "docs/architecture/04-integrations/distribution.md",
@@ -569,7 +734,11 @@
             "docs/test/README.md",
             "docs/test/versions/current-main-0.6.17-guru.109/test-strategy.md",
             "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
             "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+            "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+            "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
             "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
             "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
             "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
@@ -581,22 +750,189 @@
             "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
             "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
             "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+            "trellis/skills/guru-team/runtime/bootstrap_check.py",
             "trellis/workflows/guru-team/README.md"
           ]
         },
         "repo_ref": "castbox/guru-trellis",
         "pr_number": 622,
-        "reviewed_head": "89d37d59ab1b05daae8bd52acf49294b56461882",
+        "reviewed_head": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
         "target_ref": "main",
         "publication_ref": {
           "locator": "https://github.com/castbox/guru-trellis/pull/622",
-          "revision": "sha256:d71546d7a25fdc7262dcaf2720ed9bb995622b8c9923ffd96349e7805791e9b9"
+          "revision": "sha256:c8ab37010e03625a0588af21547554352ccddff3faf1096755eb0738c0595262"
         }
       },
-      "delivery_result": null,
+      "delivery_result": {
+        "result_id": "delivery:c513ae2b07b605acb29294287417a71f03719851",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/622",
+            "revision": "c513ae2b07b605acb29294287417a71f03719851"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93",
+          "content_ref": "sha256:df57de73ed8ba0c31fb55f523da046feb6be412af040ad28d8f52aa9d9e15b7d",
+          "head_ref": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-clarify-requirements/SKILL.md",
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            ".agents/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            ".agents/skills/guru-clarify-requirements/references/contract.md",
+            ".agents/skills/guru-clarify-requirements/references/issue-content.md",
+            ".agents/skills/guru-create-issue/SKILL.md",
+            ".agents/skills/guru-review-change-request/SKILL.md",
+            ".agents/skills/guru-review-change-request/references/contract.md",
+            ".agents/skills/guru-review-contract-wording/SKILL.md",
+            ".agents/skills/guru-review-contract-wording/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/SKILL.md",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            ".claude/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            ".claude/skills/guru-clarify-requirements/references/contract.md",
+            ".claude/skills/guru-clarify-requirements/references/issue-content.md",
+            ".claude/skills/guru-create-issue/SKILL.md",
+            ".claude/skills/guru-review-change-request/SKILL.md",
+            ".claude/skills/guru-review-change-request/references/contract.md",
+            ".claude/skills/guru-review-contract-wording/SKILL.md",
+            ".claude/skills/guru-review-contract-wording/references/contract.md",
+            ".codex/skills/guru-clarify-requirements/SKILL.md",
+            ".codex/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            ".codex/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            ".codex/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            ".codex/skills/guru-clarify-requirements/references/contract.md",
+            ".codex/skills/guru-clarify-requirements/references/issue-content.md",
+            ".codex/skills/guru-create-issue/SKILL.md",
+            ".codex/skills/guru-review-change-request/SKILL.md",
+            ".codex/skills/guru-review-change-request/references/contract.md",
+            ".codex/skills/guru-review-contract-wording/SKILL.md",
+            ".codex/skills/guru-review-contract-wording/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/SKILL.md",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            ".cursor/skills/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            ".cursor/skills/guru-clarify-requirements/references/contract.md",
+            ".cursor/skills/guru-clarify-requirements/references/issue-content.md",
+            ".cursor/skills/guru-create-issue/SKILL.md",
+            ".cursor/skills/guru-review-change-request/SKILL.md",
+            ".cursor/skills/guru-review-change-request/references/contract.md",
+            ".cursor/skills/guru-review-contract-wording/SKILL.md",
+            ".cursor/skills/guru-review-contract-wording/references/contract.md",
+            ".trellis/guru-team/runtime/bootstrap_check.py",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md",
+            ".trellis/guru-team/skills/packages/guru-create-issue/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-change-request/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-review-contract-wording/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-review-contract-wording/references/contract.md",
+            ".trellis/spec/architecture/baseline-usage.md",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/workflow/companion-scripts.md",
+            ".trellis/spec/workflow/index.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/README.md",
+            "docs/architecture/contributions/153-issue-content-ssot.md",
+            "docs/architecture/evidence/current-evidence.md",
+            "docs/design/README.md",
+            "docs/design/versions/current-main-0.6.17-guru.109/design-main.md",
+            "docs/requirements-design-test-contributions/153-issue-content-ssot/design.md",
+            "docs/requirements-design-test-contributions/153-issue-content-ssot/manifest.yaml",
+            "docs/requirements-design-test-contributions/153-issue-content-ssot/requirements.md",
+            "docs/requirements-design-test-contributions/153-issue-content-ssot/test.md",
+            "docs/requirements-design-test-contributions/153-issue-content-ssot/traceability.md",
+            "docs/requirements/README.md",
+            "docs/requirements/versions/current-main-0.6.17-guru.109/requirement-main.md",
+            "docs/test/README.md",
+            "docs/test/versions/current-main-0.6.17-guru.109/test-strategy.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+            "trellis/presets/guru-team/scripts/python/test_issue_content_distribution.py",
+            "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+            "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/brief/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/detailed/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/issue-content/revision/process.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md",
+            "trellis/skills/guru-team/packages/guru-create-issue/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-contract-wording/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-review-contract-wording/references/contract.md",
+            "trellis/skills/guru-team/runtime/bootstrap_check.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 622,
+        "reviewed_head": "3877dcaf0f40a35c19d402b2ee6fb0c132c45ca4",
+        "merge_commit": "c513ae2b07b605acb29294287417a71f03719851",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
-  "completion_results": [],
-  "closure_results": []
+  "completion_results": [
+    {
+      "result_id": "completion:7cc4f7be-2684-4a79-902b-303ba5c4fe51",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "docs/requirements-design-test-contributions/153-issue-content-ssot/test.md",
+          "revision": "sha256:ec2441d991ff2145c82c389e0b2621cc439456da8b6e6f47dbfcf2a5d36a7f47"
+        },
+        {
+          "locator": "docs/architecture/README.md",
+          "revision": "current-main-0.6.17-guru.100"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/622",
+          "revision": "c513ae2b07b605acb29294287417a71f03719851"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/10-18-153-issue-content-ssot/prd.md",
+        "revision": "sha256:717162576799e6b2cb44d93de98335bf28381c572b37a348beb80c38247dec48"
+      },
+      "delivery_result_ids": [
+        "delivery:c513ae2b07b605acb29294287417a71f03719851"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:8ee80bec89fc88638827cdbc",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/153",
+          "revision": "CLOSED"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:7cc4f7be-2684-4a79-902b-303ba5c4fe51",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/153",
+        "revision": "CLOSED"
+      }
+    }
+  ]
 }
