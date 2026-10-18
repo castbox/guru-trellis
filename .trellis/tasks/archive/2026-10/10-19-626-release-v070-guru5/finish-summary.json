@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-18T19:02:10Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-19-626-release-v070-guru5",
+    "title": "#626 准备 v0.7.0-guru.5 及内部 0.7.0 知识版本",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-19-626-release-v070-guru5",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/626-release-v070-guru5",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "#626 准备 v0.7.0-guru.5 及内部 0.7.0 知识版本",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5",
+          ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/prd.md",
+          ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#626"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/626-release-v070-guru5"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5",
+        ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/prd.md",
+        ".trellis/tasks/archive/2026-10/10-19-626-release-v070-guru5/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#626 准备 v0.7.0-guru.5 及内部 0.7.0 知识版本；#626；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
