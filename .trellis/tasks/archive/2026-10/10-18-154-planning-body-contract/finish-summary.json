@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-18T08:33:54Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-18-154-planning-body-contract",
+    "title": "规范 Task 与 Delivery 的规划正文、来源承接和中文写作",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-18-154-planning-body-contract",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/154-planning-body-contract",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "规范 Task 与 Delivery 的规划正文、来源承接和中文写作",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract",
+          ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/prd.md",
+          ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#154"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/154-planning-body-contract"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract",
+        ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/prd.md",
+        ".trellis/tasks/archive/2026-10/10-18-154-planning-body-contract/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "规范 Task 与 Delivery 的规划正文、来源承接和中文写作；#154；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
