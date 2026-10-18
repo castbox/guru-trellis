@@ -1,0 +1,15 @@
+{"file": ".trellis/tasks/10-18-154-validation-flow/prd.md", "reason": "整体 scope、剩余 R2 与 Completion 责任"}
+{"file": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/prd.md", "reason": "D1 场景、行为和验收"}
+{"file": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md", "reason": "D1 具体落点、范围 B 与来源设计处置"}
+{"file": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/implement.md", "reason": "步骤、验证、partial Policy 与 Docs Plan"}
+{"file": "validation-fixture/source-a.md", "reason": "完整来源 A，改 build 不采用，其余承诺保持"}
+{"file": "validation-fixture/source-b.md", "reason": "完整来源 B 与 dist 普通构建兼容"}
+{"file": "validation-fixture/sandbox/pack.py", "reason": "真实 CLI 与构建路径"}
+{"file": "validation-fixture/tests/test_pack.py", "reason": "真实 subprocess 回归测试"}
+{"file": "validation-fixture/docs/usage.md", "reason": "当前 durable 用法与文档 delta"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整安装写作规范"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值和范围边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "共享规划正文与来源完整性合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前 delivery-prd 模板及本批深度边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前 delivery-design 模板及本批深度边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前 delivery-implement 模板及本批深度边界"}

@@ -1,0 +1,166 @@
+{
+  "schema_version": "2.0",
+  "id": "154-validation-flow",
+  "name": "154-validation-flow",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "pack 帮助展示与 dry-run，保持 dist 兼容性",
+  "description": "完整交付帮助展示与 dry-run；D1 帮助，D2 dry-run；普通构建行为不变。",
+  "dev_type": null,
+  "scope": "帮助展示 --output 用途及真实默认 dist；dry-run 只报告目标、不创建目录文件；普通构建不覆盖；两个能力均满足后整体 Completion。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-18",
+  "base_branch": "codex/154-validation-base",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-18-154-validation-flow/prd.md",
+    "revision": "sha256:81b7e22d328f03a46b9844a63c8c7477df39a420f2a07818302b36e1bb61ed76"
+  },
+  "deliveries": [
+    {
+      "id": "8be0fd96-f68a-47fd-aad5-789391cbb01c",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-18-154-validation-flow/prd.md",
+          "revision": "sha256:81b7e22d328f03a46b9844a63c8c7477df39a420f2a07818302b36e1bb61ed76"
+        },
+        "anchors": [
+          "R1",
+          "R3",
+          "R4",
+          "AC1",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md",
+        "revision": "sha256:91bb3ed5556d7b3340c838a75a12458c2a0a5a4712429d3ab784225bcd80d38b"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:a761cfc829170d106e095a903d4e29f6c543d328cbf18c8bc55a5b6b0bebc512",
+        "paths": [
+          "validation-fixture/docs/usage.md",
+          "validation-fixture/sandbox/pack.py",
+          "validation-fixture/tests/test_pack.py"
+        ],
+        "head_ref": "b1b096df218c25442ebdeebed72e9025c4c847e4",
+        "base_ref": "b1b096df218c25442ebdeebed72e9025c4c847e4"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:6518f1aa-102a-4fa0-be85-840433f25b7b",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/prd.md",
+              "revision": "sha256:81b7e22d328f03a46b9844a63c8c7477df39a420f2a07818302b36e1bb61ed76"
+            },
+            "anchors": [
+              "R1",
+              "R3",
+              "R4",
+              "AC1",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md",
+            "revision": "sha256:91bb3ed5556d7b3340c838a75a12458c2a0a5a4712429d3ab784225bcd80d38b"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/prd.md",
+              "revision": "sha256:7778e5ef4ba916082646bf2353d9f6e22fbed350843a3f9e27a6b9baba51aa16"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md",
+              "revision": "sha256:91bb3ed5556d7b3340c838a75a12458c2a0a5a4712429d3ab784225bcd80d38b"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/implement.md",
+              "revision": "sha256:7487036cd1c6ab66feb9203566c65b977e60f01a0ec8de786aaa604179089c98"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:483cfd8d8855aeff000d022185f24e2569552aaf3f7a6609cb90861d24a62583",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/prd.md",
+              "revision": "sha256:81b7e22d328f03a46b9844a63c8c7477df39a420f2a07818302b36e1bb61ed76"
+            },
+            "anchors": [
+              "R1",
+              "R3",
+              "R4",
+              "AC1",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md",
+            "revision": "sha256:91bb3ed5556d7b3340c838a75a12458c2a0a5a4712429d3ab784225bcd80d38b"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:a761cfc829170d106e095a903d4e29f6c543d328cbf18c8bc55a5b6b0bebc512",
+            "paths": [
+              "validation-fixture/docs/usage.md",
+              "validation-fixture/sandbox/pack.py",
+              "validation-fixture/tests/test_pack.py"
+            ],
+            "head_ref": "b1b096df218c25442ebdeebed72e9025c4c847e4",
+            "base_ref": "b1b096df218c25442ebdeebed72e9025c4c847e4"
+          },
+          "predecessor_result_id": "planning-accepted:6518f1aa-102a-4fa0-be85-840433f25b7b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/prd.md",
+              "revision": "sha256:7778e5ef4ba916082646bf2353d9f6e22fbed350843a3f9e27a6b9baba51aa16"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/design.md",
+              "revision": "sha256:91bb3ed5556d7b3340c838a75a12458c2a0a5a4712429d3ab784225bcd80d38b"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-154-validation-flow/deliveries/8be0fd96-f68a-47fd-aad5-789391cbb01c/implement.md",
+              "revision": "sha256:7487036cd1c6ab66feb9203566c65b977e60f01a0ec8de786aaa604179089c98"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

@@ -20,6 +20,17 @@ class PackBuildTest(unittest.TestCase):
             check=False,
         )
 
+    def test_help_describes_output_without_building(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            before = set(root.rglob("*"))
+            result = self.invoke(root, "--help")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stderr, "")
+            for expected in ("--output", "DIR", "输出目录", "dist"):
+                self.assertIn(expected, result.stdout)
+            self.assertEqual(set(root.rglob("*")), before)
+
     def test_default_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
