@@ -65,7 +65,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
         self.source = self.directory / "source"
         (self.source / "trellis/workflows/guru-team").mkdir(parents=True)
         (self.source / "trellis/workflows/guru-team/workflow.md").write_bytes((SOURCE / "trellis/workflows/guru-team/workflow.md").read_bytes())
-        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.4"}')
+        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.5"}')
         for args in (("init", "-q"), ("config", "user.name", "Upgrade fixture"), ("config", "user.email", "fixture@example.invalid"), ("add", "."), ("commit", "-qm", "source fixture")):
             subprocess.run(["git", *args], cwd=self.source, check=True, capture_output=True)
         old = {"schema_version": "2.0", "extension": {"version": "0.6.17-guru.88", "target_trellis_cli": "0.7.0-castbox.3"},
@@ -236,7 +236,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
 
     def test_source_candidate_edit_blocks_before_writes_and_resume_never_refreezes(self):
         plan = self.plan(); before = self.tree()
-        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.4","normal":"new edit"}')
+        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.5","normal":"new edit"}')
         with self.assertRaisesRegex(MigrationError, "frozen candidate"):
             upgrade.begin(PACKAGE, self.root, self.public, plan, self.fork)
         self.assertEqual(self.tree(), before)

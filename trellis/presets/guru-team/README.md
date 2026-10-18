@@ -113,38 +113,31 @@ Projection checks and actual native behavior are separate evidence; current
 
 ## Apply And Verify
 
-已发布稳定版本为 `v0.7.0-guru.3`，peeled commit 为
-`7d20a930341dae3e7dd2d214660ce3b99e28d863`；其原 Fork lock 为
-`5c760463680ffc10a3f26957b330c57a4b0c3ff8`，main CI `37735554354`。
-默认稳定安装使用同一 immutable `.3` tag 的 workflow marketplace
-`gh:castbox/guru-trellis/trellis#v0.7.0-guru.3` 和 preset checkout，按该 checkout
-的原 lock 构建 Fork，不与当前新 Fork 混搭。
+已发布稳定版本为 `v0.7.0-guru.4`，peeled commit 为
+`855f236850714edc4b78169218c09568c823f336`。默认稳定安装使用同一 immutable `.4`
+tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.4`
+和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。
 
-本次目标为尚未发布的 `v0.7.0-guru.4`。当前准备源码的 extension 与原 maintenance
-target 为 `0.7.0-guru.4`；它不等于已发布的 immutable `.3` tag 内容。
-当前正式 Fork lock 为 `7bcbeaad31380e7a29c97898cb947c6120a61775`，
-tree `c2129a4e600f37b40b08ecec7347fe16a5642d3a`，成功 main CI `39043542548`，
-包含 #40 维护能力、#43 的旧原生 schema-1 会话元数据兼容修复与 #47 的
-Task/Delivery Git 对象读取优化，以及 #50 的公开 `GitCandidateContent` 不可变摘要能力及 #52 的公开 `task_resume`。本次仅准备精确来源；目标工具安装、Guru PR 链与
-性能验收仍须后续独立验证。CLI/Core
-均为 `0.7.0-castbox.4`，package manager 为 `pnpm@10.32.1`。
+本次目标为尚未发布的 `v0.7.0-guru.5`。当前准备源码的 extension 与 maintenance
+target 为 `0.7.0-guru.5`；它与已发布的 immutable `.4` tag 分开读取。
+正式 Fork lock 保持 `7bcbeaad31380e7a29c97898cb947c6120a61775`，
+tree `c2129a4e600f37b40b08ecec7347fe16a5642d3a`，成功 main CI `39043542548`。
+该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
+Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
+#52 公开 `task_resume`。CLI/Core 保持 `0.7.0-castbox.4`，package manager
+保持 `pnpm@10.32.1`。这些来源身份不替代实际目标安装、Guru PR 链或性能验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
-不证明当前 lock 的匹配构建。当前来源使用干净 workspace 的正常 CLI/Core
-依赖布局，保留模板原 mode；不重打上游包、不放宽 source_locked，
-不代表 Guru `.4` 已发布或目标正式采用。
-源码试用的 workflow marketplace 与 preset 使用同一个真实、远端可寻址的完整 Guru
-SHA；不预填未形成的 SHA，不使用尚不存在的 `.4` tag。来源记录和 Fork CI 不替代
-实际构建、Guru exact-candidate、installed/lifecycle 或发布门禁。
+不证明当前 lock 的匹配构建。使用干净 source workspace 的正常 CLI/Core 依赖布局，
+保留模板原 mode；不以相同版本号选择另一构建或放宽 `source_locked`。
 
-当前基础工具采用保留其自身 receipt 对应的 `.3` installed graph 与原生 Task2/session3；
-这不证明 `.4` installed parity。S2 先交付实际 clean committed `.4` 来源，S3 再经原
-tools-only owner 执行新的 `.4` 操作，完成四平台投影、三平台 reapply/drift、正式 clean/
-predecessor 维护及目标 native/下一实际 owner、恢复和回退定向验证。来源准备不声明
-`.4` 正式安装、整体准备、完整多平台矩阵或业务/Release 通过。
-
-本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结
-exact commit/tree 执行；早期 `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的验收不能替代
-本次候选验证。tag、tag-pinned smoke、GitHub Release 与 Release Issue closure 仍为后续独立动作。
+源码试用的 workflow marketplace 与 preset 必须使用同一个真实、远端可寻址的完整
+Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.5` tag。
+准备源码与投影检查不证明 `.5` 安装、业务采用或 Release 通过。
+本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main`
+重新冻结 exact commit/tree，执行定向安装及 predecessor 升级验证。tag、tag-pinned
+smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完成。
+历史验收只保留原来源身份，不替代本次候选门禁；完整多平台矩阵与真实业务、生产
+验证保持独立。
 
 历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；拒绝不代表升级成功。
@@ -162,7 +155,7 @@ business Intake，普通 apply 保持严格。
 For current-source validation, use the source-locked, built
 `castbox/Trellis@7bcbeaad31380e7a29c97898cb947c6120a61775` CLI
 (successful main CI `39043542548`) and that same reviewed Guru source.
-Stable `.3` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
+Stable `.4` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:
 

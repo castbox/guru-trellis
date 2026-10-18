@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整语言规范与证据边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "最小可靠验证与测试价值"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与历史保留边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文与来源承诺"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开版本与安装文案"}
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "固定Fork来源与版本轴"}
+{"file": "docs/architecture/README.md", "reason": "阶段架构authority与内部版本关系"}
