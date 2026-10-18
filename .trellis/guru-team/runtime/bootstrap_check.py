@@ -24,7 +24,7 @@ def check_public_wrapper(assets: Path, runtime_id: str, target: Path) -> None:
     with temporary_directory("python_runtime_check") as view:
         runtime = view / ".trellis/guru-team/runtime"
         installed_skills = runtime.parent / "skills"
-        ignore = shutil.ignore_patterns("tests", "__pycache__", "*.pyc")
+        ignore = shutil.ignore_patterns("tests", "__pycache__", "*.pyc", "*.pyo")
         shutil.copytree(assets, runtime, ignore=ignore)
         shutil.copytree(package, installed_skills / "packages" / package_id, ignore=ignore)
         shutil.copytree(skills / "schemas", installed_skills / "schemas", ignore=ignore)

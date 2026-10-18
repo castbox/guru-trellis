@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本轮自然语言写作与评审规则"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实际 Task/Delivery 正文承接合同"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围与测试价值"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Guru 与上游/业务路径边界"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "同步、provenance 与重复应用行为"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批规划正文与实施审核承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批规划正文与实施审核承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批规划正文与实施审核承接"}
