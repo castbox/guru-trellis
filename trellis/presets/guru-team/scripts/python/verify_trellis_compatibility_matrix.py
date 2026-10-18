@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -2166,13 +2167,72 @@ def _checkout_predecessor_source(repo_root: Path, before_tag: str, source_root: 
     _git(source_root, "checkout", "--detach", before_tag)
 
 
+def _upgrade_native_bootstrap_tools(
+    repo_root: Path, target: Path, fork_source: Path, source_ref: str,
+    installed: Mapping[str, Any], cell_root: Path, env: Mapping[str, str],
+) -> dict[str, Any]:
+    """Maintain tools only; the caller already checked the fixed init fixture."""
+    runtime = repo_root / "trellis/skills/guru-team"
+    sys.path.insert(0, str(runtime))
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "matrix_maintenance_transport", runtime / "runtime/maintenance_transport.py")
+        transport = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(transport)
+        cli = fork_source / "packages/cli"
+        source = transport._invoke(cli, "source")
+        candidate = source["contract"]
+        descriptor = {
+            "cli_package_root": str(cli), "dependency_mode": "source_locked",
+            "guru_source_root": str(repo_root), "fork_source_root": str(fork_source),
+            "expected_candidate": {
+                "cli_version": candidate["cli_version"], "core_version": candidate["core_version"],
+                "cli_digest": transport.package_digest(cli),
+                "core_digest": transport.package_digest(Path(source["core_package_root"])),
+            },
+        }
+    finally:
+        sys.path.pop(0)
+    package = runtime / "packages/guru-upgrade-tools"
+    def save(name: str, value: Any) -> Path:
+        path = cell_root / ("tools-" + name + ".json")
+        path.write_text(json.dumps(value), encoding="utf-8")
+        return path
+    public = save("input", {"profile": "install", "source_ref": source_ref,
+                            "dependency_mode": "source_locked", "checkout": str(target)})
+    def call(script: str, *extra: str) -> dict[str, Any]:
+        output = _run((str(package / "scripts" / script), "--root", str(target),
+                       "--input", str(public), *extra), cwd=repo_root, env=env,
+                      capture=True, log=cell_root / ("tools-" + script + ".log"))
+        return _require_dict(json.loads(output), "tools owner output")
+    preview = call("preview.sh", "--upstream-source", str(save("source", descriptor)))["result"]
+    prepare = save("prepare", {
+        "upstream_source": descriptor,
+        "tools_input": {"root": str(target), "workflow": {
+            "action": "install", "template_id": "guru-team", "ownership": "custom",
+            "provider": "gh:castbox/guru-trellis/trellis#" + source_ref,
+            "content": (repo_root / "trellis/workflows/guru-team/workflow.md").read_text(),
+        }, "file_decisions": [
+            {"path": row["path"], "source": row["source"], "action": "preserve"}
+            for row in preview["public_tools"]["files"]
+            if row["status"] == "conflict" and not row["required"]]},
+        "selected_platforms": installed["install"]["selected_platforms"], "guru_decisions": [],
+    })
+    frozen = save("plan", call("prepare.sh", "--plan", str(prepare))["result"]["plan"])
+    result = call("invoke.sh", "--plan", str(frozen))
+    save("output", result)
+    if result.get("exit_id") != "tools_upgraded" or result.get("unverified"):
+        raise MatrixError("original tools owner did not complete the source-locked bootstrap maintenance")
+    return result
+
+
 def _upgrade_bootstrap_fixture(
     repo_root: Path, target: Path, fork_source: Path, workflow_source: str,
     cell_root: Path, env: Mapping[str, str],
 ) -> dict[str, Any]:
-    """Run the original Plan2 owner for the fixed init/bootstrap scenario.
+    """Run the original maintenance owner for the fixed init/bootstrap scenario.
 
-    This scenario explicitly retains the init-owned bootstrap as defer. It is
+    Legacy bootstrap stays defer; native schema2 bootstrap stays unchanged. It is
     not an inventory planner for business Tasks or session restoration.
     """
     import base64
@@ -2214,9 +2274,6 @@ def _upgrade_bootstrap_fixture(
             or inventory.get("branch_bindings")):
         raise MatrixError("existing fixture requires exactly the init-owned bootstrap Task")
     task = tasks[0]
-    templates = workspace["prospective_templates"]
-    workflow = (repo_root / "trellis/workflows/guru-team/workflow.md").read_text()
-    contract = json.loads(workflow.split("[trellis-runtime-contract]", 1)[1].split("[/trellis-runtime-contract]", 1)[0])
     def raw(path: Path) -> dict[str, Any] | None:
         if not path.exists():
             return None
@@ -2224,6 +2281,21 @@ def _upgrade_bootstrap_fixture(
         return {"sha256": hashlib.sha256(content).hexdigest(),
                 "mode": stat.S_IMODE(path.stat().st_mode),
                 "content_base64": base64.b64encode(content).decode()}
+    native = _load_json(target / task["task_ref"] / "task.json")
+    if native.get("schema_version") == "2.0":
+        if native.get("lifecycle_generation") != 0 or native.get("deliveries") != []:
+            raise MatrixError("existing fixture requires the untouched native init bootstrap")
+        result = _upgrade_native_bootstrap_tools(
+            repo_root, target, fork_source, source_ref, installed, cell_root, env)
+        for name, original in task["artifacts"].items():
+            if raw(target / name) != original:
+                raise MatrixError("bootstrap fixture bytes or modes changed during tools maintenance")
+        return result
+    if native.get("schema_version", "1.0") != "1.0":
+        raise MatrixError("existing fixture bootstrap schema is unsupported")
+    templates = workspace["prospective_templates"]
+    workflow = (repo_root / "trellis/workflows/guru-team/workflow.md").read_text()
+    contract = json.loads(workflow.split("[trellis-runtime-contract]", 1)[1].split("[/trellis-runtime-contract]", 1)[0])
     files = [{"target": {"kind": "project", "workspace": "primary", "path": name},
               "owner": "preserve", "action": "preserve", "source": original}
              for name, original in task["artifacts"].items()]
@@ -2377,10 +2449,11 @@ def _run_cell(
             raise MatrixError(
                 "existing cell candidate workflow is unpublished; exact remote source is required"
             )
-        _upgrade_bootstrap_fixture(
+        maintenance = _upgrade_bootstrap_fixture(
             repo_root, target, fork_source, workflow_source, cell_root, env,
         )
-        update_mode = "source_locked_installation_upgrade"
+        update_mode = ("source_locked_tools_upgrade" if maintenance.get("exit_id") == "tools_upgraded"
+                       else "source_locked_installation_upgrade")
         reapplied_preset = _apply_preset(
             repo_root,
             target,
@@ -2419,7 +2492,7 @@ def _run_cell(
     result.update(
         {
             "update_mode": update_mode,
-            "workflow_sample": ("source_locked_installation_upgrade" if scenario == "existing" else
+            "workflow_sample": (update_mode if scenario == "existing" else
                                 "public_plus_local_candidate" if local_sample else "exact_marketplace"),
             "before_projection_sha256": before_projection["projection_sha256"],
             "after_projection_sha256": after_projection["projection_sha256"],
