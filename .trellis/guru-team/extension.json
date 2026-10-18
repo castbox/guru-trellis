@@ -1167,11 +1167,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-18T11:05:38Z",
+  "installed_at": "2026-10-18T14:38:21Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "ed59e851b6c1257bac6316a9571274427e383c93",
-    "commit": "ed59e851b6c1257bac6316a9571274427e383c93",
+    "ref": "bdb5185c673c91b2fb5cfc66ffbb33849904a69c",
+    "commit": "bdb5185c673c91b2fb5cfc66ffbb33849904a69c",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1244,7 +1244,7 @@
       ".trellis/spec/workflow/bootstrap-repository-ssot.md": "8d9fb88bb8f105532df49aa24ea948cedd8d9b8965a83026ccd0b56e20efb37c",
       ".trellis/spec/workflow/task-delivery-migration.md": "aa63f94fee3e6b67ef3dce7859b3e6b00ab448c783f7badcbf02e72388a118f9",
       ".trellis/spec/workflow/causal-completion-semantics.md": "4702e841c306d48190019ddb65505ea2e118f0fd1d561b9fa57ac4e4b2e3b6da",
-      ".trellis/spec/workflow/requirements-design-test-ssot.md": "b6917597cfc92a6112a8fc4475c6739bc23ee567af288ea91bd63dc0900c91f0",
+      ".trellis/spec/workflow/requirements-design-test-ssot.md": "445e04986734bd3776a3f4a9bb664bbce6d7621d151ec71aba5167a0964d2c4d",
       ".trellis/spec/workflow/semantic-retrieval.md": "7f523e481aa122eddcda7d2d59c5ec04c4c6012247e6ac0b6958626a4ae8501f",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "995c5ebccdfc9d4485155878f97c90be7315ce404f710e2419010cf677971bff",
       ".trellis/spec/workflow/workflow-contract.md": "801a5a1672bd808c0a8995c4e2ebb3ed82e47f9b0e88ba35869cd2542f564642",
@@ -1410,7 +1410,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "ee1a9df20078afa4ee466872c71fdee1fe96b2c473d790d7993b5d47456a8a2b",
-        "tree_sha256": "42dc1406c62232e148ec3633f8841a8c192bd9556dc722b95010d3f0bdca5d36"
+        "tree_sha256": "3778086e6c159b57224d423b490e8506d4896e7ebe0b3a8cefd2f8b97697d3fb"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -1420,7 +1420,7 @@
       {
         "id": "guru-maintain-requirements-design-test-ssot",
         "interface_sha256": "4f5ec614797083d120042ca18866b4acfb448c5d1dab50025deb7289ab2a562e",
-        "tree_sha256": "6de25e9511437e836a6daf8fb843a9d64a1ee9ba9cd16c529c745e3caf629c96"
+        "tree_sha256": "800596d8874d324f1699726ce471a36cbdd7d870d8d2f2fe62a7a91f410c9718"
       },
       {
         "id": "guru-merge-task-delivery",
@@ -9301,7 +9301,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
+        "sha256": "e7b92cbcaedbb5a9cd6d9a71c542c8e7b469514104fd87815290489621f598d2",
         "executable": false,
         "action": "installed"
       },
@@ -9854,7 +9854,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "sha256": "89829b93696c3c7f60cacfe8f0d16d6067753c236bef743cbe8b8b972338c26a",
         "executable": false,
         "action": "installed"
       },
@@ -10540,7 +10540,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
-        "sha256": "878839571c72bdbd0c5e5a491779686cb76c9ca7c62d9acbf8f84faf2371e3ed",
+        "sha256": "628daa8c1dd6b8440227c14cea7a927a2491cbc56ef90e5416a5589bbb761aa3",
         "executable": false,
         "action": "installed"
       },
@@ -10757,7 +10757,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
-        "sha256": "417763fb82661588714068b9c1e8f4fd73b8024553eea065afe954187d249b49",
+        "sha256": "8f2931837e1e0b2a8393a9fd9a05c51810e67cd4da045720d09e0e54ad4bd455",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "sha256": "adc8d08fcbd163034eb9dfbdf380f23cb056436b2c5b7785890f5da5a1483b85",
         "executable": false,
         "action": "installed"
       },
@@ -39422,7 +39429,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
+        "sha256": "e7b92cbcaedbb5a9cd6d9a71c542c8e7b469514104fd87815290489621f598d2",
         "executable": false,
         "action": "installed"
       },
@@ -39898,7 +39905,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "sha256": "89829b93696c3c7f60cacfe8f0d16d6067753c236bef743cbe8b8b972338c26a",
         "executable": false,
         "action": "installed"
       },
@@ -40318,7 +40325,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
+        "sha256": "e7b92cbcaedbb5a9cd6d9a71c542c8e7b469514104fd87815290489621f598d2",
         "executable": false,
         "action": "installed"
       },
@@ -40794,7 +40801,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "sha256": "89829b93696c3c7f60cacfe8f0d16d6067753c236bef743cbe8b8b972338c26a",
         "executable": false,
         "action": "installed"
       },
@@ -41214,7 +41221,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
+        "sha256": "e7b92cbcaedbb5a9cd6d9a71c542c8e7b469514104fd87815290489621f598d2",
         "executable": false,
         "action": "installed"
       },
@@ -41690,7 +41697,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "sha256": "89829b93696c3c7f60cacfe8f0d16d6067753c236bef743cbe8b8b972338c26a",
         "executable": false,
         "action": "installed"
       },
@@ -42110,7 +42117,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "4c9243fad283c7b091959fe980e2dcb304836b558ddc2304c56137de80ef528a",
+        "sha256": "e7b92cbcaedbb5a9cd6d9a71c542c8e7b469514104fd87815290489621f598d2",
         "executable": false,
         "action": "installed"
       },
@@ -42586,7 +42593,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "89300fc00467596a64edb0fd0332aaee3104b6113602cb5c678bd9652dae6dd3",
+        "sha256": "89829b93696c3c7f60cacfe8f0d16d6067753c236bef743cbe8b8b972338c26a",
         "executable": false,
         "action": "installed"
       },
@@ -43650,7 +43657,7 @@
       {
         "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
-        "sha256": "878839571c72bdbd0c5e5a491779686cb76c9ca7c62d9acbf8f84faf2371e3ed",
+        "sha256": "628daa8c1dd6b8440227c14cea7a927a2491cbc56ef90e5416a5589bbb761aa3",
         "executable": false,
         "action": "installed"
       },
@@ -43860,7 +43867,14 @@
       {
         "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
-        "sha256": "417763fb82661588714068b9c1e8f4fd73b8024553eea065afe954187d249b49",
+        "sha256": "8f2931837e1e0b2a8393a9fd9a05c51810e67cd4da045720d09e0e54ad4bd455",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".agents/skills/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "sha256": "adc8d08fcbd163034eb9dfbdf380f23cb056436b2c5b7785890f5da5a1483b85",
         "executable": false,
         "action": "installed"
       },
@@ -43951,7 +43965,7 @@
       {
         "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
-        "sha256": "878839571c72bdbd0c5e5a491779686cb76c9ca7c62d9acbf8f84faf2371e3ed",
+        "sha256": "628daa8c1dd6b8440227c14cea7a927a2491cbc56ef90e5416a5589bbb761aa3",
         "executable": false,
         "action": "installed"
       },
@@ -44161,7 +44175,14 @@
       {
         "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
-        "sha256": "417763fb82661588714068b9c1e8f4fd73b8024553eea065afe954187d249b49",
+        "sha256": "8f2931837e1e0b2a8393a9fd9a05c51810e67cd4da045720d09e0e54ad4bd455",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "sha256": "adc8d08fcbd163034eb9dfbdf380f23cb056436b2c5b7785890f5da5a1483b85",
         "executable": false,
         "action": "installed"
       },
@@ -44252,7 +44273,7 @@
       {
         "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
-        "sha256": "878839571c72bdbd0c5e5a491779686cb76c9ca7c62d9acbf8f84faf2371e3ed",
+        "sha256": "628daa8c1dd6b8440227c14cea7a927a2491cbc56ef90e5416a5589bbb761aa3",
         "executable": false,
         "action": "installed"
       },
@@ -44462,7 +44483,14 @@
       {
         "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
-        "sha256": "417763fb82661588714068b9c1e8f4fd73b8024553eea065afe954187d249b49",
+        "sha256": "8f2931837e1e0b2a8393a9fd9a05c51810e67cd4da045720d09e0e54ad4bd455",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".claude/skills/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "sha256": "adc8d08fcbd163034eb9dfbdf380f23cb056436b2c5b7785890f5da5a1483b85",
         "executable": false,
         "action": "installed"
       },
@@ -44553,7 +44581,7 @@
       {
         "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md",
-        "sha256": "878839571c72bdbd0c5e5a491779686cb76c9ca7c62d9acbf8f84faf2371e3ed",
+        "sha256": "628daa8c1dd6b8440227c14cea7a927a2491cbc56ef90e5416a5589bbb761aa3",
         "executable": false,
         "action": "installed"
       },
@@ -44763,7 +44791,14 @@
       {
         "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/contract.md",
-        "sha256": "417763fb82661588714068b9c1e8f4fd73b8024553eea065afe954187d249b49",
+        "sha256": "8f2931837e1e0b2a8393a9fd9a05c51810e67cd4da045720d09e0e54ad4bd455",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".cursor/skills/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "source": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md",
+        "sha256": "adc8d08fcbd163034eb9dfbdf380f23cb056436b2c5b7785890f5da5a1483b85",
         "executable": false,
         "action": "installed"
       },

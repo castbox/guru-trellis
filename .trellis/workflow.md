@@ -1139,7 +1139,10 @@ write anything.
 Read the planning artifacts, curated specs, and live diff from that worktree.
 Use the configured Trellis implement/check agents when available; their
 terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
-and implement the current scope.
+through `guru-maintain-requirements-design-test-ssot` and
+`guru-maintain-architecture-baseline` as applicable, then implement the current
+scope. Those original owners load their shared current-knowledge contract;
+implementation reads the applicable complete bodies they identify.
 
 For implementation/check dispatch, provide the exact public DeliveryKey and
 planning_root, the Task's whole accepted scope, and the installed Author body
@@ -1224,7 +1227,9 @@ and Closure; no caller invokes direct archival or retired session recording.
 #### 3.3 Docs SSOT reconciliation
 
 Verify that durable specs and the approved Docs SSOT Plan were reconciled before
-the final Phase 2 Check. A new substantive delta returns to its earliest affected
+the final Phase 2 Check through the original RDT and Architecture maintenance
+owners. They own complete-definition promotion and migration under their
+step-local contracts. A new substantive delta returns to its earliest affected
 owner. Do not routinely add Architecture prose after full Branch Review.
 
 #### 3.4 Task commit
@@ -1513,6 +1518,12 @@ its public routes and reread the stage-applicable Requirements, Design, and
 Test authority; unrelated CURRENT advancement does not force a rewrite;
 they never read package-private owner state. Architecture inheritance uses only
 the public Architecture Baseline locator/version/status.
+
+The two original maintenance Skills load the shared current-knowledge contract
+from the installed RDT package. Planning, implementation, final Check,
+independent Review and promotion consume the applicable complete bodies through
+those owners. Their step-local contracts own reading, revision, structural
+identity and migration; this workflow adds no duplicate method or new gate.
 
 Each planning cycle chooses exactly one strategy:
 

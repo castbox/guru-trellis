@@ -67,3 +67,5 @@
 | `ADR-030` | accepted | 受审分支晋升先于最终 Check；原 authority、committed 独立判断、完整 Review 与有界引用对齐保持 |
 
 `ADR-030` 正文见 [`030-promotion-before-final-check.md`](./030-promotion-before-final-check.md)。
+
+- [ADR-031：完整当前知识单元与两层栈来源](./031-current-effective-knowledge.md)

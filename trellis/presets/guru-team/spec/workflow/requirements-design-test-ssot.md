@@ -13,15 +13,23 @@ typed exits.
 The default authority is:
 
 ```text
-docs/requirements/{README.md,versions/<version>/**}
-docs/design/{README.md,versions/<version>/**}
-docs/test/{README.md,versions/<version>/**}
+docs/requirements/{README.md,current/**,versions/<version>/**}
+docs/design/{README.md,current/**,versions/<version>/**}
+docs/test/{README.md,current/**,versions/<version>/**}
 ```
 
 Each README identifies the current version and preserves historical
 navigation. A repository may supply reviewed compatible locators. Trellis task
 planning remains task-local input and never becomes repository product
 authority by itself.
+
+The original RDT and Architecture Skills load one shared current-knowledge
+contract from
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+It owns complete-unit reading, structural revision, promotion and migration.
+`current/` is the default capability/responsibility layout for migrated units;
+the reviewed repository entry identifies actual bodies and unmigrated scope.
+No projection stores a duplicate mutable version claim or body summary.
 
 The default task contribution is:
 
@@ -36,8 +44,9 @@ docs/requirements-design-test-contributions/<task-ref>/
 
 Each contribution belongs to one task/ref. Parallel tasks use distinct
 locators and do not modify the same shared current authority file. Promotion
-rereads both the contribution and current authority; a failed promotion
-re-enters only the current contribution.
+rereads both the contribution and current authority and integrates the delta
+into complete current definitions under that shared contract. A failed
+promotion re-enters only the current contribution.
 
 ## Traceability And Provenance
 

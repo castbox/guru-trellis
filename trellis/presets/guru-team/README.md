@@ -1,5 +1,12 @@
 # Guru Team Preset
 
+当前知识读写的唯一共享正文位于原 RDT package 的
+[current-knowledge.md](../../skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)。
+两维护 Skills 实际读取同一文件；原递归 package 安装分发，无新 runtime API。
+完整单元、真实两层技术栈源、本仓库迁移与旧 Task 读取边界，以及完整匹配安装、
+update/reapply 和项目投影责任见 [MIGRATION-331](MIGRATION-331.md)。分发一致、
+真实 Agent 正确读写与成本改善、业务采用分别验证，不能互相代替。
+
 Issue 创建与修订的共同内容正文由原 Clarify package 的
 [Issue 内容编写规范](../../skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md)
 唯一维护。四个原 Issue owners 实际读取同一安装正文及清晰写作规范，继续各自的

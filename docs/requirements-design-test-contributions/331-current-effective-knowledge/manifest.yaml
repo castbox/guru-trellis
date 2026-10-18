@@ -1,0 +1,16 @@
+task_id: 331-current-effective-knowledge
+source: https://github.com/castbox/guru-trellis/issues/331
+status: promoted
+strategy: delta_first
+preimage: current-main-0.6.17-guru.109
+source_revision: bdb5185c673c91b2fb5cfc66ffbb33849904a69c
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.6.17-guru.101
+  status: active
+promoted_into: current-main-0.6.17-guru.110
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md

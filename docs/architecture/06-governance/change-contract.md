@@ -14,7 +14,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 | `gap-and-deviation` | 区分计划关闭、保留、新增和恶化的 GAP/偏移，并为每项保留 owner 与 closure condition |
 | `parallel-scope` | 列出允许的 task-isolated scope 与禁止竞争的 shared current/GAP/owner 范围 |
 | `evidence-and-freshness` | 绑定 design responsibility、before/after、test/runtime/external evidence 与当前 invocation freshness |
-| `review-and-promotion` | 绑定 contribution、必要 ADR、independent committed range、expected current 与 promotion state |
+| `review-and-promotion` | 绑定 contribution、必要 ADR、完整候选与晋升前 authority、全部拟写内容、expected-current 与 promotion state；Branch Review 阶段另绑定精确 committed range |
 
 每项必须显式判定 `applicable|not_applicable` 并给出理由；architecture impact 不得以空值代替判断。范围、风险、authority、持久化、SDK、外部、owner 或架构边界扩大时，旧结果 stale 并重新进入 Architecture owner。
 
@@ -22,7 +22,7 @@ Identity：`guru-trellis-architecture-change-contract-v1`；状态：`current`�
 
 每次读取 live authority 后，原语义 owner 判断本阶段实际适用的基线、规则与候选；无关整体 CURRENT、安装版本或共享 ref 前进不自动使在途结论 stale。真实 scope、规划假设、实现、依赖或明确立即适用规则改变时仍回对应原 owner，旧快照不能遮蔽这些变化。内容候选与 integration target 分离；不以 latest-target ancestry 代替完整内容审查或当前 PR 资格。
 
-shared-current promotion 自身仍绑定写前 expected-current；错配只由原 promotion owner 按实际差额处理。已经发生的 promotion 新 diff 仍重新经过 Phase2/TaskCommit/独立完整 BranchReview。九 concern、descriptor identity、check id/version 与 result contract 保持；ADR-005 中的普遍 CURRENT-advance stale 片段按 ADR-028 的窄 successor 解释，不创建第二 authority 或新增检查协议。
+shared-current promotion 自身绑定写前 live expected-current；错配只由原 promotion owner 按实际差额处理。原独立 Phase2 先评估完整候选及全部拟写内容，原 owner 晋升并核对写入适用性后，最终 Check、TaskCommit 和独立完整 committed BranchReview 覆盖所有实际差额。九 concern、descriptor identity、check id/version 与 result contract 保持。ADR-005 中普遍 CURRENT-advance stale 与 committed-review-first 的片段分别由 ADR-028、ADR-030 窄替代，不创建第二 authority 或新增检查协议。
 
 ## Constitution applicability consumption
 
@@ -37,7 +37,7 @@ shared-current promotion 自身仍绑定写前 expected-current；错配只由�
 - `dedicated_refactor_slice`：在行为/API/规则不变前提下，以单一主写的小切片收敛旧实现，要求可验证、可观测、可回滚和明确删除条件。
 - `no_architecture_impact`：只记录 current baseline/constitution、task/stage 与可审核理由，不创建 contribution、ADR 或 project-check burden。
 
-阶段顺序固定为 Planning candidate_assessment impact/path -> Author solution writing -> Wording -> final_plan actual contribution/current eligibility -> Approval -> qualified implementation discovery re-entry -> Phase 2 before/after + project checks -> task contribution/necessary ADR -> independent committed full-diff Branch Review -> expected-current-bound serialized promotion -> fresh Phase 2/commit/Branch Review -> Publication/Acceptance current consumption。未 promotion 的 `reviewed_candidate` 不得进入 Publication/Finish。
+阶段顺序固定为 Planning candidate_assessment impact/path -> Author solution writing -> Wording -> final_plan actual contribution/current eligibility -> Approval -> qualified implementation discovery re-entry -> task contribution/necessary ADR 与完整拟晋升内容 -> independent Phase2 before/after + project checks -> original-owner expected-current-bound serialized promotion -> 实际写入适用性核对 -> 最终 Check -> TaskCommit -> committed 独立 Architecture + 完整 BranchReview -> Publication/Acceptance current consumption。稳定正常候选无需在晋升前先做 committed Review；finding 修复、多 Delivery、真实候选改变或合法窄绑定刷新仍按原生命周期回最早受影响 owner。未 promotion 的 `reviewed_candidate` 不得进入 Publication/Finish。
 
 ## Current project-check descriptor
 
@@ -58,6 +58,18 @@ Clarify active scope_ready1.0 在完成 scope 判断后，经原 clear-router �
 
 #531以ADR-024迁移上述Planning责任：Task整体scope-only由Author写作后Clarify审查；Delivery candidate/final两目的独立Architecture、Wording、Approval与Activation保持原owner，同DeliveryKey/planning_root回程。Task-only Completion/Finish仍使用task_impact_sync，不将Delivery与Task结果换标签。
 
-## #600 晋升顺序与输入后继
+## 当前候选、晋升与恢复输入
 
-[ADR-030](../adr/030-promotion-before-final-check.md)作为 ADR-005 的晋升时机后继。非 Planning4.0/Delivery2.0 current input 显式绑定 before_authority 与完整 candidate；promotion 移除尚未发生的 committed_range 前置。Planning purpose3.0、bootstrap/repair、九 concerns、descriptor/check/result identities 与原 owners保持。新 CURRENT 必须作为受审差额与晋升前 authority 比较；最终 Check及committed独立判断覆盖实际写入。窄引用对齐、恢复和在途切换由 [MIGRATION-600](../../../trellis/presets/guru-team/MIGRATION-600.md)定位原合同。
+非 Planning `4.0` / Delivery `2.0` input 显式绑定 `before_authority` 与完整 `candidate`。前者定位固定 Git authority 的 baseline、constitution 和 change-contract，后者绑定当前 head/content identity。Branch Review 的 before Git revision 等于精确 committed range 的 base。新 CURRENT 必须作为受审差额比较，不能以其自身证明符合旧约束。Planning purpose `3.0`、bootstrap/repair、九 concerns、descriptor/check/result identities 与原 owners 保持。
+
+promotion 发生在 Phase2，绑定贡献、原独立候选审查和完整 proposed targets，不要求尚未发生的 committed_range。原 owner 写前重读 live expected-current 及各 target 原文；一致时只写已审内容。写后读取全部实际 targets 并判断语义、依赖与验证义务是否保持，再将真实候选交最终 Check。发生额外变更、内容缺失或适用性变化时回原 assessment/check，不借用旧结论。
+
+部分晋升写入由原 owner 按同一个唯一 intent 区分 completed、pending、conflict；只补未冲突的 pending 内容。冲突或 intent 不明确时停止。完成后输出丢失，只从仍匹配的实际文件和原 intent 恢复同一结果，不创建新 successor 或长期账本。不可重新推导的恢复内容仅在有直接 consumer 时进入 owner-private 短期运行状态，消费后删除；授权信息不写入任何状态。
+
+本合同直接给出当前顺序；[ADR-030](../adr/030-promotion-before-final-check.md)保留时机决策，[MIGRATION-600](../../../trellis/presets/guru-team/MIGRATION-600.md)定位接口切换及在途恢复。旧 `.100` 内容与 ADR-005 历史保持可追溯，不是当前执行前置。
+
+## 当前知识和通用源的项目读取关系
+
+按本阶段实际问题选择完整知识单元与必要关系，不以历史增量回放替代当前定义。RDT 和 Architecture 各由原维护方拥有正文与晋升，导航只定位。Architecture 的 FOUNDATION/CURRENT/TARGET/GAP/PLAN/ADR/EVIDENCE 仍分工；本文件不把 accepted target、推断或验证缺口提升为实现事实。
+
+[技术基线选择](../00-foundation/stack-selection.md)定位本项目选定的公共技术栈源、准确版本、项目约束和差异。Architecture owner 在本项目范围维护投影，源维护方在公共源范围维护完整定义。源或引用缺失、范围冲突、迁移未完成时，明确受影响结论并进入原 repair/澄清，保留原 authority。源版本推进不自动替换已选版本或要求旧 Task 重写。当前组织候选的迁移与普通读取退出由 [MIGRATION-331](../../../trellis/presets/guru-team/MIGRATION-331.md)定位，最终状态由原 owner 晋升和真实 Test/EVIDENCE 决定。

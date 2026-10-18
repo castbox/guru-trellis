@@ -23,6 +23,13 @@ whole-Task `task_impact_sync(stage=acceptance_finish)`, plus the corresponding
 `delivery_task_impact_sync` profiles with explicit public Delivery identity.
 
 Load [references/contract.md](references/contract.md) completely before acting.
+Also read the shared current-knowledge contract in full at
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+The matching canonical source is
+`trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Use the installed path for repository execution; source maintenance may read
+the canonical source. A missing required contract uses the existing incomplete
+installation/blocked route; do not copy it into this package or invent a fallback.
 The contract selects the executor: new task Architecture assessments use a
 fresh independent subagent; downstream eligibility and baseline maintenance
 retain their existing owners. Follow the contract's Independent assessment

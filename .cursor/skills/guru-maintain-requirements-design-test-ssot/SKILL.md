@@ -27,6 +27,12 @@ Task work defaults to the isolated contribution root
 tasks do not edit shared current authority. A compatible reviewed locator may
 replace either default without changing this package contract.
 
+Before executing any profile, read
+[references/current-knowledge.md](references/current-knowledge.md) in full.
+It owns complete-unit reading, revision, promotion and migration behavior.
+Use applicable complete bodies and necessary relationships; navigation and
+historical contributions do not replace a migrated current definition.
+
 The stable traceability chain is:
 
 `requirement_id / behavior_id -> design_responsibility_id / contract_id -> test_strategy_id / scenario_id / case_id`.
@@ -58,7 +64,7 @@ Public exits are `ssot_current`, `sync_required`,
   sync, or current-task revision from the approved task delta.
 - `promotion`: reread one contribution and current authority, then review
   traceability, subtraction, version/history, and Architecture inheritance
-  before promotion.
+  before integrating it into the complete current definitions.
 - `repair`: repair incomplete, stale, conflicting, version, navigation, or
   migration state without expanding business requirements or unrelated history.
 

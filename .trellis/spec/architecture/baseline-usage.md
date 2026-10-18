@@ -1,29 +1,19 @@
 # Architecture Baseline 使用规则
 
-## Current identity
+本页是项目读取投影，不保存第二套 current version、架构定义或历史增量。
 
-- locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.100`
-- status：`active`
-- source binding：完整继承 `docs/architecture/README.md` 中 `.99` 及其前驱 authority；本次 #153 以 main@`ed59e851b6c1257bac6316a9571274427e383c93` 的 `.99` 为比较起点，按 expected `.99` 晋升 `.100`。ARCH-CUR-073 / ARCH-DOM-056 / ARCH-INT-059 / EVD-072 定位职责增量，规则、贡献、真实验证与未验证边界只读 `docs/architecture/` 及其唯一 Test；本 projection 不证明最终门禁通过。
-- Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
-- design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
-- project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`
-- required concern set：`guru-trellis-architecture-change-concerns-v1`
-- project check：`guru-trellis-architecture-convergence@1`
+## Authority
 
-## 语义分区
+- Baseline locator：`docs/architecture/README.md`，版本及状态从该入口读取。
+- Constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1`。
+- Project change contract：`docs/architecture/06-governance/change-contract.md`，包含真实 concern 和 project-check descriptor。
+- 两层栈选择：`docs/architecture/00-foundation/stack-selection.md`，固定通用源/version，项目只拥有选择、范围和差异。
+- 当前治理：`docs/architecture/06-governance/rules.md`，稳定 ARCH-GOV identity 可直接定位，历史原因进入其 ADR/Git 来源。
 
-FOUNDATION 是横向约束；CURRENT 必须有 code/config/test/release evidence；TARGET 是 accepted future state；GAP 是 explicit delta；PLAN 只记录依赖；ADR 是历史；EVIDENCE 支撑而不替代 judgment。`inferred` 与 `unverified` 不得晋升为 CURRENT。
+## 读取与维护
 
-## Task route
+原 `guru-maintain-architecture-baseline` 先判断阶段适用 authority，再读本次职责正文和必要 RDT 关系。完整知识读取方法由 `.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 唯一拥有；Architecture 专属 profiles/concerns/独立评估及晋升只读原 Architecture package。
 
-文件变更先走 `guru-maintain-architecture-baseline:task_impact_sync`。`sync_required` 进入 `promotion`；`baseline_incomplete` 回 Bootstrap/repair；`architecture_conflict`、`contract_incomplete`、`fitness_regression` 回对应 owner；`blocked` 停止。普通并行 task 使用隔离 contribution，不写同一 shared current。
+FOUNDATION、CURRENT、TARGET、GAP、PLAN、ADR、EVIDENCE 保持原角色；目标或接受的选择不等于实现证据。来源缺失、断链、冲突、迁移未完回原 repair/澄清，不能推定完整采用。
 
-## Freshness
-
-每次 gate 重读 live baseline locator/version/status、design constitution、project change contract/check descriptor、RDT public identity、task delta 和 source binding。任一 locator 缺失、CURRENT/TARGET 串位、版本冲突或 projection stale 时 fail closed，并进入 `repair`；不得靠本页摘要继续。
-
-## Root-Cause Candidate Usage
-
-Architecture retains independent responsibility and necessity judgment. New or materially changed incident mechanisms consume guru-qualify-root-cause after actual normal/solution outcomes; qualification does not promote Architecture or prove completion.
+Task 隔离贡献，shared current 仅由原 promotion owner 写入。独立 Phase2 先比较旧 authority、完整候选及拟写内容，原 owner 按 expected-current 晋升并核对实际写入，随后最终 Check/commit/独立完整 Review。无关 CURRENT/ref 推进不强迫旧 Task 改选版本；真实 scope/依赖/方案变化回原 owner。具体合同及恢复只由原 Skill 定义。
