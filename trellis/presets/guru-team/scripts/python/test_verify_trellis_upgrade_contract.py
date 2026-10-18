@@ -542,7 +542,7 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                  mock.patch.object(self.matrix, "_run", side_effect=["This will UPGRADE", ""]) as run, \
                  mock.patch.object(self.matrix, "_workflow_source_requires_local_sample", return_value=False), \
                  mock.patch.object(self.matrix, "_preview_and_switch_workflow") as switch, \
-                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture") as upgrade, \
+                 mock.patch.object(self.matrix, "_upgrade_bootstrap_fixture", return_value={"exit_id": "tools_upgraded"}) as upgrade, \
                  mock.patch.object(self.matrix, "_assert_docs_authority"), \
                  mock.patch.object(self.matrix, "compare_capabilities", return_value={"comparison_sha256": "comparison"}), \
                  mock.patch.object(self.matrix, "_assert_projection_consistency"), \
@@ -556,7 +556,8 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             switch.assert_not_called()
             self.assertEqual(upgrade.call_args.args[:4],
                              (root, root / "cell/project", root / "fork", "fixture"))
-            self.assertEqual(result["update_mode"], "source_locked_installation_upgrade")
+            self.assertEqual(result["update_mode"], "source_locked_tools_upgrade")
+            self.assertEqual(result["workflow_sample"], "source_locked_tools_upgrade")
 
     def test_existing_cell_uses_supported_predecessor_seed_for_new_platform(self) -> None:
         predecessor_extension = {
@@ -601,6 +602,82 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
                     )
             self.assertEqual(run.call_count, 1)
             self.assertEqual(Path(run.call_args.args[0][0]).name, "preview.sh")
+
+    def test_native_bootstrap_tools_freezes_one_original_owner_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            workflow = root / "trellis/workflows/guru-team/workflow.md"
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text("canonical workflow")
+            transport = mock.Mock()
+            transport._invoke.return_value = {"contract": {"cli_version": "cli", "core_version": "core"},
+                                               "core_package_root": str(root / "core")}
+            transport.package_digest.return_value = "digest"
+            responses = [{"result": {"public_tools": {"files": [
+                {"path": "AGENTS.md", "source": {"sha256": "old"}, "status": "conflict", "required": False}]}}},
+                {"result": {"plan": {"upstream_plan": {"operation_id": "original"}}}},
+                {"exit_id": "tools_upgraded", "unverified": []}]
+            with mock.patch.object(self.matrix.importlib.util, "spec_from_file_location"), \
+                 mock.patch.object(self.matrix.importlib.util, "module_from_spec", return_value=transport), \
+                 mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(row) for row in responses]) as run:
+                result = self.matrix._upgrade_native_bootstrap_tools(root, root / "target", root / "fork",
+                    "a" * 40, {"install": {"selected_platforms": ["codex"]}}, root, {})
+            self.assertEqual(result, responses[-1])
+            self.assertEqual([Path(call.args[0][0]).name for call in run.call_args_list],
+                             ["preview.sh", "prepare.sh", "invoke.sh"])
+            self.assertEqual(json.loads((root / "tools-plan.json").read_text()), responses[1]["result"]["plan"])
+            request = json.loads((root / "tools-prepare.json").read_text())
+            self.assertEqual(request["tools_input"]["workflow"]["content"], "canonical workflow")
+            self.assertEqual(request["tools_input"]["file_decisions"][0]["action"], "preserve")
+            self.assertEqual(request["upstream_source"]["dependency_mode"], "source_locked")
+
+    def test_bootstrap_schema_selects_original_owner_and_preserves_artifacts(self) -> None:
+        import base64
+        import hashlib
+        for schema in ("1.0", "2.0"):
+            with self.subTest(schema=schema), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                target = root / "project"
+                ref = ".trellis/tasks/00-bootstrap-guidelines"
+                task_path = target / ref / "task.json"
+                task_path.parent.mkdir(parents=True)
+                task_path.write_text(json.dumps({"schema_version": schema,
+                    "lifecycle_generation": 0, "deliveries": []}))
+                original = {"content_base64": base64.b64encode(task_path.read_bytes()).decode(),
+                    "sha256": hashlib.sha256(task_path.read_bytes()).hexdigest(), "mode": 0o644}
+                manifest = target / ".trellis/guru-team/extension.json"
+                manifest.parent.mkdir(parents=True)
+                manifest.write_text(json.dumps({"extension": {"version": "0.7.0-guru.4"},
+                    "install": {"selected_platforms": ["codex"]}}))
+                workflow = root / "trellis/workflows/guru-team/workflow.md"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_text("[trellis-runtime-contract]{}[/trellis-runtime-contract]")
+                workspace = {"root": str(target), "local_sessions": [], "tasks": [{
+                    "task_ref": ref, "source": original, "artifacts": {ref + "/task.json": original}}],
+                    "prospective_templates": {"files": [], "contents": {}, "candidate_sha256": "a" * 64},
+                    "receipt_source": {"content_base64": base64.b64encode(b'{"hashes":{}}').decode()},
+                    "workflow_source": None, "version_source": None}
+                preview = {"result": {"inventory": {"workspaces": [workspace],
+                    "common_sessions": [], "branch_bindings": []}, "installed_core": "old",
+                    "source_candidate": {}, "fork_candidate": {}}}
+                with mock.patch.object(self.matrix, "_git", return_value="a" * 40), \
+                     mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(preview),
+                        json.dumps({"result": {}}), json.dumps({"exit_id": "upgraded", "unverified": []})]) as run, \
+                     mock.patch.object(self.matrix, "_upgrade_native_bootstrap_tools",
+                        return_value={"exit_id": "tools_upgraded", "unverified": []}) as tools:
+                    result = self.matrix._upgrade_bootstrap_fixture(root, target, root,
+                        "gh:castbox/guru-trellis/trellis#" + "a" * 40, root, {})
+                self.assertEqual(task_path.read_bytes(), base64.b64decode(original["content_base64"]))
+                if schema == "2.0":
+                    self.assertEqual(result["exit_id"], "tools_upgraded")
+                    tools.assert_called_once()
+                    self.assertEqual(run.call_count, 1)
+                else:
+                    tools.assert_not_called()
+                    self.assertEqual(result["exit_id"], "upgraded")
+                    plan = json.loads((root / "upgrade-plan.json").read_text())
+                    self.assertEqual(plan["core_plan"]["tasks"][0]["disposition"], "defer")
+                    self.assertEqual(plan["core_plan"]["tasks"][0]["source_task_schema"], "1.0")
 
     def test_install_workflow_omits_task_personnel_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
