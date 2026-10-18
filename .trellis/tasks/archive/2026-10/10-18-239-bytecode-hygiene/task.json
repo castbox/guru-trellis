@@ -1,0 +1,448 @@
+{
+  "schema_version": "2.0",
+  "id": "239-bytecode-hygiene",
+  "name": "239-bytecode-hygiene",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 239,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Guru Team 字节码过滤及语法检查缓存",
+  "description": "完成 #239 R1-R3 与定向验收，保留既有过滤和 #430 reapply 行为。",
+  "dev_type": null,
+  "scope": "Guru 产品字节码过滤与无落盘语法检查",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-18",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+    "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+  },
+  "deliveries": [
+    {
+      "id": "66b872ff-763a-4e24-80e6-0b6f0e4763b8",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+          "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+        "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+      },
+      "candidate": {
+        "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+        "kind": "git",
+        "paths": [
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/runtime/bootstrap_check.py",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/workflow/companion-scripts.md",
+          ".trellis/spec/workflow/index.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+          ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+          "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+          "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+          "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/skills/guru-team/runtime/bootstrap_check.py"
+        ],
+        "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+        "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:0b85e427-389c-4758-bc11-9caac1bdbaf3",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+              "revision": "sha256:e3afada6a8fcd707b9611ccf6ce8dda196ac71fdc61f4f8f6c341b83871ea9cb"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+              "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              "revision": "sha256:7ad2394f86a8f14bbc8c52dc1aa95e63a7ab7f2e11c08afb52c74b4f364f684a"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:5b057d36e4d83dd8d2fe59cb33022d85b9f9e6502d42ab4ec30896353581efca",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+          },
+          "candidate": {
+            "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py"
+            ],
+            "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+            "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
+          },
+          "predecessor_result_id": "planning-accepted:0b85e427-389c-4758-bc11-9caac1bdbaf3",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+              "revision": "sha256:e3afada6a8fcd707b9611ccf6ce8dda196ac71fdc61f4f8f6c341b83871ea9cb"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+              "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+            },
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              "revision": "sha256:7ad2394f86a8f14bbc8c52dc1aa95e63a7ab7f2e11c08afb52c74b4f364f684a"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:9f233c400b99beaf791b9f5d6d330ae6ba173f847ecedcfc405e84ba824456f5",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+          },
+          "candidate": {
+            "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py"
+            ],
+            "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+            "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
+          },
+          "predecessor_result_id": "check:5b057d36e4d83dd8d2fe59cb33022d85b9f9e6502d42ab4ec30896353581efca",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              "revision": "sha256:7ad2394f86a8f14bbc8c52dc1aa95e63a7ab7f2e11c08afb52c74b4f364f684a"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:8db5be1f4122aeb1db137cc71e5aba7dc5cacc06fee3e4901a1c5305e2981e94",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            "revision": "sha256:cd96741e84283b78051d6be6b29a84bcd08f518ad3a100691144311880e96770"
+          },
+          "candidate": {
+            "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+            "kind": "git",
+            "paths": [
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/workflow/companion-scripts.md",
+              ".trellis/spec/workflow/index.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+              ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+              "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+              "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+              "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py"
+            ],
+            "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+            "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93"
+          },
+          "predecessor_result_id": "full-review:9f233c400b99beaf791b9f5d6d330ae6ba173f847ecedcfc405e84ba824456f5",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+              "revision": "sha256:7ad2394f86a8f14bbc8c52dc1aa95e63a7ab7f2e11c08afb52c74b4f364f684a"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:eb6d89221615bbb0ffc7c788754bb397496a9d422611f78203b727702f043df1",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/620",
+            "revision": "sha256:28d03c6299fa78fe0fa3fab207851cfb93961eb9d81cd0794a61189c2828e60b"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93",
+          "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+          "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/bootstrap_check.py",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/workflow/companion-scripts.md",
+            ".trellis/spec/workflow/index.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+            "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+            "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+            "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/runtime/bootstrap_check.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 620,
+        "reviewed_head": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/620",
+          "revision": "sha256:28d03c6299fa78fe0fa3fab207851cfb93961eb9d81cd0794a61189c2828e60b"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:178912fc1a50e72775790cba06c1563ac61ce25f",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/620",
+            "revision": "178912fc1a50e72775790cba06c1563ac61ce25f"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "ed59e851b6c1257bac6316a9571274427e383c93",
+          "content_ref": "sha256:c4672193c334dbd9516c1cf9bb6e47cc5c5efa19f8dc545d137ed2fea1fb5f94",
+          "head_ref": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+          "kind": "git",
+          "paths": [
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/runtime/bootstrap_check.py",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/workflow/companion-scripts.md",
+            ".trellis/spec/workflow/index.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/check.jsonl",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/design.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.jsonl",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/implement.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/deliveries/66b872ff-763a-4e24-80e6-0b6f0e4763b8/prd.md",
+            ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+            "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+            "trellis/presets/guru-team/scripts/python/verify_dogfood_platform_selection.py",
+            "trellis/presets/guru-team/spec/workflow/companion-scripts.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/skills/guru-team/runtime/bootstrap_check.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 620,
+        "reviewed_head": "07769db08bb19e723f088604d0dbe3bf62a7a5fa",
+        "merge_commit": "178912fc1a50e72775790cba06c1563ac61ce25f",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:7f7117a5-5d28-4cfb-b8aa-3217fcb8dc9a",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/620",
+          "revision": "178912fc1a50e72775790cba06c1563ac61ce25f"
+        },
+        {
+          "locator": "trellis/presets/guru-team/scripts/python/test_bytecode_hygiene.py",
+          "revision": "sha256:a7331ae716859409840b5deed3d9f7781b8e8412846d47ef3642f37ab2a7b113"
+        },
+        {
+          "locator": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "revision": "sha256:fbf48279b71985919e10a7375ee42a575d67649fce14812f3e8038b7b4d3eb85"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/10-18-239-bytecode-hygiene/prd.md",
+        "revision": "sha256:557b9f11dc1f678c3d1fe68f61f71e1a182e73331a011ebaea63481857594c91"
+      },
+      "delivery_result_ids": [
+        "delivery:178912fc1a50e72775790cba06c1563ac61ce25f"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:98bc2321bdc52287b20217b5",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/239",
+          "revision": "CLOSED"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:7f7117a5-5d28-4cfb-b8aa-3217fcb8dc9a",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/239",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
