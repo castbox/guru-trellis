@@ -34,53 +34,42 @@ officially supported explicit `--template <name>` path when a specific template
 is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
-Stable install and upgrade docs must keep four version axes explicit. The
-published stable release and this release's predecessor are `v0.7.0-guru.3`
-(peeled `7d20a930341dae3e7dd2d214660ce3b99e28d863`), extension `0.7.0-guru.3`,
-with its historical Fork lock `5c760463680ffc10a3f26957b330c57a4b0c3ff8`,
-CLI/core `0.7.0-castbox.3`, package manager `pnpm@10.32.1` and CI `37735554354`.
-Stable workflow marketplace and preset sources for one installation use that
-same immutable `.3` tag and the Fork lock read from that tag; do not combine
-the released Guru source with a later source tree's Fork lock.
+Stable install and upgrade docs must keep the version axes explicit. The
+published stable release and this release's predecessor are `v0.7.0-guru.4`
+(peeled `855f236850714edc4b78169218c09568c823f336`), extension `0.7.0-guru.4`.
+Stable workflow marketplace and preset sources use that same immutable `.4`
+tag. Build the Fork selected by that checkout's own source lock; a matching
+CLI version number alone does not establish a matching build.
 
-The next repository target is `v0.7.0-guru.4`, not yet published. Its preparation
-first adopts the canonical source lock at
-`castbox/Trellis@7bcbeaad31380e7a29c97898cb947c6120a61775`, reviewed main CI
-`39043542548`, using CLI/core `0.7.0-castbox.4` and `pnpm@10.32.1`. This
-source includes #40 maintenance, #43 native schema-1 session compatibility,
-and #47 Task/Delivery Git object reading improvements plus #50 public
-`GitCandidateContent` immutable-content support and #52 public `task_resume`. This step prepares the
-exact source only; target tools installation, the Guru PR chain and performance
-acceptance still require their own subsequent verification. The previously published Fork `.4` tarballs are historical package sources,
-not this source lock's matching build. Use the clean locked source workspace
-with its normal CLI/Core dependency layout. Do not substitute packed template
-modes or infer equality from the shared version number. This does not publish
-Guru `.4` or prove target adoption.
-Current preparation source uses extension `0.7.0-guru.4` and the matching
-original maintenance target; it does not change the immutable `.3` release.
-The adopted baseline tools remain a `.3` installed graph matching their own
-receipts, with native Task2/session3 adoption separate from final `.4` parity.
-S2 produces the actual clean committed `.4` source. S3 consumes it through a
-new original tools-only operation, completing `.4` packages/runtime/schema and
-four-platform projection, three-platform reapply/drift and formal focused
-clean/predecessor maintenance, target-native next-owner continuation, resume
-and rollback evidence. Do not reuse the earlier `.3` operation for that claim.
-Source/module checks and baseline `.3` receipt checks do not establish `.4`
-installed parity or complete preparation; the whole Task retains those duties.
+The next repository target is `v0.7.0-guru.5`, not yet published. Its canonical
+extension and maintenance target are `0.7.0-guru.5`. The Fork source lock stays
+at `castbox/Trellis@7bcbeaad31380e7a29c97898cb947c6120a61775`, reviewed main CI
+`39043542548`, with CLI/core `0.7.0-castbox.4` and `pnpm@10.32.1`. This source
+includes #40 maintenance, #43 native schema-1 session compatibility, #47
+Task/Delivery Git object reading improvements, #50 public `GitCandidateContent`
+immutable-content support and #52 public `task_resume`. These source identities
+retain their scope; they do not prove target tools installation, the Guru PR
+chain or performance acceptance. The previously published Fork `.4` tarballs
+are historical package sources, not this source lock's matching build. Use the
+clean locked source workspace with its normal CLI/Core dependency layout and
+original template modes.
 
-Before `.4` publication, marketplace and preset must use the same actual,
+Before `.5` publication, marketplace and preset must use the same actual,
 remote-addressable full Guru candidate SHA. Do not insert an invented SHA or
-use the unavailable `.4` tag as a provider. Only after publication and remote
-tag identity verification may both use immutable `v0.7.0-guru.4`. The final
+use the unavailable `.5` tag as a provider. Only after publication and remote
+tag identity verification may both use immutable `v0.7.0-guru.5`. The final
 exact-candidate gate starts from fresh main after preparation and Finish
-bookkeeping merge; source-adoption, earlier local samples and earlier
-predecessor acceptance do not replace it. Unpinned branch inputs remain
-mutable latest/canary sources. These docs do not publish the target or prove
-tools installation, Task conversion, native next-owner continuation or Release.
+bookkeeping merge. It performs focused installation and predecessor upgrade
+validation before the separate tag, tag-pinned smoke, GitHub Release and Issue
+closure actions. Earlier local samples and historical acceptance retain their
+original source identity and do not replace these gates. Unpinned branch
+inputs remain mutable latest/canary sources. Preparation docs do not prove
+installation, native continuation, real-business adoption, production, the full
+cumulative matrix or Release.
 
 The older published `v0.7.0-guru.1` used extension `0.7.0-guru.1` and historical
 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f` / CLI/core `0.7.0-castbox.1` /
-`pnpm@10.32.1`; it is historical evidence, not the predecessor for `.4`.
+`pnpm@10.32.1`; it is historical evidence, not the predecessor for `.5`.
 
 The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
@@ -107,9 +96,13 @@ current-only. Do not describe rejection, dirty local builds or a planned
 successor tag as fixed-source upgrade/release success.
 
 Current knowledge authority is read from the three layer READMEs:
-`current-main-0.6.17-guru.101` / `active`, with Architecture
-`current-main-0.6.17-guru.94` / `active`. These are independent of software
-release axes; an isolated preparation contribution does not advance them.
+`current-main-0.7.0-guru.111` / `active`, with Architecture
+`current-main-0.7.0-guru.102` / `active`. Their predecessors are
+`current-main-0.6.17-guru.110` and `current-main-0.6.17-guru.101` respectively.
+The existing knowledge owners maintain these identity successors and their
+navigation. Historical versions and their applicable definitions remain
+readable. Knowledge identity is independent of software release; an identity
+successor does not prove new behavior or Release.
 Source and installed registry counts describe their own actual graph, not one
 another. Read the selected registry and matching workflow rather than copying
 a previous count into a new release claim.

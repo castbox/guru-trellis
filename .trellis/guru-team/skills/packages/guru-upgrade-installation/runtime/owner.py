@@ -20,7 +20,7 @@ from runtime.schema import validate_json
 from runtime.task_lifecycle.identity import task_inventory
 
 TARGET_CORE = "0.7.0-castbox.4"
-TARGET_GURU = "0.7.0-guru.4"
+TARGET_GURU = "0.7.0-guru.5"
 
 
 def formal_guru_source(source: Path, requested_ref: str) -> None:

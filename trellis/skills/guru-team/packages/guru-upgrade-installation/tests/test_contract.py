@@ -356,7 +356,7 @@ class MigrationContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.fixture(root)
-            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.4"})
+            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.5"})
             skill = root / "trellis/skills/guru-team/packages/guru-upgrade-installation/SKILL.md"
             skill.parent.mkdir(parents=True)
             skill.write_text("candidate source\n")
@@ -376,7 +376,7 @@ class MigrationContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.fixture(root)
-            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.4"})
+            write_json(root / "trellis/guru-team-extension.json", {"version": "0.7.0-guru.5"})
             subprocess.run(["git", "add", "trellis"], cwd=root, check=True, capture_output=True)
             subprocess.run(["git", "commit", "-qm", "version"], cwd=root, check=True, capture_output=True)
             skill = root / "trellis/skills/guru-team/packages/guru-upgrade-installation/SKILL.md"
