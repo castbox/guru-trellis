@@ -108,6 +108,23 @@ Approval or replay a prewrite Architecture result.
 
 ## Delivery Planning input
 
+For `delivery_planning_artifacts`, actually read
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`
+and that same package's `templates/delivery-prd.md`,
+`templates/delivery-design.md`, and `templates/delivery-implement.md` alongside
+the three current documents and necessary source references. Load referenced
+clauses and associated conditions before judging their wording; link presence
+does not establish semantic preservation.
+
+Use these bodies only within this owner's controlled wording review and its
+existing seven planning dimensions. Keep the fixed three-file scan scope and
+original rewrite/scan/re-entry contract. Do not become the general planning
+sufficiency reviewer or business writer. An equivalent wording repair refreshes
+only affected gates through the original `content_changed` route. A missing
+commitment or changed mechanism returns through the existing route to Author
+and the earliest affected owner; technical elaboration alone is not a product
+scope change. Approval retains the complete planning adequacy judgment.
+
 For Delivery documents explicitly use delivery_planning_artifacts and the
 opaque public DeliveryKey. Resolve its task_ref/planning_root through the installed
 API and scan/review all three current files. Never review Task-root documents as

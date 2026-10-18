@@ -42,6 +42,23 @@ and returns here for fresh qualification; it never enters scope confirmation.
 
 Read the approved planning, live diff and dirty paths, implementation, tests,
 Docs SSOT, source Issue authority, and applicable repository validation directly.
+Actually load
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`
+and that package's `templates/delivery-prd.md`,
+`templates/delivery-design.md`, and `templates/delivery-implement.md`.
+Read the exact selected Delivery planning_root's bodies and necessary planning
+references with their associated conditions. Check actual source commitments,
+batch context and the requirement/design/implementation/validation relationship
+under the shared depth and trimming rules, within the complete nine-dimension
+round. A link, heading set, or earlier approval is not evidence of that read.
+When accepted scope requires actual Agent behavior, assess its evidence
+separately from deterministic and installation checks; one layer cannot supply
+another layer's required acceptance.
+Ordinary planning omissions return through `planning_stale` to the earliest
+affected original planning owner; implementation-only omissions keep their
+existing repair route. Technical elaboration is not itself a scope change.
+This owner does not rewrite planning or broaden accepted scope to repair it.
+
 Read the unique Direct Source from the current task's `source.repo_ref` and
 `source.number`, or honor its valid `no_issue` source. Judge Related Work,
 Coordination and Follow-up facts only for an explicit accepted-scope purpose.

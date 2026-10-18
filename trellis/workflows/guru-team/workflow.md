@@ -1041,9 +1041,11 @@ After this checked scope result, mandatory invoke `guru-create-delivery` for an
 explicit first/next slice. Its `created` output enters the current unique Author
 delivery_initial_review; #292 retains the sole writing responsibility.
 The Author resolves public `planning_root`; no task-root development plan is reused.
-Delivery Planning produces non-empty `prd.md`, `design.md`, and `implement.md`, plus
-one explicit Docs SSOT Plan. Before presentation, invoke the planning profile
-of guru-review-contract-wording.
+Load the Author's installed `references/planning-body.md` and profile-selected
+`templates/` through its Skill contract. Original Clarify, Wording and Approval
+own their respective acceptance boundaries and consume that same body contract;
+the workflow does not restate its chapter, depth or trimming rules.
+Before presentation, invoke the planning profile of guru-review-contract-wording.
 
 
 #### 1.5 Delivery activation
@@ -1138,6 +1140,20 @@ Read the planning artifacts, curated specs, and live diff from that worktree.
 Use the configured Trellis implement/check agents when available; their
 terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
 and implement the current scope.
+
+For implementation/check dispatch, provide the exact public DeliveryKey and
+planning_root, the Task's whole accepted scope, and the installed Author body
+contract at
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`.
+Include that body contract, the package's applicable `templates/` and necessary
+planning/spec references in the original official `task.py add-context` selection with actual
+file/reason entries for that Delivery. Workers must actually read the current
+three bodies, shared contract, applicable templates and necessary referenced
+conditions. Missing planning basis returns to its earliest original owner;
+dispatch does not repair it by inventing assumptions. Preserve Architecture's
+own independent first-read order; do not preload its reviewer with PRD or
+acceptance narrative. Official agents, hooks, seeds and generators remain
+upstream-owned.
 
 Before selecting validation, read
 `.trellis/spec/workflow/quality-guidelines.md` and apply its `Validation Scope

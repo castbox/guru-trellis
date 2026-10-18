@@ -17,7 +17,11 @@ any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
 `judgment_mode=semantic`. Read [the authoring contract](references/authoring.md)
-before any planning write. Workflow and standalone modes use the same current
+and [the shared planning-body contract](references/planning-body.md) before
+any planning write. Actually load the applicable templates through the
+[profile load table](references/authoring.md#profile-specific-body-loading);
+do not treat their links or seed files as completed writing. Workflow and
+standalone modes use the same current
 TaskId/generation, source, checkout, upstream output and dependency checks.
 
 This is the sole business writer: task_scope_requirements writes only the

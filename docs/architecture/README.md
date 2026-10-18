@@ -1,5 +1,13 @@
 # Architecture Baseline SSOT
 
+版本：`current-main-0.6.17-guru.99`；状态：`active`；predecessor：`current-main-0.6.17-guru.98`（比较起点 main@`855f236850714edc4b78169218c09568c823f336`）。本增量承接 [#154 规划正文贡献](./contributions/154-planning-body-contract.md)，继承下方 `.98` 的全部适用 authority。constitution、ADR-022/024/030、原 owners、GAP lifecycle 与软件四轴保持。
+
+当前增量为 ARCH-CUR-072 / ARCH-DOM-055 / ARCH-INT-058 / EVD-071。原 Author package 单写共享正文合同、四类模板和完整去敏过程示例；原写作、审核和实施入口实际加载同源正文与必要引用。原接受边界、Task/Delivery authority、公共 I/O、seed 与官方 agents 保持。具体规则读 canonical Author package，实际验证和未验证边界只由 [唯一 Test](../requirements-design-test-contributions/154-planning-body-contract/test.md) 记录。
+
+原 Architecture owner 按独立 Phase2 评估的拟写内容，在 expected `.98` 上写入本后继。最终 Check、Task Commit、committed 独立 Architecture 与完整 Branch Review仍覆盖实际晋升候选。知识晋升不证明 Task Completion、软件发布、其他平台实际行为或完整 Release 矩阵。
+
+## 历史 `.98` 权威
+
 版本：`current-main-0.6.17-guru.98`；状态：`active`；predecessor：`current-main-0.6.17-guru.97`（比较起点 main@`ef0fcdf0c3746e6d84f97732b9ab776a4bf7703e`）。本增量承接 [#577 人工旧归档恢复贡献](./contributions/577-manual-archive-resume.md)。constitution、ADR-024/027/030、原 owners、GAP lifecycle 以及软件四轴保持；完整继承下方 `.97` 的 #589 D7 与 #600 组合权威。
 
 当前增量为 ARCH-CUR-071 / ARCH-DOM-054 / ARCH-INT-057 / EVD-070。原 source-loaded maintenance 增加闭合 archive-resume，公共 Trellis 拥有恢复模型与 operation，原 Guru owners 保留历史核验、私有控制和实际下一阶段判断。创建/历史 reservation 与当前 active identity 消费分开；known-dirty 历史来源仍由原 upgrade owner 逐路径核验。职责与兼容退出读贡献和原 ADR；实际验证、首次失败及未验证边界只由 [唯一 Test](../requirements-design-test-contributions/577-manual-archive-resume/test.md) 记录。

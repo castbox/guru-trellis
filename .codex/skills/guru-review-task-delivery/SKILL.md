@@ -26,6 +26,24 @@ return to their original owner. History and phase cannot supply readiness.
 Read `references/contract.md`, the current requirement authority, approved
 Delivery policy, current slice and remaining work, validation evidence, RDT and
 Architecture authorities, full Branch Review, base, and live Git/GitHub facts.
+Actually load
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`
+and that package's `templates/delivery-prd.md`,
+`templates/delivery-design.md`, and `templates/delivery-implement.md`.
+Read the selected Delivery's three bodies and necessary planning references,
+including linked conditions, before judging their current applicability.
+Within the existing ten dimensions, check that this batch's behavior, design,
+execution and evidence support its actual acceptance and independent Delivery
+conditions. Full D1 still needs batch context; partial/later slices retain
+actual predecessor facts, remaining responsibility and whole-task Completion
+conditions. When accepted scope requires actual Agent writing/review behavior,
+assess its evidence separately; template presence, static checks and
+installation projection do not establish that behavior.
+Ordinary planning omissions use `planning_revision_required` and the existing
+Author return; implementation omissions use `implementation_required`.
+Actual authority choices keep the scope route. Do not write planning, reinterpret
+technical elaboration as a product choice, or infer whole-task completion.
+
 The structured single Direct Source remains portable across repositories;
 legal no-Issue slices have no invented source reference. Judge live source
 revisions and required external facts against this slice's accepted scope.

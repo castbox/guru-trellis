@@ -205,6 +205,26 @@ installation; it is not a current fallback or schema-2 writer.
 
 ## Current schema2 whole-scope continuation
 
+Before judging source sufficiency or accepting the whole PRD, read
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md`.
+Apply its source-role, completeness and reference rules within this owner's
+requirements scope. Read the current sources and their linked conditions in
+full; a source summary or an existing link does not establish that read.
+Investigate repository-answerable gaps before asking a real product or scope
+choice. Unsettled implementation details belong to Author/Architecture when
+the requirements are already clear; do not ask the user to design the mechanism.
+
+For `task_scope_requirements_acceptance`, also read
+`.trellis/guru-team/skills/packages/guru-author-task-plan/templates/task-prd.md`
+and the actual Author root PRD before `accept_scope`. Check that current whole
+requirements are complete under that template, including source commitments
+and observable acceptance. A seed, empty heading, or unresolved required draft
+gap cannot be accepted. Return an ordinary writing omission to the same
+scope-only Author through the original continuation; real source or scope
+choices stay here. This acceptance requires no Delivery design or implement.
+Do not write planning, create another scope authority, or change the existing
+public input/output contracts.
+
 The new distribution retires legacy active_task_scope_change runtime; its old
 schema remains pinned-old validation evidence. delivery_active_task_scope_change
 and delivery_task_scope_revision judge current source and overall scope, return
