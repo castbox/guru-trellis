@@ -1,5 +1,11 @@
 # Guru Team Workflow
 
+Issue 创建与修订共用原 Clarify package 的
+[Issue 内容编写规范](../../skills/guru-team/packages/guru-clarify-requirements/references/issue-content.md)。
+四个原 Issue owners 在各自职责内实际读取同一正文及清晰写作规范；workflow
+保持原编排，不复制内容规则。原 preset 分发正文与去敏教学示例，已有项目须
+采用完整匹配安装。示例、投影一致或检查通过不证明实际写作与外部回读完成。
+
 Architecture 晋升在最终 Check 前完成；committed 独立判断和完整 Branch Review
 覆盖实际晋升文件。公共入口与 consumer 必须成套更新，三类在途 Delivery、
 partial/output-loss 恢复和窄引用/状态对齐见

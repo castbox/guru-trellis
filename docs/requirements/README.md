@@ -1,5 +1,9 @@
 # Requirements SSOT
 
+唯一 current RDT authority 为 `current-main-0.6.17-guru.109/active`；[本版入口](./versions/current-main-0.6.17-guru.109/requirement-main.md) 完整继承 `.108` 并承接 [#153 唯一增量](../requirements-design-test-contributions/153-issue-content-ssot/traceability.md)。本 Task 适用 Architecture `.99/active`；[唯一 Test](../requirements-design-test-contributions/153-issue-content-ssot/test.md) 分开维护实际行为、机械、安装与外部结果。知识晋升不替代后续最终 Check、独立完整 Review、Delivery 或 Task Completion，不宣称正式发布或完整 Release 矩阵。
+
+历史 `.108` authority：
+
 唯一 current RDT authority 为 `current-main-0.6.17-guru.108/active`；[本版入口](./versions/current-main-0.6.17-guru.108/requirement-main.md) 完整继承 `.107` 并承接 [#154唯一增量](../requirements-design-test-contributions/154-planning-body-contract/traceability.md)。本Task适用 Architecture `.98/active`；[唯一Test](../requirements-design-test-contributions/154-planning-body-contract/test.md) 持有实际结果与未验证边界。晋升不表示真实行为验收、软件发布或业务完成。
 
 历史 `.107` authority：

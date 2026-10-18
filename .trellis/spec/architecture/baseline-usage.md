@@ -3,9 +3,9 @@
 ## Current identity
 
 - locator：`docs/architecture/README.md`
-- version：`current-main-0.6.17-guru.97`
+- version：`current-main-0.6.17-guru.100`
 - status：`active`
-- source binding：main@`9a10cb54c4a7eb8016d52b9bd5c3c2ec7de31807` 的 #589 `.96` 与执行分支@`87176aea126cc9ade10f334eb379e0d35a053295` 的 #600 `.96` 组合。#589 保留 ARCH-CUR-069 / ARCH-DOM-052 / ARCH-INT-055 / EVD-068；#600 当前投影为 ARCH-CUR-070 / ARCH-DOM-053 / ARCH-INT-056 / EVD-069。原 `.95` 比较依据、各贡献和 ADR-030 的来源、职责与验证边界只读 `docs/architecture/`；本 projection 不证明整合候选门禁通过。
+- source binding：完整继承 `docs/architecture/README.md` 中 `.99` 及其前驱 authority；本次 #153 以 main@`ed59e851b6c1257bac6316a9571274427e383c93` 的 `.99` 为比较起点，按 expected `.99` 晋升 `.100`。ARCH-CUR-073 / ARCH-DOM-056 / ARCH-INT-059 / EVD-072 定位职责增量，规则、贡献、真实验证与未验证边界只读 `docs/architecture/` 及其唯一 Test；本 projection 不证明最终门禁通过。
 - Finalizer recovery binding：既有 `REQ-048/DES-046/TST-032/SCN-044` 同时覆盖 same-base fresh-reviewed transaction reprepare；只消费合法 predecessor tail、selected-base lineage、current review/Publication/live HEAD equality、Open PR absence 与 transaction-owned remote endpoints，不把 terminal PR history、branch name、session 或 path 提升为 authority。
 - design constitution：`docs/architecture/00-foundation/design-constitution.md` / `guru-trellis-design-constitution-v1` / `current`
 - project change contract：`docs/architecture/06-governance/change-contract.md` / `guru-trellis-architecture-change-contract-v1`

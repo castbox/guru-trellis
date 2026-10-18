@@ -629,3 +629,7 @@ ARCH-CUR-071 / ARCH-DOM-054 / ARCH-INT-057 承接 [#577 贡献](../contributions
 ## EVD-071：#154 规划正文合同的架构增量
 
 ARCH-CUR-072 / ARCH-DOM-055 / ARCH-INT-058 承接 [#154 贡献](../contributions/154-planning-body-contract.md)。比较起点为 main@`855f236850714edc4b78169218c09568c823f336` 的 `.98`；原 Architecture owner 在独立 Phase2 审查完整候选及拟写内容后，按 expected `.98` 晋升 `.99`。最终 Check、Task Commit 与 committed 独立完整审查仍评估实际候选。此处只定位职责差额；全部实际验证、首次失败和未验证边界只由 [唯一 Test](../../requirements-design-test-contributions/154-planning-body-contract/test.md) 单写，不以知识晋升证明软件发布或整体完成。
+
+## EVD-072：#153 共同 Issue 内容规范的架构增量
+
+ARCH-CUR-073 / ARCH-DOM-056 / ARCH-INT-059 承接 [#153 贡献](../contributions/153-issue-content-ssot.md)。比较起点为 main@`ed59e851b6c1257bac6316a9571274427e383c93` 的 `.99`；原 Architecture owner 独立评估完整候选及拟写内容后，按 expected `.99` 晋升 `.100` 并核验实际写入适用性。最终 Check、Task Commit 与 committed 独立完整审查仍覆盖实际候选。本文只定位职责差额；实际 Agent、首次遗漏与修订、真实创建/正文修改回读、确定性检查、匹配安装及未验证边界只由 [唯一 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md) 单写。知识晋升不证明整体完成或软件发布。

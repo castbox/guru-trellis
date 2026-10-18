@@ -12,6 +12,19 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Issue Content
+
+For Issue and proposed-draft review, read the shared
+[Issue content specification](../guru-clarify-requirements/references/issue-content.md)
+in full before the existing readiness gate, together with the writing
+specification above and necessary current sources. Apply it within the ten
+existing dimensions to the complete final title/body, scope, delivery unit,
+and observable acceptance. Return ordinary omissions to the affected original
+owner through existing exits; do not turn unsettled technical elaboration into
+a product requirement gap or silently expand a local revision. The full
+installed content body is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+
 ## Intent Entry
 
 Load this Skill for an explicit Issue readiness or independent-deliverability

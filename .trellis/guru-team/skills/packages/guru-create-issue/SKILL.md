@@ -12,6 +12,20 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Issue Content
+
+Before the existing creation semantic gate, read the shared
+[Issue content specification](../guru-clarify-requirements/references/issue-content.md)
+in full, together with the writing specification above and necessary current
+sources. Confirm the final complete title/body meets that common baseline,
+the prior reviews still apply, and the exact pending content matches the
+reviewed draft. An omission follows the original `refresh_review` route to
+Sync/fresh Intake and the affected original owner; do not create first or
+become a second writer. After creation, use the original live readback to
+verify actual title/body against the reviewed content, preserving the existing
+marker and recovery contract. The full installed content body is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+
 ## Intent Entry
 
 Load this Skill when the user requests GitHub Issue creation in natural

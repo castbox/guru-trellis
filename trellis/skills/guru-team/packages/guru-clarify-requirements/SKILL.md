@@ -12,6 +12,17 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+## Issue Content
+
+For Issue or draft authoring, revision, and requirements review, read the shared
+[Issue content specification](references/issue-content.md) in full before the
+applicable writing or semantic gate, together with the writing specification
+above and current necessary sources. The full installed content body is
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/references/issue-content.md`.
+Use it for complete-body organization and self-review within this owner's
+existing responsibility. Preserve review-only scope and the original source
+actions, refresh, and typed exits; a content gap does not authorize a write.
+
 ## Intent Entry
 
 Load this Skill for a general request to review a GitHub Issue, including
