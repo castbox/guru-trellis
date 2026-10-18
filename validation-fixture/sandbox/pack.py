@@ -7,7 +7,7 @@ from pathlib import Path
 
 def build_parser():
     parser = argparse.ArgumentParser(prog="pack", description="构建本地包。")
-    parser.add_argument("--output", metavar="DIR", default="dist", help=argparse.SUPPRESS)
+    parser.add_argument("--output", metavar="DIR", default="dist", help="输出目录（默认：%(default)s）")
     return parser
 
 
