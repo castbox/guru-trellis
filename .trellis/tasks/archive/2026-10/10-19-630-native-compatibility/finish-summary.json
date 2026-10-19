@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-19T18:35:25Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-19-630-native-compatibility",
+    "title": "修复 Guru Trellis 三系统运行与安装一致性",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-19-630-native-compatibility",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/630-native-compatibility",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "修复 Guru Trellis 三系统运行与安装一致性",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility",
+          ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/prd.md",
+          ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#630"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/630-native-compatibility"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility",
+        ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/prd.md",
+        ".trellis/tasks/archive/2026-10/10-19-630-native-compatibility/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "修复 Guru Trellis 三系统运行与安装一致性；#630；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
