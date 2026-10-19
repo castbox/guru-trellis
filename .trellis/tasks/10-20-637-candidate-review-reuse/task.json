@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0",
+  "id": "637-candidate-review-reuse",
+  "name": "637-candidate-review-reuse",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 637,
+    "disposition": "exact_source"
+  },
+  "title": "#637 贯通候选审核与验证复用",
+  "description": "统一跨阶段候选适用性、真实原覆盖加差额及受影响依赖，保留首次独立完整审核。",
+  "dev_type": null,
+  "scope": "castbox/guru-trellis#637 全部行为与验收；保留#636已交付能力；不启动#638/#635。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-20",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/prd.md",
+    "revision": "sha256:7f4be79f0d6c2b8254178ec90c46271e9b29222ccee0f3597461a09d80660d5d"
+  },
+  "deliveries": [
+    {
+      "id": "5499bb2d-86d7-4a5c-9747-9b06e00f4ef9",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/prd.md",
+          "revision": "sha256:7f4be79f0d6c2b8254178ec90c46271e9b29222ccee0f3597461a09d80660d5d"
+        },
+        "anchors": [
+          "AC637-01",
+          "AC637-02",
+          "AC637-03",
+          "AC637-04",
+          "AC637-05",
+          "AC637-06",
+          "AC637-07",
+          "AC637-08",
+          "AC637-09",
+          "AC637-10"
+        ]
+      },
+      "planning_root": "deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/design.md",
+        "revision": "sha256:50007403a896d8a1a20d970df09fc5d7ec4a09024227ef2f33690d88164587e1"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:1e9e5d3b-d8b3-40d3-9eb9-b022fcb8e6a9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/prd.md",
+              "revision": "sha256:7f4be79f0d6c2b8254178ec90c46271e9b29222ccee0f3597461a09d80660d5d"
+            },
+            "anchors": [
+              "AC637-01",
+              "AC637-02",
+              "AC637-03",
+              "AC637-04",
+              "AC637-05",
+              "AC637-06",
+              "AC637-07",
+              "AC637-08",
+              "AC637-09",
+              "AC637-10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/design.md",
+            "revision": "sha256:50007403a896d8a1a20d970df09fc5d7ec4a09024227ef2f33690d88164587e1"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/prd.md",
+              "revision": "sha256:3200a1ac4c59778860bb041e0d322212ddd02646e50895ac59259e251d715a0b"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/design.md",
+              "revision": "sha256:50007403a896d8a1a20d970df09fc5d7ec4a09024227ef2f33690d88164587e1"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/implement.md",
+              "revision": "sha256:399ebc251a8ce8b3f4162f7fe61f5a55b46c14ac9b83d3b18af6e6e10f88fbc4"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

@@ -12,6 +12,10 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this

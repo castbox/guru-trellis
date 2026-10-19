@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 # Architecture Baseline: Planning 3.0 and Nonplanning 4.0
 
 ## Authority model
@@ -127,9 +131,9 @@ result.
 
 ## Independent assessment entry
 
-New `task_impact_sync` conclusions at `planning`, applicable
-`implementation_discovery`, `phase2`, and `branch_review` are executed by a
-fresh independent subagent, including a proposed no-impact change. The reviewer
+The first independent `task_impact_sync` assessment at `planning`, applicable
+`implementation_discovery`, `phase2`, or `branch_review` uses a fresh independent
+subagent, including a proposed no-impact change. The reviewer
 has not authored or implemented the current candidate and has not read its PRD,
 acceptance criteria, implementation summary, completion claims, prior pass, or
 scope defense. Use empty task history, not a full-history fork of the caller.
@@ -186,42 +190,30 @@ results are not evidence of this execution. Normal caller self-authoring can
 pass objective validation while failing this Markdown method; re-enter with a
 compliant fresh reviewer, not a new authenticity mechanism or hostile fixture.
 
-A compliant fresh worker may finish Architecture first, then read task
-narratives and execute Check or Branch Review. Each Skill still performs its
-own complete review and produces its own actual result and freshness. A worker
-already exposed to narratives or implementation cannot retroactively supply
-the independent first round. Committed Branch Review always reassesses its
-candidate independently; Phase 2 pass cannot substitute. New facts that change
-Architecture judgment return to the corresponding fresh assessment stage.
+A compliant worker may finish Architecture first, then read task narratives
+and execute Check or Branch Review. A later candidate or stage uses the shared
+Candidate Applicability And Coverage contract: the original reviewer may
+continue while actually independent of implementation. Read the entire delta
+and affected consumers before judging which Architecture conclusions remain
+applicable. With no new Architecture facts, do not dispatch a new reviewer to
+rebuild the same understanding. New facts require the corresponding independent
+assessment; an eligible retained reviewer may perform it. Missing original
+coverage or an unbounded combined effect requires the complete assessment.
+Each stage still performs its own current semantic project checks and formal
+invocation. Phase 2 pass never supplies the Branch Review-stage result.
+A worker already exposed to narratives cannot retroactively supply the first
+independent read, and an implementer cannot approve the candidate.
 Review and validation commands are read-only evidence collection; they do not
 authorize product fixes, scope changes or promotion.
 
 ### Engineering execution facts and current project-check results
 
-After the independent read order and current check-set determination, the
-reviewer may adopt original engineering command results from another reviewer
-or stage when they are lawfully accessible and verifiable and the actual check
-definition/version, dependencies, toolchain, parameters, environment and test
-expectations remain applicable. Verify against actual command results, existing
-summary/evidence locators and Git checked objects. Neither a reviewer, stage,
-commit or promotion identity change alone invalidates these facts, nor does a
-matching path or code tree establish their applicability. Documentation that
-changes behavior contracts or introduces risks can change the check set.
-
-Execute new checks and affected checks when any of those inputs changed, their
-applicability is unknown or the original result is unavailable; preserve other
-applicable facts. In the existing project-check evidence/summary explain what
-ran this round, what was adopted, its original source and applicability reason.
-Never claim the current reviewer executed an adopted command. Do not read
-another owner's private state, retain or reconstruct retired checkpoints, or
-introduce a ledger, cache or long-lived result history to make adoption possible.
-
-The current semantic project-check result is always newly judged and bound to
-this invocation after the review. Prior semantic pass, project-check result or
-freshness token is not an engineering execution fact and cannot supply this
-result. The original descriptor/result and wrapper freshness checks remain
-unchanged. A necessary rerun belongs to the affected check, not an unrelated
-full suite or another phase.
+Apply the shared Candidate Applicability And Coverage contract after the
+independent read order and current check-set determination. This owner records
+execution or adoption, source and applicability reason in its existing
+project-check evidence/summary. Personally judge every applicable current
+semantic project check and bind its descriptor/result to this invocation.
+Original descriptor/result and wrapper freshness checks remain unchanged.
 
 ## Responsibility and change causality
 

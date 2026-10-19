@@ -44,6 +44,112 @@ schemas, consumer input contracts, and `public_contracts.projections[]` are the
 only public I/O graph authority. Workflow prose must never infer a route from a
 private checkpoint, digest, recorder result, example, or runtime implementation.
 
+## Candidate Applicability And Coverage
+
+This section is the single shared rule for Architecture, Check, TaskCommit,
+Branch Review, Delivery Review, Publication, Merge and their continuation.
+Each original owner applies it within its own responsibility and produces its
+own current formal result. It adds no Skill, phase, public field or evidence store.
+
+Keep three kinds of evidence distinct:
+
+- Engineering execution facts are actual command results for specific checked
+  inputs, dependencies, toolchain, environment, parameters, check definition
+  and expectations. They may remain applicable after a candidate changes.
+- Semantic judgments are an owner's actual conclusions about its current
+  responsibility and exact candidate. An old pass never supplies a new pass.
+- Git/PR facts identify commits, trees, ranges, payloads and remote outcomes.
+  Read current facts for the action; they do not prove semantic coverage or
+  engineering execution.
+
+### Original coverage and current judgment
+
+The first candidate requires a complete independent review. Planning and
+implementation self-checks do not replace it. For a later candidate, the
+original review owner reads verifiable original coverage, the entire actual
+delta and affected dependencies, including unchanged consumers. It states
+what remains applicable, what no longer applies and what it supplemented.
+Original coverage plus that reviewed delta and affected dependencies must
+cover the complete current fixed-base-to-HEAD range. The owner then judges
+the current candidate and uses its original recorder/validator/public entry.
+This applies to normal integration, finding fixes and other content changes;
+the narrow promotion-reference-alignment profile retains its own input limits.
+
+Use only actual retained public Task/Delivery results or public invocation
+objects, exact Git objects and ranges, current bodies, and verifiable original
+command results. A passed public full_review can locate its formal coverage
+through candidate, scope, plan, outcome and predecessor. A planning AuthorityRef
+does not establish command execution. If rework cleared a result slot, use a
+still-held actual public output or its original producer's supported recovery.
+Never read another owner's private checkpoint, reconstruct retired private
+state, or add a permanent review/test ledger, transcript or digest chain.
+
+An initial implementation_required has no passed full_review. Its commit and
+finding refs locate facts and defects; they do not prove passed coverage.
+Any original complete review work used for the next judgment must remain
+verifiable through actual public results/invocation objects, Git and current
+bodies. Retained reviewer understanding can reduce repeated reading but does
+not create authority. Supplement missing coverage; perform a complete review
+when the combined effect cannot be bounded. Neither a missing checkpoint nor
+a new reviewer/session alone invalidates otherwise verifiable coverage.
+
+Independence means that the reviewer has not authored or implemented the
+candidate under review. Keep the Architecture contract's first independent
+read order. A compliant independent reviewer may perform Architecture and
+then Branch Review, or continue a later candidate. When no new Architecture
+fact requires reassessment, do not dispatch another reviewer merely to rebuild
+the same understanding. Each stage still personally judges applicability and
+produces its own required formal result. An author cannot approve their work.
+
+After a finding fix, verify closure, the fix delta and affected coverage.
+The original compliant reviewer may complete the current final judgment;
+there is no unconditional distinct-reviewer or identical full-review rerun.
+Closure alone is not passed. Existing finding anchors, ancestry and current
+result binding remain required. The retained `fresh_final_review` wire value
+has the explicit successor meaning and matching-install boundary in
+MIGRATION-637; it is not permission to silently reinterpret an old installation.
+
+### Engineering fact applicability
+
+Before inspecting prior results, determine the current complete scope, risks,
+affected consumers and applicable check set. Adopt an original engineering
+result only when accessible and verifiable and its inputs, actual dependencies,
+toolchain, environment, invocation parameters, check definition/version and
+expectations remain applicable. Reviewer, stage, commit or promotion changes
+alone do not require command repetition. A matching path or tree is insufficient.
+
+Run each new or affected check when any input changed, applicability is unknown
+or the original result is unavailable. Preserve unaffected verifiable facts.
+In existing summary/evidence fields distinguish current execution from adoption,
+with the original source, checked object and applicability reason. Never claim
+to have executed an adopted command. Complete every current semantic dimension
+and report required evidence gaps through the original owner routes. A legal
+configuration change is an affected-check input, not an old-value correctness
+whitelist; judge usability through appropriate actual integration/E2E execution
+under the current profile. Execution-result updates or added external evidence
+alone do not redefine the candidate or start identity recomputation loops.
+Keep the existing exact-candidate checks, including Task metadata, intact.
+
+### Candidate and action boundaries
+
+A same-tree commit only refreshes necessary commit/candidate binding. It does
+not establish unchanged tools, environment or required checks. Review navigation,
+version and reference changes for their actual behavior; document suffixes do
+not grant exemptions. For conflict resolution, read both sides, the combined
+semantics and affected unchanged consumers, rather than only conflict lines.
+An unrelated target advance does not replace the fixed review object or require
+integration. Real scope, design assumptions, authority or dependency changes
+return to the earliest affected original owner.
+
+Delivery Review, Publication and Merge consume applicable content review and
+judge their own current payload, Issue semantics, candidate and live facts.
+They do not repeat unchanged business-design review. Required checks, expected
+HEAD, remote transaction readback and each side-effect boundary remain intact.
+Same-Delivery recovery uses the original producer and actual public identity;
+it requires no new Delivery, empty commit or proof ledger. See
+[MIGRATION-637](https://github.com/castbox/guru-trellis/blob/main/trellis/presets/guru-team/MIGRATION-637.md) for matching installation
+and in-flight recovery; source edits never hot-migrate an active installation.
+
 ## Native Reference And Guru Route Ownership
 
 Upstream bundled `trellis-meta` references are provider-owned and are not
@@ -202,9 +308,10 @@ architecture boundary invalidates the Planning result before the expanded edit
 or test. Phase 2 assesses the complete candidate and proposed Architecture delta
 after Docs reconciliation. The original Architecture owner promotes the
 reviewed delta and verifies actual-write applicability before final Check.
-Branch Review independently recomputes those concerns over the complete
-committed diff, including promoted files and pre-promotion authority. It never
-reuses Phase 2 as review proof.
+Branch Review forms its own current conclusion over the complete committed
+range, including promoted files and pre-promotion authority. Apply Candidate
+Applicability And Coverage to original coverage and actual delta; a Phase 2
+result cannot replace the Branch Review-stage result.
 
 Every fresh `baseline_current` binds `constitution_status=current`, an existing
 regular project-owned constitution locator, and its exact source profile. Only
@@ -476,7 +583,8 @@ For Phase 2, a current retained `passed` checkpoint may be checked again and
 projected through the existing checker-to-`invoke-guru-check-task` path. This is
 rematerialization through the existing public invocation, not a new public
 recovery profile, exit, schema, or semantic judgment. If that checkpoint is
-missing or stale, fresh Phase 2 Architecture and `guru-check-task` are required.
+missing or stale, the original Phase 2 Architecture and Check owners perform
+their current invocations under Candidate Applicability And Coverage.
 Task Commit output loss uses the existing `guru-create-task-commit` same-
 candidate `recovery_resume` contract and may not create a second candidate,
 empty commit, amend, or duplicate commit. Lost Branch Review or Delivery Review
@@ -485,7 +593,8 @@ owner run. Delivery Review's original owner determines whether its still-held
 checked Branch Review anchor remains applicable; normal checkpoint retirement
 alone does not invalidate that DTO. Loss of Delivery Review output does not
 mechanically rerun unaffected upstream owners. New committed content still
-requires a complete current exact-range Branch Review.
+requires a current exact-range Branch Review under Candidate Applicability
+And Coverage; it does not unconditionally repeat original covered work.
 Delivery Publish/Merge recovery belongs to the original owner and
 current PR/HEAD transaction. A current checked Delivery result enters
 Completion; evidence-only changes use Completion's evidence-refresh entry,

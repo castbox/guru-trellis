@@ -17,6 +17,9 @@ read `.trellis/workflow.md#manual-gitgithub-operations` (Manual Git/GitHub
 Operations). That global owner defines the boundary; this entry adds no recovery
 steps and does not turn a manual result into Guru completion.
 
+Read `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+when continuing a changed candidate; the invoked owners apply its shared rules.
+
 Read the sole continuation in `.trellis/workflow.md` and current public
 Task/Delivery availability through the installed context helpers. Follow its
 Phase 2 early Draft and Phase 3.6/3.7 final routes. Mandatory load the applicable owners by stable Skill id:

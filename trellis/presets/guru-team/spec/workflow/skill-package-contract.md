@@ -926,8 +926,12 @@ mechanical conversion; current purpose-bound gates must be rerun.
 before every task work stage/commit side effect. It exposes only `committed`,
 `revision-required`, and `blocked`: Branch Review/finding closure consumes the
 first, the skill re-enters on the second, and the workflow stops on the third.
-Finding-fix task work returns through implementation and full Phase 2 before a
-new plan sequence may invoke the skill again. Workflow and standalone entry
+Finding-fix task work returns through implementation and current complete
+Phase 2 coverage before a new plan sequence may invoke the skill again. Apply
+[Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage)
+to retained coverage, the entire delta and affected dependencies; this does not
+require repeating unaffected commands or changing reviewer identity.
+Workflow and standalone entry
 preconditions include ordinary Git operation state. Gitlink snapshot identity
 is conditional on index mode `160000` and binds an initialized, clean worktree
 HEAD; for non-deleted gitlinks that artifact HEAD is also the exact index OID,
@@ -1342,8 +1346,8 @@ workflow/standalone preconditions in this order: `runtime_dependency`,
 `validation_scope`, `docs_ssot`, `issue_scope`, and `invocation_freshness`.
 
 The Skill owns repository check selection, scope qualification before severity,
-complete adequacy and Docs SSOT review, current-scope findings, full-rerun
-identity, the AI Review Gate, re-entry, and exactly four exits:
+complete adequacy and Docs SSOT review, current-scope findings, current-candidate
+re-entry identity, the AI Review Gate, re-entry, and exactly four exits:
 `passed` -> active Skill `guru-create-task-commit`,
 `implementation_required` -> workflow target `guru-resume-implementation`,
 `planning_stale` -> workflow target `guru-task-check-planning-router`, and
@@ -1373,8 +1377,9 @@ tests, and issue scope. These are direct semantic inputs; AI still owns
 sufficiency, qualification, findings, and route.
 
 Each re-entry completes the current semantic round. Check owns the current
-applicable check set and dependency-scoped execution-fact reuse under its
-`references/contract.md` Dependency-Scoped Validation contract. Reuse binds a
+applicable check set under its `references/contract.md` Dependency-Scoped
+Validation entry and the shared Candidate Applicability And Coverage contract.
+Reuse binds a
 current result through existing validation summaries; it neither changes old
 candidate records nor creates a public receipt, cache, or cross-Skill authority.
 Task Commit's existing retained-checkpoint consumer remains unchanged.

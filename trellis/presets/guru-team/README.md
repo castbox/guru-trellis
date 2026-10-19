@@ -105,11 +105,21 @@ The installer never edits upstream Trellis source or a global npm package.
 Architecture review uses the existing
 [canonical Skill](../../skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md)
 and its [step-local contract](../../skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md).
-New conclusions use fresh independent subagents; platform entries load and
-schedule that same contract. Install/update must reapply the matching complete
+First assessments and later independent continuation follow that contract;
+platform entries load and schedule the same owner. Install/update must reapply the matching complete
 preset so canonical, installed and selected platform copies use the same method.
 Projection checks and actual native behavior are separate evidence; current
 #404 coverage and limitations live in its [unique Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
+
+## 候选变化后的审核与验证
+
+[唯一候选适用性合同](spec/workflow/workflow-contract.md#candidate-applicability-and-coverage) 由七个原 owner 在各自职责内读取。
+首次完整独立审核继续执行；后继候选以可核验原覆盖、全部差额和受影响依赖形成
+当前完整结论。finding 闭合后不再无条件更换 reviewer 或重复完整相同审核。
+各阶段仍须实际判断并产生原正式结果；工程命令事实与语义结论分别处理。
+matching 安装、`fresh_final_review` 的窄后继含义及同 Delivery 在途恢复见
+[MIGRATION-637](MIGRATION-637.md)。源码修改不代表活跃 Task 已迁移，静态分发不证明实际
+Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未来接口明确未验证。
 
 ## 提前 Draft 与最终门禁
 
