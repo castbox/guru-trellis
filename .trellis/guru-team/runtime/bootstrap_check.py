@@ -10,13 +10,15 @@ from pathlib import Path
 
 try:
     from .temporary_lifecycle import temporary_directory
+    from .bootstrap_transport import native_bash, wrapper_call
 except ImportError:  # bootstrap.py is also a direct stdlib-only entry.
     from temporary_lifecycle import temporary_directory
+    from bootstrap_transport import native_bash, wrapper_call
 
 
 def check_public_wrapper(assets: Path, runtime_id: str, target: Path) -> None:
     skills = assets.parent if (assets.parent / "packages").is_dir() else assets.parent / "skills"
-    check = json.loads((assets / "python-runtime.json").read_text())["public_wrapper_check"]
+    check = json.loads((assets / "python-runtime.json").read_text(encoding="utf-8"))["public_wrapper_check"]
     package_id = check["package"]
     package = skills / "packages" / package_id
     if not (package / "scripts/invoke.sh").is_file() or not (skills / "schemas").is_dir():
@@ -37,18 +39,20 @@ def check_public_wrapper(assets: Path, runtime_id: str, target: Path) -> None:
         pointer.parent.mkdir(parents=True)
         interpreter = cache / runtime_id / "venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         pointer.write_text(json.dumps({"schema_version": "2.0", "cache_scope": "user",
-                                       "runtime_id": runtime_id, "interpreter": str(interpreter)},
-                                      sort_keys=True, separators=(",", ":")))
+                                       "runtime_id": runtime_id, "interpreter": interpreter.as_posix()},
+                                      sort_keys=True, ensure_ascii=False, separators=(",", ":")), encoding="utf-8", newline="\n")
         environment = os.environ.copy()
         environment.pop("PYTHONHOME", None)
         environment.pop("VIRTUAL_ENV", None)
-        environment["GURU_TEAM_PYTHON_CACHE_ROOT"] = str(cache)
+        environment["GURU_TEAM_PYTHON_CACHE_ROOT"] = cache.as_posix()
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
         wrapper = installed_skills / "packages" / package_id / "scripts/invoke.sh"
+        bash = native_bash()
         for case in check["cases"]:
+            command, payload_input = wrapper_call(bash, wrapper, case["arguments"])
             result = subprocess.run(
-                ["bash", str(wrapper), *case["arguments"]],
-                cwd=view, env=environment, text=True, stdout=subprocess.PIPE,
+                command, input=payload_input,
+                cwd=view, env=environment, text=True, encoding="utf-8", stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, check=False,
             )
             payload = json.loads(result.stdout)

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 from .io import CommandError, read_json_file
 
@@ -21,7 +22,7 @@ def validate_json(instance: Any, schema_path: Path, field_path: str) -> None:
         parsed = urlparse(uri)
         if parsed.scheme != "file":
             raise ValueError("Contract references must resolve to installed files.")
-        path = Path(unquote(parsed.path))
+        path = Path(url2pathname(parsed.path))
         value = dict(read_json_file(path, str(path)))
         value["$id"] = path.resolve().as_uri()
         return Resource.from_contents(value)

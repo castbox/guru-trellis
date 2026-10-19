@@ -1,5 +1,6 @@
 """Integration checks use real Git checkouts and native unittest subprocesses."""
 import json
+import importlib.util
 from pathlib import Path
 import subprocess
 import shutil
@@ -175,6 +176,18 @@ class SelectionTest(unittest.TestCase):
                     code, report = self.run_selection(root, selection)
                     self.assertEqual((code, report["tests_run"]), (0, 1))
 
+    def test_normal_subtest_failure_retains_actual_id_and_message(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            test = root / "test_checkout.py"
+            test.write_text("import unittest\nclass Checkout(unittest.TestCase):\n"
+                            " def test_eol(self):\n"
+                            "  with self.subTest(autocrlf='true'): self.fail('normal checkout drift')\n", encoding="utf-8")
+            code, report = self.run_selection(root, str(test))
+            self.assertEqual((code, report["failures"], report["errors"]), (1, 1, 0))
+            self.assertEqual(report["outcomes"], [{"id": "test_checkout.Checkout.test_eol (autocrlf='true')",
+                                                   "kind": "failure", "message": "normal checkout drift"}])
+
 
 class ObserverTest(unittest.TestCase):
     cases = [{"arguments": ["--valid"], "expected_returncode": 0, "expected_output": {"ok": True}},
@@ -218,6 +231,34 @@ class ObserverTest(unittest.TestCase):
                     mock.call(["bash", "/fixture/invoke.sh", "--invalid"], **kwargs)])
                 self.assertEqual([row["supplemental"] for row in calls], [False, True])
                 self.assertEqual(calls[1]["returncode"], 2)
+
+    def test_absolute_bash_stdin_supplement_uses_target_transport(self):
+        source = ci.HERE.parent / "trellis/skills/guru-team/runtime/bootstrap_transport.py"
+        spec = importlib.util.spec_from_file_location("fixture_transport", source)
+        transport = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(transport)
+        cases = [{"arguments": ["--invocation", '{"名称":"first"}'],
+                  "expected_returncode": 0, "expected_output": {"ok": True}},
+                 {"arguments": ["--invocation", '{"名称":"second"}'],
+                  "expected_returncode": 2, "expected_output": {"code": "schema_mismatch"}}]
+        with tempfile.TemporaryDirectory(prefix="Guru stdin space ") as temporary:
+            root = Path(temporary) / "中文 fixture"
+            root.mkdir()
+            wrapper = root / "invoke.sh"
+            wrapper.write_bytes(b'#!/bin/bash\npayload=$(cat)\ncase "$payload" in\n'
+                b' *first*) printf "original failure\\n"; exit 7;;\n'
+                b' *second*) printf \'{"code":"schema_mismatch"}\\n\'; exit 2;;\nesac\nexit 9\n')
+            bash = Path(ci.find_bash()).resolve()
+            command, stdin = transport.wrapper_call(bash, wrapper, cases[0]["arguments"])
+            calls = []
+            observer = WrapperObserver(subprocess.run, cases, calls, transport.wrapper_call)
+            result = observer(command, input=stdin, encoding="utf-8", text=True,
+                              cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.assertEqual((result.returncode, result.stdout), (7, "original failure\n"))
+            self.assertEqual([row["returncode"] for row in calls], [7, 2])
+            self.assertEqual([row["input"] for row in calls], [case["arguments"][1] for case in cases])
+            self.assertEqual([row["supplemental"] for row in calls], [False, True])
+            self.assertEqual(calls[1]["argv"], [str(bash), wrapper.as_posix(), "--invocation", "-"])
 
 
 if __name__ == "__main__":

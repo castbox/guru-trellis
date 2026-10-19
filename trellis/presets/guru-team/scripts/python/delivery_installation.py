@@ -129,7 +129,8 @@ def diagnose_delivery_installation(source: Path, target: Path) -> dict:
     if invalid:
         return {"status": "blocked", "code": "invalid_task_inventory", "task_refs": invalid,
                 "remediation": "Resolve the actual Task records with their existing owner before installation."}
-    if missing or version != "0.7.0-castbox.4":
+    source_lock = json.loads((source / "trellis/presets/guru-team/source/trellis-source.json").read_text(encoding="utf-8"))
+    if missing or version != source_lock["cli_version"]:
         return {"status": "blocked", "code": "unsupported_delivery_api", "installed_core": version, "missing_modules": missing,
                 "remediation": "Install the explicitly reviewed Core/CLI Delivery API 1.0 candidate as a complete package before Guru projection. Matching version text alone is not candidate qualification."}
     missing_capabilities = installed_capabilities(common, workflow, records)

@@ -19,6 +19,7 @@ APPROVED_KERNEL_FILES = {
     "base_selection.py",
     "bootstrap.py",
     "bootstrap_check.py",
+    "bootstrap_transport.py",
     "compat.py",
     "discovery.py",
     "eval_runner.py",

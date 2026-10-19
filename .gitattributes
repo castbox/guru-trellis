@@ -7,3 +7,75 @@
 # picking either side (task state lives in task.json, not index.md). See
 # .trellis/spec/cli/backend/directory-structure.md for details.
 .trellis/workspace/*/journal-*.md merge=union
+
+# Guru canonical text uses LF; raw dependency locks retain their bytes.
+/trellis/workflows/guru-team/**/*.md text eol=lf
+/trellis/workflows/guru-team/**/*.py text eol=lf
+/trellis/workflows/guru-team/**/*.sh text eol=lf
+/trellis/workflows/guru-team/**/*.json text eol=lf
+/trellis/workflows/guru-team/**/*.yml text eol=lf
+/trellis/workflows/guru-team/**/*.yaml text eol=lf
+/trellis/workflows/guru-team/**/*.toml text eol=lf
+/trellis/workflows/guru-team/**/*.txt text eol=lf
+/trellis/workflows/guru-team/**/*.lock -text
+/trellis/skills/guru-team/**/*.md text eol=lf
+/trellis/skills/guru-team/**/*.py text eol=lf
+/trellis/skills/guru-team/**/*.sh text eol=lf
+/trellis/skills/guru-team/**/*.json text eol=lf
+/trellis/skills/guru-team/**/*.yml text eol=lf
+/trellis/skills/guru-team/**/*.yaml text eol=lf
+/trellis/skills/guru-team/**/*.toml text eol=lf
+/trellis/skills/guru-team/**/*.txt text eol=lf
+/trellis/skills/guru-team/**/*.lock -text
+/trellis/presets/guru-team/**/*.md text eol=lf
+/trellis/presets/guru-team/**/*.py text eol=lf
+/trellis/presets/guru-team/**/*.sh text eol=lf
+/trellis/presets/guru-team/**/*.json text eol=lf
+/trellis/presets/guru-team/**/*.yml text eol=lf
+/trellis/presets/guru-team/**/*.yaml text eol=lf
+/trellis/presets/guru-team/**/*.toml text eol=lf
+/trellis/presets/guru-team/**/*.txt text eol=lf
+/trellis/presets/guru-team/**/*.lock -text
+/trellis/presets/guru-team/source/trellis-source.json -text
+# guru-team-managed-text:start
+/.agents/skills/guru-*/**/*.json text eol=lf
+/.agents/skills/guru-*/**/*.md text eol=lf
+/.agents/skills/guru-*/**/*.py text eol=lf
+/.agents/skills/guru-*/**/*.sh text eol=lf
+/.claude/commands/guru/finish-work.md text eol=lf
+/.claude/skills/guru-*/**/*.json text eol=lf
+/.claude/skills/guru-*/**/*.md text eol=lf
+/.claude/skills/guru-*/**/*.py text eol=lf
+/.claude/skills/guru-*/**/*.sh text eol=lf
+/.codex/prompts/guru-finish-work.md text eol=lf
+/.codex/skills/guru-*/**/*.json text eol=lf
+/.codex/skills/guru-*/**/*.md text eol=lf
+/.codex/skills/guru-*/**/*.py text eol=lf
+/.codex/skills/guru-*/**/*.sh text eol=lf
+/.cursor/commands/guru-finish-work.md text eol=lf
+/.cursor/skills/guru-*/**/*.json text eol=lf
+/.cursor/skills/guru-*/**/*.md text eol=lf
+/.cursor/skills/guru-*/**/*.py text eol=lf
+/.cursor/skills/guru-*/**/*.sh text eol=lf
+/.trellis/guru-team/**/*.json text eol=lf
+/.trellis/guru-team/**/*.md text eol=lf
+/.trellis/guru-team/**/*.py text eol=lf
+/.trellis/guru-team/**/*.sh text eol=lf
+/.trellis/guru-team/**/*.yml text eol=lf
+/.trellis/spec/workflow/bootstrap-repository-ssot.md text eol=lf
+/.trellis/spec/workflow/causal-completion-semantics.md text eol=lf
+/.trellis/spec/workflow/clear-technical-writing.md text eol=lf
+/.trellis/spec/workflow/companion-scripts.md text eol=lf
+/.trellis/spec/workflow/data-contracts.md text eol=lf
+/.trellis/spec/workflow/quality-guidelines.md text eol=lf
+/.trellis/spec/workflow/requirements-design-test-ssot.md text eol=lf
+/.trellis/spec/workflow/semantic-retrieval.md text eol=lf
+/.trellis/spec/workflow/skill-package-contract.md text eol=lf
+/.trellis/spec/workflow/subtraction-first-compatibility.md text eol=lf
+/.trellis/spec/workflow/task-delivery-migration.md text eol=lf
+/.trellis/spec/workflow/workflow-contract.md text eol=lf
+/.trellis/guru-team/extension.json -text
+/.trellis/guru-team/runtime/requirements.lock -text
+/.trellis/guru-team/skills/adapters/eval/guru-team-shared-eval -text
+/.trellis/guru-team/trellis-source.json -text
+# guru-team-managed-text:end

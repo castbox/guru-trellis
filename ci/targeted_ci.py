@@ -20,17 +20,19 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
-def run(command, cwd, path_prepend=None):
+def run(command, cwd, path_prepend=None, env_patch=None, input_data=None):
     command = [str(part) for part in command]
     # npm.cmd is a Windows command script; subsequent pnpm calls use node directly.
     shell = os.name == "nt" and command[0].lower().endswith((".cmd", ".bat"))
     env = None
-    if path_prepend is not None:
+    if path_prepend is not None or env_patch is not None:
         env = dict(os.environ)
+        env.update(env_patch or {})
+    if path_prepend is not None:
         env["PATH"] = str(path_prepend) + os.pathsep + env.get("PATH", "")
     return subprocess.run(subprocess.list2cmdline(command) if shell else command,
                           cwd=cwd, env=env, shell=shell, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT)
+                          stderr=subprocess.STDOUT, input=input_data)
 
 
 class Steps:
@@ -38,14 +40,16 @@ class Steps:
         self.directory = directory
         self.target = target
 
-    def call(self, stage, command, cwd, category="infrastructure", path_prepend=None):
+    def call(self, stage, command, cwd, category="infrastructure", path_prepend=None, env_patch=None, input_data=None):
         item = {"stage": stage, "command": [str(x) for x in command],
                 "cwd": str(cwd), "category": category}
         if path_prepend is not None:
             item["path_prepend"] = str(path_prepend)
+        if input_data is not None:
+            item["fixture_input"] = input_data.decode("utf-8")
         print(f"{self.target['role']}: {stage}", flush=True)
         try:
-            completed = run(command, cwd, path_prepend=path_prepend)
+            completed = run(command, cwd, path_prepend=path_prepend, env_patch=env_patch, input_data=input_data)
             data = completed.stdout
             item["returncode"] = completed.returncode
         except OSError as exc:
@@ -113,6 +117,10 @@ def smoke(steps, target, workspace, python, bash, sha):
     fork_sha = checkout(steps, lock["repository"], lock["commit"], fork, workspace, "fork")
     if fork_sha != lock["commit"]:
         raise RuntimeError("Fork checkout did not resolve the target source lock")
+    ok, tree = steps.call("fork-tree", ["git", "rev-parse", "HEAD^{tree}"], fork)
+    ok_parents, parents = steps.call("fork-parents", ["git", "show", "-s", "--format=%P", "HEAD"], fork)
+    if not ok or not ok_parents or tree != lock["tree"] or parents.split() != lock["parents"]:
+        raise RuntimeError("Fork tree/parents differ from the target source lock")
     package = json.loads((fork / "package.json").read_text(encoding="utf-8"))
     manager = package["packageManager"]
     if manager.split("+", 1)[0] != lock["package_manager"]:
@@ -134,10 +142,14 @@ def smoke(steps, target, workspace, python, bash, sha):
     steps.call("fork-dependency-versions", pnpm + ["list", "--recursive", "--depth", "0", "--json"],
                fork, path_prepend=pnpm_bin)
     (fork / "packages/cli/dist/.guru-source-commit").write_text(fork_sha + "\n", encoding="utf-8")
-    clean = workspace / "clean install"
+    clean = workspace / "中文 clean install"
+    steps.target["clean_install_root"] = str(clean)
     if not steps.call("smoke-git-init", ["git", "init", clean], workspace)[0]:
         return
     cli = fork / "packages/cli/bin/trellis.js"
+    ok, version = steps.call("fork-cli-version", ["node", cli, "--version"], fork)
+    if not ok or version.splitlines()[0] != lock["cli_version"]:
+        raise RuntimeError("Built Fork CLI version differs from the target source lock")
     provider = f"gh:castbox/guru-trellis/trellis#{sha}"
     if not steps.call("smoke-cli-init", ["node", cli, "init", "-y", "--codex", "--workflow",
                                          "guru-team", "--workflow-source", provider], clean, "installation")[0]:
@@ -153,6 +165,21 @@ def smoke(steps, target, workspace, python, bash, sha):
     validator = clean / ".trellis/guru-team/scripts/bash/check-skill-packages.sh"
     steps.call("smoke-installed-validation", [bash, validator.as_posix(), "--root", clean.as_posix(),
                                               "--mode", "installed", "--json"], clean, "installation")
+    steps.call("smoke-installed-wrapper", [python, HERE / "runtime_diagnostic.py", "--target-root", target,
+               "--installed-root", clean, "--python", python,
+               "--output", steps.directory / "installed-wrapper.json"], clean, "installation")
+    eol_driver = HERE.parent / TEST_ROOT / "test_managed_text_eol.py"
+    eol_report = steps.directory / "native-eol.json"
+    steps.call("native-eol", [python, HERE / "unittest_report.py", "--root", eol_driver.parent,
+               "--output", eol_report,
+               str(eol_driver) + "::ManagedTextInstallTests.test_real_install_clone_validate_reapply"],
+               target, "tests", env_patch={"GURU_NATIVE_TARGET_ROOT": str(target),
+               "GURU_UPSTREAM_DELIVERY_SCRIPTS": str(clean / ".trellis/scripts"), "PYTHONUTF8": "0"})
+    if eol_report.exists():
+        steps.target["native_eol"] = json.loads(eol_report.read_text(encoding="utf-8"))
+    # The driver owns this harness; every product entry below belongs to target.
+    from native_maintenance import maintain
+    maintain(steps, target, clean, workspace, python, bash, cli, provider)
 
 
 def execute_target(repository, role, ref, workspace, diagnostics, selections, bash):
@@ -178,11 +205,21 @@ def execute_target(repository, role, ref, workspace, diagnostics, selections, ba
                                                        "-r", lock], target)[0]
         if ready:
             steps.call("python-versions", [python, "-m", "pip", "list", "--format=json"], target)
+            steps.call("native-python-encoding", [python, "-c",
+                       "import codecs,json,locale,os,sys; encoding=locale.getpreferredencoding(False); print(json.dumps({'executable':sys.executable,'utf8_mode':sys.flags.utf8_mode,'preferred_encoding':encoding})); sys.exit(1 if os.name=='nt' and (sys.flags.utf8_mode or codecs.lookup(encoding).name=='utf-8') else 0)"],
+                       target, env_patch={"PYTHONUTF8": "0"})
             outcome = diagnostics / "unittest.json"
             steps.call("tests", [python, HERE / "unittest_report.py", "--root", target / TEST_ROOT,
                                  "--output", outcome, *selections], target, "tests")
             if outcome.exists():
                 result["tests"] = json.loads(outcome.read_text(encoding="utf-8"))
+            native = diagnostics / "native-compatibility.json"
+            native_driver = HERE.parent / TEST_ROOT / "test_runtime_native_compatibility.py"
+            steps.call("native-compatibility", [python, HERE / "unittest_report.py",
+                       "--root", native_driver.parent, "--output", native, native_driver],
+                       target, "tests", env_patch={"GURU_NATIVE_TARGET_ROOT": str(target), "PYTHONUTF8": "0"})
+            if native.exists():
+                result["native_compatibility"] = json.loads(native.read_text(encoding="utf-8"))
             diagnostic = diagnostics / "runtime-diagnostic.json"
             result["runtime_diagnostic"] = {"report": diagnostic.name}
             steps.call("runtime-diagnostic", [python, HERE / "runtime_diagnostic.py",

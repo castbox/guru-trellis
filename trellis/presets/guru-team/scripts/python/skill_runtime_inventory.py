@@ -6,6 +6,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("base_selection.py"),
     Path("bootstrap.py"),
     Path("bootstrap_check.py"),
+    Path("bootstrap_transport.py"),
     Path("command.py"),
     Path("compat.py"),
     Path("discovery.py"),

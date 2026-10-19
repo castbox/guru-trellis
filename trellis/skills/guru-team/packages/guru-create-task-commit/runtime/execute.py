@@ -85,18 +85,18 @@ def _install_hook_proxies(repo: Path, proxy_root: Path, log_path: Path) -> None:
         script = [
             "#!/bin/sh",
             "set +e",
-            f"original={shlex.quote(str(original))}",
+            f"original={shlex.quote(original.as_posix())}",
             "if [ -x \"$original\" ]; then",
             "  \"$original\" \"$@\"",
             "  rc=$?",
             "else",
             "  rc=0",
             "fi",
-            f"printf '%s\\t%s\\n' {shlex.quote(name)} \"$rc\" >> {shlex.quote(str(log_path))}",
+            f"printf '%s\\t%s\\n' {shlex.quote(name)} \"$rc\" >> {shlex.quote(log_path.as_posix())}",
             "exit \"$rc\"",
             "",
         ]
-        proxy.write_text("\n".join(script))
+        proxy.write_text("\n".join(script), encoding="utf-8", newline="\n")
         proxy.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
 
 
@@ -104,7 +104,7 @@ def _hook_results(log_path: Path) -> list[dict[str, object]]:
     if not log_path.is_file():
         return []
     results = []
-    for line in log_path.read_text().splitlines():
+    for line in log_path.read_text(encoding="utf-8").splitlines():
         name, separator, value = line.partition("\t")
         if not separator or name not in HOOK_NAMES:
             continue
@@ -237,7 +237,7 @@ def _write_happy_path_receipt(
     )
     target = commit_result_path(repo, task_key, sequence)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n")
+    target.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     return receipt
 
 
@@ -375,7 +375,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         message_path = temp_root / "message"
         hooks_root = temp_root / "hooks"
         hook_log = temp_root / "hook-results"
-        message_path.write_text(candidate["message"]["bytes"])
+        message_path.write_bytes(candidate["message"]["bytes"].encode("utf-8"))
         message_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
         _install_hook_proxies(repo, hooks_root, hook_log)
         env = {
@@ -413,6 +413,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                 ],
                 cwd=transaction,
                 text=True,
+                encoding="utf-8",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 env={**os.environ, **env},
@@ -462,7 +463,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
                     commit_sha=created_commit,
                     hook_results=results,
                 )
-            if message_path.read_text() != candidate["message"]["bytes"]:
+            if message_path.read_bytes().decode("utf-8") != candidate["message"]["bytes"]:
                 raise _commit_failure(
                     stage="pre_publication_validation",
                     message="A commit hook changed the reviewed message file.",

@@ -633,3 +633,7 @@ ARCH-CUR-072 / ARCH-DOM-055 / ARCH-INT-058 承接 [#154 贡献](../contributions
 ## EVD-072：#153 共同 Issue 内容规范的架构增量
 
 ARCH-CUR-073 / ARCH-DOM-056 / ARCH-INT-059 承接 [#153 贡献](../contributions/153-issue-content-ssot.md)。比较起点为 main@`ed59e851b6c1257bac6316a9571274427e383c93` 的 `.99`；原 Architecture owner 独立评估完整候选及拟写内容后，按 expected `.99` 晋升 `.100` 并核验实际写入适用性。最终 Check、Task Commit 与 committed 独立完整审查仍覆盖实际候选。本文只定位职责差额；实际 Agent、首次遗漏与修订、真实创建/正文修改回读、确定性检查、匹配安装及未验证边界只由 [唯一 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md) 单写。知识晋升不证明整体完成或软件发布。
+
+## EVD-073：#630 三系统兼容与受管字节责任
+
+ARCH-CUR-074 / ARCH-DOM-057 / ARCH-INT-060与ADR-032承接[#630贡献](../contributions/630-native-compatibility.md)。固定比较起点为Git `0543731bf52aa80842fde5db47332380de513cf0` 的Architecture `.102`；原owner在独立Phase2完整候选与拟写内容评估后按expected-current晋升`.103`，最终Check和完整committed Review继续覆盖实际结果。本项只定位差额，首次WSL/Unicode-pointer/CRLF失败、修复与实际三系统、WindowsCodex及发布状态只由[#630唯一Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)维护；不以知识晋升宣称这些结果已通过。

@@ -161,3 +161,5 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-055`（#154）：原 Author 独占规划正文、模板和示例；Discovery 调查事实，Clarify 判断来源和范围，Architecture 按原独立方法评估，Wording、Approval、实施、Check、Delivery Review 与 Completion 分别承接原职责。普通遗漏回最早受影响 owner，技术细化不自动改变产品范围。模板填充只写选定 Task/Delivery 规划；RDT 与 Architecture 原 owners 单写长期贡献晋升，不建立第二方案或授权存储。详见 [贡献](../contributions/154-planning-body-contract.md) 与 ADR-022/024。
 
 `ARCH-DOM-056`（#153）：Clarify 单写 Issue 内容正文并保留来源、意图、范围及正文整理判断；Wording、Readiness、Create Issue 分别保留表述审核、完整性/交付单位判断和已审草稿创建/回读。Author 仍单写 Planning 来源合同，managed spec 仍单写语言规则，preset 只拥有受管分发。范围外缺口先说明实际影响，真实范围选择回原 Clarify；不增加第二 writer、内容评分器或审核阶段。Architecture/RDT 原 owners 各自单写 shared-current，具体差额见 [贡献](../contributions/153-issue-content-ssot.md)。
+
+`ARCH-DOM-057`（#630）：installer原owner独占Guru声明文本LF、root attributes有界块和精确EOL恢复；用户.gitattributes整体、块外字节与上游entry归属不转移。raw validator继续真实字节校验。base/schema/bootstrap与TaskCommit各原owner承担系统Path、file URI、原生Bash/stdin及UTF8候选协议，source owner通过固定Fork .5而非overlay patch接入原生维护。窄替代条件由[ADR-032](../adr/032-managed-text-lf.md)拥有；实际结果及限制见[#630唯一Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)。

@@ -85,7 +85,20 @@ managed assets use their previous-managed hash provenance:
 | equals the current manifest's previous managed hash | Write `.bak`, then install current canonical bytes. |
 | unknown local edit or invalid current provenance | Preserve the target, write canonical bytes to `.new` when safe, and block activation. |
 
-Only current Guru-owned paths participate in this table.
+Only current Guru-owned paths participate in this table. For declared text
+categories in [Managed Text LF Policy](./installer.md#managed-text-lf-policy),
+a CRLF-only checkout difference can first recover to LF when the result is
+exactly canonical, or its digest equals a valid previous-managed hash. This
+is the only additional equivalence condition. A managed version upgrade
+retains the original raw `.bak`; unknown content edits still produce `.new`.
+Lock, binary, source-lock and installed-manifest identities retain raw
+comparison. Installed validators compare raw bytes after recovery.
+
+Root `.gitattributes` is user-owned. Guru owns only its bounded managed text
+block, preserves other bytes, and adds no ownership claim for the file.
+Effective Git attributes must preserve the declared LF policy; conflicts stop
+before activation. This block does not authorize management of upstream
+entries or whole platform directories.
 
 ## Deterministic Validator Boundary
 

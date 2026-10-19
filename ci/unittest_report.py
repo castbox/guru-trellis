@@ -26,6 +26,13 @@ class Result(unittest.TextTestResult):
         super().addSkip(test, reason)
         self.outcomes.append({"id": test.id(), "kind": "skip", "message": reason})
 
+    def addSubTest(self, test, subtest, err):
+        super().addSubTest(test, subtest, err)
+        if err is not None:
+            self.outcomes.append({"id": subtest.id(),
+                                  "kind": "failure" if isinstance(err[1], test.failureException) else "error",
+                                  "message": str(err[1])})
+
 
 def load_selection(loader, selection, root):
     filename, separator, name = selection.partition("::")

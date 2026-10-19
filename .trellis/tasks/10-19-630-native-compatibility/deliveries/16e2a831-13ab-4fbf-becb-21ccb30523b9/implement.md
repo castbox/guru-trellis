@@ -1,35 +1,40 @@
-# D1 实施与验证计划
+# D1 三系统兼容实施与验证计划
 
 ## 1. 输入与引用
 
-读取整体 Task PRD 和本批 PRD、design 全文。来源处置只由 design 第3节维护。本批命中 #630 的 CI 精确选择与底层失败诊断；docs/ci/README.md 为直接维护合同，quality-guidelines 的 Test And Validation Value/Validation Scope Ownership 为测试范围。起点为 main `0543731bf52aa80842fde5db47332380de513cf0`，无前序交付。
+读取整体Task PRD、本批PRD/design全文；唯一来源处置为design第3节。Architecture实际candidate_assessment=architecture_impact/target_native，baseline .102、constitution-v1。行为合同为installer.md受管hash/恢复、upstream-ownership.md边界、README当前框架来源、quality-guidelines的Test And Validation Value和Validation Scope Ownership。共享planning-body及三个当前模板是实施/Check上下文，不能只看旧CI计划。
+
+固定B=0543731bf52aa80842fde5db47332380de513cf0。已有同批10da9be7的CI代码继续使用，没有前序已交付Delivery。原PR #634保留，分支codex/630-native-compatibility；所有写入先C3 boundary。
 
 ## 2. 有依赖顺序的步骤与文件责任
 
-- I1：CI implement worker 负责 ci/unittest_report.py 及其真实加载回归；先验证现有包外选择缺口，再新增 file::selector，保留旧入口结果。
-- I2：同 worker 负责 ci/runtime_diagnostic.py 与直接相关测试；加载目标原 bootstrap_check 和实际依赖环境，观察固定 capability wrapper，不改变产品 argv/输入/encoding/返回行为。
-- I3：I2 后接入 ci/targeted_ci.py 的原目标生命周期与 artifact，保持独立 baseline/candidate 和安装尝试；collector 错误、产品观察与安装状态分开。
-- I4：主会话更新 docs/ci/README.md；独立 Check/Architecture reviewer 读取完整候选，完成定向验证与设计符合性审核。若需要改产品 runtime/source-lock/hash，回后继 Delivery 或原规划 owner，不扩张本批。
-- I5：精确提交、完整 committed Review、Draft PR/原生 CI、Ready/Merge。原生诊断结果可作为后继修复证据；整体 Issue 保持打开。
+- I1 runtime implement worker：独占canonical runtime/base_selection.py、schema.py、bootstrap_check.py及同职责必要helper、TaskCommit runtime/execute.py和直接包级回归。执行D1–D4；先正常fixture证据再决定checkout-index。读取完整批准计划及必要spec，不自行改public合同。
+- I2 installer implement worker：独占canonical preset Python installer及新cohesive LF helper、其直接测试、canonical .gitattributes及installer/upstream-ownership spec差额。执行D5；不修改runtime/CI/上游。2941行installer仅薄接入，不超过3000；用户attributes块外与真实编辑保护完整。
+- I3 CI/integration implement worker：独占ci/runtime_diagnostic.py、targeted_ci.py及专项driver/测试、docs/ci/README.md、source lock与README对应来源说明。执行D6/D7。依赖I1的实际transport接口和I2真实install合同；先协调契约再接入。现有三系统入口不重建、不弱化matcher。
+- I4 主会话协调同一Task隔离贡献/ADR与必要操作文档，原RDT writer收敛delta；使用现有apply同步dogfood，处理每个.new/.bak并验证drift。各worker不单独重应用dogfood或写shared architecture current，不revert他人改动。
+- I5 完整候选提交独立Phase2 Architecture；原owner基于真实贡献/ADR和完整proposed targets晋升，实际落盘适用性核对后最终Check。实现checker使用配置trellis-check agent，原Check owner作完整语义判断，不以少数命令代替。
+- I6 TaskCommit→完整B...HEAD独立Architecture/BranchReview→更新同PRPublication→三系统当前候选原生检查→Ready/Merge。整体Completion另验WindowsCodex和正式发布，Issue不能因本批合并自动关闭。
 
 ## 3. 验证入口、输入与预期观察
 
-V1/V2：`python3 -m unittest discover -s ci -p 'test*.py' -v`，并由真实子进程运行 unittest_report 的 file::selector、旧文件/模块、缺方法/import 错误案例。通过条件为选择与报告满足 DA1/DA2，不以用例数量代替语义检查。
+V1：`python3 -m unittest discover -s ci -p 'test*.py' -v`及file::selector；保留七项已交付行为，新增transport专项必须实际观察target。V2/V5：通过独立driver在target导入根下执行真实Git/schema/TaskCommit fixture；Windows显式`PYTHONUTF8=0`并记录cp1252，读回最终commit与hook/index。V3/V4：现有targeted-ci.yml三系统hash-locked依赖及clean安装；明确Bash路径、单executable解释器、仅python3可见性和实际两case wrapper。旧baseline安装失败与候选成功分别核对。
 
-V3/V4：原 `.github/workflows/targeted-ci.yml` 的 PR 或 workflow_dispatch，在 ubuntu-24.04、macos-15、windows-2025 运行。每个目标保存 driver/target SHA、OS/Python/Git/Bash、诊断 JSON、原返回码和安装日志。原生 fixture 失败也须保留真实底层输出。现有 Windows 产品安装失败不能被记为本批产品已修复；本批必须证明 diagnostic collector 和精确选择本身可用。
+V6：installer定向测试加真实正常LF/CRLF clone/apply/reapply；初装、checkout、installed validation、真实编辑保护、attributes冲突和原sidecar规则分开观察。V7：采用固定Fork .5并正常pnpm frozen build，运行CLI --help定义的init、update --dry-run/--skip-all、maintain tools_install及原recovery_ref recover/resume、同provider --create-new/--force，然后Guru apply/reapply和实际入口。Windows上游py -3与Guru executable路径分别验证，不能相互混用。
 
-V5：核对 docs/ci 的新语法与 artifact 位置；不声明 Agent 启动、完整上游集成或 Release Gate 已通过。无 product/preset 改动，因此本批不跑完整 throwaway 发布矩阵或更新 dogfood；若实际写集变化，回原 owner 重新判断。
+V8：运行source/installed validation、ownership、受影响package及投影检查；`trellis/presets/guru-team/scripts/bash/apply.sh --repo .`后`check-dogfood-overlay-drift.sh`，零未解决.new/.bak。用当前canonical和installed真实bytes核对，不能只验证旧安装。三系统运行绑定driver/target/upstream、环境、命令、返回码，artifact链接进入最终证据。V9：Windows实际Codex会话单独记录CLI版本、hooks开关/一次性审阅前提、启动命令、自动加载与所选Skill真实调用；不以直接hook或静态投影替代。official release由原release skill执行，不在产品CI中伪造。
 
 ## 4. 停止条件与适用回退点
 
-缺少目标依赖/Bash/资产则记录真实环境缺口，不填诊断通过。诊断入口改变目标调用或覆盖失败时修复本批设计/代码。首偏差证明需要产品修复时形成后继明确候选；不改全局 npm、node_modules 或上游文件。保留并行工作区内容。源码可在本分支正常返工；本批没有业务数据/DB 迁移，无需创造生产回滚协议。
+产品新机制、范围或authority变化回qualification/Author/Architecture原owner；普通实现缺陷原地修复并刷新受影响检查。依赖安装失败、缺Bash/解释器、schema普通错误、bootstrap失败保持真实非零，不能算缺陷复现或通过。unknown edit/attributes冲突保留原文件，停止activation并报告sidecar。保留其他并行工作区，不跨Task清理。无业务DB/data迁移；源码返工和preset原staging/activation/sidecar承担恢复，不另造事务协议。WindowsCodex缺认证只阻塞依赖验收与最终完成；不得上传维护者凭据或用手工注入规避。
 
 ## 5. Delivery Policy（唯一）
 
-Policy=partial。本批独立交付：包级文件+用例选择和复用原 CI 的固定 runtime capability 诊断。可交付条件为 DA1–DA5 满足，三系统取得真实诊断记录，且既有产品失败和证据边界如实保留。
+Policy=partial。本批现在独立交付完整产品代码、CI回归、受管字节策略、固定上游集成和三系统脚本/安装证据；可交付条件为DA1–DA11满足且当前PR所有适用checks通过。原CI-only政策已因真实Merge门禁不可分离而合法返工，本修订保持同一key/PR与整体accepted_scope。
 
-剩余责任属于同 Task 后继 Delivery：两个参考提交逐项处置，路径/URI/编码/跨进程传输/解释器/换行修复，固定上游 .5 集成，三系统完整产品回归和 Windows Codex 实际会话。Task Completion 仍须整体 AC1–AC10 满足并完成正式发布；D1 合并只证明本批，不关闭 #630，不将整体工作移交 #631。
+剩余责任为同Task的WindowsCodex实际会话、整个AC1–AC10最终证据核对以及官方生产发布/任务Closure。它们是整体完成条件，不能用本批合并替代，不能转交#631。Task Completion需原owner按真实事实决定剩余工作；未具备Agent环境不得关Issue或声称Release Gate通过。
 
 ## 6. Docs SSOT Plan（唯一）
 
-Strategy=delta_first。本批实际差额是 CI 选择语法与诊断证据读取，由 docs/ci/README.md 的主会话 writer 维护，直接 consumer 为 CI 维护者和后继修复者。原 guru-maintain-requirements-design-test-ssot 在最终 Phase 2 前判断该操作文档 delta 的收敛；不为无 lifecycle 行为变化制造空 RDT contribution 或新 current version。Architecture 仍由原独立 owner 评估/必要时晋升；no-impact 时不制造 contribution/ADR。整体 runtime、installer 和 source-lock 文档差额由后继产品 Delivery 维护。
+Strategy=delta_first。I1–I3维护原runtime/installer/source/CI说明和直接测试；installer/upstream-ownership窄新规则须显式与D5/ADR一致。原guru-maintain-requirements-design-test-ssot writer在最终Phase2前判断并reconcile本批真实需求/行为/设计/测试差额，直接consumer为安装者、维护者、Check与Completion；若需要真实RDT contribution则由原writer写并晋升，不能只以文件存在宣称。
+
+Architecture task-owned贡献与必要ADR由Author本次写作，Phase2独立评估完整候选后原Architecture owner负责expected-current绑定晋升和实际落盘核对；随后才最终Check/TaskCommit/独立committed Review。不在Planning直接改共享导航，不制造空贡献或审计缓存。软件release与知识authority版本分离；所有未验证native/Agent/发行边界如实保留。
