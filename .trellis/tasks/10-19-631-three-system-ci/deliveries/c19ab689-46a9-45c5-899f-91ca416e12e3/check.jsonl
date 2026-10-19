@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/10-19-631-three-system-ci/prd.md", "reason": "整体范围与职责边界"}
+{"file": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md", "reason": "完整 CI 方案与失败语义"}
+{"file": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/implement.md", "reason": "执行顺序和完整验收"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实质写作前完整读取"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值与范围边界"}

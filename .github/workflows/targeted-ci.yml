@@ -1,0 +1,85 @@
+name: Targeted native CI
+
+on:
+  pull_request:
+    paths: &paths
+      - 'trellis/**'
+      - 'ci/**'
+      - '.github/workflows/**'
+      - '.gitattributes'
+      - 'docs/ci/**'
+      - 'README.md'
+      - '**/requirements*.txt'
+      - '**/requirements*.lock'
+      - '**/package.json'
+      - '**/pnpm-lock.yaml'
+      - '**/pyproject.toml'
+  push:
+    branches: [main]
+    paths: *paths
+  workflow_dispatch:
+    inputs:
+      candidate_ref:
+        description: Same-repository candidate commit or ref (empty means run SHA)
+        type: string
+        default: ''
+      baseline_ref:
+        description: Optional same-repository baseline commit or ref
+        type: string
+        default: ''
+      tests:
+        description: Space-separated target test files or unittest IDs
+        type: string
+        default: test_guru_platform_inventory.py
+      expected_test:
+        description: Optional exact baseline unittest failure ID
+        type: string
+        default: ''
+      expected_message:
+        description: Optional exact assertion message (requires expected_test)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  targeted:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Driver integration tests
+        run: python -m unittest discover -s ci -p test_targeted_ci.py -v
+      - name: Run independent targets
+        if: ${{ !cancelled() }}
+        env:
+          CI_CANDIDATE: ${{ inputs.candidate_ref || github.event.pull_request.head.sha || github.sha }}
+          CI_BASELINE: ${{ inputs.baseline_ref }}
+          CI_TESTS: ${{ inputs.tests || 'test_guru_platform_inventory.py' }}
+          CI_EXPECTED_TEST: ${{ inputs.expected_test }}
+          CI_EXPECTED_MESSAGE: ${{ inputs.expected_message }}
+          CI_EVENT: ${{ github.event_name }}
+          CI_SOURCE_REF: ${{ github.ref }}
+        run: python ci/targeted_ci.py --output diagnostics --work-root "${{ runner.temp }}/Guru CI targets"
+      - name: Upload existing diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: targeted-${{ matrix.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: diagnostics/
+          retention-days: 14
+          if-no-files-found: error

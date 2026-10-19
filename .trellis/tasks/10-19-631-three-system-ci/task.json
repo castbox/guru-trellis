@@ -1,0 +1,175 @@
+{
+  "schema_version": "2.0",
+  "id": "631-three-system-ci",
+  "name": "631-three-system-ci",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 631,
+    "disposition": "exact_source"
+  },
+  "title": "建立 Guru Trellis 三系统定向 CI 验证基础设施",
+  "description": "交付原生三系统自动及手动 CI、独立 commit 对照、真实测试和 clean 安装 smoke、失败 artifact 及维护说明。",
+  "dev_type": null,
+  "scope": "Issue #631 全部实施范围与验收；#630 和上游 #53 仅作为产品缺陷 owner。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-19",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-19-631-three-system-ci/prd.md",
+    "revision": "sha256:df0a5d0fa71c64db3eeee53b7435cdd9e8df05f19ee8e903f585e09955340fea"
+  },
+  "deliveries": [
+    {
+      "id": "c19ab689-46a9-45c5-899f-91ca416e12e3",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-19-631-three-system-ci/prd.md",
+          "revision": "sha256:df0a5d0fa71c64db3eeee53b7435cdd9e8df05f19ee8e903f585e09955340fea"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6"
+        ]
+      },
+      "planning_root": "deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+        "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:9cf03d8fa6d185cbb191e169c0780aa4fe2f542a730c483cc07ae104415bf149",
+        "paths": [
+          ".github/workflows/targeted-ci.yml",
+          "README.md",
+          "ci/targeted_ci.py",
+          "ci/test_targeted_ci.py",
+          "ci/unittest_report.py",
+          "docs/ci/README.md"
+        ],
+        "head_ref": "71f432f22acc78df7194a818c27b8e467ceb3048",
+        "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:03b9fcb8-f4f3-407c-8172-5209ee604929",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/prd.md",
+              "revision": "sha256:df0a5d0fa71c64db3eeee53b7435cdd9e8df05f19ee8e903f585e09955340fea"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+            "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/prd.md",
+              "revision": "sha256:d38caae7a47a04a9f43e6c68db910bd3f3deab1edf2f7bdff2277f0446daa0be"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+              "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/implement.md",
+              "revision": "sha256:d0f1cbe0bcd6868c4c9676c4a38d67d6060b15edbe1412e65e302be128d06797"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:6b9ecbf6dfc878470e3de2cf4315d8d0ec1ff0b0c77f71ad2be639369eb24583",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/prd.md",
+              "revision": "sha256:df0a5d0fa71c64db3eeee53b7435cdd9e8df05f19ee8e903f585e09955340fea"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+            "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:9cf03d8fa6d185cbb191e169c0780aa4fe2f542a730c483cc07ae104415bf149",
+            "paths": [
+              ".github/workflows/targeted-ci.yml",
+              "README.md",
+              "ci/targeted_ci.py",
+              "ci/test_targeted_ci.py",
+              "ci/unittest_report.py",
+              "docs/ci/README.md"
+            ],
+            "head_ref": "71f432f22acc78df7194a818c27b8e467ceb3048",
+            "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048"
+          },
+          "predecessor_result_id": "planning-accepted:03b9fcb8-f4f3-407c-8172-5209ee604929",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/prd.md",
+              "revision": "sha256:d38caae7a47a04a9f43e6c68db910bd3f3deab1edf2f7bdff2277f0446daa0be"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+              "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/implement.md",
+              "revision": "sha256:d0f1cbe0bcd6868c4c9676c4a38d67d6060b15edbe1412e65e302be128d06797"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

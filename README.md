@@ -1,5 +1,7 @@
 # Guru Trellis
 
+[三系统定向 CI：运行、对照与诊断](docs/ci/README.md)
+
 架构变化先在现有 Phase2 独立评估中审查完整候选及拟晋升内容，再由原 owner
 在执行分支晋升，随后完成最终 Check、Task Commit、committed 独立架构判断和
 完整 Branch Review。安装切换、在途恢复及完整审查后的窄引用/状态对齐见
