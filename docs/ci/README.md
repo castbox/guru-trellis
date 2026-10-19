@@ -41,7 +41,7 @@ Actions job summary 显示两个目标的 SHA、阶段及状态。`targeted-<OS>
 
 clean 安装后，原 driver 继续以独立进程执行 `update --dry-run/--skip-all`、同 provider 的 workflow `--create-new/--force`、`maintain tools_install` 的 prepare/preview/apply，以及原 `recovery_ref` 的 recover/resume。随后重新应用目标 Guru preset、执行 installed validation 并检查 sidecar。Windows 上游命令串使用 `py -3`；Guru `--python` 仍只接收单个 executable 路径。维护链路失败保留其原阶段和非零结果，不算完成。
 
-`installed-wrapper.json` 和 `maintenance-installed-wrapper.json` 分别记录初装后及维护后在实际目标上执行的两项 manifest wrapper case。调用读取目标已有 active pointer；不会创建替代 pointer 或退回 CI Python。维护后还按生成的 Codex hook 命令执行非敏感 fixture，以验证原生解释器/argv 可执行。该 hook 结果只证明脚本入口，实际 Agent 会话另行验收。
+`installed-wrapper.json` 和 `maintenance-installed-wrapper.json` 分别记录初装后及维护后在实际目标上执行的两项 manifest wrapper case。调用读取目标已有 active pointer；不会创建替代 pointer 或退回 CI Python。维护后还按生成的 Codex hook 命令执行非敏感 fixture，以验证原生解释器/argv 可执行。该 hook 结果只证明脚本入口，不证明实际 Agent 会话。
 
 诊断收集完成和 fixture 产品失败是不同结果。collector 的启动、依赖或执行缺口保持为环境/执行失败；fixture 的返回码与异常保留为产品观察。测试或诊断失败后仍尝试原 clean 安装。原安装失败继续保留非零，不因取得诊断而变成通过；`expected_test/expected_message` 的精确 unittest 匹配规则保持。
 
@@ -58,11 +58,13 @@ gh run rerun <run-id> --repo castbox/guru-trellis
 
 本地驱动集成测试只证明目标隔离、结果收集和失败继续。真实 PR、main push、dispatch 的三系统 run 及自然失败 artifact 需要在 Actions 实际取得；合并前不能声称 main/dispatch 已验证。运行记录由维护者在对应 Issue/PR 引用实际 run 链接，不在此放占位成功记录。
 
-本次代表性 clean Codex 安装不证明 Agent 自动加载或全部平台/历史版本的 Release Gate。真实 Windows Codex 会话可由 dispatch 的 `windows_codex_session=true` 单独启用，复用 candidate 的实际安装及原 artifact；安装不成功时该验收必须失败。正常 PR 不执行此额外会话。其实际自动加载、Skill 调用、hooks 启用和环境结果仍需逐项核对，不能由静态配置、直接 hook 或 wrapper 代替。
+本次代表性 clean Codex 安装不证明 Agent 自动加载或全部平台/历史版本的 Release Gate。[#630](https://github.com/castbox/guru-trellis/issues/630) 的三系统验收聚焦命令行 Python runtime、目录相关脚本和实际公开 wrapper。macOS、Linux、Windows 均不要求真实 Codex 或其他 Agent 会话，也不要求 OpenAI 账号、模型推理或 GPU。已有成功脚本证据可在适用性核对后采用，无需为补充 Agent 证据重跑。
+
+维护者可通过 dispatch 的 `windows_codex_session=true` 显式启用额外的 Windows Codex 会话诊断，复用 candidate 的实际安装及原 artifact。正常 PR 不执行此诊断；安装不成功时诊断保持失败。该入口不承担 #630 必需验收，已有会话失败不阻塞该 Task 完成。如需判断诊断中的实际自动加载、Skill 调用、hooks 启用和环境结果，仍须逐项核对原始事件，不能由静态配置、直接 hook 或 wrapper 代替。
 
 该会话使用官方 Codex CLI 0.163.0、Ollama 0.40.6 和本地 `qwen3.5:9b`，不需要 OpenAI 账号或 API 凭据。独立 `CODEX_HOME` 不复制维护者登录状态。模型须在当前 Agent 中实际读取所选 Skill 及完整合同，完成语义判断并调用公开 wrapper；Skill 名不是 Agent 类型。模型执行总预算为 600 秒，依赖安装和模型下载另计。超时会终止 Windows 子进程树，并保留原始会话、rollout、命令与失败状态。CLI 正常退出也只表示执行结束，仍由 Task owner 核对实际加载与调用证据。
 
-模型通过官方 `ollama pull qwen3.5:9b --runner llamacpp` 下载到隔离缓存。采集器以 `FROM qwen3.5:9b` 和 `PARAMETER num_ctx 65536` 创建临时 `guru630-windows-validation:latest`，供 Codex 实际推理。Modelfile 不覆盖温度或 presence_penalty，不添加 system prompt 或语义答案。Codex 两轮均使用 `model_context_window=65536`、`tool_output_token_limit=32768` 和 `model_reasoning_effort=none`。每轮真实 argv 保存在报告中。`session.Modelfile` 保存实际创建输入；`report.json` 记录源 tag、会话 tag、真实 show 的格式/runner/参数及结束前 `/api/ps` 的加载上下文。配置和本地预检不能替代真实 Windows 验收。
+模型通过官方 `ollama pull qwen3.5:9b --runner llamacpp` 下载到隔离缓存。采集器以 `FROM qwen3.5:9b` 和 `PARAMETER num_ctx 65536` 创建临时 `guru630-windows-validation:latest`，供 Codex 实际推理。Modelfile 不覆盖温度或 presence_penalty，不添加 system prompt 或语义答案。Codex 两轮均使用 `model_context_window=65536`、`tool_output_token_limit=32768` 和 `model_reasoning_effort=none`。每轮真实 argv 保存在报告中。`session.Modelfile` 保存实际创建输入；`report.json` 记录源 tag、会话 tag、真实 show 的格式/runner/参数及结束前 `/api/ps` 的加载上下文。配置和本地预检不能证明真实 Windows 会话成功。
 
 启动前，采集器在临时安装目录写入真实请求草稿 `.guru-validation-request.md`，artifact 中的 `request-draft.md` 保存同一输入。草稿只提出候选问题，不提供语义决策。若安装目录没有 HEAD，采集器通过命令局部 Git 身份创建空初始提交，不消费已暂存文件，也不创建活动 Task。准备命令及退出码进入原报告；准备失败时停止会话。
 
@@ -70,4 +72,4 @@ gh run rerun <run-id> --repo castbox/guru-trellis
 
 完整读取按单文件请求输出预算 32768；出现截断时按行分块补读缺失内容。首轮报告实际观察及真实程序错误，不称为资格通过。末轮独立判断并通过 stdin 实际调用 wrapper，再按完整 Skill 定义自审真实结果的一致性。发现错误时由模型自行修正并重新调用；最终报告实际退出码、stdout 和证据限制。
 
-解释器可见性、非 UTF-8、LF/CRLF 及实际 Agent 的证据分别由 [#630](https://github.com/castbox/guru-trellis/issues/630) 承接；上游 [Trellis#53](https://github.com/castbox/Trellis/issues/53) 的结果只证明其前置修复。控制解释器可见性须使用真实解释器/launcher 并验证子进程解析，不能用 runner 其他 Python 掩盖条件。
+解释器可见性、非 UTF-8、LF/CRLF、路径脚本及公开 wrapper 的证据由 [#630](https://github.com/castbox/guru-trellis/issues/630) 承接；实际 Agent 会话只作额外诊断。上游 [Trellis#53](https://github.com/castbox/Trellis/issues/53) 的结果只证明其前置修复。控制解释器可见性须使用真实解释器/launcher 并验证子进程解析，不能用 runner 其他 Python 掩盖条件。
