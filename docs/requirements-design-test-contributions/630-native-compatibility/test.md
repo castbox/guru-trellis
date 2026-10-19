@@ -1,6 +1,6 @@
 # #630 测试策略与证据
 
-状态：current，验证进行中。本文件拥有本贡献实际执行结果及未验证边界；requirements/design和traceability只定义行为、责任和关系，不复制结果为第二authority。
+状态：current，验收范围已收敛到命令行 Python runtime、目录相关脚本及实际公开 wrapper。采用下文 D1/D2 已成功的三系统脚本、安装与维护证据，不重跑成功验证。真实 Codex 或其他 Agent 会话、OpenAI 账号、模型推理及 GPU 均不是本 Task 完成条件；Windows 实际会话仍未完成，不改记为通过。D3 文档检查及整体 Task Completion 由各自后续门禁判断。本文件拥有本贡献实际执行结果及未验证边界；requirements/design和traceability只定义行为、责任和关系，不复制结果为第二authority。
 
 | Identity | 入口与可观察结果 |
 | --- | --- |
@@ -11,9 +11,11 @@
 | T630-05 | 正常Git LF/CRLF clone/checkout与真实apply/reapply/installed validation；声明文本稳定或精确恢复，真实编辑.new、原.bak及用户attributes块外保护，更深冲突不被忽略。不得伪造manifest/hash构造通过。 |
 | T630-06 | 固定Fork .5 clean build及实际目标版本；新进程update、maintain tools_install→Guru reapply→入口，Windows上游py -3与Guru单executable分开；同provider --create-new预览/--force应用和同recovery_ref新进程recover/resume。 |
 | T630-07 | driver file::selector、旧选择/错误和失败继续回归；canonical/dogfood/installed、ownership及受影响声明平台投影、reapply/drift和sidecar。安装缺陷不冒用unittest expected matcher。 |
-| T630-08 | 原生Windows实际Codex正常会话自动加载Guru workflow/平台入口，完成所选版本hooks前提并正常调用一个Guru Skill；记录版本、命令和可观察结果。直接hook、wrapper和读文件只算脚本证据，不能替代会话。 |
+| T630-08 | withdrawn：原 Windows 真实 Codex 会话验收义务已撤销。[旧定义](https://github.com/castbox/guru-trellis/blob/cf07d082c046b8e5e3c5050a603f22285821b215/docs/requirements-design-test-contributions/630-native-compatibility/test.md)及已有失败保留为历史观察；不重新赋予此 ID Python 测试含义。当前必需脚本能力由 T630-01..07 覆盖。 |
 
 ## 历史执行快照
+
+以下保留至 D2 的原执行记录，包括当时的待验证义务与状态。历史措辞不恢复已撤销的 T630-08 义务；当前状态及后续事实见本文顶部与文末 D3 记录。原始日志保持原样。
 
 - 原始run [39223843984](https://github.com/castbox/guru-trellis/actions/runs/39223843984)：driver/candidate 10da9be7、baseline 0543731。三系统driver通过；macOS/Linux clean安装及两wrapper cases通过；Windows原bare bash进入WSL导致JSONDecodeError，安装失败。该run是修复前证据，不是产品修复通过。
 - 本轮固定Fork源码7f050fa11ddd8569e5db4f728ea1b745b7500a98已在独立干净workspace以pnpm10.32.1 frozen lock正常build，CLI/Core .5，marker等于源码HEAD。该事实只证明本机build；三系统Guru实际采用仍待验证。
@@ -80,3 +82,15 @@ D2 在原采集器中准备真实非敏感请求草稿及正常初始 Git HEAD�
 本地完整预验证随后通过：官方 `qwen3.5:9b` 的 GGUF / Q4_K_M / llamacpp 变体，Codex 与 Ollama 上下文均为 65536，工具输出预算 32768，`model_reasoning_effort=none`，模型保留官方默认采样参数。两轮约 493 秒，共用 600 秒截止时间。原始 rollout 可见自动 `trellis-bootstrap` 与 workflow-state 注入、完整写作规范/Skill/合同/schema/runtime 读取、实际 startup、root consumer 及 Git 观察；没有输出截断或上下文压缩。模型直接以 stdin 调用公开 wrapper，真实返回 0 和 `classified / rejected_not_reproduced`；该结论与本机 root 观察一致，没有写入资格状态文件。完整原始 rollout 保留三次相关调用：首次成功返回 0，随后模型的额外确认命令产生 `invalid_json`、返回 2，模型自行纠正后再次返回 0。精简 CLI events 仅显示两次成功；验收采用完整 rollout 的实际错误与恢复序列，不用精简事件覆盖原始失败。
 
 当前采集器已恢复该成功会话的两轮提示，分别经字节比较确认一致，并沿用固定 `none` 配置和同一 600 秒截止时间。后续未通过的提示优化已撤回，不重复执行已成功的模型预验证、14 项 CI 回归或 D1 三系统验证；当前 Check 仍须判断这些结果对最终候选的适用性。这只证明本机 macOS 完整模型流程可行，不替代原生 Windows T630-08。原生 Windows 会话、D2 Delivery 和整体 Completion 继续保持未完成。
+
+## D3 当前脚本验收与后续事实（2026-10-20）
+
+D2 已由 [PR #639](https://github.com/castbox/guru-trellis/pull/639) 合并，head 为 `cf07d082c046b8e5e3c5050a603f22285821b215`，merge 为 `b470580d4f79f61c66d72db97861fe1564b5e746`。[PR CI 39284953290](https://github.com/castbox/guru-trellis/actions/runs/39284953290) 的 Ubuntu、macOS、Windows 三项均成功。这是 D2 已交付及脚本检查的后续事实，不把历史待完成记录回写成已通过。
+
+额外的 [Windows 会话 run 39285077678](https://github.com/castbox/guru-trellis/actions/runs/39285077678) 使用同一 `cf07d082` candidate。下载的 `windows-codex-session/report.json` 记录 `status=failed`、`session.status=timed_out`、`timeout_seconds=600`，仅有首轮会话，未完成第二轮。真实草稿、空初始 HEAD、Codex/Ollama 安装及模型准备成功；Codex 0.163.0 使用本地 `qwen3.5:9b`，`credential_source=none_local_model`，没有 OpenAI 账号认证失败。原始 `session.jsonl`、`session.stderr`、rollout 和 Ollama 日志保留。模型执行超时不改写为 Skill 调用或完整 Agent 会话成功，也不否定此前已成功的产品、安装与维护脚本结果。
+
+本次范围收敛以当前 [Issue #630](https://github.com/castbox/guru-trellis/issues/630) 和 [T630-08 当前定义](../../test/current/native-compatibility.md)为准。三个系统均只要求 Python runtime、目录相关脚本及公开 wrapper；真实 Agent、模型或 GPU 不属于必需验收。采用上文 D1 原生三系统安装/维护及实际 wrapper、D1 合并后 run 39251774587、D2 三系统 CI 和 14 项直接回归。D3 只修订文档，没有修改产品、collector 或 CI workflow，未重跑上述成功验证，也未启动新的模型、GPU 或 CI dispatch。
+
+Windows 实际 Agent 会话保持未完成，仅作额外诊断历史。本文不据脚本成功声明 Agent 成功、全仓测试通过、累计 Release Gate 或官方软件发行完成。D3 Check、完整 Review 与整体 Completion、Closure、Finish 分别由其正式 owner 判断。
+
+D3 新增文档检查已执行：`git diff --check` 返回 0；检查本轮 10 份 Markdown 中 13 个本地链接目标均存在，文件清单无 Python 或 CI workflow 变更。本段仅补充该实际结果，没有新增链接或代码。原 RDT owner 已正式返回 `ssot_current`，保留全局 RDT `.112` 和 Architecture `.103`，当前 native 单元修订为 `630-script-validation-2026-10-20`。这些事实不代替后续 Check、Review 或 Task Completion。

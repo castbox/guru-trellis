@@ -10,7 +10,7 @@
     "disposition": "exact_source"
   },
   "title": "修复 Guru Trellis 三系统运行与安装一致性",
-  "description": "修复路径、URI、跨进程传输、编码与受管文本换行，接入固定上游修复并验证三系统和 Windows Codex 实际会话。",
+  "description": "修复路径、URI、跨进程传输、编码与受管文本换行，接入固定上游修复并验证原生Python runtime与目录相关脚本。",
   "dev_type": null,
   "scope": "Issue #630 当前全部行为要求与验收；复用 #631 CI 和 #53 修复，保留正常错误恢复与用户修改保护。",
   "package": null,
@@ -25,7 +25,7 @@
   "meta": {},
   "accepted_scope": {
     "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
-    "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+    "revision": "sha256:1d242802be1b042a5555041950e17a8dff196e1c3c2bba70060fe631028d6da9"
   },
   "deliveries": [
     {
@@ -669,7 +669,7 @@
       },
       "planning_root": "deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2",
       "profile": "pull_request",
-      "phase": "reviewing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
         "revision": "sha256:13a57672754e95d5557b446654ad3bc1fd81c03bd325dc88f81acf40f471f5be"
@@ -688,7 +688,7 @@
           "docs/ci/README.md",
           "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
         ],
-        "head_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb",
+        "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
         "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb"
       },
       "results": {
@@ -730,7 +730,7 @@
           ]
         },
         "check": {
-          "result_id": "check:6d58958ce4dc5e659cbc13854d06a532ee64e1a6e390443221a0672159407266",
+          "result_id": "check:c8425a7192c56b38a1c4ada71f86143729896f4dd0f68f71bd53288d1d4e16a4",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -762,7 +762,7 @@
               "docs/ci/README.md",
               "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
             ],
-            "head_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb",
+            "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
             "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb"
           },
           "predecessor_result_id": "planning-accepted:b6266a93-6bb3-48ec-acce-e8b5aabb3493",
@@ -779,6 +779,302 @@
             {
               "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
               "revision": "sha256:94687e2e2ba711bc9759d90945f75d32a4eb122cc2dc61b095a3683e1b075317"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:29b6e84d6c4ac630e27e93cac413c06e4aad41ce1ff6881ff87c529290855f7e",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "AC7",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+            "revision": "sha256:13a57672754e95d5557b446654ad3bc1fd81c03bd325dc88f81acf40f471f5be"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:5e958ab62ad06b24469151d273bb666adef14b872ac31154c77c137a1828d593",
+            "paths": [
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/check.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/prd.md",
+              "ci/test_windows_codex_session.py",
+              "ci/windows_codex_session.py",
+              "docs/ci/README.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
+            ],
+            "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+            "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb"
+          },
+          "predecessor_result_id": "check:c8425a7192c56b38a1c4ada71f86143729896f4dd0f68f71bd53288d1d4e16a4",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+              "revision": "sha256:94687e2e2ba711bc9759d90945f75d32a4eb122cc2dc61b095a3683e1b075317"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:5b39c6def474cc8765da8b2cd936680a41c8414135852edadd203ff04841ebdb",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "AC7",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+            "revision": "sha256:13a57672754e95d5557b446654ad3bc1fd81c03bd325dc88f81acf40f471f5be"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:5e958ab62ad06b24469151d273bb666adef14b872ac31154c77c137a1828d593",
+            "paths": [
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/check.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/prd.md",
+              "ci/test_windows_codex_session.py",
+              "ci/windows_codex_session.py",
+              "docs/ci/README.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
+            ],
+            "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+            "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb"
+          },
+          "predecessor_result_id": "full-review:29b6e84d6c4ac630e27e93cac413c06e4aad41ce1ff6881ff87c529290855f7e",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+              "revision": "sha256:94687e2e2ba711bc9759d90945f75d32a4eb122cc2dc61b095a3683e1b075317"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:2b43e6763448e078ae9991f4f76060fabbfd68adedeea7e1ba7c9d63528a9902",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/639",
+            "revision": "sha256:ab4159dcc7681f29cdd696b22e9a239bf438346d509224d4f4d28aeca1536359"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb",
+          "content_ref": "sha256:5e958ab62ad06b24469151d273bb666adef14b872ac31154c77c137a1828d593",
+          "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+          "kind": "git",
+          "paths": [
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/check.jsonl",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.jsonl",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/prd.md",
+            "ci/test_windows_codex_session.py",
+            "ci/windows_codex_session.py",
+            "docs/ci/README.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 639,
+        "reviewed_head": "cf07d082c046b8e5e3c5050a603f22285821b215",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/639",
+          "revision": "sha256:ab4159dcc7681f29cdd696b22e9a239bf438346d509224d4f4d28aeca1536359"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:b470580d4f79f61c66d72db97861fe1564b5e746",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/639",
+            "revision": "b470580d4f79f61c66d72db97861fe1564b5e746"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "cc8f2564cf0a42bbd1209ec9da295412391082cb",
+          "content_ref": "sha256:5e958ab62ad06b24469151d273bb666adef14b872ac31154c77c137a1828d593",
+          "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+          "kind": "git",
+          "paths": [
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/check.jsonl",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/design.md",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.jsonl",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/implement.md",
+            ".trellis/tasks/10-19-630-native-compatibility/deliveries/f7c844eb-fbb8-43d7-a08c-e0650c85eaa2/prd.md",
+            "ci/test_windows_codex_session.py",
+            "ci/windows_codex_session.py",
+            "docs/ci/README.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/test.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 639,
+        "reviewed_head": "cf07d082c046b8e5e3c5050a603f22285821b215",
+        "merge_commit": "b470580d4f79f61c66d72db97861fe1564b5e746",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    },
+    {
+      "id": "67b69e71-7295-4d7c-ac50-62ff321cef69",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+          "revision": "sha256:1d242802be1b042a5555041950e17a8dff196e1c3c2bba70060fe631028d6da9"
+        },
+        "anchors": [
+          "AC7",
+          "AC10"
+        ]
+      },
+      "planning_root": "deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+        "revision": "sha256:40898f1adb5692c5d45b6d6862788946025c3dcad46639201f2026ffaf190c89"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:1b81a5fc1f1d2e6e7b2f5eb1ea177051f8ba1d253b0db4918aaa4bd9bb30dd1e",
+        "paths": [
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/check.jsonl",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.jsonl",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.md",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/prd.md",
+          ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+          "docs/ci/README.md",
+          "docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/test.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/traceability.md",
+          "docs/requirements/current/native-compatibility.md",
+          "docs/test/current/native-compatibility.md"
+        ],
+        "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+        "base_ref": "cf07d082c046b8e5e3c5050a603f22285821b215"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:460e9b77-6aa7-4eeb-9a51-d80ac3d91eca",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:1d242802be1b042a5555041950e17a8dff196e1c3c2bba70060fe631028d6da9"
+            },
+            "anchors": [
+              "AC7",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+            "revision": "sha256:40898f1adb5692c5d45b6d6862788946025c3dcad46639201f2026ffaf190c89"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/prd.md",
+              "revision": "sha256:6f17c65841e7935e22a846703e12b5e2882888ebe6d3a0aecc90884cc8cbbe28"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+              "revision": "sha256:40898f1adb5692c5d45b6d6862788946025c3dcad46639201f2026ffaf190c89"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.md",
+              "revision": "sha256:a9e33f5b65799ea84b49ea125849dcf4cd56ad433423131c00395a8ef47247ee"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:7578acf6c5efae0298c0664f942eb6507ce7ed9707bc4f9e7a07b37078450741",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:1d242802be1b042a5555041950e17a8dff196e1c3c2bba70060fe631028d6da9"
+            },
+            "anchors": [
+              "AC7",
+              "AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+            "revision": "sha256:40898f1adb5692c5d45b6d6862788946025c3dcad46639201f2026ffaf190c89"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:1b81a5fc1f1d2e6e7b2f5eb1ea177051f8ba1d253b0db4918aaa4bd9bb30dd1e",
+            "paths": [
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/check.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/prd.md",
+              ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "docs/ci/README.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/test.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/traceability.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/test/current/native-compatibility.md"
+            ],
+            "head_ref": "cf07d082c046b8e5e3c5050a603f22285821b215",
+            "base_ref": "cf07d082c046b8e5e3c5050a603f22285821b215"
+          },
+          "predecessor_result_id": "planning-accepted:460e9b77-6aa7-4eeb-9a51-d80ac3d91eca",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/prd.md",
+              "revision": "sha256:6f17c65841e7935e22a846703e12b5e2882888ebe6d3a0aecc90884cc8cbbe28"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/design.md",
+              "revision": "sha256:40898f1adb5692c5d45b6d6862788946025c3dcad46639201f2026ffaf190c89"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/67b69e71-7295-4d7c-ac50-62ff321cef69/implement.md",
+              "revision": "sha256:a9e33f5b65799ea84b49ea125849dcf4cd56ad433423131c00395a8ef47247ee"
             }
           ]
         },

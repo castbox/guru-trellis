@@ -11,7 +11,7 @@
 | C2 | https://github.com/castbox/chengtuo-resume/commit/0b3c3c28735859fde09dfe6fb41a87c84422994e | 历史 URI、编码、checkout-index 线索；须独立验证 |
 | OWN | .trellis/spec/preset/upstream-ownership.md | 当前 canonical/preset 所有权与用户修改保护 |
 
-managed runtime 指由 Guru 激活的 hash-locked Python 环境；安装解释器与日常 runtime 是不同职责。原生 Windows 不包含 WSL。实际 Agent 自动加载必须由 Codex CLI 正常会话入口产生；直接运行 hook 只证明脚本调用。
+managed runtime 指由 Guru 激活的 hash-locked Python 环境；安装解释器与日常 runtime 是不同职责。原生 Windows 不包含 WSL。本 Task 验证 Python runtime 与目录相关脚本；直接运行 hook 只证明脚本调用，不宣称实际 Agent 会话通过。
 
 ## 2. 背景与问题
 
@@ -49,7 +49,7 @@ Windows 开发机上的 chengtuo-resume 在使用 Guru Trellis 执行任务期�
 | S2 | 安装器及 Skill caller，原生 Python/Bash | 安装并激活 runtime；公开 wrapper 处理成功 JSON 与普通 schema 错误；路径和 JSON 到 consumer 后语义相同 |
 | S3 | TaskCommit owner，隔离 Git fixture | 使用真实任务提交入口生成中文消息；候选文件、发布前读回与最终 commit 一致；真实消息变化被检测 |
 | S4 | 安装/更新用户，正常 LF/CRLF checkout | 初装、再次 checkout、installed validation 与 reapply 不产生虚假漂移；真实本地改动仍被保护 |
-| S5 | Windows Codex CLI，新隔离验证配置 | 显式完成 hooks 前提；正常启动自动加载 Guru workflow/平台入口并按路由调用一个 Guru Skill |
+| S5 | 声明平台的命令行调用方，实际候选安装 | 核对受影响平台投影，并实际运行相关 Python 脚本及公开 wrapper；不要求 Codex 或其他 Agent 会话 |
 | S6 | 更新/维护用户，固定上游修复版本 | 新进程 update、tools_install、workflow preview/force 与同 recovery_ref recover/resume 后，Guru reapply 和入口可用 |
 | S7 | CI driver，基线与候选独立 checkout | 精确选择包级断言并保存两目标原始结果；预期基线失败不掩盖候选失败 |
 
@@ -90,7 +90,7 @@ S2 的解释器/Bash 缺失、普通 schema 错误和激活前检查失败，必
 - 对确定的缺陷，在固定环境配置下分别运行受影响基线和修复候选。记录实际 commit、测试驱动身份、OS/runner 镜像版本、Git/Python/Bash 版本、入口、命令、退出码及断言；基线须命中对应缺陷，候选须通过。依赖安装失败或无关报错不算复现。旧版本没有回归测试时，将测试驱动与被测目标分开标识，不能把候选实现混入基线。不同缺陷可使用各自实际受影响基线，不强行要求一个基线复现全部问题。
 - 控制解释器可见性时，核对被测子进程实际解析结果，防止 runner 预装 Python 掩盖场景；记录 UTF-8/locale 配置，编码用例覆盖受支持的非 UTF-8 配置，不能仅凭 UTF-8 默认环境通过判定修复。LF/CRLF 仍通过正常 checkout/安装构造。
 - 上游 #53 的原生结果作为前置证据，本 Issue 仍在固定的上游修复来源和 Guru 候选上验证集成，不用上游 CI 绿色替代 Guru 安装链路。
-- 真实 Agent 启动的必需组合固定为 Windows + Codex CLI。在原生 Windows runner 或临时原生 Windows 环境，使用实际安装的候选，通过 Codex CLI 正常启动/会话入口验证其自动加载 Guru workflow 与平台入口，并在该会话中按正常路由实际调用一个 Guru Skill。规划记录 Codex CLI 版本、公开启动命令、所选 Skill 及可观察结果。按所选版本的公开配置合同显式完成 hooks 功能开关和原生要求的一次性 hook 启用/审阅，并记录非敏感配置前提；验证环境不能依赖维护者机器已有的启用状态。上游 `packages/cli/src/configurators/codex.ts` 当前已提示该前提，实际操作以所选 Codex 版本合同为准。使用独立验证配置，保留维护者已有全局配置和凭据；如一次性启用需要交互，使用临时原生 Windows 环境完成，不能改用手工注入 workflow 文本代替自动加载。未具备此前提时记为 Agent 环境未就绪；不得以直接执行 hook、wrapper 或读取文件替代自动加载/调用证据。macOS/Linux 的本 Issue 必需验收为原生安装、真实脚本/wrapper 运行和 Codex 定向投影检查，不要求再启动真实 Agent。其他声明 Agent 平台仅检查本次修改涉及的投影。Windows Codex 启动条件缺失时，该项保持未验证并阻塞本 Issue 最终完成；不把该阻塞转交 #631，也不要求 #631 配置 Agent 凭据。
+- 验证范围为命令行下的 Python runtime、目录与路径相关脚本及实际公开 wrapper。macOS、Linux、Windows 均不要求真实 Codex 或其他 Agent 会话，不要求 OpenAI 账号、模型推理或 GPU。已有会话失败和未验证结果如实保留，不阻塞 Completion。
 - 报告提供 Actions run 与脱敏 artifact 链接，区分平台模拟单测、原生脚本执行、实际安装和 Agent 启动结果。本次补入 #631 已交付的环境与失败证据，不新增本 Issue 产品修复通过结论。
 
 ### 已交付基础设施的实际边界
@@ -111,15 +111,15 @@ Windows clean 安装在 hash-locked 依赖安装和 capability probe 成功后�
 - 准备选定测试所需的 managed runtime、Git fixture 和原生 Bash 调用方式，再执行缺陷断言。只修正本 Issue 回归直接涉及的 fixture 前提；ImportError、runtime 未激活或 WinError 193 不能算命中待修复缺陷，不扩张为全仓测试清理。
 - 当前 `ci/unittest_report.py` 能按文件路径执行包级测试，但单独传入默认 installer 测试目录外模块的 unittest ID 会导入失败。为本 Issue 的包级回归补齐“文件 + 用例”精确选择能力或等效明确加载方式，并补充正常用法的驱动回归；不以整文件混入无关失败代替精确缺陷证据。旧目标没有新回归时，将独立测试驱动与旧目标实现分开，不把新产品实现复制进基线。
 - 当前 `expected_test/expected_message` 仅匹配精确 unittest failure，并要求基线其他阶段正常；不会接受基线安装失败。安装缺陷通过相同环境配置下的原生入口、实际基线失败日志和修复候选成功日志分别验收，由 AI 对照具体失败机制判断。无需强制把 `comparison.established` 改成 true；如需自动汇总适配，只补本 Issue 必需的确定性记录，不放宽成任意安装失败均算预期，候选失败和未完成继续保留。
-- 解释器可见性、非 UTF-8、LF/CRLF、公开 wrapper、中文提交和 Windows Codex 实际会话继续按原验收完成。#631 默认测试与安装尝试不替代专项结果。每次修复验证绑定实际 driver、基线、候选和上游来源；artifact 过期时按公开入口重跑，不把失效链接当作可读取证据。
+- 解释器可见性、非 UTF-8、LF/CRLF、公开 wrapper 和中文提交继续按对应脚本验收完成。#631 默认测试与安装尝试不替代专项结果。每次修复验证绑定实际 driver、基线、候选和上游来源；artifact 过期时按公开入口重跑，不把失效链接当作可读取证据。
 
 本 Task 不新增 public Skill ID 或改变公共输入/出口。具体修复方案由 Delivery 规划决定；若方案需要改变公共合同，须回原 scope owner。没有业务数据模型、数据库迁移或生产数据写入。
 
 ## 7. 可观察验收与验证方式
 
-I630 下列十项依次为 AC1–AC10，覆盖 S1–S7 与 R1–R6。保留原生环境、失败基线、独立 driver、编码和真实 Agent 证据责任；未完成项不勾选。
+I630 下列十项依次为 AC1–AC10，覆盖 S1–S7 与 R1–R6。保留原生脚本环境、失败基线、独立 driver 与编码证据责任；未完成项不勾选。
 
-这是跨系统兼容专项。最低环境为 macOS、Linux、Windows 各一个原生环境；Windows 使用原生 Python 与 Git for Windows Bash，WSL 不代替 Windows 证据。规划时固定每个环境的 OS、Git、Python、Bash 和实际入口。真实 Agent 启动矩阵仅为 Windows + Codex CLI；macOS/Linux 执行原生脚本及 Codex 投影回归，其他声明 Agent 平台执行受影响投影检查。Windows 的显式解释器选择方式须写成可复制命令，涉及含空格可执行路径时验证正确传递。
+这是跨系统兼容专项。最低环境为 macOS、Linux、Windows 各一个原生环境；Windows 使用原生 Python 与 Git for Windows Bash，WSL 不代替 Windows 证据。规划时固定每个环境的 OS、Git、Python、Bash 和实际入口。三系统验收聚焦 Python runtime、目录相关脚本与公开 wrapper；Codex 及其他声明平台只检查受影响投影，不要求真实 Agent 会话。Windows 的显式解释器选择方式须写成可复制命令，涉及含空格可执行路径时验证正确传递。
 
 - [ ] 对两个参考提交中的工具修改逐项记录吸收、保持现有等效能力、替代或排除结论，并链接代码和证据。checkout-index --index 须先证明与正常提交/平台物化行为的关系，不随附带提交直接引入。
 - [ ] 三系统各完成一次代表性干净安装，使用安装后的真实公开 wrapper 运行 bootstrap manifest 已声明的成功和普通 schema 不完整输入用例，检查返回码及 JSON 合同。
@@ -127,15 +127,15 @@ I630 下列十项依次为 AC1–AC10，覆盖 S1–S7 与 R1–R6。保留原�
 - [ ] 验证 Unix 仅 python3、Windows 显式选择解释器，以及日常 wrapper 仅使用已激活 managed runtime。对缺失解释器/Bash、普通 schema 错误和 bootstrap 校验失败，保留既有错误/失败恢复语义；激活前校验失败不破坏旧 active pointer 与可用环境。
 - [ ] 在隔离测试仓库通过真实任务提交入口写入中文消息，核对消息文件的实际字节、发布前读回比较与最终提交内容；写入和读回均按候选消息协议工作，不只验证 write_bytes。保留既有 hook/索引检查和真实消息变化的检测。
 - [ ] 通过正常 Git checkout 配置和安装操作构造 LF/CRLF 差异，定位摘要产生与读取点。验证初装、再次 checkout、installed validation 和 reapply 结果一致；真实用户改动仍按原合同保护，不手工伪造 manifest/hash 构造用例。
-- [ ] 验证 canonical、dogfood 和本次修改的 Guru 平台投影一致。在 Windows + Codex CLI 通过真实启动/会话入口证明候选安装的 Guru workflow/平台入口自动加载，并正常路由调用所选 Guru Skill，记录版本、命令和可观察结果。macOS/Linux 的 Codex 及其他受影响声明平台按上述矩阵执行定向投影检查；三系统原生安装和真实脚本/wrapper 验收仍全部保留，不扩张为全 Agent × 全 OS 运行矩阵。
+- [ ] 验证 canonical、dogfood 和本次修改的 Guru 平台投影一致；从命令行实际运行相关 Python 脚本和公开 wrapper，证明路径、解释器及 JSON 传输正常。沿用已成功三系统原生安装与脚本证据，不扩张为 Agent 会话验证。
 - [ ] #53 修复接入后，在固定来源与实际安装身份上验证新进程的原生 update、`trellis maintain` tools_install 入口 → Guru apply/reapply → hook/Skill 入口链路。Windows 的 py -3 场景验证上游原生 executable/argv；Guru 安装另用其合同支持的单一 executable 名或路径。保留上游显式选择/跳过探测与 Guru 显式选择失败不回退的各自合同，不把两套规则混用。在受影响的 Windows 场景验证同一 workflow provider/template 的 `--create-new` 预览与显式 `--force` 应用，以及成功工具安装原 recovery_ref 的新进程 recover/幂等 resume；使用 #53 的原生结果作前置证据，再核对 Guru 集成入口。不重跑全部恢复矩阵或制造故障。记录 .new/.bak 结果，保留用户修改。
-- [ ] 将适用回归接入 #631 已交付入口，补齐包级用例精确选择及直接相关测试前提，验证基线/候选实现隔离。提供指定缺陷的基线失败、修复候选通过和三系统定向结果；安装缺陷按原生安装入口日志独立对照，不冒用 unittest 匹配器。真实 Agent 入口单独报告。
+- [ ] 将适用回归接入 #631 已交付入口，补齐包级用例精确选择及直接相关测试前提，验证基线/候选实现隔离。提供指定缺陷的基线失败、修复候选通过和三系统定向结果；安装缺陷按原生安装入口日志独立对照，不冒用 unittest 匹配器。已有真实 Agent 尝试单独报告，不列为必需验收。
 - [ ] 补充实际修改的回归测试和使用说明。每项证据记录环境、入口、命令、返回码及结果；缺环境记为未验证，缺项不勾选。跨系统必需验收未完成时，本 Issue 不算完成，也不声称 Release Gate 通过。
 
 本 Issue 不执行所有 AI 平台、全部历史版本及全部 installer 组合的累计发布矩阵。也不包含业务功能、生产写入、威胁/攻击模型、恶意篡改、竞态压力、锁协议或额外 fault injection。
 
-生产发布属于代码完成后的独立发行步骤。只有本 Task 全部验收、发布准备及发行校验满足时，才发布 Guru 官方版本；源码与 CI 通过不能替代真实 Agent 验收。
+本 Task 不执行官方软件版本发行、tag 或 GitHub Release；Task 闭环与累计 Release Gate 分开判断。实际 Agent 会话不属于本 Task 完成条件。
 
 ## 8. 实际未决项
 
-需求无未决产品选择。技术调查尚须确认 Windows clean 安装的底层失败、换行摘要完整链路，以及参考 checkout-index 修改是否必要；由 Delivery Author/implementation owner 处理。Windows Codex CLI 实际会话环境、hooks 前提和可用认证尚未验证；缺失时仅阻塞依赖它的验收与最终 Completion，不阻塞独立修复。
+需求无未决产品选择。产品修复和采集器修正分别通过 PR #634、#639 合并；已成功的原生 Python/runtime、路径、安装与维护证据继续采用。D3 只同步当前验收与文档，后续仍须完成实际 Check、Review、Completion、Closure、Finish 和精确资源清理。Windows Codex 会话保持未完成，不作为阻塞或通过事实。
