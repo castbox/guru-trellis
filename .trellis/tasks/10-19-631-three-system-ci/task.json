@@ -54,7 +54,7 @@
       },
       "candidate": {
         "kind": "git",
-        "content_ref": "sha256:9cf03d8fa6d185cbb191e169c0780aa4fe2f542a730c483cc07ae104415bf149",
+        "content_ref": "sha256:0b504c6d3f4913801726b3dbcc61bbd2bfa1fc42d7f6eac42d7a4af01c977fc4",
         "paths": [
           ".github/workflows/targeted-ci.yml",
           "README.md",
@@ -63,7 +63,7 @@
           "ci/unittest_report.py",
           "docs/ci/README.md"
         ],
-        "head_ref": "71f432f22acc78df7194a818c27b8e467ceb3048",
+        "head_ref": "ebde09f4fcfd9b754eab208300ca3ed6c3ec7dc1",
         "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048"
       },
       "results": {
@@ -109,9 +109,63 @@
           ]
         },
         "check": {
-          "result_id": "check:6b9ecbf6dfc878470e3de2cf4315d8d0ec1ff0b0c77f71ad2be639369eb24583",
+          "result_id": "check:8edf6e5b7caf43127906d453e9db145b36406d8c90db0aed958f4ffb3e1420e2",
           "owner_role": "check",
           "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/prd.md",
+              "revision": "sha256:df0a5d0fa71c64db3eeee53b7435cdd9e8df05f19ee8e903f585e09955340fea"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+            "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0b504c6d3f4913801726b3dbcc61bbd2bfa1fc42d7f6eac42d7a4af01c977fc4",
+            "paths": [
+              ".github/workflows/targeted-ci.yml",
+              "README.md",
+              "ci/targeted_ci.py",
+              "ci/test_targeted_ci.py",
+              "ci/unittest_report.py",
+              "docs/ci/README.md"
+            ],
+            "head_ref": "ebde09f4fcfd9b754eab208300ca3ed6c3ec7dc1",
+            "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048"
+          },
+          "predecessor_result_id": "planning-accepted:03b9fcb8-f4f3-407c-8172-5209ee604929",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/prd.md",
+              "revision": "sha256:d38caae7a47a04a9f43e6c68db910bd3f3deab1edf2f7bdff2277f0446daa0be"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
+              "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/implement.md",
+              "revision": "sha256:d0f1cbe0bcd6868c4c9676c4a38d67d6060b15edbe1412e65e302be128d06797"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:19cc85b45cdb7055b976427707ef5b3169aa753be5a9fa8ffcfd4fd49f89f2f6",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
           "outcome": "passed",
           "scope_ref": {
             "authority": {
@@ -142,30 +196,53 @@
               "ci/unittest_report.py",
               "docs/ci/README.md"
             ],
-            "head_ref": "71f432f22acc78df7194a818c27b8e467ceb3048",
+            "head_ref": "ebde09f4fcfd9b754eab208300ca3ed6c3ec7dc1",
             "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048"
           },
-          "predecessor_result_id": "planning-accepted:03b9fcb8-f4f3-407c-8172-5209ee604929",
+          "predecessor_result_id": "check:a21424a0886711dc07ec6e467949a872de9accd2544074c6955d021396836aea",
           "obligations": [],
           "evidence": [
-            {
-              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/prd.md",
-              "revision": "sha256:d38caae7a47a04a9f43e6c68db910bd3f3deab1edf2f7bdff2277f0446daa0be"
-            },
-            {
-              "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/design.md",
-              "revision": "sha256:2e1ee8f20507a9ac645e2362961ddf50b91d48195b39378dc7bd1347827d26ea"
-            },
             {
               "locator": ".trellis/tasks/10-19-631-three-system-ci/deliveries/c19ab689-46a9-45c5-899f-91ca416e12e3/implement.md",
               "revision": "sha256:d0f1cbe0bcd6868c4c9676c4a38d67d6060b15edbe1412e65e302be128d06797"
             }
           ]
         },
-        "full_review": null,
         "readiness": null
       },
-      "publication_result": null,
+      "publication_result": {
+        "result_id": "publication:80f3d1e05486f06a61a687b782bd3bbeb73fd3c623eca4f8349f10fcabbbfbe0",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/632",
+            "revision": "sha256:332b26eb63f06afd4b34609c9767b63e21890e6cd5cc13d841697088881c33e8"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "71f432f22acc78df7194a818c27b8e467ceb3048",
+          "content_ref": "sha256:9cf03d8fa6d185cbb191e169c0780aa4fe2f542a730c483cc07ae104415bf149",
+          "head_ref": "ebde09f4fcfd9b754eab208300ca3ed6c3ec7dc1",
+          "kind": "git",
+          "paths": [
+            ".github/workflows/targeted-ci.yml",
+            "README.md",
+            "ci/targeted_ci.py",
+            "ci/test_targeted_ci.py",
+            "ci/unittest_report.py",
+            "docs/ci/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 632,
+        "reviewed_head": "ebde09f4fcfd9b754eab208300ca3ed6c3ec7dc1",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/632",
+          "revision": "sha256:332b26eb63f06afd4b34609c9767b63e21890e6cd5cc13d841697088881c33e8"
+        }
+      },
       "delivery_result": null,
       "stop_result": null
     }

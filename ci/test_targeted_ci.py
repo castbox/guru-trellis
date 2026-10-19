@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -59,6 +60,32 @@ class DriverIntegrationTest(unittest.TestCase):
             self.assertEqual(saved["tests"]["tests_run"], 1)
             self.assertIn("Bash unavailable", saved["execution_error"])
             self.assertEqual(self.git(repo, "rev-parse", "HEAD"), candidate)
+
+    def test_nested_package_script_resolves_target_local_pnpm(self):
+        lock = json.loads((ci.HERE.parent / "trellis/presets/guru-team/source/trellis-source.json").read_text())
+        with tempfile.TemporaryDirectory(prefix="Guru local pnpm space ") as temporary:
+            root = Path(temporary)
+            tools = root / "tools"
+            installed = ci.run([shutil.which("npm") or "npm", "install", "--prefix", tools,
+                                "--no-audit", "--no-fund", lock["package_manager"]], root)
+            self.assertEqual(installed.returncode, 0, installed.stdout.decode("utf-8", "replace"))
+            package = root / "package"
+            package.mkdir()
+            (package / "package.json").write_text(json.dumps({"name": "nested-pnpm-fixture",
+                "private": True, "scripts": {"outer": "pnpm run inner", "inner": "node probe.cjs"}}))
+            (package / "probe.cjs").write_text(
+                'require("node:fs").writeFileSync("resolved.json", JSON.stringify({execpath: process.env.npm_execpath}));\n')
+            diagnostics = root / "diagnostics"
+            diagnostics.mkdir()
+            result = {"role": "fixture", "steps": []}
+            steps = ci.Steps(diagnostics, result)
+            pnpm = tools / "node_modules/pnpm/bin/pnpm.cjs"
+            ok, output = steps.call("nested-pnpm", ["node", pnpm, "run", "outer"], package,
+                                    path_prepend=tools / "node_modules/.bin")
+            self.assertTrue(ok, output)
+            resolved = json.loads((package / "resolved.json").read_text())
+            self.assertEqual(Path(resolved["execpath"]).resolve(), pnpm.resolve())
+            self.assertEqual(result["steps"][0]["returncode"], 0)
 
     def test_only_exact_assertion_can_exempt_baseline(self):
         baseline = {"role": "baseline", "status": "failed", "steps": [

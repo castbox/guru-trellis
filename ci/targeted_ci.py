@@ -20,12 +20,16 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
-def run(command, cwd):
+def run(command, cwd, path_prepend=None):
     command = [str(part) for part in command]
     # npm.cmd is a Windows command script; subsequent pnpm calls use node directly.
     shell = os.name == "nt" and command[0].lower().endswith((".cmd", ".bat"))
+    env = None
+    if path_prepend is not None:
+        env = dict(os.environ)
+        env["PATH"] = str(path_prepend) + os.pathsep + env.get("PATH", "")
     return subprocess.run(subprocess.list2cmdline(command) if shell else command,
-                          cwd=cwd, shell=shell, stdout=subprocess.PIPE,
+                          cwd=cwd, env=env, shell=shell, stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
 
 
@@ -34,12 +38,14 @@ class Steps:
         self.directory = directory
         self.target = target
 
-    def call(self, stage, command, cwd, category="infrastructure"):
+    def call(self, stage, command, cwd, category="infrastructure", path_prepend=None):
         item = {"stage": stage, "command": [str(x) for x in command],
                 "cwd": str(cwd), "category": category}
+        if path_prepend is not None:
+            item["path_prepend"] = str(path_prepend)
         print(f"{self.target['role']}: {stage}", flush=True)
         try:
-            completed = run(command, cwd)
+            completed = run(command, cwd, path_prepend=path_prepend)
             data = completed.stdout
             item["returncode"] = completed.returncode
         except OSError as exc:
@@ -117,14 +123,16 @@ def smoke(steps, target, workspace, python, bash, sha):
                                        "--no-audit", "--no-fund", manager.split("+", 1)[0]], workspace)[0]:
         return
     pnpm = ["node", tools / "node_modules/pnpm/bin/pnpm.cjs"]
+    pnpm_bin = tools / "node_modules/.bin"
     commands = [("pnpm-version", pnpm + ["--version"]),
                 ("fork-dependencies", pnpm + ["install", "--frozen-lockfile"]),
                 ("fork-core-build", pnpm + ["--filter", "@mindfoldhq/trellis-core", "build"]),
                 ("fork-cli-build", pnpm + ["--filter", "@mindfoldhq/trellis", "build"])]
     for stage, command in commands:
-        if not steps.call(stage, command, fork)[0]:
+        if not steps.call(stage, command, fork, path_prepend=pnpm_bin)[0]:
             return
-    steps.call("fork-dependency-versions", pnpm + ["list", "--recursive", "--depth", "0", "--json"], fork)
+    steps.call("fork-dependency-versions", pnpm + ["list", "--recursive", "--depth", "0", "--json"],
+               fork, path_prepend=pnpm_bin)
     (fork / "packages/cli/dist/.guru-source-commit").write_text(fork_sha + "\n", encoding="utf-8")
     clean = workspace / "clean install"
     if not steps.call("smoke-git-init", ["git", "init", clean], workspace)[0]:
