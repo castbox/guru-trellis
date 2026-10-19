@@ -345,3 +345,11 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 `ARCH-CUR-073`（#153）：原 Clarify package 单写共同 Issue 内容规范及去敏过程示例。四个既有 Issue owners 在原职责内实际读取同一正文、清晰写作规范与必要来源；创建及完善形成最终完整正文，修订分别保持完整内容审核和本轮语言范围。原 Author 来源规则、固定 title/body scan、十维 readiness、创建/正文修改回读及原 typed exits 保持。内容充分性归 AI，分发检查不替代行为证据。职责由 [贡献](../contributions/153-issue-content-ssot.md) 承接，实际观察、普通遗漏修订及未验证边界只由 [唯一 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md) 记录。
 
 `ARCH-CUR-074`（#630 reviewed source）：shared runtime采用本机Path与标准file URI转换，bootstrap fixture通过验证后的原生Bash/POSIX路径/UTF8 stdin进入原公开wrapper；TaskCommit按UTF8候选bytes写入、读回及最终commit验证，原真实hook/index保持。installer按[ADR-032](../adr/032-managed-text-lf.md)维护限定LF和精确恢复，raw校验及用户编辑保护保持。固定Fork来源选择由source lock单写，当前`.5`；源码实现和本地工程验证不证明最终native candidate、Windows实际Agent或正式发布。职责与采用边界见ARCH-DOM-057/ARCH-INT-060，全部实际状态只由[#630唯一Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)拥有。
+
+## ARCH-CUR-075：原 owners 内的早期 Draft 反馈
+
+#636 将有界早期提交与 Draft 反馈纳入原 TaskCommit/Publication。早期候选不要求完整 Check；原精确 staging、敏感检查、目标核验、真实 hook 事务及同提交恢复保持。Publication 在同 PR 的未审候选 push 前确保 Draft，支持 Draft 创建/更新、Ready 回退与最终 Ready，并从同操作实际 PR/HEAD/payload 恢复输出丢失。Draft 不写最终 PublicationFact、不构成 gate 或整体完成。
+
+固定 B/H 的独立完整内容分析和风险匹配验证在 Draft 后并行；target 前进不使内容审核中断。HEAD 与组合候选证据分别承接，冲突/无 merge ref/CI 未触发保留 HEAD支持入口和具体组合缺口。早期 Review 不写 public full_review；最终真实 Check predecessor、fresh committed Architecture/完整 Branch Review、readiness和Merge保持。ADR-030 的最终Check前晋升顺序不变，#637的跨阶段审核复用和#638的时机变更不进入本增量。
+
+本条与 [ADR-033](../adr/033-early-draft-feedback.md)窄替代 ARCH-CUR-059/060 及继承合同中“所有提交/PR反馈统一在完整Check/readiness之后”的时机片段；保留Task/Delivery API、阶段ownership、Refs-only/Closure、历史事实与既有终态能力。源码/投影、实际Agent/GitHub和未验证边界只由 [唯一Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md) 拥有。

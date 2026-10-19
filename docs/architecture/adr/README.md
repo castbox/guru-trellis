@@ -71,3 +71,5 @@
 - [ADR-031：完整当前知识单元与两层栈来源](./031-current-effective-knowledge.md)
 
 - [ADR-032：受管文本 LF 与精确 EOL 恢复](./032-managed-text-lf.md)；限定installer字节判定的窄后继，raw身份与用户编辑保护保持。
+
+- [ADR-033：原 owners 提前提供 Draft 反馈](./033-early-draft-feedback.md)；早期有界提交、同PR状态往返与最终门禁分别承接。

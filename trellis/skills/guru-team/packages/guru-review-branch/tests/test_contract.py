@@ -866,11 +866,11 @@ class BranchReviewContractTest(unittest.TestCase):
         self.assertNotIn("mapping", json.dumps(boundary).lower())
         public = interface["public_contracts"]
         self.assertEqual(
-            "guru-review-branch-input-legacy-index-2.0",
+            "guru-review-branch-input-legacy-index-3.0",
             public["input"]["aggregate_schema"]["schema_id"],
         )
         self.assertEqual(
-            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement", "delivery_promotion_reference_alignment"],
+            ["delivery_branch_review", "delivery_base_continuity", "delivery_archived_review", "delivery_scope_withdrawal", "delivery_scope_revision", "legacy_control_inspection", "legacy_control_retirement", "delivery_promotion_reference_alignment", "delivery_draft_content_review"],
             [profile["id"] for profile in public["input"]["profiles"]],
         )
         self.assertEqual(
@@ -888,6 +888,8 @@ class BranchReviewContractTest(unittest.TestCase):
                 "delivery_stopped",
                 "delivery_scope_revised",
                 "legacy_controls_retired",
+                "draft_content_reviewed",
+                "draft_revision_required",
             ],
             [output["exit_id"] for output in public["outputs"]],
         )

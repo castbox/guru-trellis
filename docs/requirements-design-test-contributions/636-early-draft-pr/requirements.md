@@ -1,6 +1,6 @@
 # Task 与 Delivery 生命周期
 
-知识单元：`RDT-REQ-LIFECYCLE`。状态：`proposed`。候选继承 RDT `current-main-0.6.17-guru.109`，固定迁移源为 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。只有三层共享入口完成原 owner 晋升后，本单元才作为 successor 的当前正文；旧阶段仍使用其适用版本。
+知识单元：`RDT-REQ-LIFECYCLE`。状态：`proposed`。候选继承 RDT `current-main-0.7.0-guru.112`，固定前驱为 Git `b470580d4f79f61c66d72db97861fe1564b5e746`；更早迁移来源按该前驱保留。只有三层共享入口完成原 owner 晋升后，本单元才作为 successor 的当前正文；旧阶段仍使用其适用版本。
 
 ## 身份、整体责任与入口
 

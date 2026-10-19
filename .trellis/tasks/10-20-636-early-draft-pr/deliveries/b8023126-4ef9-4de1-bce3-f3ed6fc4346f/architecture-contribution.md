@@ -1,8 +1,8 @@
 # #636 早期 Draft 架构贡献候选
 
-TaskId=`636-early-draft-pr`，generation=0，Delivery=`b8023126-4ef9-4de1-bce3-f3ed6fc4346f`。状态为未审核的Planning候选；change_path=`target_native`。本文件不是共享Architecture authority，也不记录授权或gate通过。
+TaskId=`636-early-draft-pr`，generation=0，Delivery=`b8023126-4ef9-4de1-bce3-f3ed6fc4346f`。状态为已完成独立 Planning 评估、尚未晋升的贡献候选；change_path=`target_native`。本文件不是共享Architecture authority，也不记录授权或gate通过。
 
-比较起点为 `b470580d4f79f61c66d72db97861fe1564b5e746:docs/architecture/`，阶段适用baseline `.103`、constitution v1、change contract/concerns v1。真实设计在同目录design.md D636-01..05，ADR候选为adr-early-draft-pr.md。原candidate_assessment已明确架构影响，但final_plan与Phase2评估尚未完成。
+比较起点为 `b470580d4f79f61c66d72db97861fe1564b5e746:docs/architecture/`，阶段适用baseline `.103`、constitution v1、change contract/concerns v1。真实设计在同目录design.md D636-01..05，ADR候选为adr-early-draft-pr.md。原 candidate_assessment 与 final_plan 已分别执行，实际 final_plan 输出为 baseline_current/reviewed_candidate；Phase2 的独立实现评估与共享晋升尚未完成。
 
 Before：TaskCommit所有当前入口都要求完整Check；Publication只在readiness后执行到Ready，远端反馈被延后。After：同一原owner具有早期有界提交与Draft反馈入口，原事务在push前确保Draft并恢复同PR状态；Draft后完整内容分析与HEAD验证并行。最终Check、正式full_review predecessor、readiness、PublicationFact/Merge和整体收尾保持。
 
@@ -18,4 +18,4 @@ Before：TaskCommit所有当前入口都要求完整Check；Publication只在rea
 | evidence-and-freshness | applicable；固定B/H内容、HEAD H与组合T/M分开；target前进不是自动stale。命令结果仅为执行事实，当前语义由原owner判断。 |
 | review-and-promotion | applicable；final_plan独立读实际方案/贡献；Phase2独立评估完整拟晋升targets后原owner写入和判断适用性；最终Check/commit/独立完整Review覆盖实际差额。 |
 
-项目检查沿 `guru-trellis-architecture-convergence:repository:1` / version1、change-contract入口和`guru-project-architecture-check-result-2.0`。当前只形成设计贡献；实际结果由原owner在本阶段语义检查后正式调用。源码、安装、真实Draft/状态往返、Agent审核、CI、Merge与Release矩阵均未在本候选中宣称通过。没有#637/#638或Backend队列/CI的新职责。
+项目检查沿 `guru-trellis-architecture-convergence:repository:1` / version1、change-contract入口和`guru-project-architecture-check-result-2.0`。本文件只承接架构贡献；各阶段实际结果由原 owner 正式调用。源码、matching 安装、真实 Draft、独立早期审核、首失败与修复、CI 及未验证边界只在 docs/requirements-design-test-contributions/636-early-draft-pr/test.md 单写，不能由本贡献声明整任务通过。没有#637/#638或Backend队列/CI的新职责。

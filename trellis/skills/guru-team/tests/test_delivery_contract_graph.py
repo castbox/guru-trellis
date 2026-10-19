@@ -38,7 +38,10 @@ class DeliveryGraphTests(unittest.TestCase):
                         continue
                     target = consumer["contract"]
                     if target["kind"] == "json_schema":
-                        validate_json(projected, package / target["path"], "workflow")
+                        schema_path = package / target["path"]
+                        if not schema_path.is_file():
+                            schema_path = SKILLS / target["path"]
+                        validate_json(projected, schema_path, "workflow")
                     else:
                         self.assertEqual(target["kind"], "skill_input_authoring_seed")
                         self.assertEqual(set(projected), set(target["seed_fields"]))

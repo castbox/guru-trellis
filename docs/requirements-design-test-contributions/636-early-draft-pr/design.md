@@ -1,6 +1,6 @@
 # Task / Delivery 生命周期设计
 
-知识单元：`RDT-DES-LIFECYCLE`。状态：`proposed`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
+知识单元：`RDT-DES-LIFECYCLE`。状态：`proposed`。固定前驱 RDT `.112` / Git `b470580d4f79f61c66d72db97861fe1564b5e746`；更早迁移来源按该前驱保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
 
 ## 稳定设计身份
 
