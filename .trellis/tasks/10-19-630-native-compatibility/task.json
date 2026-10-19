@@ -50,7 +50,7 @@
       },
       "candidate": {
         "kind": "git",
-        "content_ref": "sha256:93c28ff944ff9ea72ada8f6648b0c65eb2f6670f22a6543dee567f588eda7b98",
+        "content_ref": "sha256:ff77b55c63a33cf85319ea3f1b89705ea96752b84b7dc6d5bd9c7012bc9f4390",
         "paths": [
           ".gitattributes",
           ".github/workflows/targeted-ci.yml",
@@ -105,6 +105,7 @@
           "trellis/presets/guru-team/scripts/python/managed_text_eol.py",
           "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
           "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_guru_platform_inventory.py",
           "trellis/presets/guru-team/scripts/python/test_managed_text_eol.py",
           "trellis/presets/guru-team/scripts/python/test_runtime_native_compatibility.py",
           "trellis/presets/guru-team/source/trellis-source.json",
@@ -117,7 +118,7 @@
           "trellis/skills/guru-team/runtime/validate.py",
           "trellis/workflows/guru-team/README.md"
         ],
-        "head_ref": "10da9be7c976ac210ec3a8afc42077f5e709bd7f",
+        "head_ref": "2555e5e78583b06f900786fb19c1ee4a76e03917",
         "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
       },
       "results": {
@@ -159,7 +160,7 @@
           ]
         },
         "check": {
-          "result_id": "check:573fa95551a9fbbbbe63262245477fcd7db4ef6a9a641f9a6d08dd8d4b7fc3c4",
+          "result_id": "check:f847448a3f1ca38f394d241bfc1c3386319cfa57ed36468b8c54d615eb489574",
           "owner_role": "check",
           "owner_id": "guru-check-task",
           "outcome": "passed",
@@ -179,7 +180,7 @@
           },
           "candidate": {
             "kind": "git",
-            "content_ref": "sha256:93c28ff944ff9ea72ada8f6648b0c65eb2f6670f22a6543dee567f588eda7b98",
+            "content_ref": "sha256:ff77b55c63a33cf85319ea3f1b89705ea96752b84b7dc6d5bd9c7012bc9f4390",
             "paths": [
               ".gitattributes",
               ".github/workflows/targeted-ci.yml",
@@ -234,6 +235,7 @@
               "trellis/presets/guru-team/scripts/python/managed_text_eol.py",
               "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
               "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/test_guru_platform_inventory.py",
               "trellis/presets/guru-team/scripts/python/test_managed_text_eol.py",
               "trellis/presets/guru-team/scripts/python/test_runtime_native_compatibility.py",
               "trellis/presets/guru-team/source/trellis-source.json",
@@ -246,7 +248,7 @@
               "trellis/skills/guru-team/runtime/validate.py",
               "trellis/workflows/guru-team/README.md"
             ],
-            "head_ref": "10da9be7c976ac210ec3a8afc42077f5e709bd7f",
+            "head_ref": "2555e5e78583b06f900786fb19c1ee4a76e03917",
             "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
           },
           "predecessor_result_id": "planning-accepted:6bdb67cc-22e6-4aff-bcfa-98f2c9ec6a55",

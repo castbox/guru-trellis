@@ -18,6 +18,14 @@ class DriverIntegrationTest(unittest.TestCase):
     def git(self, root, *args):
         return subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.STDOUT).decode().strip()
 
+    def test_cli_version_accepts_notice_but_requires_exact_actual_version(self):
+        lock = json.loads((ci.HERE.parent / "trellis/presets/guru-team/source/trellis-source.json").read_text(encoding="utf-8"))
+        expected = lock["cli_version"]
+        notice = f"\nTrellis update available: 0.6.14 → {expected}\n   Run: trellis update\n\n"
+        self.assertTrue(ci.cli_version_matches(notice + expected + "\n", expected))
+        self.assertFalse(ci.cli_version_matches(notice + "0.0.0-fixture\n", expected))
+        self.assertFalse(ci.cli_version_matches(notice, expected))
+
     def test_independent_commits_continue_and_preserve_raw_results(self):
         with tempfile.TemporaryDirectory(prefix="Guru CI space ") as temporary:
             root = Path(temporary)

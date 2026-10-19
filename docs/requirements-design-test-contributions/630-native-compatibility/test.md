@@ -25,3 +25,7 @@
 - 最终candidate的三系统CI、Windows实际Codex会话与官方Release仍待执行。未完成项不勾选，不能由本贡献晋升推导通过。
 
 - 首次独立Phase2发现ARCH630-F1：三个RDT active .112入口误指旧.111。原owner修正为已存在的.112版本；逐层读取版本入口与native完整单元核对，历史.111页未改。正式Architecture须以修正后的新候选重新判断。
+
+- 最终候选首轮 [39236746140](https://github.com/castbox/guru-trellis/actions/runs/39236746140) 绑定driver/target `2555e5e78583b06f900786fb19c1ee4a76e03917`。Ubuntu/macOS/Windows的独立runtime均6项通过、无failure/error/skip，包含真实root/worktree/schema/wrapper/TaskCommit。Windows Server2025 build26100、镜像20261007.264.1、Python3.12.10，utf8_mode=0/preferred_encoding=cp1252，Git2.56.0.windows.2，Git Bash来自C:/Program Files/Git/bin/bash.exe。
+- 该轮三系统整体仍失败：BR630-F1把CLI更新提示首行误当版本（实际完整版本行是正确.5），BR630-F2平台CLI测试mock缺少真实text_attributes字段，11项中2个KeyError。clean安装尚未开始；Windows实际Codex commands=[]，因candidate未通过而诚实阻止。该轮不算安装、维护或Agent通过。
+- 原owner修正版本输出的完整末行精确比较及mock协议；直接driver10项和platform inventory11项通过，三系统原始版本输出回放通过，raw logs未改。新candidate仍须原生安装/维护与实际Agent验收。用户更新目标为Issue630及Task闭环；正式软件发行是独立动作，现不执行，也不据本轮声明Release Gate通过。

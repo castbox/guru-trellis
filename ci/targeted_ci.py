@@ -89,6 +89,11 @@ def find_bash():
     return None
 
 
+def cli_version_matches(output, expected):
+    # The CLI prints its complete version after any update notice.
+    return output.strip().splitlines()[-1:] == [expected]
+
+
 def environment(driver):
     details = {"platform": platform.platform(), "python": sys.version,
                "executable": sys.executable, "utf8_mode": sys.flags.utf8_mode,
@@ -148,7 +153,7 @@ def smoke(steps, target, workspace, python, bash, sha):
         return
     cli = fork / "packages/cli/bin/trellis.js"
     ok, version = steps.call("fork-cli-version", ["node", cli, "--version"], fork)
-    if not ok or version.splitlines()[0] != lock["cli_version"]:
+    if not ok or not cli_version_matches(version, lock["cli_version"]):
         raise RuntimeError("Built Fork CLI version differs from the target source lock")
     provider = f"gh:castbox/guru-trellis/trellis#{sha}"
     if not steps.call("smoke-cli-init", ["node", cli, "init", "-y", "--codex", "--workflow",
