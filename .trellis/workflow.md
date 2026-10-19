@@ -276,10 +276,13 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"blocked","consumer":{"kind":"stop","id":"task-check-blocked"}} -->
 ### Phase 3 owners
 <!-- guru-skill-invoke: {"skill":"guru-create-task-commit","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"draft_committed","consumer":{"kind":"workflow","id":"guru-draft-commit-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"committed","consumer":{"kind":"skill","id":"guru-review-branch"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"revision-required","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
 <!-- guru-skill-exit: {"skill":"guru-create-task-commit","exit":"blocked","consumer":{"kind":"stop","id":"task-commit-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-review-branch","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"draft_revision_required","consumer":{"kind":"workflow","id":"guru-draft-content-revision-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"draft_content_reviewed","consumer":{"kind":"workflow","id":"guru-draft-content-review-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"passed","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-branch","exit":"archived_review_passed","consumer":{"kind":"stop","id":"legacy-archived-review-disposition-required"}} -->
@@ -295,6 +298,8 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"scope_confirmation_required","consumer":{"kind":"workflow","id":"guru-task-delivery-scope-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-review-task-delivery","exit":"blocked","consumer":{"kind":"stop","id":"task-delivery-review-blocked"}} -->
 <!-- guru-skill-invoke: {"skill":"guru-publish-task-delivery","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"draft_revision_ready","consumer":{"kind":"workflow","id":"guru-draft-revision-router"}} -->
+<!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"draft_published","consumer":{"kind":"workflow","id":"guru-draft-feedback-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"ready_for_merge","consumer":{"kind":"skill","id":"guru-merge-task-delivery"}} -->
 <!-- guru-skill-exit: {"skill":"guru-publish-task-delivery","exit":"review_stale","consumer":{"kind":"skill","id":"guru-review-task-delivery"}} -->
@@ -408,6 +413,11 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-workflow-target: {"id":"phase-1-delivery-activation"} -->
 <!-- guru-workflow-target: {"id":"guru-base-reconciliation-router"} -->
 <!-- guru-workflow-target: {"id":"guru-base-continuity-passed-router"} -->
+<!-- guru-workflow-target: {"id":"guru-draft-commit-router"} -->
+<!-- guru-workflow-target: {"id":"guru-draft-feedback-router"} -->
+<!-- guru-workflow-target: {"id":"guru-draft-revision-router"} -->
+<!-- guru-workflow-target: {"id":"guru-draft-content-review-router"} -->
+<!-- guru-workflow-target: {"id":"guru-draft-content-revision-router"} -->
 <!-- guru-workflow-target: {"id":"guru-resume-implementation"} -->
 <!-- guru-workflow-target: {"id":"guru-task-base-planning-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-base-scope-router"} -->
@@ -515,6 +525,11 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-delivery-started-router | Consume the actual public Planning result for same-Delivery implementation. |
 | guru-base-reconciliation-router | Consume the fixed integration result and resume its closed target through the original candidate/Check/Review applicability owners. |
 | guru-base-continuity-passed-router | Return the bounded result to the original Check/Branch Review applicability owners; only their real current candidate-bound results resume the closed target. Continuity is not a full Review gate. |
+| guru-draft-commit-router | Consume task_ref/key/B/commit_sha; rename commit_sha to candidate_head for original Publication delivery_draft_publish. The original Publication owner authors and reviews its exact Chinese title/body. No Check or final Review is inferred. |
+| guru-draft-feedback-router | Consume Draft task/key/B/H/repo/PR; retain this exact candidate for parallel independent guru-review-branch:delivery_draft_content_review and implementation/Check-owned risk-matched HEAD validation. No gate or new Delivery is created. |
+| guru-draft-revision-router | Consume the original Publication return-to-Draft result and resume the same implementing Delivery. Original TaskCommit and Publication publish its next candidate to the same PR. |
+| guru-draft-content-review-router | Return the call-local complete B/H analysis to the implementation/Check coordinator. Validate actual HEAD before using facts; fresh formal full Review remains mandatory after Check. |
+| guru-draft-content-revision-router | Return immediate concrete revision_refs to the same implementation owner; rerun affected analysis on a changed HEAD. No cross-stage review cache is retained. |
 | guru-resume-implementation | Resume Phase 2 implementation. |
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
@@ -796,10 +811,10 @@ PR or Task inventory never selects the Task or Delivery.
 | `no_current_delivery` | Current request/authority determines Task scope Clarify, explicitly selected first/next slice through `guru-create-delivery`, Completion evidence/validation or current Closure/Finish/Cleanup. No automatic empty Delivery. |
 | `terminal_delivery` | Original terminal owner releases that exact selection; Task stays bound for Completion. Do not replace identity. |
 | `current / planning` | Resume the same Delivery's unique Author, Wording, Architecture and Approval. Only its current `approved` enters `guru-activate-delivery`. |
-| `current / implementing` | Resume current implementation; actual owner hands candidate through the public implementation projection to formal Check. |
+| `current / implementing` | Resume implementation. A reviewable candidate with minimum self-checks and sensitive-content review enters original TaskCommit early Draft profiles, then original Publication; formal Check follows complete quality work. |
 | `current / checking` | Original Phase 2 Architecture assessment/promotion and actual-write applicability, then `guru-check-task` over the final candidate; ordinary quality methods do not write formal Check. |
 | `current / reviewing` | Check/TaskCommit recovery and candidate binding precede first full independent Branch Review, then Delivery Review. Recover missing evidence through the original owner; phase does not substitute for the gate. |
-| `current / publishing` | Current Delivery Review/Publish/Merge owner and original transaction; required gate refresh returns to its declared producer. |
+| `current / publishing` | Current Delivery Review/Publish/Merge owner and original transaction. A revision requiring early publication enters Publication delivery_return_to_draft before implementation; required gate refresh retains its producer. |
 | error / unknown | Fail closed with the exact identity/API/owner diagnostic. |
 
 | Current output or change | Consumer / original producer |
@@ -812,6 +827,10 @@ PR or Task inventory never selects the Task or Delivery.
 | Check result lost | `guru-check-task` validates its own current evidence or performs fresh semantic Check; no pass from phase or files. |
 | Check `passed` | Invoke `guru-create-task-commit` for necessary dirty content or clean committed candidate. |
 | TaskCommit output lost | Same commit owner recovers exact candidate; no duplicate/empty/amended commit to restore stdout. |
+| TaskCommit `draft_committed` | guru-draft-commit-router enters original Publication draft publish; it cannot seed formal Branch Review. |
+| Publication `draft_published` | guru-draft-feedback-router dispatches independent complete fixed B/H analysis and risk-matched HEAD validation in parallel. |
+| Draft/Ready mutation output lost | Original Publication same-plan resume first reads actual same PR/HEAD/state; recover the original terminal result without repeating mutation. |
+| Ready PR needs unreviewed revision | Original Publication delivery_return_to_draft invalidates affected gates through lawful rework, then guru-draft-revision-router resumes the same Delivery. |
 | TaskCommit `committed` | Candidate continuity router: affected HEAD returns through Reviewing rework, implementation begin_check and applicable Check; unchanged clean candidate enters independent full Review directly. |
 | Branch Review missing/stale | Fresh committed full-diff Architecture and `guru-review-branch`; Phase 2 or bounded continuity cannot replace first full Review. |
 | Branch Review `passed` | Invoke `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
@@ -1119,6 +1138,32 @@ mode/profile. Neither a stopped slice nor the projection decides Completion.
 
 #### 2.1 Implementation
 
+A reviewable candidate may receive early remote feedback before complete Check.
+Explicitly invoke `guru-create-task-commit:delivery_draft_commit`, or its clean
+`delivery_draft_committed_reentry` for an already formed integration/fix commit.
+Consume `draft_committed` only through guru-draft-commit-router and invoke
+`guru-publish-task-delivery:delivery_draft_publish`. The step-local owners define
+the bounded review, exact local commit and remote confirmation boundaries.
+
+After `draft_published`, guru-draft-feedback-router starts independent complete
+fixed B/H analysis and risk-matched validation in parallel. Explicitly invoke
+`guru-review-branch:delivery_draft_content_review`; its result is call-local
+feedback, never public full_review. The implementation/Check owner runs the
+Planning-selected supported HEAD commands at H. PR conflicts, absent merge refs
+and untriggered pull_request CI do not block this HEAD entry. Report actual
+commands/results and keep target T / integration M checks separate. Missing
+business CI entry remains its business owner's concrete dependency.
+
+A changed HEAD needs fresh applicable analysis and validation. Real active Git
+merge/sequencer operations retain their original owner; after legal Reconcile
+forms a commit and returns to implementing, clean early reentry publishes that
+HEAD without requiring Check. Do not manufacture a synchronization commit.
+
+A Ready PR that needs an unreviewed revision first enters original Publication
+`delivery_return_to_draft`. Its result resumes the same Delivery through the
+revision router; the new candidate then follows the early commit/Draft path.
+Draft/Ready state alone never grants Check, Review, Merge or Completion pass.
+
 Implementation callers inherit the subtraction-first contract from the approved
 plan. Workers may execute approved-plan work only. If implementation discovers
 an out-of-plan deprecated asset, compatibility need, or owner/authority change,
@@ -1234,7 +1279,7 @@ owner. Do not routinely add Architecture prose after full Branch Review.
 
 #### 3.4 Task commit
 
-Invoke `guru-create-task-commit` with the checked public DeliveryKey and
+For the final path, invoke `guru-create-task-commit` with the checked public DeliveryKey and
 Check result. Its semantic owner selects the actual candidate path: necessary
 dirty content uses the exact prepare/review/confirmation/executor transaction;
 already committed content uses `delivery_committed_reentry` with a fresh Check
@@ -1300,7 +1345,7 @@ validation and unverified boundaries, then authors the exact Chinese PR
 title/body with `Refs` only. Missing or stale Architecture evidence returns
 to its owner; task-content changes return to Phase 2 and full review.
 
-The checked `ready` DTO enters `guru-publish-task-delivery`, whose own
+The final checked `ready` DTO enters `guru-publish-task-delivery:delivery_review_ready`, whose own
 preview/confirmation, exact HEAD, remote branch and PR transaction govern
 push, Draft/Ready transition, and output-loss recovery. It never archives
 the task or closes its source Issue. Only its current `ready_for_merge` enters

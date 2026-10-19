@@ -19,7 +19,7 @@ steps and does not turn a manual result into Guru completion.
 
 Read the sole continuation in `.trellis/workflow.md` and current public
 Task/Delivery availability through the installed context helpers. Follow its
-Phase 3.6/3.7 route and mandatory load the applicable owners by stable Skill id:
+Phase 2 early Draft and Phase 3.6/3.7 final routes. Mandatory load the applicable owners by stable Skill id:
 
 This is the exclusive finish entry for a Guru task. The upstream-owned
 `trellis-finish-work` Skill is not applicable to Guru tasks and must not be

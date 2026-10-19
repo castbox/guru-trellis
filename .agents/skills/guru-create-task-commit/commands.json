@@ -208,7 +208,7 @@
       ],
       "side_effect": "git_write",
       "schema_bindings": [
-        "schemas/delivery-commit-result-1.0.schema.json"
+        "schemas/delivery-commit-result-2.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

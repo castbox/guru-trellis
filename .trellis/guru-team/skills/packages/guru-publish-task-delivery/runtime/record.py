@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from owner import parser, plan_from_input, read_json, record_gate, repo_root, validate_public_input, validate_review
+from owner import parser, plan_from_input, read_json, record_gate, repo_root, validate_public_input, validate_review, expected_publication_exit
 
 
 def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[str, Any]:
@@ -14,7 +14,7 @@ def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[st
     args = parser("record").parse_args(argv)
     root = repo_root(Path(args.root or "."))
     public_input = validate_public_input(read_json(args.input))
-    review = validate_review(read_json(args.review_input))
+    review = validate_review(read_json(args.review_input), expected_publication_exit(root, public_input))
     context = plan_from_input(root, public_input)
     if context.get("typed_exit") != "preview":
         return context

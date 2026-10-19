@@ -37,7 +37,7 @@ shared-current promotion 自身绑定写前 live expected-current；错配只由
 - `dedicated_refactor_slice`：在行为/API/规则不变前提下，以单一主写的小切片收敛旧实现，要求可验证、可观测、可回滚和明确删除条件。
 - `no_architecture_impact`：只记录 current baseline/constitution、task/stage 与可审核理由，不创建 contribution、ADR 或 project-check burden。
 
-阶段顺序固定为 Planning candidate_assessment impact/path -> Author solution writing -> Wording -> final_plan actual contribution/current eligibility -> Approval -> qualified implementation discovery re-entry -> task contribution/necessary ADR 与完整拟晋升内容 -> independent Phase2 before/after + project checks -> original-owner expected-current-bound serialized promotion -> 实际写入适用性核对 -> 最终 Check -> TaskCommit -> committed 独立 Architecture + 完整 BranchReview -> Publication/Acceptance current consumption。稳定正常候选无需在晋升前先做 committed Review；finding 修复、多 Delivery、真实候选改变或合法窄绑定刷新仍按原生命周期回最早受影响 owner。未 promotion 的 `reviewed_candidate` 不得进入 Publication/Finish。
+阶段顺序固定为 Planning candidate_assessment impact/path -> Author solution writing -> Wording -> final_plan actual contribution/current eligibility -> Approval -> qualified implementation discovery re-entry -> task contribution/necessary ADR 与完整拟晋升内容 -> independent Phase2 before/after + project checks -> original-owner expected-current-bound serialized promotion -> 实际写入适用性核对 -> 最终 Check -> TaskCommit -> committed 独立 Architecture + 完整 BranchReview -> 最终 readiness/Ready Publication 与 Acceptance current consumption。稳定正常候选无需在晋升前先做 committed Review；finding 修复、多 Delivery、真实候选改变或合法窄绑定刷新仍按原生命周期回最早受影响 owner。未 promotion 的 `reviewed_candidate` 不得进入最终 readiness/Ready Publication 或 Finish；早期 Draft 反馈按 ADR-033 的独立入口承接。
 
 ## Current project-check descriptor
 
@@ -73,3 +73,9 @@ promotion 发生在 Phase2，绑定贡献、原独立候选审查和完整 propo
 按本阶段实际问题选择完整知识单元与必要关系，不以历史增量回放替代当前定义。RDT 和 Architecture 各由原维护方拥有正文与晋升，导航只定位。Architecture 的 FOUNDATION/CURRENT/TARGET/GAP/PLAN/ADR/EVIDENCE 仍分工；本文件不把 accepted target、推断或验证缺口提升为实现事实。
 
 [技术基线选择](../00-foundation/stack-selection.md)定位本项目选定的公共技术栈源、准确版本、项目约束和差异。Architecture owner 在本项目范围维护投影，源维护方在公共源范围维护完整定义。源或引用缺失、范围冲突、迁移未完成时，明确受影响结论并进入原 repair/澄清，保留原 authority。源版本推进不自动替换已选版本或要求旧 Task 重写。当前组织候选的迁移与普通读取退出由 [MIGRATION-331](../../../trellis/presets/guru-team/MIGRATION-331.md)定位，最终状态由原 owner 晋升和真实 Test/EVIDENCE 决定。
+
+## 早期 Draft 与最终 Publication 的区分（ADR-033）
+
+#636 原 TaskCommit/Publication 在 implementing 的已激活切片中提供有界提交和同PR Draft反馈。该入口不消费最终Check/readiness，也不写公共gate或PublicationFact。Draft后固定B/H内容分析与风险验证并行；新未审HEAD push前由原Publication确保Draft。早期分析不自动映射正式full_review；最终Check predecessor、原完整质量链和Refs-only/Closure保持。
+
+上述反馈可先于最终Phase2晋升链，不属于ARCH-GOV-008禁止未晋升贡献进入的最终readiness/Ready发布。独立Phase2仍评估完整实现与全部拟晋升内容，再原owner晋升/判断实际写入、最终Check、commit及独立完整committed Review；本增量不改变ADR-030时机，不实施#638。正式非Planning Architecture stage=publication仍用于最终Delivery readiness，不以Draft存在制造该stage通过。

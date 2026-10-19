@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-input-delivery-aggregate-2.0",
+  "oneOf": [
+    {
+      "oneOf": [
+        {
+          "$ref": "public-delivery-review-ready-input-1.0.schema.json"
+        },
+        {
+          "$ref": "public-delivery-same-plan-resume-input-1.0.schema.json"
+        },
+        {
+          "$ref": "public-delivery-reprepare-publication-input-1.0.schema.json"
+        },
+        {
+          "$ref": "public-delivery-scope-withdrawal-input-1.0.schema.json"
+        },
+        {
+          "$ref": "public-delivery-scope-revision-input-1.0.schema.json"
+        }
+      ]
+    },
+    {
+      "$ref": "legacy_control_retirement-input-1.0.schema.json"
+    },
+    {
+      "$ref": "legacy_history_verification-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-draft-publish-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-return-to-draft-input-1.0.schema.json"
+    }
+  ]
+}

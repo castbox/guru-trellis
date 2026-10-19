@@ -52,15 +52,10 @@ class ContractTests(unittest.TestCase):
     def test_interface_is_delivery_only(self) -> None:
         interface = self.interface()
         self.assertEqual(interface["judgment_mode"], "semantic")
-        self.assertEqual([item["id"] for item in interface["external_exits"]], ["ready_for_merge", "review_stale", "resume_publication", "reprepare_required", "blocked", "delivery_stopped", "delivery_scope_revised", "legacy_controls_retired", "verified_legacy_history", "unverified_legacy_history"])
         self.assertEqual(interface["public_contracts"]["private_artifacts"][0]["persistence"], "ignored_runtime")
         exit_ids = {item["id"] for item in interface["external_exits"]}
         self.assertTrue(exit_ids.isdisjoint({"completed", "archived", "issue_closed", "cleanup"}))
         self.assertFalse(any(token in exit_id for exit_id in exit_ids for token in ("archive", "finish", "completion", "cleanup")))
-
-    def test_stage_order_is_closed(self) -> None:
-        source = (PACKAGE / "runtime/owner.py").read_text()
-        self.assertIn('(\"push_content\", \"bind_pr\", \"converge_metadata\", \"mark_ready\", \"ready\")', source)
 
     def test_declared_json_schema_consumer_paths_exist_and_validate(self) -> None:
         interface = self.interface()

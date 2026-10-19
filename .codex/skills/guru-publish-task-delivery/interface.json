@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-publish-task-delivery",
   "name": "guru-publish-task-delivery",
-  "description": "Publish one reviewed active-task Delivery through a semantic gate and an idempotent push, PR binding, metadata, and Ready transaction.",
+  "description": "Publish early Draft feedback or final Ready through the original recoverable transaction.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -43,9 +43,9 @@
     },
     {
       "id": "delivery_review",
-      "evidence": "guru-review-task-delivery ready DTO",
-      "binding": "Delivery key, current Readiness result, reviewed candidate, exact Chinese title/body and remaining-work state",
-      "freshness": "reviewed HEAD and payload remain current"
+      "evidence": "Selected profile: accepted Planning for Draft; current Readiness for Ready; original publishing revision for return-to-Draft.",
+      "binding": "Task/key, fixed candidate and exact requested action.",
+      "freshness": "Reread applicable current public facts for this action."
     },
     {
       "id": "remote_identity",
@@ -329,6 +329,38 @@
     {
       "id": "legacy_control_restore_input",
       "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_publish_input",
+      "path": "schemas/public-delivery-draft-publish-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_return_to_draft_input",
+      "path": "schemas/public-delivery-return-to-draft-input-1.0.schema.json"
+    },
+    {
+      "id": "draft_published_output",
+      "path": "schemas/public-output-delivery-draft-published-1.0.schema.json"
+    },
+    {
+      "id": "draft_revision_ready_output",
+      "path": "schemas/public-output-delivery-draft-revision-ready-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate_2_0",
+      "path": "schemas/public-input-delivery-2.0.schema.json"
+    },
+    {
+      "id": "publication_transaction_2_0",
+      "path": "schemas/publication-transaction-2.0.schema.json"
+    },
+    {
+      "id": "semantic_review_2_0",
+      "path": "schemas/semantic-review-2.0.schema.json"
+    },
+    {
+      "id": "transaction_636_migration_input",
+      "path": "schemas/private-publication-transaction-636-input.schema.json"
     }
   ],
   "validators": [
@@ -455,6 +487,22 @@
         "kind": "workflow",
         "id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history"
       }
+    },
+    {
+      "id": "draft_published",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-feedback-router"
+      }
+    },
+    {
+      "id": "draft_revision_ready",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-revision-router"
+      }
     }
   ],
   "reentry": {
@@ -496,8 +544,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-1.0",
-        "path": "schemas/public-input-delivery-1.0.schema.json"
+        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-2.0",
+        "path": "schemas/public-input-delivery-2.0.schema.json"
       },
       "profiles": [
         {
@@ -603,6 +651,36 @@
           "discriminator": {
             "field": "profile",
             "value": "legacy_history_verification"
+          }
+        },
+        {
+          "id": "delivery_draft_publish",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-draft-publish-1.0",
+            "path": "schemas/public-delivery-draft-publish-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_publish_input",
+            "path": "examples/public-delivery-draft-publish-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_publish"
+          }
+        },
+        {
+          "id": "delivery_return_to_draft",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-return-to-draft-1.0",
+            "path": "schemas/public-delivery-return-to-draft-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_return_to_draft_input",
+            "path": "examples/public-delivery-return-to-draft-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_return_to_draft"
           }
         }
       ]
@@ -771,6 +849,34 @@
         },
         "consumer_use_ids": [
           "project_unverified_legacy_history"
+        ]
+      },
+      {
+        "exit_id": "draft_published",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-draft-published-1.0",
+          "path": "schemas/public-output-delivery-draft-published-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_published_output",
+          "path": "examples/public-output-delivery-draft-published-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_published"
+        ]
+      },
+      {
+        "exit_id": "draft_revision_ready",
+        "schema": {
+          "schema_id": "guru-publish-task-delivery-output-delivery-draft-revision-ready-1.0",
+          "path": "schemas/public-output-delivery-draft-revision-ready-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_revision_ready_output",
+          "path": "examples/public-output-delivery-draft-revision-ready-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_revision_ready"
         ]
       }
     ],
@@ -977,6 +1083,32 @@
           "schema_id": "legacy-maintenance-publish-task-delivery-unverified-legacy-history-input-1.0",
           "path": "consumers/workflow/production/legacy-maintenance-publish-task-delivery-unverified-legacy-history.schema.json"
         }
+      },
+      {
+        "id": "draft_published_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-feedback-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-publish-task-delivery-draft-published-1.0",
+          "path": "consumers/workflow/production/publish-task-delivery-draft-published.schema.json",
+          "kind": "json_schema"
+        }
+      },
+      {
+        "id": "draft_revision_ready_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-revision-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-publish-task-delivery-draft-revision-ready-1.0",
+          "path": "consumers/workflow/production/publish-task-delivery-draft-revision-ready.schema.json",
+          "kind": "json_schema"
+        }
       }
     ],
     "projections": [
@@ -1121,6 +1253,62 @@
         "exit_id": "unverified_legacy_history",
         "consumer_input_id": "unverified_legacy_history_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_draft_published",
+        "exit_id": "draft_published",
+        "consumer_input_id": "draft_published_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "candidate_head",
+            "target": "candidate_head"
+          },
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          }
+        ]
+      },
+      {
+        "id": "project_draft_revision_ready",
+        "exit_id": "draft_revision_ready",
+        "consumer_input_id": "draft_revision_ready_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "repo_ref",
+            "target": "repo_ref"
+          },
+          {
+            "source": "pr_number",
+            "target": "pr_number"
+          }
+        ]
       }
     ],
     "private_artifacts": [
@@ -1128,8 +1316,8 @@
         "id": "publication_transaction",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "guru-publish-task-delivery-transaction-1.0",
-          "path": "schemas/publication-transaction.schema.json"
+          "schema_id": "guru-publish-task-delivery-transaction-2.0",
+          "path": "schemas/publication-transaction-2.0.schema.json"
         },
         "persistence": "ignored_runtime"
       },

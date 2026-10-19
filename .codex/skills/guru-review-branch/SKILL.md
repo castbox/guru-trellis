@@ -17,11 +17,32 @@ Read the current Delivery integration contract in [references/contract.md](refer
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
 
-Use this Skill after `guru-create-task-commit:committed` and before publication.
+Use the final profile after `guru-create-task-commit:committed`; early Draft content analysis has its independent entry below.
 Read [references/contract.md](references/contract.md) completely before acting.
 
 Before judging committed validation or its claims, read and apply
 `.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`.
+
+## Early complete content analysis
+
+`delivery_draft_content_review` independently reads the complete fixed B..H diff,
+current scope, plans, contracts, consumers, tests and applicable Architecture.
+Its input contains task/key/B/branch_review_commit and no Check field. Review
+applicable correctness and both subtraction dimensions. Qualify real findings
+under supported normal paths. Do not read Check private conclusions or infer
+pass from Draft, CI or phase. Target advancement, PR conflict and absent merge
+refs do not change this content range.
+
+After independent semantic analysis, invoke scripts/invoke.sh --input with this
+profile and --owner-result containing status, summary, evidence and concrete
+revision_refs only for revision-required. Return exactly draft_content_reviewed
+(task/key/B/H), draft_revision_required (task/key/revision_refs), or blocked.
+The result is call-local feedback; it writes no public full_review, gate or
+review cache. Changed HEAD requires fresh analysis. The implementation/Check
+coordinator immediately consumes feedback and separately judges command facts.
+Formal delivery_branch_review still independently reviews the actual complete
+candidate after real Check. Never promote early pass into final pass.
+
 
 ## Actual Candidate Set
 

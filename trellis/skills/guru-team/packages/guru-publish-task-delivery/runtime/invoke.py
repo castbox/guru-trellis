@@ -26,7 +26,7 @@ def run(package_root: Path, command: dict[str, Any], argv: list[str]) -> dict[st
     del command
     args = parser("invoke").parse_args(argv)
     public = read_json(args.input)
-    if public.get("profile") not in {"delivery_review_ready", "delivery_same_plan_resume", "delivery_reprepare_publication", "delivery_scope_withdrawal", "delivery_scope_revision"}:
+    if public.get("profile") not in {"delivery_draft_publish", "delivery_return_to_draft", "delivery_review_ready", "delivery_same_plan_resume", "delivery_reprepare_publication", "delivery_scope_withdrawal", "delivery_scope_revision"}:
         from owner import WorkflowError
         raise WorkflowError("Use the current public Delivery publication profiles; legacy Task publication is pinned-old-only.", code="schema_mismatch")
     if public.get("profile") == "delivery_scope_revision":

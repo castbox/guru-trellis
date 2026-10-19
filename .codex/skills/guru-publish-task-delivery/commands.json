@@ -174,7 +174,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/publication-transaction.schema.json"
+        "schemas/publication-transaction-2.0.schema.json"
       ],
       "validator_id": "publication_executor",
       "runtime_role": "execute"
@@ -287,7 +287,8 @@
       "side_effect": "runtime_write",
       "schema_bindings": [
         "schemas/private-delivery-migration-input-1.0.schema.json",
-        "schemas/private-delivery-migration-review-1.0.schema.json"
+        "schemas/private-delivery-migration-review-1.0.schema.json",
+        "schemas/private-publication-transaction-636-input.schema.json"
       ],
       "validator_id": "private_delivery_migration",
       "runtime_role": "record"

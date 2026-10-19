@@ -1,6 +1,6 @@
 # Task 与 Delivery 生命周期
 
-知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。候选继承 RDT `current-main-0.6.17-guru.109`，固定迁移源为 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。只有三层共享入口完成原 owner 晋升后，本单元才作为 successor 的当前正文；旧阶段仍使用其适用版本。
+知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.113`；晋升前完整定义为 immutable Git `b470580d4f79f61c66d72db97861fe1564b5e746:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.112`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
 
@@ -31,6 +31,20 @@ Planning 在实质 solution 写入前先取得真实 candidate 的独立 Archite
 whole-scope 变化先回原 Clarify；受影响 Delivery 的实际当前阶段 owner 读取新的整体 authority，合法 rework 后交同一 Author。仅清除受影响结果，不以旧 gate 资格阻挡 scope 修订，不改历史已交付事实。整个切片撤回由实际当前 owner 执行公共 stop/release，保留 candidate/commit/PR/history；停止不是交付或整体完成。PR 关闭及资源删除各有原 owner。
 
 远端 ref、无关共享 CURRENT、archive 或工具版本前进，不强迫换源、同步、重写贡献或整链重审。实际冲突、必需检查具体集成失败、原 Merge 确认的既有服务端更新要求、明确依赖纳入或用户主动同步，才进入原 Reconcile；一次固定目标，按真实差额恢复原阶段，不追赶新目标或制造空提交。立即适用规则、scope、依赖和方案的实质变化仍回原 owner。
+
+## 早期提交、Draft 反馈与并行候选验证
+
+`R636-01..07 / BEH636-01..07` 由 #636 增加。TaskCommit 在已激活且处于实施阶段的当前 Delivery 中，以有界 AI 内容审查、最小自检、敏感内容检查、精确 staging 和目标核验形成早期真实提交。该提交仍执行原 hook/事务和同提交输出恢复，但不把完整 task Check、最终 Branch Review、全部编译或重型集成/race 作为统一前置。最小命中命令由当前 Planning 按风险选定。早期提交输出不证明任何最终 gate。
+
+原 Publication 在同 Task/Delivery 的唯一同仓 Open PR 上创建或更新 Draft；正文准确区分已执行、失败、SKIP、未执行和待完成项目。冲突解决或问题修正形成新候选后，经原提交/发布 owner 更新同 PR，不在本地等待最终审核才能先发布反馈，不造空提交或新 Delivery。所有 Draft 和最终 Delivery 正文均 Refs-only；即使 full/default target，Issue 关闭仍由整体 Closure 独占。
+
+同 PR 已 Ready 而需要发布未最终审核的修订时，由原 Publication 先读回真实状态/HEAD，合法 rework 失效受影响的 Check/full_review/readiness，并确保远端退回 Draft 后才推送新候选。身份、planning、固定 B、PR 与已发生历史事实保留。新候选取得全部适用最终证据后，才可沿原最终 Publication 再转 Ready；旧 HEAD 的 readiness 不放行新 HEAD 或 Merge。
+
+Draft 后在同一固定 B/H 并行启动独立完整内容分析和风险匹配验证。目标分支前进不中断该内容审核。分支 HEAD H 的验证与目标 T/组合候选 M 的验证分别标识；文本冲突、没有 PR merge ref 或 pull_request CI 未触发不阻止固定分支内容审核和受支持 HEAD 命中检查。组合检查保留具体缺口及恢复条件，Draft 的存在不证明远端 CI 已执行。业务 CI 入口缺失由业务 owner处理，Guru 不因此接管业务 CI。
+
+原 Branch Review 的早期分析结果只供当前实现/Check 判断和修正，不写 public full_review，不自动复用为正式 pass。正式 full_review 保留真实 Check predecessor；Check、完整独立 committed Review、readiness、Ready/Merge 各自判断实际候选。早期反馈不推迟、取消或降低完整最终质量义务。
+
+原 producer 恢复已成功但输出丢失的 commit、Draft 创建、push、metadata 和 Draft/Ready 转换，先读回同操作实际状态/HEAD/payload，再接续剩余动作。不能创建重复 PR、空提交或以历史 Ready 冒充新通过。公共 I/O、阶段和受控 producer/consumer 必须显式成套迁移，canonical/workflow/platform/dogfood 同步；Draft 不是新公共 phase 或最终 PublicationFact，也不产生第二状态 authority。
 
 ## 最终检查、提交和独立审核
 

@@ -390,7 +390,10 @@ route for that observation. The main coordinator rereads those facts and runs
 `trellis-*` agent definitions remain upstream-owned and are not patched by the
 Guru preset.
 
-Only `guru-check-task:passed` reaches `guru-create-task-commit`. Finding and
+The final Check-bound path reaches `guru-create-task-commit` only through
+`guru-check-task:passed`. The early Draft path explicitly invokes the same
+TaskCommit and Publication owners through their independent profiles and five
+workflow-owned Draft routers. Finding and
 planning-stale exits return to their declared consumers automatically. The
 workflow does not reproduce Phase 2 adequacy dimensions, severity rules,
 recorder/checker commands, or private evidence shape.
@@ -405,8 +408,10 @@ Chinese PR title/body with `Refs` only, including when the target is the
 default branch. It discloses remaining task work and unverified boundaries;
 task-content findings return to Phase 2 and affected downstream gates.
 
-Only `guru-review-task-delivery:ready` enters `guru-publish-task-delivery`.
-That owner controls the reviewed HEAD push, current Draft/Ready PR, bounded
+Only `guru-review-task-delivery:ready` enters the final Ready Publication
+profile. Early task/key/B/H enters the independent Draft profile; return-to-Draft
+uses the original publishing revision owner and lawful rework.
+That owner controls the selected HEAD push, current Draft/Ready PR, bounded
 side-effect confirmation, and same-plan recovery. Only its checked
 `ready_for_merge` enters `guru-merge-task-delivery`, which requires a separate
 expected-head merge confirmation. Its `delivered` result is one Delivery, not
@@ -783,3 +788,16 @@ Explicit tools-only and selected legacy Task maintenance load their standalone s
 ## Manual archive resume (#577)
 
 Manual historical archive resume enters the existing standalone maintenance owner archive_resume profile. Formal Finish archives still enter Reactivate; unfinished Closure/Finish/Finalizer work returns to its original owner. Only actual installed identity/checkout/binding/session, target-native continuation and next semantic-owner validation may resume current execution.
+
+## Early Draft routing (#636)
+
+The canonical workflow uniquely consumes draft_committed, draft_published,
+draft_revision_ready, draft_content_reviewed and draft_revision_required. It
+explicitly invokes original TaskCommit, Publication and early Branch Review;
+profiles and internal behavior remain package-owned. Draft feedback dispatches
+independent fixed B/H content analysis and implementation/Check-owned HEAD
+validation in parallel. Final Check, formal full_review, readiness and Merge
+remain mandatory. Target advancement, conflicts and absent merge refs do not
+block the supported HEAD entry; target/integration evidence stays separate.
+Current continuation uses public phase plus original-owner transaction readback,
+never Draft as gate authority. See task-delivery-early-draft-migration.md.

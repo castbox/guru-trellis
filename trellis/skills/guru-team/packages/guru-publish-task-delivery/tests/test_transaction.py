@@ -36,7 +36,7 @@ def pr(*, draft: bool = True, title: str = "Delivery title", body: str = BODY) -
 
 
 def transaction(stage: str = "bind_pr") -> dict:
-    value = {"schema_version":"1.0","skill_id":OWNER.SKILL_ID,"transaction_ref":"c"*64,"stage":stage,"input":source_input(),"repo_ref":"castbox/guru-trellis","base_branch":"main","head_branch":"codex/435","reviewed_head":HEAD,"initial_remote_head":None,"candidate_pr":None,"bound_pr":None,"decisions":{"push_required":True,"create_pr_required":True,"metadata":None,"ready":None}}
+    value = {"schema_version":"2.0","action":"ready","terminal":"ready","skill_id":OWNER.SKILL_ID,"transaction_ref":"c"*64,"stage":stage,"input":source_input(),"repo_ref":"castbox/guru-trellis","base_branch":"main","head_branch":"codex/435","reviewed_head":HEAD,"initial_remote_head":None,"candidate_pr":None,"bound_pr":None,"decisions":{"push_required":True,"create_pr_required":True,"metadata":None,"ready":None}}
     return value
 
 

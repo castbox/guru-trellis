@@ -2,7 +2,7 @@
 
 | Identity / alias | Status | Locator | Relations |
 | --- | --- | --- | --- |
-| RDT-TST-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md); [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md) |
+| RDT-TST-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08; R636/BEH636 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md); [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md) |
 | RDT-TST-COMPLETION; Completion/Closure/Finish; R531-06; R547 | current | [completion-closure](./completion-closure.md) | [RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md); [RDT-DES-COMPLETION](../../design/current/completion-closure.md) |
 | RDT-TST-KNOWLEDGE; RDT/Architecture; REQ-007/BEH-007; R331 | current | [knowledge-maintenance](./knowledge-maintenance.md) | [RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md); [RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md) |
 

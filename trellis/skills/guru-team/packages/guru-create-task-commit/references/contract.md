@@ -21,7 +21,7 @@ upstream migration/default-cutover qualification.
 
 ### Committed content and mutation are distinct
 
-All current commit profiles bind `delivery_key` and `check_result_id`.
+Final commit profiles bind `delivery_key` and `check_result_id`; early profiles independently bind `delivery_key` and fixed `base_ref`.
 `delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
 non-metadata clean candidate and nonempty full fixed base-to-HEAD diff. Latest
 target ancestry is not a qualification condition.
@@ -73,6 +73,31 @@ required. Actual content changes use the dirty path. A successful necessary
 dirty commit retires the association. Missing input returns to this original
 owner, never invents a new commit or a private public-state authority.
 
+## Early Draft commit
+
+`delivery_draft_commit` requires the exact registered Task/Delivery, accepted
+current Planning and implementing phase. It binds fixed base B without a
+check_result_id. Review the complete dirty snapshot and actual proposed content
+against scope. Run Planning-selected minimum self-checks. Check sensitive
+content, precise target, stage paths, message and unrelated preservation before
+prepare and the current-dialogue commit boundary. Complete Check, heavy tests
+and final Branch Review remain pending duties.
+
+Use the same prepare and exact invoke transaction, real hooks and same-commit
+receipt recovery. The private candidate/result use the closed delivery-2.0 union:
+draft contains no Check or phase2 anchor; final retains both real bindings.
+`draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
+router and original Publication. It cannot enter formal Branch Review.
+
+For an already committed nonempty B..HEAD candidate, including a legal resolved
+integration commit, `delivery_draft_committed_reentry` performs the same bounded
+semantic review and proves committed Task identity and all five Planning files.
+It returns the early DTO without stage, commit, hook, begin_check or gate.
+Active merge/sequencer state is still rejected. New dirty content uses prepare;
+no empty commit restores output. Final profiles keep Check and `committed`
+semantics. Matching migration is defined by MIGRATION-636.
+
+
 ## Preserved semantic and transaction duties
 
 The duties below apply to the current Delivery input and output contracts.
@@ -82,10 +107,10 @@ Historical data is read only by its named history or migration owner.
 
 ## Entry And Candidate
 
-Workflow and standalone mode read the current Task identity, Delivery plans,
-actual passed public Check, exact current candidate and complete Git state.
-The input binds `delivery_key` and `check_result_id`; the original commit
-transaction validates them again at its mutation boundary. It does not read
+Workflow and standalone mode read current Task identity, accepted Delivery plans,
+the selected profile candidate and complete Git state. Final inputs bind the
+actual public Check through `check_result_id`; early inputs have no Check field.
+The original transaction validates the selected contract again before mutation. It does not read
 Check or Planning private checkpoints. Dirty paths are facts, not authority.
 
 Build the next three-digit candidate under the ignored owner-private path
@@ -97,14 +122,14 @@ authorization, cross-Skill digest, freshness journal, or terminal result. It is 
 task artifact, never enters `path_classifications` or `exact_stage_paths`, and
 is never staged or committed.
 
-The current Delivery candidate uses `delivery-1.0`. Older Task candidates are not converted and
+The current Delivery candidate uses the closed `delivery-2.0` union. Older Task candidates are not converted and
 no removed facts are synthesized. The owner deletes or rejects it and performs
-a complete reprepare from current Phase 2 evidence, live task/HEAD/snapshot,
+a complete reprepare from the selected profile evidence, live task/HEAD/snapshot,
 scope classifications, and message review.
 
 Classify every dirty path exactly once:
 
-- `task-reviewed`: current task scope covered by fresh Phase 2 evidence;
+- `task-reviewed`: current task scope covered by the selected early bounded review or final Check;
 - `unrelated-preserved`: outside scope and preserved byte-for-byte;
 - `unreviewed-blocking`: possibly in scope but not covered by Phase 2;
 - `ambiguous-blocking`: the AI cannot classify reliably.
@@ -186,7 +211,7 @@ Pinned-old private executor diagnostics do not establish a current Delivery gate
 `check-task-commit-plan.sh` and `create-task-commit.sh` remain stable
 package-private testing, diagnostic, and bounded recovery entries.
 
-`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-1.0` candidates
+`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-2.0` candidates
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git
@@ -239,7 +264,7 @@ published commit before deleting both. The executor does not append `committed`,
 
 ## Exit
 
-Return exactly one declared exit: `committed`, `revision-required`, or
+Return exactly one declared exit: `draft_committed`, `committed`, `revision-required`, or
 `blocked`. The committed DTO is projected to Branch Review, which verifies the
 current commit directly from live Git. A finding fix returns through
 implementation and a full Phase 2 rerun before a fresh private candidate.
@@ -252,8 +277,9 @@ Clean validation recomputes projected bytes from original Git blobs and current 
 
 ## Fixed content baseline
 
-Both dirty commit and clean re-entry consume the current Check candidate’s
-exact base OID. The Task base_branch remains the PR target name; origin/base
+Final dirty commit and clean re-entry consume the current Check candidate’s
+exact base OID. Early profiles consume the caller-selected pinned development
+base, retaining an existing Delivery candidate base when present. The Task base_branch remains the PR target name; origin/base
 is not reread to select content or require ancestry. A clean candidate needs
 its complete nonempty fixed base..HEAD diff and all original identity, plan,
 content, staging/hook and recovery facts. Necessary commits evolve actual HEAD

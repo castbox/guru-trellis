@@ -122,6 +122,27 @@ Stop preserves commits/PR/resources; PR close and cleanup require their actual
 owners and any necessary current side-effect confirmation. Lost output retries
 the identical stored stop result and releases selection without another stop.
 
+## Early complete content analysis
+
+`delivery_draft_content_review` independently reads the complete fixed B..H diff,
+current scope, plans, contracts, consumers, tests and applicable Architecture.
+Its input contains task/key/B/branch_review_commit and no Check field. Review
+applicable correctness and both subtraction dimensions. Qualify real findings
+under supported normal paths. Do not read Check private conclusions or infer
+pass from Draft, CI or phase. Target advancement, PR conflict and absent merge
+refs do not change this content range.
+
+After independent semantic analysis, invoke scripts/invoke.sh --input with this
+profile and --owner-result containing status, summary, evidence and concrete
+revision_refs only for revision-required. Return exactly draft_content_reviewed
+(task/key/B/H), draft_revision_required (task/key/revision_refs), or blocked.
+The result is call-local feedback; it writes no public full_review, gate or
+review cache. Changed HEAD requires fresh analysis. The implementation/Check
+coordinator immediately consumes feedback and separately judges command facts.
+Formal delivery_branch_review still independently reviews the actual complete
+candidate after real Check. Never promote early pass into final pass.
+
+
 ## Preserved semantic and transaction duties
 
 The duties below apply to the current Delivery input and output contracts.

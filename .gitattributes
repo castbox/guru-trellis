@@ -72,6 +72,7 @@
 /.trellis/spec/workflow/semantic-retrieval.md text eol=lf
 /.trellis/spec/workflow/skill-package-contract.md text eol=lf
 /.trellis/spec/workflow/subtraction-first-compatibility.md text eol=lf
+/.trellis/spec/workflow/task-delivery-early-draft-migration.md text eol=lf
 /.trellis/spec/workflow/task-delivery-migration.md text eol=lf
 /.trellis/spec/workflow/workflow-contract.md text eol=lf
 /.trellis/guru-team/extension.json -text

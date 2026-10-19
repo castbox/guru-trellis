@@ -1542,18 +1542,21 @@ intent cannot route through `not_required`.
 
 ## Current Task Commit Authority
 
-Candidate 5.0 removes branch classification and publication-state eligibility.
-A current exact commit request authorizes only the matching action in the
-conversation. Without that request, the Skill asks once after displaying the
-exact repo, ref, HEAD, paths, and message. Branch name, role, protection,
-sharing, other-task ownership, remote branch presence, and PR state neither
-grant nor deny authority and are not read as commit preconditions. Task/HEAD,
-Phase 2, snapshot, exact staging, message, Git operation state, and unrelated
-preservation still fail closed. Authorization is never persisted.
+Current private candidate/result use the independently versioned delivery-2.0
+closed draft/final union. Draft carries no check_result_id or phase2 anchor;
+final binds real current Check. Public committed keeps its final meaning.
+draft_committed hands only task/key/B/commit_sha to the Draft workflow router.
+Both paths retain complete snapshot classification, exact staging, structured
+message, real hook isolation, Git operation-state checks and unrelated state
+preservation. The same locator recovers a successful commit without duplication.
+Authorization stays in the current conversation. Old candidates/receipts follow
+the original producer's bounded recovery/reprepare before matching cutover.
 
-An unfinished 4.0 owner-private candidate is not converted or supplemented. It
-is rejected or removed and the owner fully reprepares candidate 5.0 from current
-Phase 2 and live Git evidence.
+Publication transaction 2.0 binds action and terminal inside the same original
+owner. Draft/readback DTOs carry task/key/B/H/repo/PR only as needed by their
+workflow consumers. They are not PublicationFact or a second candidate ledger.
+Formal Ready, candidate-bound readiness and PublicationFact remain distinct.
+See task-delivery-early-draft-migration.md for the exact current conversion.
 
 ## Historical PR Merge Gate And Results (Pinned-Old-Only)
 

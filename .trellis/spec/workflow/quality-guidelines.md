@@ -1597,3 +1597,18 @@ Full multi-platform Release compatibility remains with its dedicated owner.
 ## Manual archive resume (#577)
 
 Archive-resume validation exercises a matching public pair, preserved raw archive/source, original owner attribution and exact retirement/restore, returned active identity, real active ambiguity, same-operation retry/output loss/rollback and later-work protection. One representative old-installation topology must execute target-native continuation and the next actual Guru semantic owner. Report formal source-lock adoption, real business adoption and full Release matrix separately; none follows from local_candidate or fixture results.
+
+## Early Draft validation (#636)
+
+Exercise original public wrappers for no-Check exact commit, clean reentry,
+receipt output-loss recovery and call-local early complete-range Review.
+Exercise production Publication functions with stateful provider ports for
+Draft creation/update, Ready-before-push conversion, same-PR Draft/Ready
+round trips and each explicit lost-output recovery point. Prove that Draft
+writes no final PublicationFact, old readiness cannot release changed HEAD,
+formal Review still requires Check, fixed B/H survives target advancement,
+and no merge ref is needed for the supported HEAD checks. Original-owner
+transaction conversion preserves completed facts and pending Ready intent
+without remote mutation or invented gates. Provider fixtures, real GitHub
+results, matching installation and business CI are separate evidence layers.
+Keep ordinary-task validation scope; do not run the full Release matrix.

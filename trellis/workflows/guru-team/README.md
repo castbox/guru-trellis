@@ -107,6 +107,14 @@ owns reviewer method and input boundaries; this workflow routes the real result.
 Delivery/Completion consume current conclusions and matching-stage eligibility.
 Actual native and projection evidence is owned by [#404 Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
 
+## 提前 Draft 与最终门禁
+
+原 TaskCommit 支持无 Check 的有界早期提交及已提交候选 reentry。原 Publication
+创建/更新同一 Draft，并在更新 Ready PR 前先退回 Draft。Draft 输出只启动固定 B/H
+的独立内容分析和风险匹配 HEAD 验证，不写最终 PublicationFact。最终 Check、正式
+full_review、readiness、Ready 和 Merge 保持完整门禁。早期反馈不要求最终文档晋升。
+成套 I/O、在途状态、私有事务 2.0 与安装/恢复合同见 [MIGRATION-636.md](../../presets/guru-team/MIGRATION-636.md)。
+
 ## Current Lifecycle
 
 ```text

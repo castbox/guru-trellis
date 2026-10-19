@@ -2176,3 +2176,17 @@ commit, payload and recovery rather than restarting or synchronizing.
 ## Manual archive resume (#577)
 
 #577 adds the independent archive_resume input profile to guru-maintain-legacy-task. Original convert/history_closeout/resume/rollback and minimal typed exits retain their meaning. The original six private owners accept source_task_ref only to separate physical archived source from task_ref control attribution; omission preserves the original input. See MIGRATION-577 and the package-owned contract.
+
+## Early Draft Skill I/O (#636)
+
+TaskCommit and Publication select current Delivery aggregate 2.0. Branch Review
+selects Delivery aggregate 3.0 and legacy-index 3.0, retaining the existing
+promotion alignment and maintenance profiles. New early profiles have their
+own closed input/output contracts. Existing final profile schemas and semantic
+meanings remain unchanged. Package interfaces declare five workflow-owned
+consumers for early commit, publication, revision and content feedback. Each
+projection carries only that consumer's required fields. Current runtime does
+not read old candidate/transaction schemas; the original named one-time
+migration owner alone consumes them. Historical assets remain for their real
+diagnostic/migration consumers, not current fallback. Draft feedback never
+serves as Check, formal full_review, readiness or Merge input.

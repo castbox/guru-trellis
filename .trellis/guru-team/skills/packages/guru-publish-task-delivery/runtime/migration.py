@@ -5,7 +5,7 @@ from pathlib import Path
 
 from owner import (WorkflowError, load_transaction, read_json, repo_root,
                    save_transaction, validate_transaction, ready_output,
-                   validate_public_input, transaction_path)
+                   validate_public_input, transaction_path, digest, read_pr, find_bindable_pr)
 from runtime.delivery_projection.adapter import DeliveryProjection
 from runtime.schema import validate_json
 from runtime.io import CommandError
@@ -21,14 +21,24 @@ def _run(package, command, argv):
     args = parser.parse_args(argv)
     root = repo_root(Path(args.root or "."))
     public, review = read_json(args.input), read_json(args.owner_result)
-    validate_json(public, package / "schemas/private-delivery-migration-input-1.0.schema.json", "input")
+    if public.get("profile") == "publication_transaction_636":
+        validate_json(public, package / "schemas/private-publication-transaction-636-input.schema.json", "input")
+    else:
+        validate_json(public, package / "schemas/private-delivery-migration-input-1.0.schema.json", "input")
     validate_json(review, package / "schemas/private-delivery-migration-review-1.0.schema.json", "owner_result")
     if review["status"] != "passed":
         raise WorkflowError("Original Publish owner must review actual same-cycle attribution and recovery obligations.", code="private_state_invalid")
     transaction = load_transaction(root, public["transaction_ref"])
     if transaction is None:
         raise WorkflowError("Recover the exact original publication transaction.", code="private_state_missing")
-    validate_transaction(transaction)
+    if transaction.get("schema_version") == "1.0":
+        validate_json(transaction, package / "schemas/publication-transaction.schema.json", "transaction")
+        if transaction.get("transaction_sha256") != digest({k:v for k,v in transaction.items() if k != "transaction_sha256"}):
+            raise WorkflowError("The original transaction digest is stale.", code="private_state_invalid")
+    else:
+        validate_transaction(transaction)
+    if public.get("profile") == "publication_transaction_636":
+        return migrate_636(root, transaction, public, args.preview)
     source = transaction["input"]
     projection = DeliveryProjection(root, source["task_ref"])
     projection.resolve(public["delivery_key"])
@@ -62,6 +72,7 @@ def _run(package, command, argv):
                 or projection.gate_applicability(public["delivery_key"])["readiness"]["kind"] != "applicable"):
             raise WorkflowError("Fresh current Readiness is required before continuing an incomplete transaction.", code="publication_stale")
         candidate = delivery["candidate"]
+    migrated.update(schema_version="2.0", action="ready", terminal="ready")
     migrated["input"] = new_source
     migrated["public_candidate"] = candidate
     if args.preview:
@@ -70,6 +81,43 @@ def _run(package, command, argv):
     # Keep the old transaction ref/retry stage and all actual decisions. No
     # push/PR/Ready mutation or public gate occurs in this private command.
     return {"status": "transaction_bound", "transaction_ref": transaction["transaction_ref"]}
+
+
+def migrate_636(root, transaction, public, preview):
+    """One-time current 1.0 -> 2.0 conversion; no remote mutation or gate."""
+    source = transaction["input"]
+    if source.get("task_ref") != public["task_ref"] or source.get("delivery_key") != public["delivery_key"]:
+        raise WorkflowError("Select the exact original current Delivery transaction.", code="private_state_invalid")
+    if transaction["schema_version"] == "2.0":
+        return {"status":"already_bound", "transaction_ref":transaction["transaction_ref"]}
+    projection = DeliveryProjection(root, source["task_ref"])
+    selected = projection.resolve(source["delivery_key"])
+    pr = (read_pr(root, transaction["bound_pr"]["number"]) if transaction.get("bound_pr")
+          else find_bindable_pr(root, transaction))
+    if pr is not None:
+        heads = {transaction["reviewed_head"], transaction.get("initial_remote_head")}
+        original = transaction.get("candidate_pr")
+        if original:heads.add(original["head_sha"])
+        if pr["head_sha"] not in heads:
+            raise WorkflowError("The actual PR HEAD is outside this operation's preimage/postimage.", code="publication_stale")
+    if transaction["stage"] == "ready":
+        if (pr is None or pr["state"] not in {"OPEN", "MERGED"} or pr["is_draft"]
+                or pr["head_sha"] != transaction["reviewed_head"]
+                or pr["title"] != source["pr_title"] or pr["body"] != source["pr_body"]):
+            raise WorkflowError("Recover the actual original Ready result before conversion.", code="publication_stale")
+    else:
+        readiness = selected["results"]["readiness"]
+        if (selected["phase"] != "publishing" or readiness is None
+                or readiness["result_id"] != source["readiness_result_id"]
+                or projection.gate_applicability(source["delivery_key"])["readiness"]["kind"] != "applicable"
+                or selected["candidate"]["head_ref"] != transaction["reviewed_head"]):
+            raise WorkflowError("Recover applicable original readiness before converting a pending Ready action.", code="publication_stale")
+    migrated = copy.deepcopy(transaction)
+    migrated.update(schema_version="2.0", action="ready", terminal="ready")
+    path = transaction_path(root, transaction["transaction_ref"]).relative_to(root).as_posix()
+    if preview:return {"status":"preview", "write_paths":[path]}
+    save_transaction(root, migrated)
+    return {"status":"transaction_bound", "transaction_ref":migrated["transaction_ref"]}
 
 
 def run(package, command, argv):

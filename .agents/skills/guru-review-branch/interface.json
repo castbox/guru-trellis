@@ -377,6 +377,30 @@
     {
       "id": "legacy_control_restore_input",
       "path": "schemas/legacy_control_restore-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_content_review_input",
+      "path": "schemas/public-delivery-draft-content-review-input-1.0.schema.json"
+    },
+    {
+      "id": "draft_content_reviewed_output",
+      "path": "schemas/public-output-delivery-draft-content-reviewed-1.0.schema.json"
+    },
+    {
+      "id": "draft_revision_required_output",
+      "path": "schemas/public-output-delivery-draft-revision-required-1.0.schema.json"
+    },
+    {
+      "id": "draft_content_review",
+      "path": "schemas/draft-content-review-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate_3_0",
+      "path": "schemas/public-input-delivery-3.0.schema.json"
+    },
+    {
+      "id": "input_legacy_index_3_0",
+      "path": "schemas/public-input-legacy-index-3.0.schema.json"
     }
   ],
   "validators": [
@@ -483,6 +507,22 @@
         "kind": "workflow",
         "id": "legacy-maintenance-review-branch-legacy-controls-retired"
       }
+    },
+    {
+      "id": "draft_content_reviewed",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-content-review-router"
+      }
+    },
+    {
+      "id": "draft_revision_required",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-content-revision-router"
+      }
     }
   ],
   "reentry": {
@@ -526,8 +566,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-review-branch-input-legacy-index-2.0",
-        "path": "schemas/public-input-legacy-index-2.0.schema.json"
+        "schema_id": "guru-review-branch-input-legacy-index-3.0",
+        "path": "schemas/public-input-legacy-index-3.0.schema.json"
       },
       "profiles": [
         {
@@ -648,6 +688,21 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_promotion_reference_alignment"
+          }
+        },
+        {
+          "id": "delivery_draft_content_review",
+          "schema": {
+            "schema_id": "guru-review-branch-input-delivery-draft-content-review-1.0",
+            "path": "schemas/public-delivery-draft-content-review-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_content_review_input",
+            "path": "examples/public-delivery-draft-content-review-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_content_review"
           }
         }
       ]
@@ -799,6 +854,34 @@
         "consumer_use_ids": [
           "project_legacy_controls_retired"
         ]
+      },
+      {
+        "exit_id": "draft_content_reviewed",
+        "schema": {
+          "schema_id": "guru-review-branch-output-delivery-draft-content-reviewed-1.0",
+          "path": "schemas/public-output-delivery-draft-content-reviewed-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_content_reviewed_output",
+          "path": "examples/public-output-delivery-draft-content-reviewed-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_content_reviewed"
+        ]
+      },
+      {
+        "exit_id": "draft_revision_required",
+        "schema": {
+          "schema_id": "guru-review-branch-output-delivery-draft-revision-required-1.0",
+          "path": "schemas/public-output-delivery-draft-revision-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_revision_required_output",
+          "path": "examples/public-output-delivery-draft-revision-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_revision_required"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -941,6 +1024,32 @@
           "schema_id": "legacy-maintenance-review-branch-legacy-controls-retired-input-1.0",
           "path": "consumers/workflow/production/legacy-maintenance-review-branch-legacy-controls-retired.schema.json"
         }
+      },
+      {
+        "id": "draft_content_reviewed_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-content-review-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-review-branch-draft-content-reviewed-1.0",
+          "path": "consumers/workflow/production/review-branch-draft-content-reviewed.schema.json",
+          "kind": "json_schema"
+        }
+      },
+      {
+        "id": "draft_revision_required_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-content-revision-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-review-branch-draft-revision-required-1.0",
+          "path": "consumers/workflow/production/review-branch-draft-revision-required.schema.json",
+          "kind": "json_schema"
+        }
       }
     ],
     "projections": [
@@ -1026,6 +1135,50 @@
         "exit_id": "legacy_controls_retired",
         "consumer_input_id": "legacy_controls_retired_input",
         "operation": "direct"
+      },
+      {
+        "id": "project_draft_content_reviewed",
+        "exit_id": "draft_content_reviewed",
+        "consumer_input_id": "draft_content_reviewed_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          }
+        ]
+      },
+      {
+        "id": "project_draft_revision_required",
+        "exit_id": "draft_revision_required",
+        "consumer_input_id": "draft_revision_required_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "revision_refs",
+            "target": "revision_refs"
+          }
+        ]
       }
     ],
     "private_artifacts": [
