@@ -17,6 +17,7 @@ import zipfile
 CODEX_VERSION = "0.163.0"
 OLLAMA_VERSION = "v0.40.6"
 MODEL = "qwen3:4b"
+SESSION_TIMEOUT = 600
 
 
 def write_json(path, value):
@@ -24,6 +25,7 @@ def write_json(path, value):
 
 
 def command(argv, cwd, environment, output, name, timeout=600):
+    print(f"Windows Codex validation: {name}", flush=True)
     with (output / (name + ".stdout")).open("wb") as stdout, (output / (name + ".stderr")).open("wb") as stderr:
         shell = os.name == "nt" and str(argv[0]).lower().endswith((".cmd", ".bat"))
         result = subprocess.run(subprocess.list2cmdline([str(x) for x in argv]) if shell else argv,
@@ -31,6 +33,17 @@ def command(argv, cwd, environment, output, name, timeout=600):
                                 stderr=stderr, timeout=timeout, check=False)
     return {"argv": [str(x) for x in argv], "returncode": result.returncode,
             "stdout": name + ".stdout", "stderr": name + ".stderr"}
+
+
+def stop_process_tree(process):
+    if os.name == "nt":
+        # The .cmd launcher and Ollama both start child processes.
+        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                       timeout=30, check=False)
+    elif process.poll() is None:
+        process.kill()
+    process.wait(timeout=15)
 
 
 def wait_server(process, address):
@@ -58,6 +71,7 @@ def main():
               "model": MODEL, "provider": "ollama", "credential_source": "none_local_model"}
     server = None
     server_log = None
+    codex_home = None
     try:
         if os.name != "nt":
             raise RuntimeError("This evidence requires native Windows")
@@ -126,8 +140,12 @@ def main():
         bash = Path(shutil.which("git")).resolve().parent.parent / "bin/bash.exe"
         prompt = (
             "This is a read-only validation in the installed repository. Use the workflow and platform "
-            "instructions automatically loaded by Codex. First acknowledge the actual Trellis session context "
-            "if it loaded. Then use the installed guru-qualify-normal-scenario Skill in standalone mode with "
+            "instructions automatically loaded by Codex. Perform this work directly in the current agent. "
+            "A Skill is a Markdown instruction file, NOT an agent_type. Do not spawn or delegate to agents. "
+            "Your first action must use a shell tool to read .agents/skills/guru-qualify-normal-scenario/SKILL.md "
+            "and its references/contract.md in full. Read the clear-technical-writing specification it requires. "
+            "Acknowledge the actual Trellis session context if it loaded. Then execute that Skill yourself "
+            "in standalone mode with "
             "requirements_scope_set for this real candidate: whether an additional path-rendering repair is "
             "needed for supported Chinese-and-space repository paths in this installation. Read the Skill and "
             "its full contract, inspect current requirement authority and supported runtime consumers, and "
@@ -136,21 +154,30 @@ def main():
             f"The native Git for Windows Bash executable is {bash.as_posix()}. "
             "Use the activated installed managed runtime through the public wrapper. "
             "Do not substitute a direct hook call or a host-provided semantic result for the session workflow."
+            " Never infer or simulate file contents, tool execution or typed stdout. If a tool fails, report "
+            "the actual failure. Use shell tools to read the installed files and invoke the public wrapper; "
+            "do not use spawn_agent for any step."
         )
         prompt_path = output / "session-prompt.txt"
         prompt_path.write_text(prompt, encoding="utf-8")
         argv = [str(codex), "exec", "--oss", "--local-provider", "ollama", "--model", MODEL,
                 "--enable", "hooks", "--dangerously-bypass-hook-trust",
                 "--dangerously-bypass-approvals-and-sandbox", "--json", "-C", str(installed),
-                "-c", "model_context_window=32768", "-c", "model_max_output_tokens=4096", "-"]
-        with prompt_path.open("rb") as stdin, (output / "session.jsonl").open("wb") as stdout, (output / "session.stderr").open("wb") as stderr:
-            completed = subprocess.run(subprocess.list2cmdline(argv), shell=True, stdin=stdin,
-                                       cwd=installed, env=environment, stdout=stdout, stderr=stderr,
-                                       timeout=2700, check=False)
-        report["session"] = {"argv": argv, "returncode": completed.returncode,
+                "-c", "model_context_window=32768", "-"]
+        report["session"] = {"argv": argv, "status": "running", "timeout_seconds": SESSION_TIMEOUT,
                              "events": "session.jsonl", "stderr": "session.stderr"}
-        if (codex_home / "sessions").is_dir():
-            shutil.copytree(codex_home / "sessions", output / "session-rollouts")
+        print(f"Windows Codex validation: model session (limit {SESSION_TIMEOUT} seconds)", flush=True)
+        with prompt_path.open("rb") as stdin, (output / "session.jsonl").open("wb") as stdout, (output / "session.stderr").open("wb") as stderr:
+            completed = subprocess.Popen(subprocess.list2cmdline(argv), shell=True, stdin=stdin,
+                                         cwd=installed, env=environment, stdout=stdout, stderr=stderr)
+            try:
+                completed.wait(timeout=SESSION_TIMEOUT)
+            except subprocess.TimeoutExpired:
+                report["session"]["status"] = "timed_out"
+                stop_process_tree(completed)
+                report["session"]["returncode"] = completed.returncode
+                raise
+        report["session"].update(status="completed", returncode=completed.returncode)
         report["status"] = "completed" if completed.returncode == 0 else "session_failed"
         # Completion is an execution fact. The task owner reviews automatic context
         # loading, actual Skill invocation and semantic output in the raw session.
@@ -160,14 +187,15 @@ def main():
         return 1
     finally:
         if server is not None:
-            server.terminate()
             try:
-                server.wait(timeout=15)
-            except subprocess.TimeoutExpired:
-                server.kill()
-                server.wait(timeout=15)
+                stop_process_tree(server)
+            except (OSError, subprocess.SubprocessError) as exc:
+                report["cleanup_error"] = f"{type(exc).__name__}: {exc}"
         if server_log is not None:
             server_log.close()
+        if codex_home is not None and (codex_home / "sessions").is_dir():
+            shutil.copytree(codex_home / "sessions", output / "session-rollouts")
+        print(f"Windows Codex validation: {report['status']}", flush=True)
         write_json(output / "report.json", report)
         # Dependencies, binaries and model weights are temporary execution assets;
         # upload only non-sensitive configuration facts, raw events and logs.

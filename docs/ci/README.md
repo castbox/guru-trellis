@@ -60,4 +60,6 @@ gh run rerun <run-id> --repo castbox/guru-trellis
 
 本次代表性 clean Codex 安装不证明 Agent 自动加载或全部平台/历史版本的 Release Gate。真实 Windows Codex 会话可由 dispatch 的 `windows_codex_session=true` 单独启用，复用 candidate 的实际安装及原 artifact；安装不成功时该验收必须失败。正常 PR 不执行此额外会话。其实际自动加载、Skill 调用、hooks 启用和环境结果仍需逐项核对，不能由静态配置、直接 hook 或 wrapper 代替。
 
+该会话使用官方 Codex CLI、Ollama 和本地 `qwen3:4b`，不需要 OpenAI 账号或 API 凭据。独立 `CODEX_HOME` 不复制维护者登录状态。模型须在当前 Agent 中实际读取所选 Skill 及完整合同，完成语义判断并调用公开 wrapper；Skill 名不是 Agent 类型。模型会话限时 600 秒，依赖安装和模型下载另计。超时会终止 Windows 子进程树，并保留原始会话、rollout、命令与失败状态。CLI 正常退出也只表示执行结束，仍由 Task owner 核对实际加载与调用证据。
+
 解释器可见性、非 UTF-8、LF/CRLF 及实际 Agent 的证据分别由 [#630](https://github.com/castbox/guru-trellis/issues/630) 承接；上游 [Trellis#53](https://github.com/castbox/Trellis/issues/53) 的结果只证明其前置修复。控制解释器可见性须使用真实解释器/launcher 并验证子进程解析，不能用 runner 其他 Python 掩盖条件。
