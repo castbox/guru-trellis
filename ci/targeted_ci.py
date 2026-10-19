@@ -183,6 +183,18 @@ def execute_target(repository, role, ref, workspace, diagnostics, selections, ba
                                  "--output", outcome, *selections], target, "tests")
             if outcome.exists():
                 result["tests"] = json.loads(outcome.read_text(encoding="utf-8"))
+            diagnostic = diagnostics / "runtime-diagnostic.json"
+            result["runtime_diagnostic"] = {"report": diagnostic.name}
+            steps.call("runtime-diagnostic", [python, HERE / "runtime_diagnostic.py",
+                       "--target-root", target, "--python", python, "--output", diagnostic], target)
+            if diagnostic.exists():
+                observed = json.loads(diagnostic.read_text(encoding="utf-8"))
+                result["runtime_diagnostic"].update(
+                    collector_status=observed["collector_status"],
+                    fixture_status=observed.get("fixture_status", "not_executed"))
+        else:
+            result["runtime_diagnostic"] = {"collector_status": "not_executed",
+                                            "reason": "Target Python dependencies unavailable"}
         # Tests and installation are independent; always attempt the latter.
         if bash:
             ok, uname = steps.call("bash-uname", [bash, "-c", "uname -s; bash --version"], target)

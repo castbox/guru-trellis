@@ -15,13 +15,25 @@ gh workflow run targeted-ci.yml --repo castbox/guru-trellis \
   -f tests=test_guru_platform_inventory.py
 ```
 
-两个 ref 必须可由同仓库 Git fetch 解析。空 candidate 使用当前 run SHA，空 baseline 只运行 candidate。`tests` 接受以空格分隔的文件路径或 unittest ID；裸文件名相对于目标的 `trellis/presets/guru-team/scripts/python/`。断言始终来自目标，旧目标没有用例时会失败，不会复制新产品实现。
+两个 ref 必须可由同仓库 Git fetch 解析。空 candidate 使用当前 run SHA，空 baseline 只运行 candidate。`tests` 接受文件路径、unittest ID，以及 `文件.py::类.方法`。文件路径和模块选择保持原语义；裸文件名相对于目标的 `trellis/presets/guru-team/scripts/python/`。以下选择只执行指定包级用例，不执行同文件的其他测试：
+
+```text
+trellis/skills/guru-team/packages/guru-sync-base/tests/test_contract.py::BaseSyncPackageContractTests.test_porcelain_z_parser_keeps_registered_worktree_records_separate
+```
+
+CLI 调用包含空格的路径时，将完整的 `文件.py::类.方法` 作为一个 argv 传递。断言来自目标 checkout；旧目标没有文件或用例时保持失败，不复制候选产品实现。导入错误、缺少用例和零用例不能算缺陷命中或通过。
 
 如需验证具体缺陷，同时传 `expected_test` 和 `expected_message`。两者分别精确匹配 unittest failure ID 与 assertion message。ImportError、unittest error、依赖失败和无关 assertion 不算命中。仅当基线的失败全部命中、其余阶段正常且 candidate 全部通过时，报告对照成立。未指定、未命中或两目标相同结果均如实报告。skip、expected failure、零用例不能算完整通过。
 
 ## 报告与定位
 
 Actions job summary 显示两个目标的 SHA、阶段及状态。`targeted-<OS>-<run>-<attempt>` artifact 保存14天，仅含明确的诊断：`report.json`、`summary.md`、各阶段命令/原始退出码/日志和 unittest outcome。报告记录镜像、Python/Git/Bash/Node/pnpm、实际依赖、locale、UTF-8 模式以及 Git 换行配置。它不收集完整环境变量、凭据、`.git` 或目标工作树。
+
+每个目标的 `runtime-diagnostic.json` 单独记录 bootstrap capability fixture 的实际调用。诊断驱动来自本次 driver，`bootstrap_check`、runtime 资产和依赖环境来自被测目标。它只观察 manifest 已声明的公开 wrapper 用例，保留原 argv、输入、编码、返回码和输出；不替换产品代码或修改 active pointer。报告用于定位正常安装的底层失败，不是产品修复通过证明。
+
+原 fixture 遇到首个失败时会停止。诊断器在原临时视图仍存在时，另行执行尚未运行的 manifest 用例，并标记 `supplemental=true`。补充调用沿用原 wrapper、工作目录和环境；原首个失败及 fixture 异常继续保留，不能将补充调用当作原 fixture 已继续或已通过。
+
+诊断收集完成和 fixture 产品失败是不同结果。collector 的启动、依赖或执行缺口保持为环境/执行失败；fixture 的返回码与异常保留为产品观察。测试或诊断失败后仍尝试原 clean 安装。原安装失败继续保留非零，不因取得诊断而变成通过；`expected_test/expected_message` 的精确 unittest 匹配规则保持。
 
 ```bash
 gh run list --repo castbox/guru-trellis --workflow targeted-ci.yml

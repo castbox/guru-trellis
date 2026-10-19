@@ -1,0 +1,173 @@
+{
+  "schema_version": "2.0",
+  "id": "630-native-compatibility",
+  "name": "630-native-compatibility",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 630,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Guru Trellis 三系统运行与安装一致性",
+  "description": "修复路径、URI、跨进程传输、编码与受管文本换行，接入固定上游修复并验证三系统和 Windows Codex 实际会话。",
+  "dev_type": null,
+  "scope": "Issue #630 当前全部行为要求与验收；复用 #631 CI 和 #53 修复，保留正常错误恢复与用户修改保护。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-19",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+    "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+  },
+  "deliveries": [
+    {
+      "id": "16e2a831-13ab-4fbf-becb-21ccb30523b9",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+          "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+        },
+        "anchors": [
+          "R1–R6",
+          "AC1–AC10"
+        ]
+      },
+      "planning_root": "deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+        "revision": "sha256:bc197013bd489d30554ac169c6a0c76821cd7ef31f8f246f17eab903e069281d"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:ad4fb4767392bdb60375c1229471738db8b492522804b671bf9be184d75e5ab3",
+        "paths": [
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/check.jsonl",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.jsonl",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+          ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+          ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+          "ci/runtime_diagnostic.py",
+          "ci/targeted_ci.py",
+          "ci/test_targeted_ci.py",
+          "ci/unittest_report.py",
+          "docs/ci/README.md"
+        ],
+        "head_ref": "0543731bf52aa80842fde5db47332380de513cf0",
+        "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:f742d805-aa0b-4499-af31-f5aefd836e99",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "R1–R6",
+              "AC1–AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+            "revision": "sha256:bc197013bd489d30554ac169c6a0c76821cd7ef31f8f246f17eab903e069281d"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+              "revision": "sha256:ed340c1d9b65c6f0b1d2fd2cbc80bb597eb0639f73ed03d46f8324d87fdb99c1"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+              "revision": "sha256:bc197013bd489d30554ac169c6a0c76821cd7ef31f8f246f17eab903e069281d"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+              "revision": "sha256:1dc1f0459037c0d27e61372cf28ffb2385b8e92b30f03c59e1d74cd2c0adf3ed"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:be3e6ff05c3a4d7d4bb6f07529fef1d984615577f033f7f052e2a13157bc997e",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "R1–R6",
+              "AC1–AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+            "revision": "sha256:bc197013bd489d30554ac169c6a0c76821cd7ef31f8f246f17eab903e069281d"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:ad4fb4767392bdb60375c1229471738db8b492522804b671bf9be184d75e5ab3",
+            "paths": [
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/check.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.jsonl",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+              ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+              ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "ci/runtime_diagnostic.py",
+              "ci/targeted_ci.py",
+              "ci/test_targeted_ci.py",
+              "ci/unittest_report.py",
+              "docs/ci/README.md"
+            ],
+            "head_ref": "0543731bf52aa80842fde5db47332380de513cf0",
+            "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
+          },
+          "predecessor_result_id": "planning-accepted:f742d805-aa0b-4499-af31-f5aefd836e99",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+              "revision": "sha256:ed340c1d9b65c6f0b1d2fd2cbc80bb597eb0639f73ed03d46f8324d87fdb99c1"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+              "revision": "sha256:bc197013bd489d30554ac169c6a0c76821cd7ef31f8f246f17eab903e069281d"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+              "revision": "sha256:1dc1f0459037c0d27e61372cf28ffb2385b8e92b30f03c59e1d74cd2c0adf3ed"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
