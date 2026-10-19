@@ -68,3 +68,15 @@ Windows baseline 的 root 入口实际拒绝合法 root（unsafe_path）；file 
 run 39240156056 使用官方 Codex CLI 0.163.0、Ollama 0.40.6 和本地 qwen3:4b。依赖与模型安装成功，隔离 CODEX_HOME 未使用 OpenAI 账号凭据；会话在 2700 秒后超时失败。原始事件显示模型把 guru-qualify-normal-scenario Skill 名作为 spawn_agent 的 agent_type，收到 unknown agent_type，随后未完成公开 wrapper 调用。该会话不满足 T630-08，也不能作为自动加载与 Skill 执行的完整验收。
 
 采集器将纠正 Skill 与 Agent 类型的提示，改为当前 Agent 读取 Skill 全文及合同并直接调用其公开 wrapper；单次模型会话上限为 600 秒。重试结果仍须核对实际工具事件及 typed stdout，不由进程退出码或提示文本推定通过。三系统产品原生安装、维护与 wrapper 证据已通过；Windows Agent 验收及 Task 闭环尚未完成。当前目标不执行正式软件发行，也不声明累计 Release Gate 通过。
+
+### D2 采集器前提与本地模型预验证
+
+D1 已通过 PR #634 合并；合并提交 `80413052748afecc65622a38cab283aba69352bb` 的三系统 CI [39251774587](https://github.com/castbox/guru-trellis/actions/runs/39251774587) 均成功。这保持产品与安装层证据，不代表 T630-08 已通过。
+
+D2 在原采集器中准备真实非敏感请求草稿及正常初始 Git HEAD，并以真实 `thread.started` 身份接续两轮会话。全部 exec/resume 共用 600 秒截止时间。CI 驱动 10 项、采集器直接回归 4 项通过；后者覆盖空 HEAD 准备、已暂存安装文件保留、普通 Git 失败、真实子进程退出码以及第二轮剩余预算与超时原始输出保留。这些测试不判断模型语义结果。
+
+本地使用官方 Codex CLI 0.163.0 与 Ollama 0.40.6、隔离 CODEX_HOME，无 OpenAI 账号凭据。qwen3:4b-instruct、qwen3:8b、qwen3.5:4b 的已执行探测均未形成完整验收：存在未执行必需命令、将 Bash wrapper 作为 Python 执行、只打印 JSON、决策与观察矛盾或静态路径误判。qwen3.5:4b 的低随机性本地配置亦未因此获得通过。全部失败保持失败，不能由 CLI 退出 0 或结构检查通过替代语义判断。当前继续验证完整程序组织；Windows 实际 Agent 结果、D2 Delivery 和 Task Completion 均未完成。
+
+本地完整预验证随后通过：官方 `qwen3.5:9b` 的 GGUF / Q4_K_M / llamacpp 变体，Codex 与 Ollama 上下文均为 65536，工具输出预算 32768，`model_reasoning_effort=none`，模型保留官方默认采样参数。两轮约 493 秒，共用 600 秒截止时间。原始 rollout 可见自动 `trellis-bootstrap` 与 workflow-state 注入、完整写作规范/Skill/合同/schema/runtime 读取、实际 startup、root consumer 及 Git 观察；没有输出截断或上下文压缩。模型直接以 stdin 调用公开 wrapper，真实返回 0 和 `classified / rejected_not_reproduced`；该结论与本机 root 观察一致，没有写入资格状态文件。完整原始 rollout 保留三次相关调用：首次成功返回 0，随后模型的额外确认命令产生 `invalid_json`、返回 2，模型自行纠正后再次返回 0。精简 CLI events 仅显示两次成功；验收采用完整 rollout 的实际错误与恢复序列，不用精简事件覆盖原始失败。
+
+当前采集器已恢复该成功会话的两轮提示，分别经字节比较确认一致，并沿用固定 `none` 配置和同一 600 秒截止时间。后续未通过的提示优化已撤回，不重复执行已成功的模型预验证、14 项 CI 回归或 D1 三系统验证；当前 Check 仍须判断这些结果对最终候选的适用性。这只证明本机 macOS 完整模型流程可行，不替代原生 Windows T630-08。原生 Windows 会话、D2 Delivery 和整体 Completion 继续保持未完成。
