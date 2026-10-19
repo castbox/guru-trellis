@@ -1,0 +1,372 @@
+{
+  "schema_version": "2.0",
+  "id": "630-native-compatibility",
+  "name": "630-native-compatibility",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 630,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Guru Trellis 三系统运行与安装一致性",
+  "description": "修复路径、URI、跨进程传输、编码与受管文本换行，接入固定上游修复并验证三系统和 Windows Codex 实际会话。",
+  "dev_type": null,
+  "scope": "Issue #630 当前全部行为要求与验收；复用 #631 CI 和 #53 修复，保留正常错误恢复与用户修改保护。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-19",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+    "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+  },
+  "deliveries": [
+    {
+      "id": "16e2a831-13ab-4fbf-becb-21ccb30523b9",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+          "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+        },
+        "anchors": [
+          "R1–R6",
+          "AC1–AC10"
+        ]
+      },
+      "planning_root": "deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+        "revision": "sha256:b8b2f12b7074ef2977e137703088591596eeb3477ad9f9758aaee53e8e55ba3a"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:0c088140a79a0d9d3bfccced99845d853343570aa66aef88a38bd1549750e237",
+        "paths": [
+          ".gitattributes",
+          ".github/workflows/targeted-ci.yml",
+          ".trellis/.version",
+          ".trellis/guru-team/runtime/base_selection.py",
+          ".trellis/guru-team/runtime/bootstrap_check.py",
+          ".trellis/guru-team/runtime/bootstrap_transport.py",
+          ".trellis/guru-team/runtime/schema.py",
+          ".trellis/guru-team/runtime/validate.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+          ".trellis/guru-team/trellis-source.json",
+          ".trellis/spec/preset/installer.md",
+          ".trellis/spec/preset/upstream-ownership.md",
+          "README.md",
+          "ci/native_maintenance.py",
+          "ci/runtime_diagnostic.py",
+          "ci/targeted_ci.py",
+          "ci/test_targeted_ci.py",
+          "ci/unittest_report.py",
+          "ci/windows_codex_session.py",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/README.md",
+          "docs/architecture/adr/032-managed-text-lf.md",
+          "docs/architecture/adr/README.md",
+          "docs/architecture/contributions/630-native-compatibility.md",
+          "docs/architecture/evidence/current-evidence.md",
+          "docs/ci/README.md",
+          "docs/design/README.md",
+          "docs/design/current/README.md",
+          "docs/design/current/native-compatibility.md",
+          "docs/design/versions/current-main-0.7.0-guru.112/design-main.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/design.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/manifest.yaml",
+          "docs/requirements-design-test-contributions/630-native-compatibility/requirements.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/test.md",
+          "docs/requirements-design-test-contributions/630-native-compatibility/traceability.md",
+          "docs/requirements/README.md",
+          "docs/requirements/current/README.md",
+          "docs/requirements/current/native-compatibility.md",
+          "docs/requirements/versions/current-main-0.7.0-guru.112/requirement-main.md",
+          "docs/test/README.md",
+          "docs/test/current/README.md",
+          "docs/test/current/native-compatibility.md",
+          "docs/test/versions/current-main-0.7.0-guru.112/test-strategy.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/delivery_installation.py",
+          "trellis/presets/guru-team/scripts/python/managed_text_eol.py",
+          "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+          "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+          "trellis/presets/guru-team/scripts/python/test_guru_platform_inventory.py",
+          "trellis/presets/guru-team/scripts/python/test_managed_text_eol.py",
+          "trellis/presets/guru-team/scripts/python/test_runtime_native_compatibility.py",
+          "trellis/presets/guru-team/source/trellis-source.json",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+          "trellis/skills/guru-team/runtime/base_selection.py",
+          "trellis/skills/guru-team/runtime/bootstrap_check.py",
+          "trellis/skills/guru-team/runtime/bootstrap_transport.py",
+          "trellis/skills/guru-team/runtime/schema.py",
+          "trellis/skills/guru-team/runtime/validate.py",
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "head_ref": "c6b620db9f9d90b26d201542e89f8da8bca8744f",
+        "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:6bdb67cc-22e6-4aff-bcfa-98f2c9ec6a55",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "R1–R6",
+              "AC1–AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+            "revision": "sha256:b8b2f12b7074ef2977e137703088591596eeb3477ad9f9758aaee53e8e55ba3a"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+              "revision": "sha256:0890826a40b7693dd314c986e499d00224c538219ea2e8545e8f014863c76405"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+              "revision": "sha256:b8b2f12b7074ef2977e137703088591596eeb3477ad9f9758aaee53e8e55ba3a"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+              "revision": "sha256:e827af956aff324508db6c3a0c1534bc22ddc8abb9b57287511ded37fd9843e7"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:0fed23eed1259e40d73bbab100a7a742f63b5fc0f89b4a52c53bf39e1738cf44",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/prd.md",
+              "revision": "sha256:bda4ffcd4ee9a1f1405fe05df50275f3b0433549ca8d326d4aad7b0f9a53fe26"
+            },
+            "anchors": [
+              "R1–R6",
+              "AC1–AC10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+            "revision": "sha256:b8b2f12b7074ef2977e137703088591596eeb3477ad9f9758aaee53e8e55ba3a"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0c088140a79a0d9d3bfccced99845d853343570aa66aef88a38bd1549750e237",
+            "paths": [
+              ".gitattributes",
+              ".github/workflows/targeted-ci.yml",
+              ".trellis/.version",
+              ".trellis/guru-team/runtime/base_selection.py",
+              ".trellis/guru-team/runtime/bootstrap_check.py",
+              ".trellis/guru-team/runtime/bootstrap_transport.py",
+              ".trellis/guru-team/runtime/schema.py",
+              ".trellis/guru-team/runtime/validate.py",
+              ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/common.py",
+              ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/spec/preset/installer.md",
+              ".trellis/spec/preset/upstream-ownership.md",
+              "README.md",
+              "ci/native_maintenance.py",
+              "ci/runtime_diagnostic.py",
+              "ci/targeted_ci.py",
+              "ci/test_targeted_ci.py",
+              "ci/unittest_report.py",
+              "ci/windows_codex_session.py",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/README.md",
+              "docs/architecture/adr/032-managed-text-lf.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/contributions/630-native-compatibility.md",
+              "docs/architecture/evidence/current-evidence.md",
+              "docs/ci/README.md",
+              "docs/design/README.md",
+              "docs/design/current/README.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/design/versions/current-main-0.7.0-guru.112/design-main.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/design.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/manifest.yaml",
+              "docs/requirements-design-test-contributions/630-native-compatibility/requirements.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/test.md",
+              "docs/requirements-design-test-contributions/630-native-compatibility/traceability.md",
+              "docs/requirements/README.md",
+              "docs/requirements/current/README.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/requirements/versions/current-main-0.7.0-guru.112/requirement-main.md",
+              "docs/test/README.md",
+              "docs/test/current/README.md",
+              "docs/test/current/native-compatibility.md",
+              "docs/test/versions/current-main-0.7.0-guru.112/test-strategy.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/delivery_installation.py",
+              "trellis/presets/guru-team/scripts/python/managed_text_eol.py",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+              "trellis/presets/guru-team/scripts/python/test_guru_platform_inventory.py",
+              "trellis/presets/guru-team/scripts/python/test_managed_text_eol.py",
+              "trellis/presets/guru-team/scripts/python/test_runtime_native_compatibility.py",
+              "trellis/presets/guru-team/source/trellis-source.json",
+              "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+              "trellis/skills/guru-team/runtime/base_selection.py",
+              "trellis/skills/guru-team/runtime/bootstrap_check.py",
+              "trellis/skills/guru-team/runtime/bootstrap_transport.py",
+              "trellis/skills/guru-team/runtime/schema.py",
+              "trellis/skills/guru-team/runtime/validate.py",
+              "trellis/workflows/guru-team/README.md"
+            ],
+            "head_ref": "c6b620db9f9d90b26d201542e89f8da8bca8744f",
+            "base_ref": "0543731bf52aa80842fde5db47332380de513cf0"
+          },
+          "predecessor_result_id": "planning-accepted:6bdb67cc-22e6-4aff-bcfa-98f2c9ec6a55",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md",
+              "revision": "sha256:0890826a40b7693dd314c986e499d00224c538219ea2e8545e8f014863c76405"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md",
+              "revision": "sha256:b8b2f12b7074ef2977e137703088591596eeb3477ad9f9758aaee53e8e55ba3a"
+            },
+            {
+              "locator": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md",
+              "revision": "sha256:e827af956aff324508db6c3a0c1534bc22ddc8abb9b57287511ded37fd9843e7"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": {
+        "result_id": "publication:ae676e8dcb19456b478b68ebd224eda93123c6350de52e8919af3596b5231225",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/634",
+            "revision": "sha256:a87b91373465ff2721422abe6cdbf6f461592e313f29501b9a0fa82371f784b0"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "0543731bf52aa80842fde5db47332380de513cf0",
+          "content_ref": "sha256:ff77b55c63a33cf85319ea3f1b89705ea96752b84b7dc6d5bd9c7012bc9f4390",
+          "head_ref": "c6b620db9f9d90b26d201542e89f8da8bca8744f",
+          "kind": "git",
+          "paths": [
+            ".gitattributes",
+            ".github/workflows/targeted-ci.yml",
+            ".trellis/.version",
+            ".trellis/guru-team/runtime/base_selection.py",
+            ".trellis/guru-team/runtime/bootstrap_check.py",
+            ".trellis/guru-team/runtime/bootstrap_transport.py",
+            ".trellis/guru-team/runtime/schema.py",
+            ".trellis/guru-team/runtime/validate.py",
+            ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/common.py",
+            ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
+            ".trellis/guru-team/trellis-source.json",
+            ".trellis/spec/preset/installer.md",
+            ".trellis/spec/preset/upstream-ownership.md",
+            "README.md",
+            "ci/native_maintenance.py",
+            "ci/runtime_diagnostic.py",
+            "ci/targeted_ci.py",
+            "ci/test_targeted_ci.py",
+            "ci/unittest_report.py",
+            "ci/windows_codex_session.py",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/04-integrations/distribution.md",
+            "docs/architecture/README.md",
+            "docs/architecture/adr/032-managed-text-lf.md",
+            "docs/architecture/adr/README.md",
+            "docs/architecture/contributions/630-native-compatibility.md",
+            "docs/architecture/evidence/current-evidence.md",
+            "docs/ci/README.md",
+            "docs/design/README.md",
+            "docs/design/current/README.md",
+            "docs/design/current/native-compatibility.md",
+            "docs/design/versions/current-main-0.7.0-guru.112/design-main.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/design.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/manifest.yaml",
+            "docs/requirements-design-test-contributions/630-native-compatibility/requirements.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/test.md",
+            "docs/requirements-design-test-contributions/630-native-compatibility/traceability.md",
+            "docs/requirements/README.md",
+            "docs/requirements/current/README.md",
+            "docs/requirements/current/native-compatibility.md",
+            "docs/requirements/versions/current-main-0.7.0-guru.112/requirement-main.md",
+            "docs/test/README.md",
+            "docs/test/current/README.md",
+            "docs/test/current/native-compatibility.md",
+            "docs/test/versions/current-main-0.7.0-guru.112/test-strategy.md",
+            "trellis/guru-team-extension.json",
+            "trellis/presets/guru-team/README.md",
+            "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/delivery_installation.py",
+            "trellis/presets/guru-team/scripts/python/managed_text_eol.py",
+            "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+            "trellis/presets/guru-team/scripts/python/test_apply_guru_team_trellis_preset.py",
+            "trellis/presets/guru-team/scripts/python/test_guru_platform_inventory.py",
+            "trellis/presets/guru-team/scripts/python/test_managed_text_eol.py",
+            "trellis/presets/guru-team/scripts/python/test_runtime_native_compatibility.py",
+            "trellis/presets/guru-team/source/trellis-source.json",
+            "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/common.py",
+            "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
+            "trellis/skills/guru-team/runtime/base_selection.py",
+            "trellis/skills/guru-team/runtime/bootstrap_check.py",
+            "trellis/skills/guru-team/runtime/bootstrap_transport.py",
+            "trellis/skills/guru-team/runtime/schema.py",
+            "trellis/skills/guru-team/runtime/validate.py",
+            "trellis/workflows/guru-team/README.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 634,
+        "reviewed_head": "c6b620db9f9d90b26d201542e89f8da8bca8744f",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/634",
+          "revision": "sha256:a87b91373465ff2721422abe6cdbf6f461592e313f29501b9a0fa82371f784b0"
+        }
+      },
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

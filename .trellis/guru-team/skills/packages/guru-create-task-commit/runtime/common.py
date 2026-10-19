@@ -17,13 +17,13 @@ def load(repo,package_root,value,field):
  else:
   q=Path(str(value or ""));choices=[q] if q.is_absolute() else [repo/q,package_root/q];q=next((x for x in choices if x.is_file() and not x.is_symlink()),None)
   if q is None:raise CommandError("unsafe_path",field,"Use a regular JSON file.")
-  raw=q.read_text()
+  raw=q.read_text(encoding="utf-8")
  try:v=json.loads(raw)
  except Exception as exc:raise CommandError("invalid_json",field,"Provide one JSON object.") from exc
  if not isinstance(v,dict):raise CommandError("invalid_json",field,"Provide one JSON object.")
  return v
 def git(repo,*args,env=None,check=True,input=None):
- p=subprocess.run(["git",*args],cwd=repo,text=True,input=input,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=None if env is None else {**os.environ,**env})
+ p=subprocess.run(["git",*args],cwd=repo,text=True,encoding="utf-8",input=input,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=None if env is None else {**os.environ,**env})
  if check and p.returncode:raise CommandError("stale_identity","repository",p.stderr.strip() or "Repair Git state.",3)
  return p
 def sha_file(path):return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
@@ -34,7 +34,7 @@ def task_dir(repo,value):
  if not p.is_dir() or p.is_symlink() or not p.is_relative_to((repo/".trellis/tasks").resolve()):raise CommandError("unsafe_path","input.task_ref","Use one task below .trellis/tasks.")
  return p
 def json_file(path,field):
- try:value=json.loads(path.read_text())
+ try:value=json.loads(path.read_text(encoding="utf-8"))
  except Exception as exc:raise CommandError("invalid_json",field,"Provide one valid JSON object.") from exc
  if not isinstance(value,dict):raise CommandError("invalid_json",field,"Provide one valid JSON object.")
  return value
@@ -144,7 +144,7 @@ def build_candidate(package_root,repo,public,authoring):
   candidate.update(delivery_key=public["delivery_key"],check_result_id=public["check_result_id"],schema_version="delivery-1.0")
   candidate["$schema"]="https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-1.0.json"
   candidate["task"].pop("status")
- validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
+ validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n",encoding="utf-8",newline="\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
  try:receipt.parent.rmdir()
  except OSError:pass
  return cp,candidate

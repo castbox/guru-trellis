@@ -1,0 +1,16 @@
+task_id: 630-native-compatibility
+source: https://github.com/castbox/guru-trellis/issues/630
+status: promoted
+strategy: delta_first
+preimage: current-main-0.7.0-guru.111
+source_revision: 0543731bf52aa80842fde5db47332380de513cf0
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.7.0-guru.102
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+promoted_into: current-main-0.7.0-guru.112

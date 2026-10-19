@@ -34,6 +34,7 @@ from platform_projection_contract import DESCRIPTORS_BY_FLAG
 from validate_upstream_ownership import validate_repository as validate_upstream_ownership_repository
 from delivery_installation import require_delivery_installation, diagnose_delivery_installation, require_tools_maintenance_installation
 from managed_python_runtime import ensure_managed_python_runtime, raise_managed_runtime_error
+from managed_text_eol import canonical_bytes, equivalent_lf, prepare_attributes
 
 
 EXTENSION_MANIFEST = Path("trellis/guru-team-extension.json")
@@ -621,7 +622,7 @@ def retain_previous_manifest_for_noop(
             for item in section.get("files", [])
         ):
             return candidate
-    for key in ("agents_principles", "codex_dispatch", "runtime_gitignore"):
+    for key in ("agents_principles", "codex_dispatch", "runtime_gitignore", "text_attributes"):
         item = result.get(key)
         if isinstance(item, dict) and item.get("action") not in {"unchanged", "checked"}:
             return candidate
@@ -651,7 +652,7 @@ def retain_previous_manifest_for_noop(
 def write_installed_extension_manifest(dst: Path, payload: dict[str, Any]) -> str:
     path = dst / "extension.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_bytes((json.dumps(payload, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
     return path.name
 
 
@@ -953,7 +954,7 @@ def copy_provenance_managed(
     except ValueError:
         return {"action": "conflict", "path": "<outside-repo>", "reason": "outside_repo_boundary"}
     relative = relative_path.as_posix()
-    canonical = source.read_bytes()
+    canonical = canonical_bytes(source)
     canonical_hash = hashlib.sha256(canonical).hexdigest()
     executable = bool(source.stat().st_mode & 0o100)
     target_mode = 0o755 if executable else 0o644
@@ -983,8 +984,13 @@ def copy_provenance_managed(
             "reason": "target_not_regular_file",
         }
     current = target.read_bytes()
-    current_hash = hashlib.sha256(current).hexdigest()
+    previous_hash = previous_hashes.get(relative) if provenance_valid else None
+    normalized = equivalent_lf(current, source, previous_hash)
+    current_hash = hashlib.sha256(normalized).hexdigest()
     if current_hash == canonical_hash:
+        if normalized != current:
+            write_target(target, normalized)
+            return {"action": "updated_managed", "path": relative, "sha256": canonical_hash, "executable": executable}
         if stat.S_IMODE(target_stat.st_mode) != target_mode:
             target.chmod(target_mode)
             return {
@@ -1695,15 +1701,20 @@ def ensure_codex_dispatch_mode(repo: Path) -> dict[str, str | None]:
 
 
 def copy_managed(source: Path, target: Path) -> dict[str, str]:
+    canonical = canonical_bytes(source)
     target.parent.mkdir(parents=True, exist_ok=True)
     if not target.exists():
-        shutil.copyfile(source, target)
+        target.write_bytes(canonical)
         return {"path": str(target), "action": "installed"}
-    if filecmp.cmp(source, target, shallow=False):
+    current = target.read_bytes()
+    if current == canonical:
         return {"path": str(target), "action": "unchanged"}
+    if equivalent_lf(current, source) == canonical:
+        target.write_bytes(canonical)
+        return {"path": str(target), "action": "updated_managed"}
     backup = target.with_name(f"{target.name}.bak")
     shutil.copyfile(target, backup)
-    shutil.copyfile(source, target)
+    target.write_bytes(canonical)
     return {"path": str(target), "action": "updated_managed", "backup": str(backup)}
 
 
@@ -1724,7 +1735,7 @@ def copy_managed_spec(
             previous_backups = {
                 value for value in install["managed_backups"] if isinstance(value, str)
             }
-    if target.exists() and filecmp.cmp(source, target, shallow=False):
+    if target.exists() and equivalent_lf(target.read_bytes(), source) == canonical_bytes(source):
         backup = target.with_name(f"{target.name}.bak")
         backup_relative = backup.relative_to(repo).as_posix()
         if backup_relative in previous_backups:
@@ -1732,17 +1743,18 @@ def copy_managed_spec(
                 if backup.is_symlink() or not backup.is_file():
                     return {"path": str(target), "action": "conflict", "sidecar": str(backup)}
                 backup.unlink()
+            target.write_bytes(canonical_bytes(source))
             return {"path": str(target), "action": "updated_managed"}
         return copy_managed(source, target)
     if not target.exists():
         return copy_managed(source, target)
     previous_hash = previous_hashes.get(relative)
-    current_hash = hashlib.sha256(target.read_bytes()).hexdigest()
+    current_hash = hashlib.sha256(equivalent_lf(target.read_bytes(), source, previous_hash)).hexdigest()
     if isinstance(previous_hash, str) and re_full_hex_digest(previous_hash) and current_hash == previous_hash:
         return copy_managed(source, target)
     sidecar = target.with_name(f"{target.name}.new")
     sidecar.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, sidecar)
+    sidecar.write_bytes(canonical_bytes(source))
     return {"path": str(target), "action": "conflict", "sidecar": str(sidecar)}
 
 
@@ -1999,6 +2011,7 @@ def managed_transaction_paths(
     """
     paths: set[Path] = {
         Path("AGENTS.md"),
+        Path(".gitattributes"),
         Path(".gitignore"),
         Path(".trellis/config.yaml"),
         # The workflow marketplace owns this file; validation reads it while
@@ -2454,17 +2467,20 @@ def install_assets(
         )
         staging_repo.mkdir(parents=True, exist_ok=True)
         preimage = materialize_managed_preimage(repo, staging_repo, managed_paths)
+        text_attributes = prepare_attributes(repo, staging_repo, set(source_projections) | {dst_relative / "extension.json"})
         result = _install_assets_in_place(
             src,
             staging_repo / dst_relative,
             staging_repo,
             platforms,
             source_validation=source_validation,
+            text_attributes=text_attributes,
             upstream_ownership_validation=upstream_ownership_validation,
             managed_python=managed_python,
             migration_preserved_paths=migration_preserved_paths or set(),
             tools_only=tools_only,
         )
+        result["text_attributes"] = text_attributes
         result["python_runtime"] = python_runtime
         result["delivery_support"] = delivery_support
         result["managed_transaction"] = {
@@ -2553,6 +2569,7 @@ def _install_assets_in_place(
     source_validation: dict[str, Any],
     upstream_ownership_validation: dict[str, Any],
     managed_python: Path,
+    text_attributes: dict[str, str] | None = None,
     migration_preserved_paths: set[str] | None = None,
     tools_only: bool = False,
 ) -> dict[str, Any]:
@@ -2614,7 +2631,7 @@ def _install_assets_in_place(
 
     target_config = dst / "config.yml"
     if not target_config.exists():
-        shutil.copyfile(src / MANAGED_CONFIG, target_config)
+        target_config.write_bytes(canonical_bytes(src / MANAGED_CONFIG))
         installed.append(target_config.relative_to(repo).as_posix())
 
     ensure_companion_modes(dst, repo, MANAGED_ASSET_PATHS, preserved, companion_results, ensure_executable)
@@ -2651,6 +2668,7 @@ def _install_assets_in_place(
         "managed_backups": managed_backups,
         "managed_asset_hashes": managed_asset_hashes,
         "agents_principles": agents_principles,
+        "text_attributes": text_attributes,
         "codex_dispatch": codex_dispatch,
         "runtime_gitignore": runtime_gitignore,
         "language_guidance": language_guidance,
@@ -2910,6 +2928,7 @@ def main() -> int:
         "managed_backups": result["managed_backups"],
         "managed_transaction": result["managed_transaction"],
         "agents_principles": result["agents_principles"],
+        "text_attributes": result["text_attributes"],
         "codex_dispatch": result["codex_dispatch"],
         "runtime_gitignore": result["runtime_gitignore"],
         "language_guidance": result["language_guidance"],

@@ -69,3 +69,5 @@
 `ADR-030` 正文见 [`030-promotion-before-final-check.md`](./030-promotion-before-final-check.md)。
 
 - [ADR-031：完整当前知识单元与两层栈来源](./031-current-effective-knowledge.md)
+
+- [ADR-032：受管文本 LF 与精确 EOL 恢复](./032-managed-text-lf.md)；限定installer字节判定的窄后继，raw身份与用户编辑保护保持。

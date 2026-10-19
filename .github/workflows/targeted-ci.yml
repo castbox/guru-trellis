@@ -39,6 +39,10 @@ on:
         description: Optional exact assertion message (requires expected_test)
         type: string
         default: ''
+      windows_codex_session:
+        description: Run the actual Windows Codex session acceptance after candidate installation
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -50,7 +54,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-15, windows-2025]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: ${{ matrix.os == 'windows-2025' && inputs.windows_codex_session && 120 || 60 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,6 +79,9 @@ jobs:
           CI_EVENT: ${{ github.event_name }}
           CI_SOURCE_REF: ${{ github.ref }}
         run: python ci/targeted_ci.py --output diagnostics --work-root "${{ runner.temp }}/Guru CI targets"
+      - name: Actual Windows Codex session
+        if: ${{ !cancelled() && runner.os == 'Windows' && inputs.windows_codex_session }}
+        run: python ci/windows_codex_session.py --diagnostics diagnostics/candidate --output diagnostics/windows-codex-session
       - name: Upload existing diagnostics
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

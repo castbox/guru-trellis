@@ -1,0 +1,14 @@
+{"file": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/prd.md", "reason": "本批真实部分交付需求与剩余责任"}
+{"file": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/design.md", "reason": "当前 CI 选择与诊断设计"}
+{"file": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/implement.md", "reason": "执行顺序、验证与唯一 Policy/Docs Plan"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质输出前完整读取的写作规范"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值与验证范围"}
+{"file": "docs/ci/README.md", "reason": "CI 当前真实入口和证据边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "完整规划正文与来源设计承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批方案及来源处置合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批执行Policy和Docs Plan合同"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "安装字节与原失败/sidecar合同"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "Guru与上游资产所有权"}
+{"file": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/architecture-adr.md", "reason": "限定EOL规则窄替代决策"}
+{"file": ".trellis/tasks/10-19-630-native-compatibility/deliveries/16e2a831-13ab-4fbf-becb-21ccb30523b9/architecture-contribution.md", "reason": "本Task隔离Architecture贡献"}

@@ -7,13 +7,13 @@
     "version": "0.7.0-guru.5",
     "workflow_template_id": "guru-team",
     "marketplace_index_schema_version": 1,
-    "target_trellis_cli": "0.7.0-castbox.4",
+    "target_trellis_cli": "0.7.0-castbox.5",
     "requires": {
-      "trellis_cli": "0.7.0-castbox.4"
+      "trellis_cli": "0.7.0-castbox.5"
     },
     "tested": {
       "trellis_cli": [
-        "0.7.0-castbox.4"
+        "0.7.0-castbox.5"
       ]
     },
     "public_api": {
@@ -1167,11 +1167,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-18T18:32:18Z",
+  "installed_at": "2026-10-19T09:49:07Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "33f18a768c9c8d901f34b899934ac40c3d97cc5b",
-    "commit": "33f18a768c9c8d901f34b899934ac40c3d97cc5b",
+    "ref": "10da9be7c976ac210ec3a8afc42077f5e709bd7f",
+    "commit": "10da9be7c976ac210ec3a8afc42077f5e709bd7f",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1252,7 +1252,7 @@
       ".trellis/spec/workflow/data-contracts.md": "43bad2cc09ab1fae19a10a1761318813e5f6db1e6cff86fb48981f748530be9e",
       ".trellis/spec/workflow/companion-scripts.md": "edc778db56ed27e33a63f351995847142c1b280b3af38fb5032d16f65b20af61",
       ".trellis/spec/workflow/quality-guidelines.md": "fbf48279b71985919e10a7375ee42a575d67649fce14812f3e8038b7b4d3eb85",
-      ".trellis/guru-team/trellis-source.json": "4ef08d0d582d357e0d02301108418b300e8963a4fde98cdbf12f1e0d66ebffc9"
+      ".trellis/guru-team/trellis-source.json": "d40f2fe561ceb65b748be6874bf592f3cdd019c238ec03cf9e0ee51eac5a2137"
     },
     "new_copies": [],
     "managed_backups": [],
@@ -1375,7 +1375,7 @@
       {
         "id": "guru-create-task-commit",
         "interface_sha256": "8abc17d6d607078db5ceeb4c74ab698fdefa90a66d170421b6743a22e1f250d4",
-        "tree_sha256": "591c5c27d5eb0ff20e4677c955da23bc4d0651de7437e6a5229da7af23412564"
+        "tree_sha256": "80ca084df64be179b7d9578e02327553d21fd63c55c381fe37ec6f9537d5b22e"
       },
       {
         "id": "guru-discover-change-context",
@@ -7397,7 +7397,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/common.py",
-        "sha256": "99fa260af616e655389c4e426a1eca14bf499b5711d4605080a76c78a6ac5f83",
+        "sha256": "a1939253321ac09d504eacebb2e58aeff6143075f6128a4b130d991e30dc8469",
         "executable": false,
         "action": "installed"
       },
@@ -7411,7 +7411,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-create-task-commit/runtime/execute.py",
         "source": "trellis/skills/guru-team/packages/guru-create-task-commit/runtime/execute.py",
-        "sha256": "86f296f61139137d5d76a5425305f022641b408b82020f20101a1706582dea09",
+        "sha256": "c75fedf11228b210310bee0e400cad1faab43dc3ccaa47683538b349c795acf3",
         "executable": false,
         "action": "installed"
       },
@@ -19227,7 +19227,7 @@
       {
         "path": ".trellis/guru-team/runtime/base_selection.py",
         "source": "trellis/skills/guru-team/runtime/base_selection.py",
-        "sha256": "8c4a960ff092e1c5dc9ae530b37b34a92d3427f7ba785d62e6323e924282379f",
+        "sha256": "217df88be4fe4a24fe625679016d9f1f38355abaf183d181b5d3ed3227d28003",
         "executable": false,
         "action": "installed"
       },
@@ -19241,7 +19241,14 @@
       {
         "path": ".trellis/guru-team/runtime/bootstrap_check.py",
         "source": "trellis/skills/guru-team/runtime/bootstrap_check.py",
-        "sha256": "89c1416c1a12861bce44be7c44ad7241bb5d292c2086c94b5b46c725a19054ee",
+        "sha256": "c6f41c8c01797ffa446e634931212ed723f2bea280f8bca04ca4c741d21c4294",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/runtime/bootstrap_transport.py",
+        "source": "trellis/skills/guru-team/runtime/bootstrap_transport.py",
+        "sha256": "9c1719ebea78fad6b372a950885718d7f463a141bba54ba6781c6e4da0a15797",
         "executable": false,
         "action": "installed"
       },
@@ -19360,7 +19367,7 @@
       {
         "path": ".trellis/guru-team/runtime/schema.py",
         "source": "trellis/skills/guru-team/runtime/schema.py",
-        "sha256": "24b2450a023e0286180fdcec0cf052ca65845941061b8dbfe59141d85fc8fae4",
+        "sha256": "7f27a2c02e15c9d4d275f3580a65986a3eaa02c50c01a0dc954d87b45f1f0867",
         "executable": false,
         "action": "installed"
       },
@@ -19381,7 +19388,7 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "a69164349e5bb72320efd89c7dba6506f83cd28e64d4586a779c7550de6fc9e0",
+        "sha256": "361abed4414cbe90b59a507d7d97e45d2c98a548e14a6fba9481dba8306ebdf6",
         "executable": false,
         "action": "installed"
       },

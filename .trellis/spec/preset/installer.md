@@ -356,6 +356,50 @@ package-only copy, missing dispatcher/manifest, incompatible API, command drift,
 or managed-copy drift must fail before the target companion command with the
 documented full-preset install/upgrade remediation.
 
+## Managed Text LF Policy
+
+Canonical Guru workflow, Skill and preset source text uses `text eol=lf` in
+root `.gitattributes`. Declared categories are Markdown, Python, shell,
+JSON/schema, YAML/config templates, TOML and text files. Dependency locks and
+the exact source lock retain raw bytes. Binary files are not normalized.
+
+The preset maintains one bounded root `.gitattributes` block between
+`# guru-team-managed-text:start` and `# guru-team-managed-text:end`. It covers
+Guru namespaces derived from current installation projections and exact
+managed spec/Finish entry paths. It does not cover whole platform roots or
+upstream `trellis-*` assets. The installer preserves all bytes outside the
+block. `.gitattributes` remains user-owned and does not enter
+`install.managed_assets`. Duplicate or incomplete markers stop installation.
+
+Before activation, Git checks the staged rules through the target's real Git
+directory and a staged work tree. The view includes the target's ancestor
+`.gitattributes` files; Git continues to read real config, global attributes
+and `info/attributes`. If an effective rule changes a declared text path away
+from `text eol=lf`, installation stops with
+`managed_text_attributes_conflict`. Resolve that rule before retrying. The
+staged block is not activated on failure.
+
+For an existing declared text asset, the installer can recover a CRLF-only
+checkout difference when replacing CRLF with LF gives exactly canonical LF
+bytes, or its SHA-256 equals a valid previous-managed hash. The latter proves
+only recorded previous content; it does not infer historical source.
+Canonical-equal recovery writes LF without a content-upgrade backup. A real
+managed version upgrade still writes original pre-recovery bytes to `.bak`
+under existing rules. Other content differences remain unknown edits and
+receive `.new`. Lock, binary, source-lock and installed-manifest identities
+do not use this recovery branch.
+
+Copy/generation writes declared text as LF. Manifest digests still describe
+actual installed raw bytes. Installed validators retain their original raw
+byte checks, without EOL equivalence or a second digest authority. Reapply
+must finish existing conflict/sidecar recovery before it reports success.
+
+Run `test_managed_text_eol.py` for normal Git CRLF checkout recovery, original
+backup bytes, local edits, raw locks, user attributes and actual Git rule
+precedence. Its real installation case executes apply, normal LF/CRLF clones,
+raw installed validation and reapply. The existing-initialized-target fixture
+is separate from clean CLI installation and actual Agent evidence.
+
 ## Extension Version Manifest
 
 `trellis/guru-team-extension.json` is the canonical source for the Guru Team

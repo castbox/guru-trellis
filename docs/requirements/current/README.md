@@ -6,6 +6,8 @@
 | RDT-REQ-COMPLETION; Completion/Closure/Finish; R531-06; R547 | current | [completion-closure](./completion-closure.md) | [RDT-DES-COMPLETION](../../design/current/completion-closure.md); [RDT-TST-COMPLETION](../../test/current/completion-closure.md) |
 | RDT-REQ-KNOWLEDGE; RDT/Architecture; REQ-007/BEH-007; R331 | current | [knowledge-maintenance](./knowledge-maintenance.md) | [RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md); [RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md) |
 
+| RDT-REQ-NATIVE; R630/BEH630; 三系统兼容 | current | [native-compatibility](./native-compatibility.md) | [RDT-DES-NATIVE](../../design/current/native-compatibility.md); [T630](../../test/current/native-compatibility.md) |
+
 | Legacy scope identity | Status | Locator | Relations |
 | --- | --- | --- | --- |
 | RDT109-LEGACY; 未列入迁移关系的身份/范围 | legacy_unmigrated | [immutable .109](../versions/current-main-0.6.17-guru.109/requirement-main.md) | [migration inventory](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) |

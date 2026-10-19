@@ -9,14 +9,18 @@ DEFAULT_BASE_CANDIDATES = ("dev", "develop", "main", "master")
 def digest(value): return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
 def git(root,*args,check=True):
     try:
-        p=subprocess.run(["git",*args],cwd=root,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p=subprocess.run(["git",*args],cwd=root,text=True,encoding="utf-8",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     except OSError as exc:
         raise CommandError("git_failed","repository",f"Git inspection failed: {exc}",4) from exc
     if check and p.returncode: raise CommandError("git_failed","repository",p.stderr.strip() or "Repair Git state and retry.",4)
     return p.stdout.strip()
+def _is_repository_root(root):
+    value=git(root,"rev-parse","--show-toplevel",check=False)
+    return bool(value) and Path(value).resolve()==root
+
 def repo(value):
     root=Path(value or ".").resolve()
-    if git(root,"rev-parse","--show-toplevel",check=False)!=str(root): raise CommandError("unsafe_path","root","Use the exact Git repository root.")
+    if not _is_repository_root(root): raise CommandError("unsafe_path","root","Use the exact Git repository root.")
     return root
 def clean(root): return git(root,"status","--porcelain=v1","-z")==""
 def head(root,ref="HEAD"): return git(root,"rev-parse","--verify",ref)
@@ -84,7 +88,7 @@ def configured_candidates(root,config):
     return values
 
 def remote_default(root,remote):
-    process=subprocess.run(["git","ls-remote","--symref",remote,"HEAD"],cwd=root,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    process=subprocess.run(["git","ls-remote","--symref",remote,"HEAD"],cwd=root,text=True,encoding="utf-8",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     if process.returncode: return None
     matches=[]
     for line in process.stdout.splitlines():
@@ -146,7 +150,7 @@ def authority_checkout(root,selected_base,require_clean=False):
     if not isinstance(path_value,str) or not path_value:
         raise CommandError("git_failed","repository.authority_checkout","The selected-base worktree registration has no usable checkout path.",4)
     authority=Path(path_value).resolve()
-    if git(authority,"rev-parse","--show-toplevel",check=False)!=str(authority) or _common_dir(authority)!=_common_dir(root):
+    if not _is_repository_root(authority) or _common_dir(authority)!=_common_dir(root):
         raise CommandError("git_failed","repository.authority_checkout","The selected-base checkout does not match the session repository identity.",4)
     local_head=head(root,selected_ref)
     authority_head=head(authority)

@@ -32,6 +32,7 @@ def successful_install_result(platforms: set[str]) -> dict[str, object]:
         "managed_backups": [],
         "managed_transaction": {},
         "agents_principles": {},
+        "text_attributes": {"action": "unchanged", "path": ".gitattributes"},
         "codex_dispatch": {},
         "runtime_gitignore": {},
         "language_guidance": {},
