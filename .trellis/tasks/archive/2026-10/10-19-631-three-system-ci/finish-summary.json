@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-19T06:23:15Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-19-631-three-system-ci",
+    "title": "建立 Guru Trellis 三系统定向 CI 验证基础设施",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-19-631-three-system-ci",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/631-three-system-ci",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "建立 Guru Trellis 三系统定向 CI 验证基础设施",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci",
+          ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/prd.md",
+          ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#631"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/631-three-system-ci"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci",
+        ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/prd.md",
+        ".trellis/tasks/archive/2026-10/10-19-631-three-system-ci/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "建立 Guru Trellis 三系统定向 CI 验证基础设施；#631；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
