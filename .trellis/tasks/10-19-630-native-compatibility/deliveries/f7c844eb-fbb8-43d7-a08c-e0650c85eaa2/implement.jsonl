@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "原写作与review语义边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批规划正文及来源完整条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "后继切片需求与剩余责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "真实设计与兼容/验证责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行Policy及Docs Plan"}
+{"file": "ci/windows_codex_session.py", "reason": "本批唯一采集器实现"}
+{"file": "docs/design/current/native-compatibility.md", "reason": "D630-06 CI事实与AI判断分责"}
+{"file": "docs/test/current/native-compatibility.md", "reason": "T630-08真实Windows会话验收"}
