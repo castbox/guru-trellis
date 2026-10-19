@@ -160,6 +160,10 @@ MANAGED_SPEC_PATHS = (
         Path(".trellis/spec/workflow/task-delivery-migration.md"),
     ),
     (
+        Path("trellis/presets/guru-team/spec/workflow/task-delivery-early-draft-migration.md"),
+        Path(".trellis/spec/workflow/task-delivery-early-draft-migration.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md"),
         Path(".trellis/spec/workflow/causal-completion-semantics.md"),
     ),

@@ -12,7 +12,10 @@ def _project(package_root:Path,e:dict,result:dict)->dict:
   if not all(isinstance(x,str) and x for x in (task_ref,base_ref,commit)):raise CommandError("invalid_arguments","invocation.result","Provide committed task, base, and commit identity.")
   out={"exit_id":"committed","task_ref":task_ref,"base_ref":base_ref,"branch_review_commit":commit};schema="public-committed-output.schema.json"
   if "delivery_key" in e:
-   out.update(delivery_key=e["delivery_key"],check_result_id=e["check_result_id"]);schema="public-output-delivery-committed-1.0.schema.json"
+   out.update(delivery_key=e["delivery_key"])
+   if e.get("commit_kind")=="draft":
+    out.update(exit_id="draft_committed",commit_sha=out.pop("branch_review_commit"));schema="public-output-delivery-draft-committed-1.0.schema.json"
+   else:out["check_result_id"]=e["check_result_id"];schema="public-output-delivery-committed-1.0.schema.json"
  elif exit_id=="revision-required":
   out={"exit_id":exit_id,"task_ref":result["task_ref"]};schema="public-revision-required-output.schema.json"
   if "delivery_key" in e:out["delivery_key"]=e["delivery_key"];schema="public-output-delivery-revision-required-1.0.schema.json"
@@ -21,7 +24,7 @@ def _project(package_root:Path,e:dict,result:dict)->dict:
 def _recover_receipt(package_root:Path,repo:Path,candidate_locator:str)->dict:
  candidate_path,_relative,task_key,sequence=canonical_candidate_locator(repo,candidate_locator);target=commit_result_path(repo,task_key,sequence)
  if not target.is_file() or target.is_symlink():raise CommandError("unsafe_path","candidate_artifact","Use a current prepared candidate or its package-owned recovery receipt.")
- receipt=load(repo,package_root,target,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-1.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
+ receipt=load(repo,package_root,target,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-2.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
  if receipt["candidate_artifact"]!=candidate_locator:raise CommandError("stale_identity","candidate_artifact","Retry the exact prepared candidate locator.",3)
  if git(repo,"symbolic-ref","HEAD").stdout.strip()!=receipt["branch_ref"] or git(repo,"rev-parse","HEAD").stdout.strip()!=receipt["commit_sha"]:raise CommandError("stale_identity","happy_path_result","The recovered branch identity changed; rerun the owning workflow from live facts.",3)
  parents=git(repo,"show","-s","--format=%P",receipt["commit_sha"]).stdout.strip().split();tree=git(repo,"show","-s","--format=%T",receipt["commit_sha"]).stdout.strip();message_sha=hashlib.sha256(_raw_commit_message(repo,receipt["commit_sha"]).encode()).hexdigest()
@@ -38,13 +41,13 @@ def _run_happy_path(package_root:Path,root_value:str|None,candidate_artifact:str
  candidate=load(repo,package_root,path,"candidate_artifact");_unused,_relative,task_key,sequence=canonical_candidate_locator(repo,locator);receipt_path=commit_result_path(repo,task_key,sequence)
  if receipt_path.is_file() and not receipt_path.is_symlink():
   try:
-   receipt=load(repo,package_root,receipt_path,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-1.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
+   receipt=load(repo,package_root,receipt_path,"happy_path_result");validate_json(receipt,package_root/("schemas/delivery-commit-result-2.0.schema.json" if "delivery_key" in receipt else "schemas/happy-path-result.schema.json"),"happy_path_result")
   except CommandError:
    if git(repo,"rev-parse","HEAD").stdout.strip()!=candidate["git"]["pre_commit_head"]:raise
   else:
    if git(repo,"symbolic-ref","HEAD").stdout.strip()==receipt["branch_ref"] and git(repo,"rev-parse","HEAD").stdout.strip()==receipt["commit_sha"]:return _recover_receipt(package_root,repo,locator)
  result=execute_commit(package_root,{"_happy_path_candidate_locator":locator},["--root",str(repo),"--candidate-artifact",str(path)])
- if result.get("exit")!="committed":return _project(package_root,{"task_ref":candidate["task"]["path"],"base_ref":candidate["git"]["base_ref"],**({"delivery_key":candidate["delivery_key"],"check_result_id":candidate["check_result_id"]} if "delivery_key" in candidate else {})},result)
+ if result.get("exit")!="committed":return _project(package_root,{"task_ref":candidate["task"]["path"],"base_ref":candidate["git"]["base_ref"],**({"delivery_key":candidate["delivery_key"],"commit_kind":candidate["commit_kind"],**({"check_result_id":candidate["check_result_id"]} if "check_result_id" in candidate else {})} if "delivery_key" in candidate else {})},result)
  return _recover_receipt(package_root,repo,locator)
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--candidate-artifact");p.add_argument("--invocation");p.add_argument("--input");p.add_argument("--owner-result");a=parse(p,argv)

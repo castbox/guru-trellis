@@ -41,7 +41,7 @@ upstream migration/default-cutover qualification.
 Current profiles are `delivery_review_ready`, `delivery_same_plan_resume`, and
 `delivery_reprepare_publication`. A fresh transaction consumes the exact
 `readiness_result_id`; recovery is keyed by selected public Delivery and the
-private transaction reference. Keep all five publication substeps private and
+private transaction reference. Keep publication substeps private and
 preserve same-PR adoption and metadata convergence. Bind provider queries and
 mutations to the actual repository; no implicit target guessing.
 
@@ -72,6 +72,45 @@ Stop preserves commits/PR/resources; PR close and cleanup require their actual
 owners and any necessary current side-effect confirmation. Lost output retries
 the identical stored stop result and releases selection without another stop.
 
+## Early Draft and Ready revision
+
+`delivery_draft_publish` consumes task/key/B/H and exact Chinese pr_title/pr_body.
+It requires accepted Planning in implementing, a nonempty fixed complete range
+and actual HEAD H. It does not consume readiness. Review scope, target,
+sensitive content and evidence claims. The body separates HEAD checks from
+target/integration checks and truthfully lists executed, failed, SKIP and pending
+work. Every Delivery body remains Refs-only.
+
+Preview the exact same repo/base/head/PR, title/body and maximum remote writes.
+Obtain current-dialogue confirmation only for actual remote mutation. Invoke
+the original public wrapper with the completed semantic review. This profile's
+route.typed_exit is draft_published. The current 2.0 transaction records its
+action/terminal and necessary mutation preimage/postimage. ensure_draft precedes
+push. An existing Ready PR is first returned to Draft; binding and exact
+metadata convergence reuse that PR. draft_published reads actual PR/HEAD/payload
+and enters the feedback router. It never records final PublicationFact.
+
+Before a publishing Delivery receives unreviewed changes, use independent
+`delivery_return_to_draft` with concrete revision_reason. Read the original
+same PR/HEAD/state and review the exact revision boundary. This owner confirms
+Draft and lawfully reworks publication to implementation, invalidating
+check/full_review/readiness while retaining Planning, identity and history.
+The review route is draft_revision_ready. Its output returns task/key/repo/PR
+to implementation. A new HEAD cannot use old readiness.
+
+Same-plan resume keeps the original action/exit and reads actual state after
+lost push/create/edit/Draft/Ready output. It accepts the original preimage or
+completed postimage. No second PR, repeated push or empty commit restores
+stdout. Recover an old action before previewing a new one. The next action
+verifies and retires the prior completed transaction; no action journal or
+second Delivery store remains.
+
+Final delivery_review_ready still requires current candidate-bound readiness.
+Only actual Ready records PublicationFact, and only current gates permit
+ready_for_merge. Early feedback/analysis cannot supply a gate. One-time matching
+1.0 transaction conversion is defined by MIGRATION-636.
+
+
 ## Preserved semantic and transaction duties
 
 The duties below apply to the current Delivery input and output contracts.
@@ -87,10 +126,12 @@ from Delivery Review and produces only the minimal Merge seed or a typed
 same-owner/stale/blocking result. Git and GitHub remain the live fact sources;
 the ignored transaction is recovery state, not a Delivery ledger.
 
-The exact stages are:
+The current 2.0 transaction owns one action and terminal:
 
 ```text
-push_content -> bind_pr -> converge_metadata -> mark_ready -> ready
+draft_publish: ensure_draft -> push_content -> bind_pr -> converge_metadata -> draft
+return_to_draft: ensure_draft -> draft_revision
+ready: push_content -> bind_pr -> converge_metadata -> mark_ready -> ready
 ```
 
 The transaction binds the Task identity, public Delivery key, repository, base/head

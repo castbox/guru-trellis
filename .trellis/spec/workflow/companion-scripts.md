@@ -30,7 +30,8 @@ a GitHub-error or business Delivery/Completion route.
 exact Chinese `Refs`-only PR payload. Its normal public entry is
 `invoke-guru-review-task-delivery`; record/check are owner-local diagnostic and
 test commands. A checked `ready` goes only to `guru-publish-task-delivery`.
-That owner previews the exact remote/PR action with
+Final Ready consumes that result. Early Draft consumes its own exact candidate
+input without readiness. That owner previews the exact remote/PR action with
 `preview-task-delivery-publication`, obtains current-dialogue confirmation for
 remote mutation, and invokes `invoke-guru-publish-task-delivery`. Its private
 transaction binds push, PR metadata and Draft/Ready recovery without archiving
@@ -1640,3 +1641,17 @@ The root package record/check/invoke commands validate AI-authored goal/classifi
 ## Manual archive resume (#577)
 
 The existing maintenance transport forwards prepareArchivedTaskResume and accepts the declared additive task_resume capability. Archive preparation requires that capability. Source-locked source/build/byte/mode validation remains strict; local_candidate proves isolated development only. Original private owners read source_task_ref when supplied and retain exact task_ref attribution.
+
+## Early Draft original-owner runtime (#636)
+
+The original TaskCommit exact executor consumes current delivery-2.0 draft/final
+candidate and receipt unions. Draft has no Check or phase2 anchor; final retains
+real Check bindings. The original Publication executor uses transaction 2.0
+action/terminal, confirms Draft before pushing early candidates, and writes
+PublicationFact only for the final Ready terminal. Same-plan readback recovers
+actual completed writes without repeating push/create/edit/state conversion.
+The original private migration command is the only reader of a supported old
+1.0 transaction; current execution has no fallback. Early Branch Review's
+public invocation validates call-local completed analysis and emits its minimal
+DTO without writing full_review or retaining a review checkpoint. Markdown
+owns scope, content/evidence sufficiency, findings and route judgments.

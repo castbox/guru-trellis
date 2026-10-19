@@ -3,7 +3,7 @@
   "schema_version": "1.4",
   "id": "guru-create-task-commit",
   "name": "guru-create-task-commit",
-  "description": "Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.",
+  "description": "Create an exact reviewed Delivery commit for early Draft feedback or the final Check-bound path.",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -45,9 +45,9 @@
     },
     {
       "id": "phase2_result",
-      "evidence": "guru-check-task passed DTO",
-      "binding": "task_ref, Delivery key, exact current Check result and candidate",
-      "freshness": "the Phase 2 checker confirms phase2_commit_anchor remains in current history and the current reviewed-content identity still matches the owner checkpoint"
+      "evidence": "Selected profile: current accepted Planning in implementing for early Draft, or current real public Check for final commit.",
+      "binding": "Exact Task/Delivery and selected closed input.",
+      "freshness": "Rechecked before exact mutation."
     },
     {
       "id": "pre_commit_head",
@@ -229,6 +229,30 @@
     {
       "id": "delivery_source_migration_input_1_0",
       "path": "schemas/delivery-source-migration-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_commit_input",
+      "path": "schemas/public-delivery-draft-commit-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_committed_reentry_input",
+      "path": "schemas/public-delivery-draft-committed-reentry-input-1.0.schema.json"
+    },
+    {
+      "id": "draft_committed_output",
+      "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_candidate_2_0",
+      "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_result_2_0",
+      "path": "schemas/delivery-commit-result-2.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate_2_0",
+      "path": "schemas/public-input-delivery-2.0.schema.json"
     }
   ],
   "validators": [
@@ -287,11 +311,19 @@
         "kind": "stop",
         "id": "task-commit-blocked"
       }
+    },
+    {
+      "id": "draft_committed",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-commit-router"
+      }
     }
   ],
   "reentry": {
-    "identity": "Delivery key, current Check result and candidate; dirty transaction also binds pre-commit HEAD",
-    "freshness": "the current Delivery Check, candidate and live Git facts still match; dirty transactions also match the complete dirty snapshot",
+    "identity": "Delivery key and fixed base; final profiles additionally bind current Check; dirty transactions bind pre-commit HEAD.",
+    "freshness": "Current selected profile prerequisites and live candidate; dirty paths match the complete snapshot.",
     "stale_behavior": "fail_closed"
   },
   "tests": [
@@ -327,8 +359,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-create-task-commit-input-delivery-aggregate-1.0",
-        "path": "schemas/public-input-delivery-1.0.schema.json"
+        "schema_id": "guru-create-task-commit-input-delivery-aggregate-2.0",
+        "path": "schemas/public-input-delivery-2.0.schema.json"
       },
       "profiles": [
         {
@@ -405,6 +437,36 @@
             "field": "profile",
             "value": "delivery_committed_reentry"
           }
+        },
+        {
+          "id": "delivery_draft_commit",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-draft-commit-1.0",
+            "path": "schemas/public-delivery-draft-commit-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_commit_input",
+            "path": "examples/public-delivery-draft-commit-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_commit"
+          }
+        },
+        {
+          "id": "delivery_draft_committed_reentry",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-draft-committed-reentry-1.0",
+            "path": "schemas/public-delivery-draft-committed-reentry-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_committed_reentry_input",
+            "path": "examples/public-delivery-draft-committed-reentry-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_committed_reentry"
+          }
         }
       ]
     },
@@ -470,6 +532,20 @@
         },
         "consumer_use_ids": [
           "project_blocked"
+        ]
+      },
+      {
+        "exit_id": "draft_committed",
+        "schema": {
+          "schema_id": "guru-create-task-commit-output-delivery-draft-committed-1.0",
+          "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_committed_output",
+          "path": "examples/public-output-delivery-draft-committed-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_committed"
         ]
       }
     ],
@@ -539,6 +615,19 @@
           "id": "task-commit-blocked"
         },
         "payload_kind": "zero_payload"
+      },
+      {
+        "id": "draft_committed_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-commit-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-create-task-commit-draft-committed-1.0",
+          "path": "consumers/workflow/production/create-task-commit-draft-committed.schema.json",
+          "kind": "json_schema"
+        }
       }
     ],
     "projections": [
@@ -596,6 +685,30 @@
         "consumer_input_id": "blocked_stop_input",
         "operation": "select",
         "mappings": []
+      },
+      {
+        "id": "project_draft_committed",
+        "exit_id": "draft_committed",
+        "consumer_input_id": "draft_committed_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "commit_sha",
+            "target": "commit_sha"
+          }
+        ]
       }
     ],
     "private_artifacts": [
@@ -618,20 +731,20 @@
         "persistence": "ignored_runtime"
       },
       {
-        "id": "delivery_commit_candidate_1_0",
+        "id": "delivery_commit_candidate_2_0",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-1.0.json",
-          "path": "schemas/delivery-commit-candidate-1.0.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json",
+          "path": "schemas/delivery-commit-candidate-2.0.schema.json"
         },
         "persistence": "ignored_runtime"
       },
       {
-        "id": "delivery_commit_result_1_0",
+        "id": "delivery_commit_result_2_0",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-1.0.json",
-          "path": "schemas/delivery-commit-result-1.0.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-2.0.json",
+          "path": "schemas/delivery-commit-result-2.0.schema.json"
         },
         "persistence": "ignored_runtime"
       },

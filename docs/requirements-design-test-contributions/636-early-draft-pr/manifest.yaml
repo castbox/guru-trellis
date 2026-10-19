@@ -1,0 +1,19 @@
+task_id: 636-early-draft-pr
+source: https://github.com/castbox/guru-trellis/issues/636
+status: proposed
+strategy: delta_first
+preimage: current-main-0.7.0-guru.112
+source_revision: b470580d4f79f61c66d72db97861fe1564b5e746
+architecture:
+  locator: docs/architecture/README.md
+  version: current-main-0.7.0-guru.103
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements: docs/requirements/current/task-delivery-lifecycle.md
+  design: docs/design/current/task-delivery-lifecycle.md
+  test: docs/test/current/task-delivery-lifecycle.md

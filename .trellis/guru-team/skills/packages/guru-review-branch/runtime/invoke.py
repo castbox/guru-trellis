@@ -46,6 +46,9 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         public = envelope["public_input"]
     else:
         public = load(repo, package_root, args.input, "input")
+    if public.get("profile") == "delivery_draft_content_review":
+        from draft import invoke as draft_review
+        return draft_review(package_root, repo, public, load(repo, package_root, args.owner_result, "owner_result"))
     if public.get("profile") == "delivery_promotion_reference_alignment":
         from alignment import facts
         facts(package_root, repo, public)

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-workflow-publish-task-delivery-draft-revision-ready-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_ref",
+    "delivery_key",
+    "repo_ref",
+    "pr_number"
+  ],
+  "properties": {
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "repo_ref": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "pr_number": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

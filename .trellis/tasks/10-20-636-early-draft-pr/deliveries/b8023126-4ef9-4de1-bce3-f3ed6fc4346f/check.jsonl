@@ -1,0 +1,19 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "全部新正文和review加载唯一写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "本批三正文的职责深度和唯一来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批要求和全部来源验收承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "九节方案及来源设计处置核对"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "执行验证与唯一Policy/Docs Plan核对"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "保留上游身份gate链Refs-only与Closure分工"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "原TaskCommit/Publication和固定候选时序差额"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "本批早期Draft候选与恢复验收对照"}
+{"file": "docs/architecture/README.md", "reason": "阶段适用Architecture导航"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "新增profile和局部状态的当前必要性与职责边界"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "独立阶段评估九concerns和晋升合同"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "只编排显式skills和typed exits的完整受控consumer"}
+{"file": "trellis/skills/guru-team/packages/guru-create-task-commit/references/contract.md", "reason": "原精确提交事务与Check前置演进"}
+{"file": "trellis/skills/guru-team/packages/guru-publish-task-delivery/references/contract.md", "reason": "原同PR事务恢复和Refs-only边界"}
+{"file": "trellis/skills/guru-team/packages/guru-review-branch/SKILL.md", "reason": "早期完整内容分析与正式Check后独立Review分别承接"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进一次性迁移无双读及3000行边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "风险匹配验证对象/范围与测试价值"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "最小Public I/O独立闭合入口和唯一consumer"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "deterministic事实执行与标准stdout receipts"}

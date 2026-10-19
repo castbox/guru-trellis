@@ -15,7 +15,8 @@ from runtime.schema import validate_json
 
 
 SKILL_ID = "guru-publish-task-delivery"
-STAGES = ("push_content", "bind_pr", "converge_metadata", "mark_ready", "ready")
+STAGES = ("ensure_draft", "push_content", "bind_pr", "converge_metadata", "mark_ready", "ready", "draft", "draft_revision")
+TERMINALS = {"ready", "draft", "draft_revision"}
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA64 = re.compile(r"^[0-9a-f]{64}$")
 CYCLE_REF = re.compile(r"^delivery-cycle:v1:[0-9a-f]{64}$")
@@ -101,6 +102,10 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
     common = {"profile", "mode", "task_ref"}
     if profile == "review_ready":
         required = common | {"delivery_cycle_ref", "reviewed_head", "pr_title", "pr_body", "remaining_work_state"}
+    elif profile == "draft_publish":
+        required = common | {"delivery_key", "base_ref", "candidate_head", "pr_title", "pr_body"}
+    elif profile == "return_to_draft":
+        required = common | {"delivery_key", "revision_reason"}
     elif profile == "same_plan_resume":
         required = common | {"transaction_ref"}
     elif profile == "reprepare_publication":
@@ -118,27 +123,32 @@ def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
         raise WorkflowError("Unsupported publication mode.", code="schema_mismatch")
     if not isinstance(value.get("task_ref"), str) or TASK_REF.fullmatch(value["task_ref"]) is None:
         raise WorkflowError("Invalid task_ref.", code="schema_mismatch")
-    if profile == "review_ready":
-        if not delivery_profile and (not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None):
+    if profile in {"draft_publish", "return_to_draft"} and not delivery_profile:
+        raise WorkflowError("Draft entries require the current public Delivery identity.", code="schema_mismatch")
+    if profile in {"review_ready", "draft_publish"}:
+        if profile == "review_ready" and not delivery_profile and (not isinstance(value["delivery_cycle_ref"], str) or CYCLE_REF.fullmatch(value["delivery_cycle_ref"]) is None):
             raise WorkflowError("delivery_cycle_ref must use the current closed identity.", code="schema_mismatch")
-        if not isinstance(value["reviewed_head"], str) or SHA40.fullmatch(value["reviewed_head"]) is None:
+        if not isinstance(value.get("reviewed_head", value.get("candidate_head")), str) or SHA40.fullmatch(value.get("reviewed_head", value.get("candidate_head", ""))) is None:
             raise WorkflowError("reviewed_head must be a full lowercase commit id.", code="schema_mismatch")
-        for field in ("pr_title", "pr_body", "remaining_work_state"):
+        for field in (("pr_title", "pr_body", "remaining_work_state") if profile == "review_ready" else ("pr_title", "pr_body", "base_ref")):
             if not isinstance(value[field], str) or not value[field].strip():
                 raise WorkflowError(f"{field} is required.", code="schema_mismatch")
-        if value["remaining_work_state"] not in {"none", "remaining"}:
+        if profile == "review_ready" and value["remaining_work_state"] not in {"none", "remaining"}:
             raise WorkflowError("remaining_work_state must be none or remaining.", code="schema_mismatch")
         if CLOSING.search(value["pr_body"]):
             raise WorkflowError("Delivery PR body contains a closing keyword.", code="closing_keyword_forbidden")
     elif profile == "same_plan_resume":
         if not isinstance(value["transaction_ref"], str) or SHA64.fullmatch(value["transaction_ref"]) is None:
             raise WorkflowError("transaction_ref must be a lowercase SHA-256 value.", code="schema_mismatch")
+    elif profile == "return_to_draft":
+        if not isinstance(value["revision_reason"], str) or not value["revision_reason"].strip():
+            raise WorkflowError("State the concrete same-Delivery revision reason.", code="schema_mismatch")
     elif not isinstance(value["reason_code"], str) or not value["reason_code"]:
         raise WorkflowError("reason_code is required.", code="schema_mismatch")
     return value
 
 
-def validate_review(value: dict[str, Any]) -> dict[str, Any]:
+def validate_review(value: dict[str, Any], expected_exit: str = "ready_for_merge") -> dict[str, Any]:
     required = {"schema_version", "skill_id", "review", "route"}
     if set(value) != required or value.get("schema_version") != "1.0" or value.get("skill_id") != SKILL_ID:
         raise WorkflowError("Semantic review identity is invalid.", code="schema_mismatch")
@@ -148,8 +158,8 @@ def validate_review(value: dict[str, Any]) -> dict[str, Any]:
         raise WorkflowError("Semantic review shape is invalid.", code="schema_mismatch")
     if review.get("status") != "passed" or not isinstance(review.get("summary"), str) or not review["summary"].strip():
         raise WorkflowError("A passed semantic publication review is required.", code="schema_mismatch")
-    if not isinstance(route, dict) or set(route) != {"typed_exit"} or route.get("typed_exit") != "ready_for_merge":
-        raise WorkflowError("Semantic review route must be ready_for_merge.", code="schema_mismatch")
+    if not isinstance(route, dict) or set(route) != {"typed_exit"} or route.get("typed_exit") != expected_exit:
+        raise WorkflowError("Semantic review route must match the selected publication action.", code="schema_mismatch")
     return value
 
 
@@ -246,6 +256,8 @@ def read_pr(root: Path, number: int) -> dict[str, Any]:
 def transaction_ref(public_input: dict[str, Any]) -> str:
     if public_input["profile"].removeprefix("delivery_") == "same_plan_resume":
         return public_input["transaction_ref"]
+    if public_input["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+        return digest({"skill_id": SKILL_ID, "input": public_input})
     identity = {"delivery_key": public_input["delivery_key"], "readiness_result_id": public_input["readiness_result_id"]} if "delivery_key" in public_input else {"delivery_cycle_ref": public_input["delivery_cycle_ref"]}
     return digest({"skill_id": SKILL_ID, "task_ref": public_input["task_ref"], **identity})
 
@@ -259,7 +271,7 @@ def unique_task_transaction(root: Path, task_ref: str, delivery_key: dict | None
                 continue
             value = read_json(path)
             if isinstance(value.get("input"), dict) and value["input"].get("task_ref") == task_ref and (delivery_key is None or value["input"].get("delivery_key") == delivery_key):
-                if value.get("stage") == "ready":
+                if value.get("stage") in TERMINALS:
                     continue
                 validate_transaction(value)
                 matches.append(value)
@@ -285,8 +297,10 @@ def save_transaction(root: Path, transaction: dict[str, Any]) -> None:
 
 
 def validate_transaction(transaction: dict[str, Any]) -> None:
-    if transaction.get("schema_version") != "1.0" or transaction.get("skill_id") != SKILL_ID:
+    if transaction.get("schema_version") != "2.0" or transaction.get("skill_id") != SKILL_ID:
         raise WorkflowError("Private transaction identity is invalid.", code="private_state_invalid")
+    if transaction.get("action") not in {"ready", "draft_publish", "return_to_draft"} or transaction.get("terminal") != {"ready":"ready", "draft_publish":"draft", "return_to_draft":"draft_revision"}.get(transaction.get("action")):
+        raise WorkflowError("Private action/terminal contract is invalid.", code="private_state_invalid")
     if transaction.get("stage") not in STAGES or SHA64.fullmatch(str(transaction.get("transaction_ref", ""))) is None:
         raise WorkflowError("Private transaction stage/reference is invalid.", code="private_state_invalid")
     actual = transaction.get("transaction_sha256")
@@ -307,6 +321,8 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
             raise WorkflowError("Requested publication transaction does not exist.", code="private_state_missing")
         validate_transaction(existing)
         source = existing["input"]
+        if any(public_input.get(field) != source.get(field) for field in ("task_ref", "delivery_key")):
+            raise WorkflowError("Resume the exact original Task/Delivery transaction.", code="private_state_invalid")
     else:
         source = public_input
         if existing is not None:
@@ -318,6 +334,10 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
                 raise
             if existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
+
+    if source["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+        from draft import plan
+        return plan(root, source, existing, ref)
 
     if "delivery_key" in source and existing is not None and existing["stage"] == "ready":
         # Recover the original remote fact before requiring an active checkout
@@ -397,12 +417,48 @@ def blocked(reason_code: str, remediation: str) -> dict[str, Any]:
     return {"typed_exit": "blocked", "output": {"exit_id": "blocked", "reason_code": reason_code, "remediation": remediation}}
 
 
+def expected_publication_exit(root, public):
+    source = public
+    if public["profile"] in {"delivery_same_plan_resume", "delivery_reprepare_publication"}:
+        tx = (load_transaction(root, public["transaction_ref"]) if "transaction_ref" in public
+              else unique_task_transaction(root, public["task_ref"], public.get("delivery_key")))
+        if tx is None:
+            raise WorkflowError("Recover the exact original publication transaction.", code="private_state_missing")
+        source = tx["input"]
+    return {"delivery_draft_publish": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
+
+
+def retire_completed(root, new_transaction):
+    """Keep one same-operation recovery result per Delivery, not a journal."""
+    directory = transaction_path(root, new_transaction["transaction_ref"]).parent
+    for path in directory.glob("*.json") if directory.is_dir() else ():
+        if path.name.endswith(".gate.json") or path.stem == new_transaction["transaction_ref"]:
+            continue
+        old = read_json(path)
+        if old.get("input", {}).get("delivery_key") != new_transaction["input"].get("delivery_key"):
+            continue
+        validate_transaction(old)
+        if old.get("base_ref") and new_transaction.get("base_ref") and old["base_ref"] != new_transaction["base_ref"]:
+            raise WorkflowError("Retain the original Delivery content baseline for Draft updates.", code="publication_stale")
+        if old["stage"] not in TERMINALS:
+            raise WorkflowError("Recover the unfinished original publication action before a new action.", code="private_state_invalid")
+        if old["terminal"] == "ready":
+            ready_output(root, old)
+        else:
+            from draft import output
+            output(root, old)
+        path.unlink()
+        path.with_suffix(".gate.json").unlink(missing_ok=True)
+
+
 def initial_transaction(context: dict[str, Any]) -> dict[str, Any]:
     candidate = context.get("candidate_pr")
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "skill_id": SKILL_ID,
         "transaction_ref": context["transaction_ref"],
+        "action": "ready",
+        "terminal": "ready",
         "stage": "push_content",
         "input": context["input"],
         "public_candidate": context.get("public_candidate"),
@@ -466,6 +522,12 @@ def push_content(root: Path, transaction: dict[str, Any]) -> None:
         transaction["stage"] = "bind_pr"
         save_transaction(root, transaction)
         return
+    if remote != transaction["initial_remote_head"]:
+        raise WorkflowError("Remote HEAD differs from this action's original preimage/postimage.", code="publication_stale")
+    if transaction["terminal"] == "draft":
+        current_pr = find_bindable_pr(root, transaction)
+        if current_pr is not None and not current_pr["is_draft"]:
+            raise WorkflowError("Confirm this same PR is Draft before pushing unreviewed content.", code="publication_stale")
     if remote and not is_ancestor(root, remote, head):
         raise WorkflowError("Remote branch is not a reviewed ancestor.", code="publication_stale")
     _run(root, ["git", "push", "origin", f"{head}:refs/heads/{transaction['head_branch']}"])
@@ -521,7 +583,7 @@ def converge_metadata(root: Path, transaction: dict[str, Any]) -> None:
         pr = read_pr(root, bound["number"])
         if pr["title"] != source["pr_title"] or pr["body"] != source["pr_body"]:
             raise WorkflowError("PR metadata mutation did not converge.", code="external_command_failed")
-    transaction["stage"] = "mark_ready"
+    transaction["stage"] = "draft" if transaction["terminal"] == "draft" else "mark_ready"
     save_transaction(root, transaction)
 
 
@@ -597,13 +659,21 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
 def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
     transaction = load_transaction(root, context["transaction_ref"])
     if transaction is None:
-        transaction = initial_transaction(context)
+        if context["input"]["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+            from draft import initial
+            transaction = initial(context)
+        else:
+            transaction = initial_transaction(context)
+        retire_completed(root, transaction)
         save_transaction(root, transaction)
     validate_transaction(transaction)
     exact_context(root, transaction)
     while True:
         stage = transaction["stage"]
-        if stage == "push_content":
+        if stage == "ensure_draft":
+            from draft import ensure_draft
+            ensure_draft(root, transaction)
+        elif stage == "push_content":
             push_content(root, transaction)
         elif stage == "bind_pr":
             bind_pr(root, transaction)
@@ -613,6 +683,9 @@ def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
             mark_ready(root, transaction)
         elif stage == "ready":
             return ready_output(root, transaction)
+        elif stage in {"draft", "draft_revision"}:
+            from draft import output
+            return output(root, transaction)
         transaction = load_transaction(root, context["transaction_ref"])
         if transaction is None:
             raise WorkflowError("Publication transaction disappeared.", code="private_state_missing")
@@ -666,7 +739,7 @@ def project_review_stale(root: Path, output: dict[str, Any]) -> dict[str, Any]:
 
 def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None) -> dict[str, Any]:
     public_input = validate_public_input(read_json(input_path))
-    review = validate_review(read_json(review_path))
+    review_input = read_json(review_path)
     try:
         context = plan_from_input(root, public_input)
     except WorkflowError as exc:
@@ -680,6 +753,7 @@ def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None)
         if exc.code in REPREPARE_REQUIRED_CODES:
             return {"exit_id": "reprepare_required", "task_ref": public_input["task_ref"], **({"delivery_key":public_input["delivery_key"]} if "delivery_key" in public_input else {}), "reason_code": exc.code}
         raise
+    review = validate_review(review_input, expected_publication_exit(root, public_input))
     if context.get("typed_exit") != "preview":
         return project_review_stale(root, context["output"])
     if not context["terminal_recovery"]:

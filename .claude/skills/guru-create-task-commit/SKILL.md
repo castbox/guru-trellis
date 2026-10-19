@@ -1,6 +1,6 @@
 ---
 name: guru-create-task-commit
-description: Create a reviewed Trellis task work commit after Phase 2, including finding-fix and revision commits, with exact staging and fresh evidence.
+description: Create an exact reviewed Delivery commit for early Draft feedback or the final Check-bound path.
 ---
 
 # Create Task Commit
@@ -63,7 +63,7 @@ through the current Delivery input after its fresh Check and semantic review.
 package-private diagnostic, testing, and bounded recovery entries. They must
 not be added between prepare and the confirmed public invocation.
 
-Return exactly one declared exit: `committed`, `revision-required`, or
+Return exactly one declared exit: `draft_committed`, `committed`, `revision-required`, or
 `blocked`. Unknown, multiple, stale, or unmapped results fail closed.
 
 For an explicit independent manual operation after an automatic stop, read
@@ -72,7 +72,7 @@ That global boundary does not relax this Skill's entry or completion contract.
 
 The current candidate lives only under ignored
 `.trellis/.runtime/guru-team/task-commit-plans/**`, is never staged, and is
-removed after success. Candidate delivery-1.0 has no authorization, branch
+removed after success. Candidate delivery-2.0 has no authorization, branch
 classification, publication eligibility, freshness digest, or terminal result
 fields. The public invocation may retain one minimal ignored result receipt after success
 so the same locator can recover lost stdout without repeating the commit; a
@@ -84,3 +84,27 @@ Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
 
 For actual Plan2 planning relocation, this owner may explicitly review and select the bounded `markdown_relative_links_v1` private source mode described in the contract. Existing absent-mode source mappings stay strict bytes/modes. Planning owners never consume this private association.
+
+## Early Draft commit
+
+`delivery_draft_commit` requires the exact registered Task/Delivery, accepted
+current Planning and implementing phase. It binds fixed base B without a
+check_result_id. Review the complete dirty snapshot and actual proposed content
+against scope. Run Planning-selected minimum self-checks. Check sensitive
+content, precise target, stage paths, message and unrelated preservation before
+prepare and the current-dialogue commit boundary. Complete Check, heavy tests
+and final Branch Review remain pending duties.
+
+Use the same prepare and exact invoke transaction, real hooks and same-commit
+receipt recovery. The private candidate/result use the closed delivery-2.0 union:
+draft contains no Check or phase2 anchor; final retains both real bindings.
+`draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
+router and original Publication. It cannot enter formal Branch Review.
+
+For an already committed nonempty B..HEAD candidate, including a legal resolved
+integration commit, `delivery_draft_committed_reentry` performs the same bounded
+semantic review and proves committed Task identity and all five Planning files.
+It returns the early DTO without stage, commit, hook, begin_check or gate.
+Active merge/sequencer state is still rejected. New dirty content uses prepare;
+no empty commit restores output. Final profiles keep Check and `committed`
+semantics. Matching migration is defined by MIGRATION-636.

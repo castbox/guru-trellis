@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0",
+  "id": "636-early-draft-pr",
+  "name": "636-early-draft-pr",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 636,
+    "disposition": "exact_source"
+  },
+  "title": "#636 提前创建和更新 Draft PR",
+  "description": "通过现有公共提交和 Publication owner 支持早期 Draft，分离 Ready/Merge 并保留同身份恢复、固定候选与完整交付义务。",
+  "dev_type": null,
+  "scope": "实现 live #636 全部行为与验收；不启动 #637/#638，不改业务仓、队列、部署或完整 Release 矩阵。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-20",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-20-636-early-draft-pr/prd.md",
+    "revision": "sha256:dfca6518e73774e45a6079f7f9ebb9ca1e605626a8e8068b20a63ead042bba42"
+  },
+  "deliveries": [
+    {
+      "id": "b8023126-4ef9-4de1-bce3-f3ed6fc4346f",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-20-636-early-draft-pr/prd.md",
+          "revision": "sha256:dfca6518e73774e45a6079f7f9ebb9ca1e605626a8e8068b20a63ead042bba42"
+        },
+        "anchors": [
+          "AC636-01",
+          "AC636-02",
+          "AC636-03",
+          "AC636-04",
+          "AC636-05",
+          "AC636-06",
+          "AC636-07",
+          "AC636-08",
+          "AC636-09",
+          "AC636-10"
+        ]
+      },
+      "planning_root": "deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-20-636-early-draft-pr/deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f/design.md",
+        "revision": "sha256:9a8ea168690c742719f8c6525a290edb913167e70d7a2af8801ab7225bab1629"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:b35afd1b-cd08-4500-ab38-9d979d1be550",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-20-636-early-draft-pr/prd.md",
+              "revision": "sha256:dfca6518e73774e45a6079f7f9ebb9ca1e605626a8e8068b20a63ead042bba42"
+            },
+            "anchors": [
+              "AC636-01",
+              "AC636-02",
+              "AC636-03",
+              "AC636-04",
+              "AC636-05",
+              "AC636-06",
+              "AC636-07",
+              "AC636-08",
+              "AC636-09",
+              "AC636-10"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-20-636-early-draft-pr/deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f/design.md",
+            "revision": "sha256:9a8ea168690c742719f8c6525a290edb913167e70d7a2af8801ab7225bab1629"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-20-636-early-draft-pr/deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f/prd.md",
+              "revision": "sha256:85acd245f6c6a7aea8e68b6e5ae7cf984c42f51580ad9691e2a21196a6b053fe"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-636-early-draft-pr/deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f/design.md",
+              "revision": "sha256:9a8ea168690c742719f8c6525a290edb913167e70d7a2af8801ab7225bab1629"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-636-early-draft-pr/deliveries/b8023126-4ef9-4de1-bce3-f3ed6fc4346f/implement.md",
+              "revision": "sha256:dfcd090d5b1db5ed18d86f3399dbc0fdc9ba5cdb2ea4e802b938265d917ccf12"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
