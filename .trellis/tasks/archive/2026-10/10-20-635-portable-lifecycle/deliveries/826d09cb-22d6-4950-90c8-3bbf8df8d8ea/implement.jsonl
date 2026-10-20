@@ -8,6 +8,6 @@
 {"file": "docs/requirements/current/completion-closure.md", "reason": "承接完整Completion及精确Issue动作要求"}
 {"file": "docs/design/current/completion-closure.md", "reason": "定位Closure动作集、Finish及本机资源职责的窄替代"}
 {"file": "docs/test/current/completion-closure.md", "reason": "覆盖retain/no-Issue/混合集与再次Finish，不补造历史"}
-{"file": ".trellis/tasks/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/architecture-contribution.md", "reason": "读取真实task-owned架构差额及单写晋升职责"}
-{"file": ".trellis/tasks/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/adr-portable-lifecycle.md", "reason": "读取必要ADR候选及窄替代、迁移与退出边界"}
+{"file": ".trellis/tasks/archive/2026-10/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/architecture-contribution.md", "reason": "读取真实task-owned架构差额及单写晋升职责"}
+{"file": ".trellis/tasks/archive/2026-10/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/adr-portable-lifecycle.md", "reason": "读取必要ADR候选及窄替代、迁移与退出边界"}
 {"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "锁定真实matching provider，source采用不等于目标安装"}
