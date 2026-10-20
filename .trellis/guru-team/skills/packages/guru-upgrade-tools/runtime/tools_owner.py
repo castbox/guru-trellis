@@ -30,18 +30,21 @@ def legacy_owner(package):
     return module
 
 
-def project_agents_target(plan, module):
-    """Compose the existing Guru block into the public writer's first target."""
-    for action in plan['actions']:
-        if action.get('kind', 'file') != 'file' or action['path'] != 'AGENTS.md':
-            continue
-        target = action['target']
-        content = None if target is None else base64.b64decode(target['content_base64'])
-        rendered = module.render_agents_ai_first_principles(content)
-        action['target'] = {'content_base64': base64.b64encode(rendered).decode('ascii'),
-                            'sha256': hashlib.sha256(rendered).hexdigest(),
-                            'mode': 0o644 if target is None else target['mode']}
-    return plan
+def delegate_agents_preservation(plan):
+    """Leave a preserved optional file to the original Guru writer only."""
+    actions = [row for row in plan['actions'] if row['path'] == 'AGENTS.md']
+    if (len(actions) != 1 or 'AGENTS.md' in plan['guard']['required_paths']
+            or actions[0]['source'] != actions[0]['target']):
+        raise ValueError('Tools-only installation requires an explicit AGENTS.md preserve decision')
+    source = actions[0]['source']
+    plan['actions'].remove(actions[0])
+    return {'sha256': None if source is None else source['sha256'],
+            'mode': None if source is None else source['mode']}
+
+
+def validate_agents_source(root, plan, old):
+    if old.state(old.relative_file(root, 'AGENTS.md')) != plan['agents_source']:
+        raise ValueError('Preserved AGENTS.md changed since preparation')
 
 
 def selected_target(context, public):
@@ -174,6 +177,7 @@ def inventory(package, root, public, descriptor, plan=None):
                  for path in sorted(paths)], 'peer_pointers': peer_pointers(root, old),
              'public_tools': call(descriptor, 'inspectToolsTarget', {'root': str(root)})}
     if plan is not None:
+        validate_agents_source(root, plan, old)
         facts['public_preview'] = validate_tools_plan(root, public, plan, old)
         decisions = {row['path']: row for row in plan['guru_decisions']}
         if len(decisions) != len(plan['guru_decisions']):
@@ -466,8 +470,8 @@ def run(package_root, metadata, argv):
             if Path(tools['root']).resolve() != root:
                 raise ValueError('Public tools input root differs from selected checkout')
             frozen = {key: value for key, value in plan.items() if key != 'tools_input'}
-            frozen['upstream_plan'] = project_agents_target(
-                call(plan['upstream_source'], 'prepareToolsInstallation', tools), old.installer(source))
+            frozen['upstream_plan'] = call(plan['upstream_source'], 'prepareToolsInstallation', tools)
+            frozen['agents_source'] = delegate_agents_preservation(frozen['upstream_plan'])
             validate_json(frozen, package_root / 'schemas/private-plan.schema.json', 'plan')
             facts = inventory(package_root, root, public, frozen['upstream_source'], frozen)
             return {'plan': frozen, 'facts': facts}

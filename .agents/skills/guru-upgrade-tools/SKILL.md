@@ -28,8 +28,10 @@ asking for a real choice or write confirmation, and
 for intermediate receipts. Do not use full installation migration as fallback.
 
 The original prepare owner consumes the SDK-exported PreparedMaintenancePlan
-through its public preview/apply entrypoints. Before the first apply freezes
-targets, it composes the named AGENTS target with the canonical Guru-owned
-block through the original installer's pure renderer. Core template hashes
-retain their upstream-baseline meaning. Recovery keeps the same frozen plan
-and rollback compatibility checks; it does not reproject or repair checkpoints.
+through its public preview/apply entrypoints. Select preserve for AGENTS.md.
+Before initial apply, delegate that optional no-write action to Guru and freeze
+its original hash/mode privately. Core does not own that file in this operation;
+the original Guru installer alone updates its named block and retains project
+instructions. Core targets and template hashes remain unchanged. Recovery keeps
+the same plan, Guru preimages and rollback compatibility checks; it does not
+reproject targets or repair checkpoints.
