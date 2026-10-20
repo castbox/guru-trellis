@@ -1365,10 +1365,13 @@ Guru Gate, artifact, finding severity, or route. The package
 publishes current-only schema `guru-phase2-check-6.0`. Recorder/checker runtime
 commands accept AI-authored closed input and validate only objective schema,
 `phase2_capture_commit` ancestry, recomputed
-private `guru-phase2-worktree-content-1.0` identity over live tracked and
-untracked worktree paths, current dirty reviewed-path coverage, finding/scope
-linkage, and exit/consumer invariants. Phase 2 does not consume the four-stage
-durable `guru-reviewed-content-1.0` contract. Any non-current input or checkpoint
+private `guru-phase2-worktree-content-2.0` identity over live tracked and
+untracked business paths including executable mode, current dirty reviewed-path
+coverage, finding/scope linkage, and exit/consumer invariants. The local token
+uses the existing metadata exclusions from
+`data-contracts.md#reviewed-content-identity`; it remains distinct from the
+durable `guru-reviewed-content-1.0` identity used by the candidate handoff.
+Any non-current input or checkpoint
 shape fails closed rather than synthesizing a semantic result.
 
 Reviewed paths and validation evidence are non-empty. Every adequacy dimension

@@ -51,12 +51,12 @@
       "phase": "implementing",
       "plan_ref": {
         "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
-        "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+        "revision": "sha256:446247708a299089f3088b38cc4a70c9cd73687d58702e573dff53a16492086a"
       },
       "candidate": null,
       "results": {
         "planning": {
-          "result_id": "planning-accepted:bc7e9168-3704-4741-ab4d-7451b44b12c5",
+          "result_id": "planning-accepted:9d8efec4-205f-4103-b351-5e8b3467cc67",
           "owner_role": "planning",
           "owner_id": "guru-activate-delivery",
           "outcome": "accepted",
@@ -77,7 +77,7 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
-            "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+            "revision": "sha256:446247708a299089f3088b38cc4a70c9cd73687d58702e573dff53a16492086a"
           },
           "candidate": null,
           "predecessor_result_id": null,
@@ -89,11 +89,11 @@
             },
             {
               "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
-              "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+              "revision": "sha256:446247708a299089f3088b38cc4a70c9cd73687d58702e573dff53a16492086a"
             },
             {
               "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/implement.md",
-              "revision": "sha256:6605499365d128e15c46e71210fb2d68e233e9fdffda4e135985b6a411e34341"
+              "revision": "sha256:16c6bc3056a2917cc33771c95acfc93787187df02ab61ddf22446eccd439371c"
             }
           ]
         },

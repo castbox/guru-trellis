@@ -18,6 +18,7 @@
 | I638-04 隔离正文与代表迁移 | I03；implement writer及原RDT/Architecture维护方 | 写本Task RDT contribution五件套及完整proposed正文；Architecture contribution/必要ADR候选按design§9。迁移知识维护、命中生命周期及必要Architecture完整单元；根README稳定identity/薄导航是本次切换内容，之后普通Task不强制再写。不触碰其它Task贡献或历史归档。尚未晋升时共享current保持原状 |
 | I638-05 定向测试和实际安装 | I01..04形成可审候选；trellis-check worker/原验证owners | 按§3执行生产wrapper、公共投影、direct consumer和一个representative clean install/reapply；新增测试只检测独立行为，不锁mutable配置或照抄实现。运行实际Agent样本，host不填pass。保留首次失败/修复和层次边界 |
 | I638-06 dogfood与工具切换 | matching完整source已形成；原installer/tools owner | canonical overlay变化后原`apply.sh --repo .`和drift；如legacy archives阻塞，记录未通过并保留归档，走原支持的matching tools升级，不局部复制。workflow通过官方preview/显式apply同步；不改上游、全局npm或node_modules。需要commit/安装副作用时在原边界展示精确计划 |
+| I638-06a local-clone 来源恢复 | 新 candidate assessment、Wording、final_plan、Approval、Activation；原 installation/tools 实现与审核 owners | 按 design D638-06 直接修改 `guru-upgrade-installation/runtime/owner.py` 的原 manifest/source reader；`owner.py:preview`、`guru-upgrade-tools/runtime/tools_owner.py:inventory`、`delivery_upgrade.py:old_installation`/preview 传原已选完整 source。补真实 installer receipt、已删除旧 clone、exact object/metadata/preimage 的定向测试。原 GitHub、dirty 和 unknown-preimage 行为保留，不新增 public DTO 或第二来源路径。定向验证后从完整匹配 source 重新原 preview→prepare→独立安装边界→invoke/readback/recovery，保全本 Task/session/peer 和用户配置 |
 | I638-07 首次候选检查 | I05/06可用；原implementation、独立Architecture与Check owners | implementation在implementing按固定B、实际HEAD及完整差额paths调用candidate/begin_check，进入checking。独立Architecture/Check读取完整实现/拟写及消费者；原Check选candidate_checked时先合法rework到implementation，只清readiness、保留planning和既有真实历史，再发给final integration，不写Check gate或进入TaskCommit |
 | I638-08 最终整合与最终质量 | I07后公共phase=implementing；原两maintenance、implementation及质量owners | 固定真实目标，#637补真实组合差额/消费者，原owners写入读回。implementation以同B、实际HEAD及全部晋升/关系/导航paths重建candidate并begin_check回checking；最终Architecture/Check校验新content_ref并覆盖实际候选，只有finalCheck record_gate进入reviewing。无知识变化也走合法candidate回程，无空文件/提交。随后TaskCommit和独立committed Review/readiness |
 | I638-09 实际交付与终态 | I08及对应副作用授权；各原owner | 原Publish/merge、Completion、Closure、Finish/bookkeeping、Cleanup分别执行和readback；只用实际终态证明完成。此计划不授予commit/push/PR/merge/closure/archive/cleanup权限，不持久化授权 |
@@ -35,6 +36,7 @@ canonical之外的`.trellis/guru-team/`、`.agents/skills/`、`.codex/skills/`�
 | T03 / V05 | Review/TaskCommit/Delivery Review/Publish命中contract及flow测试，current selectors/source package validator | 全部直接consumer接受新时机及Arch输出，最终Ready拒绝未晋升或缺最终覆盖。现有初次/修复/无Git整合路径保持；无实际义务不跑完整无关suite |
 | T04 / V06 | 原preset source validator、canonical/dogfood drift、声明平台projection/mode、Markdown本次链接与旧Gitref检查 | 当前source与投影一致、历史引用解析、无用户内容损失；静态成功不等于运行行为或Release矩阵 |
 | T05 / V06 | 一个matching source clean native Codex安装；同样本完整preset reapply，在途Task/Delivery public文件/phase/selection比对，`.new/.bak` inventory | 匹配CLI/Core与package从零可用；reapply保全。若普通仓库apply命中legacyarchives写前阻塞，单列失败；matching tools-only及fixture结果分开 |
+| T05a / V06a | installation/tests 新增 local-source receipt 行为用例；原 `test_dirty_source_provenance.py`、`test_contract.py` 命中 source-reader cases；tools `test_native_install.py`、`test_recovery.py` 与 installation `test_delivery_upgrade.py` 命中 callers；最后执行本 Task 原 tools preview/prepare/invoke | 使用真实 Git 对象和原 producer/consumer，观察旧 clone 删除后精确旧 bytes 可恢复、不同新 HEAD 不替代旧 source、缺失 object/clean metadata mismatch 在写前停止。GitHub/dirty/unknown preimage 既有结果不退化；实际 target 安装及其同操作恢复单独记录，不从 fixture 推断通过 |
 | T06 / V07 | design§8冻结的不同能力双Task、同单元双Task、no-change/无需Git整合样本，由真实nativeAgents读写和调用原installed owners | 正式候选review、原owner合成、实际写入后完整差额/未改consumer覆盖分别有真实public输出及Git；不从host预填DTO、目录名或最后retry推断成功 |
 | T07 / V07 | matching已安装#636早期Draft入口、#637覆盖适用性和本轮finalintegration链；同Task/key与同PR身份 | Draft保持非最终结果；后继真实变化按#637判断；最终Check/Review/Ready只消费实际最终内容。远端写入另按具体授权，transport与真实GitHub层分别记录 |
 | T08 / V08 | 本D1原正式Check、TaskCommit、完整B..H Review、Publish/Merge和终态readback | 实际源码/文档同PR交付；Issue closure、Task Finish和Cleanup都取各自最终结果，不因单次merge宣称整体完成 |
@@ -48,6 +50,8 @@ canonical之外的`.trellis/guru-team/`、`.agents/skills/`、`.codex/skills/`�
 live Direct Source、scope或必要依赖变化时，停止受影响步骤并回原Clarify/Author/Architecture；技术细化和mapped恢复自动接续。独立review缺实际执行或输出、拟写正文不完整、组合前提变化、消费者覆盖缺失时不晋升或不Ready。普通target mismatch先读真实差额再由原owner处理，不覆盖已合入条件。
 
 schema/consumer/freshness验证失败结束该invocation，原owner重新读取并新一轮判断，不能把错误当pass。实现、接口、验证义务改变时回原相应quality owner；不能用promotion-reference-alignment处理实质正文变化。缺测试环境/正式source lock/外部证据如实标未验证，不以重复retry或静态结果替代。
+
+local-clone receipt 的旧对象缺失或 clean metadata mismatch 时，停止依赖它的 preview/写入并返回原维护 owner。preimage 不能唯一恢复时，保留 unknown preimage 并继续只读 preview；原维护 owner 完成原 preserve/replace 判断前，不进入 prepare 或目标写入。不得改写 receipt、从新 HEAD 补旧 hash 或要求已删除目录复活。实际安装仍有独立精确 write-set 边界；本规划不授权执行尚未展示的 tools 写入。
 
 本地实现修复保留无关dirty与untracked，stage仅本批明确路径。安装失败保留用户内容及原受管恢复结果；shared entry尚未切换时保持原authority。无数据库/服务部署，因此没有新增DB回滚或生产恢复协议。Git/GitHub、archive与cleanup仍由各自原owner展示并确认精确动作。
 

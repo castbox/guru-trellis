@@ -52,3 +52,32 @@ Check整组首次观察为39 PASS / 20 SKIP。test_delivery_flow.py因缺TRELLIS
 当前source validator复核通过：40 active packages、124 commands、144 package tests。Task上下文validate通过（两份15-entry manifest）；超出注入上限的规范仍需Agent自行完整读取，警告不代表已注入全文。
 
 本轮首次dogfood drift实际退出1：0 missing、6 changed，分别是`.trellis/workflow.md`和五份workflow spec。它们尚未通过受管切换同步，故本阶段dogfood未通过；不能用source成功替代。ownership/schema与三平台入口定位子检查通过，只覆盖原安装的这些客观部分。后续须按原matching安装/Tools合同切换并重新检查，保留普通legacy-archive reapply边界。
+
+## H 候选的真实分发与样本进展
+
+早期提交 H=`ea8fb296a87e554b9dd6e92004e354cd777f508c` 已通过原 TaskCommit/Publication 发布到 Draft PR [#646](https://github.com/castbox/guru-trellis/pull/646)。本次 live 读回仍为 OPEN/Draft、base=main、head=H；Ubuntu、macOS、Windows 三项 targeted CI 均 SUCCESS。它们只覆盖 H，不覆盖下方未提交修复，不证明最终 Check/Review 或整项完成。
+
+本轮已从匹配 Fork commit `7f050fa11ddd8569e5db4f728ea1b745b7500a98` 完成 frozen-lockfile 安装和正常构建；CLI/Core 均为 `0.7.0-castbox.5`。原 `validate_fork_source` 通过，212 份模板得到核对，锁定来源的 CI `39215935088` 为 SUCCESS。该精确构建的 formal source-lock 缺口已补齐；不改写早期 PR 发布时仍未验证的事实，也不据此声称完整 Release 矩阵通过。
+
+单个代表样本由该 Fork 的正式 bin launcher 原生 init Codex，并从 GitHub 精确 H 安装 Guru workflow，再以干净 H source 完整 apply。实际 installed validator 通过，workflow 与 H canonical 字节一致，零 `.new/.bak`。后续复用这个安装创建 linked worktree，没有新增第二个 clean-install 矩阵样本。
+
+V638-07 查询 A 已经原 Sync→Discovery→Clarify→Wording→Readiness→Task 创建→Author 整体 PRD→Clarify accept_scope→Delivery 创建与选择。原 Sync 最初因无 origin blocked；配置真实 repository 和实际验证分支后，local/remote/decision 三方均为样本 B=`f18737f5c6cb2cfc8f37761f8e97154703e06878`。没有用 source main 或虚构 GitHub identity 代替样本 base。
+
+在 Task `v638-query-a` / generation 0 / Delivery `94337b7b-6cfd-4367-9200-423eed7cdff2` 的 Planning 稳定边界执行完整 reapply。首次默认 PATH Python 3.15 在依赖安装阶段返回 `dependency_install_failed`，15 个保留文件未变；该失败不计通过。改用初次安装的 Python 3.12 后 apply 成功。默认平台参数曾展开三平台，随后通过原 installer 显式 `--platform codex` 收敛；最终 Task/workspace/session/用户配置共15个快照文件、Git-common/checkout Python pointers 和 HEAD 均保持，零 sidecars，installed 验证通过。父会话的 current 查询没有样本绑定，未将其当作 selection 丢失；原 actor 会话实际读回相同 Task/Delivery、scope/planning_root 和 Planning 阶段，四个 gate 仍 missing。
+
+查询 A 的首次独立 Planning Architecture 调用曾因新 reviewer 会话未绑定/未选择该 Delivery 返回 `stale_identity(delivery_key)`。沿原 EnsureCheckout、Bind 和既有 Delivery 显式 selection 恢复后，新语义轮正式返回 `baseline_current/candidate_assessment`。这不证明完整 V638-07：不同能力双 Task、同单元双 Task、no-change、最终合成/实际写入及完整消费者质量链仍待完成。
+
+## 在途 local-clone receipt 的定向修复
+
+实际 execution checkout 的原 tools preview 首先在写前返回 `Missing legacy Guru source provenance`。原 installer 会原样记录本地 clone origin；该旧目录已删除，而 receipt 的 exact commit `fd16444370c3eceed68c02dc1fc344114bc2ae7e` 仍可从明确选定的完整 source 读取。修复沿原 installation owner 与共享 callers 承接，不改 receipt，不用 H 代替旧来源。原独立 Architecture、Author、Wording、Approval/Activation 已完成受影响规划返工；它们不作为实现或安装通过的替代证据。
+
+| 受检对象 / 原入口 | 实际结果与限制 |
+| --- | --- |
+| installation `test_local_source_receipt.py` | 4 PASS，1.138s。真实 installer provenance producer、Git clone/object 和原 reader；验证旧目录删除后精确旧 bytes、浅 clone 缺失 old object、clean metadata mismatch、dirty per-path。后续 HEAD/tag 不能替代旧 preimage |
+| installation `test_dirty_source_provenance.py` / `test_contract.py` | 分别 3 PASS（0.474s）、34 PASS（17.081s）；保留原 dirty/GitHub/metadata/hash/preimage 与恢复职责 |
+| tools `test_recovery.py` | 4 PASS，0.026s；原恢复 preimage、后续工作和 public rollback 边界 |
+| 原 source reader 对实际 #638 receipt 的只读调用 | `old_manifest(root, selected_source)` 与 `old_paths` 通过；9870 managed hashes、0 unknown preimage，receipt 字节未变。只证明原 reader，不冒称完整 tools preview/prepare/install |
+| 独立定向 source quality | 重读新增机制、所有 root/workspace/begin callers 与测试，无新缺陷候选；另实际执行 11 项定向用例通过。不是正式 Phase 2 或完整 B..H Review |
+| source validator、语法与上下文 | 原 source wrapper PASS：40 packages、124 commands、151 package tests；349 份 Guru Python 内存 compile 通过，改动代码均低于3000行。两份19-entry context 经原 task.py validate 通过；注入截断/代码路径警告仍需 Agent 手动读取 |
+
+`test_delivery_upgrade.py` 的20项因缺 `GURU_UPSTREAM_DELIVERY_CLI` / `GURU_UPSTREAM_LEGACY_CLI` 全部 SKIP；`test_native_install.py` 的1项因未提供 original-writer legacy fixture 与 matching maintenance pair SKIP。没有把 exit 0 的 SKIP 当通过，也没有伪造对应环境。实际 #638 完整 tools preview/prepare/install/recovery 尚未执行，dogfood 原受管切换、最终候选/晋升/质量链和终态仍未完成。完整 Release 矩阵和生产采用边界保持。

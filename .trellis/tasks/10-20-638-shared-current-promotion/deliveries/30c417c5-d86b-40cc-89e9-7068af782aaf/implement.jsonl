@@ -13,3 +13,7 @@
 {"file": ".trellis/delivery-contract.md", "reason": "原公共phase及合法role/operation合同，不新增Task状态"}
 {"file": "trellis/skills/guru-team/runtime/delivery_projection/adapter.py", "reason": "原candidate/begin_check投影、固定B及真实content_ref"}
 {"file": "trellis/skills/guru-team/runtime/delivery_projection/gates.py", "reason": "原Check合法rework和最终public gate writer责任"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py", "reason": "D638-06 原 manifest/source reader、exact old commit 与 preimage 归属"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py", "reason": "I638-06a 原 tools caller 的 complete-source 投影及实际 preview/prepare/invoke"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py", "reason": "D638-06 共享 installation caller 及原迁移恢复"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_dirty_source_provenance.py", "reason": "T05a 保留 dirty、clean mismatch 与 recorded object 的行为约束"}

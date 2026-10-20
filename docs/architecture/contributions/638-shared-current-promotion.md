@@ -37,3 +37,11 @@
 真实命中target变化先由原owner合成；需求前提推翻回scope/Planning，行为/接口/验证义务变化回原质量owner。部分写入或输出丢失沿同一明确intent恢复，不引入新状态机。没有知识变化时不制造空ADR/贡献/导航。
 
 实现、完整拟写正文、当前final_plan、实际Agent双Task样本、matching installed #636/#637组合、reapply/dogfood、最终Check/Review与交付均尚未验证。既有suite/reapply/source-lock记录只作线索，当前fresh归因。本文不证明软件Release、业务采用、Task Completion、Closure、Finish或Cleanup。
+
+## 实施发现：在途 local-clone receipt
+
+原 tools preview 在写前实际拒绝本 Task 旧安装。正常 installer 将当时 source checkout 的 origin 原样写入 source.repo；该 origin 是本机 #637 clone 路径。路径已删除，但 receipt 的精确旧提交 fd16444370c3eceed68c02dc1fc344114bc2ae7e 在本仓对象和 GitHub 均可读，其 Guru/CLI metadata 与旧安装匹配。原 maintenance consumer 只接受 GitHub transport，因此无法开始本批 R638-06/07 的 tools 切换。没有修改 receipt 或把后续 dirty 状态当首次失败。
+
+拟在原安装维护 owner 内补齐这个正常输入：保留 receipt，不把其中路径当旧源码 authority，也不要求旧本机目录继续存在。由原 caller 显式提供本轮已选完整 Guru source；consumer 从其 Git 对象读取 recorded exact old commit，先核对旧 Guru/CLI metadata，再沿原逐路径 source/preimage 规则恢复缺失 hashes。不可读或不匹配仍在写前停止；不以当前 HEAD 代替旧来源。已有 GitHub transport 保留原义。该修正不增加 public DTO、持久来源记录、Task 转换或兼容 parser，也不改 Task/session/archive。
+
+该差额归原 producer/consumer 的来源判定及其共享直接 callers，详细方案由 Delivery design 的 D638-06 单写。原 caller 的完整 source 提供 receipt exact old object；clean metadata mismatch 或对象缺失写前停止，dirty receipt 仍仅作原逐路径来源。原 GitHub 和 unknown-preimage 语义不扩张。实施与定向验证由 implement I638-06a/T05a 承接，不新增 ADR、公共来源 DTO 或第二维护 owner。本节不表示新规划已激活、修复已实施或安装已成功。

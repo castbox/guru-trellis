@@ -21,6 +21,11 @@ from runtime.task_lifecycle.identity import task_inventory
 
 TARGET_CORE = "0.7.0-castbox.4"
 TARGET_GURU = "0.7.0-guru.5"
+GURU_SOURCE_REPOS = frozenset(
+    prefix + "castbox/guru-trellis" + suffix
+    for prefix in ("https://github.com/", "git@github.com:", "ssh://git@github.com/")
+    for suffix in ("", ".git")
+)
 
 
 def formal_guru_source(source: Path, requested_ref: str) -> None:
@@ -68,7 +73,7 @@ def source_profile(version: str) -> str:
     raise MigrationError("Source is outside the supported Guru 0.6.x / 0.7.0 families")
 
 
-def old_manifest(root: Path) -> dict:
+def old_manifest(root: Path, source: Path | None = None) -> dict:
     value = json.loads(relative_file(root, ".trellis/guru-team/extension.json").read_text(encoding="utf-8"))
     if value.get("schema_version") not in {"1.0", "2.0"}:
         raise MigrationError("Unknown installation manifest schema")
@@ -78,13 +83,15 @@ def old_manifest(root: Path) -> dict:
     if not re.fullmatch(r"0\.6\.\d+|0\.7\.0-castbox\.\d+", core):
         raise MigrationError("Missing or unsupported actual installed core contract")
     provenance = value.get("source", {})
-    repo = "castbox/guru-trellis"
-    # Same bounded GitHub transport identities used by current origin_matches.
-    source_repos = {prefix + repo + suffix for prefix in
-                    ("https://github.com/", "git@github.com:", "ssh://git@github.com/")
-                    for suffix in ("", ".git")}
-    if provenance.get("repo") not in source_repos or not provenance.get("commit"):
+    observed_repo = provenance.get("repo")
+    if not isinstance(observed_repo, str) or not observed_repo or not provenance.get("commit"):
         raise MigrationError("Missing legacy Guru source provenance")
+    if observed_repo not in GURU_SOURCE_REPOS:
+        # A local clone's recorded origin can disappear. The caller-selected
+        # complete source supplies the exact object; never open that old path.
+        if source is None or not re.fullmatch(r"[a-f0-9]{40}", provenance["commit"]):
+            raise MigrationError("Acquire the exact installed release/source objects before preview")
+        legacy_source_commits(value, source)
     return value
 
 
@@ -92,10 +99,12 @@ def legacy_source_commits(manifest: dict, source: Path) -> list[str]:
     # Early receipts describe the observed working tree, sometimes a release
     # predecessor. Formal tags supply exact canonical bytes, never target hashes.
     candidates = [manifest["source"]["commit"]]
-    ref = manifest["source"].get("ref", "")
-    if re.fullmatch(r"v0\.(?:6\.\d+|7\.0)-guru\.\d+", ref):
-        candidates.append(ref)
-    candidates += git(source, "tag", "--list", "v0.6.*-guru.*", "v0.7.0-guru.*").splitlines()
+    observed_repo = manifest["source"].get("repo")
+    if not observed_repo or observed_repo in GURU_SOURCE_REPOS:
+        ref = manifest["source"].get("ref", "")
+        if re.fullmatch(r"v0\.(?:6\.\d+|7\.0)-guru\.\d+", ref):
+            candidates.append(ref)
+        candidates += git(source, "tag", "--list", "v0.6.*-guru.*", "v0.7.0-guru.*").splitlines()
     result = []
     expected = manifest.get("extension", {})
     for candidate in candidates:
@@ -221,7 +230,7 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
         raise MigrationError("Preview an initial_upgrade; recovery reads its own private checkpoint")
     if git(source, "rev-parse", public["target_source_ref"] + "^{commit}") != git(source, "rev-parse", "HEAD"):
         raise MigrationError("Target source ref does not resolve to this checkout HEAD")
-    manifest = old_manifest(root)
+    manifest = old_manifest(root, source)
     installed_core = (root / ".trellis/.version").read_text().strip()
     if not re.fullmatch(r"0\.6\.\d+|0\.7\.0-castbox\.\d+", installed_core):
         raise MigrationError("Live core is outside the supported predecessor contracts")

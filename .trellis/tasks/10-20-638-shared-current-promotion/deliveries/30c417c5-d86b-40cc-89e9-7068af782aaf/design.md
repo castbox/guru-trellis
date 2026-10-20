@@ -70,6 +70,16 @@ Arch 非 Planning 当前合同切到5.0/Delivery3.0；Planning3.0/Delivery1.0、
 
 Author 写本批三正文及本 Task Architecture contribution/必要 ADR 候选。实施 worker 只在批准范围写 canonical、Task 隔离 RDT contribution 和完整 proposed targets；原维护方最终晋升。完整定义仍由 current-knowledge 与原 package 合同单写，workflow只编排。canonical变化通过原 preset/package分发同步 dogfood；官方 Trellis hooks、runtime agents、上游包和 node_modules 不改。
 
+### D638-06 原维护 owner 恢复合法 local-clone receipt
+
+本轮原 tools preview 已在写入前返回 `Missing legacy Guru source provenance`。原 installer 的 `source_provenance` 直接记录 source checkout 的 origin；旧安装因此合法记录了本地 #637 clone 路径。旧目录已删除，但 receipt 记录的精确 commit `fd16444370c3eceed68c02dc1fc344114bc2ae7e` 在本轮选定的完整 source 中可读，Guru/CLI metadata 与旧安装匹配。这个正常输入缺口阻断 R638-06/07 的 matching tools 切换，修复归原安装维护 owner，不改变需求或增加 ADR。
+
+原 `guru-upgrade-installation/runtime/owner.py:old_manifest` 接收调用方已经选定的完整 source。它保留旧 receipt，并从该 source 的 Git 对象读取 recorded exact old commit。receipt 中的本地路径仅是安装时观察，不作为本轮源码 authority，不要求旧目录存在，也不读取其当前 remote。clean receipt 必须匹配旧 extension 的 Guru version 与 `target_trellis_cli`；缺失精确对象或 metadata 不匹配在任何目标写入前停止。不得用当前 HEAD 或同版本 tag 替代 local clean receipt 缺失或不匹配的精确对象。
+
+dirty receipt 仍按原 `legacy_source_commits` 规则处理：recorded commit 只提供逐路径历史候选，不代表未提交的整棵 source；不把 clean 的整树 metadata 相等条件套到 dirty receipt。随后复用原 `old_paths` 的 source/preimage/hash 推导。未知旧内容仍保留为 unknown preimage，交原计划中的 preserve/replace 判断；不能因此允许覆盖或删除。既有 GitHub transport 的来源含义及原恢复行为保持。
+
+三个实际 callers 必须传同一条明确 source：installation `owner.py:preview`、`guru-upgrade-tools/runtime/tools_owner.py:inventory`、`guru-upgrade-installation/runtime/delivery_upgrade.py:old_installation` 及其 preview 调用。source 由各原 owner 的 complete-source 解析取得，不能从 receipt 路径推断。该参数属于原维护 owner 内部函数，不增加公共 Skill 输入、来源账本、Task/Delivery/session/archive 字段或长期兼容 parser。修复后仍执行原 preview、prepare、invoke 与原恢复，不能热复制已安装片段。
+
 ## 5. 接口与数据
 
 | 原 owner / 入口 | 当前输入和最小输出 | 直接 consumer 与客观限制 |
@@ -80,6 +90,7 @@ Author 写本批三正文及本 Task Architecture contribution/必要 ADR 候选
 | Architecture delivery_promotion3.0 / repository promotion5.0 | `stage=final_integration`，原 task/key/root、baseline/constitution/project contract、before_authority、candidate、contribution sync target；stable baseline允许同 identity | 原 current router→本次实际写入适用性→最终 phase2 assessment/Check；删除 successor_baseline 和总README content token的普通晋升强制字段；bootstrap distinct successor仍有效 |
 | RDT promotion2.0 | 原 contribution、实际 authority和 `stage=final_integration` | 真实写入后才 ssot_current；不需要全局版本递增，完整源以Git定位 |
 | 最终 Check→TaskCommit→Review→Delivery | 保留 final passed/check_result_id、原固定B/H和当前完整结果 | 初次 candidate_checked不能投影到TaskCommit、full_review或readiness；最终实际写入须由这些原 owners覆盖 |
+| 原 installation/tools source reader | caller 已选 complete source → `old_manifest` 内部参数；从 receipt exact old commit 读取旧 metadata，再交原逐路径 preimage reader | 三个原 callers 成套承接；公共输入和 receipt 不变。local clean exact object 缺失或 metadata mismatch 写前停止；dirty/GitHub/unknown-preimage 保留原语义 |
 
 公共状态转换固定为：implementation `begin_check`（implementing→checking）→原Check候选判断及 `rework(target_role=implementation, affected_results=[readiness])`（checking→implementing）→原owners最终写入→implementation重新`candidate(...,base_ref=B,head_ref=actualHEAD)`/`begin_check`（implementing→checking）→原Check最终`record_gate`（checking→reviewing）。操作的owner_id从原workflow declaration读取，不能由caller指定任意role或直接修改Task文件。旧candidate content_ref在写入后不再适用，必须通过上述原owner回程更新；普通freshness校验不放宽。
 
@@ -109,6 +120,8 @@ candidate_checked输出丢失时，先读公共phase与实际candidate：若仍c
 
 先在一个matching clean样本验证全套当前安装和in-flight reapply，再对本仓dogfood使用原受管同步。若原普通apply仍被228个legacy archives写前阻塞，保留该结果，不删归档绕过；只能通过原支持的matching tools升级处理本Task运行副本，按该owner要求先有可供安装的完整source。需要commit或额外安装副作用时在具体边界展示并取得确认。不能以局部复制runtime热改当前安装；不能把tools-only成功当普通全仓reapply通过。
 
+本次 tools preview 的已知首个失败是 D638-06 的 local-clone receipt。本轮尚未在本 Task 执行 checkout 运行 full apply；legacy archives 阻塞仅为历史线索。先修复并定向验证原 source reader，再从完整匹配 source 重新 preview。preview 通过后，原 tools owner 只 prepare 一次实际 write set，展示目标 checkout、source、Fork、用户配置保留、Task/session/peer 保全及 sidecar 决策，再沿该独立安装边界执行。原 receipt 不手改；缺失旧对象或不匹配 metadata 不以重新生成 receipt、补新 HEAD 或删除归档解决。安装成功、部分失败和同操作恢复分别以原结果与读回证明。
+
 同一最终业务PR包含代码、合同和实际current正文。独立baseline clone与原主checkout不移动。不开#635、不改Backend、不部署或Release。没有新增数据库或外部服务数据迁移；本次迁移对象是公共合同、受管运行副本和明确在途入口。
 
 ## 8. 验证设计
@@ -121,6 +134,7 @@ candidate_checked输出丢失时，先读公共phase与实际candidate：若仍c
 | V638-04 / AC05/07 | matching schema/consumer projection和原恢复入口；未晋升/已晋升/已有Review三类，旧Git引用及普通mismatch/output-loss | 当前入口拒绝旧shape，不转换pass；同key恢复无重复写；旧意义可解析。只测普通错误，不造攻击或crash矩阵 |
 | V638-05 / AC06/07 | Arch/RDT/Check/Review/Delivery/Publish命中package测试，shared Delivery projection及source validator | 独立发现真实路由/字段/阶段/内容错误，确认直接consumer；局部模块结果不冒称全链或Agent通过 |
 | V638-06 / AC07 | 一个matching clean native Codex安装；完整reapply、在途Task/Delivery保全、声明平台投影、drift、mode、sidecar；本仓原受管同步 | source/dogfood/installed分开，逐项记录用户内容及`.new/.bak`。实际选择matching CLI/Core0.7.0-castbox.5；formal source lock缺口保持；不扩完整多平台Release矩阵 |
+| V638-06a / AC07、R06/07 | 原 installer 产生 local-clone receipt，删除旧 clone；选定完整 source 含 recorded exact old commit，经原 maintenance preview/reader 取旧 metadata 与逐路径 preimage；配对输入为缺失精确 object、clean metadata mismatch、后续 HEAD 字节不同、原 dirty/GitHub receipt | 合法旧源删除仍可 preview，旧 hash 来自 recorded object，不能被新 HEAD 替换；两类普通来源错误写前阻塞且目标 bytes 不变。既有 dirty/GitHub/unknown-preimage 语义保持。定向测试不替代真实 target 的 prepare/install/recovery |
 | V638-07 / AC01..04/07 | 真实native Agents通过安装后的原owners执行：不同能力双Task一组、同单元双Task一组、no-change及无需Git整合路径；#636Draft→#637后继差额→最终current组合 | 首次读完整拟写，最终原owner合成并写入，独立review覆盖全差额及未改consumer。公开正式输出、Git和当前正文证明实际工作；fixture预填pass只证明transport。无成本倍数目标，不把总时长全归无效流程 |
 | V638-08 / AC06 | 本D1实际质量链、最终业务PR、Completion/Closure/Finish/Cleanup | 当前Check/Review、PR/merge及各生命周期终态分别取真实证据；planning或目录存在不证明完成 |
 
