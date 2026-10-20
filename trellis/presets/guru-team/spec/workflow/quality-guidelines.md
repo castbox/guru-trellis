@@ -766,7 +766,7 @@ repository evidence, scope-before-severity, the four scope dispositions, all
 nine adequacy dimensions, blocking/non-blocking unverified items, four
 exit/consumer invariants, planning discriminator closure, finding-fix full
 rerun, exceptional unfinished/replacement recovery, dirty/reviewed-path and
-post-commit freshness, the current schema 5.0 checkpoint, and the single compact
+post-commit freshness, the current schema 6.0 checkpoint, and the single compact
 artifact owner. Routine implementation/check identity remains live semantic
 context and must not become persisted assignment or liveness evidence.
 Distribution validation must compare canonical, installed shared, and exact
@@ -826,7 +826,7 @@ cannot pass the gate. Include:
   merge/repair/follow-up checkpoint when required
 - Phase 2 consumption of that plan: the implementation terminal result and live
   repository facts are ephemeral inputs to the `guru-check-task` semantic Gate;
-  its ignored-runtime schema 5.0 checkpoint stores only the final Docs SSOT
+  its ignored-runtime schema 6.0 checkpoint stores only the final Docs SSOT
   conclusion, adequacy dimensions, findings, verification evidence, and route,
   without an implementation handoff or raw worker transcript
 - Phase 3 verification of that plan: final review checks the current planning

@@ -947,7 +947,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 Path(path).name in {"prd.md", "implement.md", "task.json"}
                 for path in facts["required_reads"]
             ))
-            public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+            public = json.loads((owner_repository / facts["public_input_locator"]).read_text())
             design_locator = public["task_locator"] + "/" + public["planning_root"] + "/design.md"
             self.assertIn(design_locator, facts["required_reads"])
             self.assertNotIn(".trellis/tasks/eval-task/design.md", facts["required_reads"])
@@ -989,7 +989,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                 facts_path = repository / eval_constants.ARCHITECTURE_PUBLIC_AUTHORING_FACTS
                 facts = json.loads(facts_path.read_text(encoding="utf-8"))
                 from adapters.eval.architecture_authoring import public_contract_reads
-                public = json.loads((owner_repository / "docs/architecture-eval/public-input.json").read_text())
+                public = json.loads((owner_repository / facts["public_input_locator"]).read_text())
                 public_reads = public_contract_reads(projection, public)
                 case_reads = sorted(path for path in case_root.iterdir() if path.is_file())
                 owner_reads = [
@@ -1738,7 +1738,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     list(Draft202012Validator(request_schema).iter_errors(invalid))
                 )
 
-    def test_production_phase2_inputs_close_schema_5_for_every_exit(self) -> None:
+    def test_production_phase2_inputs_close_schema_6_for_every_exit(self) -> None:
         from adapters.eval import eval_constants, eval_support, native_adapter, owner_staging, production_fixtures
         from jsonschema import Draft202012Validator
 
@@ -1793,7 +1793,7 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     )
                     payload = json.loads(path.read_text(encoding="utf-8"))
                     current = {
-                        "schema_version": "5.0",
+                        "schema_version": "6.0",
                         "skill_id": "guru-check-task",
                         "task_ref": ".trellis/tasks/phase2-eval",
                         "phase2_capture_commit": "1" * 40,

@@ -168,7 +168,8 @@
         "delivery_finding_fix_rerun",
         "delivery_planning_reentry",
         "delivery_resolved_reconciliation",
-        "delivery_scope_withdrawal"
+        "delivery_scope_withdrawal",
+        "delivery_candidate_check"
       ],
       "profile_case_bindings": [
         {
@@ -208,6 +209,12 @@
           "profile_id": "delivery_scope_withdrawal",
           "eval_case_ids": [
             "delivery-stopped"
+          ]
+        },
+        {
+          "profile_id": "delivery_candidate_check",
+          "eval_case_ids": [
+            "delivery-candidate-check"
           ]
         }
       ],
@@ -279,6 +286,16 @@
           "eval_case_ids": [
             "resolved-reconciliation-passed"
           ]
+        },
+        {
+          "exit_id": "candidate_checked",
+          "output_schema_id": "guru-check-task-output-delivery-candidate-checked-1.0",
+          "output_example_id": "candidate_checked_output",
+          "consumer_input_id": "candidate_checked_input",
+          "projection_id": "project_candidate_checked",
+          "eval_case_ids": [
+            "delivery-candidate-check"
+          ]
         }
       ],
       "private_artifact_ids": [
@@ -287,7 +304,7 @@
       "interface_schema_id": "guru-team-skill-interface-1.4",
       "eval_schema_id": "guru-team-skill-evals-1.0",
       "eval_case_selector": {
-        "expected_case_count": 14
+        "expected_case_count": 15
       }
     },
     {

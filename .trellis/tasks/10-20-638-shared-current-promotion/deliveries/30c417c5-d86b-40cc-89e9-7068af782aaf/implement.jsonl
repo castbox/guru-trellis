@@ -1,0 +1,15 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "全部写作与原范围审核采用唯一清晰写作规范"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共I/O及private-state最小consumer合同"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "唯一候选适用性和全局路由边界"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进、旧入口退出与3000行阈值"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按accepted scope选择有效验证并分层报告"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文深度及唯一来源设计处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "D1设计九节与来源设计承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "唯一Policy和DocsPlan的实施责任"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "阶段适用authority、九concerns及AI project-check"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "真实必要性、职责内聚及单向收敛"}
+{"file": "docs/architecture/contributions/638-shared-current-promotion.md", "reason": "本Task架构差额和拟晋升职责"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "完整知识单元及原两维护owner唯一共享合同"}
+{"file": ".trellis/delivery-contract.md", "reason": "原公共phase及合法role/operation合同，不新增Task状态"}
+{"file": "trellis/skills/guru-team/runtime/delivery_projection/adapter.py", "reason": "原candidate/begin_check投影、固定B及真实content_ref"}
+{"file": "trellis/skills/guru-team/runtime/delivery_projection/gates.py", "reason": "原Check合法rework和最终public gate writer责任"}

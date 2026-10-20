@@ -270,8 +270,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         # Test authoring projects historical fixture seeds onto the current
         # contract. Production runtime never performs this migration.
         if public_input.get("profile") in {"task_impact_sync", "delivery_task_impact_sync"} and public_input.get("stage") != "planning" and public_input.get("schema_version") in {"2.0", "delivery-1.0"}:
-            public_input["schema_version"] = "delivery-2.0" if public_input["profile"].startswith("delivery_") else "4.0"
-            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:4.0"
+            public_input["schema_version"] = "delivery-3.0" if public_input["profile"].startswith("delivery_") else "5.0"
+            public_input["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:5.0"
             public_input["before_authority"] = {"git_revision": self.authority_revision,
                 "baseline_locator": "docs/architecture/README.md",
                 "constitution_locator": "docs/architecture/00-foundation/design-constitution.md",
@@ -320,7 +320,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+        if public_input.get("schema_version") in {"5.0", "delivery-3.0"}:
             owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
@@ -372,7 +372,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         }
         if "planning_purpose" in public_input:
             owner["planning_purpose"] = public_input["planning_purpose"]
-        if public_input.get("schema_version") in {"4.0", "delivery-2.0"}:
+        if public_input.get("schema_version") in {"5.0", "delivery-3.0"}:
             owner.update(before_authority=public_input["before_authority"], candidate=public_input["candidate"])
         if public_input["profile"].startswith("delivery_"):
             owner.update(delivery_key=public_input["delivery_key"], planning_root=public_input["planning_root"])
@@ -424,8 +424,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         self.assertEqual(
             aggregate,
             {
-                "schema_id": "guru-maintain-architecture-baseline-input-index-4.0",
-                "path": "schemas/public-input-aggregate-4.0.schema.json",
+                "schema_id": "guru-maintain-architecture-baseline-input-index-5.0",
+                "path": "schemas/public-input-aggregate-5.0.schema.json",
             },
         )
         self.assertFalse((self.package / "schemas/public-input.schema.json").exists())
@@ -437,8 +437,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             {item["id"] for item in interface["external_exits"]},
             {"baseline_current", "sync_required", "baseline_incomplete", "architecture_conflict", "contract_incomplete", "fitness_regression", "blocked"},
         )
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
-        self.assertTrue(all(item["schema"]["schema_id"].endswith(("4.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("5.0", "3.0", "2.0", "1.0")) for item in interface["public_contracts"]["input"]["profiles"]))
+        self.assertTrue(all(item["schema"]["schema_id"].endswith(("5.0", "2.0", "1.0", "3.0")) for item in interface["public_contracts"]["outputs"]))
         architecture_input_ids = {
             interface["public_contracts"]["input"]["aggregate_schema"]["schema_id"],
             *(
@@ -1435,7 +1435,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         contract = (self.package / "references/contract.md").read_text(encoding="utf-8")
         for phrase in (
             "Load [references/contract.md](references/contract.md) completely before acting.",
-            "Planning 3.0, nonplanning 4.0, or matching Delivery schema",
+            "Planning 3.0, nonplanning 5.0, or matching Delivery schema",
             "scripts/invoke.sh --invocation -",
             "owner_not_yet_executed",
             "platform truly cannot provide the contract-required",

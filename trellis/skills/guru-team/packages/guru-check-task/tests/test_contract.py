@@ -40,14 +40,16 @@ class CheckTaskPackageContractTests(unittest.TestCase):
                 ("delivery_stopped", {"kind": "skill", "id": "guru-review-task-completion"}),
                 ("resolved_reconciliation_passed", {"kind": "workflow", "id": "guru-delivery-resolved-reconciliation-router"}),
                 ("delivery_scope_revised", {"kind": "workflow", "id": "guru-delivery-scope-revised-router"}),
+                ("legacy_controls_retired", {"kind": "workflow", "id": "legacy-maintenance-check-task-legacy-controls-retired"}),
+                ("candidate_checked", {"kind": "workflow", "id": "guru-knowledge-final-integration-router"}),
             ],
         )
         private = self.interface["public_contracts"]["private_artifacts"]
         self.assertEqual(private[0]["persistence"], "ignored_runtime")
-        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-5.0.json"))
+        self.assertTrue(private[0]["schema"]["schema_id"].endswith("guru-phase2-check-6.0.json"))
         self.assertRegex(self.example["reviewed_content_sha256"], r"^[0-9a-f]{64}$")
         self.assertIn(
-            "guru-phase2-worktree-content-1.0",
+            "guru-phase2-worktree-content-2.0",
             self.schema["properties"]["reviewed_content_sha256"]["description"],
         )
 
@@ -273,7 +275,8 @@ class CheckTaskPackageContractTests(unittest.TestCase):
             with self.subTest(source=label):
                 text = " ".join(path.read_text(encoding="utf-8").split())
                 self.assertIn("task_impact_sync(stage=phase2)", text)
-                self.assertIn("project Architecture check", text)
+                if label != "workflow":
+                    self.assertIn("project Architecture check", text)
                 self.assertIn("before/after", text)
                 self.assertNotIn("Afizzy", text)
 
@@ -297,10 +300,12 @@ class CheckTaskPackageContractTests(unittest.TestCase):
 
         workflow = sources["workflow"].read_text(encoding="utf-8")
         phase = workflow.split("#### 2.2 Task check", 1)[1].split("## Phase 3", 1)[0]
-        self.assertLess(
-            phase.index("task_impact_sync(stage=phase2)"),
-            phase.index("Guru-check-task's passed exit"),
-        )
+        self.assertLess(phase.index("task_impact_sync(stage=phase2)"),
+                        phase.index("guru-check-task:delivery_candidate_check"))
+        passed = next(row for row in self.interface["external_exits"] if row["id"] == "passed")
+        candidate = next(row for row in self.interface["external_exits"] if row["id"] == "candidate_checked")
+        self.assertEqual(passed["consumer"]["id"], "guru-create-task-commit")
+        self.assertEqual(candidate["consumer"]["id"], "guru-knowledge-final-integration-router")
         contract = " ".join(sources["contract"].read_text(encoding="utf-8").split())
         self.assertIn("does not read Architecture private state", contract)
         self.assertIn("None can be converted into a Phase 2 pass", contract)
@@ -371,7 +376,7 @@ class CheckTaskPackageContractTests(unittest.TestCase):
     def test_example_is_deidentified_and_current(self) -> None:
         encoded = json.dumps(self.example)
         self.assertNotIn("/Users/", encoded)
-        self.assertEqual(self.example["schema_version"], "5.0")
+        self.assertEqual(self.example["schema_version"], "6.0")
         self.assertEqual(self.example["skill_id"], "guru-check-task")
 
 

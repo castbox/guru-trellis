@@ -122,10 +122,10 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    content=b"tracked\n"
    (repo/"tracked.txt").write_bytes(content)
    subprocess.run(["git","add","tracked.txt"],cwd=repo,check=True)
-   entries=[{"path":"tracked.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest()}]
+   entries=[{"path":"tracked.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest(),"mode":"100644"}]
    expected=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
    retired=hashlib.sha256(json.dumps({"algorithm":"guru-reviewed-content-1.0","entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
-   self.assertEqual("guru-phase2-worktree-content-1.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
+   self.assertEqual("guru-phase2-worktree-content-2.0",PHASE2_WORKTREE_CONTENT_ALGORITHM)
    self.assertEqual(expected,content_identity(repo))
    self.assertNotEqual(retired,content_identity(repo))
 
@@ -133,7 +133,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as temporary:
    repo=Path(temporary);self.git(repo,"init","-q")
    content=b"tracked\n";(repo/"file.txt").write_bytes(content);os.symlink("file.txt",repo/"link")
-   entries=[{"path":"file.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest()},{"path":"link","kind":"symlink","target":"file.txt"},{"path":"missing","kind":"missing"}]
+   entries=[{"path":"file.txt","kind":"file","content_sha256":hashlib.sha256(content).hexdigest(),"mode":"100644"},{"path":"link","kind":"symlink","target":"file.txt"},{"path":"missing","kind":"missing"}]
    expected=hashlib.sha256(json.dumps({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":entries},sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
    self.assertEqual(expected,content_identity(repo,["file.txt","link","missing"]))
 

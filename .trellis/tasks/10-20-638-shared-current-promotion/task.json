@@ -1,0 +1,111 @@
+{
+  "schema_version": "2.0",
+  "id": "638-shared-current-promotion",
+  "name": "638-shared-current-promotion",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 638,
+    "disposition": "exact_source"
+  },
+  "title": "#638 降低共享知识晋升争用",
+  "description": "保持能力完整正文和稳定身份，将shared current实际晋升移到最终整合并验证全部差额消费者。",
+  "dev_type": null,
+  "scope": "castbox/guru-trellis#638全部目标、最终整合定义与七项验收；保留#636/#637并完成实际安装组合回归；不启动#635。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-20",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-20-638-shared-current-promotion/prd.md",
+    "revision": "sha256:25a442e26ebd74734a38f3886e531e58575ee32e56c79dffb1d68c22556d95fc"
+  },
+  "deliveries": [
+    {
+      "id": "30c417c5-d86b-40cc-89e9-7068af782aaf",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-20-638-shared-current-promotion/prd.md",
+          "revision": "sha256:25a442e26ebd74734a38f3886e531e58575ee32e56c79dffb1d68c22556d95fc"
+        },
+        "anchors": [
+          "AC638-01",
+          "AC638-02",
+          "AC638-03",
+          "AC638-04",
+          "AC638-05",
+          "AC638-06",
+          "AC638-07"
+        ]
+      },
+      "planning_root": "deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
+        "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:bc7e9168-3704-4741-ab4d-7451b44b12c5",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-20-638-shared-current-promotion/prd.md",
+              "revision": "sha256:25a442e26ebd74734a38f3886e531e58575ee32e56c79dffb1d68c22556d95fc"
+            },
+            "anchors": [
+              "AC638-01",
+              "AC638-02",
+              "AC638-03",
+              "AC638-04",
+              "AC638-05",
+              "AC638-06",
+              "AC638-07"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
+            "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/prd.md",
+              "revision": "sha256:e2b7d87db762d9fda999f22ca756f59ecf970f34239b35d0b9f77b4ad06f8054"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/design.md",
+              "revision": "sha256:7eadb7c73dc60a89bf66e779e2da327f8aaea639b8a58b3d716454ee7b09b6c0"
+            },
+            {
+              "locator": ".trellis/tasks/10-20-638-shared-current-promotion/deliveries/30c417c5-d86b-40cc-89e9-7068af782aaf/implement.md",
+              "revision": "sha256:6605499365d128e15c46e71210fb2d68e233e9fdffda4e135985b6a411e34341"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

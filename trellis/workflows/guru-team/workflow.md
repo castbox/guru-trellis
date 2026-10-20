@@ -132,6 +132,7 @@ invalid interface projections stop fail closed.
 <!-- guru-skill-exit: {"skill":"guru-maintain-architecture-baseline","exit":"blocked","consumer":{"kind":"stop","id":"architecture-baseline-blocked"}} -->
 ### Requirements Design Test SSOT owner
 <!-- guru-skill-invoke: {"skill":"guru-maintain-requirements-design-test-ssot","required":true} -->
+<!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"candidate_ready","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-current-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"ssot_current","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-current-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"sync_required","consumer":{"kind":"skill","id":"guru-maintain-requirements-design-test-ssot"}} -->
 <!-- guru-skill-exit: {"skill":"guru-maintain-requirements-design-test-ssot","exit":"revision_required","consumer":{"kind":"workflow","id":"guru-requirements-design-test-ssot-planning-router"}} -->
@@ -269,6 +270,7 @@ outside the business-task workflow's mandatory invokes.
 ### Phase 2 owner
 <!-- guru-skill-invoke: {"skill":"guru-check-task","required":true} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"delivery_stopped","consumer":{"kind":"skill","id":"guru-review-task-completion"}} -->
+<!-- guru-skill-exit: {"skill":"guru-check-task","exit":"candidate_checked","consumer":{"kind":"workflow","id":"guru-knowledge-final-integration-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"passed","consumer":{"kind":"skill","id":"guru-create-task-commit"}} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"resolved_reconciliation_passed","consumer":{"kind":"workflow","id":"guru-delivery-resolved-reconciliation-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-check-task","exit":"implementation_required","consumer":{"kind":"workflow","id":"guru-resume-implementation"}} -->
@@ -472,6 +474,7 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-workflow-target: {"id":"guru-task-plan-ready-router"} -->
 <!-- guru-workflow-target: {"id":"guru-task-plan-approval-revision-router"} -->
 <!-- guru-stop-target: {"id":"task-plan-author-blocked"} -->
+<!-- guru-workflow-target: {"id":"guru-knowledge-final-integration-router"} -->
 ### Workflow target behavior
 | Target | Global behavior |
 | --- | --- |
@@ -479,12 +482,13 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-task-plan-requirements-ready-router | Thin-project Author task_ref/delivery_key/candidate into original Architecture delivery_task_impact_sync candidate_assessment; obtain only its fresh authority/route fields from live facts. Never manufacture an impact conclusion or invent a DeliveryKey/planning_root. |
 | guru-task-plan-ready-router | Project task_ref/delivery_key to Wording delivery_planning_artifacts and resolve its current three docs; invoke the original Wording owner. |
 | guru-task-plan-approval-revision-router | Project task_ref/delivery_key and actual revision_actions to Author delivery_approval_revision, with current mode; no Approval self-writing edge remains. |
-| guru-architecture-baseline-sync-router | Invoke original Architecture maintenance for the declared sync_kind/target. Preserve explicit DeliveryKey/planning_root where the selected Interface supports them. Retain planning purpose in this call-local route and rerun that purpose's task impact afterwards; no new assessment owner, checkpoint or lifecycle stage. |
-| guru-architecture-baseline-current-router | Validate actual current authority and selected source_profile. Delivery planning dispatches solely by planning_purpose: candidate_assessment projects its actual assessment and key into Author delivery_solution_planning; final_plan projects the actual final assessment directly into adjacent Delivery Approval. Bootstrap/repair reruns impact for the original purpose/stage. Promotion returns to the original Architecture owner for actual-write applicability and its matching final Phase 2 result, then Check; it does not restart an already completed full Review. Downstream Delivery/Completion still requires no_change or reviewed_promoted. |
-| guru-architecture-baseline-bootstrap-router | Enter original foundation bootstrap or bounded repair for missing authority; retain the current planning_purpose in call-local route context, then rerun task impact for that purpose. Maintenance 2.0 current is not a planning 3.0 result. |
+| guru-architecture-baseline-sync-router | Invoke original Architecture maintenance for the declared sync_kind/target. Preserve explicit DeliveryKey/planning_root where the selected Interface supports them. Retain planning purpose in this call-local route and rerun that purpose's task impact afterwards. For final_integration promotion-origin bootstrap/repair, retain the original promotion profile/key/root/stage call-locally and project maintenance to its existing phase2 stage; maintenance current returns only to that original promotion for reread and candidate rebinding, never as promoted success. No new assessment owner, checkpoint or lifecycle stage. |
+| guru-architecture-baseline-current-router | Validate actual current authority and selected source_profile. Delivery planning dispatches solely by planning_purpose: candidate_assessment projects its actual assessment and key into Author delivery_solution_planning; final_plan projects the actual final assessment directly into adjacent Delivery Approval. Bootstrap/repair from final-integration promotion returns to that original promotion through the sync-router projection; other maintenance reruns impact for the original purpose/stage. Promotion returns to the original Architecture owner for actual-write applicability, then implementation rebinds the actual candidate and matching final Phase 2 invokes final Check; it does not restart an already completed full Review. Downstream Delivery/Completion still requires no_change or reviewed_promoted. |
+| guru-architecture-baseline-bootstrap-router | Enter original foundation bootstrap or bounded repair for missing authority. Final-integration promotion origins use the same call-local maintenance phase2 projection and return to the original promotion as the sync-router; other origins retain planning_purpose and rerun the original task impact. Maintenance current is neither a planning 3.0 result nor promoted success. |
 | guru-architecture-baseline-planning-router | For planning conflict/contract gap, project planning_purpose and concrete conflict/missing refs to Author architecture_conflict_resolution. Actual scope choice uses Clarify. Nonplanning repair keeps its original owner; never reinterpret these exits as current. |
 | guru-architecture-baseline-check-router | Return `fitness_regression` to implementation/check and require the affected downstream stages again. |
-| guru-requirements-design-test-ssot-current-router | Consume the reviewed authority locator, active version, scope, status, and freshness; the next owner rereads live Requirements, Design, and Test authority. |
+| guru-requirements-design-test-ssot-current-router | `candidate_ready` retains the actual contribution and applicable authority locators for the original candidate Check; it is not shared-current success. `ssot_current` resumes the original caller with actual authority. Final-integration promotion resumes implementation for candidate rebinding; the next owner rereads its stage-applicable complete bodies. |
+| guru-knowledge-final-integration-router | Consume only the current Check `candidate_checked` and its TaskRef/DeliveryKey/candidate after Check has returned the public phase to implementing. Invoke the original Architecture and RDT promotion owners at final_integration for actual knowledge changes; no_change skips writes. Return through the original implementation candidate/begin_check owner, then matching final Architecture phase2 and final Check. No TaskCommit, Review or Ready consumes candidate_checked. |
 | guru-requirements-design-test-ssot-planning-router | Return the exact affected scope and revision code to the current planning or implementation owner. |
 | guru-requirements-design-test-ssot-bootstrap-router | Enter controlled foundation bootstrap or repair for the declared missing layer without expanding business scope. |
 | original-request-route | Return to the original non-repository request. |
@@ -587,7 +591,9 @@ self-authoring, a prior-stage DTO or an overall gate for that invocation.
 | Planning candidate | `delivery_task_impact_sync(stage=planning, planning_purpose=candidate_assessment)` | `guru-author-task-plan:delivery_solution_planning` |
 | Planning final | `delivery_task_impact_sync(stage=planning, planning_purpose=final_plan)` | Adjacent Delivery `guru-approve-task-plan` |
 | Qualified implementation expansion | `delivery_task_impact_sync(stage=implementation_discovery)` | `guru-phase2-implementation-coordinator` |
-| Phase 2 | `delivery_task_impact_sync(stage=phase2)` including the proposed promotion, then original-owner promotion/applicability when required | `guru-check-task` over the actual final candidate |
+| Candidate Check | `delivery_task_impact_sync(stage=phase2)` over the complete candidate and proposed targets | `guru-check-task:delivery_candidate_check` |
+| Final integration | Original `delivery_promotion(stage=final_integration)` only for reviewed changes | Original implementation candidate/begin_check owner |
+| Final Phase 2 | `delivery_task_impact_sync(stage=phase2)` over actual rebound content after integration | `guru-check-task` final profile |
 | Branch Review | `delivery_task_impact_sync(stage=branch_review)` over the committed full diff | `guru-review-branch` |
 | Delivery Review | `delivery_task_impact_sync(stage=publication)` | `guru-review-task-delivery` |
 | Completion/Finish | Actual Task `task_impact_sync(stage=acceptance_finish)` when no Delivery; selected Delivery uses `delivery_task_impact_sync` | `guru-review-task-completion` / `guru-finish-task` after Closure |
@@ -599,9 +605,11 @@ root; the Task-only acceptance/finish row uses `source_profile=task_impact_sync`
 `source_profile=delivery_bootstrap_foundation|delivery_repair` reruns
 `delivery_task_impact_sync(stage=<affected-stage>)` with that same DeliveryKey and
 planning root. Task-only `bootstrap_foundation|repair` reruns the matching
-`task_impact_sync` call. `source_profile=delivery_promotion|promotion` returns to
-the original Architecture owner for actual-write applicability and a matching
-Phase 2 result over the final candidate. The Architecture package owns when
+`task_impact_sync` call. For a final-integration promotion origin, both maintenance
+profiles instead use the sync-router phase2 projection and return only to the
+original promotion; `baseline_incomplete` uses that same bootstrap-router return. `source_profile=delivery_promotion|promotion` returns to
+the original Architecture owner for actual-write applicability, then original
+implementation rebinds the actual content before matching final Phase 2. The Architecture package owns when
 changed facts require another assessment. A promotion alone does not replay
 an earlier independent assessment or a completed full Review. A
 missing result stops that stage. `baseline_incomplete` enters bootstrap/repair;
@@ -611,7 +619,9 @@ A stale identity for the explicitly stage-applicable baseline, constitution,
 contribution or candidate returns `sync_required` to the Architecture owner.
 Unrelated overall CURRENT/version/ref advancement does not change that
 applicability. `sync_required(sync_kind=promotion_required)` enters the original
-serialized promotion route; only a real affected dependency is reconsidered.
+promotion route at the final-integration boundary; before that boundary, a
+reviewed candidate proceeds only to candidate Check. Only a real affected
+dependency is reconsidered.
 Promotion's own expected-current write mismatch remains local to promotion.
 
 Delivery Review rejects missing or stale Architecture evidence, every conflict,
@@ -713,7 +723,7 @@ or context loss, read it again if its complete current text is unavailable.
 ```text
 Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
 Phase 1: Plan    -> Author requirements, candidate Architecture, Author solution, Wording, final Architecture, Approval, presentation, Delivery activation
-Phase 2: Execute -> implementation discovery re-entry, Docs reconciliation, Architecture assessment/promotion, final task check
+Phase 2: Execute -> implementation discovery re-entry, complete isolated Docs candidate, candidate Check, original-owner final integration, rebound final task check
 Phase 3: Finish  -> docs reconciliation, commit, full-diff review, Delivery cycles, Completion, Closure, Finish, Cleanup
 ```
 
@@ -817,7 +827,7 @@ PR or Task inventory never selects the Task or Delivery.
 | `terminal_delivery` | Original terminal owner releases that exact selection; Task stays bound for Completion. Do not replace identity. |
 | `current / planning` | Resume the same Delivery's unique Author, Wording, Architecture and Approval. Only its current `approved` enters `guru-activate-delivery`. |
 | `current / implementing` | Resume implementation. A reviewable candidate with minimum self-checks and sensitive-content review enters original TaskCommit early Draft profiles, then original Publication; formal Check follows complete quality work. |
-| `current / checking` | Original Phase 2 Architecture assessment/promotion and actual-write applicability, then `guru-check-task` over the final candidate; ordinary quality methods do not write formal Check. |
+| `current / checking` | Original Architecture phase2 and Check for the actual public candidate. An unpromoted complete candidate uses delivery_candidate_check; only its candidate_checked enters final integration. Final Check consumes rebound actual content; ordinary quality methods do not write formal Check. |
 | `current / reviewing` | Check/TaskCommit recovery and candidate binding precede first full independent Branch Review, then Delivery Review. Recover missing evidence through the original owner; phase does not substitute for the gate. |
 | `current / publishing` | Current Delivery Review/Publish/Merge owner and original transaction. A revision requiring early publication enters Publication delivery_return_to_draft before implementation; required gate refresh retains its producer. |
 | error / unknown | Fail closed with the exact identity/API/owner diagnostic. |
@@ -830,6 +840,8 @@ PR or Task inventory never selects the Task or Delivery.
 | Current approval awaits acceptance | `phase-1-delivery-activation` presents current artifacts and invokes new Activation after its dialogue boundary. |
 | Activation result lost | Original `guru-activate-delivery` recovers the actual recorded result for the same key; no Task-status transition or new Delivery. |
 | Check result lost | `guru-check-task` validates its own current evidence or performs fresh semantic Check; no pass from phase or files. |
+| Check `candidate_checked` | `guru-knowledge-final-integration-router`; original maintenance promotion, then implementation candidate/begin_check and matching final Architecture/Check. |
+| Candidate Check output lost | Original Check/implementation/maintenance owners recover from actual public phase and writes under their contracts; phase alone never supplies a pass. |
 | Check `passed` | Invoke `guru-create-task-commit` for necessary dirty content or clean committed candidate. |
 | TaskCommit output lost | Same commit owner recovers exact candidate; no duplicate/empty/amended commit to restore stdout. |
 | TaskCommit `draft_committed` | guru-draft-commit-router enters original Publication draft publish; it cannot seed formal Branch Review. |
@@ -1254,16 +1266,19 @@ including the subtraction-first policy and maintainability contract. The
 workflow only supplies its mandatory Architecture result and consumes the
 declared typed exit; it does not duplicate owner-level adequacy checks.
 
-Mandatory invoke
+Implementation first binds the complete candidate through its original
+candidate/begin_check entry. Mandatory invoke
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=phase2)` over the
-complete worktree candidate after the approved Docs SSOT reconciliation. The
-Architecture owner includes the proposed promotion and consumes its own
-promotion/applicability routes before returning the final current result. Only
-its fresh current route invokes guru-check-task; failed/unverified mandatory
-checks, conflict, incompleteness, stale identity, or fitness regression follow
-their Architecture routes and cannot become a Phase 2 pass.
+complete implementation and isolated proposed targets, then original
+`guru-check-task:delivery_candidate_check`. Consume `candidate_checked` only
+through `guru-knowledge-final-integration-router`; each Skill owns its internal
+review, public phase transition and write behavior. Failed or stale results
+retain their declared routes.
 
-Guru-check-task's passed exit directly invokes `guru-create-task-commit`.
+After original-owner final integration, the implementation owner rebuilds the
+actual candidate and invokes begin_check. Mandatory matching Architecture
+phase2 and the original final Check cover that rebound content. Only final
+`passed` directly invokes `guru-create-task-commit`.
 Actual task/planning findings retain their declared owner routes. Remote-base
 advancement alone adds no invocation or re-entry.
 
@@ -1551,14 +1566,16 @@ constitution prose, project rules, or Architecture private state.
 
 Planning assesses a real candidate before Author solution writing, then final
 Wording-current facts immediately before Approval. Qualified implementation expansion
-invalidates it. Phase 2 assesses the complete candidate and proposed promotion
-before the final Check. The original owner validates the actual write and
+invalidates it. Candidate Phase 2 assesses complete implementation and isolated
+proposed targets before candidate Check. Its candidate_checked enters the
+original owners final integration; implementation then rebinds actual content
+for final Architecture phase2 and Check. The original owner validates the actual write and
 applicability. Branch Review independently recomputes over the committed full
 diff, including promoted files and comparison with pre-promotion authority. Delivery
 Review and Completion/Finish accept only current `no_change` or fully
-`reviewed_promoted` state. Shared current changes only by serialized promotion
-against that write operation's expected-current identity; a mismatch returns
-`sync_required` for promotion. Its matching final candidate enters Check,
+`reviewed_promoted` state. Shared current changes only by original-owner
+final-integration promotion against that operation's expected-current; a mismatch returns
+`sync_required` for promotion. Implementation rebinds its actual final candidate before Check,
 Task Commit and committed Review; changed obligations return to their affected
 owners. The Architecture package owns recovery and applicability judgments.
 

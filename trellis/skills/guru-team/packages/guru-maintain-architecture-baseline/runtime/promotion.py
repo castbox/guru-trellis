@@ -128,7 +128,7 @@ def check_promotion(repo: Path, public: dict, owner: dict) -> None:
     if (review.get("status") != "reviewed" or review.get("independent") is not True
             or review.get("candidate") != public["candidate"]
             or review.get("before_authority") != public["before_authority"]):
-        _error("owner_result.review", "Use the actual independent pre-Check candidate and proposed-content assessment.")
+        _error("owner_result.review", "Use the actual independent candidate and proposed-content assessment.")
     if not targets:
         _error("owner_result.promotion_targets", "Recover the original reviewed target contents before continuing.")
     states = target_states(repo, targets)
@@ -137,18 +137,17 @@ def check_promotion(repo: Path, public: dict, owner: dict) -> None:
     if _before_candidate(repo, targets) != public["candidate"]:
         _error("candidate", "The actual delta exceeds the reviewed candidate or proposed target contents; return to the affected Architecture assessment.")
     baseline = public["baseline"]
-    successor = public["successor_baseline"]
     if (public["expected_current_identity"] != baseline["identity"]
-            or public["current_identity"] != baseline["identity"]
-            or successor["locator"] != baseline["locator"]
-            or successor["identity"] == baseline["identity"]):
-        _error("expected_current_identity", "Reread the original expected-current baseline and distinct successor.")
-    baseline_targets = [row for row in targets if row["locator"] == baseline["locator"]]
-    if len(baseline_targets) != 1 or baseline_targets[0]["before_content"] is None:
-        _error("owner_result.promotion_targets", "Bind the expected-current baseline text and its successor write.")
-    expected_content = "sha256:" + hashlib.sha256(baseline_targets[0]["before_content"].encode()).hexdigest()
-    if expected_content != public["expected_current_content_identity"]:
-        _error("expected_current_content_identity", "Recover the exact baseline read before this operation's first write.")
+            or public["current_identity"] != baseline["identity"]):
+        _error("expected_current_identity", "Reread the actual expected-current Architecture authority.")
+    if owner.get("baseline_identity") != baseline["identity"]:
+        baseline_writes = [target for target in targets
+                           if target["locator"] == baseline["locator"]]
+        if (len(baseline_writes) != 1
+                or baseline_writes[0]["before_content"] is None
+                or baseline_writes[0]["content"] is None
+                or baseline_writes[0]["before_content"] == baseline_writes[0]["content"]):
+            _error("owner_result.baseline_identity", "A changed after identity requires this operation's actual reviewed baseline target write; leaf-only promotion retains its before identity.")
     if owner.get("post_candidate") != capture_candidate(repo):
         _error("owner_result.post_candidate", "Bind the result to the actual complete promoted candidate.")
     if owner.get("postwrite_applicability", {}).get("status") != "applicable":

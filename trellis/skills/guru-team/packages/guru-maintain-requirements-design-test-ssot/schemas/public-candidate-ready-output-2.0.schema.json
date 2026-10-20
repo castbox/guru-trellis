@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-requirements-design-test-ssot-output-candidate-ready-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "contribution_locator",
+    "authority_locator",
+    "authority_version"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "candidate_ready"
+    },
+    "contribution_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

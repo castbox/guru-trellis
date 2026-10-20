@@ -976,9 +976,15 @@ compatibility reader converts them to a current schema.
 
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-5.0` and
+New active evidence uses closed schema `guru-phase2-check-6.0` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
-parallel pass artifact is allowed. The ignored owner checkpoint stores only
+parallel pass artifact is allowed. The independent candidate profile has
+`candidate_checked` output containing only task_ref, delivery_key and existing
+candidate head/content_identity. It records no final public Check and cannot
+supply check_result_id to TaskCommit. It returns through original public rework
+and final integration; actual writes require implementation candidate rebinding
+before final Check. RDT candidate_ready independently carries only contribution
+and applicable authority locators/version, not a current-success claim. The ignored owner checkpoint stores only
 mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
