@@ -1,6 +1,6 @@
 # Task 与 Delivery 生命周期
 
-知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.114`；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
+知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
 
@@ -48,13 +48,15 @@ Draft 后在同一固定 B/H 并行启动独立完整内容分析和风险匹配
 
 ## 最终检查、提交和独立审核
 
-`R531-04 / BEH531-CANDIDATE`、`R530-01..05`、`R600-01..06 / BEH600-01..06` 保持。实施 owner 先完成受选 Docs 策略。需要晋升时，fresh 独立 Architecture Phase2 reviewer 对比晋升前 immutable authority，读取完整 tracked/untracked 候选、实际 consumers 与 proposed targets，形成真实 assessment。原 RDT/Architecture owners 核对 live expected-current 后，在本执行分支写入完整 reviewed successor，并核对实际内容和适用性；随后最终 Check 覆盖所有晋升写入。无变化不增加 contribution、ADR 或空阶段。
+`R531-04 / BEH531-CANDIDATE`、`R530-01..05`、`R600-01..06 / BEH600-01..06` 与 `R638-01..07` 保持原独立职责和最终质量要求。实施先完成所选 Docs 策略的完整隔离贡献和 proposed 正文。implementation以固定B、实际HEAD及全部提交/dirty paths调用原candidate/begin_check进入checking；独立Architecture phase2和原Check delivery_candidate_check先读晋升前authority、完整候选及受影响未改consumers，判断完整候选。
 
-最终顺序是：独立 Phase2 assessment → 原 owners 晋升 → 实际写入适用性核对 → 完整最终 Check → 精确 Task Commit → fresh 独立 committed Architecture / 完整 Branch Review。ADR-030 仅替代旧“先 committed Review 再首次晋升”时序；独立性、expected-current、职责和后续审核义务保留。新 CURRENT 自身不能证明对晋升前约束的符合性，也不为补最终 SHA/Review 状态循环写正文。
+候选通过时原Check以既有rework(target_role=implementation, affected_results=[readiness])回implementing，再输出candidate_checked，不写最终public Check。唯一consumer调用原Architecture/RDT final_integration：一次固定真实命中目标、保留双方有效条件并补审真实差额/组合/未改消费者，原owner写完整组合并读回。no-change跳过写入，不制造空贡献或ADR。普通晋升不要求全局版本递增或总入口必写；稳定identity和精确Git内容分别管理。
 
-Check 审查当前完整 scope、需求/设计/测试/兼容/Docs/Architecture 及实际 consumer；若产生真实候选问题，按正常场景/机制/因果准入，不能用恶意篡改构造范围。完整审查没有候选时使用真正空集，不制造占位finding；空集或全 rejected 均不自动等于通过。工程命令结果只证明其实际层次。
+implementation以同B、实际HEAD及全部晋升/关系/导航paths重建candidate/begin_check，回checking；最终Architecture/Check覆盖新content_ref与全部实际差额。只有最终Check record_gate进入reviewing，随后精确TaskCommit、fresh独立committed Architecture/完整BranchReview。写前candidate、candidate_checked、candidate_ready或reviewed_candidate不能进入TaskCommit、full_review或Ready。无知识写入也执行合法候选回程，无空提交。
 
-dirty 候选由原 Commit 精确 stage/commit；clean 已提交候选在 fresh Check 和当前公共适用性下直接进入首次完整 Review，不制造空提交或重复提交。Branch Review 读取固定 B..H 全部 diff，包含晋升和非本次最后提交；Phase2 pass 不代替独立 committed 判断。finding 修复回最早受影响 owner；修复后的最终结果覆盖实际最终候选。窄 promotion-reference alignment 只在原 Review 明确合同内采用，不能代替未执行的完整审查。
+Check审当前完整scope、需求/设计/测试/兼容/Docs/Architecture及实际consumer。真实候选问题按正常场景/机制/因果准入；不扩恶意篡改情形。完整审查没有候选则用真正空集；全rejected不自动passed。工程结果只证明实际层次。候选失败不晋升，实质前提/义务变化回最早受影响owner，实际写入不以“只是文档”豁免。
+
+dirty候选由原Commit精确stage/commit；clean已提交候选在fresh最终Check和当前适用性下直接首次完整Review，不造空/重复commit。BranchReview读固定B..H全diff，包括全部晋升及非最后commit；Phase2不能代替独立committed判断。finding修复后当前结果覆盖真实最终候选；窄reference alignment只承接其声明的引用/状态，不替代完整或实质正文审查。晋升前authority保持比较起点，不用新CURRENT自证或循环补Review SHA。
 
 ## 候选适用性与完整覆盖
 
@@ -70,7 +72,7 @@ finding/整合修正后，原合规 reviewer 核闭合、修订差额及受影�
 
 Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义、候选及 live 事实，消费仍适用的内容判断，不重做无实质变化的业务设计审核。真实 scope、前提或依赖变化回最早受影响 owner；同 Delivery 恢复不制造新身份或空提交。唯一共享执行定义由 canonical workflow-contract 的 Candidate Applicability And Coverage 小节拥有，七个原 owner 显式读取，平台只加载/路由。matching 完整安装和在途退出按 MIGRATION-637；旧完整安装固定或沿原维护 owner 成套切换，source 编辑不热迁移开发 Task。
 
-本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、最终 Check 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638 未来接口尚未交付时明确未验证，由后项负责，不构成本项关闭前置。Completion/Closure/Release 各保留独立责任。
+本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、最终 Check 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638的当前组合按T638实际验证，历史#637结果不证明该组合通过。Completion/Closure/Release 各保留独立责任。
 
 ## 交付事实与整体完成
 

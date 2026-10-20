@@ -1,14 +1,14 @@
 # 当前适用知识的读取、修订与晋升
 
-知识单元：`RDT-REQ-KNOWLEDGE`。状态：`current`。前驱 RDT `.109`、Architecture `.100`；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。候选正文须经原 owners 晋升才进入共享 authority，不因目录名 current 自动生效。
+知识单元：`RDT-REQ-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。前驱 RDT `.109`、Architecture `.100`；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。候选正文须经原 owners 晋升才进入共享 authority，不因目录名 current 自动生效。
 
 ## 唯一 authority 与完整知识
 
-`REQ-007/019/027..035`、`BEH-007` 保留身份，并按下述阶段适用性和 ADR-030 替代旧冲突片段。RDT 由唯一 `guru-maintain-requirements-design-test-ssot` 管理一个 Requirements/Design/Test repository authority。每个活动 requirement/behavior 均有 owning design responsibility/contract 和至少一个 test strategy/scenario/case，双向关系保持。Architecture 独占项目 FOUNDATION/CURRENT/TARGET/GAP/PLAN/ADR/EVIDENCE、constitution/决策/owner/兼容/历史；RDT 只继承其公开 locator/version/status，不读 private state，不复制架构正文。task-local PRD/design/implement 是 Task planning，不能冒充 repository authority。
+`REQ-007/019/027..035`、`BEH-007` 保留身份，并按下述阶段适用性及 ADR-KNOWLEDGE-FINAL-INTEGRATION 承接当前时序。RDT 由唯一 `guru-maintain-requirements-design-test-ssot` 管理一个 Requirements/Design/Test repository authority。每个活动 requirement/behavior 均有 owning design responsibility/contract 和至少一个 test strategy/scenario/case，双向关系保持。Architecture 独占项目 FOUNDATION/CURRENT/TARGET/GAP/PLAN/ADR/EVIDENCE、constitution/决策/owner/兼容/历史；RDT 只继承其公开 locator/version/status，不读 private state，不复制架构正文。task-local PRD/design/implement 是 Task planning，不能冒充 repository authority。
 
 `R331-01 / BEH331-01`：读者先按问题、Task、阶段和候选选择真正适用来源，再按能力/行为/接口/职责或稳定 ID 到完整单元。当前有效要求、已接受目标、未确认、历史和 superseded 内容分开；target 不冒充当前实现。读取必要关联（条件、否定、例外、顺序、依赖、设计、测试、Architecture），不无限展开所有链接。导航仅存 identity/alias/status/locator/关系，不是另一份业务摘要。搜索排名、日期和编号不决定 authority，命中标题或摘要不替代正文。解释旧决定或原因时按需读历史；普通当前查询不要求重放全部版本/贡献。
 
-当前单元是原 owner 在已声明能力范围内合并的完整定义，历史 contribution 保留来源责任；晋升后后续查询不能仍靠贡献链补出遗漏规则。精确 public API/schema 仍由 canonical package 单写，单元展开能力行为并指向必要完整接口，不复制接口成第二来源。单元 revision 可由完整 Git snapshot 定位，避免维护无限重复版本正文。
+当前单元是原 owner 在已声明能力范围内合并的完整定义，历史 contribution 保留来源责任；晋升后后续查询不能仍靠贡献链补出遗漏规则。精确 public API/schema 仍由 canonical package 单写，单元展开能力行为并指向必要完整接口，不复制接口成第二来源。单元 revision 由完整 Git snapshot 与 locator 定位。根 authority identity 稳定，普通 Task 不强制递增全局版本或写根 README；只有定位关系、身份或状态真实变化才改导航。真实 public API/schema 版本继续独立维护。
 
 ## 一致修订、身份与隔离
 
@@ -18,13 +18,17 @@
 
 ## 四 profiles、日常闭环与晋升
 
-RDT 的四 profiles 保留：bootstrap_foundation 建立/复用/迁移兼容三层 authority；task_impact_sync 对批准 delta 判断 no-op、isolated contribution、窄 direct sync 或 revision；promotion 审查 contribution、subtraction、trace、版本历史与 Architecture inheritance；repair 修复具体 authority/navigation/version/迁移缺陷，不扩需求或改无关历史。
+RDT 保持四 profiles：bootstrap_foundation 建立/复用/迁移兼容三层 authority；task_impact_sync2.0 对批准 delta 判断 no-op、完整 isolated candidate 或 revision；promotion2.0 在 final_integration 审查 contribution、subtraction、trace、历史和 Architecture inheritance并实际写入；repair 修复具体 authority/navigation/迁移缺陷，不扩需求或改无关历史。bootstrap/repair 原合同不变。
 
-Planning、实施、最终 Check、Branch Review、Delivery Review、Completion、Finish 都实际加载阶段适用的完整正文和必要关系。Planning 选择唯一 ssot_first、delta_first、bootstrap_or_repair_docs 或 no_docs_update_needed；Phase2 执行该策略。delta_first 的最终 Check 之前完成 reviewed contribution 合并；Branch Review 核验 reconciliation，不能首次补晋升。
+Planning、实施、候选 Check、最终 Check、Branch Review、Delivery Review、Completion、Finish 都读取阶段适用的完整正文与必要关系。Planning 选择唯一 ssot_first、delta_first、bootstrap_or_repair_docs 或 no_docs_update_needed。Phase2 先执行策略并形成完整隔离候选；有变化时 candidate_ready 仅表示贡献和完整拟写可供候选检查，不表示共享 authority 已更新。无变化返回真实 no-change，不创建空 contribution、ADR或提交。
 
-`R331-04 / BEH331-04` 与 `R600-01..06`：fresh 独立 Phase2 Architecture assessment 先读晋升前 authority 和完整 tracked/untracked candidate/proposed targets，再由原 owners 对真实 live expected-current 晋升。后继正文吸收所有受影响仍有效条件与新 delta，并更新薄入口/关系；实际写入后核对适用性。随后完整最终 Check、精确 commit、fresh committed Architecture/完整 Branch Review。无变化不制造 ADR/贡献/阶段，不能拿新 CURRENT 自证旧约束。finding 修复/义务变化回最早 owner；只改引用/状态仍须原合同下覆盖最终候选的正式结果，不循环记录最终 Review SHA。
+`R331-04 / BEH331-04`、`R600-01..06` 与 `R638-01..07`：原 implementation 在 implementing 以固定 B、实际 HEAD 及完整差额构造 candidate/begin_check，进入 checking。独立 Architecture phase2 和原 Check delivery_candidate_check 读取晋升前适用 authority、完整 tracked/untracked implementation、完整 proposed targets 与受影响未改 consumers。候选通过时原 Check 用既有 rework(target_role=implementation, affected_results=[readiness]) 返回 implementing，再输出 candidate_checked；它不写最终公共 Check。Planning 和真实历史结果保留，历史不自动获得当前适用性。
 
-两个贡献先后晋升时，第二个 owner 比较真实 current 和自己的 base，保留第一个的全部有效定义再合第二个，不能覆盖成第二份 delta。expected-current mismatch 回原 promotion/review，不自动判所有旧 Task 过期。partial/output-loss 由原 owner 读取同一明确 intent，仅完成 pending targets；真实冲突或不唯一停止，不另建状态机。
+candidate_checked 的唯一 consumer 调原两 maintenance owners 最终整合。原 owners 一次固定真实目标 branch/commit，逐一读取命中单元。不同单元推进不改本方未命中内容；相同单元须保留真实 current、本方来源和双方仍有效条件，生成唯一完整组合正文，必要时按原候选适用性合同补审全部差额及受影响未改 consumers。不得只靠 Git 自动合入、目录或版本数字宣称语义兼容。推翻需求前提回 scope/Planning；改变实现、接口或验证义务回相应原质量 owner。
+
+原 owners 亲自写已审内容并读回所有 targets，判断实际适用性。随后 implementation 以同 B、实际 HEAD 和全部晋升/关系/导航 paths 重建 candidate/begin_check。原 Architecture 对实际候选作匹配 phase2 判断；最终 Check 只能消费新 content_ref，记录真实公共 passed，之后精确 TaskCommit、独立 committed Architecture/完整 Branch Review 覆盖实际内容。无知识写入也走合法候选回程，不制造空文件或空提交。Ready/Publication/Completion/Finish 只接受真实 no_change 或 reviewed_promoted，候选出口不能代替最终 gate。
+
+expected-current mismatch 只影响本次实际写入，由原 owner 重读真实差额，不自动判全部在途 Task 过期。partial/output-loss 由原 owner读取同一明确 intent，完成已写 targets 的 readback并仅补 pending；真实冲突或不唯一时停止，不新建状态机、全仓 hash账本或第二 current。无关目标前进不要求 merge/rebase 或追赶 SHA。
 
 ## 阶段适用版本与实际变化
 

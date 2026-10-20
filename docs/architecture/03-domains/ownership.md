@@ -154,7 +154,7 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-052`（#589 D7）：上游公开内容 owner 独占不可变对象摘要与序列化；原 Merge manual/history owner 继续拥有历史准备、逐候选比对、事实归属与恢复。公开 context 只在同一操作/实际仓库内复用不可变计算事实，不接管业务或阶段判断。原 tools owner 负责从 clean source 正式采用及 receipt，Architecture/RDT 原 owners 分别单写 shared-current；无新 owner、ADR、GAP 或双写。
 
-`ARCH-DOM-053`（#600）：原 Architecture owner 独占拟晋升审查、expected-current 写入、恢复与实际结论适用性；Check 独占最终完整候选质量判断。Task Commit、committed 独立 Architecture、Branch Review、Delivery、Completion、Closure、Finish 和 Cleanup 保持各自职责。原 Branch Review owner 的窄引用/状态对齐只承接已验证事实，正式结果仍交原 Delivery Review；不增加审批链、store 或审查账本。具体合同见 [ADR-030](../adr/030-promotion-before-final-check.md)。
+`ARCH-DOM-053`：原Architecture独占拟晋升独立评估、final_integration写入/恢复及适用性；原RDT独占三层正文晋升；原Check独占完整候选检查、合法rework及最终public Check。implementation独占candidate/begin_check与真实after重绑，workflow仅消费candidate_checked并调原owners。TaskCommit、committed独立Architecture、BranchReview、Delivery/Publish/Merge及整体终态owners保持原职责。候选结果不形成最终门禁，窄引用对齐不能承接实质正文。无新Skill、公共phase、调度器、store或账本；详见[ADR-KNOWLEDGE-FINAL-INTEGRATION](../adr/knowledge-final-integration.md)。
 
 `ARCH-DOM-054`（#577）：公共 Trellis 保持 Task/Delivery/session/binding、legacy projection 与恢复回退的唯一 writer。`guru-maintain-legacy-task` 只拥有独立维护意图、精确对象与写集、同操作 Guru checkpoint、原 owner 调用和实际目标续接。原 Publish/Merge 核验历史，原 Publish/Merge/Finish 及明确选定 gate owners 分别解释和处置自己的私有 controls；`source_task_ref` 指向物理归档，`task_ref` 保留原活动控制归属。原 Identity/Bind 共用 installed public active resolution 和选定 checkout；C4 仍拥有首次 branch binding，历史 reservation 不成为第二 current authority。当前 scope、真实新 Delivery Planning、整体 Completion 和未完成 closeout 分别回原 owners；原 upgrade owner 保留历史工具来源判断。独立评估、Architecture/RDT 晋升及发布职责不转移。责任及旧 consumer 退出条件读 [贡献](../contributions/577-manual-archive-resume.md) 和 ADR-024/027。
 

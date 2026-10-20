@@ -1,6 +1,6 @@
 # Task / Delivery 生命周期测试策略
 
-知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.114`；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
+知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
 
@@ -14,7 +14,7 @@
 | T154-02/03/04 | 全量、partial、后继和返工；详细来源及规范性承诺 | 真实完整来源被读取；Task与slice正文分明；设计处置唯一且保条件；Policy/Docs Plan不重复；下游实际消费正文。 |
 | T531-03 / R531-03 | 同slice scope/方案变化、部分/全部撤回，各真实stage | 原Clarify及最早stage合法rework，身份/PR/history保留；stop/release不冒充delivered；独立工作不因局部provider缺口阻断。 |
 | T531-04 / T530-01..05 | dirty精确提交；clean既有候选freshCheck后首次Review；普通stdout loss | 真实内容进入commit，clean零空/重复commit；Review输入绑定实际H；完整独立Architecture/Branch Review；旧gate不冒充current。 |
-| T600-01/02/03/04/05/06 | authority变更的完整tracked/untracked候选与proposed targets；无变化控制 | 独立before/after→原owners晋升→写入适用性→最终Check→commit→committed Review；无变更无ADR/空阶段；mismatch/partial/conflict走原owner。 |
+| T600-01/02/03/04/05/06 | authority变更的完整tracked/untracked候选与proposed targets；无变化控制 | 独立before/after与候选Check→合法回implementation→原owners最终整合→重新candidate/begin_check→最终Check→commit→committed Review；no-change无空文件/ADR/commit；mismatch/partial/conflict走原owner。 |
 | T535-01..04 | 完整Review无候选，或非空全rejected | 真空集[]与分类区分；完整维度/Docs/Architecture/freshness及route仍审，不凭空集自动passed/ready。 |
 | T531-05 / T557-01..04 | 原Publish/Merge成功后投影/输出丢失；正式发布后人工双亲merge | 实际成功读回且零重复副作用；历史事实不等新gate；actual head/CI/delta交Completion；不执行第二merge。 |
 | BEH567-01..05 / 该源T567链 | 各阶段固定B/H；无关target前进；实际冲突/依赖同步 | 固定候选正常前进、默认零Reconcile；仅真实触发固定一次target，恢复同Delivery，不追赶、不重放无关门禁。 |
@@ -49,7 +49,13 @@
 | T637-03 / R637-03 | 正常共享 Runtime/事务实现缺陷，原命令缺失或环境改变 | 扩审未改 consumers 并检出具体缺陷；缺项补跑，其余可核验事实按当前适用性采用。 |
 | T637-04 / R637-02/07 | 实际同树新提交、无关 target 前进、公开输出恢复与已退休 checkpoint | 固定 B/同 Delivery；只刷新必要绑定、不假定环境；旧 gate 不冒充当前，缺覆盖补审，无私有跨读或重建。 |
 | T637-05 / R637-04/05/08 | 旧/新完整安装的同初始实际 Agent 样本 | 先比较充分性/检错，再分别实测语义、命令、正式记录、远端等待和重复动作；fixture/scanner 不证明 Agent 行为，不预设收益比例。 |
-| T637-06 / R637-06/07 | #636 已交付 installed 早期入口与真实同 PR/HEAD 修订、最终门禁 | 同 key/PR 接续，早期不写 full_review，真实 Check predecessor 与 payload/live 资格；#638 未交付接口明确交后项验证。 |
+| T637-06 / R637-06/07 | #636 已交付 installed 早期入口与真实同 PR/HEAD 修订、最终门禁 | 同 key/PR 接续，早期不写 full_review，真实 Check predecessor 与 payload/live 资格；#638当前组合按T638实际证明，不从历史通过推断。 |
 | T637-07 / R637-08 | canonical/声明平台、单 clean matching、reapply/drift/mode/sidecar 与在途恢复 | 完整 matching 投影和实际 installed owner 运行，旧完整安装固定或原 owner 显式成套迁移；不推定全平台实际 Agent、业务/生产或完整 Release 矩阵。 |
 
 本轮实际命令、首次失败、Agent/fixture/installed/remote 层次、分阶段耗时及未验证边界唯一由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)维护。本文定义完整策略，不将规划、旧结果或知识晋升当作通过证据。
+
+## T638：候选到真实最终内容
+
+T638-01..07的完整场景由 [knowledge test](./knowledge-maintenance.md#t638稳定身份与最终整合场景) 定义。本单元重点验证实际公共phase为implementing→checking→implementing→checking→reviewing；候选不写finalgate，真实写入后旧candidate不能放行，原implementation重新绑定全部after差额。未晋升不能Ready，no-change不造空贡献/commit，实际Git无整合阻塞可直接晋升。旧pass不转换，三类在途/普通输出丢失恢复同key/B，无第二current。
+
+实际命令、失败、Agent/fixture/installed/GitHub及未验证边界唯一由 [#638 Test](../../requirements-design-test-contributions/638-shared-current-promotion/test.md)维护。历史T600/T636/T637保留其实际对象和结果，不冒充当前组合通过。

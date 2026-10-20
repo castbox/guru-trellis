@@ -96,3 +96,69 @@ V638-07 查询 A 已经原 Sync→Discovery→Clarify→Wording→Readiness→Ta
 - 原 `check-dogfood-overlay-drift.sh` exit0：workflow、selected native/shared platform projections 和 spec copies 与 canonical 一致。此前0 missing/6 changed的门禁在本次真实受管切换后已解除；没有执行历史受阻的全量 legacy-archive apply，也不将其改写为本轮通过。
 
 这次 tools 维护未创建提交或修改 PR，未写 shared current，未转换/完成 Task。21项专用 fixture SKIP 仍保留；真实样本全组、主 Task 最终候选/晋升/Check/Review/readiness、交付和整体终态仍待完成。主执行 checkout 的 dogfood 投影与本文新增结果尚待后续正式质量链及独立提交。
+
+## 受管投影候选的追加验证
+
+397个受管投影及结果路径已形成提交 `bed3aece257cce60fd2a84beed732ae7af021f9f`；相对父2c772b5，canonical `trellis/` 无差额。原 Publication 实际返回 `draft_published`，同一PR #646的HEAD、中文payload与Draft状态均读回匹配。run `39382648302` 的Ubuntu、macOS、Windows targeted CI全部SUCCESS，覆盖bed3aece；不是完整Release矩阵或目标分支组合证明。该发布不写主Task最终质量gate。
+
+本轮针对该候选另实际执行 RDT `test_contract.py` 11项、Check `test_candidate_check.py` 5项、Architecture `test_promotion.py` 11项，合计27 PASS。后两组首次setup因缺 `GURU_UPSTREAM_DELIVERY_SCRIPTS` 未执行被测逻辑；补为实际构建的匹配Fork `packages/cli/dist/templates/trellis/scripts`（以及用例需要的同目录`common`）后通过。24个变更Python文件语法与完整B..bed3范围的`diff --check`通过。这些是source层工程事实，不是正式Check/Review或实际Agent样本的替代证据。
+
+## 真实查询 A 的完整本地候选与晋升链
+
+样本 `v638-query-a` 在固定B=`f18737f5c6cb2cfc8f37761f8e97154703e06878` 上完成原Author、Wording、独立Planning Architecture、Approval与Activation。实现只先写隔离贡献和完整拟写正文；原RDT返回 `candidate_ready`，独立Phase2 Architecture与候选Check实际执行后，原Check返回 `candidate_checked` 并合法回到implementing，公共Check仍null，shared current仍未写入。
+
+原维护执行者逐个读取真实目标，写入并读回RDT三个叶单元与Architecture一个叶单元；独立Architecture owner覆盖四个实际写入后正式返回 `reviewed_promoted`，原RDT返回真实 `ssot_current`。原implementation重建包含全部四个写入的17路径candidate并begin_check，独立最终Check才记录公共passed。此阶段的命中目标写前都与B相同，证明无需Git整合的真实晋升路径；不把它当同单元已有其他贡献时的合成证明。
+
+原TaskCommit产生本地 `8d3fc49b6d75057770899bb8674e3a54621cb03c`，唯一parent为B，无merge/rebase或额外同步提交。HEAD变化后，原Reviewing owner实际rework回implementing并清除受影响质量结果；原implementation重绑新H后再次完成独立Architecture/最终Check，原TaskCommit clean reentry未新增提交。首个完整B..H Branch Review已实际写入该样本的公共full_review并读回applicable，范围为全部17文件；这不是主Task的质量gate。四个全局README未改，未命中单元、关系/导航及查询和导出consumer保留；没有样本remote PR、Closure或归档动作。
+
+在实际晋升后，原RDT对同一已满足的完整拟写重入，返回 `ssot_current`，前后HEAD/status相同，无空贡献、ADR或提交。此结果只证明该RDT维护重入，不冒称独立Architecture no-impact或整组no-change覆盖。
+
+样本存在明确方法边界：早期root/D1 Author写作已由原wrapper核对Task/checkout，执行者也读过current，但没有在每次Planning文件写入前单独调用checkout-boundary helper。后续manifest、隔离贡献、公共begin_check及晋升/提交相关写入按原入口核验；没有手改state补造过去步骤。因此不将本样本描述为每个流程动作零遗漏。不同能力双Task的后续导出B、同单元双Task及剩余no-change/consumer组合验证仍未完成。
+
+## V638-07 不同能力双 Task：实际本地结果
+
+两 Task 均从同一 B=`f18737f5c6cb2cfc8f37761f8e97154703e06878` 建立独立候选。Query A 的本地 H=`8d3fc49b6d75057770899bb8674e3a54621cb03c`；Export B 的本地 H=`912215a04f097e2356cc769cf7eb4a120ea291f1`。两个提交的唯一父提交均为 B，没有 merge/rebase 或只为祖先关系的同步提交。
+
+Export 原维护 owner 固定 Query H 为实际整合 target，读取全部21份长期文档。其最终组合逐字保留 Query 已晋升的四层正文，再加入 Export 自有四层完整定义。原独立 reviewer 补审全部8个实际正文差额和两条未改 consumer 后，原维护 owners 实际写入、读回，再重绑实际候选进入最终 Architecture/Check。根导航及另外13份长期文档与该固定 target 相同；未推动共同版本计数器。
+
+Query 与 Export 均已通过原本地完整质量链及 Delivery Review，正式出口为 `ready`。Export 的第一次完整 committed Review 覆盖 B..H 的全部21个文件，无 P0–P3 findings；实际 full_review 为 `full-review:8442b0fa0d8026d7109ad24b4c8e6ee3119c369bec395782c6966b39bdf897e8`，readiness 为 `readiness:93ac03b3bd113ed119046fd2fb110c37c06264351440c71599cb6204e7d0c723`。原公共输出位于临时样本目录的 `export-branch-review-result.json` 和 `export-local-readiness-result.json`，Git H 提供不可变完整正文和范围。
+
+实际完整定义分别保留查询超时的原错误来源、导出完成不代表通知发送。结果证明当前 native owner 链可在本地完成不同能力候选、真实 target 保留/组合、晋升、实际内容检查和本地交付准备；不证明样本远端发布、合并、Task Completion 或生产部署。共享同单元双 Task 的最终组合仍单独验证，不以本结果替代。
+
+## V638-07 同一共享单元双 Task：实际本地结果
+
+Shared Query A 与 Shared Export B 从同一固定 B=`f18737f5c6cb2cfc8f37761f8e97154703e06878` 独立形成完整候选。A 的 H=`a0d4f5342040660ceafabc0a9c77bb121fdcdf72`，B 的 H=`8f0dce1ce286954e0dbbd08ac370b161f713a3ff`；两个 H 的唯一父提交均为 B，没有 merge/rebase、SHA 追赶或额外同步提交。
+
+A 首次候选的 RDT design 曾将原“未批准的新增入口不从配置或文档建议推断为允许”收窄为导出入口。原独立 owner 实际判为 `fitness_regression`，原 Check 经合法 rework 回实施，仅恢复该泛指条件，再重绑实际候选重新检查。原失败不计通过，没有手改 state 或补造 pass。之后 A 的四层完整正文真实晋升，允许只读查询，保留来源优先、缺来源 repair、历史不覆盖和只读不改写；导出新入口当时仍未批准。
+
+B 最终整合固定真实 A H，读取全部21份长期文档，比较固定 B、自有完整提案和 A 已晋升正文。原独立 reviewer 在写前补审四个实际组合差额与两条未改 consumer；原维护 owners 写入并读回四层共享正文，再重绑实际16路径候选，完成最终 Architecture/Check。最终定义同时允许来源存在时只读查询和导出，完整保留缺来源返回原 repair、不推断或继续正常路径、有历史数据不覆盖、查询不改写及泛指未批准入口不得推断允许的条件。共享 owner、稳定身份与跨层关系保持。
+
+主会话另从实际 Git H 逐层读取 B/A/B-final 完整正文：最终仅四个 shared current 与 A 不同，另外17份长期文档逐字保持 A，包括各层根导航、独立 query/export 和两条 consumer。完整定义直接位于 current；读者无需拼接贡献历史。
+
+两样本均实际完成 H fresh Check、clean TaskCommit 重入、首次完整 B..H 的17文件独立 Branch Review、publication Architecture 和本地 Delivery Review。A 的 full_review=`full-review:7cb57856f4c2e397a3683642a3257c8ca9942f67f77edf1ccc91b305dd53c634`，readiness=`readiness:5379e69169decfb47a410382a980d166328a884b162c412a5a555b13315ef56a`；B 的 full_review=`full-review:70a7ae5f2eff433e5120ab2ed43880bb40423fedc98b9d772d982dbe3321eb3f`，readiness=`readiness:be2faeb5b9bf05a01529a44e39ae34fd408788f62cde28a635943afb9a84ad1e`。原公共输出在临时样本目录 `shared-query-branch-review-result.json`、`shared-query-local-readiness-result.json`、`shared-export-branch-review-result.json` 和 `shared-export-local-readiness-result.json`。
+
+上述 `ready` 只证明本地文档知识切片的发布准备。样本 publication/delivery 结果仍为空，没有样本 push、远端 PR、合并、Task Completion 或清理。公共门禁更新造成的 Task metadata dirty 没有另造提交。结果不证明业务服务执行、生产采用或完整 Release 矩阵。
+
+## V638-07 无知识变化 Task：实际本地结果
+
+新增样本 `v638-no-change` / generation 0 / D1 `21cacb85-fefd-4f4e-9546-ef566e83eaa3` 从同一固定 B=`f18737f5c6cb2cfc8f37761f8e97154703e06878` 执行。实际业务差额仅将 `docs/consumers/query.md` 原三句分别排为三段；文字、标点、链接、顺序和读取职责保持。主会话从实际 Git 逐字核对非换行字节及其余20份长期文档，确认没有 RDT/Architecture current、根导航、贡献或 ADR 写入。
+
+原 RDT 实际返回 `ssot_current`，独立 Architecture 在 Planning、候选/最终 Phase 2、committed Review 和 publication 阶段均实际判断 `no_architecture_impact / no_change`。原候选 Check 返回 `candidate_checked` 并合法回到 implementing，未写最终 Check；原 owners 跳过知识写入，实施重新 candidate/begin_check 后完成最终 Check。非空本地提交 `61dff91df49732675a402232c36b7de558a5e50e` 的唯一父提交为 B。
+
+提交后首次以 Check 身份请求 reviewing 回程被原 API 以 `owner_mismatch` 无副作用拒绝。原 Review owner 合法恢复；首次完整 Review 随后实际返回 `implementation_required`，指出 Task design/implement 两处将该执行者误写成 Check。原 qualification、Approval 修订动作、唯一 Author、Wording、Architecture、Approval 和 Activation 完成正常返工，仅纠正这两处规划表述。保留原提交及失败，追加非空修正 `d9ebd00381c48c54b650f8bf98b9cdb637e6ea0b`，其唯一父提交为 `61dff91`；没有 amend、merge/rebase、同步提交或空第三提交。
+
+H2 上的当前 Check、clean TaskCommit、完整 B..H2 的8文件独立 Review、publication Architecture 和本地 Delivery Review 均实际完成。原 finding 已由其独立 owner 关闭；完整 Review=`full-review:8677bb04286ecbf2099d7f5b2933ff3c0e7e631a42ffa18b32042da3d52862fa`，readiness=`readiness:d864bb1b5aa06dd98c17e9f26dfae65dc7481ff611da2f37f561bd39af5c325a`。正式公共输出在临时样本目录的 `no-change-h2-check-result.json`、`no-change-h2-branch-review-result.json`、`no-change-h2-publication-architecture-result.json` 和 `no-change-local-readiness-result.json`。首次错误由原执行者会话报告；`no-change-postcommit-rework-stdout.json` 实际为空，不作为错误证明。首次失败不计为通过，后续合法回程和修订以可读的正式公共输出为据。
+
+该样本只证明当前无知识影响路径及其本地质量链。没有样本 push、远端 PR、合并、Completion、Closure、归档、清理或部署。必要提交包含真实 consumer 排版和 Task 规划，未用空贡献、ADR 或提交补结果。
+
+## 当前主候选的定向验证复核
+
+主会话针对 HEAD=`bed3aece257cce60fd2a84beed732ae7af021f9f` 实际执行并读取七组原始输出：Architecture promotion 11项、候选 Check 5项、RDT contract 11项、local-source receipt 4项、dirty-source receipt 3项、Delivery consumers 16项、readiness consumer 14项，合计64 PASS。原始日志分别为临时验证根的 `main-architecture-validation-{architecture-promotion,check-candidate,rdt-contract}.log`、`main-current-{local-source-receipt,dirty-source-receipt,delivery-consumers,readiness-consumer}.log`。这些 source wrapper 结果与上述真实 Agent 样本分别证明其实际层次。
+
+当前 source validator 与 dogfood drift 均通过：40个 active packages、124条 commands、151个测试库存入口；151是库存数量，不是执行通过数。两份19-entry Task context validate 通过，注入截断和代码路径警告保留，Agent 已自行读取适用规范。规定清单349份 Python 及另外5份变更 canonical Python 内存 compile、Bash syntax、marketplace JSON 和四个阶段的 context 读取通过；24份变更 canonical 代码均未达到3000行。完整 diff hygiene 通过。17份拟晋升目标的217个相对链接和8个 Guru authority Git/path 定位均可解析；首次把外仓 SHA 当作本仓对象的辅助检查假设错误已纠正，没有将其列为产品缺陷或扩测试义务。
+
+## 当前验证边界
+
+不同能力与同共享单元两组 native 样本及独立 no-change 样本均已到本地 `ready`。无需 Git 整合的有变化路径有真实晋升和完整质量链；独立无知识影响 Task 则有真实 no-change 及完整本地质量链。Query A 原 RDT 对已满足 delta 的无变化重入仍只说明该层重入，不替代新增样本，也未把已有架构影响的 Task 改标 no-impact。
+
+此前阶段性“尚待”保留原时点含义。本节不替代主 #638 的正式候选 Check、最终 shared current 晋升、最终 Check/committed Review/readiness 或交付终态；这些仍由各原 owners 执行。20项 migration fixture、1项 native legacy-install fixture 的 SKIP、完整 Architecture contract suite 未完成及完整历史 legacy-archive apply 未执行继续保留。已执行的 representative clean install、完整样本 reapply、主 tools 同操作恢复、dogfood drift 和三平台 targeted CI 分别只证明其实际层次，不升级为完整 Release 矩阵或 production 结论。
