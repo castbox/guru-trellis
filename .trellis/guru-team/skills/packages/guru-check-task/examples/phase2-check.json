@@ -1,0 +1,54 @@
+{
+  "schema_version": "6.0",
+  "skill_id": "guru-check-task",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "phase2_capture_commit": "2222222222222222222222222222222222222222",
+  "reviewed_paths": ["docs/requirements/example.md", "src/example.py"],
+  "reviewed_content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "validation": {
+    "commands": [
+      {"id": "unit", "outcome": "passed", "summary": "Targeted unit tests passed."}
+    ],
+    "unverified_items": [],
+    "summary": "Applicable validation completed without a blocking gap."
+  },
+  "docs_ssot": {
+    "status": "passed",
+    "strategy": "ssot_first",
+    "durable_paths": ["docs/requirements/example.md"],
+    "summary": "The durable requirement SSOT reflects the implementation."
+  },
+  "delivery_policy": {
+    "task_scope": ["R1", "R2"],
+    "delivery_slice": ["R1"],
+    "remaining_work": ["R2"],
+    "independent_delivery_conditions": ["R1 is usable and verifiable without R2."],
+    "validation_boundaries": ["R1 targeted checks passed; R2 remains explicitly unverified future work."],
+    "current_slice_status": "passed",
+    "remaining_work_status": "disclosed",
+    "summary": "The current slice is complete and independent; remaining work is not claimed complete."
+  },
+  "candidate_classifications": [],
+  "semantic_review": {
+    "status": "passed",
+    "summary": "The complete current task scope passed Phase 2 semantic review.",
+    "adequacy_dimensions": [
+      {"id": "requirements", "status": "passed", "summary": "Requirements are carried over."},
+      {"id": "design", "status": "passed", "summary": "Design contracts are implemented."},
+      {"id": "implementation", "status": "passed", "summary": "Implementation matches the design."},
+      {"id": "tests", "status": "passed", "summary": "Applicable tests passed."},
+      {"id": "docs_ssot", "status": "passed", "summary": "The Docs SSOT plan was completed."},
+      {"id": "cross_layer", "status": "passed", "summary": "Cross-layer contracts agree."},
+      {"id": "compatibility", "status": "passed", "summary": "Compatibility boundaries were reviewed."},
+      {"id": "deployment_and_operations", "status": "passed", "summary": "Operational impact was reviewed."},
+      {"id": "verification_completeness", "status": "passed", "summary": "No blocking verification remains."}
+    ],
+    "scope_decisions": [],
+    "findings": []
+  },
+  "typed_exit": "passed",
+  "route": null,
+  "reason": "All current-scope dimensions passed with complete evidence.",
+  "consumer": {"kind": "skill", "id": "guru-create-task-commit"}
+}

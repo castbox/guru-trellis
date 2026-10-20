@@ -1,0 +1,16 @@
+{
+  "profile": "delivery_active_task_scope_change",
+  "source_exit": "start",
+  "mode": "workflow",
+  "target_locator": "#145",
+  "task_locator": ".trellis/tasks/current",
+  "resume_target": "initial-wording",
+  "continuation_id": "stage0-current",
+  "task_id": "sample-task",
+  "lifecycle_generation": 0,
+  "delivery_key": {
+    "task_id": "current",
+    "lifecycle_generation": 0,
+    "delivery_id": "11111111-1111-4111-8111-111111111111"
+  }
+}

@@ -1,0 +1,444 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-6.0.json",
+  "title": "Guru Phase 2 Check 6.0 Compact Semantic Projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "mode",
+    "task_ref",
+    "phase2_capture_commit",
+    "reviewed_paths",
+    "reviewed_content_sha256",
+    "validation",
+    "docs_ssot",
+    "delivery_policy",
+    "candidate_classifications",
+    "semantic_review",
+    "typed_exit",
+    "route",
+    "reason",
+    "consumer"
+  ],
+  "properties": {
+    "schema_version": {"const": "6.0"},
+    "skill_id": {"const": "guru-check-task"},
+    "mode": {"enum": ["workflow", "standalone"]},
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "phase2_capture_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Owner-private Git commit captured with this Phase 2 result; it is used only for ancestry and commit preparation."
+    },
+    "reviewed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "reviewed_content_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Owner-private guru-phase2-worktree-content-2.0 identity over business bytes and modes, excluding lifecycle/session/result metadata; adjacent Check freshness only."
+    },
+    "validation": {"$ref": "#/$defs/validation"},
+    "docs_ssot": {"$ref": "#/$defs/docsSsot"},
+    "delivery_policy": {"$ref": "#/$defs/deliveryPolicy"},
+    "candidate_classifications": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/candidateClassification"}
+    },
+    "semantic_review": {"$ref": "#/$defs/semanticReview"},
+    "typed_exit": {
+      "enum": ["candidate_checked", "passed", "resolved_reconciliation_passed", "implementation_required", "planning_stale", "blocked"]
+    },
+    "route": {"enum": [null, "reapprove_plan", "clarify_requirements"]},
+    "reason": {"type": "string", "minLength": 1},
+    "consumer": {"$ref": "#/$defs/consumer"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "candidate_checked"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "route": {
+            "const": null
+          },
+          "consumer": {
+            "const": {
+              "kind": "workflow",
+              "id": "guru-knowledge-final-integration-router"
+            }
+          },
+          "semantic_review": {
+            "properties": {
+              "status": {
+                "const": "passed"
+              },
+              "findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "status": {
+                        "const": "open"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "adequacy_dimensions": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "passed"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "validation": {
+            "properties": {
+              "unverified_items": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "blocking": {
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "blocking"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "passed"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "route": {"const": null},
+          "consumer": {"const": {"kind": "skill", "id": "guru-create-task-commit"}},
+          "semantic_review": {
+            "properties": {
+              "status": {"const": "passed"},
+              "findings": {
+                "not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}
+              },
+              "adequacy_dimensions": {
+                "items": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}
+              }
+            }
+          },
+          "validation": {
+            "properties": {
+              "unverified_items": {
+                "not": {"contains": {"properties": {"blocking": {"const": true}}, "required": ["blocking"]}}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "resolved_reconciliation_passed"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "route": {"const": null},
+          "consumer": {"const": {"kind": "skill", "id": "guru-reconcile-task-base"}},
+          "semantic_review": {
+            "properties": {
+              "status": {"const": "passed"},
+              "findings": {"not": {"contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}}},
+              "adequacy_dimensions": {"items": {"properties": {"status": {"const": "passed"}}, "required": ["status"]}}
+            }
+          },
+          "delivery_policy": {
+            "properties": {
+              "current_slice_status": {"const": "passed"},
+              "remaining_work_status": {"const": "disclosed"}
+            }
+          },
+          "validation": {
+            "properties": {
+              "unverified_items": {"not": {"contains": {"properties": {"blocking": {"const": true}}, "required": ["blocking"]}}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "implementation_required"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "route": {"const": null},
+          "consumer": {"const": {"kind": "workflow", "id": "guru-resume-implementation"}},
+          "semantic_review": {
+            "properties": {
+              "status": {"const": "implementation_required"},
+              "findings": {
+                "contains": {"properties": {"status": {"const": "open"}}, "required": ["status"]}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "planning_stale"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "route": {"enum": ["reapprove_plan", "clarify_requirements"]},
+          "consumer": {"const": {"kind": "workflow", "id": "guru-task-check-planning-router"}},
+          "semantic_review": {
+            "properties": {"status": {"const": "planning_stale"}}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"typed_exit": {"const": "blocked"}}, "required": ["typed_exit"]},
+      "then": {
+        "properties": {
+          "route": {"const": null},
+          "consumer": {"const": {"kind": "stop", "id": "task-check-blocked"}},
+          "semantic_review": {
+            "properties": {"status": {"const": "blocked"}}
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "outcome", "summary"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "outcome": {"enum": ["passed", "failed", "skipped"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "unverifiedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "summary", "blocking"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "blocking": {"type": "boolean"}
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commands", "unverified_items", "summary"],
+      "properties": {
+        "commands": {"type": "array", "items": {"$ref": "#/$defs/command"}},
+        "unverified_items": {"type": "array", "items": {"$ref": "#/$defs/unverifiedItem"}},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "docsSsot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "strategy", "durable_paths", "summary"],
+      "properties": {
+        "status": {"enum": ["passed", "blocked"]},
+        "strategy": {
+          "enum": [
+            "ssot_first",
+            "delta_first",
+            "bootstrap_or_repair_docs",
+            "no_docs_update_needed"
+          ]
+        },
+        "durable_paths": {"$ref": "#/$defs/stringList"},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "deliveryPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_scope",
+        "delivery_slice",
+        "remaining_work",
+        "independent_delivery_conditions",
+        "validation_boundaries",
+        "current_slice_status",
+        "remaining_work_status",
+        "summary"
+      ],
+      "properties": {
+        "task_scope": {"$ref": "#/$defs/nonEmptyStringList"},
+        "delivery_slice": {"$ref": "#/$defs/nonEmptyStringList"},
+        "remaining_work": {"$ref": "#/$defs/stringList"},
+        "independent_delivery_conditions": {"$ref": "#/$defs/nonEmptyStringList"},
+        "validation_boundaries": {"$ref": "#/$defs/nonEmptyStringList"},
+        "current_slice_status": {"enum": ["passed", "failed", "blocked"]},
+        "remaining_work_status": {"enum": ["disclosed", "misclassified"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "qualificationDecision": {
+      "enum": [
+        "qualified_current",
+        "qualified_explicit_nonstandard",
+        "qualified_approved_expansion",
+        "rejected_no_authority",
+        "rejected_unsupported_entry",
+        "rejected_not_reproduced",
+        "rejected_out_of_scope"
+      ]
+    },
+    "normalScenarioWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_refs",
+        "supported_entry_refs",
+        "existing_caller_refs",
+        "honest_action_sequence",
+        "defect_observation",
+        "excluded_assumptions"
+      ],
+      "properties": {
+        "requirement_refs": {"$ref": "#/$defs/stringList"},
+        "supported_entry_refs": {"$ref": "#/$defs/stringList"},
+        "existing_caller_refs": {"$ref": "#/$defs/stringList"},
+        "honest_action_sequence": {"$ref": "#/$defs/nonEmptyStringList"},
+        "defect_observation": {"type": "string", "minLength": 1},
+        "excluded_assumptions": {"$ref": "#/$defs/stringList"}
+      }
+    },
+    "candidateClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_ref", "decision", "witness", "consumer_use"],
+      "properties": {
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "decision": {"$ref": "#/$defs/qualificationDecision"},
+        "witness": {"$ref": "#/$defs/normalScenarioWitness"},
+        "consumer_use": {"const": "task_commit_preflight"}
+      }
+    },
+    "scopeDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "candidate_ref", "disposition", "summary", "finding_id"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["current_scope", "out_of_scope", "scope_change_required"]},
+        "summary": {"type": "string", "minLength": 1},
+        "finding_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "candidate_ref", "severity", "summary", "path", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "candidate_ref": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2", "P3"]},
+        "summary": {"type": "string", "minLength": 1},
+        "path": {"type": ["string", "null"]},
+        "status": {"enum": ["open", "resolved"]}
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "summary"],
+      "properties": {
+        "id": {
+          "enum": [
+            "requirements",
+            "design",
+            "implementation",
+            "tests",
+            "docs_ssot",
+            "cross_layer",
+            "compatibility",
+            "deployment_and_operations",
+            "verification_completeness"
+          ]
+        },
+        "status": {"enum": ["passed", "failed", "blocked"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "semanticReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary",
+        "adequacy_dimensions",
+        "scope_decisions",
+        "findings"
+      ],
+      "properties": {
+        "status": {"enum": ["passed", "implementation_required", "planning_stale", "blocked"]},
+        "summary": {"type": "string", "minLength": 1},
+        "adequacy_dimensions": {
+          "type": "array",
+          "minItems": 9,
+          "maxItems": 9,
+          "items": {"$ref": "#/$defs/dimension"}
+        },
+        "scope_decisions": {"type": "array", "items": {"$ref": "#/$defs/scopeDecision"}},
+        "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}
+      }
+    },
+    "consumer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["skill", "workflow", "stop"]},
+        "id": {"type": "string", "minLength": 1}
+      }
+    },
+    "nonEmptyStringList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

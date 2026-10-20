@@ -1,0 +1,13 @@
+{
+  "exit_id": "candidate_checked",
+  "task_ref": ".trellis/tasks/07-26-example",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "candidate": {
+    "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "content_identity": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
+}

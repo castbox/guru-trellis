@@ -1,0 +1,8 @@
+{
+  "exit_id": "legacy_controls_retired",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "owner_id": "guru-check-task"
+}

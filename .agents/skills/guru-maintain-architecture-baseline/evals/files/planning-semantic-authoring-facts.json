@@ -1,0 +1,8 @@
+{
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  }
+}

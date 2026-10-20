@@ -1,0 +1,150 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reviewed_delivery_key",
+    "publication_result_id",
+    "reviewed_pr",
+    "observed_checks",
+    "content_impact",
+    "ai_review_gate"
+  ],
+  "properties": {
+    "reviewed_delivery_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "delivery_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "publication_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "pr_number",
+        "head_sha",
+        "merge_sha",
+        "target_ref"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "pr_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "merge_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "observed_checks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "content_impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "summary",
+        "affected_owner_refs"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "same_candidate",
+            "equivalent_candidate",
+            "changed_candidate"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "affected_owner_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "changed_candidate"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "affected_owner_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "passed",
+            "blocked"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-manual-merged-review-1.0"
+}

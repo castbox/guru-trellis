@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-author-task-plan-input-delivery-architecture-conflict-resolution-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "planning_purpose",
+    "conflict_refs",
+    "delivery_key"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_architecture_conflict_resolution"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "planning_purpose": {
+      "enum": [
+        "candidate_assessment",
+        "final_plan"
+      ]
+    },
+    "conflict_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "delivery_key": {
+      "type": "object",
+      "description": "Opaque upstream DeliveryKey; only the installed public parser validates identity and relationship."
+    }
+  }
+}

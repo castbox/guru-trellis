@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-publish-task-delivery-input-aggregate-1.0","oneOf":[{"$ref":"public-review-ready-input.schema.json"},{"$ref":"public-same-plan-resume-input.schema.json"},{"$ref":"public-reprepare-publication-input.schema.json"}]}

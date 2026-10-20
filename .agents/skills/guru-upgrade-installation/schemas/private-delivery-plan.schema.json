@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-upgrade-installation-private-delivery-plan-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "core_plan",
+    "dependency_mode",
+    "source_candidate",
+    "fork_candidate",
+    "guru_workspaces",
+    "controls",
+    "owner_migrations"
+  ],
+  "properties": {
+    "core_plan": {
+      "type": "object",
+      "required": [
+        "schema_version"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "2.0"
+        }
+      }
+    },
+    "dependency_mode": {
+      "enum": [
+        "source_locked",
+        "local_candidate"
+      ]
+    },
+    "controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "location",
+          "path",
+          "workspace"
+        ],
+        "properties": {
+          "location": {
+            "enum": [
+              "common",
+              "checkout"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "workspace": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "source_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "head",
+        "files"
+      ],
+      "properties": {
+        "head": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "files": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "fork_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cli",
+        "core"
+      ],
+      "properties": {
+        "cli": {
+          "type": "object",
+          "minProperties": 1
+        },
+        "core": {
+          "type": "object",
+          "minProperties": 1
+        }
+      }
+    },
+    "fork_source_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "guru_workspaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspace",
+          "selected_platforms",
+          "decisions"
+        ],
+        "properties": {
+          "workspace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selected_platforms": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "path",
+                "action",
+                "expected_sha256"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action": {
+                  "enum": [
+                    "replace",
+                    "preserve"
+                  ]
+                },
+                "expected_sha256": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "owner_migrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspace",
+          "skill_id",
+          "input",
+          "owner_result",
+          "paths",
+          "command_id"
+        ],
+        "properties": {
+          "workspace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "skill_id": {
+            "enum": [
+              "guru-create-task-commit",
+              "guru-publish-task-delivery",
+              "guru-merge-task-delivery"
+            ]
+          },
+          "input": {
+            "type": "object"
+          },
+          "owner_result": {
+            "type": "string",
+            "minLength": 1
+          },
+          "paths": {
+            "type": "array",
+            "minItems": 0,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "command_id": {
+            "enum": [
+              "migrate-task-commit-planning-source",
+              "migrate-task-delivery-publication",
+              "migrate-task-delivery-merge"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

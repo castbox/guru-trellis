@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-stage0-review-contract-wording-input-planning-artifacts-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "source_exit",
+    "mode",
+    "task_locator",
+    "planning_artifacts",
+    "continuation_id"
+  ],
+  "properties": {
+    "profile": {
+      "const": "planning_artifacts"
+    },
+    "source_exit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_locator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "planning_artifacts": {
+      "const": [
+        "prd.md",
+        "design.md",
+        "implement.md"
+      ]
+    },
+    "continuation_id": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

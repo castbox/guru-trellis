@@ -1,0 +1,15 @@
+{
+  "exit_id": "sync_required",
+  "task_locator": ".trellis/tasks/example",
+  "stage": "acceptance_finish",
+  "sync_kind": "baseline_advanced",
+  "expected_current_identity": "current-v1",
+  "current_identity": "current-v2",
+  "sync_target": {
+    "kind": "baseline",
+    "locator": "docs/architecture/README.md",
+    "expected_identity": "current-v1",
+    "current_identity": "current-v2"
+  },
+  "freshness_identity": "promotion-fresh-v1"
+}

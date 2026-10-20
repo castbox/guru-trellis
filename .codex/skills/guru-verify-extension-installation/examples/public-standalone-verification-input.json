@@ -1,0 +1,8 @@
+{
+  "profile": "standalone_verification",
+  "mode": "standalone",
+  "repo_ref": "castbox/guru-trellis",
+  "remote": "origin",
+  "ref": "refs/heads/feature-117",
+  "caller_intent": "verify-extension-installation"
+}

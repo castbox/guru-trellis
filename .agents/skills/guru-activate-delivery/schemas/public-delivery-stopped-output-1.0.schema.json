@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-activate-delivery-output-delivery-stopped-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "exit_id",
+    "task_ref",
+    "task_key"
+  ],
+  "properties": {
+    "exit_id": {
+      "const": "delivery_stopped"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_key": {
+      "type": "object"
+    }
+  }
+}

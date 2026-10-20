@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-input-source-repository-verification-4.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "mode", "repo_ref", "remote", "ref", "caller_intent"],
+  "properties": {
+    "profile": {"const": "source_repository_verification"},
+    "mode": {"const": "standalone"},
+    "repo_ref": {"const": "castbox/guru-trellis"},
+    "remote": {"const": "origin"},
+    "ref": {"type": "string", "pattern": "^(?:[0-9a-f]{40}|refs/(?:heads|tags)/[A-Za-z0-9._/-]+)$"},
+    "caller_intent": {"const": "verify-extension-installation"}
+  }
+}

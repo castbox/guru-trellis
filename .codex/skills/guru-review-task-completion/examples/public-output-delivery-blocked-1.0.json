@@ -1,0 +1,9 @@
+{
+  "exit_id": "blocked",
+  "reason": {
+    "reason_code": "evidence_missing",
+    "reason_refs": [
+      "validation:current"
+    ]
+  }
+}

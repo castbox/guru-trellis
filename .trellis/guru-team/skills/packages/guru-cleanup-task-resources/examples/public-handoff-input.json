@@ -1,0 +1,1 @@
+{"profile":"machine_handoff","mode":"workflow","task_id":"example-task","lifecycle_generation":1,"handoff_inventory":{"task_id":"example-task","lifecycle_generation":1,"handoff_id":"handoff:example","inventory_id":"inventory:example"}}

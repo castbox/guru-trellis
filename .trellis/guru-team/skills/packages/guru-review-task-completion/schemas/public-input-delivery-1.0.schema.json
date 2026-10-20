@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-task-completion-input-delivery-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-delivery-completion-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-evidence-refresh-input-1.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-reactivation-validation-input-1.0.schema.json"
+    }
+  ]
+}

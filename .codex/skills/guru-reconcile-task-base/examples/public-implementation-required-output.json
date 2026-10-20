@@ -1,0 +1,14 @@
+{
+  "exit_id": "implementation_required",
+  "task_ref": ".trellis/tasks/current",
+  "task_head": "1111111111111111111111111111111111111111",
+  "finding_refs": [
+    "finding-1"
+  ],
+  "resume_target": "task_commit",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  }
+}

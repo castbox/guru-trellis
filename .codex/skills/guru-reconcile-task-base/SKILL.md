@@ -1,0 +1,125 @@
+---
+name: guru-reconcile-task-base
+description: Reconcile one exact active-task and evolved-base pair through a semantic impact review, controlled integration evidence, and six typed exits.
+---
+
+# Reconcile Task Base
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
+Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
+package contract before the stage judgment; the contract owns its local routes.
+
+Invoke this Skill only for an actual integration need established by the
+current owner: conflict, a concrete required-check failure, an existing server
+update requirement observed by Merge, an explicit dependency/requirement, or
+user-requested synchronization. A newer target SHA or behind status alone is
+not an entry condition. There is no default pair guard. Read `references/contract.md`, then bind
+the exact caller profile, base pair, task authority, planning, and candidate
+evidence before forming the AI judgment.
+
+Use the exact caller profile supplied by the boundary. For `delivery_post_plan`,
+`delivery_post_check`, and `delivery_post_commit`, bind selected_base_ref to the
+one owner-selected target commit OID and derive the old base from the unique
+merge base; callers do not supply an old/new base pair. Post-review profiles bind their adjacent reviewed pair explicitly. Treat
+that operation pair as an integration clock only: its advance does not by
+itself invalidate approved planning or task content.
+
+Build the temporary candidate through the declared deterministic command.
+After the AI has separately judged authority, task-content, and integration
+impact, a compatible pre-review result must display and execute one confirmed,
+expected-head-bound local merge commit before recording `reconciled`.
+`delivery_post_plan` then resumes Delivery activation. The retained `phase2`
+resume target for `delivery_post_check` and `delivery_post_commit` means bounded
+reentry through the original implementation and Check owners: retain content
+base B, bind actual integration HEAD, review the actual delta and affected
+dependencies using applicable prior evidence. It does not mandate full test
+replay, another Task Commit, or Planning. The integration commit already exists.
+
+For a genuine document conflict before implementation, this same
+`delivery_post_plan` owner resolves and reviews the baseline integration. Select
+the exact `integration_paths` and build a `stage0_tree` containing only that
+integration, restoring all other entries to the prior HEAD in a temporary
+index. Keep the real index and pending planning/implementation files intact.
+Pass the closed `resolved_candidate={stage0_tree,integration_paths}` to both
+`execute-base-candidate` and `execute-base-reconciliation`. Choose explicit
+argv-array baseline validations for the temporary candidate and judge whether
+both authorities, current planning and the resolution remain applicable.
+This baseline gate cannot assert business Check, Task Commit, full review or
+readiness, and does not require the unimplemented business scope to pass Check.
+The confirmation display additionally binds the active `MERGE_HEAD`, exact
+paths, tree/digest and parent order `[prior_task_head,new_base_head]`. The
+executor preserves unrelated staged, unstaged and untracked content; same-request
+terminal recovery returns the existing commit. Record/check/invoke return the
+original `reconciled` exit to Activation for the same Task generation and Delivery.
+
+Only `delivery_post_branch_review`, `delivery_post_publication`, and
+`delivery_finalizer_base_mismatch` may return `review_continuity_required` when the
+prior full review remains valid but the compatible candidate needs a new
+reviewed-content identity. For every committed reconciliation route, display
+the exact task branch, prior task HEAD, selected new base, candidate tree,
+local merge commit message, and zero remote effects. Invoke
+`execute-base-reconciliation` only after the user confirms that exact action
+in the current dialogue. The executor creates one expected-head-bound local
+merge commit and never pushes; the confirmation is never passed to or
+persisted by a script. A continuity result additionally hands Branch Review
+the prior full-review commit separately from the current reconciled task HEAD.
+
+Before a base-delta observation can become an impact, finding, validation
+obligation, scope question, implementation route, or stale-plan route, form its
+candidate-only set and invoke `guru-qualify-normal-scenario` with
+`base_impact_candidate_set`. Assign no severity or route before `classified`.
+Rejected candidates do not trigger clarification or task work. Mechanism
+revision returns here for remove/replace and fresh qualification; blocked
+stops. No qualification result is persisted in the base checkpoint.
+
+Before a proposed integration mechanism affects the impact judgment,
+validation obligation, or route, invoke `guru-qualify-solution-mechanism` with
+`base_impact_candidate_set`. A `mechanism_revision_required` result removes or
+replaces only that mechanism and returns here for fresh qualification; it is
+not a scope-confirmation path.
+
+Mapped exits and stale re-entry are automatic. Ask the user only when the
+semantic result is `scope_confirmation_required`; never persist that
+confirmation. Missing, stale, ambiguous, or unmapped operation evidence fails closed. Pair
+ancestry applies only to this explicitly selected integration operation.
+
+For the post-implementation `delivery_resolved_candidate` profile supplied by
+the Check owner, run the resolved executor. The original implementation owner
+retains B and binds actual committed HEAD; the Check owner judges applicable
+prior evidence plus the resolution delta and records the actual new Check.
+Then run `project-resolved-full-review`. That deterministic package command emits the
+complete existing `guru-review-branch:branch_review` input directly; it is not
+an additional Reconcile typed exit and never enters Task Commit or bounded
+base continuity.
+
+
+At this candidate boundary, consume actual normal-scenario and solution-mechanism
+outcomes before loading `guru-qualify-root-cause` with `base_impact_candidate_set`. Supply only eligible
+refs. New or materially changed incident/protection mechanisms enter that owner;
+ordinary features receive its stable applicability disposition. Consume a
+still-applicable same-mechanism conclusion on later stages and independently
+review this stage's current work/evidence; caller change alone does not repeat
+qualification. Root `classified` continues this stage, retaining diagnosis or
+mitigation disposition without claiming repair. `mechanism_revision_required`
+removes/replaces that mechanism and reenters; `diagnosis_required` pauses only
+the unsupported repair and continues bounded investigation of the returned
+gaps through this owner, then resubmits. A concrete `blocked` stops. Do not turn
+symptom suppression into unrelated scope confirmation, cache qualifications,
+or use qualification as completion. Actual scope changes use existing routes.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## 公共 Delivery 迁移边界
+
+新 runtime 只接受 `delivery_*` profiles；旧 schema 是历史读取资产。每个输入显式携带 `delivery_key`，公共 upstream query 校验 Task/Delivery/generation 关系；不读 Task.status 或根 Planning。`delivery_post_plan` 返回 `delivery_activation`。局部 base pair 的 Git identity、candidate、AI impact 判断及 prior review continuity 保留；默认 pair guard 已退役；实际整合不能生成或代替 Planning、Check、Full Review、Readiness 的语义判断。owner checkpoint 以 Task generation 与 Delivery identity 隔离，消费后删除。candidate/base 改变由 consumer 按 upstream invalidation 合同重新确认受影响阶段。

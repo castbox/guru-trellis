@@ -1,0 +1,5 @@
+{
+  "code": "invalid_public_input",
+  "field_path": "input.review_intent",
+  "remediation": "Use one declared branch_review intent."
+}

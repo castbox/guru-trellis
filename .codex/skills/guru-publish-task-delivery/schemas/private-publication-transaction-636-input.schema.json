@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-private-transaction-636-input-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "transaction_ref",
+    "task_ref",
+    "delivery_key"
+  ],
+  "properties": {
+    "profile": {
+      "const": "publication_transaction_636"
+    },
+    "transaction_ref": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delivery_key": {
+      "type": "object"
+    }
+  }
+}

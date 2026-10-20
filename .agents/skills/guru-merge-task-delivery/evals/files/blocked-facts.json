@@ -1,0 +1,1 @@
+{"scenario":"A current provider or policy blocker prevents merge before mutation.","owner_evidence":{"semantic_gate":"blocked","confirmation":"not_required"},"owner_staging":{"recipe":"merge-delivery-blocked"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--review-input",".trellis/.runtime/guru-team/evals/merge-review.json"]}}

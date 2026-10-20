@@ -1,0 +1,1 @@
+{"schema_version":"1.0","status":"error","command":"invoke-guru-execute-task-free-change","error":{"code":"schema_mismatch","locator":"input","message":"The public input is invalid.","remediation":"Provide one declared input profile."}}

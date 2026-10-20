@@ -1,0 +1,1 @@
+{"scenario":"Local evidence cannot establish the intended checkout, so no write occurs and execution location is requested.","owner_staging":{"recipe":"task-free-location-insufficient"},"public_invocation":{"arguments":["--input",".trellis/.runtime/guru-team/evals/public-input.json","--owner-result",".trellis/.runtime/guru-team/evals/owner-result.json"]}}

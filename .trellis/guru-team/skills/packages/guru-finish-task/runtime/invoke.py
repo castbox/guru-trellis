@@ -1,0 +1,551 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.util
+import json
+import re
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+from runtime.io import CommandError
+from runtime.schema import validate_json
+from runtime.task_lifecycle.branch_store import BranchBindingStore, TaskLifecycleKey
+from runtime.task_lifecycle.errors import LifecycleContractError
+from runtime.task_lifecycle.git_facts import inspect_repository
+from runtime.task_lifecycle.identity import resolve_task_id
+from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
+from runtime.task_lifecycle.source import task_source, task_source_with_review
+
+
+def load(root: Path, package_root: Path, value: str, field: str) -> dict:
+    path = Path(value)
+    choices = [path] if path.is_absolute() else [root / path, package_root / path]
+    source = next((candidate for candidate in choices if candidate.is_file() and not candidate.is_symlink()), None)
+    if source is None:
+        raise CommandError("invalid_json", field, "Provide one regular JSON file.")
+    try:
+        payload = json.loads(source.read_text())
+    except json.JSONDecodeError as exc:
+        raise CommandError("invalid_json", field, "Provide valid JSON.") from exc
+    if not isinstance(payload, dict):
+        raise CommandError("invalid_json", field, "Provide one object.")
+    return payload
+
+
+def git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    proc = subprocess.run(["git", *args], cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if check and proc.returncode:
+        raise CommandError("stale_identity", "bookkeeping", proc.stderr.strip() or "Refresh the reviewed Git facts.", 3)
+    return proc
+
+
+def gh(repo_ref: str, *args: str) -> str:
+    proc = subprocess.run(["gh", *args, "--repo", repo_ref], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if proc.returncode:
+        raise CommandError("stale_identity", "bookkeeping.github", proc.stderr.strip() or "Refresh the reviewed GitHub facts.", 3)
+    return proc.stdout
+
+
+def gh_json(repo_ref: str, *args: str):
+    try:
+        return json.loads(gh(repo_ref, *args))
+    except json.JSONDecodeError as exc:
+        raise CommandError("invalid_json", "bookkeeping.github", "GitHub returned invalid JSON.") from exc
+
+
+def finish_ref(public: dict, lifecycle_generation: int = 0) -> str:
+    suffix = hashlib.sha256((public["task_id"] + public["closure_result"]["result_id"] + str(lifecycle_generation)).encode()).hexdigest()[:16]
+    return "finish:v1:" + suffix
+
+
+def closure_result_for_input(public: dict) -> dict:
+    if public["profile"] == "finish_reentry":
+        return {key: public[key] for key in ("task_id", "lifecycle_generation", "result_id")}
+    return public["closure_result"]
+
+
+def read_closure_snapshot(root: Path, package_root: Path, result: dict) -> dict:
+    try:
+        from runtime.task_lifecycle.closure_result import read_terminal_closure_result
+    except ImportError as exc:
+        raise CommandError("closure_result_reader_missing", "closure_result", "Provide the shared read-only terminal Closure result API.", 3) from exc
+    try:
+        snapshot = read_terminal_closure_result(inspect_repository(root), result)
+    except LifecycleContractError as exc:
+        raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    validate_json(snapshot, package_root / "schemas/closure-result-snapshot.schema.json", "closure_result_snapshot")
+    if snapshot["result_ref"] != result:
+        raise CommandError("stale_identity", "closure_result", "Read the exact terminal Closure result.", 3)
+    actions = snapshot["action_set"]
+    identities = [(row["issue_ref"]["repo_ref"], row["issue_ref"]["issue_number"]) for row in actions]
+    if len(identities) != len(set(identities)) or (snapshot["terminal"] == "closed") != any(row["disposition"] in {"close", "already_closed_at_review"} for row in actions):
+        raise CommandError("stale_identity", "closure_result_snapshot", "Read one consistent terminal Closure action set.", 3)
+    return snapshot
+
+
+def resolve_finish_identity(root: Path, result: dict) -> dict:
+    try:
+        identity = resolve_task_id(root, result["task_id"])
+    except LifecycleContractError as exc:
+        raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    if identity.lifecycle_generation != result["lifecycle_generation"]:
+        raise CommandError("stale_identity", "closure_result.lifecycle_generation", "Resolve the exact current task incarnation.", 3)
+    task_ref = identity.task_ref if identity.lifecycle_state == "active" else ".trellis/tasks/" + Path(identity.task_ref).name
+    return {"task_id": result["task_id"], "lifecycle_generation": result["lifecycle_generation"], "task_ref": task_ref, "closure_result": result}
+
+
+def closure_current(actions: list[dict]) -> bool:
+    for action in actions:
+        if action["disposition"] == "no_close_authority":
+            continue
+        issue_ref = action["issue_ref"]
+        issue = gh_json(issue_ref["repo_ref"], "issue", "view", str(issue_ref["issue_number"]), "--json", "number,state")
+        required_state = "OPEN" if action["disposition"] == "retain_open" else "CLOSED"
+        if not isinstance(issue, dict) or issue.get("number") != issue_ref["issue_number"] or str(issue.get("state")).upper() != required_state:
+            return False
+    return True
+
+
+def closure_source_current(root: Path, public: dict, frozen_source: dict) -> bool:
+    try:
+        artifact = resolve_task_id(root, public["task_id"])
+        metadata = json.loads((root / artifact.task_ref / "task.json").read_text(encoding="utf-8"))
+        source = task_source_with_review(metadata, frozen_source)
+    except (LifecycleContractError, OSError, ValueError) as exc:
+        raise CommandError("stale_identity", "task.source", "Reread the exact current task source before Finish.", 3) from exc
+    if artifact.lifecycle_generation != public["lifecycle_generation"]:
+        raise CommandError("stale_identity", "task.lifecycle_generation", "Use the exact current task generation.", 3)
+    return source == frozen_source
+
+
+def lifecycle_generation(root: Path, public: dict, archive_ref: str) -> int:
+    candidates = [root / public["task_ref"] / "task.json", root / archive_ref / "task.json"]
+    for path in candidates:
+        if path.is_file() and not path.is_symlink():
+            try:
+                task = json.loads(path.read_text())
+                value = task.get("lifecycle_generation", 0)
+            except (OSError, json.JSONDecodeError) as exc:
+                raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3) from exc
+            if type(value) is not int or value != public["lifecycle_generation"] or task.get("id") != public["task_id"]:
+                raise CommandError("stale_identity", "task.json.lifecycle_generation", "Task lifecycle generation is invalid.", 3)
+            return value
+    raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
+
+
+def transaction_path(root: Path, public: dict, generation: int) -> Path:
+    return root / ".trellis/.runtime/guru-team/finish" / (finish_ref(public, generation).split(":")[-1] + ".json")
+
+
+def manual_result_path(root: Path, key: TaskLifecycleKey) -> Path:
+    return inspect_repository(root).common_dir / "guru-team/finish-results" / key.task_id / f"{key.lifecycle_generation}-manual.json"
+
+
+def persist_cleanup_fallback(root: Path, package_root: Path, key: TaskLifecycleKey,
+                             finish_result_id: str, archive_ref: str, transaction: dict) -> None:
+    result = {
+        "schema_version": "1.0", "task_id": key.task_id,
+        "lifecycle_generation": key.lifecycle_generation, "finish_result_id": finish_result_id,
+        "finish_head": transaction["commit"], "target_head": transaction["target_head"],
+        "archive_ref": archive_ref, "head_branch": transaction["head_branch"],
+    }
+    validate_json(result, package_root / "schemas/manual-finish-result.schema.json", "manual_finish_result")
+    path = manual_result_path(root, key)
+    if path.is_file() and json.loads(path.read_text(encoding="utf-8")) != result:
+        raise CommandError("stale_identity", "manual_finish_result", "Recover the exact terminal Finish result.", 3)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_transaction(path: Path, payload: dict, package_root: Path) -> None:
+    validate_json(payload, package_root / "schemas/finish-transaction-3.0.schema.json", "finish_transaction")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+
+def read_transaction(path: Path, public: dict, bookkeeping: dict, package_root: Path, generation: int) -> dict | None:
+    if not path.is_file():
+        return None
+    try:
+        payload = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise CommandError("stale_identity", "finish_transaction", "Discard the invalid private Finish transaction before retry.", 3) from exc
+    if payload.get("schema_version") == "2.0":
+        validate_json(payload, package_root / "schemas/finish-transaction.schema.json", "finish_transaction")
+        payload.pop("expected_base_head", None)
+        payload["schema_version"] = "3.0"
+    validate_json(payload, package_root / "schemas/finish-transaction-3.0.schema.json", "finish_transaction")
+    expected = {"task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"]}
+    if any(payload.get(key) != value for key, value in expected.items()):
+        raise CommandError("stale_identity", "finish_transaction", "The private Finish transaction belongs to another identity.", 3)
+    return payload
+
+
+def lifecycle_roots(public: dict, semantic: dict) -> tuple[Path, str, Path, tuple[str, ...]]:
+    task_dir = Path(public["task_ref"])
+    archive_ref = semantic["bookkeeping"]["archive_ref"]
+    if archive_ref not in semantic["allowlist"] or archive_ref.count("/") != 4 or Path(archive_ref).name != task_dir.name or public["task_ref"] not in semantic["allowlist"]:
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Finish requires one exact active path and one exact final archive root.", 3)
+    archive_roots = [entry for entry in semantic["allowlist"] if entry.startswith(".trellis/tasks/archive/")]
+    if any(entry.count("/") != 4 or Path(entry).name != task_dir.name for entry in archive_roots):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Every archive root must belong to the current task identity.", 3)
+    permitted = tuple(sorted({public["task_ref"], *archive_roots}))
+    if any(not (entry == public["task_ref"] or entry.startswith(public["task_ref"] + "/") or entry.startswith(".trellis/tasks/archive/")) for entry in semantic["allowlist"]):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Finish allowlist contains paths outside task lifecycle storage.", 3)
+    return task_dir, archive_ref, Path(archive_ref), permitted
+
+
+def changed_paths(root: Path) -> set[str]:
+    paths = set(git(root, "diff", "--name-only", "HEAD").stdout.splitlines())
+    paths.update(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
+    paths.update(git(root, "ls-files", "--others", "--exclude-standard").stdout.splitlines())
+    return {path for path in paths if path}
+
+
+def path_allowed(path: str, allowlist: tuple[str, ...]) -> bool:
+    return any(path == allowed or path.startswith(allowed + "/") for allowed in allowlist)
+
+
+def reviewed_changed_paths(root: Path, allowlist: tuple[str, ...]) -> set[str]:
+    paths = changed_paths(root)
+    if not paths or any(not path_allowed(path, allowlist) for path in paths):
+        raise CommandError("stale_identity", "semantic_result.allowlist", "The bookkeeping diff is empty or contains a path outside the reviewed lifecycle allowlist.", 3)
+    return paths
+
+
+def stage_reviewed_changes(root: Path, allowlist: tuple[str, ...]) -> None:
+    paths = reviewed_changed_paths(root, allowlist)
+    git(root, "add", "-A", "--", *sorted(paths))
+    staged = set(git(root, "diff", "--cached", "--name-only", "--no-renames").stdout.splitlines())
+    if staged != paths:
+        raise CommandError("stale_identity", "semantic_result.allowlist", "Staging did not preserve the exact reviewed bookkeeping path set.", 3)
+
+
+def verify_payload(bookkeeping: dict) -> None:
+    text = "\n".join([bookkeeping["commit_subject"], bookkeeping["commit_body"], bookkeeping["pr_title"], bookkeeping["pr_body"], bookkeeping["merge_subject"], bookkeeping["merge_body"]])
+    if re.search(r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?[ \t]*(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#[1-9][0-9]*\b", text):
+        raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not close an Issue.", 3)
+    if any(f"{key}:" in text for key in (
+        "Guru-Delivery-Task", "Guru-Delivery-Cycle",
+        "Guru-Task-Identity", "Guru-Delivery-Schema", "Guru-Delivery-Head",
+    )):
+        raise CommandError("stale_identity", "semantic_result.bookkeeping", "Bookkeeping payload must not publish a business Delivery identity.", 3)
+
+
+def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, archive_path: Path,
+                    frozen_source: dict | None = None) -> None:
+    task_dir = root / task_ref
+    archive_dir = root / archive_path
+    if archive_dir.exists():
+        raise CommandError("stale_identity", "archive_ref", "Target archive already exists; rebuild the reviewed Finish transaction.", 3)
+    task_path = task_dir / "task.json"
+    if not task_path.is_file() or task_path.is_symlink():
+        raise CommandError("stale_identity", "task_ref", "Active task metadata is missing or unsafe.", 3)
+    task = json.loads(task_path.read_text())
+    if task.get("id") != public["task_id"]:
+        raise CommandError("stale_identity", "task.json.id", "Task identity does not match the resolved lifecycle.", 3)
+    if "source" not in task:
+        task["source"] = task_source_with_review(task, frozen_source) if frozen_source is not None else task_source(task)
+    if task.get("schema_version") == "2.0":
+        from runtime.delivery_projection.adapter import DeliveryProjection
+        record = DeliveryProjection(root, public["task_ref"]).read_record()
+        closure = next((r for r in record["closure_results"] if r["result_id"] == public["closure_result"]["result_id"]), None)
+        if closure is None or closure["lifecycle_generation"] != record["lifecycle_generation"]:
+            raise CommandError("stale_identity", "closure_result", "Recover the current public Closure before Finish archive projection.", 3)
+    else:
+        task["status"] = "completed"
+        task["lifecycle_generation"] = task.get("lifecycle_generation", 0)
+        task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
+    retire_archived_sessions(root, public["task_id"], task["lifecycle_generation"])
+    archive_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(task_dir), str(archive_dir))
+    (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
+    branch = git(root, "branch", "--show-current").stdout.strip() or "detached"
+    source = task_source(task)
+    issue_refs = [f"#{source['number']}"] if source["kind"] == "issue" else []
+    artifacts = {key: name for key, name in (("prd", "prd.md"), ("design", "design.md"), ("implement", "implement.md")) if (archive_dir / name).is_file()}
+    archive_paths = sorted([archive_ref, *(f"{archive_ref}/{name}" for name in ("task.json", *artifacts.values(), "finish-summary.json"))])
+    summary = {
+        "schema_version": 2,
+        "generated_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "generator": "guru-team.finalize-task",
+        "task": {"slug": archive_dir.name, "title": task.get("title", archive_dir.name), "status": "completed", "artifact_dir": public["task_ref"], "archive_dir": archive_ref},
+        "git": {"base_branch": task.get("base_branch", "main"), "branch": branch, "commits": [], "changed_paths": []},
+        "github": {"pr_url": ""},
+        "artifacts": artifacts,
+        "index": {"problem": task.get("title", archive_dir.name), "outcome": "任务已完成并归档。", "changed_behavior": ["持久化 Completion、Closure 与 Finish 终态"], "affected_surfaces": [{"kind": "task-artifact", "name": "task archive", "paths": archive_paths, "change": "归档当前 task 并写入完成摘要。"}], "contract_changes": [], "search_terms": {"issue_refs": issue_refs, "pr_refs": [], "branches": [branch], "paths": archive_paths, "commands": [], "config_keys": [], "schema_fields": [], "symbols": [], "phrases": ["完成任务归档", "写入完成摘要", "保留 task identity"]}, "retrieval_text": f"{task.get('title', archive_dir.name)}；{'；'.join(issue_refs)}；完成任务归档；写入完成摘要；保留 task identity"},
+    }
+    schema = root / ".trellis/guru-team/schemas/finish-summary.schema.json"
+    if schema.is_file():
+        validate_json(summary, schema, "finish_summary")
+    (archive_dir / "finish-summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
+
+
+def retire_archived_sessions(root: Path, task_id: str, generation: int) -> None:
+    repository = inspect_repository(root)
+    if not (repository.common_dir / "trellis/sessions").exists():
+        return
+    init = root / ".trellis/scripts/common/__init__.py"
+    if not init.is_file():
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3)
+    package_name = "guru_finish_target_common_" + hashlib.sha256(str(root.resolve()).encode()).hexdigest()[:16]
+    spec = importlib.util.spec_from_file_location(
+        package_name, init, submodule_search_locations=[str(init.parent)]
+    )
+    if spec is None or spec.loader is None:
+        raise CommandError("official_session_unavailable", "session", "Load the Fixed Fork session API before Finish archive projection.", 3)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except ImportError as exc:
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3) from exc
+    active_task = getattr(module, "active_task", None)
+    if not all(callable(getattr(active_task, name, None)) for name in ("task_session_records", "clear_task_from_sessions")):
+        raise CommandError("official_session_unavailable", "session", "Install the Fixed Fork session API before Finish archive projection.", 3)
+    try:
+        selected = active_task.task_session_records(task_id, generation, root)
+        active_task.clear_task_from_sessions(task_id, generation, root, selected=selected)
+    except (OSError, ValueError) as exc:
+        raise CommandError("session_retirement_failed", "session", str(exc), 3) from exc
+
+
+def current_remote_head(root: Path, base_branch: str) -> str:
+    git(root, "fetch", "--no-tags", "origin", f"refs/heads/{base_branch}:refs/remotes/origin/{base_branch}")
+    return git(root, "rev-parse", f"refs/remotes/origin/{base_branch}").stdout.strip()
+
+
+def exact_pr(repo_ref: str, number: int, bookkeeping: dict, expected_head: str) -> dict:
+    pr = gh_json(repo_ref, "pr", "view", str(number), "--json", "number,url,state,isDraft,title,body,headRefName,headRefOid,baseRefName,mergedAt,mergeCommit")
+    required = {"number", "url", "state", "isDraft", "title", "body", "headRefName", "headRefOid", "baseRefName"}
+    if not isinstance(pr, dict) or not required.issubset(pr):
+        raise CommandError("stale_identity", "bookkeeping.pr", "GitHub returned incomplete bookkeeping PR facts.", 3)
+    if pr["number"] != number or pr["title"] != bookkeeping["pr_title"] or pr["body"] != bookkeeping["pr_body"] or pr["headRefName"] != bookkeeping["head_branch"] or pr["headRefOid"] != expected_head or pr["baseRefName"] != bookkeeping["base_branch"] or pr["isDraft"]:
+        raise CommandError("stale_identity", "bookkeeping.pr", "The live bookkeeping PR differs from the reviewed payload or expected head.", 3)
+    return pr
+
+
+def publish(root: Path, public: dict, bookkeeping: dict, allowlist: tuple[str, ...], transaction_file: Path, transaction: dict | None, package_root: Path, generation: int) -> dict:
+    verify_payload(bookkeeping)
+    if git(root, "branch", "--show-current").stdout.strip() != bookkeeping["head_branch"]:
+        raise CommandError("stale_identity", "bookkeeping.head_branch", "Run Finish only in the reviewed task worktree and branch.", 3)
+    if bookkeeping["head_branch"] == bookkeeping["base_branch"]:
+        raise CommandError("stale_identity", "bookkeeping.head_branch", "Bookkeeping must not commit directly on the target base branch.", 3)
+    if transaction is None:
+        reviewed_changed_paths(root, allowlist)
+        parent_head = git(root, "rev-parse", "HEAD").stdout.strip()
+        transaction = {"schema_version": "3.0", "stage": "publish_prepared", "task_ref": public["task_ref"], "task_id": public["task_id"], "closure_result_id": public["closure_result"]["result_id"], "finish_ref": finish_ref(public, generation), "lifecycle_generation": generation, "repo_ref": bookkeeping["repo_ref"], "base_branch": bookkeeping["base_branch"], "head_branch": bookkeeping["head_branch"], "archive_ref": bookkeeping["archive_ref"], "parent_head": parent_head}
+        write_transaction(transaction_file, transaction, package_root)
+    parent_head = transaction["parent_head"]
+    if transaction["stage"] == "publish_prepared":
+        live_head = git(root, "rev-parse", "HEAD").stdout.strip()
+        if live_head == parent_head:
+            stage_reviewed_changes(root, allowlist)
+            message = bookkeeping["commit_subject"] + ("\n\n" + bookkeeping["commit_body"] if bookkeeping["commit_body"] else "")
+            git(root, "commit", "-m", message)
+            live_head = git(root, "rev-parse", "HEAD").stdout.strip()
+        elif git(root, "rev-parse", f"{live_head}^").stdout.strip() != parent_head:
+            raise CommandError("stale_identity", "finish_transaction", "Local HEAD escaped the prepared bookkeeping transaction.", 3)
+        else:
+            expected_message = bookkeeping["commit_subject"] + ("\n\n" + bookkeeping["commit_body"] if bookkeeping["commit_body"] else "")
+            actual_message = git(root, "show", "-s", "--format=%B", live_head).stdout.rstrip("\n")
+            recovered_paths = set(git(root, "diff", "--name-only", parent_head, live_head).stdout.splitlines())
+            if actual_message != expected_message or not recovered_paths or any(not path_allowed(path, allowlist) for path in recovered_paths):
+                raise CommandError("stale_identity", "finish_transaction", "The recovered commit does not match the reviewed bookkeeping message and allowlist.", 3)
+        transaction.update({"stage": "committed", "commit": live_head})
+        write_transaction(transaction_file, transaction, package_root)
+    commit = transaction["commit"]
+    if git(root, "rev-parse", "HEAD").stdout.strip() != commit or changed_paths(root):
+        raise CommandError("stale_identity", "finish_transaction", "The committed bookkeeping candidate is no longer exact and clean.", 3)
+    remote = git(root, "ls-remote", "--heads", "origin", f"refs/heads/{bookkeeping['head_branch']}").stdout.strip().split()
+    if remote and remote[0] not in {parent_head, commit}:
+        raise CommandError("stale_identity", "bookkeeping.head_branch", "The remote bookkeeping branch moved outside this Finish transaction.", 3)
+    if not remote or remote[0] != commit:
+        git(root, "push", "origin", f"HEAD:refs/heads/{bookkeeping['head_branch']}")
+    rows = gh_json(bookkeeping["repo_ref"], "pr", "list", "--state", "open", "--head", bookkeeping["head_branch"], "--base", bookkeeping["base_branch"], "--json", "number,url,state,isDraft,title,body,headRefName,headRefOid,baseRefName")
+    if not isinstance(rows, list) or len(rows) > 1:
+        raise CommandError("stale_identity", "bookkeeping.pr", "Bookkeeping PR discovery is ambiguous.", 3)
+    if rows:
+        number = rows[0].get("number")
+    else:
+        url = gh(bookkeeping["repo_ref"], "pr", "create", "--base", bookkeeping["base_branch"], "--head", bookkeeping["head_branch"], "--title", bookkeeping["pr_title"], "--body", bookkeeping["pr_body"]).strip()
+        match = re.fullmatch(r"https://github\.com/[^/]+/[^/]+/pull/([1-9][0-9]*)", url)
+        if not match:
+            raise CommandError("stale_identity", "bookkeeping.pr", "GitHub did not return one canonical bookkeeping PR URL.", 3)
+        number = int(match.group(1))
+    pr = exact_pr(bookkeeping["repo_ref"], int(number), bookkeeping, commit)
+    transaction.update({"stage": "pr_open", "pr_number": pr["number"], "pr_url": pr["url"]})
+    write_transaction(transaction_file, transaction, package_root)
+    return transaction
+
+
+def verify_target(root: Path, transaction: dict, public: dict) -> str:
+    target_head = current_remote_head(root, transaction["base_branch"])
+    archive_probe = git(root, "cat-file", "-e", f"{target_head}:{transaction['archive_ref']}/task.json", check=False)
+    summary_probe = git(root, "cat-file", "-e", f"{target_head}:{transaction['archive_ref']}/finish-summary.json", check=False)
+    active_probe = git(root, "cat-file", "-e", f"{target_head}:{public['task_ref']}/task.json", check=False)
+    if archive_probe.returncode or summary_probe.returncode or active_probe.returncode == 0:
+        raise CommandError("stale_identity", "bookkeeping.target", "The target baseline does not contain the unique terminal archive state.", 3)
+    return target_head
+
+
+def merge(root: Path, public: dict, bookkeeping: dict, transaction: dict, transaction_file: Path, package_root: Path) -> dict:
+    pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
+    if str(pr["state"]).upper() != "MERGED":
+        gh(bookkeeping["repo_ref"], "pr", "merge", str(transaction["pr_number"]), "--merge", "--match-head-commit", transaction["commit"], "--subject", bookkeeping["merge_subject"], "--body", bookkeeping["merge_body"])
+        pr = exact_pr(bookkeeping["repo_ref"], transaction["pr_number"], bookkeeping, transaction["commit"])
+    if str(pr["state"]).upper() != "MERGED" or not pr.get("mergedAt") or not isinstance(pr.get("mergeCommit"), dict) or not pr["mergeCommit"].get("oid"):
+        raise CommandError("stale_identity", "bookkeeping.pr", "The bookkeeping PR is not terminally merged.", 3)
+    target_head = verify_target(root, transaction, public)
+    if git(root, "merge-base", "--is-ancestor", pr["mergeCommit"]["oid"], target_head, check=False).returncode:
+        raise CommandError("stale_identity", "bookkeeping.target", "The verified bookkeeping merge is absent from the current target history.", 3)
+    transaction.update({"stage": "success", "target_head": target_head})
+    write_transaction(transaction_file, transaction, package_root)
+    return transaction
+
+
+def resume(public: dict, reason_code: str, remediation: str) -> dict:
+    return {
+        "exit_id": "resume_finish",
+        "task_id": public["task_id"],
+        "lifecycle_generation": public["lifecycle_generation"],
+        "transaction_id": finish_ref(public, public["lifecycle_generation"]),
+        "result_id": public["closure_result"]["result_id"],
+    }
+
+
+def run(package_root: Path, command: dict, argv: list[str]) -> dict:
+    # Inspect only the profile before loading the separate legacy owner. Normal
+    # current calls keep their original runtime dependencies and preconditions.
+    import argparse as _argparse, io as _io, sys as _sys
+    from runtime.io import read_json as _read_json
+    _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--input')
+    _selected,_rest=_selector.parse_known_args(argv)
+    if _selected.input:
+        if _selected.input=='-':
+            _content=_sys.stdin.read();_sys.stdin=_io.StringIO(_content)
+            _public=_read_json(_content,'input')
+        else:_public=_read_json(_selected.input,'input')
+        if _public.get('profile') in {'legacy_control_retirement','legacy_history_verification'}:
+            import importlib.util as _util
+            _spec=_util.spec_from_file_location('legacy_'+package_root.name.replace('-','_'),package_root/'runtime/legacy_maintenance.py')
+            _owner=_util.module_from_spec(_spec);_spec.loader.exec_module(_owner)
+            return _owner.maybe_run(package_root,argv)
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--root")
+    parser.add_argument("--input", required=True)
+    parser.add_argument("--semantic-result", required=True)
+    parser.add_argument("--confirmed-finish", action="store_true")
+    parser.add_argument("--confirmed-bookkeeping-publish", action="store_true")
+    parser.add_argument("--confirmed-bookkeeping-merge", action="store_true")
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        raise CommandError("invalid_arguments", "arguments", "Use the finish command contract.") from exc
+    root = Path(args.root or ".").resolve()
+    supplied = load(root, package_root, args.input, "input")
+    semantic = load(root, package_root, args.semantic_result, "semantic_result")
+    validate_json(supplied, package_root / "schemas/public-input.schema.json", "input")
+    validate_json(semantic, package_root / "schemas/semantic-result-2.0.schema.json", "semantic_result")
+    if supplied["profile"] != semantic["profile"] or supplied["mode"] != semantic["mode"]:
+        raise CommandError("stale_identity", "semantic_result", "Finish identity differs from Closure.", 3)
+    result = closure_result_for_input(supplied)
+    public = resolve_finish_identity(root, result)
+    if supplied["profile"] == "finish_reentry" and supplied["transaction_id"] != finish_ref(public, public["lifecycle_generation"]):
+        raise CommandError("stale_identity", "transaction_id", "Resume only the exact Finish and Closure results.", 3)
+    snapshot = read_closure_snapshot(root, package_root, result)
+    route = semantic["route"]
+    if route["typed_exit"] != "success":
+        if route["typed_exit"] == "resume_finish":
+            out = resume(public, route["reason_code"], route["remediation"])
+        elif route["typed_exit"] == "closure_refresh_required":
+            out = {"exit_id": "closure_refresh_required", **public["closure_result"]}
+        else:
+            out = {"exit_id": "blocked", "reason_code": route["reason_code"], "reason_refs": ["closure_result"]}
+        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+        return out
+    if not closure_source_current(root, public, snapshot["source"]) or not closure_current(snapshot["action_set"]):
+        out = {"exit_id": "closure_refresh_required", **public["closure_result"]}
+        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+        return out
+    bookkeeping = semantic["bookkeeping"]
+    verify_payload(bookkeeping)
+    task_ref, archive_ref, archive_path, allowlist = lifecycle_roots(public, semantic)
+    task_dir = root / task_ref
+    archive_dir = root / archive_path
+    if task_dir.is_dir():
+        lifecycle_generation(root, public, archive_ref)
+        if not args.confirmed_finish:
+            return resume(public, "confirmation_required", "Confirm the reviewed local archive projection.")
+        project_archive(root, public, task_ref, archive_ref, archive_path, snapshot["source"])
+        return resume(public, "bookkeeping_publication_required", "Review and confirm the exact bookkeeping commit, push and PR payload.")
+    if not archive_dir.is_dir():
+        raise CommandError("stale_identity", "task_ref", "Active task or its current archive is missing.", 3)
+    generation = lifecycle_generation(root, public, archive_ref)
+    transaction_file = transaction_path(root, public, generation)
+    transaction = read_transaction(transaction_file, public, bookkeeping, package_root, generation)
+    if transaction is None or transaction.get("stage") in {"projected", "publish_prepared", "committed"}:
+        if not args.confirmed_bookkeeping_publish:
+            return resume(public, "bookkeeping_publication_confirmation_required", "Confirm the reviewed bookkeeping commit, push and PR creation.")
+        transaction = publish(root, public, bookkeeping, allowlist, transaction_file, transaction, package_root, generation)
+    if transaction.get("stage") == "pr_open":
+        if not args.confirmed_bookkeeping_merge:
+            return resume(public, "bookkeeping_merge_confirmation_required", "Confirm the exact expected-head bookkeeping PR merge.")
+        transaction = merge(root, public, bookkeeping, transaction, transaction_file, package_root)
+    if transaction.get("stage") != "success":
+        return resume(public, "bookkeeping_verification_required", "Recover and verify the same bookkeeping transaction.")
+    target_head = verify_target(root, transaction, public)
+    if git(root, "merge-base", "--is-ancestor", transaction["target_head"], target_head, check=False).returncode:
+        raise CommandError("stale_identity", "bookkeeping.target", "The completed Finish result is absent from the current target history.", 3)
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey(public["task_id"], generation)
+    branches = BranchBindingStore(store.repository)
+    try:
+        binding = branches.read(key)
+        ledger = store.read(key)
+        if binding is not None and binding.branch_name != bookkeeping["head_branch"]:
+            raise LifecycleContractError("branch_binding_conflict", "binding", "Retire only the exact Finish task branch association.")
+        if ledger is not None and ledger.finish_result_id is None and binding is None:
+            raise LifecycleContractError("branch_binding_required", "binding", "Recover the current branch association before Finish sealing.")
+        # The merge commit proves target persistence; cleanup refs still point at the PR head.
+        seal = store.seal_for_finish(key, finish_result_id=finish_ref(public, generation), finish_head=transaction["commit"])
+    except LifecycleContractError as exc:
+        if exc.code != "resource_ownership_missing":
+            raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+        if binding is not None:
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
+                                       expected_branch_name=binding.branch_name)
+        transaction["cleanup_state"] = "manual_cleanup_required"
+        write_transaction(transaction_file, transaction, package_root)
+        persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
+        out = {"exit_id": "manual_cleanup_required", "task_id": public["task_id"], "lifecycle_generation": generation, "finish_result_id": finish_ref(public, generation), "cleanup_state": "manual_cleanup_required"}
+        validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+        return out
+    if binding is not None:
+        try:
+            branches.retire_generation(key, expected_revision=binding.binding_revision,
+                                       expected_branch_name=binding.branch_name)
+        except LifecycleContractError as exc:
+            raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    persist_cleanup_fallback(root, package_root, key, finish_ref(public, generation), archive_ref, transaction)
+    out = {
+        "exit_id": "success",
+        "task_id": seal["task_id"],
+        "lifecycle_generation": seal["lifecycle_generation"],
+        "finish_result_id": seal["finish_result_id"],
+        "inventory_id": seal["inventory_id"],
+    }
+    validate_json(out, package_root / "schemas/public-output.schema.json", "stdout")
+    return out
+
+
+if __name__ == "__main__":
+    try:
+        print(json.dumps(run(Path(__file__).parents[1], {}, sys.argv[1:]), ensure_ascii=False))
+    except CommandError as exc:
+        print(json.dumps({"code": exc.code, "field_path": exc.field_path, "remediation": exc.remediation}, ensure_ascii=False), file=sys.stderr)
+        raise SystemExit(exc.exit_status)

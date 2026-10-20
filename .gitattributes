@@ -1,0 +1,33 @@
+# guru-team-managed-text:start
+/.agents/skills/guru-*/**/*.json text eol=lf
+/.agents/skills/guru-*/**/*.md text eol=lf
+/.agents/skills/guru-*/**/*.py text eol=lf
+/.agents/skills/guru-*/**/*.sh text eol=lf
+/.codex/prompts/guru-finish-work.md text eol=lf
+/.codex/skills/guru-*/**/*.json text eol=lf
+/.codex/skills/guru-*/**/*.md text eol=lf
+/.codex/skills/guru-*/**/*.py text eol=lf
+/.codex/skills/guru-*/**/*.sh text eol=lf
+/.trellis/guru-team/**/*.json text eol=lf
+/.trellis/guru-team/**/*.md text eol=lf
+/.trellis/guru-team/**/*.py text eol=lf
+/.trellis/guru-team/**/*.sh text eol=lf
+/.trellis/guru-team/**/*.yml text eol=lf
+/.trellis/spec/workflow/bootstrap-repository-ssot.md text eol=lf
+/.trellis/spec/workflow/causal-completion-semantics.md text eol=lf
+/.trellis/spec/workflow/clear-technical-writing.md text eol=lf
+/.trellis/spec/workflow/companion-scripts.md text eol=lf
+/.trellis/spec/workflow/data-contracts.md text eol=lf
+/.trellis/spec/workflow/quality-guidelines.md text eol=lf
+/.trellis/spec/workflow/requirements-design-test-ssot.md text eol=lf
+/.trellis/spec/workflow/semantic-retrieval.md text eol=lf
+/.trellis/spec/workflow/skill-package-contract.md text eol=lf
+/.trellis/spec/workflow/subtraction-first-compatibility.md text eol=lf
+/.trellis/spec/workflow/task-delivery-early-draft-migration.md text eol=lf
+/.trellis/spec/workflow/task-delivery-migration.md text eol=lf
+/.trellis/spec/workflow/workflow-contract.md text eol=lf
+/.trellis/guru-team/extension.json -text
+/.trellis/guru-team/runtime/requirements.lock -text
+/.trellis/guru-team/skills/adapters/eval/guru-team-shared-eval -text
+/.trellis/guru-team/trellis-source.json -text
+# guru-team-managed-text:end

@@ -1,0 +1,7 @@
+{
+  "exit_id": "return_to_task_work",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/07-25-117-verify-extension-installation",
+  "finding_refs": ["extension-finding-001"],
+  "resume_target": "phase-2"
+}

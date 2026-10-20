@@ -1,0 +1,11 @@
+{
+  "exit_id": "mechanism_revision_required",
+  "profile": "implementation_discovery",
+  "continuation_id": "root-cause:aaaaaaaaaaaaaaaaaaaaaaaa",
+  "revision_candidates": [
+    {
+      "candidate_ref": "candidate-root-cause",
+      "reason": "Remove the mechanism that only hides the original failure."
+    }
+  ]
+}

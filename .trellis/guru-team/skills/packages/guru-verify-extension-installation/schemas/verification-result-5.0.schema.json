@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-installation-verification-result-5.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill_id", "mode", "profile", "immutable_identity", "semantic_result", "unverified_boundaries", "identity"],
+  "properties": {
+    "schema_version": {"const": "5.0"},
+    "skill_id": {"const": "guru-verify-extension-installation"},
+    "mode": {"const": "standalone"},
+    "profile": {"const": "source_repository_verification"},
+    "immutable_identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repo_ref", "remote", "ref", "branch_review_commit", "publication_head", "extension_source_commit", "capability_profile"],
+      "properties": {
+        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "remote": {"type": "string", "minLength": 1},
+        "ref": {"type": "string", "minLength": 1},
+        "branch_review_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "publication_head": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "extension_source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "capability_profile": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "semantic_result": {
+      "type": "object", "additionalProperties": false,
+      "required": ["typed_exit", "conclusion", "finding_refs", "blocker"],
+      "properties": {
+        "typed_exit": {"enum": ["verified", "blocked"]},
+        "conclusion": {"enum": ["verified", "blocked"]},
+        "finding_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "blocker": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["reason_code", "remediation"],
+          "properties": {"reason_code": {"type": ["string", "null"]}, "remediation": {"type": ["string", "null"]}}
+        }
+      }
+    },
+    "unverified_boundaries": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "identity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["verification_ref"],
+      "properties": {"verification_ref": {"type": "string", "pattern": "^extension-verification:[0-9a-f]{24}$"}}
+    }
+  }
+}

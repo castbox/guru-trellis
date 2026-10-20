@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-task-free-change-output-reselect-mode-1.0","type":"object","additionalProperties":false,"required":["exit_id","continuation_id"],"properties":{"exit_id":{"const":"reselect_mode"},"continuation_id":{"type":"string","minLength":1}}}

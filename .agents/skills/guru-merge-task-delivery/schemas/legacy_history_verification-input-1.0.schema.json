@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-merge-task-delivery-input-legacy_history_verification-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "root",
+    "key",
+    "task_ref",
+    "fact_refs"
+  ],
+  "properties": {
+    "profile": {
+      "const": "legacy_history_verification"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "task_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fact_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "repo_ref",
+          "reviewed_head",
+          "target_branch",
+          "head_branch",
+          "pr_number",
+          "merge_commit",
+          "target_ref"
+        ],
+        "properties": {
+          "repo_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewed_head": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "head_branch": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pr_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "merge_commit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "minItems": 1
+    }
+  }
+}

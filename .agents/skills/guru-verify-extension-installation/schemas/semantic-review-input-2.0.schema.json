@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-semantic-review-input-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["applicability", "verification_profile", "semantic_review", "typed_exit", "redaction"],
+  "properties": {
+    "applicability": {
+      "allOf": [
+        {"$ref": "marketplace-verification.schema.json#/properties/applicability"},
+        {"properties": {"status": {"const": "required"}}}
+      ]
+    },
+    "verification_profile": {"$ref": "marketplace-verification.schema.json#/properties/verification_profile"},
+    "semantic_review": {
+      "allOf": [
+        {"$ref": "marketplace-verification.schema.json#/properties/semantic_review"},
+        {"properties": {"conclusion": {"enum": ["verified", "blocked"]}}}
+      ]
+    },
+    "typed_exit": {"enum": ["verified", "blocked"]},
+    "redaction": {"$ref": "marketplace-verification.schema.json#/properties/redaction"},
+    "reason_code": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
+    "remediation": {"type": "string", "minLength": 1}
+  }
+}

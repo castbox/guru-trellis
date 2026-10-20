@@ -1,0 +1,475 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-root-cause-semantic-result-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill_id",
+    "public_input",
+    "candidate_results",
+    "ai_review_gate",
+    "typed_exit",
+    "consumer"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "skill_id": {
+      "const": "guru-qualify-root-cause"
+    },
+    "public_input": {
+      "type": "object"
+    },
+    "candidate_results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/candidateResult"
+      }
+    },
+    "ai_review_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewed_candidate_refs",
+        "summary"
+      ],
+      "properties": {
+        "status": {
+          "const": "passed"
+        },
+        "reviewed_candidate_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "typed_exit": {
+      "enum": [
+        "classified",
+        "mechanism_revision_required",
+        "diagnosis_required",
+        "blocked"
+      ]
+    },
+    "consumer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "workflow"
+            },
+            "id": {
+              "const": "guru-root-cause-classified-router"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "workflow"
+            },
+            "id": {
+              "const": "guru-root-cause-mechanism-router"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "workflow"
+            },
+            "id": {
+              "const": "guru-root-cause-diagnosis-router"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "stop"
+            },
+            "id": {
+              "const": "root-cause-qualification-blocked"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "candidateResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_ref",
+            "goal",
+            "classification",
+            "reason",
+            "evidence"
+          ],
+          "properties": {
+            "candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "goal": {
+              "const": "diagnosis"
+            },
+            "classification": {
+              "enum": [
+                "diagnosis_incomplete",
+                "symptom_suppression_rejected",
+                "blocked"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "observed_failure",
+                "bounded_investigation",
+                "action_impact",
+                "evidence_gaps"
+              ],
+              "properties": {
+                "observed_failure": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "bounded_investigation": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "action_impact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidence_gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_ref",
+            "goal",
+            "classification",
+            "reason",
+            "evidence"
+          ],
+          "properties": {
+            "candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "goal": {
+              "const": "mitigation"
+            },
+            "classification": {
+              "enum": [
+                "mitigation_only",
+                "symptom_suppression_rejected",
+                "blocked"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "effect_evidence",
+                "risks",
+                "legitimate_consumer_impact",
+                "conditions",
+                "owner",
+                "expiry_or_exit",
+                "remaining_cause"
+              ],
+              "properties": {
+                "effect_evidence": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "risks": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "legitimate_consumer_impact": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "conditions": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "owner": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "expiry_or_exit": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "remaining_cause": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_ref",
+            "goal",
+            "classification",
+            "reason",
+            "evidence"
+          ],
+          "properties": {
+            "candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "goal": {
+              "const": "root_cause_fix"
+            },
+            "classification": {
+              "enum": [
+                "root_cause_mechanism_eligible",
+                "diagnosis_incomplete",
+                "symptom_suppression_rejected",
+                "blocked"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "first_failure",
+                "causal_chain",
+                "hypothesis_and_alternatives",
+                "state_or_behavior_change",
+                "counterfactual",
+                "same_input_validation",
+                "redistribution_observation",
+                "evidence_gaps"
+              ],
+              "properties": {
+                "first_failure": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "causal_chain": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "hypothesis_and_alternatives": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "state_or_behavior_change": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "counterfactual": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "same_input_validation": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "redistribution_observation": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "evidence_gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "uniqueItems": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_ref",
+            "goal",
+            "classification",
+            "reason",
+            "evidence"
+          ],
+          "properties": {
+            "candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "goal": {
+              "const": "protection"
+            },
+            "classification": {
+              "enum": [
+                "protection_invariant_eligible",
+                "symptom_suppression_rejected",
+                "blocked"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "protected_object",
+                "real_harm",
+                "direct_owner",
+                "current_authority",
+                "layer_necessity",
+                "legitimate_input_impact"
+              ],
+              "properties": {
+                "protected_object": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "real_harm": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "direct_owner": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "current_authority": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "layer_necessity": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "legitimate_input_impact": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "candidate_ref",
+            "goal",
+            "classification",
+            "reason",
+            "evidence"
+          ],
+          "properties": {
+            "candidate_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "goal": {
+              "const": "ordinary_feature"
+            },
+            "classification": {
+              "enum": [
+                "not_incident_applicable",
+                "blocked"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "applicability_basis"
+              ],
+              "properties": {
+                "applicability_basis": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

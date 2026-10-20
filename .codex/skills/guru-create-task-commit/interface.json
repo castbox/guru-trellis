@@ -1,0 +1,762 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-create-task-commit",
+  "name": "guru-create-task-commit",
+  "description": "Create an exact reviewed Delivery commit for early Draft feedback or the final Check-bound path.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "workspace_boundary",
+        "task_identity",
+        "phase2_result",
+        "pre_commit_head",
+        "git_operation_state",
+        "dirty_snapshot"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "workspace_boundary",
+        "task_identity",
+        "phase2_result",
+        "pre_commit_head",
+        "git_operation_state",
+        "dirty_snapshot"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "workspace_boundary",
+      "evidence": "task.json, current TaskBranchBinding and live Git checkout facts",
+      "binding": "actual repository root is the unique resolved active task checkout",
+      "freshness": "checked for the current invocation"
+    },
+    {
+      "id": "task_identity",
+      "evidence": "task.json and candidate task object",
+      "binding": "public Task identity, Delivery key and unique current Task checkout; no Task development status",
+      "freshness": "files and current branch still match"
+    },
+    {
+      "id": "phase2_result",
+      "evidence": "Selected profile: current accepted Planning in implementing for early Draft, or current real public Check for final commit.",
+      "binding": "Exact Task/Delivery and selected closed input.",
+      "freshness": "Rechecked before exact mutation."
+    },
+    {
+      "id": "pre_commit_head",
+      "evidence": "Git HEAD and candidate git object",
+      "binding": "exact commit id",
+      "freshness": "unchanged immediately before execution"
+    },
+    {
+      "id": "git_operation_state",
+      "evidence": "Git operation and sequencer markers",
+      "binding": "ordinary state without merge, cherry-pick, revert, rebase, sequencer or am markers",
+      "freshness": "checked during candidate validation, before staging and immediately before commit"
+    },
+    {
+      "id": "dirty_snapshot",
+      "evidence": "NUL-delimited Git status and content identities",
+      "binding": "necessary dirty increments bind complete staged, unstaged, untracked, delete and explicit rename/copy facts; clean committed re-entry validates the existing Git blobs without staging",
+      "freshness": "current snapshot, private candidate bytes, complete live index preimage and operation state still match through isolated validation"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "task_commit_candidate_example",
+      "path": "examples/task-commit-candidate.json"
+    },
+    {
+      "id": "public_input_initial_commit_example",
+      "path": "examples/public-initial-commit-input.json"
+    },
+    {
+      "id": "initial_commit_authoring",
+      "path": "examples/public-initial-commit-authoring.json"
+    },
+    {
+      "id": "public_input_revision_reentry_example",
+      "path": "examples/public-revision-reentry-input.json"
+    },
+    {
+      "id": "revision_reentry_authoring",
+      "path": "examples/public-revision-reentry-authoring.json"
+    },
+    {
+      "id": "public_input_finding_fix_commit_example",
+      "path": "examples/public-finding-fix-commit-input.json"
+    },
+    {
+      "id": "public_input_recovery_resume_example",
+      "path": "examples/public-recovery-resume-input.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_committed_example",
+      "path": "examples/public-committed-output.json"
+    },
+    {
+      "id": "public_output_revision_required_example",
+      "path": "examples/public-revision-required-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "task_commit_candidate_schema",
+      "path": "schemas/task-commit-candidate.schema.json"
+    },
+    {
+      "id": "happy_path_result_schema",
+      "path": "schemas/happy-path-result.schema.json"
+    },
+    {
+      "id": "public_input_initial_commit",
+      "path": "schemas/public-initial-commit-input.schema.json"
+    },
+    {
+      "id": "public_input_revision_reentry",
+      "path": "schemas/public-revision-reentry-input.schema.json"
+    },
+    {
+      "id": "public_input_finding_fix_commit",
+      "path": "schemas/public-finding-fix-commit-input.schema.json"
+    },
+    {
+      "id": "public_input_recovery_resume",
+      "path": "schemas/public-recovery-resume-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_committed",
+      "path": "schemas/public-committed-output.schema.json"
+    },
+    {
+      "id": "public_output_revision_required",
+      "path": "schemas/public-revision-required-output.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "delivery_initial_commit_input",
+      "path": "schemas/public-delivery-initial-commit-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_revision_reentry_input",
+      "path": "schemas/public-delivery-revision-reentry-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_finding_fix_commit_input",
+      "path": "schemas/public-delivery-finding-fix-commit-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_recovery_resume_input",
+      "path": "schemas/public-delivery-recovery-resume-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_committed_reentry_input",
+      "path": "schemas/public-delivery-committed-reentry-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate",
+      "path": "schemas/public-input-delivery-1.0.schema.json"
+    },
+    {
+      "id": "committed_delivery_output",
+      "path": "schemas/public-output-delivery-committed-1.0.schema.json"
+    },
+    {
+      "id": "revision_required_delivery_output",
+      "path": "schemas/public-output-delivery-revision-required-1.0.schema.json"
+    },
+    {
+      "id": "blocked_delivery_output",
+      "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_candidate_1_0",
+      "path": "schemas/delivery-commit-candidate-1.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_result_1_0",
+      "path": "schemas/delivery-commit-result-1.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_review_1_0",
+      "path": "schemas/delivery-commit-review-1.0.schema.json"
+    },
+    {
+      "id": "delivery_planning_source_1_0",
+      "path": "schemas/delivery-planning-source-1.0.schema.json"
+    },
+    {
+      "id": "delivery_source_migration_input_1_0",
+      "path": "schemas/delivery-source-migration-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_commit_input",
+      "path": "schemas/public-delivery-draft-commit-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_draft_committed_reentry_input",
+      "path": "schemas/public-delivery-draft-committed-reentry-input-1.0.schema.json"
+    },
+    {
+      "id": "draft_committed_output",
+      "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_candidate_2_0",
+      "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+    },
+    {
+      "id": "delivery_commit_result_2_0",
+      "path": "schemas/delivery-commit-result-2.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate_2_0",
+      "path": "schemas/public-input-delivery-2.0.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "candidate_builder",
+      "command": "scripts/prepare-task-commit.sh",
+      "runtime_command": "prepare-task-commit",
+      "objective_scope": "Live task/Phase 2/Git projection, exact path-set derivation, structured message canonicalization, and shared parser validation before any confirmation"
+    },
+    {
+      "id": "candidate_validator",
+      "command": "scripts/check-task-commit-plan.sh",
+      "runtime_command": "check-commit-messages",
+      "objective_scope": "schema, live task/HEAD/Phase 2/snapshot identity and freshness, explicit rename/copy relations, independently classified copy sources, exact paths, and shared parser facts"
+    },
+    {
+      "id": "exact_executor",
+      "command": "scripts/create-task-commit.sh",
+      "runtime_command": "create-task-commit",
+      "objective_scope": "AI-reviewed ordinary/gitlink bindings with deletion inheritance limited to rename sources, isolated validation, standard conditional Git publication, raw commit postconditions, and private runtime cleanup"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-create-task-commit",
+      "objective_scope": "Sole public entry: prepared Delivery candidate transaction or clean committed re-entry, typed-exit projection and same-commit stdout-loss recovery; legacy --invocation envelopes are retired"
+    },
+    {
+      "id": "planning_source_migration",
+      "command": "scripts/migrate-delivery-source.sh",
+      "runtime_command": "migrate-task-commit-planning-source",
+      "objective_scope": "Original owner reviewed Plan2 committed blob/mode relocation binding; no public gate or Git mutation."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "committed",
+      "evidence": "minimal committed DTO and current live Git HEAD",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-branch"
+      }
+    },
+    {
+      "id": "revision-required",
+      "evidence": "AI review or candidate validation revision evidence",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-create-task-commit"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "semantic conflict, dangerous operation, hook mutation or objective postcondition error",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-commit-blocked"
+      }
+    },
+    {
+      "id": "draft_committed",
+      "evidence": "Current original-owner result and live fixed candidate facts.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-draft-commit-router"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "Delivery key and fixed base; final profiles additionally bind current Check; dirty transactions bind pre-commit HEAD.",
+    "freshness": "Current selected profile prerequisites and live candidate; dirty paths match the complete snapshot.",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_happy_path.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-create-task-commit-input-delivery-aggregate-2.0",
+        "path": "schemas/public-input-delivery-2.0.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "delivery_initial_commit",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-initial-commit-1.0",
+            "path": "schemas/public-delivery-initial-commit-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_initial_commit_input",
+            "path": "examples/public-delivery-initial-commit-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_initial_commit"
+          }
+        },
+        {
+          "id": "delivery_revision_reentry",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-revision-reentry-1.0",
+            "path": "schemas/public-delivery-revision-reentry-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_revision_reentry_input",
+            "path": "examples/public-delivery-revision-reentry-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_revision_reentry"
+          }
+        },
+        {
+          "id": "delivery_finding_fix_commit",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-finding-fix-commit-1.0",
+            "path": "schemas/public-delivery-finding-fix-commit-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_finding_fix_commit_input",
+            "path": "examples/public-delivery-finding-fix-commit-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_finding_fix_commit"
+          }
+        },
+        {
+          "id": "delivery_recovery_resume",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-recovery-resume-1.0",
+            "path": "schemas/public-delivery-recovery-resume-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_recovery_resume_input",
+            "path": "examples/public-delivery-recovery-resume-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_recovery_resume"
+          }
+        },
+        {
+          "id": "delivery_committed_reentry",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-committed-reentry-1.0",
+            "path": "schemas/public-delivery-committed-reentry-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_committed_reentry_input",
+            "path": "examples/public-delivery-committed-reentry-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_committed_reentry"
+          }
+        },
+        {
+          "id": "delivery_draft_commit",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-draft-commit-1.0",
+            "path": "schemas/public-delivery-draft-commit-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_commit_input",
+            "path": "examples/public-delivery-draft-commit-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_commit"
+          }
+        },
+        {
+          "id": "delivery_draft_committed_reentry",
+          "schema": {
+            "schema_id": "guru-create-task-commit-input-delivery-draft-committed-reentry-1.0",
+            "path": "schemas/public-delivery-draft-committed-reentry-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_draft_committed_reentry_input",
+            "path": "examples/public-delivery-draft-committed-reentry-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_draft_committed_reentry"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "delivery_initial_commit"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-production-create-task-commit-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--candidate-artifact",
+        ".trellis/.runtime/guru-team/task-commit-plans/current/001.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "committed",
+        "schema": {
+          "schema_id": "guru-create-task-commit-output-delivery-committed-1.0",
+          "path": "schemas/public-output-delivery-committed-1.0.schema.json"
+        },
+        "example": {
+          "id": "committed_delivery_output",
+          "path": "examples/public-output-delivery-committed-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_committed"
+        ]
+      },
+      {
+        "exit_id": "revision-required",
+        "schema": {
+          "schema_id": "guru-create-task-commit-output-delivery-revision-required-1.0",
+          "path": "schemas/public-output-delivery-revision-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "revision-required_delivery_output",
+          "path": "examples/public-output-delivery-revision-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_revision_required"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-create-task-commit-output-delivery-blocked-1.0",
+          "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+        },
+        "example": {
+          "id": "blocked_delivery_output",
+          "path": "examples/public-output-delivery-blocked-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      },
+      {
+        "exit_id": "draft_committed",
+        "schema": {
+          "schema_id": "guru-create-task-commit-output-delivery-draft-committed-1.0",
+          "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
+        },
+        "example": {
+          "id": "draft_committed_output",
+          "path": "examples/public-output-delivery-draft-committed-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_draft_committed"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "branch_review_seed_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-branch"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-branch/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_branch_review",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "check_result_id",
+            "base_ref",
+            "branch_review_commit"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "review_intent"
+          ],
+          "authoring_example": {
+            "id": "committed_delivery_authoring",
+            "path": "examples/authoring-delivery-committed-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "revision_reentry_seed_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-create-task-commit"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-create-task-commit/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_revision_reentry",
+          "seed_fields": [
+            "source_exit",
+            "task_ref",
+            "delivery_key"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode",
+            "check_result_id"
+          ],
+          "authoring_example": {
+            "id": "revision_required_delivery_authoring",
+            "path": "examples/authoring-delivery-revision-required-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-commit-blocked"
+        },
+        "payload_kind": "zero_payload"
+      },
+      {
+        "id": "draft_committed_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-draft-commit-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "schema_id": "guru-workflow-create-task-commit-draft-committed-1.0",
+          "path": "consumers/workflow/production/create-task-commit-draft-committed.schema.json",
+          "kind": "json_schema"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_committed",
+        "exit_id": "committed",
+        "consumer_input_id": "branch_review_seed_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "check_result_id",
+            "target": "check_result_id"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "branch_review_commit",
+            "target": "branch_review_commit"
+          }
+        ]
+      },
+      {
+        "id": "project_revision_required",
+        "exit_id": "revision-required",
+        "consumer_input_id": "revision_reentry_seed_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          }
+        ]
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      },
+      {
+        "id": "project_draft_committed",
+        "exit_id": "draft_committed",
+        "consumer_input_id": "draft_committed_workflow_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "base_ref",
+            "target": "base_ref"
+          },
+          {
+            "source": "commit_sha",
+            "target": "commit_sha"
+          }
+        ]
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "task_commit_candidate",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json",
+          "path": "schemas/task-commit-candidate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "task_commit_happy_path_result",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-task-commit-happy-path-result-1.0.json",
+          "path": "schemas/happy-path-result.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_commit_candidate_2_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json",
+          "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_commit_result_2_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-2.0.json",
+          "path": "schemas/delivery-commit-result-2.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "delivery_planning_source_1_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-task-commit-planning-source-1.0",
+          "path": "schemas/delivery-planning-source-1.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

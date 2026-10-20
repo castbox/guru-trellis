@@ -1,0 +1,101 @@
+{
+  "schema_version": "3.0",
+  "skill_id": "guru-clarify-requirements",
+  "generated_at": "2026-01-01T00:00:00Z",
+  "mode": "standalone",
+  "typed_exit": "clear",
+  "invocation_context": {
+    "kind": "proposed_draft",
+    "caller": "standalone requirements review",
+    "task_locator": null,
+    "resume_target": "guru-review-contract-wording"
+  },
+  "review_target": {
+    "kind": "draft",
+    "repo": "example/guru-extension",
+    "issue_number": null,
+    "url": null,
+    "state": "draft",
+    "updated_at": null,
+    "body_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "facts_sha256": "ecbfcd32f254c0ebc87fa353478d4b913cdde8d3933b558c81aa837a49f135b8"
+  },
+  "target_disposition": {
+    "disposition": "keep_current_draft",
+    "duplicate_query": "repo:example/guru-extension is:issue is:open reviewed draft",
+    "duplicate_checked_at": "2026-01-01T00:00:00Z",
+    "duplicate_candidates": [],
+    "duplicate_facts_sha256": "483927c9d8588cb79f0aca1ccfe80ac4242fad74eb5374408b80d886867b03a6",
+    "selected_issue": null,
+    "original_target_role": "primary",
+    "decision_summary": "No open duplicate exists, so the current reviewed draft remains the target.",
+    "disposition_digest": "4af679323fd5d9a9266a7edfdec2a41fd0af97c432982e64c811e35450f8d8e4"
+  },
+  "context_evidence": {
+    "status": "current",
+    "evidence_refs": ["current-session:change-context"],
+    "missing_reason": null
+  },
+  "confirmed_facts": [
+    {
+      "fact_id": "delivery_goal",
+      "summary": "The reviewed draft defines one bounded delivery goal.",
+      "evidence_refs": ["review_target.body_sha256"],
+      "affected_contracts": ["requirements"]
+    }
+  ],
+  "repository_answerable_questions": [
+    {
+      "question_id": "existing_owner",
+      "question": "Which existing contract owns this behavior?",
+      "status": "answered",
+      "evidence_refs": ["context_evidence.evidence_refs"],
+      "answer_summary": "The current workflow package is the sole owner.",
+      "missing_reason": null
+    }
+  ],
+  "clarification_rounds": [],
+  "open_questions": [],
+  "scope_proposals": [],
+  "source_actions": [
+    {
+      "action_id": "no_source_change",
+      "kind": "none",
+      "target": null,
+      "payload": null,
+      "preimage_sha256": null,
+      "payload_sha256": null,
+      "action_digest": "48b26e822579ba7bc51ebd84672a3dd5460cf587056b661aee351a893a18ae1e",
+      "status": "not_required",
+      "mutation_evidence": null
+    }
+  ],
+  "mutation_results": [],
+  "active_task_evidence": null,
+  "ai_review_gate": {
+    "status": "passed",
+    "reviewed_scope": ["reviewed draft", "current context evidence", "open questions"],
+    "excluded_scope": ["implementation mechanism"],
+    "load_bearing_conclusions": ["The current requirement is complete and current."],
+    "findings": [],
+    "summary": "The reviewed evidence supports a clear requirements exit."
+  },
+  "affected_contracts": ["requirements", "workflow routing"],
+  "content_identity": {
+    "target_sha256": "791de0ef562206a5e2fb1b01913d7e94930f4685b346b9663063f34547f42017",
+    "disposition_sha256": "eb8e81586c84d7e43a739c7b00b99c59335332a77d9055d526eaf30cdbac8b6c",
+    "content_sha256": "e209dc7451b71c0ece2cdd9804515cb38bdc8324656839ef71d5fa492690994b",
+    "context_sha256": "ac54abb06e0259b0f5bf956c346007c9c77b2e5d63b2bee7fde3d1e8d9494f4e",
+    "scope_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "action_sha256": "866c424eef771c72e1c5166e76b9de3baff718018dd3a2ee8d3c80f9a6e6deda",
+    "payload_sha256": "1d8fc6ceb1f94c6326d6d5483d258fcb2e179e9869325b245d105c2219bf69fd",
+    "result_sha256": "bd0b921b87abd8117563b2d050ea54e2c4caeb9f7b50680201439e9a7eabd771"
+  },
+  "reason": "All load-bearing requirements are confirmed by current evidence.",
+  "consumer": {
+    "kind": "workflow",
+    "id": "guru-requirements-clear-router"
+  },
+  "error": null,
+  "source_selection": []
+}

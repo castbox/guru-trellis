@@ -1,0 +1,27 @@
+{
+  "profile": "planning_scenario_set",
+  "mode": "workflow",
+  "caller": "guru-approve-task-plan",
+  "target_locator": ".trellis/tasks/08-15-237-root-cause-qualification",
+  "target": {
+    "repo_locator": ".",
+    "task_ref": "08-15-237-root-cause-qualification",
+    "planning_paths": [
+      ".trellis/tasks/08-15-237-root-cause-qualification/prd.md",
+      ".trellis/tasks/08-15-237-root-cause-qualification/design.md",
+      ".trellis/tasks/08-15-237-root-cause-qualification/implement.md"
+    ],
+    "planning_identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "candidate_refs": [
+    "candidate-root-cause"
+  ],
+  "candidate_locators": [
+    {
+      "candidate_ref": "candidate-root-cause",
+      "locators": [
+        "path:AGENTS.md"
+      ]
+    }
+  ]
+}

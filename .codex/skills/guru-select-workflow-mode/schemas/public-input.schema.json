@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-workflow-mode-input-aggregate-1.0","oneOf":[{"$ref":"public-input-initial.schema.json"}]}

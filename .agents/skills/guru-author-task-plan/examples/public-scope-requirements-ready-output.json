@@ -1,0 +1,5 @@
+{
+  "exit_id": "scope_requirements_ready",
+  "task_ref": ".trellis/tasks/demo",
+  "requirements_locator": ".trellis/tasks/demo/prd.md"
+}

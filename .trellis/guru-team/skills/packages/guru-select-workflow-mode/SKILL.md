@@ -1,0 +1,90 @@
+---
+name: guru-select-workflow-mode
+description: Select standard Guru Team intake or a bounded task-free route through one AI-owned semantic decision.
+---
+
+# Guru Select Workflow Mode
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
+any confirmation, choice or clarification. This Skill retains its own action
+plan, confirmation boundary and execution/recovery contract.
+
+Run this Skill for every change-intent request that has not already entered an
+active-task route. Requirements clarification, proposed-feature design, and
+change planning remain change intent when the user defers file writes or
+resource creation. Complete this selection before the selected Guru owner
+conducts the discussion; loading brainstorm does not replace this entry.
+Issue presence, current branch, and task-free wording do not
+control entry. The AI owns the semantic decision; scripts only validate a
+completed selection and serialize the one typed exit.
+
+Use `task_free` immediately when the user explicitly requests that semantic;
+the shortest public expression is `这次走 task-free`. Recognize equivalent
+multilingual wording semantically rather than through a keyword table. Neither
+`帮我改一下` nor `不要开 Issue` is explicit task-free intent.
+
+A request whose outcome is creating a GitHub Issue requires the existing
+standard Intake draft/readiness review before `guru-create-issue` can mutate.
+Select `standard_intake` for that requested publication scope; a short draft
+or “只创建 Issue” does not make it a task-free file edit. Preserve Issue-only
+scope and do not infer permission to create a Task or execution resources.
+A request only to edit a local draft remains subject to the ordinary scope
+and risk decision below.
+
+Without explicit intent, read only the limited live repository and Issue facts
+needed for the decision:
+
+- automatically select `task_free` when the boundary is clear, local,
+  reversible, and confidently has no obvious high-risk effect;
+- ask one concise mode question when task-free is likely but scope or risk
+  evidence is insufficient; an affirmative answer selects `task_free` and a
+  refusal selects `standard_intake`, with no repeated question for the same
+  scope;
+- automatically select `standard_intake` when requirements clarification,
+  full change planning, complete
+  review, or high-risk validation is clearly needed, including material runtime,
+  cross-layer contract, public API, schema, CI, install/update, deploy,
+  permission, security, or data impact.
+
+An Issue supplies evidence but never decides the mode. File count, paths, and
+keywords are weak evidence only and never independent classifiers. Once
+selected, mapped exits, ordinary recovery, and same-scope retries reuse the
+selection. Material scope, authority, or risk changes require a fresh semantic
+decision.
+
+`task_free` selects a bounded change mode, independent of execution location.
+Needing a linked worktree does not imply `standard_intake`; branch identity
+and isolation alone do not classify scope or risk. This selection never
+authorizes Task, worktree, or branch creation,
+commit, push, PR, merge, tag, release, installation, or cleanup. Preserve all
+unrelated dirty and untracked files. `guru-execute-task-free-change` separately
+owns linked non-base checkout suitability and acquisition before the first
+write, bounded editing, targeted checks, and post-write risk evolution. Resource
+creation consumes its exact independent dialogue-local authorization; no Task
+identity or lifecycle is introduced for task-free work. It never reads remote
+branch protection and does not add fields to this Skill's public DTO.
+
+The execution Skill re-enters this selector only for automatic scope/risk
+expansion. Explicit expansion stays in that Skill's interaction re-entry.
+Commit, push, PR, merge, release, installation, cleanup, and Issue closure
+remain independent later authorizations.
+
+Return exactly one of `standard_intake`, `task_free`, or `blocked`.
+
+For a selected standard route, consume the public selection through the
+workflow's mandatory initial graph before Clarify asks its product question.
+Deferred writes and resource creation remain deferred throughout that graph;
+they do not waive the selector or the current Guru semantic owner.
+
+Read [references/contract.md](references/contract.md) for the current entry and
+public handoff contract.
+
+Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
+Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

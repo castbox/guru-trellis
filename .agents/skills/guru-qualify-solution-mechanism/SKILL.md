@@ -1,0 +1,36 @@
+---
+name: guru-qualify-solution-mechanism
+description: Qualify whether a proposed implementation mechanism can carry the required business authority without delegating it to OS, kernel, process, or descriptor primitives.
+---
+
+# Qualify Solution Mechanisms
+
+Before substantive output, read `.trellis/spec/workflow/clear-technical-writing.md`
+in full and apply it within this entry's existing scope. Until that read succeeds,
+use only short progress messages or concrete missing-dependency diagnostics.
+State the current action or missing item; make no unverified claim. If the file
+cannot be read, pause substantive output, then read it and resume the same
+request when available. No additional approval is needed for that recovery.
+
+Read `references/contract.md` and `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` completely before judging the candidate set. The
+Skill is a semantic owner: read current requirement, planning, architecture,
+dependency/caller graph, diff, tests, and repository contract yourself. Then
+review the complete candidate set and invoke `scripts/invoke.sh --invocation -`
+with one call-local JSON envelope on stdin.
+
+Do not use keyword, import, command-name, path, or static scanner output as the
+qualification decision. Such output can be evidence for AI inspection, but it
+never replaces semantic review.
+
+OS locks (`flock`, `fcntl`, lock files, inode ownership), `/proc`, PID/PGID/SID
+or process trees, liveness scans, FD identity/inheritance, signals, `kill`,
+process-group control, and equivalent kernel/process/descriptor wrappers are
+never business authority. Ordinary files and directories remain valid for
+state, artifacts, logs, caches, configuration, and durable records when their
+existence, inode, FD, or open state is not used as authority, fencing, leader
+election, or a concurrency protocol.
+
+Return exactly one declared typed exit through public invoke; consume its route and positive-exit conditions. The runtime only checks closed shape,
+identity, freshness, enum aggregation, and consumer binding; it must not decide
+whether a mechanism is good or bad and must not write qualification state.
+Author candidate inputs/returns: `references/contract.md#author-candidate-set`.

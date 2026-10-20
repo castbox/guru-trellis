@@ -1,0 +1,811 @@
+{
+  "$schema": "../../schemas/skill-interface-1.4.schema.json",
+  "schema_version": "1.4",
+  "id": "guru-review-task-delivery",
+  "name": "guru-review-task-delivery",
+  "description": "Review one approved active-task Delivery slice through a fresh semantic gate and five minimal typed exits.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "global_workflow",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "approved_delivery_policy",
+        "branch_review_handoff",
+        "current_authority_and_evidence",
+        "live_git_github",
+        "invocation_freshness"
+      ]
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "runtime_dependency",
+        "active_task",
+        "approved_delivery_policy",
+        "branch_review_handoff",
+        "current_authority_and_evidence",
+        "live_git_github",
+        "invocation_freshness"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "runtime_dependency",
+      "evidence": "installed extension, dispatcher, active package, schemas, and Delivery Review commands",
+      "binding": "complete compatible Guru Team preset",
+      "freshness": "validated before each command"
+    },
+    {
+      "id": "active_task",
+      "evidence": "current task.json, branch, worktree, and in_progress status",
+      "binding": "one exact active task current binding",
+      "freshness": "reread before record and check"
+    },
+    {
+      "id": "approved_delivery_policy",
+      "evidence": "approved task scope, current delivery slice, remaining work, independent delivery conditions, validation boundaries, and follow-up owner",
+      "binding": "selected Delivery planning and reviewed slice policy; remaining scope belongs to Task",
+      "freshness": "fresh semantic review of current planning authority"
+    },
+    {
+      "id": "branch_review_handoff",
+      "evidence": "guru-review-branch passed DTO and exact current committed HEAD",
+      "binding": "task_ref, Delivery key, exact current full_review result and candidate",
+      "freshness": "current HEAD must equal the reviewed commit"
+    },
+    {
+      "id": "current_authority_and_evidence",
+      "evidence": "requirement authority, implementation, validation, RDT/Docs, Architecture, and full Branch Review",
+      "binding": "current slice and complete current candidate impact",
+      "freshness": "freshly read by the semantic owner"
+    },
+    {
+      "id": "live_git_github",
+      "evidence": "current base, HEAD, branch, worktree, Issue, and repository facts",
+      "binding": "exact task repository and reviewed delivery payload",
+      "freshness": "reread before record and check"
+    },
+    {
+      "id": "invocation_freshness",
+      "evidence": "public input, semantic result, owner-private gate, objective check, and projected exit",
+      "binding": "one invocation-local Delivery Review round",
+      "freshness": "successful projection retires the checkpoint"
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "public_delivery_review_input",
+      "path": "examples/public-delivery-review-input.json"
+    },
+    {
+      "id": "semantic_ready",
+      "path": "examples/semantic-ready.json"
+    },
+    {
+      "id": "private_gate",
+      "path": "examples/delivery-review-gate.json"
+    },
+    {
+      "id": "public_ready_output",
+      "path": "examples/public-ready-output.json"
+    },
+    {
+      "id": "public_planning_revision_output",
+      "path": "examples/public-planning-revision-required-output.json"
+    },
+    {
+      "id": "public_implementation_output",
+      "path": "examples/public-implementation-required-output.json"
+    },
+    {
+      "id": "public_scope_output",
+      "path": "examples/public-scope-confirmation-required-output.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "publish_authoring",
+      "path": "examples/public-publish-delivery-authoring.json"
+    },
+    {
+      "id": "planning_revision_consumer_example",
+      "path": "consumers/workflow/production/review-task-delivery-planning-revision.example.json"
+    },
+    {
+      "id": "implementation_consumer_example",
+      "path": "consumers/workflow/production/review-task-delivery-implementation-required.example.json"
+    },
+    {
+      "id": "scope_consumer_example",
+      "path": "consumers/workflow/production/review-task-delivery-scope-confirmation.example.json"
+    },
+    {
+      "id": "blocked_consumer_example",
+      "path": "consumers/stop/production/review-task-delivery-blocked.example.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_input",
+      "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
+    },
+    {
+      "id": "delivery_stopped_output",
+      "path": "examples/public-delivery-stopped-output-1.0.json"
+    },
+    {
+      "id": "delivery_readiness_refresh_input",
+      "path": "examples/public-delivery-readiness-refresh-input-1.0.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "examples/public-delivery-scope-revision-input-1.0.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "examples/public-delivery-scope-revised-output-1.0.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "public_delivery_review_input",
+      "path": "schemas/public-delivery-review-input.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "semantic_result",
+      "path": "schemas/semantic-result.schema.json"
+    },
+    {
+      "id": "private_gate",
+      "path": "schemas/delivery-review-gate.schema.json"
+    },
+    {
+      "id": "public_ready_output",
+      "path": "schemas/public-ready-output.schema.json"
+    },
+    {
+      "id": "public_planning_revision_output",
+      "path": "schemas/public-planning-revision-required-output.schema.json"
+    },
+    {
+      "id": "public_implementation_output",
+      "path": "schemas/public-implementation-required-output.schema.json"
+    },
+    {
+      "id": "public_scope_output",
+      "path": "schemas/public-scope-confirmation-required-output.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "planning_revision_consumer",
+      "path": "consumers/workflow/production/review-task-delivery-planning-revision.schema.json"
+    },
+    {
+      "id": "implementation_consumer",
+      "path": "consumers/workflow/production/review-task-delivery-implementation-required.schema.json"
+    },
+    {
+      "id": "scope_consumer",
+      "path": "consumers/workflow/production/review-task-delivery-scope-confirmation.schema.json"
+    },
+    {
+      "id": "blocked_consumer",
+      "path": "consumers/stop/production/review-task-delivery-blocked.schema.json"
+    },
+    {
+      "id": "delivery_delivery_review_input",
+      "path": "schemas/public-delivery-delivery-review-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate",
+      "path": "schemas/public-input-delivery-1.0.schema.json"
+    },
+    {
+      "id": "ready_delivery_output",
+      "path": "schemas/public-output-delivery-ready-1.0.schema.json"
+    },
+    {
+      "id": "planning_revision_required_delivery_output",
+      "path": "schemas/public-output-delivery-planning-revision-required-1.0.schema.json"
+    },
+    {
+      "id": "implementation_required_delivery_output",
+      "path": "schemas/public-output-delivery-implementation-required-1.0.schema.json"
+    },
+    {
+      "id": "scope_confirmation_required_delivery_output",
+      "path": "schemas/public-output-delivery-scope-confirmation-required-1.0.schema.json"
+    },
+    {
+      "id": "blocked_delivery_output",
+      "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_input",
+      "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_withdrawal_review",
+      "path": "schemas/delivery-scope-withdrawal-review-1.0.schema.json"
+    },
+    {
+      "id": "delivery_stopped_output",
+      "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+    },
+    {
+      "id": "delivery_readiness_refresh_input",
+      "path": "schemas/public-delivery-readiness-refresh-input-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revision_input_1_0",
+      "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+    },
+    {
+      "id": "public_delivery_scope_revised_output_1_0",
+      "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+    },
+    {
+      "id": "delivery_scope_revision_review_1_0",
+      "path": "schemas/delivery-scope-revision-review-1.0.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "delivery_review_recorder",
+      "command": "scripts/record-task-delivery-review.sh",
+      "runtime_command": "record-task-delivery-review",
+      "objective_scope": "Bind an AI-completed Delivery Review to current task, HEAD, base, and a private call-local cycle identity"
+    },
+    {
+      "id": "delivery_review_checker",
+      "command": "scripts/check-task-delivery-review.sh",
+      "runtime_command": "check-task-delivery-review",
+      "objective_scope": "Reread current task and Git facts, validate the semantic union, digest, freshness, and exact exit"
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-review-task-delivery",
+      "objective_scope": "Record, check, project, schema-validate, and retire one Delivery Review checkpoint in one process"
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "ready",
+      "evidence": "the approved current slice is complete, independently deliverable, truthful, current, and Refs-only",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-publish-task-delivery"
+      }
+    },
+    {
+      "id": "planning_revision_required",
+      "evidence": "the Delivery policy is missing, ambiguous, stale, or internally incomplete",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-delivery-planning-router"
+      }
+    },
+    {
+      "id": "implementation_required",
+      "evidence": "one or more qualified current-slice findings require Phase 2 implementation",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-resume-implementation"
+      }
+    },
+    {
+      "id": "scope_confirmation_required",
+      "evidence": "one or more real authority or scope proposals require the existing clarification route",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-task-delivery-scope-router"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "a concrete external evidence or dependency gap prevents a reliable current review",
+      "consumer": {
+        "kind": "stop",
+        "id": "task-delivery-review-blocked"
+      }
+    },
+    {
+      "id": "delivery_stopped",
+      "evidence": "Current stage owner reviewed withdrawal, recorded public stop and released selection.",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-review-task-completion"
+      }
+    },
+    {
+      "id": "delivery_scope_revised",
+      "evidence": "Current stage owner reviewed actual accepted scope; public same-Delivery rework succeeded or its exact output was recovered.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-delivery-scope-revised-router"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "task_ref, branch_review_commit, current base, exact PR payload, approved Delivery policy, and call-local delivery_cycle_ref",
+    "freshness": "any task, scope, policy, content, base, review, validation, docs, Architecture, PR payload, or live-fact drift requires a fresh semantic round",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_contract.py",
+    "tests/test_runtime.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-review-task-delivery-input-delivery-aggregate-1.0",
+        "path": "schemas/public-input-delivery-1.0.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "delivery_delivery_review",
+          "schema": {
+            "schema_id": "guru-review-task-delivery-input-delivery-delivery-review-1.0",
+            "path": "schemas/public-delivery-delivery-review-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_delivery_review_input",
+            "path": "examples/public-delivery-delivery-review-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_delivery_review"
+          }
+        },
+        {
+          "id": "delivery_scope_withdrawal",
+          "schema": {
+            "schema_id": "guru-review-task-delivery-input-delivery-scope-withdrawal-1.0",
+            "path": "schemas/public-delivery-scope-withdrawal-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_scope_withdrawal_input",
+            "path": "examples/public-delivery-scope-withdrawal-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_withdrawal"
+          }
+        },
+        {
+          "id": "delivery_readiness_refresh",
+          "schema": {
+            "schema_id": "guru-review-task-delivery-input-delivery-readiness-refresh-1.0",
+            "path": "schemas/public-delivery-readiness-refresh-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_readiness_refresh_input",
+            "path": "examples/public-delivery-readiness-refresh-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_readiness_refresh"
+          }
+        },
+        {
+          "id": "delivery_scope_revision",
+          "schema": {
+            "schema_id": "guru-review-task-delivery-input-delivery-scope-revision-1.0",
+            "path": "schemas/public-delivery-scope-revision-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "public_delivery_scope_revision_input_1_0",
+            "path": "examples/public-delivery-scope-revision-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_scope_revision"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_id": "delivery_delivery_review"
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-review-task-delivery-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "invalid_public_input",
+        "path": "examples/public-invocation-error.json"
+      },
+      "example_argv": [
+        "--input",
+        "examples/public-delivery-review-input.json",
+        "--semantic-result",
+        "examples/semantic-ready.json"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "ready",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-ready-1.0",
+          "path": "schemas/public-output-delivery-ready-1.0.schema.json"
+        },
+        "example": {
+          "id": "ready_delivery_output",
+          "path": "examples/public-output-delivery-ready-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_ready"
+        ]
+      },
+      {
+        "exit_id": "planning_revision_required",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-planning-revision-required-1.0",
+          "path": "schemas/public-output-delivery-planning-revision-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "planning_revision_required_delivery_output",
+          "path": "examples/public-output-delivery-planning-revision-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_planning_revision"
+        ]
+      },
+      {
+        "exit_id": "implementation_required",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-implementation-required-1.0",
+          "path": "schemas/public-output-delivery-implementation-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "implementation_required_delivery_output",
+          "path": "examples/public-output-delivery-implementation-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_implementation"
+        ]
+      },
+      {
+        "exit_id": "scope_confirmation_required",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-scope-confirmation-required-1.0",
+          "path": "schemas/public-output-delivery-scope-confirmation-required-1.0.schema.json"
+        },
+        "example": {
+          "id": "scope_confirmation_required_delivery_output",
+          "path": "examples/public-output-delivery-scope-confirmation-required-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_scope"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-blocked-1.0",
+          "path": "schemas/public-output-delivery-blocked-1.0.schema.json"
+        },
+        "example": {
+          "id": "blocked_delivery_output",
+          "path": "examples/public-output-delivery-blocked-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      },
+      {
+        "exit_id": "delivery_stopped",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-stopped-1.0",
+          "path": "schemas/public-delivery-stopped-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "delivery_stopped_output",
+          "path": "examples/public-delivery-stopped-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_stopped"
+        ]
+      },
+      {
+        "exit_id": "delivery_scope_revised",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-output-delivery-scope-revised-1.0",
+          "path": "schemas/public-delivery-scope-revised-output-1.0.schema.json"
+        },
+        "example": {
+          "id": "public_delivery_scope_revised_output_1_0",
+          "path": "examples/public-delivery-scope-revised-output-1.0.json"
+        },
+        "consumer_use_ids": [
+          "project_delivery_scope_revised"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "publish_review_ready_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-publish-task-delivery"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-publish-task-delivery/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_review_ready",
+          "seed_fields": [
+            "task_ref",
+            "delivery_key",
+            "readiness_result_id",
+            "reviewed_head",
+            "pr_title",
+            "pr_body",
+            "remaining_work_state"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "ready_delivery_authoring",
+            "path": "examples/authoring-delivery-ready-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "planning_revision_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-delivery-planning-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-task-delivery-planning_revision_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-task-delivery-planning-revision-required.schema.json"
+        }
+      },
+      {
+        "id": "implementation_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-resume-implementation"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-task-delivery-implementation_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-task-delivery-implementation-required.schema.json"
+        }
+      },
+      {
+        "id": "scope_workflow_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-task-delivery-scope-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-task-delivery-scope_confirmation_required-delivery-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-task-delivery-scope-confirmation-required.schema.json"
+        }
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "task-delivery-review-blocked"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-task-delivery-blocked-delivery-1.0",
+          "path": "consumers/stop/delivery-1.0/review-task-delivery-blocked.schema.json"
+        }
+      },
+      {
+        "id": "delivery_stopped_seed",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-review-task-completion"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-review-task-completion/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "delivery_completion",
+          "seed_fields": [
+            "task_ref",
+            "task_key"
+          ],
+          "authoring_fields": [
+            "profile",
+            "mode"
+          ],
+          "authoring_example": {
+            "id": "delivery_stopped_delivery_authoring",
+            "path": "examples/authoring-delivery-delivery-stopped-1.0.json"
+          }
+        }
+      },
+      {
+        "id": "scope_revised_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-delivery-scope-revised-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-consumer-guru-review-task-delivery-scope-revised-1.0",
+          "path": "consumers/workflow/delivery-1.0/review-task-delivery-scope-revised.schema.json"
+        }
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_ready",
+        "exit_id": "ready",
+        "consumer_input_id": "publish_review_ready_input",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "delivery_key",
+            "target": "delivery_key"
+          },
+          {
+            "source": "readiness_result_id",
+            "target": "readiness_result_id"
+          },
+          {
+            "source": "reviewed_head",
+            "target": "reviewed_head"
+          },
+          {
+            "source": "pr_title",
+            "target": "pr_title"
+          },
+          {
+            "source": "pr_body",
+            "target": "pr_body"
+          },
+          {
+            "source": "remaining_work_state",
+            "target": "remaining_work_state"
+          }
+        ]
+      },
+      {
+        "id": "project_planning_revision",
+        "exit_id": "planning_revision_required",
+        "consumer_input_id": "planning_revision_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_implementation",
+        "exit_id": "implementation_required",
+        "consumer_input_id": "implementation_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_scope",
+        "exit_id": "scope_confirmation_required",
+        "consumer_input_id": "scope_workflow_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "direct"
+      },
+      {
+        "id": "project_delivery_stopped",
+        "exit_id": "delivery_stopped",
+        "consumer_input_id": "delivery_stopped_seed",
+        "operation": "select",
+        "mappings": [
+          {
+            "source": "task_ref",
+            "target": "task_ref"
+          },
+          {
+            "source": "task_key",
+            "target": "task_key"
+          }
+        ]
+      },
+      {
+        "id": "project_delivery_scope_revised",
+        "exit_id": "delivery_scope_revised",
+        "consumer_input_id": "scope_revised_input",
+        "operation": "direct"
+      }
+    ],
+    "private_artifacts": [
+      {
+        "id": "delivery_review_gate",
+        "kind": "gate_evidence",
+        "schema": {
+          "schema_id": "guru-review-task-delivery-gate-1.0",
+          "path": "schemas/delivery-review-gate.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      }
+    ]
+  }
+}

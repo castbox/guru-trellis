@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-contract-wording-output-pass-delivery-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-pass-output-2.0.schema.json"
+    },
+    {
+      "$ref": "public-delivery-pass-output.schema.json"
+    }
+  ]
+}

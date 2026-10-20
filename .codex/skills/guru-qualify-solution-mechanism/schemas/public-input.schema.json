@@ -1,0 +1,14 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-solution-mechanism-input-aggregate-1.0","oneOf":[
+    {"$ref":"public-task-free-pre-write-input.schema.json"},
+    {"$ref":"public-task-free-evolution-input.schema.json"},
+    {"$ref":"public-requirements-scope-set-input.schema.json"},
+    {"$ref":"public-change-request-candidate-set-input.schema.json"},
+    {"$ref":"public-planning-scenario-set-input.schema.json"},
+    {"$ref":"public-implementation-discovery-input.schema.json"},
+    {"$ref":"public-base-impact-candidate-set-input.schema.json"},
+    {"$ref":"public-phase2-candidate-set-input.schema.json"},
+    {"$ref":"public-branch-review-candidate-set-input.schema.json"},
+    {"$ref":"public-publication-candidate-set-input.schema.json"}
+  ]
+}

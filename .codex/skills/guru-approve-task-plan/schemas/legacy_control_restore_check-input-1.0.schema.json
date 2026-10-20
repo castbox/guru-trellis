@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-approve-task-plan-input-legacy_control_restore_check-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "root",
+    "recovery_ref"
+  ],
+  "properties": {
+    "profile": {
+      "const": "legacy_control_restore_check"
+    },
+    "root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recovery_ref": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

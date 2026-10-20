@@ -1,0 +1,75 @@
+# Guru Team Trellis Workflow Configuration
+# Copy to .trellis/guru-team/config.yml in the target repository.
+
+# Target GitHub repository in owner/repo format. If empty, infer from git remote.
+github_repo: ""
+
+# Require callers to provide an issue number or URL. When false, prepare can
+# return a side-effect-free proposed issue for the current AI owner to review.
+source_issue_required: false
+
+# Search open issues for likely duplicates before proposing an issue.
+duplicate_search_required: true
+
+# Number of duplicate candidates to show or record.
+duplicate_candidate_limit: 5
+
+# Behavior when a high-similarity duplicate is found.
+# Allowed values: confirm, block
+duplicate_high_similarity_action: confirm
+
+# Fallback branch type when deterministic inference does not match a supported
+# type. Allowed values: feat, fix, refactor, perf, test, docs, style, build, ci,
+# chore, revert.
+branch_type_default: chore
+
+# Optional single base branch. A non-empty value wins after an explicit --base.
+# Leave empty to select the first existing candidate below, then remote default.
+base_branch: ""
+
+# Preferred base branch candidates, in order. The first exact local or
+# remote-tracking ref that exists wins; multiple existing candidates are not
+# ambiguous. Remote default is consulted only when none exists.
+base_branch_candidates:
+  - dev
+  - develop
+  - main
+  - master
+
+# Workspace strategy.
+# Allowed values: worktree, current
+workspace_mode: worktree
+
+# Root directory for generated worktrees. Empty means ../<repo-name>-worktrees.
+worktree_root: ""
+
+# Gitignored local runtime namespace and task-local verification artifact.
+runtime_root: ".trellis/.runtime/guru-team"
+marketplace_verification_artifact: "marketplace-verification.json"
+
+# Business-project human-readable documentation default for workflow artifacts,
+# .trellis/spec/**, .trellis/tasks/**, docs/**, and bootstrap-created docs SSOT.
+artifact_language: zh-CN
+
+# Middle-platform framework knowledge lookup.
+# Allowed values:
+#   off           - do not check or warn.
+#   optional_warn - default; query guru-knowledge-center MCP when available,
+#                   warn and continue when unavailable.
+#   required      - opt-in; block design/implementation if required retrieval
+#                   cannot be performed or persisted.
+# Missing middle_platform_knowledge.mode is interpreted as optional_warn.
+middle_platform_knowledge:
+  mode: optional_warn
+
+# Remote used by the finish-work closeout transaction.
+publish:
+  remote: origin
+
+# Labels applied when the workflow creates a new issue. Empty list means no labels.
+created_issue_labels: []
+
+# Optional marker used to identify final closeout comments.
+closeout_markers:
+  - "最终收口口径"
+  - "Final Closeout"

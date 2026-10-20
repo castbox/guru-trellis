@@ -1,0 +1,12 @@
+{
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "repo_ref": "castbox/guru-trellis",
+  "pr_number": 512,
+  "profile": "delivery_merged_recovery"
+}

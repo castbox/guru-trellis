@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-input-aggregate-3.0",
+  "oneOf": [
+    {"$ref": "public-verification-required-input-3.0.schema.json"},
+    {"$ref": "public-standalone-verification-input.schema.json"}
+  ]
+}

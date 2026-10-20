@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-extension-verify-installation-output-blocked-1.0",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exit_id", "mode", "reason_code", "remediation"],
+      "properties": {
+        "exit_id": {"const": "blocked"},
+        "mode": {"const": "workflow"},
+        "reason_code": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
+        "remediation": {"type": "string", "minLength": 1}
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exit_id", "mode", "repo_ref", "reason_code", "remediation"],
+      "properties": {
+        "exit_id": {"const": "blocked"},
+        "mode": {"const": "standalone"},
+        "repo_ref": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "reason_code": {"type": "string", "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"},
+        "remediation": {"type": "string", "minLength": 1}
+      }
+    }
+  ]
+}

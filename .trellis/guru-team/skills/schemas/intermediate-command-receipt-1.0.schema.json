@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-intermediate-command-receipt-1.0",
+  "title": "Intermediate command stdout, consumed only within its current owner",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "formal_exit", "result"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "formal_exit": {"const": false},
+    "result": {"type": "object"}
+  }
+}

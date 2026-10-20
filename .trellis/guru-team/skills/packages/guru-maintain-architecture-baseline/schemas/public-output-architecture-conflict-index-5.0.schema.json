@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-maintain-architecture-baseline-output-architecture-conflict-index-5.0",
+  "oneOf": [
+    {
+      "$ref": "public-architecture-conflict-output.schema.json"
+    },
+    {
+      "$ref": "public-output-delivery-architecture-conflict-1.0.schema.json"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "conflict_refs",
+        "return_route"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "architecture_conflict"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "final_integration"
+        },
+        "conflict_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "return_route": {
+          "const": "planning"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_id",
+        "task_locator",
+        "stage",
+        "conflict_refs",
+        "return_route",
+        "delivery_key",
+        "planning_root"
+      ],
+      "properties": {
+        "exit_id": {
+          "const": "architecture_conflict"
+        },
+        "task_locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "const": "final_integration"
+        },
+        "conflict_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "return_route": {
+          "const": "planning"
+        },
+        "delivery_key": {
+          "type": "object"
+        },
+        "planning_root": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "$defs": {}
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  },
+  "exit_id": "requirements_revision_required",
+  "reason": {
+    "reason_code": "requirements_revision_required",
+    "reason_refs": [
+      "scope:current"
+    ]
+  }
+}

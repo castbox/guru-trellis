@@ -1,0 +1,10 @@
+{
+  "public_invocation": {
+    "arguments": [
+      "--invocation",
+      "-"
+    ]
+  },
+  "scope": "Display labels only; no incident or protection mechanism.",
+  "evidence_level": "post_owner_structural_only"
+}

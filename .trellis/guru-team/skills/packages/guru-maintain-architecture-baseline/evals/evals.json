@@ -1,0 +1,835 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-maintain-architecture-baseline",
+  "evals": [
+    {
+      "id": "bootstrap-foundation-current",
+      "prompt": "A reviewed foundation bootstrap activates one successor Architecture Baseline at the canonical locator without introducing a second authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The foundation bootstrap scenario returns baseline_current for the declared successor identity.",
+      "input_profile_id": "bootstrap_foundation",
+      "files": [
+        "evals/files/bootstrap-foundation-input.json",
+        "evals/files/bootstrap-foundation-current-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "no-impact",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-semantic-authoring",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "target-native",
+      "prompt": "A new capability follows the target boundary and one writer without introducing a legacy authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The target-native scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/target-native-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "legacy-boundary-convergence",
+      "prompt": "A feature touches a legacy boundary and records bounded convergence, remaining debt, compatibility exit, and forbidden parallel scope.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The legacy-boundary-convergence scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/legacy-boundary-convergence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dedicated-refactor-slice",
+      "prompt": "A behavior-preserving refactor slice has one writer, bounded migration, observation, rollback, and deletion condition.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The dedicated-refactor-slice scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/dedicated-refactor-slice-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scope-expansion",
+      "prompt": "Implementation discovery expands persistence or owner scope and the old planning contract must be redone.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The scope-expansion scenario returns contract_incomplete.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-scope-expansion-input.json",
+        "evals/files/scope-expansion-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fitness-regression",
+      "prompt": "The candidate introduces a second authority or reopens a closed GAP.",
+      "expected_exit": "fitness_regression",
+      "expected_output": "The fitness-regression scenario returns fitness_regression.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/fitness-regression-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "fitness_regression"
+          }
+        ]
+      }
+    },
+    {
+      "id": "parallel-stale",
+      "prompt": "Another task promoted a new current identity before this task could promote.",
+      "expected_exit": "sync_required",
+      "expected_output": "The parallel-stale scenario returns sync_required.",
+      "input_profile_id": "promotion",
+      "files": [
+        "evals/files/promotion-sync-input.json",
+        "evals/files/parallel-stale-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unpromoted-contribution",
+      "prompt": "Implementation passes, but the design constitution remains authority_status=pending_reviewed_promotion and the required reviewed contribution/promotion is incomplete; return sync_required(promotion_required), never baseline_current.",
+      "expected_exit": "sync_required",
+      "expected_output": "The unpromoted-contribution scenario returns sync_required(promotion_required).",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-unpromoted-input.json",
+        "evals/files/unpromoted-contribution-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "next-task-consumption",
+      "prompt": "A new task consumes only the promoted current identity and current GAP and owner state.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The next-task-consumption scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/next-task-consumption-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-external-evidence",
+      "prompt": "Applicable external evidence is unavailable and remains unverified.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The missing-external-evidence scenario returns contract_incomplete.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-architecture-input.json",
+        "evals/files/missing-external-evidence-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          }
+        ]
+      }
+    },
+    {
+      "id": "repair-current-contract",
+      "prompt": "A reviewed repair restores the missing project Architecture check descriptor while preserving the active baseline and current constitution authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The repair scenario returns baseline_current after restoring the declared contract evidence.",
+      "input_profile_id": "repair",
+      "files": [
+        "evals/files/repair-current-input.json",
+        "evals/files/repair-current-contract-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "implementation-discovery-independent-native",
+      "prompt": "Review the actual implementation_discovery candidate and unchanged production consumers under current project Architecture authority. Return the formal wrapper result you author as a fresh independent Architecture reviewer.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/implementation-discovery-independent-native-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "phase2-independent-native",
+      "prompt": "Review the actual phase2 candidate and unchanged production consumers under current project Architecture authority. Return the formal wrapper result you author as a fresh independent Architecture reviewer.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/phase2-independent-native-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "branch-review-independent-native",
+      "prompt": "Review the actual branch_review candidate and unchanged production consumers under current project Architecture authority. Return the formal wrapper result you author as a fresh independent Architecture reviewer.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/branch-review-independent-native-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-business-default-native",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "architecture_conflict"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "candidate-causality",
+            "criterion": "The reviewer identifies the candidate expansion of import-stage ownership into shared transport and impact on the unchanged query-summary caller. It separates technical protocol enums from business stages, requires necessary local migration/old-path retirement, and does not expand unrelated cache debt.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-missing-candidate-native",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "candidate-causality",
+            "criterion": "The reviewer finds that this Planning invocation has authority but no actual candidate design or diff, and returns existing incomplete/blocked instead of treating authority reads as candidate approval.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-inherited-business-default-native",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "architecture_conflict"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "candidate-causality",
+            "criterion": "The reviewer identifies the candidate expansion of import-stage ownership into shared transport and impact on the unchanged query-summary caller. It separates technical protocol enums from business stages, requires necessary local migration/old-path retirement, and does not expand unrelated cache debt.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "before-after-necessity",
+            "criterion": "The reviewer reads baseline source and candidate and recognizes that protocol-to-import stage attribution already existed; this candidate expands and solidifies that wrong ownership as a public parameter. Correct local migration moves import semantics into import_pipeline, retires generic stage fallback, and adapts query_summary while preserving legal retries=0/6 and true 0..8 validation. Missing optional diagnostic labels are not grounds to reject business calls. legacy_cache is causally unrelated and is not a current finding or required follow-up.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-constraint-sufficient-native",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "minimal-constraint-facts",
+            "criterion": "The reviewer reads only the necessary task-local endpoint capability fact and its source after current authority/candidate, distinguishes the technical wire_v2 identifier from business-stage semantics, independently establishes compatibility and unchanged explicit callers, and does not preload PRD/acceptance/implementation narrative or invent a stronger provider-version/business gate.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-constraint-insufficient-native",
+      "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
+      "expected_exit": "contract_incomplete",
+      "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "contract_incomplete"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "independent-causal-review",
+            "criterion": "A separate fresh ephemeral native worker inspects its prelude and reads Constitution/Baseline/project change contract before real candidate design/source and unchanged import and summary callers. It forms a responsibility/default/configuration judgment without PRD, acceptance or prefilled pass narratives, authors and invokes Architecture itself. The result is supported by actual before/after facts, not keyword matching or a green deterministic checker.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "minimal-constraint-facts",
+            "criterion": "The reviewer identifies the absent provider response/lifecycle capability facts needed to assess the proposed default selector, requests only those facts through an existing incomplete/blocked route, and preserves uncertainty rather than inferring compatibility from the endpoint name or reading task narratives.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-task-impact-sync-identity",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/delivery-task-impact-sync-identity-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-promotion-identity",
+      "prompt": "Another task promoted a new current identity before this task could promote.",
+      "expected_exit": "sync_required",
+      "expected_output": "The parallel-stale scenario returns sync_required.",
+      "input_profile_id": "delivery_promotion",
+      "files": [
+        "evals/files/delivery-promotion-identity-input.json",
+        "evals/files/parallel-stale-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "sync_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-repair-identity",
+      "prompt": "A reviewed repair restores the missing project Architecture check descriptor while preserving the active baseline and current constitution authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The repair scenario returns baseline_current after restoring the declared contract evidence.",
+      "input_profile_id": "delivery_repair",
+      "files": [
+        "evals/files/delivery-repair-identity-input.json",
+        "evals/files/repair-current-contract-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "delivery-bootstrap-foundation-identity",
+      "prompt": "A reviewed foundation bootstrap activates one successor Architecture Baseline at the canonical locator without introducing a second authority.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The foundation bootstrap scenario returns baseline_current for the declared successor identity.",
+      "input_profile_id": "delivery_bootstrap_foundation",
+      "files": [
+        "evals/files/delivery-bootstrap-foundation-identity-input.json",
+        "evals/files/bootstrap-foundation-current-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "whole-task-acceptance-current",
+      "prompt": "A bounded documentation-equivalent change has no architecture impact and creates no contribution or ADR.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The no-impact scenario returns baseline_current.",
+      "input_profile_id": "task_impact_sync",
+      "files": [
+        "evals/files/whole-task-acceptance-input.json",
+        "evals/files/no-impact-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          }
+        ]
+      }
+    }
+  ]
+}
