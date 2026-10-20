@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-requirements-design-test-ssot-semantic-result-1.0",
+  "$id": "guru-requirements-design-test-ssot-semantic-result-2.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -104,7 +104,8 @@
         "sync_required",
         "revision_required",
         "baseline_incomplete",
-        "blocked"
+        "blocked",
+        "candidate_ready"
       ]
     },
     "consumer": {

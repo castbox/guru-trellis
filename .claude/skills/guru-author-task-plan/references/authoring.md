@@ -120,8 +120,10 @@ Consume only the actual candidate_assessment from this same candidate/key.
 Use current constitution, baseline, required concerns and project checks, and
 its impact/change path/decision refs, to author a genuine contribution and
 necessary ADR candidate. Shared promotion remains with its original Architecture
-owner after the existing Phase 2 independent assessment of the full candidate
-and proposed delta, before final Check/commit/independent committed Review.
+owner at final_integration after independent Architecture and candidate Check
+of the full implementation and isolated proposed delta. Actual writes then
+return through implementation candidate/begin_check and final Check/commit/
+independent committed Review. Candidate checks cannot report current success.
 Planning cannot promote shared authority. Preserve a rereadable pre-promotion
 authority and write the baseline's facts, decisions, sources and verification
 limits without requiring a later documentation commit for final Review or HEAD.

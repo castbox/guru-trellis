@@ -104,7 +104,11 @@ Review DTO or Phase 2 pass does not satisfy this entry. Changed Architecture
 facts, missing/stale evidence or unpromoted contribution follow that owner's
 existing routes. Delivery does not judge impact/path/ADR or perform promotion.
 
-Architecture promotion normally finishes before final Check and the complete
+Only no_change or actual reviewed_promoted permits final readiness.
+Candidate_checked, candidate_ready and reviewed_candidate cannot be projected
+into final Check/full_review/readiness. Matching Arch5.0/Delivery3.0 and RDT2.0
+promotion occurs at final_integration, then actual candidate rebinding and final
+quality cover all writes. Architecture promotion finishes before final Check and the complete
 committed Review. This owner does not add baseline prose after Review. An
 already accepted contribution is not promoted again for readiness. For a
 supported promotion-reference alignment, consume the original Branch Review

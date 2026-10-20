@@ -1,0 +1,6 @@
+{
+  "exit_id": "candidate_ready",
+  "contribution_locator": "docs/requirements-design-test-contributions/example",
+  "authority_locator": "docs",
+  "authority_version": "guru-trellis-rdt"
+}

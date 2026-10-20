@@ -305,9 +305,11 @@ Planning cannot approve without current baseline, design-constitution, and
 project change-contract evidence. Expansion of scope, risk, owner, state
 authority, persistence, SDK lifecycle, external integration, or another
 architecture boundary invalidates the Planning result before the expanded edit
-or test. Phase 2 assesses the complete candidate and proposed Architecture delta
-after Docs reconciliation. The original Architecture owner promotes the
-reviewed delta and verifies actual-write applicability before final Check.
+or test. Candidate Phase 2 assesses complete implementation and isolated
+proposed Architecture/RDT targets. Original Check delivery_candidate_check
+returns candidate_checked only to guru-knowledge-final-integration-router.
+Original maintenance owners promote there; implementation then rebuilds the
+actual candidate/begin_check before matching final Architecture and Check.
 Branch Review forms its own current conclusion over the complete committed
 range, including promoted files and pre-promotion authority. Apply Candidate
 Applicability And Coverage to original coverage and actual delta; a Phase 2
@@ -497,8 +499,13 @@ route for that observation. The main coordinator rereads those facts and runs
 `trellis-*` agent definitions remain upstream-owned and are not patched by the
 Guru preset.
 
-The final Check-bound path reaches `guru-create-task-commit` only through
-`guru-check-task:passed`. The early Draft path explicitly invokes the same
+The original implementation owner invokes candidate/begin_check before Check.
+`delivery_candidate_check` returns `candidate_checked` only to the final
+integration router after Check's existing rework returns to implementing.
+Original Architecture/RDT promotion at final_integration and implementation's
+new candidate/begin_check precede final Check. No-change follows the same legal
+return without empty contributions or commits. Only final `passed` reaches
+`guru-create-task-commit`; candidate_checked is not a public Check gate. The early Draft path explicitly invokes the same
 TaskCommit and Publication owners through their independent profiles and five
 workflow-owned Draft routers. Finding and
 planning-stale exits return to their declared consumers automatically. The

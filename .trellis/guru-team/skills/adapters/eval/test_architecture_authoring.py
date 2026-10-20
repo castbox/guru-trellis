@@ -72,7 +72,7 @@ class ArchitectureAuthoringTests(unittest.TestCase):
             repo = self.fixture(Path(temp), stage='phase2')
             facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
             public = json.loads((repo / facts['public_input_locator']).read_text())
-            validate_json(public, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-2.0.schema.json', 'input')
+            validate_json(public, PACKAGE / 'schemas/public-input-delivery-task-impact-sync-3.0.schema.json', 'input')
             self.assertEqual(public['candidate']['content_identity'], 'sha256:' + reviewed_content_identity(repo)['sha256'])
             self.assertEqual(public['before_authority']['git_revision'], public['candidate']['head'])
             (repo / 'query_summary.py').write_text('A changed unchanged-consumer dependency\n')

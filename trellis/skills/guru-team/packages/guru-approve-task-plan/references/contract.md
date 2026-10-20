@@ -59,6 +59,12 @@ stdout, a result/report, locator, or checkpoint.
 
 ## Architecture Stage Consumption
 
+Planning remains purpose 3.0 / Delivery1.0. Nonplanning Architecture5.0 /
+Delivery3.0, RDT2.0 and Check6.0 move actual promotion to final integration;
+this does not change final_plan or permit candidate_assessment as approval.
+Planning names complete task-owned proposed targets, not early current writes.
+
+
 The global workflow mandatory invokes
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=planning, planning_purpose=final_plan)` before
 this owner can approve Planning. Its fresh `baseline_current` is the adjacent

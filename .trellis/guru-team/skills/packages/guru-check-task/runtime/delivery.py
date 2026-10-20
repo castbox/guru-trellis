@@ -9,7 +9,7 @@ from common import content_identity, dirty_paths, git, validate_candidate_classi
 from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
 from runtime.delivery_projection.gates import record_gate, rework
 from runtime.io import CommandError
-from runtime.reviewed_content import reviewed_content_metadata_path
+from runtime.reviewed_content import ReviewedContentError, reviewed_content_identity, reviewed_content_metadata_path
 from runtime.schema import validate_json
 from runtime.task_lifecycle.active_checkout import resolve_active_task_checkout
 from runtime.task_lifecycle.errors import LifecycleContractError
@@ -55,13 +55,31 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
     # this very gate. The new local token is the upstream candidate reference;
     # the existing semantic payload is retained, never interpreted as authority.
     exit_id = owner["typed_exit"]
+    candidate_check = profile == "delivery_candidate_check"
+    if (candidate_check and exit_id in {"passed", "resolved_reconciliation_passed"}) or (not candidate_check and exit_id == "candidate_checked"):
+        raise CommandError("schema_mismatch", "typed_exit", "Use candidate_checked only for candidate Check; final profiles retain their final gate meaning.")
+    if candidate_check and delivery["phase"] != "checking":
+        raise CommandError("stale_identity", "delivery.phase", "Implementation must begin_check the actual candidate before a fresh candidate Check; phase never supplies a pass.", 3)
     resolved = profile == "delivery_resolved_reconciliation"
     if (exit_id == "resolved_reconciliation_passed" and not resolved) or (resolved and exit_id == "passed"):
         raise CommandError("schema_mismatch", "typed_exit", "Use the resolved-tree pass only for its dedicated Check profile.")
     output = {"exit_id": exit_id}
     if exit_id != "blocked":
         output.update(task_ref=public["task_ref"], delivery_key=public["delivery_key"])
-    if exit_id == "passed":
+    if exit_id == "candidate_checked":
+        if owner["reviewed_content_sha256"] != content_identity(repo):
+            raise CommandError("stale_identity", "reviewed_content_sha256", "Review the complete current candidate before final integration.", 3)
+        try:
+            current = reviewed_content_identity(repo)
+        except ReviewedContentError as exc:
+            raise CommandError("stale_identity", "candidate", str(exc), 3) from exc
+        output["candidate"] = {"head": candidate["head_ref"], "content_identity": "sha256:" + current["sha256"]}
+        # Candidate judgment is complete. The existing Check owner returns to
+        # implementation; retained real gates are history, never a new pass.
+        rework(projection, public["delivery_key"], "check", "implementation",
+               authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo),
+               ["readiness"])
+    elif exit_id == "passed":
         evidence = [authority_ref(projection.planning_directory(public["delivery_key"]) / name, repo)
                     for name in ("prd.md", "design.md", "implement.md")]
         identity = hashlib.sha256(json.dumps({"key": public["delivery_key"], "candidate": candidate,

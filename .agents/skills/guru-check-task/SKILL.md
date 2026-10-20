@@ -1,6 +1,6 @@
 ---
 name: guru-check-task
-description: Check the complete current task through one AI-owned semantic round, compact private evidence, and explicit Delivery-scoped typed exits.
+description: Check complete Delivery candidates and final content through the original semantic owner.
 ---
 
 # Guru Check Task
@@ -108,7 +108,15 @@ cannot be hidden as an observation or future cleanup and cannot reach `passed`.
 The Architecture owner keeps applicability and route ownership; this Skill
 consumes its current result as direct evidence in the existing adequacy review.
 
-The final candidate includes any Architecture promotion required by this
+In `delivery_candidate_check`, consume the independent Architecture
+`reviewed_candidate` or no-change result and RDT `candidate_ready` or no-change.
+Read complete proposed definitions at their task-owned locators, fixed
+applicable sources and affected unchanged consumers. Shared current remains
+unchanged. Complete all nine dimensions without requiring a final current body
+that has not been written. Only `candidate_checked` is the successful candidate
+exit; it records no public Check and cannot enter TaskCommit.
+
+The final candidate includes any Architecture and RDT promotion required by this
 Delivery. Consume the original Architecture owner's actual-write applicability
 result; use its public `before_authority` to reread the comparison origin and
 its `candidate` to identify the actual reviewed worktree. The promoted CURRENT
@@ -145,7 +153,9 @@ only its fresh current route may resume implementation.
 
 Current Delivery input only routes the selected formal Check. Retain the full
 semantic judgment and return exactly one declared exit. Record the public
-Check only after that judgment; TaskCommit consumes its actual result ID.
+Check only after the final-profile judgment; TaskCommit consumes its actual
+result ID. Candidate Check instead performs the original lawful rework described
+in the contract before emitting candidate_checked.
 
 On every entry, complete the current semantic round and follow the contract's
 Dependency-Scoped Validation order: determine the complete check set before

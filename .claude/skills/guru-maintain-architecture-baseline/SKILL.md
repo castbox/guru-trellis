@@ -50,7 +50,7 @@ Execute one profile in this order:
    the contract's Engineering execution facts rules to supporting commands;
    judge applicability, blocking effect and before/after meaning;
 4. make the applicable judgments as the contract-selected AI owner;
-5. author one complete result matching the selected Planning 3.0, nonplanning 4.0, or matching Delivery schema;
+5. author one complete result matching the selected Planning 3.0, nonplanning 5.0, or matching Delivery schema;
 6. submit `public_input` plus that `owner_result` once through the formal
    `scripts/invoke.sh --invocation -` boundary; and
 7. consume exactly one declared typed exit.
@@ -90,16 +90,21 @@ five stable principle identities/short names, and task-local change/evidence
 contracts. It does not turn principles into a scorecard and does not encode
 language, framework, or business-specific checks.
 
-The existing independent Phase 2 reviewer assesses the complete candidate and
-proposed Architecture writes before promotion. The original owner then writes
-the reviewed contents on the execution branch against expected-current. Its
-actual promoted result enters the final Check directly. Task Commit and the
-independent committed full-diff Architecture assessment/Branch Review follow.
-Promotion alone does not restart the same-content independent assessment.
+The independent Phase 2 Architecture reviewer assesses the complete candidate
+and proposed Architecture writes while shared current remains unchanged. The
+original Check owner then checks that full candidate through its candidate-only
+profile. Only its actual `candidate_checked` exit, after legal rework to
+implementation, enters final integration. In that boundary the original
+Architecture owner reads the actual affected targets, reconciles intervening
+changes and writes the reviewed complete units. It checks actual-write
+applicability and returns the real promoted candidate. The implementation owner
+rebuilds the public candidate with every promotion, relationship and navigation
+change and calls `begin_check` again. Final Architecture/Check, Task Commit and
+independent committed full-diff Review cover that actual content.
 
 The AI owns applicability, sufficiency, conflict, regression, contribution,
 ADR, promotion, and route judgment. The deterministic runtime validates only
-purpose-bound Planning 3.0 semantics and current nonplanning 4.0 / Delivery 2.0 contracts, exact identity/freshness binding,
+purpose-bound Planning 3.0 semantics and current nonplanning 5.0 / Delivery 3.0 contracts, exact identity/freshness binding,
 project-check shape, unique consumer, and minimal typed projection. Missing or
 1.0 input is rejected; it is never upgraded or dual-read.
 
@@ -125,8 +130,9 @@ Every `baseline_current` requires `authority_status=current`, an existing
 regular repository file at the constitution locator, and carries its exact
 `source_profile`. Only the matching `task_impact_sync` or `delivery_task_impact_sync` profile
 may resume its corresponding stage. Bootstrap and repair current results rerun that affected
-`task_impact_sync` stage; promotion current results enter the final Check with the actual promoted
-candidate; Task Commit and independent committed full-diff Review follow.
+`task_impact_sync` stage, except the final-integration maintenance continuation
+defined below; promotion current results return the actual promoted candidate for implementation
+to refresh the public candidate and re-enter final Architecture/Check; Task Commit and independent committed full-diff Review follow.
 
 Public exits are `baseline_current`, `sync_required`, `baseline_incomplete`,
 `architecture_conflict`, `contract_incomplete`, `fitness_regression`, and
@@ -165,13 +171,13 @@ No new Architecture owner or lifecycle stage is introduced.
 
 Old task-impact planning 2.0 input fails closed; interrupted old planning fresh
 re-enters Author. Bootstrap and repair retain their fixed contracts. Nonplanning task impact and
-promotion select 4.0 / Delivery 2.0 under MIGRATION-600. Historical schemas are validation assets only, never a planning
+promotion select 5.0 / Delivery 3.0 under MIGRATION-638. Historical schemas are validation assets only, never a planning
 fallback. MIGRATION-292 defines the matching workflow/preset update boundary.
 
 ## Delivery Architecture projection
 
 Nonplanning development stages select delivery_task_impact_sync (schema_version
-delivery-2.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
+delivery-3.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
 in addition to this owner's original stage authorities. Read the selected
 Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
@@ -187,7 +193,7 @@ Old Task development inputs require the pinned old complete installation.
 Delivery stage recovery uses `delivery_promotion`, `delivery_repair`, or
 `delivery_bootstrap_foundation` with the explicit original DeliveryKey and
 planning_root. These profiles execute the same baseline owner algorithms and
-return the original stage identity; promotion specifically selects phase2.
+return the original stage identity; promotion specifically selects final_integration.
 Whole-task/global bootstrap, promotion and
 repair retain their existing profiles and never infer a Delivery from private state.
 
@@ -196,15 +202,39 @@ repair retain their existing profiles and never infer a Delivery from private st
 sync_kind to project the exact Task or Delivery promotion/repair/impact entry
 to this same owner. It performs no second semantic assessment and infers no identity.
 
-## Pre-Check promotion 4.0 / Delivery 2.0
+For maintenance requested by `promotion|delivery_promotion(stage=final_integration)`,
+retain the original promotion profile, stage, Task/DeliveryKey and planning_root
+only in the current call-local continuation. Project the maintenance call to
+the unchanged `repair|bootstrap_foundation(stage=phase2)` profile, or its
+Delivery equivalent. Select its existing 2.0 / delivery-1.0 schema and
+`guru-maintain-architecture-baseline:2.0` contract identity; preserve the actual
+project authority identities and same key/root. After maintenance, return to
+the original 5.0 / delivery-3.0 final-integration promotion. Reread its authority,
+targets and complete candidate and author the current result. A maintenance
+current result is not a promotion result. Do not pass final_integration to the
+old maintenance schema or relabel its output as reviewed_promoted. Missing
+call-local continuation requires fresh original-owner entry, not a guessed
+route or a new persistent handoff.
+
+## Final-integration promotion 5.0 / Delivery 3.0
 
 Read the matching section in references/contract.md. Current promotion is
-phase2/promotion_required only. Other stale authority uses fresh impact sync;
+final_integration/promotion_required only. Other stale authority uses fresh impact sync;
 project-contract repair retains repair. Current selectors reject old inputs;
 no future committed Review is a promotion prerequisite.
+
+The public `baseline`, `expected_current_identity` and `current_identity` bind
+the before authority. The owner result and output `baseline_identity` name the
+actual active authority after the reviewed write. Ordinary leaf-only promotion
+retains that identity and does not write the root entry. A real identity or
+navigation migration may write the baseline entry among its reviewed targets;
+the owner reads its complete after content and returns the actual after
+identity. A different after identity requires an actual changed baseline target
+with before/after content, completed readback and current applicability. The
+validator checks those facts without interpreting identity prose in Markdown.
 
 The original Architecture owner writes and recovers reviewed targets with
 ordinary file tools. The wrapper is a recorder/validator and writes no target
 or persistent intent. Read back the same call-local intent after partial write
 or output loss. Continue only uniquely recoverable, conflict-free pending
-writes; never recreate a successor or overwrite a conflict.
+writes; never repeat a completed write or overwrite a conflict.

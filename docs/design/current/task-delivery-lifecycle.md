@@ -1,6 +1,6 @@
 # Task / Delivery 生命周期设计
 
-知识单元：`RDT-DES-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.114`；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/design/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
+知识单元：`RDT-DES-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/design/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
 
 ## 稳定设计身份
 
@@ -38,15 +38,19 @@ Architecture 候选评估先于 Author 实质 solution；最终 Wording-current 
 
 `D636-03`：workflow 唯一反馈 consumer 固定 B/H，同时调度独立 Branch Review 早期完整内容分析与风险匹配验证。原 Review 新早期 profile 不读 Check 私有结论、不写 public full_review；最终正式 owner在真实 Check predecessor 下 fresh 判断和记录，不能自动从早期结果映射 passed。Check 仍拥有完整 scope 与最终判断；早期执行事实是否仍适用由当前原 owner审查，不新增跨阶段 review cache。HEAD H 与组合 T/M 是不同验证对象；冲突/无merge ref/CI未触发时保留 HEAD 支持入口和具体组合缺口。
 
-`D636-04/05`：global workflow 只编排显式 stable skill 与唯一 typed consumer，step-local package 单写内部行为。原 Delivery Review 判断最终范围、载荷和分层验证；Merge重新核对非 Draft PR、实际 HEAD/body 与完整当前 gate链。Refs-only/Closure独占关闭、Task Completion 与 slice事实分工不变。一次性 matching 迁移经原 commit/publication owners 恢复实际在途状态和已执行动作，旧安装固定版本、新安装成套切换；无 current 双读或第二 phase/store；#637 后继候选行为由下文完整职责承接，#638 未来组合仍按实际交付顺序验证。
+`D636-04/05`：global workflow 只编排显式 stable skill 与唯一 typed consumer，step-local package 单写内部行为。原 Delivery Review 判断最终范围、载荷和分层验证；Merge重新核对非 Draft PR、实际 HEAD/body 与完整当前 gate链。Refs-only/Closure独占关闭、Task Completion 与 slice事实分工不变。一次性 matching 迁移经原 commit/publication owners 恢复实际在途状态和已执行动作，旧安装固定版本、新安装成套切换；无 current 双读或第二 phase/store；#637 后继候选行为由下文完整职责承接，#638组合由T638实际验证，不继承旧绿色。
 
 ## 最终 Check、Commit、Review 与晋升
 
-`D531-04`、`D600-01..03 / CON600-01..03`：Phase2 review 覆盖完整 tracked/untracked candidate 与 proposed authority targets，先比较 immutable before authority，再由原 owners 按 live expected-current 晋升并读回验证适用性。最终 Check 包含其实际差额；TaskCommit 包含最终内容；fresh committed Architecture 与 Branch Review 基于固定完整范围独立重算。原 [ADR-030](../../architecture/adr/030-promotion-before-final-check.md) 拥有时序后继决定，ADR-028 保留版本适用性与内容/集成分离。
+`D531-04`、`D600-01..03 / CON600-01..03` 与 `D638-01..05`：原implementation拥有固定B/实际HEAD和全量paths的candidate/begin_check，原Check拥有完整候选质量判断及合法checking→implementing rework，原Architecture/RDT拥有实际final_integration写入。workflow只编排这些既有owners与typed exits，不新增Task phase/API操作/Skill。
 
-Check、TaskCommit、Branch Review 各保留 semantic Gate。Check 的 pass 不等于 commit；clean 现有候选从原公共事实导出当前 Review 输入，不新 commit。dirty exact stage/commit 后以实际新 H 进入完整 Review。finding-fix、fresh-final 和 bounded continuity 保持各自 entry；旧 candidate 结果不能借路径相同当 current。零候选使用 [] 并保持真实完整审查，非空全 rejected 与零候选分别记录；两者均不自动通过。
+先独立Architecture phase2比较immutable before与完整implementation/proposed targets，再原Check delivery_candidate_check完整审查。candidate_checked不调用public Check writer；其唯一consumer只能进入原两maintenance的最终整合。原owners一次固定实际目标、读取命中单元并合成完整有效条件；真实差额沿唯一候选适用合同补独立审核及受影响未改consumers，义务变化回相应原owner。随后写入、readback及适用性判断。
 
-`R578` 工程事实采用不转移 semantic owner：当前 reviewer先独立确定 check set，再审原命令的定义、依赖、预期、参数、工具链和环境是否适用。当前 judgment/result总是新作，合法事实适用则不机械重跑；缺失/未知/变化只补受影响检查。无新公共 reviewer字段、账本或退休checkpoint恢复。
+implementation用同B、实际HEAD和全部after差额重新candidate/begin_check。最终Architecture/Check验证新的content_ref，最终Check record_gate才进入reviewing。TaskCommit、独立committed Architecture/BranchReview覆盖真实最终内容；Ready/Finish仅no_change或真实reviewed_promoted。no-change仍走合法回程，不制造空贡献、ADR或commit。稳定knowledge identity与精确Git快照分开，ordinary promotion无需总入口必写/global successor；公共API版本继续真实版本化。
+
+Check、TaskCommit、BranchReview各保留semantic Gate。clean候选从真实公共事实进入Review，无新commit；dirty精确提交后以实际H进入完整Review。finding-fix、fresh-final和bounded continuity保留原entry，完整空集/全rejected均不自动passed。原工程事实按定义、依赖、预期、参数、工具链/环境采用，缺失/未知/变化补命中项；当前judgment/result实际新作，无新账本或退休checkpoint重建。
+
+Arch非Planning5.0/Delivery3.0、RDT impact/promotion2.0、Check private6.0和直接consumers经MIGRATION-638成套迁移；Planning3.0/Delivery1.0、bootstrap/repair保持。未晋升、已晋升但未Review、已有Review分别由原owner重判或补缺，不转换旧pass、不重复完成写入。candidate输出丢失按实际phase/写入事实回原producer及implementation重绑，不直接改公共state。
 
 ## 候选适用性职责与正式结果
 
@@ -58,7 +62,7 @@ Check、TaskCommit、Branch Review 各保留 semantic Gate。Check 的 pass 不�
 
 原阶段用原 summary/evidence 或必要 owner-private 短期 checkpoint 承接结论；不跨读、不重建退休数据。Delivery Review/Publish/Merge 核自身 payload/Issue/candidate/live 资格并消费适用内容结论。真实 authority/scope/依赖改变回最早 owner；普通 HEAD/阶段/身份或无关 target 前进只触发适用性判断。MIGRATION-637 成套切换 matching workflow/preset/packages/consumers，先由原 producer 恢复已经发生的事务，再同 key 原阶段重判当前结果，零重复 mutation 或空提交。source/dogfood 编辑不代表活动 Task 已采用。
 
-ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh reviewer/相同完整重审片段；ADR-028 固定候选、ADR-030 晋升先于最终 Check、ADR-033 Draft 非最终结果与 #636 真实 Check predecessor 保留。实际 #636 matching 组合与 #638 未来未验证边界分别报告，原 RDT/Architecture single-writer 不变。
+ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh reviewer/相同完整重审片段；ADR-028 固定候选、ADR-030 晋升先于最终 Check、ADR-033 Draft 非最终结果与 #636 真实 Check predecessor 保留。实际#636/#637/#638 matching组合与其未验证边界分别报告，原 RDT/Architecture single-writer 不变。
 
 ## Delivery Review / Publish / Merge
 

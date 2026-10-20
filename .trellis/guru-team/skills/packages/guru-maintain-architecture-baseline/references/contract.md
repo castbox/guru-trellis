@@ -2,7 +2,7 @@ Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicabil
 for shared candidate coverage, engineering facts and recovery. This package
 retains its own current judgment, formal result and action boundary.
 
-# Architecture Baseline: Planning 3.0 and Nonplanning 4.0
+# Architecture Baseline: Planning 3.0 and Nonplanning 5.0
 
 ## Authority model
 
@@ -91,7 +91,7 @@ classifiers, public fields, or a second constitution checklist.
 
 ## Public and owner boundary
 
-The current repository 4.0 and nonplanning Delivery delivery-2.0 public inputs are caller-owned
+The current repository 5.0 and nonplanning Delivery delivery-3.0 public inputs are caller-owned
 route and authority DTOs. Every profile
 identifies the profile, stage, task, current baseline, constitution, project
 change contract, requirement/behavior authority, and freshness. Branch Review task impact carries the exact structured committed range.
@@ -259,7 +259,7 @@ Architecture authority, stop the affected work through the existing owner route.
 by the Architecture owner. Consume the still-applicable independent conclusion,
 reviewed contribution and live authority, candidate, committed-review and
 promotion facts; judge this stage's eligibility and personally invoke the matching current
-nonplanning 4.0 / Delivery 2.0 wrapper. A caller change alone does not repeat the same assessment or create
+nonplanning 5.0 / Delivery 3.0 wrapper. A caller change alone does not repeat the same assessment or create
 another reviewer. Do not relabel a Branch Review DTO as a downstream result,
 use Phase 2 in place of committed review, or transfer promotion ownership.
 Missing committed review or promotion follows its existing route. Changed
@@ -306,15 +306,19 @@ Acceptance/Finish accepts only fresh no-change or reviewed+promoted state.
 
 Promotion belongs to the original Architecture owner and binds expected-current.
 If current advanced, the owner first assesses its real effect and uses the
-existing sync route without overwriting. An unchanged reviewed write enters the
-final Check directly. The committed Architecture assessment and full Branch
+existing sync route without overwriting. After final-integration writes, implementation rebuilds the public candidate
+with the same fixed base and all actual paths, then calls begin_check. Final
+Architecture/Check assess that new candidate; the prewrite candidate is stale. The committed Architecture assessment and full Branch
 Review independently include every implementation and promotion file. The
 resulting current identity is the only identity the next task may consume.
 
 Only a `baseline_current` produced by `task_impact_sync` may resume the exact
-matching stage. A current result from bootstrap or repair reruns the affected
-`task_impact_sync` stage; it does not resume that stage directly. A current
-promotion result enters the final Check on its actual promoted candidate, then
+matching stage. A current result from bootstrap or repair ordinarily reruns the
+affected `task_impact_sync` stage; it does not resume that stage directly.
+Final-integration maintenance instead returns to its original promotion as
+defined below. A current
+promotion result returns its actual promoted candidate for implementation to
+refresh the public candidate and re-enter final Architecture/Check, then
 Task Commit and independent committed full-diff Branch Review.
 
 Bootstrap activates only a successor with the same baseline locator,
@@ -404,8 +408,9 @@ order. Public inputs select purpose and locate the real design object; they
 never preselect impact or a decision. The project_contract binds
 `guru-maintain-architecture-baseline:planning:3.0`; project descriptors and
 check-result contracts remain 2.0. The original Architecture owner promotes
-shared authority after the existing independent Phase 2 assessment and before
-the final Check. Planning does not replace that implementation assessment.
+shared authority in final integration after the independent Architecture and
+candidate-only Check assessments, then returns the actual candidate for final
+Architecture/Check. Planning does not replace that implementation assessment.
 
 For candidate_assessment, read current baseline/constitution/change contract,
 then call-local design_facts + real source constraint_refs or design_locator,
@@ -446,13 +451,13 @@ implementation/check correction; blocked remains a stop.
 
 Retire task-impact planning 2.0 at the matching graph switch, without a legacy
 reader, guessed purpose or second parser. Bootstrap and repair keep their
-fixed contracts; current nonplanning impact and promotion use 4.0 / Delivery 2.0. The sync router is only the thin owner-preserving transition
+fixed contracts; current nonplanning impact and promotion use 5.0 / Delivery 3.0. The sync router is only the thin owner-preserving transition
 needed to retain purpose across maintenance; it owns no assessment or writer.
 
 ## Delivery Architecture projection
 
 Nonplanning development stages select delivery_task_impact_sync (schema_version
-delivery-2.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
+delivery-3.0; Planning retains delivery-1.0 and purpose-bound 3.0 semantics), carrying the exact opaque DeliveryKey and public planning_root
 in addition to this owner's original stage authorities. Read the selected
 Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
@@ -473,7 +478,7 @@ Old Task development inputs require the pinned old complete installation.
 Delivery stage recovery uses `delivery_promotion`, `delivery_repair`, or
 `delivery_bootstrap_foundation` with the explicit original DeliveryKey and
 planning_root. These profiles execute the same baseline owner algorithms and
-return the original stage identity. Promotion specifically binds phase2 and the actual promoted
+return the original stage identity. Promotion specifically binds final_integration and the actual promoted
 candidate. Whole-task/global bootstrap, promotion and
 repair retain their existing profiles and never infer a Delivery from private state.
 
@@ -481,6 +486,20 @@ repair retain their existing profiles and never infer a Delivery from private st
 `guru-architecture-baseline-sync-router`. It uses only the closed DTO shape and
 sync_kind to project the exact Task or Delivery promotion/repair/impact entry
 to this same owner. It performs no second semantic assessment and infers no identity.
+
+When final-integration promotion requests repair or Bootstrap, the current
+router retains the original promotion profile/stage, Task/DeliveryKey and
+planning_root in the call-local continuation. Its thin maintenance input
+projection selects `stage=phase2` and the existing 2.0 / delivery-1.0 repair or
+Bootstrap profile, including its existing Guru contract identity. Actual project
+authority identities and Task/Delivery identity remain bound. This projection
+does not change those maintenance profiles or their result semantics. Their
+current output returns to the original 5.0 / delivery-3.0
+`promotion|delivery_promotion(stage=final_integration)` invocation, with freshly
+read authorities, targets and complete candidate. It never establishes
+reviewed_promoted or enters final Check by itself. A missing continuation uses
+fresh original-owner entry; do not persist another route record or infer the
+promotion from a phase2 maintenance output.
 
 ## Stage-applicable Architecture authority
 
@@ -496,25 +515,54 @@ fixed design or candidate even when a shared remote-tracking ref advances.
 Promotion still rereads live CURRENT and validates its own expected-current
 write boundary; it never grants or requires Task branch synchronization.
 
-## Pre-Check promotion 4.0 / Delivery 2.0
+## Final-integration promotion 5.0 / Delivery 3.0
 
-This section supersedes the old committed-review-first promotion contract.
-`promotion` selects schema_version=4.0; `delivery_promotion` selects
-delivery-2.0. Both require stage=phase2 and sync_kind=promotion_required.
-Nonplanning impact uses the matching 4.0 / delivery-2.0 input and owner-result
-schema. Planning's two purpose-specific branches, bootstrap and repair retain
-their existing contracts. Old schemas/examples remain fixed validation assets.
-They are not current runtime alternatives. Install the matching complete
-workflow/preset and consumer graph under MIGRATION-600, or pin the complete old
-installation. A rejected old input returns to this original owner.
+This section replaces ordinary pre-Check promotion. `promotion` selects
+schema_version=5.0; `delivery_promotion` selects delivery-3.0. Both require
+stage=final_integration and sync_kind=promotion_required. Nonplanning impact
+uses the matching 5.0 / delivery-3.0 input and owner-result schema. Planning's
+two purpose-specific branches, bootstrap and repair retain their contracts.
+The old 4.0 / delivery-2.0 schemas remain fixed historical validation assets.
+The current runtime rejects those inputs. Use the matching complete installation
+under MIGRATION-638 or retain the pinned complete old installation; do not
+convert an old pass into a current result.
 
 The public promotion input keeps Task/Delivery, mode/continuation, baseline,
 constitution, project contract, freshness and contribution sync target. Its
-baseline is the actual authority read before this operation's first write.
-expected_current_identity and current_identity must equal that baseline's
-identity. expected_current_content_identity binds its exact prewrite UTF-8
-bytes. successor_baseline names the same locator and a distinct active identity.
-There is no committed_range: the commit and its independent Review occur later.
+baseline is the applicable active authority read for this operation.
+expected_current_identity and current_identity equal that before identity.
+Ordinary promotion can retain the same identity. It does not require a
+successor_baseline, a write to the root entry or a root-entry content token.
+Bootstrap alone retains its distinct-successor rule. Root navigation changes
+only when identity, status or necessary relationships actually change. Git
+commit plus locator identifies the exact applicable historical content.
+There is no committed_range: the commit and independent Review occur later.
+
+The public baseline and expected/current identity fields describe the authority
+before this operation's writes. The existing owner-result and output
+`baseline_identity` describe the actual active authority after them. The owner
+reads the complete after authority and judges its identity and applicability.
+For leaf-only writes the after identity equals the before identity. An actual
+identity migration may return a different after identity only when the reviewed
+target list includes the baseline locator with non-null, different before and
+after content. The normal target readback, full candidate reconstruction and
+postwrite applicability checks still apply. The validator checks this objective
+write boundary; it does not parse Markdown to determine identity. Thus the first
+numbered-to-stable migration can write its real baseline delta without requiring
+future ordinary promotions to write that entry or create a successor field.
+
+The first independent Architecture assessment and the original Check owner's
+candidate-only check cover the complete implementation and proposed targets
+before shared-current writes. `candidate_checked` enters final integration
+only after the original Check owner legally returns the Delivery to
+implementation. This is not a Git synchronization gate. Fix one actual target
+branch/commit for this operation and read every affected complete unit and
+necessary relationship/navigation. Preserve unaffected units and still-valid
+conditions from intervening promotions. When the combined proposal changes,
+the original independent reviewer supplements all actual deltas and affected
+unchanged consumers under the shared candidate-applicability contract.
+Changed requirement premises return to scope/Planning; changed implementation,
+interfaces or verification duties return to their original quality owner.
 
 Both current impact and promotion additionally supply:
 
@@ -530,7 +578,7 @@ Both current impact and promotion additionally supply:
   Existing metadata exclusions remain unchanged. The reviewer still reads the
   complete tracked/untracked candidate and affected unchanged consumers.
 
-The existing fresh Phase 2 reviewer first reads the original authority, then
+The independent Phase 2 reviewer first reads the original authority, then
 the actual complete candidate and all proposed Architecture target contents.
 It determines responsibilities, dependencies, compatibility and validation
 obligations before inspecting contribution attribution. Its private review
@@ -539,7 +587,7 @@ and writes the reviewed contents to the current execution branch with ordinary
 file tools. This package's invocation only records/validates; it never writes
 Architecture targets or chooses a semantic route.
 
-Current nonplanning structured contributions use architecture-contribution-4.0.
+Current nonplanning structured contributions use architecture-contribution-5.0.
 Its reviewed state can bind the independent pre-Check candidate and original
 authority; it does not require the later committed range. Planning pending
 contributions retain their original meaning. The 2.0 contribution schema remains
@@ -548,7 +596,7 @@ a pinned historical validation asset.
 The call-local owner result includes promotion_targets, each with locator,
 before_content and content (null denotes absence/deletion), plus post_candidate
 and postwrite_applicability={status: applicable, reason}. The complete target
-list is the exact proposed delta reviewed by the Phase 2 reviewer. Before the
+list is the exact composed delta reviewed by the independent reviewer. Before the
 first write, the owner checks every current target equals its before_content.
 After writing, the owner reads all actual targets and independently verifies
 that no semantics, dependencies or validation obligations changed. Exact reviewed
@@ -568,7 +616,7 @@ is uniquely recoverable and all files are unconflicted, write only pending
 contents and repeat postwrite applicability. On a conflict or missing/ambiguous
 intent, stop writing and use the existing blocked route. Output loss after
 complete writes may rematerialize the same result from still-current actual
-files and original intent. No duplicate successor, conflict overwrite, second
+files and original intent. No repeated completed write, conflict overwrite, second
 state machine or persistent reviewer/authorization history is permitted.
 The current invocation uses no checkpoint. If a separate recovery situation
 needs a short-lived same-owner intent, retain only its non-reconstructible
@@ -577,7 +625,7 @@ its direct recovery consumer finishes. Never pass it downstream.
 
 A current output exposes before_authority and the actual candidate only to the
 unique current-router consumer. That original owner uses the candidate to bind
-the final Check or matching current stage, and before_authority to retain the
+implementation's public candidate refresh and final Architecture/Check, or the matching current stage, and before_authority to retain the
 original comparison authority for committed Review and subsequent eligibility.
 Promotion projects post_candidate; impact projects its assessed candidate. Full
 review contents, target bytes, checks and recovery intent remain private.

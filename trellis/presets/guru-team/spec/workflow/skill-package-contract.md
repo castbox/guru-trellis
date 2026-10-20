@@ -1347,7 +1347,7 @@ workflow/standalone preconditions in this order: `runtime_dependency`,
 
 The Skill owns repository check selection, scope qualification before severity,
 complete adequacy and Docs SSOT review, current-scope findings, current-candidate
-re-entry identity, the AI Review Gate, re-entry, and exactly four exits:
+re-entry identity, the AI Review Gate, re-entry, and its declared exits. Final exits retain their meaning:
 `passed` -> active Skill `guru-create-task-commit`,
 `implementation_required` -> workflow target `guru-resume-implementation`,
 `planning_stale` -> workflow target `guru-task-check-planning-router`, and
@@ -1362,13 +1362,16 @@ behavior, locators, and a minimal reproduction hint without an edit, test,
 self-fix, severity, classification, or route. The Guru owner rereads and freshly
 qualifies that projection before any follow-up dispatch. Workers cannot own the
 Guru Gate, artifact, finding severity, or route. The package
-publishes current-only schema `guru-phase2-check-5.0`. Recorder/checker runtime
+publishes current-only schema `guru-phase2-check-6.0`. Recorder/checker runtime
 commands accept AI-authored closed input and validate only objective schema,
 `phase2_capture_commit` ancestry, recomputed
-private `guru-phase2-worktree-content-1.0` identity over live tracked and
-untracked worktree paths, current dirty reviewed-path coverage, finding/scope
-linkage, and exit/consumer invariants. Phase 2 does not consume the four-stage
-durable `guru-reviewed-content-1.0` contract. Any non-current input or checkpoint
+private `guru-phase2-worktree-content-2.0` identity over live tracked and
+untracked business paths including executable mode, current dirty reviewed-path
+coverage, finding/scope linkage, and exit/consumer invariants. The local token
+uses the existing metadata exclusions from
+`data-contracts.md#reviewed-content-identity`; it remains distinct from the
+durable `guru-reviewed-content-1.0` identity used by the candidate handoff.
+Any non-current input or checkpoint
 shape fails closed rather than synthesizing a semantic result.
 
 Reviewed paths and validation evidence are non-empty. Every adequacy dimension
@@ -1382,7 +1385,15 @@ Validation entry and the shared Candidate Applicability And Coverage contract.
 Reuse binds a
 current result through existing validation summaries; it neither changes old
 candidate records nor creates a public receipt, cache, or cross-Skill authority.
-Task Commit's existing retained-checkpoint consumer remains unchanged.
+Only final passed retains Task Commit's checkpoint consumer. The independent
+`delivery_candidate_check` profile has one additional `candidate_checked` exit
+with task_ref/delivery_key/candidate only. Check validates the actual public
+candidate and full proposed content, uses original rework to implementation
+with affected_results=[readiness], then emits that exit without record_gate.
+It preserves Planning and real historical results without granting current
+applicability. Its unique workflow consumer invokes original final integration;
+implementation rebuilds candidate/begin_check before final Check. Candidate
+checkpoint retirement belongs to this producer. See MIGRATION-638.
 
 Candidate hygiene treats exact bytes at an exact repo-relative path as upstream
 Trellis template-managed only when that path has a valid matching SHA-256 entry
@@ -1393,7 +1404,7 @@ findings, including tracked upstream-template migration deltas. Missing/invalid
 provenance, unknown paths, local edits, or hash mismatch remain ordinary
 candidates, while path, UTF-8, and JSON validation is never bypassed.
 
-The ignored-runtime schema 5.0 checkpoint contains only
+The ignored-runtime schema 6.0 checkpoint contains only
 `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths, validation
 evidence, final Docs SSOT result, semantic dimensions/findings, and typed route.
 The content identity serves only the local checker before Task Commit; a
@@ -1406,7 +1417,7 @@ review rounds, repository snapshots, per-file or artifact digest bundles, and
 validates this compact result without creating another artifact.
 
 When an already validated `passed` DTO is lost before Task Commit but the
-producer-retained schema-5.0 checkpoint is still current, continuation reruns
+producer-retained schema-6.0 checkpoint is still current, continuation reruns
 the existing `check-phase2-check` and original `invoke-guru-check-task` path to
 project the same minimal `passed` output. This checker-to-invoker path is the
 only deterministic rematerialization contract. It adds no public recovery

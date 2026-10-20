@@ -40,6 +40,7 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
             },
             "consumer": {
                 "ssot_current": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
+                "candidate_ready": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
                 "sync_required": {"kind": "skill", "id": "guru-maintain-requirements-design-test-ssot"},
                 "revision_required": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-planning-router"},
                 "baseline_incomplete": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-bootstrap-router"},
@@ -49,16 +50,17 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
         }
         return self.run_envelope(public_input, owner)
 
-    def test_declares_four_profiles_five_exits_and_unique_consumers(self):
+    def test_declares_four_profiles_and_one_consumer_per_exit(self):
         interface = json.loads((self.package / "interface.json").read_text())
         profiles = {item["id"] for item in interface["public_contracts"]["input"]["profiles"]}
         self.assertEqual(profiles, {"bootstrap_foundation", "task_impact_sync", "promotion", "repair"})
         exits = interface["external_exits"]
-        self.assertEqual({item["id"] for item in exits}, {"ssot_current", "sync_required", "revision_required", "baseline_incomplete", "blocked"})
-        self.assertEqual(len({(item["consumer"]["kind"], item["consumer"]["id"]) for item in exits}), 5)
+        self.assertEqual({item["id"] for item in exits}, {"candidate_ready", "ssot_current", "sync_required", "revision_required", "baseline_incomplete", "blocked"})
+        self.assertEqual(len({item["id"] for item in exits}), len(exits))
 
     def test_each_typed_exit_projects_only_its_minimal_contract(self):
         cases = [
+            ("public-input-impact.json", {"typed_exit": "candidate_ready", "authority_locator": "docs", "authority_version": "1.0", "contribution_locator": "docs/requirements-design-test-contributions/example"}),
             ("public-input-impact.json", {"typed_exit": "ssot_current", "authority_locator": "docs", "active_version": "1.0", "status": "active", "applicability_scope": "repository", "freshness": "authority-v1"}),
             ("public-input-promotion.json", {"typed_exit": "sync_required", "authority_locator": "docs", "target_version": "1.1", "contribution_locator": "docs/requirements-design-test-contributions/example", "sync_kind": "promotion", "freshness": "authority-v1"}),
             ("public-input-impact.json", {"typed_exit": "revision_required", "task_locator": ".trellis/tasks/example", "affected_scope": "traceability", "authority_locator": "docs", "authority_version": "1.0", "revision_code": "traceability_revision"}),
@@ -73,6 +75,71 @@ class RequirementsDesignTestSSOTContractTest(unittest.TestCase):
                 self.assertEqual(output["exit_id"], owner["typed_exit"])
                 self.assertNotIn("profile", output)
                 self.assertNotIn("continuation_id", output)
+
+    def reviewed_owner(self, public, exit_id, **fields):
+        return {
+            "profile": public["profile"], "mode": public["mode"],
+            "continuation_id": public["continuation_id"],
+            "input_sha256": self.digest(public),
+            "architecture_baseline": dict(public["architecture_baseline"]),
+            "ai_review_gate": {"status": "passed", "reviewed_scope": "Complete proposed or actual definitions and affected consumers.",
+                               "evidence_summary": "Fixture owner judgment exercises transport only.",
+                               "findings": [], "conclusion": "Current profile judgment completed."},
+            "typed_exit": exit_id,
+            "consumer": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
+            **fields,
+        }
+
+    def test_phase2_proposal_and_final_actual_current_are_distinct(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            current = root / "current.md"
+            current.write_text("Existing complete definition with required condition.\n")
+            proposed = root / "task-owned/proposed.md"
+            proposed.parent.mkdir()
+            proposed.write_text("Existing required condition and reviewed addition.\n")
+            public = json.loads((self.package / "examples/public-input-impact.json").read_text())
+            owner = self.reviewed_owner(public, "candidate_ready", authority_locator=public["authority_locator"],
+                                        authority_version=public["authority_version"],
+                                        contribution_locator="task-owned")
+            result = self.run_envelope(public, owner)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            candidate = json.loads(result.stdout)
+            self.assertEqual(set(candidate), {"exit_id", "contribution_locator", "authority_locator", "authority_version"})
+            self.assertEqual(current.read_text(), "Existing complete definition with required condition.\n")
+            self.assertEqual(candidate, json.loads(self.run_envelope(public, owner).stdout))
+            # The original semantic owner writes/reads back real current before
+            # promotion invocation. The validator is not a document writer.
+            current.write_text(proposed.read_text())
+            final = json.loads((self.package / "examples/public-input-promotion.json").read_text())
+            final.update(target_version=public["authority_version"], contribution_locator="task-owned")
+            written = self.reviewed_owner(final, "ssot_current", authority_locator=final["authority_locator"],
+                                          active_version=final["target_version"], status="active",
+                                          applicability_scope="repository", freshness=final["freshness"])
+            result = self.run_envelope(final, written)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            actual = json.loads(result.stdout)
+            self.assertEqual(actual["exit_id"], "ssot_current")
+            self.assertEqual(actual["active_version"], candidate["authority_version"])
+            self.assertEqual(current.read_text(), proposed.read_text())
+            self.assertEqual(actual, json.loads(self.run_envelope(final, written).stdout))
+            self.assertEqual({path.name for path in root.iterdir()}, {"current.md", "task-owned"})
+
+    def test_current_impact_and_promotion_reject_old_shape_or_wrong_stage(self):
+        for name in ("impact", "promotion"):
+            public = json.loads((self.package / f"examples/public-input-{name}.json").read_text())
+            for field in ("schema_version", "stage"):
+                old = dict(public); old.pop(field)
+                result = self.run_envelope(old, self.reviewed_owner(old, "candidate_ready"))
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
+        final = json.loads((self.package / "examples/public-input-promotion.json").read_text())
+        owner = self.reviewed_owner(final, "candidate_ready", authority_locator="docs",
+                                    authority_version="1.0", contribution_locator=final["contribution_locator"])
+        result = self.run_envelope(final, owner)
+        self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["field_path"], "owner_result.typed_exit")
 
     def test_stale_owner_identity_fails_closed(self):
         public_input = json.loads((self.package / "examples/public-input-bootstrap.json").read_text())

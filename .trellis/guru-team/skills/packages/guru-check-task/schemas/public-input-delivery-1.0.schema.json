@@ -3,6 +3,9 @@
   "$id": "guru-check-task-input-delivery-aggregate-1.0",
   "oneOf": [
     {
+      "$ref": "public-delivery-candidate-check-input-1.0.schema.json"
+    },
+    {
       "$ref": "public-delivery-initial-check-input-1.0.schema.json"
     },
     {

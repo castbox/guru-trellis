@@ -1,16 +1,16 @@
 # 当前知识单元与原维护方设计
 
-知识单元：`RDT-DES-KNOWLEDGE`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；测试：[RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md)。稳定 `REQ-007 / BEH-007` 的design责任沿原RDT/Architecture owners延续。
+知识单元：`RDT-DES-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；测试：[RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md)。稳定 `REQ-007 / BEH-007` 的design责任沿原RDT/Architecture owners延续。
 
 ## 稳定设计身份
 
-`DES-007` 保留RDT/Architecture各自唯一authority与最小spec projection。`DES-026..034` 的双维合同、constitution、责任/check/contribution边界继续由Architecture正文和原package拥有；本单元迁移其日常知识读取/适用性/晋升关系，不改写项目具体架构答案。`DES-027` 旧首次post-Review晋升顺序按D600/ADR-030替代，`DES-033` 的无条件current推进stale片段按ADR-028/R567替代，其余有效条件保持。
+`DES-007` 保留RDT/Architecture各自唯一authority与最小spec projection。`DES-026..034` 的双维合同、constitution、责任/check/contribution边界继续由Architecture正文和原package拥有；本单元迁移其日常知识读取/适用性/晋升关系，不改写项目具体架构答案。`DES-027` 的当前晋升顺序由D638/ADR-KNOWLEDGE-FINAL-INTEGRATION承接，`DES-033` 的无条件current推进stale片段按ADR-028/R567替代，其余有效条件保持。
 
 ## D331-01 / CON331-01：完整单元与薄导航
 
 原RDT维护Skill的 `references/current-knowledge.md` 单写可复用读取/修订合同，由原package distribution安装。两维护Skill按原职责加载同一通用合同；没有新公共Skill、schema、service或parser。项目根为docs/requirements/current、docs/design/current、docs/test/current；按task-delivery-lifecycle、completion-closure、knowledge-maintenance三个capability/responsibility组织完整正文。
 
-每层current/README仅列identity、alias、status、locator和必要关系，另定位明确legacy范围。单元标明适用版本/状态、完整定义/条件、必要关系、来源和替代范围；目录名current不具有semantic authority。唯一共享层README由原promotion owner切换，未切换前candidate保持proposed；不能以新导航或新CURRENT自证正确。当前正文revision用包含其完整内容的Git snapshot，不另造无限版本副本。历史版本和contributions只读来源，普通当前查询不要求拼接它们。
+每层current/README仅列identity、alias、status、locator和必要关系，另定位明确legacy范围。单元标明适用版本/状态、完整定义/条件、必要关系、来源和替代范围；目录名current不具有semantic authority。共享根入口使用稳定 authority identity guru-trellis-rdt，仅在关系、身份或状态真实变化时由原promotion owner修改；普通晋升不强制全局递增或总README写入。未切换前candidate保持proposed；不能以新导航或新CURRENT自证正确。当前正文revision用包含其完整内容的Git snapshot，不另造无限版本副本。历史版本和contributions只读来源，普通当前查询不要求拼接它们。
 
 能力正文展开完整行为、异常/否定/继承条件，细粒度公共API仍由canonical package拥有。读者按问题/阶段选单元并展开必要R/D/T/Architecture关系，不机械递归所有链接。navigation中不重复business summary，来源history也不复制成current本文的第二份规则。
 
@@ -28,17 +28,23 @@
 
 ## D331-04 / CON331-04：晋升和阶段适用性
 
-原四RDT profiles与Architecture独立评估/promote/repair保持。Planning选唯一Docs策略；delta_first在最终Check前合并。fresh独立Phase2先读immutable晋升前authority，再读完整tracked/untracked候选及proposed targets；原owners按live expected-current串行写完整current定义、入口和关系，读回后判断语义/依赖/validation obligations是否仍适用。随后完整Check、commit、fresh committed Architecture/Branch Review。D600/CON600仅替代旧post-Review首次promotion，不移走independent assessment、live写边界或后续门禁。
+原 RDT/Architecture semantic owners 及四 profiles 保持。RDT impact/promotion2.0、Architecture 非Planning5.0/Delivery3.0、Check private6.0 与直接 consumers 成套采用新时机；Planning3.0/Delivery1.0、bootstrap/repair 不改义。真实 API版本独立于稳定知识身份。精确 source 使用完整 Git revision/locator；局部目标内容一致性不成为 semantic approval或全链 authority。
 
-第二个正常Task的贡献先与已推进current作真实diff，保留第一个的全部有效定义再合自己的变化。expected-current mismatch只影响本次写入，回原promotion/review，不重写无关Task。partial/output-loss保留同一可唯一恢复intent；已完成targets读回，pending补写，conflict停原owner，不新增persistent state machine。
+`D638-02 / CON638-CANDIDATE`：implementation 先以固定 B、实际 HEAD 和全量 paths 调原 candidate/begin_check（implementing→checking）。独立 Architecture phase2 读 immutable before authority、完整 implementation 和 proposed targets，可返回真实 reviewed_candidate。RDT phase2 impact 的 candidate_ready 定位完整隔离贡献，no_change保持实际空影响。原 Check delivery_candidate_check 仍完整检查九维与受影响未改 consumers。通过时其原 role 以 rework(target_role=implementation, affected_results=[readiness]) 返回 implementing，不写 public Check gate，再发 candidate_checked；不清 Planning 或真实历史，不授权旧结果用于当前候选。
 
-阶段适用authority可从immutable版本或Git snapshot取值。普通CURRENT/remote/archive/tool前进不触发旧Task重写；真实立即适用规则或scope/dependency/solution变化回原owner。当前semantic judgment必新作；工程事实按R578/ADR-029核对真实check inputs后采用，缺失/未知/真实变化才重跑受影响命令，不保存long-lived cache或authorization。
+`D638-03 / CON638-INTEGRATION`：唯一 workflow consumer 调原两 promotion owners 的 final_integration。一次固定真实目标 branch/commit，只读写命中单元及必要关系/导航；相同单元比较适用 before、本方完整 proposed 和真实 target，保留仍有效条件与双方变化。组合改变原已审内容时按唯一 Candidate Applicability And Coverage 补独立审核全部差额、组合语义及未改消费者，前提/义务变化回最早原owner。没有真实 Git阻塞不 merge/rebase或追目标。original owners 写完整 reviewed组合并读回，不从期望 DTO 推断实际成功。
+
+实际写入后 implementation 以同 B、实际 HEAD 和全部实际差额重新 candidate/begin_check（implementing→checking）。最终 Architecture/Check 使用新 content_ref；旧写前 candidate 不能验证 after bytes。仅最终 Check record_gate（checking→reviewing）供 TaskCommit和完整独立 committed Review消费。no_change也走合法回程，无空贡献、ADR或commit。Ready/Finish不消费候选状态。
+
+partial/output-loss 只恢复同一可唯一 intent：completed读回、pending补写、conflict停原owner。candidate_checked 丢失时按实际 phase/写入事实回原 Check、implementation或maintenance，不从phase补造pass；同 DeliveryKey与B保持。当前语义每次新作，工程事实按R578/ADR-029及唯一候选适用合同核真实定义、依赖、环境、工具链、参数/期望后采用，缺失/未知/变化才补命中检查。无需长期 cache、账本或授权持久化。
+
+`D638-01 / CON638-IDENTITY`：完整单元与关系保持稳定ID，authority identity= guru-trellis-rdt；普通晋升允许同 identity，只校真实目标内容。根导航只在定位/身份/状态改变时写入，不追加每Issue业务摘要。Architecture使用独立稳定 identity guru-trellis-architecture。bootstrap仍要求其真正distinct successor，历史和真实接口版本不改义。
 
 ## D331-05 / CON331-05：迁移、恢复与分发
 
 迁移清单逐项定位B的实际predecessor条款、完整目标、继承/替代及尚未迁移范围。未review/切换前保留旧README，候选标proposed。legacy普通读取的consumer是固定旧authority的在途planning/gates，owner不再向旧current双写新能力；Task结束/合法改选/真实依赖变化后退出其旧普通读取，历史仍可追溯。普通源缺失、断链/冲突/未迁完回原repair/Clarify，不能靠推断填confirmed。晋升后correction沿原repair/新successor，不改历史快照。
 
-canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经完整apply更新；matching update/reapply保留用户修改并逐项处置sidecar/mode/drift。不造API-breaking变更或额外installer机制。当前代表性clean与旧匹配更新不等于完整Release matrix、外部业务配置重建或业务采用。
+canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经完整apply更新；matching update/reapply保留用户修改并逐项处置sidecar/mode/drift。命中公共I/O按MIGRATION-638显式版本化并成套直接迁移，不加长期双reader或额外installer机制。当前代表性clean与旧匹配更新不等于完整Release matrix、外部业务配置重建或业务采用。
 
 ## D331-06 / CON331-06：真实对照与结果归属
 

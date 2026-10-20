@@ -1,6 +1,6 @@
 # 当前知识读写与晋升测试策略
 
-知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；旧无条件stale与旧首次晋升顺序以ADR-028/030为后继。
+知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；当前适用性由ADR-028/034拥有，最终整合时序由ADR-KNOWLEDGE-FINAL-INTEGRATION拥有。
 
 ## T331-01..06 与稳定关系
 
@@ -26,3 +26,15 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 ## 唯一实际结果与缺口
 
 全部24次及迁移/安装实际结果、分类/中位成本、首次失败/修复和限制只由 [#331 test.md](../../requirements-design-test-contributions/331-current-effective-knowledge/test.md) 拥有；当前正文不复制summary为第二结果authority。尚未执行项保持未验证，缺source/安装依赖时沿原repair/blocked，不能用目录/schema/链接成功宣称行为通过。
+
+## T638：稳定身份与最终整合场景
+
+| Test / requirement → design | 正常输入 | 必须观察 |
+| --- | --- | --- |
+| T638-01 / R638-01/05 → D638-01 | 两Task同B改不同能力，原promotion依次真实读写 | 双方完整正文保留；稳定authority；无总入口必写/版本递增；未命中单元和引用不变 |
+| T638-02 / R638-03/04 → D638-03 | 同单元前一Task已晋升，后一Task最终合成 | 原条件/否定/例外、双方改动、关系/导航与受影响未改消费者均被覆盖，真实写入读回 |
+| T638-03 / R638-02/04/06 → D638-02/03 | 原begin_check→候选Check→final integration→重新begin_check→最终Check→commit/Review | 公共phase implementing/checking/implementing/checking/reviewing；候选无final gate；实际写入后旧content_ref不能放行，新candidate覆盖全部差额；no-change无空文件/提交 |
+| T638-04 / R638-05/07 → D638-04 | matching切换，未晋升/已晋升/已有Review在途，普通mismatch/partial/output-loss | 当前拒旧shape，不转换pass；同key/B恢复不重复写，旧Git引用原义保持；无第二current/长期parser |
+| T638-05/06/07 / R638-06/07 → D638-05 | 命中production wrappers、一个clean matching安装/reapply/平台投影及真实native Agents，#636/#637组合 | fixture、source/dogfood/installed、Agent/GitHub分层；真实owner读取完整候选、组合与consumer，不预填pass；无Git整合可晋升 |
+
+实际#638结果仅由 [contribution test.md](../../requirements-design-test-contributions/638-shared-current-promotion/test.md) 拥有。已有T331/T600/T578策略及其历史结果保留，但不作为当前候选已通过证据；不扩完整Release矩阵或Backend生产采用。

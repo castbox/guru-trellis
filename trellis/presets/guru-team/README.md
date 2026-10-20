@@ -15,10 +15,12 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 已有安装须完整采用匹配的 preset 与四个原 packages，再检查 reapply、投影、drift
 及 sidecar；源码更新本身不证明旧安装已经采用。
 
-Architecture 晋升在最终 Check 前完成；committed 独立判断和完整 Branch Review
-覆盖实际晋升文件。公共入口与 consumer 必须成套更新，三类在途 Delivery、
-partial/output-loss 恢复和窄引用/状态对齐见 [MIGRATION-600](MIGRATION-600.md)。
-源码更新不证明已有安装或业务采用完成。
+首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
+原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
+再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
+未晋升候选。普通知识晋升保留稳定 authority identity，根导航只在定位关系改变时写入，
+不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
+[MIGRATION-638](MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
 
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)

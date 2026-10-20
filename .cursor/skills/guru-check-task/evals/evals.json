@@ -681,6 +681,53 @@
         "evals/files/resolved-reconciliation-passed-input.json",
         "evals/files/resolved-reconciliation-passed-facts.json"
       ]
+    },
+    {
+      "id": "delivery-candidate-check",
+      "prompt": "Execute the installed guru-check-task delivery_candidate_check for the current complete task-owned proposal. Read implementation, complete proposed definitions, fixed applicable authority, independent Architecture result, RDT candidate result and affected consumers. Perform the full current semantic review and consume its actual public output. Shared current has not been promoted.",
+      "expected_exit": "candidate_checked",
+      "expected_output": "A current complete candidate judgment returns to implementation through lawful Check rework without recording a final Check gate.",
+      "input_profile_id": "delivery_candidate_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-candidate-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "candidate_checked"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "candidate-not-current",
+            "criterion": "The AI reviews complete proposed definitions and fixed applicable sources, does not claim current updated, personally judges all nine dimensions, then consumes candidate_checked only after lawful checking-to-implementing rework; no public check result exists. Fixture judgments and wrapper success alone do not establish semantic review.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

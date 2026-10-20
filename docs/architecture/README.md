@@ -1,6 +1,6 @@
 # Architecture Baseline SSOT
 
-版本：`current-main-0.7.0-guru.105`；状态：`active`；predecessor：`current-main-0.7.0-guru.104`。普通读取按下表职责定位完整正文；历史版本和贡献不替代 current 定义。
+Identity：`guru-trellis-architecture`；状态：`active`。精确内容由完整Git revision与locator定位。下表仅定位正文、状态及历史来源；普通Task不要求写本入口或递增全局版本。
 
 | Identity / role | Status | Locator | Relations |
 | --- | --- | --- | --- |
@@ -9,20 +9,14 @@
 | CURRENT | evidence_bound | [system](./01-current/system.md) | [EVIDENCE](./evidence/current-evidence.md) |
 | TARGET | accepted_target | [target](./02-target/target.md) | [GAP](./05-gaps/current-to-target.md) / [PLAN](./07-plans/roadmap.md) |
 | DOMAIN | current_boundaries | [ownership](./03-domains/ownership.md) | [INTEGRATION](./04-integrations/distribution.md) |
-| ARCH-GOV-001..012 | current | [rules](./06-governance/rules.md) | [change contract](./06-governance/change-contract.md) / ADR-005/028/030/031/033/034 |
+| ARCH-GOV-001..012 | current | [rules](./06-governance/rules.md) | [change contract](./06-governance/change-contract.md) / ADR-005/028/030/031/033/034 / ADR-KNOWLEDGE-FINAL-INTEGRATION |
 | ADR | historical_decisions | [index](./adr/README.md) / [ADR-031](./adr/031-current-effective-knowledge.md) | current 正文保留替代范围与来源 |
 | ARCH100-PINNED-TASK | historical_applicable | [固定旧authority](https://github.com/castbox/guru-trellis/blob/bdb5185c673c91b2fb5cfc66ffbb33849904a69c/docs/architecture/README.md) | immutable Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c:docs/architecture/` |
 | ARCH101-PREDECESSOR | historical_applicable | [前驱完整 authority](https://github.com/castbox/guru-trellis/blob/33f18a768c9c8d901f34b899934ac40c3d97cc5b/docs/architecture/README.md) | `current-main-0.6.17-guru.101`；successor `current-main-0.7.0-guru.102`；immutable Git `33f18a768c9c8d901f34b899934ac40c3d97cc5b:docs/architecture/` |
-| RDT | active | [Requirements](../requirements/README.md) / [Design](../design/README.md) / [Test](../test/README.md) | `current-main-0.7.0-guru.114` |
+| RDT | active | [Requirements](../requirements/README.md) / [Design](../design/README.md) / [Test](../test/README.md) | `guru-trellis-rdt` |
+| ARCH102-PREDECESSOR | historical_applicable | [固定前驱 .102](https://github.com/castbox/guru-trellis/tree/0543731bf52aa80842fde5db47332380de513cf0/docs/architecture) | immutable Git `0543731bf52aa80842fde5db47332380de513cf0`；同tree解析完整authority和必要引用 |
+| ARCH104-PREDECESSOR | historical_applicable | [固定前驱 .104](https://github.com/castbox/guru-trellis/tree/39169628f5f79cb48673eae96a36670e73f4dbbb/docs/architecture) | immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb`；同tree解析完整authority和必要引用 |
+| ARCH105-PREDECESSOR | historical_applicable | [固定前驱 .105](https://github.com/castbox/guru-trellis/blob/9cec623833b61814f1175f31acde4fa81334cdb0/docs/architecture/README.md) | immutable Git `9cec623833b61814f1175f31acde4fa81334cdb0:docs/architecture/`；同tree读取原完整正文和必要关系 |
+| ADR-KNOWLEDGE-FINAL-INTEGRATION | accepted | [knowledge-final-integration](./adr/knowledge-final-integration.md) | ARCH-GOV-008 / ARCH-DOM-053 / ARCH-INT-056 |
 
-各分区职责保持。新正文收敛 ARCH-GOV-008/009/011 的已接受后继，并增加完整知识和两层栈关系；其它分区保留原正文及适用边界，不宣称所有历史能力均已重新迁移。迁移来源/旧 Task 退出见 [MIGRATION-331](../../trellis/presets/guru-team/MIGRATION-331.md)，本轮贡献见 [331](./contributions/331-current-effective-knowledge.md)。实际验证和未验证边界只由 [唯一 Test](../requirements-design-test-contributions/331-current-effective-knowledge/test.md) 维护。知识接受、CURRENT 实现、Delivery、Task Completion 与软件 Release 分开判断。
-
-ARCH102-PREDECESSOR / historical_applicable：[固定前驱 .102](https://github.com/castbox/guru-trellis/tree/0543731bf52aa80842fde5db47332380de513cf0/docs/architecture)。在同一 immutable Git tree 解析完整authority及必要引用。
-
-#630新增职责由[贡献](./contributions/630-native-compatibility.md)、[ADR-032](./adr/032-managed-text-lf.md)及current/domain/integration完整单元承接。实际结果只由[#630唯一Test](../requirements-design-test-contributions/630-native-compatibility/test.md)拥有；知识版本与软件Release/Task Completion分开。
-
-#636 的职责后继见 [贡献](./contributions/636-early-draft-pr.md)、[ADR-033](./adr/033-early-draft-feedback.md) 与 ARCH-CUR-075 / ARCH-DOM-058 / ARCH-INT-061。实际实现、安装、Agent和远端结果仅由 [#636 唯一Test](../requirements-design-test-contributions/636-early-draft-pr/test.md)记录；知识晋升不证明软件Release、业务采用或Task完成。
-
-ARCH104-PREDECESSOR / historical_applicable：[固定前驱 .104](https://github.com/castbox/guru-trellis/tree/39169628f5f79cb48673eae96a36670e73f4dbbb/docs/architecture)。在同一 immutable Git tree 读取原完整 authority 和必要关系。
-
-#637 由 ARCH-CUR-051/076、ARCH-DOM-059、ARCH-INT-062、ARCH-GOV-003 和 [ADR-034](./adr/034-candidate-applicability-and-coverage.md)承接候选适用性职责与窄替代。实际结果和未验证边界仅由 [#637 Test](../requirements-design-test-contributions/637-candidate-review-reuse/test.md)维护；知识晋升不证明软件发布、活动安装采用或整体完成。
+未列入代表迁移的能力仍由原完整正文及其必要来源拥有；[MIGRATION-331](../../trellis/presets/guru-team/MIGRATION-331.md)定位未迁移范围，[MIGRATION-638](../../trellis/presets/guru-team/MIGRATION-638.md)定位本次时机/身份切换。知识接受不证明Delivery、Completion、安装采用或Release。

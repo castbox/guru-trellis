@@ -37,7 +37,7 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "Planning 3.0, current nonplanning 4.0 or Delivery 2.0 input; bootstrap and repair retain their fixed contracts.",
+      "evidence": "Planning 3.0, current nonplanning 5.0 or Delivery 3.0 input; bootstrap and repair retain their fixed contracts.",
       "binding": "the exact caller, mode, profile, stage, task, and continuation",
       "freshness": "fresh for every stage judgment"
     },
@@ -115,6 +115,26 @@
     {
       "id": "whole_task_acceptance_input",
       "path": "examples/public-input-whole-task-acceptance-2.0.json"
+    },
+    {
+      "id": "public_input_promotion_5_current",
+      "path": "examples/public-input-promotion-5.0.json"
+    },
+    {
+      "id": "public_input_delivery_promotion_3_current",
+      "path": "examples/public-input-delivery-promotion-3.0.json"
+    },
+    {
+      "id": "public_input_delivery_task_impact_sync_3_current",
+      "path": "examples/public-input-delivery-task-impact-sync-3.0.json"
+    },
+    {
+      "id": "public_input_whole_task_acceptance_5_current",
+      "path": "examples/public-input-whole-task-acceptance-5.0.json"
+    },
+    {
+      "id": "public_output_current_5_current",
+      "path": "examples/public-output-current-5.0.json"
     }
   ],
   "schemas": [
@@ -321,6 +341,66 @@
     {
       "id": "architecture_contribution",
       "path": "schemas/architecture-contribution-4.0.schema.json"
+    },
+    {
+      "id": "public_input_promotion_5_current",
+      "path": "schemas/public-input-promotion-5.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_promotion_3_current",
+      "path": "schemas/public-input-delivery-promotion-3.0.schema.json"
+    },
+    {
+      "id": "public_input_impact_nonplanning_5_current",
+      "path": "schemas/public-input-impact-nonplanning-5.0.schema.json"
+    },
+    {
+      "id": "public_input_delivery_task_impact_sync_3_current",
+      "path": "schemas/public-input-delivery-task-impact-sync-3.0.schema.json"
+    },
+    {
+      "id": "architecture_contribution_5_current",
+      "path": "schemas/architecture-contribution-5.0.schema.json"
+    },
+    {
+      "id": "semantic_result_5_current",
+      "path": "schemas/semantic-result-5.0.schema.json"
+    },
+    {
+      "id": "semantic_result_delivery_3_current",
+      "path": "schemas/semantic-result-delivery-3.0.schema.json"
+    },
+    {
+      "id": "public_baseline_current_output_5_current",
+      "path": "schemas/public-baseline-current-output-5.0.schema.json"
+    },
+    {
+      "id": "public_output_delivery_baseline_current_3_current",
+      "path": "schemas/public-output-delivery-baseline-current-3.0.schema.json"
+    },
+    {
+      "id": "public_output_baseline_current_index_5_current",
+      "path": "schemas/public-output-baseline-current-index-5.0.schema.json"
+    },
+    {
+      "id": "public_input_aggregate_5_current",
+      "path": "schemas/public-input-aggregate-5.0.schema.json"
+    },
+    {
+      "id": "public_output_sync_required_index_5_current",
+      "path": "schemas/public-output-sync-required-index-5.0.schema.json"
+    },
+    {
+      "id": "public_output_architecture_conflict_index_5_current",
+      "path": "schemas/public-output-architecture-conflict-index-5.0.schema.json"
+    },
+    {
+      "id": "public_output_contract_incomplete_index_5_current",
+      "path": "schemas/public-output-contract-incomplete-index-5.0.schema.json"
+    },
+    {
+      "id": "public_output_fitness_regression_index_5_current",
+      "path": "schemas/public-output-fitness-regression-index-5.0.schema.json"
     }
   ],
   "validators": [
@@ -328,7 +408,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-maintain-architecture-baseline",
-      "objective_scope": "Validate the closed 2.0 profile, exact authority status, existing current constitution locator, committed-range and freshness binding, one-to-one owner-result project-check descriptor/result binding, semantic gate, unique consumer, and one minimal profile-bound typed projection."
+      "objective_scope": "Validate selected Planning 3.0, nonplanning 5.0/Delivery 3.0 and unchanged bootstrap/repair contracts, exact candidate/authority binding, actual target bytes, project checks, unique consumer and minimal typed projection."
     }
   ],
   "tests": [
@@ -427,8 +507,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-maintain-architecture-baseline-input-index-4.0",
-        "path": "schemas/public-input-aggregate-4.0.schema.json"
+        "schema_id": "guru-maintain-architecture-baseline-input-index-5.0",
+        "path": "schemas/public-input-aggregate-5.0.schema.json"
       },
       "profiles": [
         {
@@ -449,12 +529,12 @@
         {
           "id": "task_impact_sync",
           "schema": {
-            "schema_id": "guru-architecture-baseline-input-impact-nonplanning-4.0",
-            "path": "schemas/public-input-impact-nonplanning-4.0.schema.json"
+            "schema_id": "guru-architecture-baseline-input-impact-nonplanning-5.0",
+            "path": "schemas/public-input-impact-nonplanning-5.0.schema.json"
           },
           "example": {
             "id": "task_impact_sync_current_input",
-            "path": "examples/public-input-whole-task-acceptance-4.0.json"
+            "path": "examples/public-input-whole-task-acceptance-5.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -464,12 +544,12 @@
         {
           "id": "promotion",
           "schema": {
-            "schema_id": "guru-architecture-baseline-input-promotion-4.0",
-            "path": "schemas/public-input-promotion-4.0.schema.json"
+            "schema_id": "guru-architecture-baseline-input-promotion-5.0",
+            "path": "schemas/public-input-promotion-5.0.schema.json"
           },
           "example": {
             "id": "promotion_current_input",
-            "path": "examples/public-input-promotion-4.0.json"
+            "path": "examples/public-input-promotion-5.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -494,12 +574,12 @@
         {
           "id": "delivery_task_impact_sync",
           "schema": {
-            "schema_id": "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-2.0",
-            "path": "schemas/public-input-delivery-task-impact-sync-2.0.schema.json"
+            "schema_id": "guru-maintain-architecture-baseline-input-delivery-task-impact-sync-3.0",
+            "path": "schemas/public-input-delivery-task-impact-sync-3.0.schema.json"
           },
           "example": {
             "id": "delivery_task_impact_sync_current_input",
-            "path": "examples/public-input-delivery-task-impact-sync-2.0.json"
+            "path": "examples/public-input-delivery-task-impact-sync-3.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -509,12 +589,12 @@
         {
           "id": "delivery_promotion",
           "schema": {
-            "schema_id": "guru-maintain-architecture-baseline-input-delivery-promotion-2.0",
-            "path": "schemas/public-input-delivery-promotion-2.0.schema.json"
+            "schema_id": "guru-maintain-architecture-baseline-input-delivery-promotion-3.0",
+            "path": "schemas/public-input-delivery-promotion-3.0.schema.json"
           },
           "example": {
             "id": "delivery_promotion_current_input",
-            "path": "examples/public-input-delivery-promotion-2.0.json"
+            "path": "examples/public-input-delivery-promotion-3.0.json"
           },
           "discriminator": {
             "field": "profile",
@@ -578,12 +658,12 @@
       {
         "exit_id": "baseline_current",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-baseline-current-index-4.0",
-          "path": "schemas/public-output-baseline-current-index-4.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-baseline-current-index-5.0",
+          "path": "schemas/public-output-baseline-current-index-5.0.schema.json"
         },
         "example": {
           "id": "current_output_4",
-          "path": "examples/public-output-current-4.0.json"
+          "path": "examples/public-output-current-5.0.json"
         },
         "consumer_use_ids": [
           "current_projection"
@@ -592,8 +672,8 @@
       {
         "exit_id": "sync_required",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-sync-required-delivery-index-1.0",
-          "path": "schemas/public-output-sync-required-delivery-index-1.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-sync-required-index-5.0",
+          "path": "schemas/public-output-sync-required-index-5.0.schema.json"
         },
         "example": {
           "id": "sync_output",
@@ -620,8 +700,8 @@
       {
         "exit_id": "architecture_conflict",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-architecture-conflict-delivery-index-1.0",
-          "path": "schemas/public-output-architecture-conflict-delivery-index-1.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-architecture-conflict-index-5.0",
+          "path": "schemas/public-output-architecture-conflict-index-5.0.schema.json"
         },
         "example": {
           "id": "conflict_output",
@@ -634,8 +714,8 @@
       {
         "exit_id": "contract_incomplete",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-contract-incomplete-delivery-index-1.0",
-          "path": "schemas/public-output-contract-incomplete-delivery-index-1.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-contract-incomplete-index-5.0",
+          "path": "schemas/public-output-contract-incomplete-index-5.0.schema.json"
         },
         "example": {
           "id": "contract_output",
@@ -648,8 +728,8 @@
       {
         "exit_id": "fitness_regression",
         "schema": {
-          "schema_id": "guru-maintain-architecture-baseline-output-fitness-regression-delivery-index-1.0",
-          "path": "schemas/public-output-fitness-regression-delivery-index-1.0.schema.json"
+          "schema_id": "guru-maintain-architecture-baseline-output-fitness-regression-index-5.0",
+          "path": "schemas/public-output-fitness-regression-index-5.0.schema.json"
         },
         "example": {
           "id": "fitness_output",
@@ -684,8 +764,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-baseline-current-4.0",
-          "path": "consumers/workflow/current-4.0.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-baseline-current-5.0",
+          "path": "consumers/workflow/current-5.0.schema.json"
         }
       },
       {
@@ -697,8 +777,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-sync_required-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-sync-required-5.0",
+          "path": "consumers/workflow/sync-required-5.0.schema.json"
         }
       },
       {
@@ -723,8 +803,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-architecture_conflict-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/maintain-architecture-baseline-architecture-conflict.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-architecture-conflict-5.0",
+          "path": "consumers/workflow/architecture-conflict-5.0.schema.json"
         }
       },
       {
@@ -736,8 +816,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-contract_incomplete-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/maintain-architecture-baseline-contract-incomplete.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-contract-incomplete-5.0",
+          "path": "consumers/workflow/contract-incomplete-5.0.schema.json"
         }
       },
       {
@@ -749,8 +829,8 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-fitness_regression-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json"
+          "schema_id": "guru-consumer-guru-maintain-architecture-baseline-fitness-regression-5.0",
+          "path": "consumers/workflow/fitness-regression-5.0.schema.json"
         }
       },
       {

@@ -188,6 +188,14 @@ The PR body must not contain `Close`, `Closes`, `Closed`, `Fix`, `Fixes`,
 The package does not infer Issue completion from `Refs` and never calls an
 Issue mutation API.
 
+## Final integration eligibility
+
+Final Ready consumes current readiness based on actual final Check and complete
+committed Review after original-owner knowledge integration. Candidate_checked,
+RDT candidate_ready or Architecture reviewed_candidate cannot seed Ready or
+PublicationFact. No knowledge change needs no empty contribution or promotion.
+Early Draft retains its independent input and nonfinal meaning.
+
 ## Current-stage scope revision
 
 `delivery_scope_revision` is this existing owner's semantic re-entry after original

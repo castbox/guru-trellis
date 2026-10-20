@@ -216,7 +216,7 @@ def stage_owner_execution(
                 "# Design Constitution\n\nCurrent project authority fixture.\n",
                 encoding="utf-8",
             )
-    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"4.0", "delivery-2.0"}:
+    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"5.0", "delivery-3.0"}:
         for locator in (public_payload["baseline"]["locator"], public_payload["project_contract"]["change_contract_locator"]):
             path = fixture / locator
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -252,7 +252,7 @@ def stage_owner_execution(
             },
             fixture,
         )
-    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"4.0", "delivery-2.0"}:
+    if skill_id == ARCHITECTURE_SKILL and public_payload.get("schema_version") in {"5.0", "delivery-3.0"}:
         from runtime.reviewed_content import reviewed_content_identity
         public_payload["before_authority"] = {"git_revision": head,
             "baseline_locator": public_payload["baseline"]["locator"],
@@ -475,7 +475,7 @@ def stage_owner_execution(
             owner = {
                 "schema_version": public_payload["schema_version"],
                 **({key: copy.deepcopy(public_payload[key]) for key in ("before_authority", "candidate")}
-                   if public_payload.get("schema_version") in {"4.0", "delivery-2.0"} else {}),
+                   if public_payload.get("schema_version") in {"5.0", "delivery-3.0"} else {}),
                 **({"planning_purpose": public_payload["planning_purpose"]} if "planning_purpose" in public_payload else {}),
                 **({"delivery_key": public_payload["delivery_key"], "planning_root": public_payload["planning_root"]} if public_payload["profile"].startswith("delivery_") else {}),
                 "profile": public_payload["profile"],
@@ -563,12 +563,10 @@ def stage_owner_execution(
                 }
             elif recipe == "rdt-impact-sync":
                 selected = {
-                    "typed_exit": "sync_required",
+                    "typed_exit": "candidate_ready",
                     "authority_locator": str(public_payload["authority_locator"]),
-                    "target_version": "1.1",
+                    "authority_version": str(public_payload["authority_version"]),
                     "contribution_locator": "docs/requirements-design-test-contributions/example-c",
-                    "sync_kind": "promotion",
-                    "freshness": str(public_payload["authority_freshness"]),
                 }
             elif recipe == "rdt-promotion-sync":
                 selected = {
@@ -611,6 +609,7 @@ def stage_owner_execution(
                     "conclusion": "The expected typed exit is justified by the evaluated scenario.",
                 },
                 "consumer": {
+                    "candidate_ready": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
                     "ssot_current": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-current-router"},
                     "sync_required": {"kind": "skill", "id": "guru-maintain-requirements-design-test-ssot"},
                     "revision_required": {"kind": "workflow", "id": "guru-requirements-design-test-ssot-planning-router"},

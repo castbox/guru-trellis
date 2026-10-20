@@ -3,7 +3,8 @@ import argparse, copy, hashlib, json, os, re, stat, subprocess, sys
 from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
-PHASE2_WORKTREE_CONTENT_ALGORITHM="guru-phase2-worktree-content-1.0"
+from runtime.reviewed_content import reviewed_content_metadata_path
+PHASE2_WORKTREE_CONTENT_ALGORITHM="guru-phase2-worktree-content-2.0"
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -90,7 +91,7 @@ def file_set(repo,paths):
   try:metadata=target.lstat()
   except FileNotFoundError:
    rows.append({"path":path,"kind":"missing"});continue
-  if stat.S_ISREG(metadata.st_mode):rows.append({"path":path,"kind":"file","content_sha256":hashlib.sha256(target.read_bytes()).hexdigest()})
+  if stat.S_ISREG(metadata.st_mode):rows.append({"path":path,"kind":"file","content_sha256":hashlib.sha256(target.read_bytes()).hexdigest(),"mode":"100755" if metadata.st_mode & stat.S_IXUSR else "100644"})
   elif stat.S_ISLNK(metadata.st_mode):rows.append({"path":path,"kind":"symlink","target":os.readlink(target)})
   else:raise CommandError("stale_identity","reviewed_paths",f"Unsupported reviewed-content path type: {path}",3)
  return digest({"algorithm":PHASE2_WORKTREE_CONTENT_ALGORITHM,"entries":rows})
@@ -102,7 +103,7 @@ def content_identity(repo,paths=None):
  if paths is None:
   tracked=git(repo,"ls-files","-z").split("\0")
   untracked=git(repo,"ls-files","--others","--exclude-standard","-z").split("\0")
-  paths=sorted({x for x in [*tracked,*untracked] if x and not x.startswith(".trellis/.runtime/")})
+  paths=sorted({x for x in [*tracked,*untracked] if x and not reviewed_content_metadata_path(x)})
  return file_set(repo,sorted(paths))
 def dirty_paths(repo):
  raw=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE,check=True).stdout.decode("utf-8").split("\0");out=[];i=0

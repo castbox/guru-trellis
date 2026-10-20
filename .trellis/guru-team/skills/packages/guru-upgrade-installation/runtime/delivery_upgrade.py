@@ -163,9 +163,9 @@ def prepare_inventory(root: Path, fork: Path | None) -> dict:
             "common_sessions": {} if common is None else {p.name: raw_snapshot(p) for p in sorted((common / "trellis/sessions").glob("*.json"))}}
 
 
-def old_installation(root: Path) -> dict:
+def old_installation(root: Path, source: Path | None = None) -> dict:
     from owner import old_manifest, source_profile
-    manifest = old_manifest(root)
+    manifest = old_manifest(root, source)
     version = (root / ".trellis/.version").read_text().strip()
     if not version.startswith(("0.6.", "0.7.0-castbox.")):
         raise MigrationError("Unsupported live Core source contract")
@@ -176,7 +176,7 @@ def old_installation(root: Path) -> dict:
 def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Path | None) -> dict:
     from owner import source_root, installer, old_paths, guru_owned
     source = source_root(package)
-    old = old_installation(root)
+    old = old_installation(root, source)
     if public["source_profile"] != old["profile"]:
         raise MigrationError("Source family differs from actual installed Guru")
     if public["target_source_ref"] != git(source, "rev-parse", "HEAD"):
@@ -210,7 +210,7 @@ def preview(package: Path, root: Path, public: dict, plan: dict | None, fork: Pa
     managed = {}
     for workspace, target in roots(plan).items():
         selected = workspace_rows[workspace]
-        previous = old_installation(target)
+        previous = old_installation(target, source)
         hashes = old_paths(previous["manifest"], source, target)
         decisions = {row["path"]: row for row in selected["decisions"]}
         if len(decisions) != len(selected["decisions"]):
@@ -341,12 +341,13 @@ def save(recovery: Path, checkpoint: dict) -> None:
 
 def begin(package: Path, root: Path, public: dict, plan: dict, fork: Path) -> tuple[Path, dict]:
     from owner import source_root
+    source = source_root(package)
     facts = preview(package, root, public, plan, fork)
     recovery = Path(git(root, "rev-parse", "--absolute-git-dir")) / "guru-team/install-upgrade" / str(uuid.uuid4())
-    checkpoint = {"schema_version": "2.0", "root": str(root), "source": str(source_root(package)),
+    checkpoint = {"schema_version": "2.0", "root": str(root), "source": str(source),
                   "fork": str(fork), "plan": plan, "phase": "core", "core_completed": False,
                   "owner_index": 0, "preset_index": 0, "old_managed": facts["old_managed"],
-                  "old_installation": old_installation(root), "preimages": {}}
+                  "old_installation": old_installation(root, source), "preimages": {}}
     for index, path in enumerate(facts["target_paths"]):
         row = state(Path(path))
         row["backup"] = "preimages/" + str(index)

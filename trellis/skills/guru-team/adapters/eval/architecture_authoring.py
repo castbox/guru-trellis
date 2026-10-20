@@ -143,9 +143,9 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         public["freshness_identity"] = "sha256:" + current
     if public["stage"] != "planning" and public["profile"] in {"task_impact_sync", "delivery_task_impact_sync"}:
         from runtime.reviewed_content import reviewed_content_identity
-        public["schema_version"] = "delivery-2.0" if public["profile"].startswith("delivery_") else "4.0"
+        public["schema_version"] = "delivery-3.0" if public["profile"].startswith("delivery_") else "5.0"
         public.pop("planning_purpose", None)
-        public["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:4.0"
+        public["project_contract"]["guru_contract_identity"] = "guru-maintain-architecture-baseline:5.0"
         public["before_authority"] = {"git_revision": base,
             "baseline_locator": public["baseline"]["locator"],
             "constitution_locator": public["constitution"]["authority_locator"],
@@ -176,10 +176,10 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
 
 def contract_paths(public: dict) -> tuple[str, ...]:
     """Select actual current public contracts without choosing a semantic route."""
-    if public.get("schema_version") == "delivery-2.0":
-        semantic = "schemas/semantic-result-delivery-2.0.schema.json"
-    elif public.get("schema_version") == "4.0":
-        semantic = "schemas/semantic-result-4.0.schema.json"
+    if public.get("schema_version") == "delivery-3.0":
+        semantic = "schemas/semantic-result-delivery-3.0.schema.json"
+    elif public.get("schema_version") == "5.0":
+        semantic = "schemas/semantic-result-5.0.schema.json"
     elif public.get("profile", "").startswith("delivery_"):
         semantic = "schemas/semantic-result-delivery-1.0.schema.json"
     else:

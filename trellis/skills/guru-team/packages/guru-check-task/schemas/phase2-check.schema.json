@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-5.0.json",
-  "title": "Guru Phase 2 Check 5.0 Compact Semantic Projection",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-phase2-check-6.0.json",
+  "title": "Guru Phase 2 Check 6.0 Compact Semantic Projection",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,7 +23,7 @@
     "consumer"
   ],
   "properties": {
-    "schema_version": {"const": "5.0"},
+    "schema_version": {"const": "6.0"},
     "skill_id": {"const": "guru-check-task"},
     "mode": {"enum": ["workflow", "standalone"]},
     "task_ref": {
@@ -44,7 +44,7 @@
     "reviewed_content_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Owner-private guru-phase2-worktree-content-1.0 identity over the live tracked and untracked worktree, and the only Phase 2 content freshness authority."
+      "description": "Owner-private guru-phase2-worktree-content-2.0 identity over business bytes and modes, excluding lifecycle/session/result metadata; adjacent Check freshness only."
     },
     "validation": {"$ref": "#/$defs/validation"},
     "docs_ssot": {"$ref": "#/$defs/docsSsot"},
@@ -56,13 +56,89 @@
     },
     "semantic_review": {"$ref": "#/$defs/semanticReview"},
     "typed_exit": {
-      "enum": ["passed", "resolved_reconciliation_passed", "implementation_required", "planning_stale", "blocked"]
+      "enum": ["candidate_checked", "passed", "resolved_reconciliation_passed", "implementation_required", "planning_stale", "blocked"]
     },
     "route": {"enum": [null, "reapprove_plan", "clarify_requirements"]},
     "reason": {"type": "string", "minLength": 1},
     "consumer": {"$ref": "#/$defs/consumer"}
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {
+          "typed_exit": {
+            "const": "candidate_checked"
+          }
+        },
+        "required": [
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "properties": {
+          "route": {
+            "const": null
+          },
+          "consumer": {
+            "const": {
+              "kind": "workflow",
+              "id": "guru-knowledge-final-integration-router"
+            }
+          },
+          "semantic_review": {
+            "properties": {
+              "status": {
+                "const": "passed"
+              },
+              "findings": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "status": {
+                        "const": "open"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  }
+                }
+              },
+              "adequacy_dimensions": {
+                "items": {
+                  "properties": {
+                    "status": {
+                      "const": "passed"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "validation": {
+            "properties": {
+              "unverified_items": {
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "blocking": {
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "blocking"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "if": {"properties": {"typed_exit": {"const": "passed"}}, "required": ["typed_exit"]},
       "then": {

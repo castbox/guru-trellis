@@ -31,7 +31,10 @@ facts, authorization, recorder state, or private digests.
 Read [current-knowledge.md](current-knowledge.md) completely before every
 profile. That shared contract owns unit completeness, status, stable identity,
 necessary relationships, reading, structural revision and migration. This
-package remains the only RDT semantic owner; it adds no public fields.
+package remains the only RDT semantic owner. Its current impact and promotion
+inputs are 2.0 with explicit phase2 and final_integration stages. Bootstrap and
+repair keep their original contracts. The old 1.0 impact/promotion schemas are
+history-only; current runtime rejects their shape rather than dual-parsing.
 
 This owner selects the RDT/Architecture versions applicable to the current
 Task plan and candidate. Use actual immutable version/Git-history authority
@@ -49,10 +52,14 @@ retains its own live expected-current and subtraction/traceability checks.
   complete-source navigation until the reviewed cutover.
 - `task_impact_sync`: read the applicable complete units and necessary
   relationships before judging the delta. Select the original no-op,
-  isolated-contribution, narrowly safe direct-sync or revision route. An
+  isolated-contribution, repair or revision route. An
   isolated delta identifies complete resulting definitions at its own
-  proposed-target locators without duplicating unchanged authority.
-- `promotion`: reread the actual target, reconcile intervening changes, and
+  proposed-target locators without duplicating unchanged authority. Complete
+  changed proposals return `candidate_ready` with only contribution_locator,
+  authority_locator and authority_version; the latter remains the applicable
+  source identity. No-change returns actual `ssot_current`.
+- `promotion` at final_integration: after candidate Check, reread the actual
+  target, reconcile intervening changes, and
   integrate the reviewed contribution into complete current R/D/T units.
   Check surviving conditions, subtraction, stable identities and relationships
   before updating navigation/version entry. Historical contributions remain
@@ -61,6 +68,11 @@ retains its own live expected-current and subtraction/traceability checks.
   Restore complete definitions and links within the existing scope, or return
   the original incomplete/revision/blocked exit. Never infer that an
   unmigrated object is complete because its navigation resolves.
+
+Only actual completed promotion returns `ssot_current` as an updated authority;
+`candidate_ready` is not a promotion result. The owner writes and reads back
+actual files before invoking the validator. There is no automatic document
+writer or semantic inference from stage, version, directory or schema success.
 
 All profiles retain their existing gate, freshness, confirmation, invocation
 and typed-exit contracts. Planning and implementation consume selected bodies;

@@ -2,7 +2,7 @@
 
 以下事实只绑定 current source/release evidence，不推断未来能力。
 
-当前 `.97` 组合 #589 D7 的公开不可变摘要消费（`ARCH-CUR-069`）与 #600 的晋升时机和结果适用性（`ARCH-CUR-070`）。`.95` 的清晰写作与入口读取由 `ARCH-CUR-068` 承接；`.94` 的跨 owner 工程事实由 `ARCH-CUR-067` 承接；`.93` 固定截点查询继续由 `ARCH-CUR-066` 承接；`.92` 的固定内容与实际整合继续由 `ARCH-CUR-065` 承接。完整 active inventory 由 live registry/Interfaces 定义。带旧 Issue/版本身份的计数、默认值和验证只描述其历史范围；与后继决定冲突的片段按明确 successor 读取。软件版本轴继承所整合源码；知识组合不证明当前整合门禁或软件发布通过。
+当前 authority identity 为 `guru-trellis-architecture`。完整单元沿既有稳定ID定位，精确内容由完整Git revision与locator绑定；根入口不承担每Issue业务摘要或全局递增。active inventory仍由live registry/Interfaces定义。历史计数、版本和结果只描述原范围，软件Release、知识接受与实际门禁分别判断。
 
 - `ARCH-CUR-001`（`code_recovered`）：reviewed #332 original-entry correction contribution + inherited `.44` authority 包含 23 个 active Skill packages、97 个 external exits 与 77 个 commands；精确 revision 由包含本 authority 的 Git commit/tree identity 绑定，正文不自引用可变 HEAD；registry 统一指向 interface/route/platform，22 个 integrated，`guru-verify-extension-installation` 为 `standalone_only`。
 - `ARCH-CUR-002`（`code_recovered`）：global workflow 实现四 Phase，canonical package 位于 `trellis/**`，dogfood/installed 位于 `.trellis/**`，平台投影覆盖 Shared/Codex/Claude/Cursor。
@@ -338,7 +338,7 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 
 `ARCH-CUR-069`（#589 D7 reviewed source）：manual recovery/history query2 直接消费固定 Fork 的公开 `GitCandidateContent`，上游 `delivery_store` 保留摘要算法与序列化。Guru `CandidateObjects` 及临时 snapshot 生产路径退出；原 caller 保留对象准备、Task/Delivery/PR/ancestor/expected/cutoff 与恢复校验。操作内 context 在 actual-root 变化前关闭重建，退出释放；不新增持久缓存或公共 DTO。责任与晋升范围见[已晋升贡献](../contributions/589-git-object-performance.md)，实际结果和未验证边界由[唯一 Test](../../requirements-design-test-contributions/589-git-object-performance/test.md)拥有。
 
-`ARCH-CUR-070`（#600）：[ADR-030](../adr/030-promotion-before-final-check.md)作为 ADR-005 晋升时机的窄后继。Phase2 独立 Architecture 评估完整实现及拟写内容，原 owner expected-current 分支晋升后核验实际写入和适用性；最终 Check、Task Commit、committed 独立 Architecture 与完整 Branch Review 覆盖实际候选。晋升前 authority 保持比较起点，新 CURRENT 自身是受审变更。同内容适用判断不因身份变化重复派发评估；finding、变化回程、no-change、窄修订和恢复由 [原 package](../../../trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md)及 [迁移合同](../../../trellis/presets/guru-team/MIGRATION-600.md)拥有。实际证据只由[唯一 Test](../../requirements-design-test-contributions/600-promotion-before-check/test.md)记录。
+`ARCH-CUR-070`：原独立Architecture phase2比较晋升前authority、完整implementation与拟写正文，原Check先检查完整隔离候选。candidate_checked只进入原owners的final_integration；实际写入与适用性由原owners核对，implementation随后重新candidate/begin_check，再最终Check、TaskCommit、独立committed Architecture与完整BranchReview覆盖真实after。候选不写最终public Check，Ready/Finish不接受未晋升状态。no-change无空贡献/ADR/commit；普通晋升可沿用稳定identity，不强制全局入口写入。single-writer、before比较起点、原恢复与完整质量保留，决定由[ADR-KNOWLEDGE-FINAL-INTEGRATION](../adr/knowledge-final-integration.md)拥有，实际结果仅由[#638 Test](../../requirements-design-test-contributions/638-shared-current-promotion/test.md)记录。
 
 `ARCH-CUR-071`（#577）：原 source-loaded `guru-maintain-legacy-task` 在独立 `archive_resume` profile 内承接人工旧归档，普通 current lifecycle 不增加旧格式 reader。公共 Trellis 独占数据投影、archive/active 关系、generation、session/binding 与 operation 恢复；Guru 消费真实 `resumed_task`，原私有 owners 核验历史、读取归档来源并处置自己精确 controls。当前 Identity/Bind 复用目标 installed active resolver；初始 C4 前沿公共 parser 和 active 占用检查进入原 binding owner，创建/历史 reservation 继续保留。未完成 Closure/Finish/Finalizer 回原事务，正式 Finish 及合法人工 Cleanup 回 Reactivate；恢复不制造新 Task、空 Delivery、门禁或业务完成。原 upgrade owner 仅对 receipt 明确记录 dirty 的真实 provenance commit 保留逐路径历史候选资格，原路径 bytes 检查与未知 preimage 显式处置不变。职责及退出读 [贡献](../contributions/577-manual-archive-resume.md)、ADR-024/027；实际结果与未验证边界由 [唯一 Test](../../requirements-design-test-contributions/577-manual-archive-resume/test.md) 拥有。
 
@@ -352,7 +352,7 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 
 #636 将有界早期提交与 Draft 反馈纳入原 TaskCommit/Publication。早期候选不要求完整 Check；原精确 staging、敏感检查、目标核验、真实 hook 事务及同提交恢复保持。Publication 在同 PR 的未审候选 push 前确保 Draft，支持 Draft 创建/更新、Ready 回退与最终 Ready，并从同操作实际 PR/HEAD/payload 恢复输出丢失。Draft 不写最终 PublicationFact、不构成 gate 或整体完成。
 
-固定 B/H 的独立完整内容分析和风险匹配验证在 Draft 后并行；target 前进不使内容审核中断。HEAD 与组合候选证据分别承接，冲突/无 merge ref/CI 未触发保留 HEAD支持入口和具体组合缺口。早期 Review 不写 public full_review；最终真实 Check predecessor、fresh committed Architecture/完整 Branch Review、readiness和Merge保持。ADR-030 的最终Check前晋升顺序不变，#637的跨阶段审核复用和#638的时机变更不进入本增量。
+固定 B/H 的独立完整内容分析和风险匹配验证在 Draft 后并行；target 前进不使内容审核中断。HEAD 与组合候选证据分别承接，冲突/无 merge ref/CI 未触发保留 HEAD支持入口和具体组合缺口。早期 Review 不写 public full_review；最终真实 Check predecessor、fresh committed Architecture/完整 Branch Review、readiness和Merge保持。最终Check前的真实晋升由ARCH-CUR-070当前顺序承接；#637候选适用性保持。
 
 本条与 [ADR-033](../adr/033-early-draft-feedback.md)窄替代 ARCH-CUR-059/060 及继承合同中“所有提交/PR反馈统一在完整Check/readiness之后”的时机片段；保留Task/Delivery API、阶段ownership、Refs-only/Closure、历史事实与既有终态能力。源码/投影、实际Agent/GitHub和未验证边界只由 [唯一Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md) 拥有。
 

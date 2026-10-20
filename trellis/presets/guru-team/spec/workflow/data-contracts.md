@@ -976,17 +976,26 @@ compatibility reader converts them to a current schema.
 
 ## Phase 2 Check Artifact
 
-New active evidence uses closed schema `guru-phase2-check-5.0` and
+New active evidence uses closed schema `guru-phase2-check-6.0` and
 `skill_id=guru-check-task`; the basename remains `phase2-check.json` and no
-parallel pass artifact is allowed. The ignored owner checkpoint stores only
+parallel pass artifact is allowed. The independent candidate profile has
+`candidate_checked` output containing only task_ref, delivery_key and existing
+candidate head/content_identity. It records no final public Check and cannot
+supply check_result_id to TaskCommit. It returns through original public rework
+and final integration; actual writes require implementation candidate rebinding
+before final Check. RDT candidate_ready independently carries only contribution
+and applicable authority locators/version, not a current-success claim. The ignored owner checkpoint stores only
 mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
 witness, and one typed exit/route/reason/consumer. The private
-`guru-phase2-worktree-content-1.0` identity covers live tracked and untracked
-worktree paths and has one local deterministic consumer: the checker invoked
-inside the Phase 2 public wrapper before typed-output projection. It is
-distinct from the four-consumer durable `guru-reviewed-content-1.0` contract.
+`guru-phase2-worktree-content-2.0` identity covers live tracked and untracked
+business worktree paths, including regular-file executable mode. It uses the
+existing metadata exclusions owned by [Reviewed Content Identity](#reviewed-content-identity),
+so recording lifecycle metadata does not change the checked business content.
+Only the original Check recorder/checker and public wrapper consume this local
+equality token. It remains distinct from the durable `guru-reviewed-content-1.0`
+identity used in the candidate handoff.
 Its supported atomic entries include regular files, executable files,
 symlinks, missing paths, and Gitlinks. An unchanged uninitialized Gitlink binds
 the unique stage-0 superproject index mode `160000` and OID after the current
@@ -994,9 +1003,11 @@ commit records the same pointer. An initialized Gitlink additionally requires
 an exact submodule root, clean status, and submodule `HEAD` equal to that OID.
 Dirty, HEAD-drifted, index/commit-pointer-drifted, deleted, replaced,
 root-mismatched, unmerged, or ambiguous Gitlinks fail closed. This is an
-additive `1.0` compatibility rule: the former runtime produced no valid digest
-for a Gitlink, while every previously supported non-Gitlink entry keeps its
-existing payload and digest. It does not relax Task Commit's separate rule that
+additive Gitlink compatibility rule in historical `1.0`: that earlier runtime
+produced no valid digest for a Gitlink and retained its non-Gitlink digests.
+Current `2.0` changes regular-file mode binding and metadata selection; it does
+not claim the old payload or digest is unchanged. Old checkpoint shapes remain
+historical and are not converted. This does not relax Task Commit's separate rule that
 a Gitlink selected for staging must be initialized and clean.
 It detects reviewed-content drift and returns control to the AI owner for delta
 classification; it is not authorization, semantic approval, public handoff, or
