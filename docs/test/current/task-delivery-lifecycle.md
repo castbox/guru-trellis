@@ -1,6 +1,6 @@
 # Task / Delivery 生命周期测试策略
 
-知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.113`；晋升前完整定义为 immutable Git `b470580d4f79f61c66d72db97861fe1564b5e746:docs/test/current/task-delivery-lifecycle.md`（RDT `.112`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
+知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.114`；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
 
@@ -39,3 +39,17 @@
 | T636-07 / R636-06/07 | implementing/checking/reviewing/publishing在途任务、旧commit receipt与旧Publication pending/Ready事务 | 由原owner一次性恢复/迁移同key/PR、已执行动作和真实gate义务；无伪造pass、runtime双读或新建Task/Delivery。 |
 
 本轮实际命令、首次失败、恢复及未验证边界唯一记录在 [#636 Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md)。本文只拥有完整策略/场景，不复制执行日志。
+
+## 候选适用性与覆盖完整场景
+
+| Test identity | 正常起点与实际入口 | 必须观察与证据边界 |
+| --- | --- | --- |
+| T637-01 / R637-01/04 | 原公共 Task/Delivery 和七 owner 首次完整链 | 首次真实独立覆盖、当前 Check/full_review/candidate/predecessor；Planning、自检和 Draft 反馈不替代。 |
+| T637-02 / R637-01/02/05 | matching installed 实际 Agent；首次完整后真实文档冲突、定位修订及未改 consumer | 原覆盖加双方/组合/完整差额与受影响依赖形成当前完整结果；finding 修正后核闭合及覆盖，无无因换新全量。 |
+| T637-03 / R637-03 | 正常共享 Runtime/事务实现缺陷，原命令缺失或环境改变 | 扩审未改 consumers 并检出具体缺陷；缺项补跑，其余可核验事实按当前适用性采用。 |
+| T637-04 / R637-02/07 | 实际同树新提交、无关 target 前进、公开输出恢复与已退休 checkpoint | 固定 B/同 Delivery；只刷新必要绑定、不假定环境；旧 gate 不冒充当前，缺覆盖补审，无私有跨读或重建。 |
+| T637-05 / R637-04/05/08 | 旧/新完整安装的同初始实际 Agent 样本 | 先比较充分性/检错，再分别实测语义、命令、正式记录、远端等待和重复动作；fixture/scanner 不证明 Agent 行为，不预设收益比例。 |
+| T637-06 / R637-06/07 | #636 已交付 installed 早期入口与真实同 PR/HEAD 修订、最终门禁 | 同 key/PR 接续，早期不写 full_review，真实 Check predecessor 与 payload/live 资格；#638 未交付接口明确交后项验证。 |
+| T637-07 / R637-08 | canonical/声明平台、单 clean matching、reapply/drift/mode/sidecar 与在途恢复 | 完整 matching 投影和实际 installed owner 运行，旧完整安装固定或原 owner 显式成套迁移；不推定全平台实际 Agent、业务/生产或完整 Release 矩阵。 |
+
+本轮实际命令、首次失败、Agent/fixture/installed/remote 层次、分阶段耗时及未验证边界唯一由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)维护。本文定义完整策略，不将规划、旧结果或知识晋升当作通过证据。

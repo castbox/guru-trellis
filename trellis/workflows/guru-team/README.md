@@ -98,14 +98,23 @@ Interface before invoking its step. The workflow supplies mandatory invocation,
 unique typed-exit consumers and fail-closed routing; package owners supply
 judgment and deterministic command details.
 
-New Architecture conclusions at Planning, applicable implementation discovery,
-Phase 2 and committed Branch Review are produced by a fresh independent
-subagent executing the existing
+The first independent Architecture assessment and later independent
+continuation use the existing
 [Architecture Skill](../../skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md).
 The [step-local contract](../../skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)
 owns reviewer method and input boundaries; this workflow routes the real result.
 Delivery/Completion consume current conclusions and matching-stage eligibility.
 Actual native and projection evidence is owned by [#404 Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
+
+## 候选变化后的审核与验证
+
+[唯一候选适用性合同](../../presets/guru-team/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage) 由七个原 owner 在各自职责内读取。
+首次完整独立审核继续执行；后继候选以可核验原覆盖、全部差额和受影响依赖形成
+当前完整结论。finding 闭合后不再无条件更换 reviewer 或重复完整相同审核。
+各阶段仍须实际判断并产生原正式结果；工程命令事实与语义结论分别处理。
+matching 安装、`fresh_final_review` 的窄后继含义及同 Delivery 在途恢复见
+[MIGRATION-637](../../presets/guru-team/MIGRATION-637.md)。源码修改不代表活跃 Task 已迁移，静态分发不证明实际
+Agent 行为或耗时改善。#636 已有接口需命中组合验证，#638 未来接口明确未验证。
 
 ## 提前 Draft 与最终门禁
 

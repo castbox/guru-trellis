@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整加载写作规范，实施与审核保持语义/证据边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文共享合同及来源承诺唯一处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核本批九节设计的适用内容"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核唯一Policy/Docs Plan及执行验证边界"}
+{"file": ".trellis/tasks/10-20-637-candidate-review-reuse/prd.md", "reason": "整体accepted scope与十项AC"}
+{"file": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/prd.md", "reason": "本D1完整需求、场景、前序边界"}
+{"file": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/design.md", "reason": "本D1实际设计与唯一来源处置"}
+{"file": ".trellis/tasks/10-20-637-candidate-review-reuse/deliveries/5499bb2d-86d7-4a5c-9747-9b06e00f4ef9/implement.md", "reason": "执行步骤、命中验证及唯一Policy/Docs Plan"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "现有全局边界、Interaction Budget与拟统一合同起点"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值、范围、独立审核和安装验证约束"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "直接演进与旧冲突条款退出"}
+{"file": "docs/architecture/contributions/637-candidate-review-reuse.md", "reason": "本Task真实Architecture贡献、九concern与晋升边界"}

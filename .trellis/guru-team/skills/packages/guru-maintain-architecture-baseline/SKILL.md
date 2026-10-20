@@ -12,6 +12,10 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
@@ -30,10 +34,11 @@ The matching canonical source is
 Use the installed path for repository execution; source maintenance may read
 the canonical source. A missing required contract uses the existing incomplete
 installation/blocked route; do not copy it into this package or invent a fallback.
-The contract selects the executor: new task Architecture assessments use a
-fresh independent subagent; downstream eligibility and baseline maintenance
-retain their existing owners. Follow the contract's Independent assessment
-entry before reading task narratives or authoring a result. The caller only
+The contract selects the executor: the first assessment uses a fresh independent
+subagent; later candidates and stages follow its independent continuation and
+applicability rules. Downstream eligibility and baseline maintenance retain
+their existing owners. Follow the contract's Independent assessment entry
+before reading task narratives or authoring a first result. The caller only
 coordinates and consumes the actual output; it never fills a reviewer pass.
 
 Execute one profile in this order:

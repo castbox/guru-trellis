@@ -12,6 +12,10 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
@@ -117,7 +121,8 @@ The caller forms only candidate refs, observed behavior, locators, and minimal
 reproduction clues. `classified` returns to this owner;
 `scope_confirmation_required` routes to requirements clarification;
 `mechanism_revision_required` returns to implementation for remove/replace and
-a full fresh check; `blocked` stops. Rejected candidates cannot produce a
+a current Check covering the fix delta and affected dependencies; `blocked`
+stops. Rejected candidates cannot produce a
 finding, test, implementation route, `planning_stale`, or user question. The
 Phase 2 gate stores only this owner's final classifications and six-part witness
 for its direct consumer, never qualifier stdout, report, locator, or checkpoint.

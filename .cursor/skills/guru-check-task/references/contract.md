@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 This current Skill consumes the target installation's reviewed Delivery API
@@ -145,11 +149,11 @@ promotion changed a baseline identity. This Check still covers the complete
 post-promotion candidate. A changed semantic/dependency/check obligation or a
 write outside reviewed content returns to the earliest affected original owner.
 
-The Architecture contract selects a fresh independent reviewer over the
-complete tracked/untracked candidate before task narratives. The same fresh
-worker may execute this Skill only after completing Architecture and then
-reading the whole task; its two actual results remain separate. A worker
-already exposed to narratives or implementation cannot backfill that review.
+Follow the Architecture contract's first independent assessment or lawful
+independent continuation entry for the complete tracked/untracked candidate.
+The same compliant reviewer may finish Architecture, then read the whole task
+and execute this Skill; both actual results remain separate. An implementer
+cannot approve their candidate or backfill an independent assessment.
 
 Phase 2 uses that stage result to perform the first semantic before/after review
 of the complete worktree candidate. Applicable project checks must be current;
@@ -208,7 +212,7 @@ Trace their entry and observations to the tested logic and accepted behavior;
 a command pass does not settle necessity or effectiveness. Worker checklists
 and coverage recommendations are evidence to judge under this policy, not
 automatic requirements to add tests or repeat a full chain. Qualified
-current-scope defects use the existing finding/fix/full-rerun loop; genuine
+current-scope defects use the existing finding/fix/current-Check loop; genuine
 evidence gaps use existing blocked handling. Carry conclusions in the existing
 adequacy dimensions and validation summaries.
 
@@ -264,7 +268,8 @@ diagnostic attribution alone must not add a business rejection.
    Only candidates returned eligible through `classified` may receive P0-P3 findings.
    `scope_confirmation_required` enters requirements clarification,
    `mechanism_revision_required` returns to implementation for remove/replace
-   and full rerun, and `blocked` stops. Rejected candidates never become a
+   and a current complete-coverage Check, and `blocked` stops. Rejected candidates
+   never become a
    finding, negative test, implementation route, planning-stale route, or user
    question.
 4. Review requirements, design, implementation, tests, Docs SSOT, cross-layer
@@ -298,65 +303,21 @@ cannot prove semantic equivalence or require an unrelated full-chain replay.
 
 ### Dependency-Scoped Validation
 
-The AI owner performs these steps before recording the current result:
+Apply the shared Candidate Applicability And Coverage contract in every profile,
+including finding fixes and resolved reconciliation. Determine the current
+complete check set and account for all nine dimensions. Use this owner's
+existing validation summary for execution/adoption, original source, checked
+object and applicability reason. Bind the actual current worktree through the
+original recorder even when business conclusions remain applicable.
 
-1. Independently determine the current complete scope, risks, affected consumers
-   and applicable check set before inspecting prior execution results. Read each
-   check's definition/version, checked object, real dependencies, toolchain,
-   invocation parameters, environment profile and test expectations from their
-   existing sources. Documentation can change behavior contracts or validation
-   obligations even when the code tree is unchanged.
-2. Adopt a prior engineering execution fact, including one produced by another
-   reviewer or stage, only when its original result is lawfully accessible and
-   verifiable and all those inputs remain applicable: definition/version,
-   toolchain, parameters, environment and expectations are unchanged and actual
-   dependencies are semantically equivalent. A reviewer, stage, commit or
-   promotion identity change alone does not invalidate that fact. A matching
-   path or code tree alone does not establish applicability either.
-3. In this owner's existing validation summary distinguish commands actually
-   executed this round from adopted facts; identify the original result source,
-   checked object and concrete applicability reason. Use accessible actual command
-   results, existing summary/evidence locators and Git checked objects to verify
-   the source. Do not claim this owner ran an adopted command. Author the current
-   validation result after the full current judgment; the original recorder
-   derives its current content binding. Do not alter the old record, copy an old
-   pass or freshness token, or treat an old result as the current result.
-4. Execute each new applicable check and each affected check whose definition,
-   version, dependencies, toolchain, parameters, environment or expectations
-   changed or cannot be established. A missing original result requires only its
-   check to run; keep unaffected verifiable facts. A legal configuration change
-   is a reason to run its affected check, not an old-value correctness whitelist.
-   Judge configuration usability from appropriate actual integration/E2E
-   execution under the current profile.
-5. Account for every applicable check with a current bound result or explicit
-   unverified boundary in the existing validation fields. Complete all current
-   semantic dimensions and handle findings and blocking evidence normally before
-   the original recorder/checker/public invocation. Engineering execution facts
-   never supply semantic pass, current owner judgment or result binding. Do not
-   read another owner's private state, retain or reconstruct retired checkpoints,
-   or add a cross-Skill ledger, cache or long-lived execution history.
-
-Execution-result updates or added external evidence alone do not redefine the
-candidate or trigger identity recomputation loops. If they reveal a real
-behavior, applicable-contract, scope, or validation-obligation change, return
-to the earliest affected existing owner. Normal task-metadata, documentation,
-generated/projection, promotion, or finding-fix changes receive the same impact
-judgment and automatic re-entry. Record the current worktree candidate through
-the original recorder even when business conclusions remain applicable; do
-not exclude task metadata from exact-candidate checking. Once committed
-content changes, the first current exact base-to-HEAD receives a complete
-independent Branch Review. After that complete Review, only the Branch Review
-owner's declared promotion-reference alignment profile may combine the
-recoverable original full Review with its reviewed complete delta and issue a
-new formal result over the final candidate. Other substantive changes retain
-the existing affected-review routes; Git integration continuity keeps its own
-meaning.
-
-This owner independently judges the applicability of accessible execution facts.
-No new cache, checkpoint field, public DTO, cross-Skill receipt chain, or long-lived result
-history is introduced. Existing Phase 2-to-Task Commit checkpoint consumption,
-capture ancestry, content identity and retirement remain unchanged; Branch
-Review does not consume Phase 2 private evidence as its own semantic result.
+A complete current Check may combine verifiable original coverage with the
+reviewed entire delta and affected dependencies. After committed content
+changes, Branch Review's original owner applies that same shared rule and
+records its own current exact-range result; its narrow reference-alignment
+profile remains limited to its declared input. Git integration continuity
+remains bounded. This owner does not read another owner's private state or
+supply Branch Review's semantic conclusion. Existing Phase 2-to-TaskCommit
+consumption, capture ancestry, content identity and retirement remain unchanged.
 
 ## Causal stage review
 

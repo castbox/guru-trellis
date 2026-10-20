@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 This current Skill consumes the target installation's reviewed Delivery API
@@ -71,9 +75,10 @@ Current Check must cover the final candidate, and the original complete Review
 plus the reviewed delta must cover the final fixed-base-to-HEAD range. The
 normal independent committed Architecture input remains required and must be
 applicable to that range. Do not repeat a completed promotion solely because
-HEAD changed. This profile does not close findings: original finding-owner
-closure, genuine unfinished-agent replacement and a distinct fresh-final
-review remain mandatory before an original complete Review can pass.
+HEAD changed. This profile does not close findings: original finding-owner closure
+or a real eligible replacement, followed by an actual current final judgment,
+remain mandatory before an original complete Review can pass. The same
+compliant independent reviewer may perform both judgments; apply MIGRATION-637.
 
 After that AI gate, use the same review-branch/check-review-gate/invoke commands.
 The dedicated private `delivery-alignment-gate-1.0` schema (version
@@ -227,35 +232,21 @@ task-local Architecture change contract. It never opens Architecture private
 state; this consumer does not read Architecture private state and never treats
 the Phase 2 Architecture result as current Branch Review evidence.
 
-Apply the Architecture contract's Independent assessment entry to a new fresh
-reviewer for this committed candidate. A compliant worker may perform
-Architecture first and this complete review afterwards; do not dispatch a
-narrative-preloaded overall worker and ask it to retroactively author the
-Architecture pass. Actual results and exact committed identities stay separate.
+Apply the Architecture contract's first independent assessment or lawful
+independent continuation entry for this committed candidate. The same compliant
+reviewer may perform Architecture first and this complete current review
+afterwards. Do not retroactively turn a narrative-preloaded worker into the
+first independent Architecture reviewer. Actual results and exact committed
+identities remain separate.
 
 ### Engineering validation in the complete review
 
-Independently determine the complete committed scope, risks, affected consumers
-and applicable checks before inspecting prior engineering results. Adopt an
-original command result from another reviewer or stage only when lawfully
-accessible and verifiable and its definition/version, actual dependencies,
-toolchain, invocation parameters, environment and test expectations remain
-applicable. Verify actual results through existing summary/evidence locators
-and Git checked objects. Same paths or code trees do not establish applicability;
-changed documentation can introduce behavior contracts, risks and obligations.
-Reviewer, stage, commit or promotion changes alone do not require rerunning a
-still-applicable engineering command.
-
-Execute affected or new checks when inputs changed, applicability is unknown or
-the original result is unavailable; preserve unaffected verifiable facts. In the
-existing validation summary distinguish current execution from adoption, with
-original source and applicability reason, without claiming to have run adopted
-commands. Complete this review and bind its result to the current exact range
-through the existing recorder/checker. Old semantic passes, freshness tokens and
-Phase 2 private evidence cannot supply that judgment or binding. Do not read
-another owner's private state, retain or reconstruct retired checkpoints, or
-create a ledger, cache or long-lived history. Apply this rule within this owner;
-do not transfer unconditional reruns to Architecture or another phase.
+Apply the shared Candidate Applicability And Coverage contract while independently
+judging the complete current range. Determine the current check set before
+inspecting original facts. This owner's existing validation summary states
+execution/adoption, original source and applicability reason. Its original
+recorder/checker binds the actual current conclusion and exact range; Check's
+private evidence never supplies that conclusion.
 
 ### Whitespace Candidate Hygiene
 
@@ -373,7 +364,7 @@ context only; they do not enter the gate, public DTO, private checkpoint, or a
 tracked review report.
 `scope_confirmation_required` enters requirements clarification;
 `mechanism_revision_required` returns to task work for remove/replace and a
-fresh complete review; `blocked` stops. Rejected or disproved candidates remain
+current complete-coverage review under the shared contract; `blocked` stops. Rejected or disproved candidates remain
 non-blocking observations and cannot become scope confirmation, negative tests,
 implementation, follow-up, or publication blockers,
 follow-ups or rejections.
@@ -393,22 +384,27 @@ fix passes Phase 2 and a fresh commit, run one internal closure judgment by the
 finding owner or, only after a real unfinished event, a replacement. Retain the
 original `introduced_head`, bind the fixing `fix_head`, bind a later
 `closure_head`, and carry only concrete closure evidence into the next
-judgment. The distinct fresh-final result records `review_commit`. These commit
+judgment. The current final result records `review_commit`. These commit
 anchors intentionally differ across a normal fix and closure sequence;
 ancestry, not equality, proves finding continuity.
 
-Closure has no public exit, recorder call, or artifact. The AI workflow
-immediately dispatches a distinct fresh reviewer over the complete current
-range. That reviewer consumes the transient closure result, authors one
-`fresh_final_review`, and is the only reviewer whose compact passing gate is
-persisted. A closure reviewer never also performs the fresh final review.
+Closure has no public exit, recorder call, or artifact. The compliant
+independent reviewer may continue from closure to the current final judgment.
+Read the entire fix delta and affected consumers; establish complete current
+coverage under the shared candidate contract. Missing coverage is supplemented,
+and an unbounded combined effect requires the complete review. Only after that
+judgment may `review_intent=fresh_final_review` reach the original recorder.
+MIGRATION-637 explicitly replaces the old distinct-reviewer requirement while
+retaining the wire value and finding-continuity checks. Never project closure
+or an old pass directly into passed.
 
 Required Architecture promotion completes before final Check. Independent
 committed Architecture and the complete Branch Review cover the resulting
 promotion files and before/after responsibilities. After a later change, the
 original owner judges actual impact and returns to the earliest affected
-owner. The bounded reference-alignment profile below is the only exception
-to a new complete review for the specifically described wording delta.
+owner. The shared candidate contract governs complete current coverage after later
+changes. The bounded reference-alignment profile retains its specific wording
+input limits; general revisions use the original full-review profile.
 
 Mapped finding-fix, stale, re-entry and final-review routes continue within the
 AI workflow. They are not user choices. A user prompt remains only for real
@@ -426,7 +422,8 @@ necessity judgment, including when functional tests pass.
 Qualify concrete observations through existing Branch Review profiles before
 severity or findings. `mechanism_revision_required` returns through the
 existing mechanism router for remove/replace, preserving accepted scope and
-requiring a fresh complete review. A requirement-authority conflict re-enters
+requiring a current complete-coverage review under the shared contract.
+A requirement-authority conflict re-enters
 the Architecture owner and its `architecture_conflict` Planning consumer,
 then existing clarification when source scope changes; review again against
 the revised current authority. Missing applicable evidence uses

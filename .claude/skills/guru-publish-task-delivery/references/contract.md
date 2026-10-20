@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 ### Bounded private transaction migration
@@ -37,6 +41,11 @@ convert a legacy checkpoint into pass, or switch an old installation before
 upstream migration/default-cutover qualification.
 
 ### Private publication transaction and public fact
+
+Apply the shared candidate contract to the current readiness and content
+review. This owner judges exact payload/Issue semantics, selected candidate,
+publication action and live PR facts; it does not repeat unchanged business
+design. Preserve preview, expected HEAD, transaction recovery and readback.
 
 Current profiles are `delivery_review_ready`, `delivery_same_plan_resume`, and
 `delivery_reprepare_publication`. A fresh transaction consumes the exact
@@ -109,7 +118,6 @@ Final delivery_review_ready still requires current candidate-bound readiness.
 Only actual Ready records PublicationFact, and only current gates permit
 ready_for_merge. Early feedback/analysis cannot supply a gate. One-time matching
 1.0 transaction conversion is defined by MIGRATION-636.
-
 
 ## Preserved semantic and transaction duties
 

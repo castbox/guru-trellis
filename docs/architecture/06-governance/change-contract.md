@@ -79,3 +79,11 @@ promotion 发生在 Phase2，绑定贡献、原独立候选审查和完整 propo
 #636 原 TaskCommit/Publication 在 implementing 的已激活切片中提供有界提交和同PR Draft反馈。该入口不消费最终Check/readiness，也不写公共gate或PublicationFact。Draft后固定B/H内容分析与风险验证并行；新未审HEAD push前由原Publication确保Draft。早期分析不自动映射正式full_review；最终Check predecessor、原完整质量链和Refs-only/Closure保持。
 
 上述反馈可先于最终Phase2晋升链，不属于ARCH-GOV-008禁止未晋升贡献进入的最终readiness/Ready发布。独立Phase2仍评估完整实现与全部拟晋升内容，再原owner晋升/判断实际写入、最终Check、commit及独立完整committed Review；本增量不改变ADR-030时机，不实施#638。正式非Planning Architecture stage=publication仍用于最终Delivery readiness，不以Draft存在制造该stage通过。
+
+## 候选适用性与独立职责（ADR-034）
+
+Architecture 原 owner 保留首次独立读取顺序及当前 project-check 判断。后继读取合法原覆盖、Hr..Hi 全部真实差额、冲突双方/组合语义及受影响未改 consumers，分别确定保留、失效和补充；原覆盖不足补审，影响无法界定完整评估。同合规独立 reviewer 可以接续并依次完成 Architecture 与 Branch Review，各 matching stage 的判断和 formal result 仍实际发生。新架构事实回原评估；HEAD、阶段或身份变化本身不要求重建。
+
+工程事实按定义/版本、输入/依赖、环境/工具链/参数/期望采用或补命中项，计划 ref 不证明执行，同树不证明环境。原公开结果/调用对象、精确 Git/正文与原命令为合法依据；初次 implementation_required 无 passed full_review，refs 只定位缺陷。缺来源补真实工作，不跨读或重建退休 private，不加账本、覆盖 DTO 或 digest 链。当前 Check/full_review 及 predecessor 绑定、finding ancestry、当前 payload/Issue/live 判断保留。
+
+唯一执行定义由 [workflow-contract](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage)单写；本合同只拥有项目职责和 concern/project-check 承接，不新增 descriptor/check/result identity。ADR-034 窄替代无因 fresh reviewer/相同完整重审；ADR-028/030/033 及九 concerns、single-writer、晋升顺序保持。matching 安装沿 MIGRATION-637，旧安装固定或原 owner 成套切换，同 key 原阶段恢复，不由新语义豁免当前旧安装的门禁。

@@ -1350,9 +1350,13 @@ continuity and report digests. The consumer derives Git/range/task facts from
 live state and validates the compact semantic result. A resolved finding keeps
 its original `introduced_head`, records the fixing commit as `fix_head`, binds
 the later transient closure as `closure_head`, and uses `review_commit` for the
-distinct fresh-final range. Ancestry across those anchors proves normal
+current final-review range. Ancestry across those anchors proves normal
 finding-fix closure. `passed` after any resolved finding requires
-`review_intent=fresh_final_review` over the complete current range.
+`review_intent=fresh_final_review` over the complete current range. Its explicit
+successor meaning is defined by MIGRATION-637 and
+[Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage);
+the same compliant independent reviewer may verify closure and form the final
+judgment. This does not change the gate shape or ancestry checks.
 
 The gate is valid only while `guru-reviewed-content-1.0` recomputes to the
 stored `reviewed_content_sha256`; excluded task/publication/finalization metadata
@@ -1765,7 +1769,10 @@ profile and never writes a current Delivery gate.
 
 After a fix commit, finding closure is an internal transient AI judgment by the
 finding owner or a real unfinished-agent replacement. It has no public exit or
-artifact and automatically dispatches a distinct fresh reviewer. The selected current private gate accepts the intent allowed by its
+artifact. The original compliant reviewer may continue to the current final
+judgment under the shared candidate contract; missing coverage is supplemented,
+and an unbounded combined effect requires the complete review. The selected
+current private gate accepts the intent allowed by its
 profile and, for continuity, records the prior complete review commit separately
 from the current `review_commit`. The delivered #532/#535 gate 7.0 remains the
 private consumer for that evidence. Historical input/gate schemas remain stale

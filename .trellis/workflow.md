@@ -576,9 +576,10 @@ Every standard task invokes the one stable
 applicable stage. The single mandatory marker above identifies the Skill; these
 stage calls are fresh invocations, not duplicated markers or reusable results.
 Executor selection and assessment/eligibility behavior belong solely to that
-Skill's contract. New assessment stages mandatory invoke it through its fresh
-independent subagent entry; downstream stages invoke its current eligibility
-entry and consume actual matching-stage output. The caller never substitutes
+Skill's contract. Each assessment stage invokes its first independent or
+independent-continuation entry as applicable; downstream stages invoke its
+current eligibility entry and consume actual matching-stage output.
+The caller never substitutes
 self-authoring, a prior-stage DTO or an overall gate for that invocation.
 
 | Stage | Required Architecture call | Only current resume target |
@@ -782,6 +783,10 @@ check proves native continuation.
 
 ### Bound formal Task / Delivery continuation
 
+Load `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+when continuing a changed candidate or recovering review output. Original
+owners apply that contract; this continuation does not copy their judgments.
+
 Resolve current TaskId/generation, C4 branch binding and unique checkout through
 `guru-ensure-task-checkout`, then use the installed public Delivery current query.
 Explicit-task mode requires a deliberately selected TaskId. Missing/stale/ambiguous
@@ -832,7 +837,7 @@ PR or Task inventory never selects the Task or Delivery.
 | Draft/Ready mutation output lost | Original Publication same-plan resume first reads actual same PR/HEAD/state; recover the original terminal result without repeating mutation. |
 | Ready PR needs unreviewed revision | Original Publication delivery_return_to_draft invalidates affected gates through lawful rework, then guru-draft-revision-router resumes the same Delivery. |
 | TaskCommit `committed` | Candidate continuity router: affected HEAD returns through Reviewing rework, implementation begin_check and applicable Check; unchanged clean candidate enters independent full Review directly. |
-| Branch Review missing/stale | Fresh committed full-diff Architecture and `guru-review-branch`; Phase 2 or bounded continuity cannot replace first full Review. |
+| Branch Review missing/stale | Original committed Architecture and `guru-review-branch` owners apply the shared candidate contract and emit current results; Phase 2 or bounded continuity cannot replace the first full Review. |
 | Branch Review `passed` | Invoke `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
 | Publish/Merge success output or public projection lost | Original transaction reads actual PR/HEAD/merge and retries the same public fact; no repeated remote side effect. |
 | Exact selected Delivery's existing Publication PR is manually MERGED | Original Merge `delivery_merged_recovery`, then only its verified `delivered` enters original Completion; no pre-merge gate reconstruction. |
@@ -1300,6 +1305,10 @@ PR target is not a candidate-content change.
 
 #### 3.5 Branch review
 
+Load `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`.
+The original owners use it for later candidates and finding fixes; their
+current exact-range results remain mandatory.
+
 `guru-review-branch` owns the independent complete-range semantic review for
 delete, replace, merge, and compatibility-impacting ranges, including both
 subtraction dimensions. It does not read Phase 2 private evidence or inherit
@@ -1343,7 +1352,8 @@ Only fresh `baseline_current` with `promotion_state=no_change` or
 checks the current independently deliverable slice, remaining task work,
 validation and unverified boundaries, then authors the exact Chinese PR
 title/body with `Refs` only. Missing or stale Architecture evidence returns
-to its owner; task-content changes return to Phase 2 and full review.
+to its owner; task-content changes return to the affected Phase 2 and Review
+owners under the shared candidate contract.
 
 The final checked `ready` DTO enters `guru-publish-task-delivery:delivery_review_ready`, whose own
 preview/confirmation, exact HEAD, remote branch and PR transaction govern

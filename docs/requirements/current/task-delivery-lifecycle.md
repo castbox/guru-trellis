@@ -1,6 +1,6 @@
 # Task 与 Delivery 生命周期
 
-知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.113`；晋升前完整定义为 immutable Git `b470580d4f79f61c66d72db97861fe1564b5e746:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.112`），更早迁移来源和稳定身份保留。
+知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。适用版本：`current-main-0.7.0-guru.114`；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
 
@@ -55,6 +55,22 @@ Draft 后在同一固定 B/H 并行启动独立完整内容分析和风险匹配
 Check 审查当前完整 scope、需求/设计/测试/兼容/Docs/Architecture 及实际 consumer；若产生真实候选问题，按正常场景/机制/因果准入，不能用恶意篡改构造范围。完整审查没有候选时使用真正空集，不制造占位finding；空集或全 rejected 均不自动等于通过。工程命令结果只证明其实际层次。
 
 dirty 候选由原 Commit 精确 stage/commit；clean 已提交候选在 fresh Check 和当前公共适用性下直接进入首次完整 Review，不制造空提交或重复提交。Branch Review 读取固定 B..H 全部 diff，包含晋升和非本次最后提交；Phase2 pass 不代替独立 committed 判断。finding 修复回最早受影响 owner；修复后的最终结果覆盖实际最终候选。窄 promotion-reference alignment 只在原 Review 明确合同内采用，不能代替未执行的完整审查。
+
+## 候选适用性与完整覆盖
+
+`R637-01..08 / BEH637-01..08` 拥有以下完整行为。首次候选仍取得未参与当前实现者的完整独立审核。后继候选由当前原 owner 读取可核验原覆盖、Hr..Hi 全部实际差额、冲突双方语义与组合影响，以及受影响的未改 consumers，明确保留、失效和补充范围，对精确当前完整候选亲自形成结论。不能复制旧 pass；原覆盖不足补哪段审哪段，组合影响无法界定时完整审核。
+
+工程执行事实、当前语义判断、Git/PR 事实分别判断。原命令的定义/版本、输入/依赖、工具链、环境、参数和期望仍适用且原始结果可核验时采用；变化、缺失、新检查或不明项补跑命中检查。计划 AuthorityRef 不证明命令已执行。同树只解决内容绑定，不证明环境或 required checks 未变；导航、版本和文档冲突须按行为含义检查，无关 target 前进不触发整合。
+
+独立性按未参与当前实现的实际职责判断。首次仍由合规独立 reviewer 建立完整理解；后继可由同一合规 reviewer 接续，也可先形成 Architecture 判断再完成 Branch Review。阶段、HEAD 或 reviewer 身份变化本身不要求重建同质评估。各阶段仍亲自判断并通过原正式入口产生当前结果；作者自检、Planning、早期反馈、闭合声明或原工程命令不能替代这些判断。
+
+finding/整合修正后，原合规 reviewer 核闭合、修订差额及受影响覆盖，再作当前最终完整结论；取消无条件更换 reviewer 和重复完整相同审核的要求。`fresh_final_review` 保留 wire 值，matching 迁移后表示闭合之后的当前最终完整覆盖，而非强制新身份。finding ancestry、当前 candidate/Check predecessor 和原 recorder/validator 仍真实执行；closure 不等于 pass。
+
+合法来源为现有 public Task/Delivery 结果、实际原公开结果/调用对象、精确 Git 和当前正文，以及仍可核验的原命令结果。passed full_review 可定位原范围/plan/outcome；首次 implementation_required 没有 passed full_review，finding refs 只定位缺陷，已建立的理解不能补造覆盖。缺少合法依据时补真实审核；不跨 owner 读私有状态、不重建退休 checkpoint、不增加 review/test 账本、全链 digest 或授权记录。
+
+Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义、候选及 live 事实，消费仍适用的内容判断，不重做无实质变化的业务设计审核。真实 scope、前提或依赖变化回最早受影响 owner；同 Delivery 恢复不制造新身份或空提交。唯一共享执行定义由 canonical workflow-contract 的 Candidate Applicability And Coverage 小节拥有，七个原 owner 显式读取，平台只加载/路由。matching 完整安装和在途退出按 MIGRATION-637；旧完整安装固定或沿原维护 owner 成套切换，source 编辑不热迁移开发 Task。
+
+本行为保留 R531/R567/R578/R600/R636 的有效条件、首次独立完整、最终 Check 与各当前正式结果。只替代无因新 reviewer/完整相同重审和相邻阶段抵消复用的片段。实际 #636 接口组合由后交付项验证；#638 未来接口尚未交付时明确未验证，由后项负责，不构成本项关闭前置。Completion/Closure/Release 各保留独立责任。
 
 ## 交付事实与整体完成
 

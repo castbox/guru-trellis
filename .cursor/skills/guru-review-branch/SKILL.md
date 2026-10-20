@@ -12,6 +12,10 @@ State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
 
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
@@ -38,10 +42,11 @@ profile and --owner-result containing status, summary, evidence and concrete
 revision_refs only for revision-required. Return exactly draft_content_reviewed
 (task/key/B/H), draft_revision_required (task/key/revision_refs), or blocked.
 The result is call-local feedback; it writes no public full_review, gate or
-review cache. Changed HEAD requires fresh analysis. The implementation/Check
-coordinator immediately consumes feedback and separately judges command facts.
-Formal delivery_branch_review still independently reviews the actual complete
-candidate after real Check. Never promote early pass into final pass.
+review cache. Changed HEAD requires current analysis under the shared candidate
+contract. The implementation/Check coordinator consumes feedback and separately
+judges command facts. Formal delivery_branch_review still independently judges
+the complete actual candidate after real Check. Verifiable early analysis may
+reduce repeated reading; it never supplies a formal final pass.
 
 
 ## Actual Candidate Set
@@ -182,11 +187,15 @@ cannot become a finding. After a fix commit, the finding owner or a real
 unfinished-agent replacement performs closure as an internal transient
 judgment. It retains `introduced_head`, binds the fixing `fix_head`, and
 produces a later `closure_head` plus concrete closure evidence. The AI workflow
-then automatically dispatches a distinct fresh reviewer over the complete
-current `base_oid..head_oid` range.
+then reviews the complete current `base_oid..head_oid` coverage under the
+shared candidate contract. The same compliant independent reviewer may continue;
+review closure, the entire fix delta and affected dependencies, supplementing
+missing coverage or performing the complete review when impact is unbounded.
 
-Closure emits no public exit and writes no artifact. Only the distinct
-`fresh_final_review` may reach the recorder and pass. After its AI Review Gate
+Closure emits no public exit and writes no artifact. Only the actual current
+final judgment with `review_intent=fresh_final_review` may reach the recorder
+and pass. MIGRATION-637 defines this wire value's successor meaning; closure
+alone is not passed. After its AI Review Gate
 exists, the recorder writes the compact `review-gate.json` to the exact
 task-owned ignored-runtime checkpoint and returns only a minimal receipt; it
 does not create assignment, liveness, rollup, or raw per-round reports. Only
