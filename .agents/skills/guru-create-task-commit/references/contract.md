@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 This current Skill consumes the target installation's reviewed Delivery API
@@ -267,7 +271,11 @@ published commit before deleting both. The executor does not append `committed`,
 Return exactly one declared exit: `draft_committed`, `committed`, `revision-required`, or
 `blocked`. The committed DTO is projected to Branch Review, which verifies the
 current commit directly from live Git. A finding fix returns through
-implementation and a full Phase 2 rerun before a fresh private candidate.
+implementation and current Phase 2 coverage before a fresh private candidate.
+Apply the shared candidate contract to determine the fix delta, affected
+checks and still-applicable facts; a commit does not require unrelated review
+or command repetition. Same-tree commits refresh only necessary binding,
+without claiming unchanged environment, toolchain or required checks.
 
 ### Explicit Markdown link projection compatibility
 

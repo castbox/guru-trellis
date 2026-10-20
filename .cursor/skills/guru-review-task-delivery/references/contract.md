@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 This current Skill consumes the target installation's reviewed Delivery API
@@ -20,6 +24,11 @@ convert a legacy checkpoint into pass, or switch an old installation before
 upstream migration/default-cutover qualification.
 
 ### Slice readiness and refresh
+
+Read the shared candidate contract when judging all ten dimensions. Consume
+the current applicable content review; assess this slice, remaining work,
+exact Chinese payload, source Issue semantics and live facts within this
+ownership. Do not repeat unchanged business-design review.
 
 `delivery_delivery_review` consumes the actual `full_review_result_id` and
 current candidate. Retain all ten semantic dimensions, independent slice and

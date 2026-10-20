@@ -562,20 +562,17 @@ checkpoint for Task Commit and deletes every other valid exit checkpoint; Task
 Commit tests must prove candidate construction and execution reread it, failures
 retain it, and successful publication or recovery deletes it.
 
-Engineering execution facts may be adopted across reviewers and stages only
-after the current owner independently determines the complete scope, risks,
-consumers and applicable check set, then verifies the original accessible
-result and the applicability of its definition/version, actual dependencies,
-toolchain, invocation parameters, environment and test expectations. Existing
-summaries distinguish actual execution from adoption with source and reason;
-adoption never claims current execution, supplies semantic pass or copies old
-freshness tokens. Current judgment and binding remain with each original owner.
-Do not read another owner's private state, retain or reconstruct retired
-checkpoints, or introduce a ledger, cache or long-lived result history.
+Apply [Candidate Applicability And Coverage](workflow-contract.md#candidate-applicability-and-coverage)
+when verifying engineering fact adoption and later-candidate review. The
+shared contract owns applicability and legal-source rules; targeted validation
+observes the actual choices and original owner result binding.
 
-Semantic replay coverage must observe a fresh reviewer completing the full
-current review while adopting verifiable unchanged A/B facts, with unchanged
-command counts. Cover affected B reruns for behavior-contract/expectation,
+Semantic replay coverage must observe the first complete independent review
+and a later current complete-coverage judgment while adopting verifiable
+unchanged A/B facts, with unchanged command counts. Include the original
+compliant reviewer continuing after closure, plus a real reviewer/session
+change checking evidence sufficiency; identity alone triggers no full replay.
+Cover affected B reruns for behavior-contract/expectation,
 shared-dependency, definition/version, toolchain, parameter and environment
 changes; new applicable C execution; and missing original B results rerunning
 only B. Documentation-only changes require consumer/obligation judgment, not
@@ -955,7 +952,8 @@ Python or shell.
 + Negative coverage includes incomplete qualification, mutually inconsistent
   disposition, severity on a proposal/out-of-scope item, missing or
   digest-mismatched report, round gap, stale HEAD, unfinished replacement, open
-  closure finding, reused final reviewer, unconsumed business field, and an
+  closure finding, author self-approval, missing current final coverage,
+  unconsumed business field, and an
   over-specified planned target contract.
 + Source, installed, shared/Codex/Claude/Cursor and representative local throwaway
   validation prove the 38-Skill/187-exit/114-command current package closure

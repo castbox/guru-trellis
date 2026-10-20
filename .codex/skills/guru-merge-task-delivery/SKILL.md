@@ -24,6 +24,10 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
 
 Use this Skill only after `guru-publish-task-delivery:ready_for_merge`. Read

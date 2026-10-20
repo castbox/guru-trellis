@@ -1,3 +1,7 @@
+Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+for shared candidate coverage, engineering facts and recovery. This package
+retains its own current judgment, formal result and action boundary.
+
 ## Public Delivery integration 1.0
 
 ### Manual MERGED recovery
@@ -127,6 +131,12 @@ convert a legacy checkpoint into pass, or switch an old installation before
 upstream migration/default-cutover qualification.
 
 ### Expected-head merge and historical recovery
+
+Apply the shared candidate contract to current readiness and publication.
+This owner judges its six dimensions, actual payload/Issue semantics, candidate
+and live merge facts. It consumes applicable content review without repeating
+unchanged business-design review. Expected HEAD, required checks and terminal
+readback remain mandatory for their respective entry.
 
 `delivery_ready_for_merge` consumes the exact public Publication result and
 current readiness applicability before a new remote merge. Preserve all six

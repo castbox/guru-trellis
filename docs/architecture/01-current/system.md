@@ -264,9 +264,11 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 
 ## ARCH-CUR-051：独立评估执行与下游 eligibility
 
-`ARCH-CUR-051`（reviewed #404 contribution；promotion 后 fresh gates pending）：既有 Architecture Skill 在 Planning、适用 implementation discovery、Phase2 和 committed Branch Review 的新判断由未参与候选编写/实现、未预载任务叙事的 fresh generic subagent 执行。先读 constitution/baseline/change contract、真实候选及受影响消费者，形成独立判断后核对必要解释；reviewer 自行完成 project checks、semantic result 和原 wrapper。任务叙事、一致绿色验收或主会话自填结果不能代替独立判断。
+`ARCH-CUR-051`（#404 独立职责，ADR-034 窄后继）：Architecture Skill 在 Planning、适用 implementation discovery、Phase2 和 committed Branch Review 的首次独立判断，由未参与当前候选编写/实现、未预载任务通过叙事的 fresh generic subagent 执行。先读 constitution/baseline/change contract、真实候选与受影响 consumers，形成判断后再核必要解释。后继候选由仍实际独立的合规 reviewer 按合法原覆盖、全部差额和受影响依赖接续；覆盖不足补审，组合影响无法界定则完整评估。HEAD、阶段或身份变化本身不强制重建同质评估。
 
-publication/acceptance_finish 由原 Architecture owner 读取仍适用独立结论、live authority 与 review/promotion facts，执行 matching-stage eligibility；新事实改变判断时返回 fresh assessment。整体 Check/Branch Review 与协调器继续分别拥有必要性、资格和交付；不吞并 promotion、Closure 或 Completion。新偏离与必要局部收敛按真实因果承接，无关历史债务和红测不自动扩张。唯一方法仍在 canonical Skill，当前决策见 [ADR-019](../adr/019-independent-architecture-assessment.md)。公共 2.0 I/O、四 profiles、七 exits 和 current-only writer/consumer 不变，未新增 GAP、reviewer ledger、授权存储或长期兼容路径。
+各阶段仍亲自判断 project checks、当前语义和适用性，并调用原 matching formal wrapper；一名合规 reviewer 可先 Architecture 后 Branch Review，不能以实现者自批、Planning 或上游 DTO 替代。publication/acceptance_finish 由原 owner 核当前 authority/candidate/review/promotion，执行 matching-stage eligibility；新架构事实回相应独立评估。Phase2 与 committed 完整范围判断保留，工程命令结果按定义/版本、输入/依赖、工具链、环境、参数和期望采用或补命中项，不把原命令或旧 pass 当当前 project-check 结果。
+
+原 promotion、Closure、Completion、当前公共 profile/exit/DTO、constitution 和 GAP 生命周期不变。首次与后继的完整读取及 source 边界由 canonical Skill 及唯一共享合同拥有；[ADR-034](../adr/034-candidate-applicability-and-coverage.md)明确窄替代 ADR-019/029 的无因 fresh reviewer/相同完整重审片段，历史原文在固定 Git 中保留。无新 reviewer ledger、授权存储、长期缓存或兼容 reader。
 
 ## #382 根因候选资格增量（.79）
 
@@ -353,3 +355,11 @@ post_commit Reconcile → fresh Phase2 → unchanged post_check → clean commit
 固定 B/H 的独立完整内容分析和风险匹配验证在 Draft 后并行；target 前进不使内容审核中断。HEAD 与组合候选证据分别承接，冲突/无 merge ref/CI 未触发保留 HEAD支持入口和具体组合缺口。早期 Review 不写 public full_review；最终真实 Check predecessor、fresh committed Architecture/完整 Branch Review、readiness和Merge保持。ADR-030 的最终Check前晋升顺序不变，#637的跨阶段审核复用和#638的时机变更不进入本增量。
 
 本条与 [ADR-033](../adr/033-early-draft-feedback.md)窄替代 ARCH-CUR-059/060 及继承合同中“所有提交/PR反馈统一在完整Check/readiness之后”的时机片段；保留Task/Delivery API、阶段ownership、Refs-only/Closure、历史事实与既有终态能力。源码/投影、实际Agent/GitHub和未验证边界只由 [唯一Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md) 拥有。
+
+## ARCH-CUR-076：当前候选适用性与完整覆盖
+
+#637 在唯一 workflow-contract 小节统一工程执行事实、当前语义判断和 Git/PR 事实。七个原阶段 owner 消费可核验原覆盖、全部实际差额、冲突双方/组合语义与受影响未改 consumers，形成精确当前完整结果。首次完整独立审核保留；finding 闭合与最终覆盖可由同合规 reviewer 完成，但两个判断及原正式绑定都必须真实发生。
+
+原 passed full_review 可定位范围/plan/outcome；初次 implementation_required 没有 passed 覆盖，finding refs 和已建立的理解不补造权威。合法公开结果/调用对象、Git/当前正文与原始命令结果不足时补真实工作；不跨读私有状态、不重建退休 checkpoint、不增公共覆盖字段或账本。Publication/Merge 核自身 payload、Issue、候选及 live 事实；真实 authority/scope/依赖变化回最早 owner。
+
+ADR-034 与 [MIGRATION-637](../../../trellis/presets/guru-team/MIGRATION-637.md)拥有精确替代及完整 matching 在途切换；fresh_final_review wire 保留但不再强制换人。ADR-028 固定 B、ADR-030 最终 Check 前晋升、ADR-033 Draft 非最终结果和真实 Check predecessor 保留。这里承接已审目标与源码职责；安装、实际 Agent、分阶段耗时、GitHub 和未验证边界只由 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)记录，不以本文或知识晋升证明全部已采用、Task 完成或 Release。
