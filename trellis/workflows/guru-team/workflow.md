@@ -345,7 +345,6 @@ outside the business-task workflow's mandatory invokes.
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivated_to_planning","consumer":{"kind":"workflow","id":"task-planning-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"session_binding_recovery_required","consumer":{"kind":"workflow","id":"task-session-recovery-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"resume_reactivation","consumer":{"kind":"workflow","id":"task-reactivation-resume-router"}} -->
-<!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"source_correction_required","consumer":{"kind":"workflow","id":"task-source-correction-router"}} -->
 <!-- guru-skill-exit: {"skill":"guru-reactivate-task","exit":"reactivate_blocked","consumer":{"kind":"stop","id":"task-reactivate-blocked"}} -->
 ## Workflow And Stop Targets
 <!-- guru-workflow-target: {"id":"guru-bootstrap-repository-ssot-completed-router"} -->
@@ -436,7 +435,6 @@ The graph declares every workflow and stop consumer from the active package inte
 <!-- guru-workflow-target: {"id":"task-planning-router"} -->
 <!-- guru-workflow-target: {"id":"task-session-recovery-router"} -->
 <!-- guru-workflow-target: {"id":"task-reactivation-resume-router"} -->
-<!-- guru-workflow-target: {"id":"task-source-correction-router"} -->
 <!-- guru-stop-target: {"id":"workflow-mode-selection-blocked"} -->
 <!-- guru-stop-target: {"id":"normal-scenario-qualification-blocked"} -->
 <!-- guru-stop-target: {"id":"solution-mechanism-qualification-blocked"} -->
@@ -548,9 +546,8 @@ The graph declares every workflow and stop consumer from the active package inte
 | task-requirements-revision-router | Consume Completion requirements_revision_required's actual task_ref/task_key/reason in original `guru-clarify-requirements:delivery_task_scope_revision`, with source_exit=requirements_revision_required and current mode/target_locator/resume_target/continuation_id; reason is call-local authority context. Follow actual scope_ready through guru-requirements-clear-router to Author task_scope_requirements, then scope_requirements_ready through guru-task-scope-requirements-ready-router to Clarify task_scope_requirements_acceptance. Only the published scope_ready returns to the clear-router for affected same-Delivery rework/withdrawal, explicit new Creation, or Completion without a Delivery, according to current obligations. Do not preselect old requirements_revision or create an empty slice. |
 | task-closure-refresh-router | Refresh the exact source Issue closure fact before resuming Finish. |
 | task-planning-router | Resolve the reactivated generation's current Task scope and fresh original source route. Required scope revision enters Author task_scope_requirements and original Clarify publication; unchanged scope routes to actual validation/Completion or explicit new Delivery Creation. Prior-generation approvals are not reused. |
-| task-session-recovery-router | Enter `guru-bind-task-session` with current generation and checkout identity. |
-| task-reactivation-resume-router | Re-enter the same Reactivate transaction's recovery path without duplicating mutation. |
-| task-source-correction-router | Freshly review the legacy source identity before another Reactivate attempt. |
+| task-session-recovery-router | Resolve the actual current key/ref; invoke original `guru-establish-task-branch-binding`, then `guru-ensure-task-checkout`, then `guru-bind-task-session`. Preserve already valid controls and establish only missing current-environment facts. |
+| task-reactivation-resume-router | Re-enter the same Reactivate owner with transaction_id/result_id. For shared-archive pending output, generation identifies the frozen plan's target only; it proves no active Task and must not enter Planning/Bind. Recover the same public operation and route its actual applied key/ref. |
 
 `guru-publish-task-delivery` owns the current PR and its output-loss recovery;
 `guru-merge-task-delivery` owns one expected-head merge and emits only a Delivery
@@ -852,6 +849,8 @@ PR or Task inventory never selects the Task or Delivery.
 | Branch Review missing/stale | Original committed Architecture and `guru-review-branch` owners apply the shared candidate contract and emit current results; Phase 2 or bounded continuity cannot replace the first full Review. |
 | Branch Review `passed` | Invoke `guru-review-task-delivery`; `ready` enters Publish, only `ready_for_merge` enters Merge. |
 | Publish/Merge success output or public projection lost | Original transaction reads actual PR/HEAD/merge and retries the same public fact; no repeated remote side effect. |
+| Publication private transaction unavailable, with an explicitly selected shared source and existing Open PR | Invoke original `guru-publish-task-delivery` through its closed `delivery_remote_draft_recovery` or `delivery_remote_ready_recovery` input. The package owns current state, readiness and remaining-action judgment; no new PR. |
+| Closure private transaction unavailable, with the exact shared result input | Invoke original `guru-complete-task-closure:closure_shared_result_recovery`; consume its existing exits. The carrier does not restore authorization or prove terminal state. |
 | Exact selected Delivery's existing Publication PR is manually MERGED | Original Merge `delivery_merged_recovery`, then only its verified `delivered` enters original Completion; no pre-merge gate reconstruction. |
 | Same-Delivery findings/plan/base/readiness changes | Original affected owner judges dependency-scoped invalidation and invokes lawful earliest-owner rework. Commit and historical remote facts remain facts. |
 | Whole accepted-scope change | `guru-clarify-requirements`, then affected Delivery owner; independent goals follow scope judgment rather than silently expanding this Task. |
@@ -1419,8 +1418,9 @@ declared session/source/recovery owner. Old Finish/Cleanup receipts cannot
 operate on the new generation. Archives containing retired task personnel
 fields are not lifecycle candidates. Their TaskIds remain reserved; exact
 TaskId or strictly unique source Issue clues may locate one solely for a
-read-only unsupported-format diagnostic. Only archives conforming to the
-current upstream task schema can enter Reactivate. An old in-flight Finalizer
+read-only unsupported-format diagnostic. The selected formal schema1 family may enter the matching public reactivation
+operation under the original Reactivate owner; manual history and unfinished
+closeout retain their original owners. An old in-flight Finalizer
 residue is not a Reactivate entry: use pinned-old or an explicit per-case
 manual disposition without bridging old DTOs.
 

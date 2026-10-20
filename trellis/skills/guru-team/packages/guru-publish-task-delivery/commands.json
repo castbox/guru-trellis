@@ -230,7 +230,7 @@
       ],
       "side_effect": "github_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json"
+        "schemas/public-input-delivery-3.0.schema.json"
       ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"

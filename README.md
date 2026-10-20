@@ -48,11 +48,14 @@ task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/gu
 Trellis 框架使用 `castbox/Trellis`。唯一来源记录为
 `trellis/presets/guru-team/source/trellis-source.json`，preset 将它投影到目标的
 `.trellis/guru-team/trellis-source.json`。记录是期望来源，不替代实际 checkout 与构建验证。
-当前源码固定到 `7f050fa11ddd8569e5db4f728ea1b745b7500a98`，
-对应 tree `8ed0236321d167e809f872efc43056da14b0a4de`、成功 main CI
-`39215935088`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
+当前源码固定到 `e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f`，
+对应 tree `e8db5548b11c90a0707e904c3412e3dcb4c14da8`、成功 main CI
+`39475768514`，包含上游 #40 的工具/所选任务维护能力及 #43 的旧原生
 schema-1 会话元数据兼容修复，以及 #47 的 Task/Delivery Git 对象读取优化和 #50 的公开 `GitCandidateContent` 不可变摘要能力及 #52 的公开 `task_resume`。
 本来源另包含上游 #53 的新进程 Python 选择与命令加参数执行修复。
+本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
+上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
+所选 matching CLI/Core 源码已构建；完整 Guru 适配、目标安装和原生验收仍待完成，source lock 更新不证明这些步骤通过。
 Fork CLI/core 均为 `0.7.0-castbox.5`，package manager 为 `pnpm@10.32.1`。
 来源采用不代表目标已经更新；目标工具安装、Guru 集成与各专项验收仍需实际验证。
 构建命令始终读取所选 `GURU_SOURCE` 自身的 lock。
@@ -99,8 +102,8 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 | 已发布稳定 Guru tag | `v0.7.0-guru.4`（peeled `855f236850714edc4b78169218c09568c823f336`） |
 | 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.5` |
 | 当前源码 Guru extension revision | `0.7.0-guru.5`（未发布的准备源码） |
-| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.5` @ `7f050fa11ddd8569e5db4f728ea1b745b7500a98` |
-| 当前源码 Fork CI identity | `39215935088` |
+| 当前源码固定 Fork CLI/Core | `0.7.0-castbox.5` @ `e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f` |
+| 当前源码 Fork CI identity | `39475768514` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | RDT / Architecture 分别由 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 指定 |
 

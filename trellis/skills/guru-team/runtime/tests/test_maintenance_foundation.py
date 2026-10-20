@@ -64,14 +64,66 @@ class CheckoutIsolationTests(unittest.TestCase):
 
 
 class TransportTests(unittest.TestCase):
+    def source_and_contract(self):
+        source = {"cli_package_root": ".", "dependency_mode": "local_candidate",
+                  "expected_candidate": {"cli_version": "v", "core_version": "v",
+                                         "cli_digest": "bytes", "core_digest": "bytes"}}
+        contract = {"maintenance_api": "1.0", "cli_version": "v", "core_version": "v",
+                    "operation_kinds": ["tools_install", "task_conversion", "legacy_closeout",
+                                        "task_resume", "formal_archive_reactivation"],
+                    "formal_archive_reactivation": {"task_families": ["schema1"],
+                                                    "generation": "increment_once",
+                                                    "original_archive": "read_only"}}
+        return source, contract
+
     def test_candidate_mismatch_prevents_operation(self):
         source = {"cli_package_root": ".", "dependency_mode": "local_candidate", "expected_candidate": {}}
         contract = {"maintenance_api": "1.0", "cli_version": "v", "core_version": "v", "operation_kinds": ["tools_install", "task_conversion", "legacy_closeout"]}
-        with mock.patch.object(transport, "_invoke", return_value={"contract": contract, "core_package_root": "."}) as invoke, mock.patch.object(transport, "package_digest", return_value="bytes"):
-            with self.assertRaises(CommandError) as error:
-                transport.call(source, "applyMaintenance", {"plan": {}, "state_dir": "unused"})
-            self.assertEqual(error.exception.code, "candidate_mismatch")
-            self.assertEqual(invoke.call_count, 1)
+        for method in ("applyMaintenance", "inspectFormalArchiveReactivation", "prepareFormalArchiveReactivation"):
+            with self.subTest(method=method), mock.patch.object(transport, "_invoke", return_value={"contract": contract, "core_package_root": "."}) as invoke, mock.patch.object(transport, "package_digest", return_value="bytes"):
+                with self.assertRaises(CommandError) as error:
+                    transport.call(source, method, {"plan": {}, "state_dir": "unused"})
+                self.assertEqual(error.exception.code, "candidate_mismatch")
+                invoke.assert_called_once_with(Path(".").resolve(), "source")
+
+    def test_formal_archive_methods_forward_original_input_and_result(self):
+        source, contract = self.source_and_contract()
+        payload = {"root": "/target", "key": {"task_id": "original", "lifecycle_generation": 0},
+                   "task_ref": ".trellis/tasks/archive/original",
+                   "archive": {"commit": "original-archive", "evidence": []}}
+        for method, result in (("inspectFormalArchiveReactivation", {"successor": {"kind": "absent"}}),
+                               ("prepareFormalArchiveReactivation", {"kind": "formal_archive_reactivation", "operation_id": "original"})):
+            with self.subTest(method=method), mock.patch.object(transport, "_invoke", side_effect=[{"contract": contract, "core_package_root": "."}, result]) as invoke, mock.patch.object(transport, "package_digest", return_value="bytes"):
+                self.assertIs(transport.call(source, method, payload), result)
+                self.assertEqual(invoke.call_count, 2)
+                self.assertEqual(invoke.call_args.args[:2], (str(Path(".").resolve()), method))
+                self.assertIs(invoke.call_args.args[2], payload)
+
+    def test_missing_formal_capability_prevents_sdk_call(self):
+        for missing in ("operation", "capability", "task_families", "generation", "original_archive"):
+            for method in ("inspectFormalArchiveReactivation", "prepareFormalArchiveReactivation"):
+                source, contract = self.source_and_contract()
+                if missing == "operation":
+                    contract["operation_kinds"].remove("formal_archive_reactivation")
+                elif missing == "capability":
+                    del contract["formal_archive_reactivation"]
+                else:
+                    del contract["formal_archive_reactivation"][missing]
+                with self.subTest(method=method, missing=missing), mock.patch.object(transport, "_invoke", return_value={"contract": contract, "core_package_root": "."}) as invoke, mock.patch.object(transport, "package_digest", return_value="bytes"):
+                    with self.assertRaises(CommandError) as error:
+                        transport.call(source, method, {"root": "/target"})
+                    self.assertEqual(error.exception.code, "maintenance_prerequisite_missing")
+                    invoke.assert_called_once_with(Path(".").resolve(), "source")
+
+    def test_archive_resume_does_not_require_formal_reactivation_capability(self):
+        source, contract = self.source_and_contract()
+        contract["operation_kinds"].remove("formal_archive_reactivation")
+        del contract["formal_archive_reactivation"]
+        payload = {"key": {"task_id": "original", "lifecycle_generation": 0}}
+        result = {"kind": "task_resume", "generation": 0}
+        with mock.patch.object(transport, "_invoke", side_effect=[{"contract": contract, "core_package_root": "."}, result]) as invoke, mock.patch.object(transport, "package_digest", return_value="bytes"):
+            self.assertIs(transport.call(source, "prepareArchivedTaskResume", payload), result)
+            invoke.assert_called_with(str(Path(".").resolve()), "prepareArchivedTaskResume", payload)
 
     def test_apply_preserves_frozen_plan_and_recovery_arguments(self):
         source = {"cli_package_root": "."}

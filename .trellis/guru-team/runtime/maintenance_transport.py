@@ -17,6 +17,7 @@ _METHODS = {
     "getMaintenanceContract", "inspectToolsTarget", "inspectTaskTarget",
     "prepareToolsInstallation", "prepareTaskConversion", "prepareLegacyCloseout",
     "prepareArchivedTaskResume",
+    "inspectFormalArchiveReactivation", "prepareFormalArchiveReactivation",
     "previewMaintenance", "applyMaintenance", "recoverMaintenance",
     "resumeMaintenance", "rollbackMaintenance",
 }
@@ -135,4 +136,11 @@ def call(source, method, payload=None):
         return facts["contract"]
     if method == "prepareArchivedTaskResume" and "task_resume" not in facts["contract"]["operation_kinds"]:
         _fail("maintenance_prerequisite_missing", "The selected CLI/Core pair lacks task_resume; use the original tools/source owner before archive-resume writes")
+    if method in ("inspectFormalArchiveReactivation", "prepareFormalArchiveReactivation"):
+        capability = facts["contract"].get("formal_archive_reactivation", {})
+        if ("formal_archive_reactivation" not in facts["contract"]["operation_kinds"]
+                or "schema1" not in capability.get("task_families", [])
+                or capability.get("generation") != "increment_once"
+                or capability.get("original_archive") != "read_only"):
+            _fail("maintenance_prerequisite_missing", "The selected CLI/Core pair lacks formal_archive_reactivation for schema1 with increment_once and read_only archive; use the original tools/source owner before formal archive reactivation")
     return _invoke(facts["cli_package_root"], method, payload)

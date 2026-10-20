@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "guru-reactivate-task-semantic-result-delivery-1.0",
+  "$id": "guru-reactivate-task-semantic-result-shared-archive-1.0",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -8,11 +8,12 @@
     "mode",
     "archived_lifecycle",
     "route",
-    "reason_refs"
+    "reason_refs",
+    "archive_anchor"
   ],
   "properties": {
     "profile": {
-      "const": "delivery_reactivate_completed_task"
+      "const": "delivery_reactivate_shared_archive"
     },
     "mode": {
       "enum": [
@@ -28,7 +29,6 @@
         "reactivated_to_planning",
         "session_binding_recovery_required",
         "resume_reactivation",
-        "source_correction_required",
         "reactivate_blocked"
       ]
     },
@@ -59,9 +59,6 @@
         "recovery_required"
       ]
     },
-    "source_correction": {
-      "type": "object"
-    },
     "acquisition": {
       "oneOf": [
         {
@@ -74,6 +71,113 @@
     },
     "authority": {
       "type": "object"
+    },
+    "archive_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "archive_ref",
+        "archive_commit",
+        "original_task_ref",
+        "target_ref"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "original_task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cli_package_root",
+        "dependency_mode",
+        "expected_candidate"
+      ],
+      "properties": {
+        "cli_package_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependency_mode": {
+          "enum": [
+            "source_locked",
+            "local_candidate"
+          ]
+        },
+        "expected_candidate": {
+          "type": "object"
+        },
+        "guru_source_root": {
+          "type": "string"
+        },
+        "fork_source_root": {
+          "type": "string"
+        }
+      }
+    },
+    "formal_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "key",
+        "task_ref",
+        "original_task_ref",
+        "archive",
+        "active_ref",
+        "projection",
+        "artifacts",
+        "legacy_facts"
+      ],
+      "properties": {
+        "root": {
+          "type": "string"
+        },
+        "key": {
+          "type": "object"
+        },
+        "task_ref": {
+          "type": "string"
+        },
+        "original_task_ref": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "object"
+        },
+        "active_ref": {
+          "type": "string"
+        },
+        "projection": {
+          "type": "object"
+        },
+        "artifacts": {
+          "type": "array"
+        },
+        "legacy_facts": {
+          "type": "array"
+        }
+      }
     }
   },
   "allOf": [
@@ -94,79 +198,6 @@
             "acquisition"
           ]
         }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "route": {
-            "const": "source_correction_required"
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "source_correction"
-        ],
-        "not": {
-          "required": [
-            "acquisition"
-          ]
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "route": {
-            "enum": [
-              "reactivated_to_planning",
-              "session_binding_recovery_required",
-              "resume_reactivation"
-            ]
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "selected_base_ref",
-          "reviewed_base_head",
-          "acquisition"
-        ],
-        "allOf": [
-          {
-            "if": {
-              "properties": {
-                "route": {
-                  "const": "resume_reactivation"
-                }
-              }
-            },
-            "else": {
-              "required": [
-                "session_outcome"
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "route": {
-            "enum": [
-              "reactivated_to_planning",
-              "session_binding_recovery_required",
-              "resume_reactivation"
-            ]
-          }
-        }
-      },
-      "then": {
-        "required": [
-          "authority"
-        ]
       }
     }
   ],

@@ -1,0 +1,20 @@
+{
+  "profile": "delivery_remote_ready_recovery",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/09-18-435-active-task-delivery-loop",
+  "reviewed_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "交付：建立 Active Task Delivery Publish owner",
+  "pr_body": "## 变更摘要\n\n- 发布一个已审查 Delivery。\n\n## Remaining Work\n\n- 后续工作保持 active。\n\nRefs #435\n",
+  "remaining_work_state": "remaining",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "readiness_result_id": "readiness:example",
+  "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "pr_ref": {
+    "repo_ref": "example/repo",
+    "pr_number": 42
+  }
+}

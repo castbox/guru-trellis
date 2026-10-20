@@ -72,7 +72,7 @@
 及冻结 action set；Finish 独占 archive/bookkeeping 与 terminal resource seal，不删除资源；Cleanup
 独占 Guru-owned 删除结果，保留 caller-owned；Reactivate 独占 archived TaskId 的下一 generation。
 C3/C4/C5 与 Fixed Fork 分别持有 checkout、binding、ledger 和 task/session persistence；五个 package
-只消费这些单写事实。Finish 成功后本代 binding 退役，旧代结果不成为 Reactivate/Cleanup 的当前 authority。
+只消费这些单写事实。共享 Finish 的 archive/bookkeeping 结果与本机 seal、binding 退役分别核验；本机未完责任不撤销已成立的共享结果。旧代资源结果只归原 common-dir/generation，Reactivate 核准确共享历史并优先复用实际后继，Cleanup 继续核当前资源责任。
 
 `ARCH-DOM-027`（#454 D443）：Bind 独占当前 session route 判断与官方 pointer 写入/校验。
 C2-C4 拥有 TaskId、live checkout、branch binding，C5 ledger 与 Fixed Fork adapter 分别拥有 resource
@@ -92,8 +92,8 @@ common-dir branch binding 与 registered checkout，不从退休的 task metadat
 TaskId/source/create/rename/archive；Guru lifecycle 只验证同一身份域并生成私有
 handoff ref。session 仍只有一个当前焦点指针，可按 TaskId 切换或重绑；不保存
 多绑定历史。Cleanup 在 terminal ledger 丢失时只执行显式确认的当前候选删除，
-或在 Finish branch 消失后记录零删除结果；Reactivate 仅验证同 TaskId、同代
-Finish 的 cleaned receipt。任何 Git HEAD、Issue、checkout、developer 或 assignee
+或在 Finish branch 消失后记录零删除结果；Reactivate 从同 TaskId、同代的
+准确共享 Finish 历史判定资格，不以 cleaned receipt 为跨环境前置。任何 Git HEAD、Issue、checkout、developer 或 assignee
 均不构成 task identity 或 session binding authority。
 
 `ARCH-DOM-031`（#467 current）：official Fork 仍是任务写入者；Guru 的既有
@@ -103,9 +103,9 @@ Architecture 与 RDT 各自串行晋升 shared current，release 编排只消费
 
 `ARCH-DOM-032`（#481 current）：official Fork 单写人员字段已删除的 task.json；
 Guru create-task 单写 reviewed 调用输入和既有 TaskId/generation 控制态，不再投影
-人员身份。旧归档由 inventory owner 仅提取实际 TaskId 防复用，exact TaskId 或严格
-exact-source Issue clue 只能得到只读拒绝诊断；Reactivate/Finish 不接收其生命周期
-候选。session adapter、TaskBranchBinding、common-dir resource ledger 与 checkout
+人员身份。旧归档由 inventory owner 提取实际 TaskId 防复用。明确支持的正式 schema1
+归档由原 Reactivate 核准确历史、来源和终态，再调用 Trellis 正式公共操作一次增代；
+其余旧格式保留只读诊断或原独立维护路线，不进入普通 current 执行。session adapter、TaskBranchBinding、common-dir resource ledger 与 checkout
 继续各自单写，caller/guru 归属不从旧归档推断。#292 独占 Phase 1 author。
 
 `ARCH-DOM-033`（#490 current）：Guru creator 仍拥有 C6 正式输入/恢复，official task.py 仍单写 task.json；reference_only 是现有 source disposition，无新 writer/owner/public Skill，不能授予 Issue closure。Closure/session/branch/checkout/resource 的原 ownership 保留；follow_up/parent 不是新任务创建能力。Architecture/RDT 各自仅通过 expected-current `.70 -> .71` promotion 更新 shared authority。
@@ -134,9 +134,9 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-042`（#530）：原 TaskCommit 单写 dirty exact commit 或 clean committed candidate 的当前事实核验及原 DTO 投影；Check 单写 Phase2 内容算法与证据，Reconcile 单写 integration commit，BranchReview 单写完整/continuity review，workflow 只路由。BranchReview 不读取 producer 私有 checkpoint；Architecture/RDT shared-current 仍由原 promotion owners 串行更新，不能由 clean 状态代替 gate。
 
-`ARCH-DOM-043`（#531）：上游拥有Task/Delivery公共模型、identity/selection/session与确定性转换；Guru只拥有整体scope判断、每Delivery唯一Author/Wording/Architecture/Approval及Check/TaskCommit/fullReview/readiness语义门禁。Publish/Merge各自的私有事务恢复真实副作用后投影公共事实，history不产生current gate pass。Completion/Closure/Finish/Cleanup/Reactivate原owner保持；无Delivery时整体需求、证据或收尾合法，不造空Delivery。ADR-024明确旧Task开发writer及激活分叉退出；旧安装迁移仍须公共Plan2与Guru私有owners各自就绪，不产生双authority。
+`ARCH-DOM-043`（#531）：上游拥有Task/Delivery公共模型、identity/selection/session与确定性转换；Guru只拥有整体scope判断、每Delivery唯一Author/Wording/Architecture/Approval及Check/TaskCommit/fullReview/readiness语义门禁。Publish/Merge各自核原输入与真实远端副作用后投影公共事实；私有事务可用时恢复原操作，缺失时只从明确共享source/PR与当前资格恢复已发生动作，history不产生current gate pass。Completion/Closure/Finish/Cleanup/Reactivate原owner保持；无Delivery时整体需求、证据或收尾合法，不造空Delivery。ADR-024明确旧Task开发writer及激活分叉退出；旧安装迁移仍须公共Plan2与Guru私有owners各自就绪，不产生双authority。
 
-`ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结 retain/close 动作，Finish 只核验冻结结果并归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
+`ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结完整动作集，以最小共享载体关联原公共结果；Finish 读取精确动作集并核 live 状态后归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
 
 `ARCH-DOM-045`（#548）：官方 model/session/C4 仍拥有公共事实，Creation 独占其 pending 生命周期，Author 仅调用 retirement 端口；各规划 gate 原 owner 不变。明确选择与 Creation 自动恢复分属原操作边界，详见[已晋升贡献](../contributions/548-creation-recovery.md)。
 
@@ -156,7 +156,7 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-053`：原Architecture独占拟晋升独立评估、final_integration写入/恢复及适用性；原RDT独占三层正文晋升；原Check独占完整候选检查、合法rework及最终public Check。implementation独占candidate/begin_check与真实after重绑，workflow仅消费candidate_checked并调原owners。TaskCommit、committed独立Architecture、BranchReview、Delivery/Publish/Merge及整体终态owners保持原职责。候选结果不形成最终门禁，窄引用对齐不能承接实质正文。无新Skill、公共phase、调度器、store或账本；详见[ADR-KNOWLEDGE-FINAL-INTEGRATION](../adr/knowledge-final-integration.md)。
 
-`ARCH-DOM-054`（#577）：公共 Trellis 保持 Task/Delivery/session/binding、legacy projection 与恢复回退的唯一 writer。`guru-maintain-legacy-task` 只拥有独立维护意图、精确对象与写集、同操作 Guru checkpoint、原 owner 调用和实际目标续接。原 Publish/Merge 核验历史，原 Publish/Merge/Finish 及明确选定 gate owners 分别解释和处置自己的私有 controls；`source_task_ref` 指向物理归档，`task_ref` 保留原活动控制归属。原 Identity/Bind 共用 installed public active resolution 和选定 checkout；C4 仍拥有首次 branch binding，历史 reservation 不成为第二 current authority。当前 scope、真实新 Delivery Planning、整体 Completion 和未完成 closeout 分别回原 owners；原 upgrade owner 保留历史工具来源判断。独立评估、Architecture/RDT 晋升及发布职责不转移。责任及旧 consumer 退出条件读 [贡献](../contributions/577-manual-archive-resume.md) 和 ADR-024/027。
+`ARCH-DOM-054`（#577）：公共 Trellis 保持 Task/Delivery/session/binding、legacy projection 与恢复回退的唯一 writer。`guru-maintain-legacy-task` 只拥有独立维护意图、精确对象与写集、同操作 Guru checkpoint、原 owner 调用和实际目标续接。原 Publish/Merge 核验历史，原 Publish/Merge/Finish 及明确选定 gate owners 分别解释和处置自己的私有 controls；`source_task_ref` 指向物理归档，`task_ref` 保留原活动控制归属。原 Identity/Bind 共用 installed public active resolution 和选定 checkout；C4 仍拥有首次 branch binding，历史 reservation 不成为第二 current authority。当前 scope、真实新 Delivery Planning、整体 Completion 和未完成 closeout 分别回原 owners；原 upgrade owner 保留历史工具来源判断。独立评估、Architecture/RDT 晋升及发布职责不转移。指定正式 schema1 由 Reactivate 经 Trellis formal operation 单次收敛，原 manual archive_resume 保代合同不改义；未完成 closeout 仍归原事务。责任及旧 consumer 退出条件读 [贡献](../contributions/577-manual-archive-resume.md)、ADR-024/027 与 [ADR-PORTABLE-SHARED-LIFECYCLE](../adr/portable-shared-lifecycle.md)。
 
 `ARCH-DOM-055`（#154）：原 Author 独占规划正文、模板和示例；Discovery 调查事实，Clarify 判断来源和范围，Architecture 按原独立方法评估，Wording、Approval、实施、Check、Delivery Review 与 Completion 分别承接原职责。普通遗漏回最早受影响 owner，技术细化不自动改变产品范围。模板填充只写选定 Task/Delivery 规划；RDT 与 Architecture 原 owners 单写长期贡献晋升，不建立第二方案或授权存储。详见 [贡献](../contributions/154-planning-body-contract.md) 与 ADR-022/024。
 
@@ -167,3 +167,20 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 `ARCH-DOM-058`（#636）：TaskCommit原owner独占早期有界提交/clean恢复与最终Check绑定提交，原executor保持唯一Git提交writer。Publication原owner独占同PR Draft/Ready往返、先Draft后push、元数据与同操作恢复；早期Draft不写最终PublicationFact。原BranchReview拥有固定B/H的早期完整分析，但不写full_review，最终仍由原独立owner在真实Check前置下判断和记录。workflow只调度唯一typed consumer与并行工作；原Check/DeliveryReview/Merge、Completion/Closure/Finish/Cleanup、RDT/Architecture单写职责保持。必要性、迁移退出及边界见 [贡献](../contributions/636-early-draft-pr.md)与 ADR-033，无第二账本、公共phase或兼容双读。
 
 `ARCH-DOM-059`（#637）：原 Architecture/Check/TaskCommit/Branch Review/Delivery Review/Publication/Merge 各拥有本阶段范围、原覆盖适用性、实际差额和当前结论；同合规独立 reviewer 可接续并依次执行 Architecture/Branch Review，作者自检不替代。工程事实仍归实际执行者，当前采用和补跑由当前 owner 判断；public Task/Delivery 仍由官方 API 单写。workflow/continuation/平台入口只加载路由，唯一共享规则由 workflow-contract 单写。原 RDT/Architecture owners 分别独占 expected-current 晋升，private consumer/retirement、原事务和终态职责不变。精确替代见 ADR-034；不新增 owner、store、cache、公共 DTO 或审核账本。
+
+
+## 跨环境共享事实与本机责任
+
+`ARCH-DOM-060`：公共 Trellis 继续唯一拥有 Task/Delivery/session/binding、格式解析、reopen、formal archive projection 及维护恢复。Guru 原 Identity 从明确 repository/source ref/commit 与公共 key 核验可获取代码和 Task/Delivery 关系；原 Establish/Ensure/Bind 在当前环境建立合法 checkout、branch binding 与 session。共享记录不承载原机路径或资源权属，不按 branch、标题或目录猜身份。无可验证来源或关联不唯一时，只阻塞该 Task 的实际原 owner。
+
+原 Author/Approval/Activation、Check、完整 Review、Readiness 各自判断当前资格。可核验公共结果和工程命令事实按原候选适用合同消费；缺 private checkpoint 本身不要求重开 Intake、Planning、Delivery 或无变化整链重跑。文件、phase 和历史 prose 不产生当前 pass；真实 scope、authority、依赖或候选变化回最早受影响 owner。
+
+原 Reactivate 核准确 archive commit 中的 TaskId/generation/source/scope、该版本终态关系、summary/archive 一致性及精确 bookkeeping PR/target 历史，且归档结果移除了原 active。Task2 核真实 Completion→Closure；明确支持的正式 schema1 核固定前驱合同，不补造旧 Completion/Closure/gate。summary、completed、Issue CLOSED 或单个 MERGED PR 不能单独放行。后续 target 前进或 active 后继不否定准确历史，也不要求 merge SHA 写回自身归档或新增递归 Finish PR。
+
+先核当前可获取的同 Task 后继；验证匹配则继续实际 generation，不重复 reopen/prepare。不承诺发现其它 clone 的未发布 incarnation。没有后继时，Task2 沿公共 reopen 与 relocation，指定 schema1 沿已核 matching capability 的 formal operation 严格增代一次。真实 applied key/ref 交原环境 owners，再由 Continuation 进入真实新 Delivery 或无空 Delivery 的 Completion validation；不继承旧 gate。人工历史归原 legacy owner，未入 target 的唯一未完 closeout 回原 Finish；无法唯一恢复时返回具体缺口。
+
+原 Closure 独占完整 action_set 和 source disposition，单写 task-local `closeout/closure/<safe-result-id>.json`，仅保留 schema_version、ResultRef、completion_result_id、source、action_set。safe-result-id 仅为 result_id 的 UTF-8 base64url 无 padding 文件名映射。public Closure evidence 关联该 AuthorityRef；原 Closure recovery 与 Finish 是直接 consumers。公共 Completion/scope/source 关系、精确 result/key 和 live required OPEN/CLOSED 状态仍须核验；载体不授予 close 权限，也不断言 terminal。原恢复 profile 只补丢失公共投影且零 provider close，剩余真实 close 回正常 Closure 当前动作边界。Finish 使用原 snapshot 投影逐 Issue 重核，不从 aggregate closed 推导 source_closed。载体随 Task 归档及原 artifact_origin 解析，已有结果不覆盖；旧已完成 archive 不补造载体，未发布必要输入精确阻塞其真实 consumer。
+
+原 Publish 拥有独立闭合的精确 Open PR Draft/Ready recovery profiles。明确 pr_ref 与 source_commit 绑定同 Task/Delivery、Planning、候选和 repo/base/head/owner；source 未入 main 仍可合法，与 candidate head 不同时核真实历史和完整差额。只复用同一个 Open PR并补未完成动作，绝不另建 PR；相同 head/payload 不重复 push/edit，已 Ready 不产生当前 readiness。Draft 不写最终 PublicationFact，新的未审修订仍先退 Draft。当前 Readiness 不适用回原质量 owner。MERGED 沿原 Merge 手动恢复核公共 Publication、真实双亲/actual head/target 后只补 Delivery fact，不重复 merge；Completion 仍判断 actual 差额、CI 和整个 scope。
+
+本机 branch/worktree/ignored runtime 责任限定对应 common-dir/generation；共享 remote ref 以 repository/full ref/expected head 核验。旧 seal、binding 退出或 Cleanup pending 不撤销共享 Finish，也不阻塞另一 Task 或不同合法新资源。同一资源未完责任仍冲突；B 不取得 A 清理权。Cleanup 保留未知 ownership、新代资源及已推进 remote ref，不删除或回退新提交。原合法子 Agent 并行职责保持；不引入双主、锁、scheduler、全局恢复台账或第二 authority。

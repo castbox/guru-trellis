@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实现与检查前完整加载原写作合同"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "核对已接受规划深度与唯一来源设计处置，不另建writer"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "核对本批接口、失败、兼容和迁移设计承接"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对唯一Policy及Docs Plan与最终整合顺序"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "保留R531/R636/R637/R638原owner与质量义务"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "约束公共模型、跨owner恢复与最终整合边界"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "复用原恢复与候选适用性测试并区分实际证据层次"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "承接完整Completion及精确Issue动作要求"}
+{"file": "docs/design/current/completion-closure.md", "reason": "定位Closure动作集、Finish及本机资源职责的窄替代"}
+{"file": "docs/test/current/completion-closure.md", "reason": "覆盖retain/no-Issue/混合集与再次Finish，不补造历史"}
+{"file": ".trellis/tasks/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/architecture-contribution.md", "reason": "读取真实task-owned架构差额及单写晋升职责"}
+{"file": ".trellis/tasks/10-20-635-portable-lifecycle/deliveries/826d09cb-22d6-4950-90c8-3bbf8df8d8ea/adr-portable-lifecycle.md", "reason": "读取必要ADR候选及窄替代、迁移与退出边界"}
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "锁定真实matching provider，source采用不等于目标安装"}

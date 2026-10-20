@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-publish-task-delivery-input-delivery-remote-ready-recovery-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "reviewed_head",
+    "pr_title",
+    "pr_body",
+    "remaining_work_state",
+    "delivery_key",
+    "readiness_result_id",
+    "source_commit",
+    "pr_ref"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_remote_ready_recovery"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/[A-Za-z0-9._/-]+$"
+    },
+    "reviewed_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pr_title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pr_body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remaining_work_state": {
+      "enum": [
+        "none",
+        "remaining"
+      ]
+    },
+    "delivery_key": {
+      "type": "object"
+    },
+    "readiness_result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "pr_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "pr_number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "pr_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

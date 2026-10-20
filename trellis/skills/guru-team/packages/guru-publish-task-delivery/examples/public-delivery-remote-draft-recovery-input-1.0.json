@@ -1,0 +1,19 @@
+{
+  "profile": "delivery_remote_draft_recovery",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  },
+  "base_ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "pr_title": "提前反馈：发布当前候选",
+  "pr_body": "HEAD 候选验证：最小自检已执行。\n完整 Check、独立最终 Review、重型验证待完成。\n组合候选未执行，冲突或无 merge ref 时继续 HEAD 检查。\nRefs #636\n",
+  "source_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "pr_ref": {
+    "repo_ref": "example/repo",
+    "pr_number": 42
+  }
+}

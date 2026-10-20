@@ -1,0 +1,14 @@
+{
+  "profile": "closure_shared_result_recovery",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example-task",
+  "result_ref": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "result_id": "closure:example"
+  },
+  "shared_result": {
+    "locator": ".trellis/tasks/example-task/closeout/closure/Y2xvc3VyZTpleGFtcGxl.json",
+    "revision": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

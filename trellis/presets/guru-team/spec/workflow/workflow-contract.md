@@ -825,6 +825,14 @@ Closing one exact source Issue is a separate confirmed provider
 mutation with same-transaction recovery and post-read verification. Delivery
 and bookkeeping PRs contain no Issue-closing keyword.
 
+When the original private transaction is unavailable, explicit shared inputs
+enter the same owner through its declared recovery profile. Publication owns
+the existing Open PR profiles; Closure owns `closure_shared_result_recovery`.
+The global continuation selects the original package and consumes its existing
+typed exits. It does not infer readiness, reconstruct a private transaction,
+close an Issue, or treat a shared carrier as terminal proof. Package contracts
+own the precise input and remaining-action behavior.
+
 `guru-finish-task` owns terminal archive persistence after Closure. It reviews a
 lifecycle-only allowlist, then uses three separate mutation boundaries: local
 archive projection, bookkeeping commit/push/PR publication, and expected-head
@@ -851,7 +859,8 @@ source and materializes it in the required archive metadata mutation.
 preserves TaskId, source and accepted scope, verifies archive/base identity,
 increments the lifecycle generation and establishes a current branch/checkout
 binding. Its normal exit returns to Planning; session recovery, same-transaction
-resume and legacy source correction use their declared consumers. It never
+resume use their declared consumers. The current shared-archive profile does
+not mutate historical source; invalid legacy source returns to its original owner. It never
 creates a replacement task, reopens an Issue, or treats prior
 Completion/Closure/Finish as current approval. An old in-flight Finalizer
 residue is not a normally finished archive: inspect exact task/PR/local/remote/

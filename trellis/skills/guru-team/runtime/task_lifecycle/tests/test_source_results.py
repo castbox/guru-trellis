@@ -18,19 +18,26 @@ from runtime.task_lifecycle.source import normalize_branch_ref, normalize_delive
 
 class SourceAndResultTests(unittest.TestCase):
     def test_terminal_closure_reader_retains_frozen_source(self):
+        import importlib.util
+        package = Path(__file__).resolve().parents[3] / "packages/guru-complete-task-closure"
+        spec = importlib.util.spec_from_file_location("closure_producer_fixture", package / "tests/test_closure_contract.py")
+        fixtures = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(fixtures)
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            subprocess.run(["git", "init", "-q", "-b", "main", str(root)], check=True)
+            public, semantic = fixtures.fixture()
+            public["source"]["disposition"] = "reference_only"
+            public["action_set"][0]["disposition"] = "no_close_authority"
+            semantic["reviewed_action_set"] = public["action_set"]
+            env, _, log = fixtures.fake_gh(root)
+            produced = fixtures.invoke(root, public, semantic, env, wrapper=True)
+            self.assertEqual(produced.returncode, 0, produced.stdout + produced.stderr)
+            result = json.loads(produced.stdout)["result_ref"]
             repository = inspect_repository(root)
-            result = {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo"}
-            frozen_source = {"kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 454,
-                             "disposition": "reference_only"}
-            transaction = {"ref": result, "frozen": {"action_set": [], "source": frozen_source},
-                           "terminal": "no_mutation"}
-            path = repository.common_dir / "guru-team/closure/demo/0.json"
-            path.parent.mkdir(parents=True)
-            path.write_text(json.dumps(transaction))
-            self.assertEqual(read_terminal_closure_result(repository, result)["source"], frozen_source)
+            # A local receipt is unnecessary for the public result reader.
+            (repository.common_dir / "guru-team/closure/example-task/0.json").unlink()
+            self.assertEqual(read_terminal_closure_result(repository, result)["source"], public["source"])
+            self.assertFalse(log.exists())
 
     def test_issue_and_no_issue_sources_are_the_only_shapes(self):
         self.assertEqual(normalize_source({"kind": "no_issue"}), {"kind": "no_issue"})

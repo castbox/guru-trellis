@@ -1,5 +1,6 @@
 # Completion、Closure 与终态责任设计
 
+本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/design/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-DES-COMPLETION`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md)；测试：[RDT-TST-COMPLETION](../../test/current/completion-closure.md)。稳定 `D531-06`、`D454-D436-01..05` 与 `D547` 关系保持，公共接口以各原 package 为准。
 
 ## 稳定设计身份
@@ -36,7 +37,7 @@ AI先review完整动作集及其真实副作用边界，executor再冻结最小�
 
 `guru-finish-task`只消费Closure ResultRef，通过共享只读API读exact action set，检查当前source与每个应OPEN/CLOSED状态。不能接受caller另带一个不绑定的动作列表，也不能close/reopen源。漂移回Closure。archive projection、本地/远端bookkeeping、expected-head merge三项实际mutation分别保留其原语义边界。
 
-归档包含Task整体scope、所有Delivery规划及历史、证据限制；schema-2 public aggregate的status/completedAt/commit/pr_url等retired字段不写。原Fixed Fork session API仅退休exact Task/generation pointers。archive locator由finish-summary拥有。投影后未seal恢复同Finish transaction，不以archive存在冒充Reactivate。
+归档包含Task整体scope、所有Delivery规划及历史、证据限制；schema-2 public aggregate的status/completedAt/commit/pr_url等retired字段不写。原Fixed Fork session API仅退休exact Task/generation pointers。archive locator由finish-summary拥有。只有投影、尚未证明归档进入target时恢复同Finish transaction，不以archive存在冒充Reactivate；共享Finish已成立不再要求原机seal完成。
 
 bookkeeping使用不带Issue closing关键字及business Delivery trailers的已审载荷，不产生Delivery fact，不递归Completion。local commit head与target merge commit分开：前者绑定资源seal的实际cleanup refs，后者证明archive已存在remote target且active copy已移除。普通后继target提交不使已证明可达的merge失效，也不要求Task追赶target或重跑business gates。正常原事务恢复不重复archive/PR/merge；缺terminal ownership发manual_cleanup_required，不虚构资源ledger。
 
@@ -44,7 +45,19 @@ bookkeeping使用不带Issue closing关键字及business Delivery trailers的已
 
 Cleanup消费exact当前ResourceSealRef/common-dir ledger，fresh检查所有选中ref/path、未提交内容、commit reachability、ownership及consumer；保留未知/caller-owned/peer资源。它删除资源，不撤销Completion/Closure/Finish。执行checkout位于删除目标内时转保留checkout或manual selection，禁止把自己删掉后虚报清理成功。machine-handoff和显式manual selection有各自输入，不借其它receipt。
 
-Reactivate只接normal finished/sealed终态，严格递增generation保留TaskId/source，重建当前binding/session与唯一active副本。源Issue检索读committed源/Git archive事实，summary索引不足不排除真实命中；unstructured来源要原source correction。手工历史归档由legacy owner负责；未完Finish事务由Finish恢复，不伪造终态。manual Finish需同generation/result的manual cleanup receipt。验证-only新generation直接走Completion，历史Finish/Cleanup/session都不是当前authority。
+Reactivate只接可唯一验证的共享Finish终态；先复用实际后继，无后继才严格递增generation保留TaskId/source，重建当前binding/session与唯一active副本。源Issue检索读committed源/Git archive事实，summary索引不足不排除真实命中；unstructured来源要原source correction。手工历史归档由legacy owner负责；未完Finish事务由Finish恢复，不伪造终态。原机manual Finish/Cleanup receipt只归对应本机资源owner，不作为共享终态准入。验证-only新generation直接走Completion，历史Finish/Cleanup/session都不是当前authority。
+
+## 最小共享 Closure 载体与恢复
+
+`D635-01/02 / CON635-SHARED-FINISH/CLOSURE` 窄替代本机 receipt 参与共享终态资格的片段。原 Closure 在精确动作集语义审查后、provider 动作前，按同一冻结输入生成原 ResultRef 和 `closeout/closure/<safe-result-id>.json`。文件名仅将 result_id 的 UTF-8 作无 padding base64url 编码。独立 `guru-closure-shared-result-1.0` 只含 schema_version、result_ref、completion_result_id、source、action_set；没有 terminal、授权、path/binding、gate 或扫描历史字段。
+
+原 public `close_task` evidence 关联载体 AuthorityRef。`read_terminal_closure_result` 从公共 Closure evidence 经既有 authority resolver 读取并核对 Task/generation、ResultRef、Completion/scope/source 与动作集合，继续给 Finish 原 snapshot2.0。terminal 由实际动作类型和公共结果核一致，carrier 不自行证明完成；Finish 保持逐 Issue live 核验。载体随 Task archive，历史路径沿原 artifact_origin 解释，新结果使用独立文件，现有结果不覆盖，无额外索引。
+
+闭合 `closure_shared_result_recovery` 接受精确 TaskRef/ResultRef/载体 AuthorityRef。公共结果存在时核同一结果读回；投影丢失时由原 AI 重新审查准确 Completion/source/actions 和 live 状态，才按原 result_id 补投影。该 profile 零 provider close，不从共享载体恢复授权。required CLOSED 仍 OPEN、required OPEN 已 CLOSED、source 或关联改变均回原 Closure；剩余真实 close 由原正常 profile 重新审查。旧无载体 archive 不制造输入，未发布或确实缺失的必要载体只阻塞它的真实 consumer。
+
+Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精确 bookkeeping PR/target 判定共享 Finish，确定性 helper 只读取/校验事实。先检查当前可获取后继；正式 schema1 用 matching `inspectFormalArchiveReactivation`，无后继才同一正式公共 operation；Task2 使用原 public reopen。verified root 的同前驱 sibling 等代/较早快照不另建 incarnation，更新或冲突候选保留原诊断，不在 Guru 建第二 parser。applied 只用真实 key/ref 交原环境 owners；prepared/pending 不能声明 active。
+
+共享 archive 已入 target 历史后，A 的本机 seal、binding 退出与 Cleanup 与 B 的共享准入分离。同一资源的真实责任冲突仍有效，B 不取得 A 的清理权。未进入 target 的唯一未完 closeout 才回原 Finish transaction，无法唯一恢复则报告具体必要输入。版本号、目录、status 或一个 MERGED PR 不代替完整资格。
 
 ## 原规格
 

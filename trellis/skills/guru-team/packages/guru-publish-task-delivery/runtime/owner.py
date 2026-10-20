@@ -97,6 +97,13 @@ def gh_json(root: Path, command: list[str]) -> Any:
 
 
 def validate_public_input(value: dict[str, Any]) -> dict[str, Any]:
+    if value.get("profile") in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
+        package = Path(__file__).resolve().parents[1]
+        name = value["profile"].replace("_", "-")
+        validate_json(value, package / f"schemas/public-{name}-input-1.0.schema.json", "input")
+        if CLOSING.search(value["pr_body"]):
+            raise WorkflowError("Delivery PR body contains a closing keyword.", code="closing_keyword_forbidden")
+        return value
     delivery_profile = str(value.get("profile", "")).startswith("delivery_")
     profile = str(value.get("profile", "")).removeprefix("delivery_")
     common = {"profile", "mode", "task_ref"}
@@ -256,7 +263,7 @@ def read_pr(root: Path, number: int) -> dict[str, Any]:
 def transaction_ref(public_input: dict[str, Any]) -> str:
     if public_input["profile"].removeprefix("delivery_") == "same_plan_resume":
         return public_input["transaction_ref"]
-    if public_input["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+    if public_input["profile"] in {"delivery_draft_publish", "delivery_return_to_draft", "delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
         return digest({"skill_id": SKILL_ID, "input": public_input})
     identity = {"delivery_key": public_input["delivery_key"], "readiness_result_id": public_input["readiness_result_id"]} if "delivery_key" in public_input else {"delivery_cycle_ref": public_input["delivery_cycle_ref"]}
     return digest({"skill_id": SKILL_ID, "task_ref": public_input["task_ref"], **identity})
@@ -335,6 +342,9 @@ def plan_from_input(root: Path, public_input: dict[str, Any]) -> dict[str, Any]:
             if existing.get("input") != source:
                 raise WorkflowError("Publication transaction input drifted.", code="private_state_invalid")
 
+    if source["profile"] in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
+        from remote_recovery import plan
+        return plan(root, source, existing, ref)
     if source["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
         from draft import plan
         return plan(root, source, existing, ref)
@@ -425,7 +435,7 @@ def expected_publication_exit(root, public):
         if tx is None:
             raise WorkflowError("Recover the exact original publication transaction.", code="private_state_missing")
         source = tx["input"]
-    return {"delivery_draft_publish": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
+    return {"delivery_draft_publish": "draft_published", "delivery_remote_draft_recovery": "draft_published", "delivery_return_to_draft": "draft_revision_ready"}.get(source["profile"], "ready_for_merge")
 
 
 def retire_completed(root, new_transaction):
@@ -506,6 +516,13 @@ def persist_binding_decisions(root: Path, transaction: dict[str, Any], pr: dict[
 
 
 def find_bindable_pr(root: Path, transaction: dict[str, Any]) -> dict[str, Any] | None:
+    if "existing_pr_number" in transaction:
+        pr = read_pr(root, transaction["existing_pr_number"])
+        raw = {"state": pr["state"], "headRefName": pr["head_branch"], "baseRefName": pr["base_branch"],
+               "url": pr["url"], "headRepositoryOwner": pr["head_owner"]}
+        if not same_repo_pr(raw, transaction["repo_ref"], transaction["head_branch"], transaction["base_branch"]):
+            raise WorkflowError("The exact recovery PR changed repository, target or remote ref.", code="pr_identity_stale")
+        return pr
     candidates = list_open_prs(root, transaction["head_branch"])
     same_repo = [normalize_pr(item) for item in candidates if same_repo_pr(item, transaction["repo_ref"], transaction["head_branch"], transaction["base_branch"])]
     if len(candidates) != len(same_repo):
@@ -545,6 +562,8 @@ def bind_pr(root: Path, transaction: dict[str, Any]) -> None:
             raise WorkflowError("Open PR head does not equal the pushed reviewed head.", code="pr_identity_stale")
         persist_binding_decisions(root, transaction, pr)
         return
+    if "existing_pr_number" in transaction:
+        raise WorkflowError("The explicit recovery PR is unavailable; do not create another PR.", code="pr_identity_stale")
     transaction["decisions"]["create_pr_required"] = True
     save_transaction(root, transaction)
     source = transaction["input"]
@@ -624,12 +643,15 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
         projection = DeliveryProjection(root, source["task_ref"])
         selected = projection.resolve(source["delivery_key"])
         candidate = transaction["public_candidate"]
-        result_id = "publication:" + transaction["transaction_ref"]
+        original_publication = transaction.get("public_publication")
+        result_id = original_publication["result_id"] if original_publication else "publication:" + transaction["transaction_ref"]
         owner_id = projection.declaration()["owners"]["publication"]
         pr_ref = {"locator": f"https://github.com/{transaction['repo_ref']}/pull/{pr['number']}", "revision": "sha256:" + hashlib.sha256(pr["body"].encode("utf-8")).hexdigest()}
         fact = {"result_id": result_id, "owner_id": owner_id, "evidence": [pr_ref], "profile": "pull_request",
                 "candidate": candidate, "repo_ref": transaction["repo_ref"], "pr_number": pr["number"],
                 "reviewed_head": transaction["reviewed_head"], "target_ref": transaction["base_branch"], "publication_ref": pr_ref}
+        if original_publication is not None:
+            fact = original_publication
         try:
             projection.apply({"api_version":"1.0", "operation":"record_publication", "key":source["delivery_key"],
                 "owner_role":"publication", "owner_id":owner_id, "expected_phase":selected["phase"], "result":fact,
@@ -638,7 +660,7 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
             raise WorkflowError(str(exc), code="external_command_failed") from exc
         current = projection.resolve(source["delivery_key"])
         readiness = current["results"]["readiness"]
-        if (pr["state"] == "MERGED" or git_text(root, "rev-parse", "HEAD") != source["reviewed_head"]
+        if (pr["state"] == "MERGED" or (source["profile"] != "delivery_remote_ready_recovery" and git_text(root, "rev-parse", "HEAD") != source["reviewed_head"])
                 or readiness is None or readiness["result_id"] != source["readiness_result_id"]
                 or projection.gate_applicability(source["delivery_key"])["readiness"]["kind"] != "applicable"):
             return {"exit_id":"review_stale", "task_ref":source["task_ref"], "delivery_key":source["delivery_key"], "stale_reason":"historical_success_current_readiness_changed"}
@@ -659,7 +681,10 @@ def ready_output(root: Path, transaction: dict[str, Any]) -> dict[str, Any]:
 def execute(root: Path, context: dict[str, Any]) -> dict[str, Any]:
     transaction = load_transaction(root, context["transaction_ref"])
     if transaction is None:
-        if context["input"]["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
+        if context["input"]["profile"] in {"delivery_remote_draft_recovery", "delivery_remote_ready_recovery"}:
+            from remote_recovery import initial
+            transaction = initial(context)
+        elif context["input"]["profile"] in {"delivery_draft_publish", "delivery_return_to_draft"}:
             from draft import initial
             transaction = initial(context)
         else:

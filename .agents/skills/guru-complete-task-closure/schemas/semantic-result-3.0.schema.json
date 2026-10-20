@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-complete-task-closure-semantic-result-3.0",
+  "oneOf": [
+    {
+      "$ref": "semantic-result.schema.json"
+    },
+    {
+      "$ref": "shared-result-recovery-semantic.schema.json"
+    }
+  ]
+}

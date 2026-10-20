@@ -1,5 +1,5 @@
 {
-  "profile": "delivery_reactivate_completed_task",
+  "profile": "delivery_reactivate_shared_archive",
   "mode": "workflow",
   "archived_lifecycle": {
     "task_id": "example-task",
@@ -28,5 +28,12 @@
   "authority": {
     "locator": "docs/requirements/README.md",
     "revision": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "archive_anchor": {
+    "repo_ref": "example/repository",
+    "archive_ref": ".trellis/tasks/archive/2026-10/example-task",
+    "archive_commit": "1111111111111111111111111111111111111111",
+    "original_task_ref": ".trellis/tasks/example-task",
+    "target_ref": "refs/heads/main"
   }
 }

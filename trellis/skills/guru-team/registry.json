@@ -290,7 +290,7 @@
       "name": "guru-complete-task-closure",
       "package": "packages/guru-complete-task-closure",
       "interface": "packages/guru-complete-task-closure/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.8",
       "supported_platforms": [
         "shared",
         "claude",

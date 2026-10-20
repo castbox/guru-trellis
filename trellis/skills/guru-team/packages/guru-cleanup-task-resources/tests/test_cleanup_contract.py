@@ -327,6 +327,56 @@ def test_normal_cleanup_deletes_worktree_branch_and_remote_in_order(tmp_path, mo
     assert {row.state for row in store.read(key).resources} == {"resolved"}
 
 
+def test_old_cleanup_retains_advanced_remote_and_new_generation(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=root, check=True)
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "Test")
+    (root / "tracked").write_text("base\n")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    head = git(root, "rev-parse", "HEAD")
+    git(root, "branch", "codex/demo")
+    store = ResourceLedgerStore(inspect_repository(root))
+    key = TaskLifecycleKey("demo", 0)
+    store.establish_current(key, binding_revision=0, branch_name="codex/demo",
+        branch_ownership="guru_owned", worktree_ownership="not_applicable")
+    remote = tmp_path / "github.com/example/repo.git"
+    remote.parent.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", "--bare", str(remote)], check=True)
+    git(root, "remote", "add", "origin", str(remote))
+    git(root, "push", "-q", "origin", "refs/heads/codex/demo:refs/heads/codex/demo")
+    # Record the remote before the original Finish seal through the real writers.
+    store.record_remote_delivery(key, expected_revision=0, remote_name="origin",
+        repository_ref="example/repo", branch_ref="refs/heads/codex/demo",
+        ownership="guru_owned", expected_cleanup_head=head)
+    seal = store.seal_for_finish(key, finish_result_id="finish:demo", finish_head=head)
+    public = {"profile": "normal", "mode": "standalone", "task_id": "demo",
+              "lifecycle_generation": 0, "finish_result_id": "finish:demo",
+              "inventory_id": seal["inventory_id"]}
+    (root / "tracked").write_text("normal successor work\n")
+    git(root, "commit", "-qam", "advance shared remote")
+    advanced = git(root, "rev-parse", "HEAD")
+    git(root, "push", "-q", "origin", "HEAD:refs/heads/codex/demo")
+    git(root, "branch", "codex/next")
+    new_key = TaskLifecycleKey("demo", 1)
+    binding = BranchBindingStore(inspect_repository(root)).establish(new_key, "codex/next")
+    store.establish_current(new_key, binding_revision=binding.binding_revision,
+        branch_name="codex/next", branch_ownership="guru_owned", worktree_ownership="not_applicable")
+    old_ledger, new_ledger = store.snapshot(key), store.snapshot(new_key)
+
+    result = invoke(tmp_path, root, public, confirmed=True)
+    assert result["exit_id"] == "blocked"
+    assert result["reason_code"] == "remote_head_changed"
+    assert git(root, "ls-remote", "--heads", "origin", "refs/heads/codex/demo").split() == [advanced, "refs/heads/codex/demo"]
+    assert git(root, "rev-parse", "codex/demo") == head
+    assert git(root, "rev-parse", "codex/next") == advanced
+    assert store.snapshot(key) == old_ledger
+    assert store.snapshot(new_key) == new_ledger
+    assert BranchBindingStore(inspect_repository(root)).read(new_key) == binding
+
+
 def test_finish_cleanup_handoff_uses_retained_checkout(tmp_path):
     root = tmp_path / "repo"
     root.mkdir()

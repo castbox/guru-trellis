@@ -1,5 +1,6 @@
 # Task 与 Delivery 生命周期
 
+本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
@@ -80,8 +81,27 @@ Delivery Review、Publication 和 Merge 分别核当前 payload、Issue 语义�
 
 已正式发布的 Delivery 后来被人工合并时，只能由原 Merge 的显式 recovery 读已有公共 Task/Delivery/Publication 关系、真实双亲合并及实际 head，记录事实并进入整体 Completion。事实不要求伪造 trailers，也不要求第二次 merge。实际内容变化、CI、gate 适用性和未覆盖范围由 Completion/受影响原 owners 判断，不能凭 MERGED 推断完成。
 
-Delivery 合并只产生 slice 结果。Task 未分配范围、未完成要求和缺失必要证据仍归整体 Completion。Completion、Closure、Finish、Cleanup、Reactivate 的完整能力定义在 [completion-closure](./completion-closure.md)。
+Delivery 合并只产生 slice 结果。Task 未分配范围、未完成要求和缺失必要证据仍归整体 Completion。Completion、Closure、Finish、Cleanup、Reactivate 的完整能力定义在 [completion-closure](completion-closure.md)。
+
+## 跨环境活动接续与状态职责
+
+`R635-01/03/04/05 / BEH635-STATE/RECOVER/RESOURCE/MIGRATION` 增加跨环境正常行为。原执行者不再主导同一生命周期时，B 从可获取、已提交的 source ref/commit 读取同 repository、TaskId/generation、source/scope、Delivery 和必要代码。该 ref 不必已进入默认分支；唯一可验证来源自动承接，有实际歧义才询问缺失选择。不复制 A 的 `.git`、runtime、session 或资源账本，不迁移仅在 A 的 dirty 工作。不承诺发现其他 clone 未发布状态，不支持两个环境同时主导该生命周期。
+
+| 状态与 producer | 直接 consumer 与恢复行为 | 缺失边界 |
+| --- | --- | --- |
+| 公共 Creation/Task 的 identity、source、accepted scope | Identity、Clarify、Creation、Completion 读取共享记录与明确 Git 对象 | 真实 source/代码不可获取或身份不唯一回原 Identity/scope owner，不创建替代 Task。 |
+| 公共 Delivery 的 key、planning_root、历史与远端关联 | 原阶段 owner/continuation 继续真实切片 | 缺唯一 selection/必要正文只阻塞对应 producer；不按 inventory、phase 或 PR title 猜选。 |
+| Author/Activation、Check/full Review 的结果及实际正文 | 原 Planning/Check/Review/Readiness 亲自重判适用性 | 换机/private checkpoint 丢失不自动重开 Intake/Planning/Delivery；缺语义覆盖补审，缺工程事实补命中检查，不继承 pass。 |
+| Publish/Merge 的准确 PR/commit 与公共结果 | 原 Publish/Merge 核 source、key、repository/base/head、原输入和真实状态，恢复已发生子动作 | Draft/metadata/Ready 剩余工作由 Publish 完成；MERGED 只交 Completion，缺归属回原 owner，不重复 create/merge。 |
+| Completion/Closure/Finish 的公共结果、必要动作输入与归档历史 | 原 Closure/Finish/Reactivate 分别核完整关系、provider 和目标历史 | 仅 OPEN/CLOSED、MERGED 或目录存在不足；不可推导的必要输入缺失说明 consumer，不索取整套原机目录。 |
+| 当前环境 Bind/session、C4 与资源 ownership | 原 Establish/Ensure/Bind 和 Cleanup 在当前 common-dir 恢复本机执行责任 | 不跨 common-dir 认领同名 local branch，不把未知 ownership 当 Guru 所有。 |
+
+原有同操作私有恢复继续适用。私有事务不可得而明确共享 source/对象充分时，原 Publish 使用独立既有 PR 恢复入口，原 Closure 使用其最小共享动作载体，原 Merge 使用既有公共 MERGED recovery；不根据历史 Ready、Close 或输出存在制造当前资格。每个语义 owner 沿候选适用性规则亲自判断，仅补缺失或变化命中的工作。
+
+remote branch 是 repository identity 与完整 remote ref 标识的共享资源。旧 Cleanup 继续核 generation、ownership 和 expected head；ref 已推进或属于新代时保留新提交并交原资源 owner。A 的旧资源 pending 不否定已证明的共享终态，也不阻止 B 使用不同合法资源；同一确有未完责任的资源仍受原冲突检查。两个 Task 的独立绑定、checkpoint 和清理不得互设准入；B 接续不授予清理 A 的权限。
+
+公共 I/O、唯一 consumer、matching native/Guru packages、workflow、spec、平台和完整 preset 成套迁移。旧完整安装沿 pinned 原 owner 或匹配维护路径处理在途事务，不转换旧 pass。source 采用、实际安装、原生 Agent 和完整 Release 证据分别报告。共享 Finish 与指定旧格式的完整条件由 Completion/Closure 单元拥有。
 
 ## 关系和来源边界
 
-设计：[`RDT-DES-LIFECYCLE`](../../design/current/task-delivery-lifecycle.md)。测试：[`RDT-TST-LIFECYCLE`](../../test/current/task-delivery-lifecycle.md)。知识 owner/适用性：[`RDT-REQ-KNOWLEDGE`](./knowledge-maintenance.md)。来源及精确替代范围见 [迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。公共 profile/DTO/exit 的完整规格仍由 [canonical workflow](../../../trellis/workflows/guru-team/workflow.md) 和对应 [Skill packages](../../../trellis/skills/guru-team/packages/) 独占；本单元拥有上述能力行为，不复制 schema。
+设计：[`RDT-DES-LIFECYCLE`](../../design/current/task-delivery-lifecycle.md)。测试：[`RDT-TST-LIFECYCLE`](../../test/current/task-delivery-lifecycle.md)。知识 owner/适用性：[`RDT-REQ-KNOWLEDGE`](knowledge-maintenance.md)。来源及精确替代范围见 [迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。公共 profile/DTO/exit 的完整规格仍由 [canonical workflow](../../../trellis/workflows/guru-team/workflow.md) 和对应 [Skill packages](../../../trellis/skills/guru-team/packages) 独占；本单元拥有上述能力行为，不复制 schema。

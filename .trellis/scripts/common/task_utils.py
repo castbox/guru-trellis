@@ -131,6 +131,52 @@ def _task_directories(tasks_dir: Path, repo_root: Path):
                 yield candidate
 
 
+def _formal_predecessor_for_relocation(selected: Path | None, requested: str, repo_root: Path) -> Path | None:
+    """Exclude only the public conversion's retained predecessor on a move.
+
+    Creation has no selected Task and retains ordinary identity reservation.
+    This reads a relation; it performs no conversion or lifecycle write.
+    """
+    if selected is None:
+        return None
+    provenance_path = selected / "migration" / "formal-archive-reactivation.json"
+    require_project_path(provenance_path, repo_root)
+    if not provenance_path.exists():
+        return None
+    provenance, reason = read_json_checked(provenance_path)
+    current, current_reason = read_json_checked(selected / FILE_TASK_JSON)
+    if provenance is None or current is None:
+        raise TaskIdentityError(f"formal_archive_provenance_mismatch: {reason or current_reason}")
+    key = provenance.get("key")
+    archive_ref = provenance.get("archive_ref")
+    original = provenance.get("original_task_ref")
+    commit = provenance.get("archive_commit")
+    if (set(provenance) != {"key", "archive_ref", "original_task_ref", "archive_commit"}
+            or not isinstance(key, dict) or set(key) != {"task_id", "lifecycle_generation"}
+            or key.get("task_id") != requested or type(key.get("lifecycle_generation")) is not int
+            or key["lifecycle_generation"] < 0
+            or current.get("schema_version") != "2.0" or current.get("id") != requested
+            or current["lifecycle_generation"] <= key["lifecycle_generation"]
+            or not isinstance(archive_ref, str)
+            or not re.fullmatch(r"\.trellis/tasks/archive/\d{4}-\d{2}/[^/]+", archive_ref)
+            or not isinstance(original, str) or not re.fullmatch(r"\.trellis/tasks/(?!archive$)[^/]+", original)
+            or not isinstance(commit, str) or not re.fullmatch(r"[a-f0-9]{40}(?:[a-f0-9]{24})?", commit)):
+        raise TaskIdentityError("formal_archive_provenance_mismatch: invalid public predecessor relation")
+    predecessor = repo_root / archive_ref
+    source_path = predecessor / FILE_TASK_JSON
+    retained = selected / "migration" / "source-task.json"
+    require_project_path(source_path, repo_root)
+    require_project_path(retained, repo_root)
+    source, source_reason = read_json_checked(source_path)
+    if (source is None or source.get("schema_version") is not None
+            or source.get("status") != "completed" or source.get("id") != requested
+            or source.get("lifecycle_generation") != key["lifecycle_generation"]
+            or source.get("source") != current.get("source")
+            or not retained.is_file() or retained.read_bytes() != source_path.read_bytes()):
+        raise TaskIdentityError(f"formal_archive_provenance_mismatch: retained source {source_reason or archive_ref}")
+    return predecessor.resolve()
+
+
 def task_id_collisions(
     requested: str,
     tasks_dir: Path,
@@ -141,9 +187,10 @@ def task_id_collisions(
     """Return exact/case-fold collisions relevant to one requested TaskId."""
     folded = requested.casefold()
     excluded = exclude.resolve() if exclude is not None else None
+    predecessor = _formal_predecessor_for_relocation(exclude, requested, repo_root)
     conflicts: list[str] = []
     for directory in _task_directories(tasks_dir, repo_root):
-        if excluded is not None and directory.resolve() == excluded:
+        if directory.resolve() in (excluded, predecessor):
             continue
         task_json = directory / FILE_TASK_JSON
         require_project_path(task_json, repo_root)

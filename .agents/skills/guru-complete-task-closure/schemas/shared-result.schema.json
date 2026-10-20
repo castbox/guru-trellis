@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "guru-closure-shared-result-1.0",
+  "required": [
+    "schema_version",
+    "result_ref",
+    "completion_result_id",
+    "source",
+    "action_set"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "result_ref": {
+      "$ref": "#/$defs/result"
+    },
+    "completion_result_id": {
+      "$ref": "#/$defs/id"
+    },
+    "source": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "no_issue"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "repo_ref",
+            "number",
+            "disposition"
+          ],
+          "properties": {
+            "kind": {
+              "const": "issue"
+            },
+            "repo_ref": {
+              "$ref": "#/$defs/repo"
+            },
+            "number": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "disposition": {
+              "enum": [
+                "exact_source",
+                "reference_only",
+                "follow_up",
+                "parent"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "action_set": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/action"
+      }
+    }
+  },
+  "$defs": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^(?![^/]+/[^/]+\\.git$)[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "result_id"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "result_id": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue_ref",
+        "disposition"
+      ],
+      "properties": {
+        "issue_ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repo_ref",
+            "issue_number"
+          ],
+          "properties": {
+            "repo_ref": {
+              "$ref": "#/$defs/repo"
+            },
+            "issue_number": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "disposition": {
+          "enum": [
+            "close",
+            "already_closed_at_review",
+            "retain_open",
+            "no_close_authority"
+          ]
+        }
+      }
+    }
+  }
+}
