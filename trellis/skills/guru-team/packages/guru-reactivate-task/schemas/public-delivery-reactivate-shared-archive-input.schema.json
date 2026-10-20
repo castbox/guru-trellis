@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reactivate-task-input-delivery-reactivate-shared-archive-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "archived_lifecycle",
+    "archive_anchor"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_reactivate_shared_archive"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "archived_lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "archive_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "archive_ref",
+        "archive_commit",
+        "original_task_ref",
+        "target_ref"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "original_task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

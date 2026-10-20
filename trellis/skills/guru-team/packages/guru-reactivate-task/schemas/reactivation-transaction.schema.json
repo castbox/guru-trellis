@@ -1,1 +1,188 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-reactivate-task-transaction-1.0","type":"object","additionalProperties":false,"required":["schema_version","task_id","archived_generation","transaction_id","result_id","branch_ref","base_ref","base_head","archive_ref","task_ref"],"properties":{"schema_version":{"const":"1.0"},"task_id":{"type":"string","minLength":1},"archived_generation":{"type":"integer","minimum":0},"transaction_id":{"type":"string","minLength":1},"result_id":{"type":"string","minLength":1},"branch_ref":{"type":"string","pattern":"^refs/heads/"},"base_ref":{"type":"string","pattern":"^refs/heads/"},"base_head":{"type":"string","pattern":"^[0-9a-f]{40}$"},"archive_ref":{"type":"string","pattern":"^\\.trellis/tasks/archive/"},"task_ref":{"type":"string","pattern":"^\\.trellis/tasks/(?!archive/)[^/]+$"},"source_correction_result_id":{"type":"string","minLength":1}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reactivate-task-transaction-2.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "archived_generation",
+    "transaction_id",
+    "result_id",
+    "branch_ref",
+    "base_ref",
+    "base_head",
+    "archive_anchor",
+    "reactivated_task",
+    "public_recovery_ref",
+    "stage"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "archived_generation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "transaction_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "branch_ref": {
+      "type": "string",
+      "pattern": "^refs/heads/"
+    },
+    "base_ref": {
+      "type": "string",
+      "pattern": "^refs/heads/"
+    },
+    "base_head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$"
+    },
+    "archive_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "archive_ref",
+        "archive_commit",
+        "original_task_ref",
+        "target_ref"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "original_task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reactivated_task": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "task_ref"
+          ],
+          "properties": {
+            "key": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "task_id",
+                "lifecycle_generation"
+              ],
+              "properties": {
+                "task_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+                },
+                "lifecycle_generation": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "task_ref": {
+              "type": "string",
+              "pattern": "^\\.trellis/tasks/(?!archive/)[^/]+$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "public_recovery_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stage": {
+      "enum": [
+        "public_prepared",
+        "public_applied",
+        "bound"
+      ]
+    },
+    "public_plan": {
+      "type": "object"
+    },
+    "public_state_dir": {
+      "type": "string"
+    },
+    "resource_ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branch",
+        "worktree"
+      ],
+      "properties": {
+        "branch": {
+          "enum": [
+            "guru_owned",
+            "caller_owned"
+          ]
+        },
+        "worktree": {
+          "enum": [
+            "guru_owned",
+            "caller_owned",
+            "not_applicable"
+          ]
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "stage": {
+            "enum": [
+              "public_prepared",
+              "public_applied"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "public_plan",
+          "public_state_dir",
+          "resource_ownership"
+        ]
+      }
+    }
+  ]
+}

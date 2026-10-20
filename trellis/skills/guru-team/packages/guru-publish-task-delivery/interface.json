@@ -49,15 +49,15 @@
     },
     {
       "id": "remote_identity",
-      "evidence": "origin branch plus same-repository Open PR facts",
-      "binding": "one repository/base/head branch and at most one current PR",
+      "evidence": "Explicit existing PR and shared source commit for remote recovery; original branch-bound facts for local publication.",
+      "binding": "Same repository/base, Task/Delivery/Planning lineage and full remote head ref; local branch binding remains independent.",
       "freshness": "reread before every mutation and terminal projection"
     },
     {
       "id": "invocation_freshness",
-      "evidence": "semantic gate, private transaction and exact live postconditions",
-      "binding": "one exact Delivery key and private publication transaction; same-plan recovery only",
-      "freshness": "same-plan recovery only"
+      "evidence": "Current semantic review plus actual postconditions; private transaction serves same-operation recovery only.",
+      "binding": "Exact selected Delivery, source commit and PR for remote recovery; original transaction for same-plan resume.",
+      "freshness": "Read current public applicability and live facts before remaining actions."
     }
   ],
   "runtime_dependency": {
@@ -155,6 +155,14 @@
     {
       "id": "unverified_legacy_history_output",
       "path": "examples/unverified_legacy_history-output-1.0.json"
+    },
+    {
+      "id": "delivery_remote_draft_recovery_input",
+      "path": "examples/public-delivery-remote-draft-recovery-input-1.0.json"
+    },
+    {
+      "id": "delivery_remote_ready_recovery_input",
+      "path": "examples/public-delivery-remote-ready-recovery-input-1.0.json"
     }
   ],
   "schemas": [
@@ -361,6 +369,18 @@
     {
       "id": "transaction_636_migration_input",
       "path": "schemas/private-publication-transaction-636-input.schema.json"
+    },
+    {
+      "id": "delivery_remote_draft_recovery_input",
+      "path": "schemas/public-delivery-remote-draft-recovery-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_remote_ready_recovery_input",
+      "path": "schemas/public-delivery-remote-ready-recovery-input-1.0.schema.json"
+    },
+    {
+      "id": "delivery_input_aggregate_3_0",
+      "path": "schemas/public-input-delivery-3.0.schema.json"
     }
   ],
   "validators": [
@@ -513,7 +533,9 @@
   "tests": [
     "tests/test_contract.py",
     "tests/test_transaction.py",
-    "tests/test_legacy_maintenance.py"
+    "tests/test_legacy_maintenance.py",
+    "tests/test_remote_recovery.py",
+    "tests/test_early_draft.py"
   ],
   "platform_destinations": [
     "shared",
@@ -544,8 +566,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-2.0",
-        "path": "schemas/public-input-delivery-2.0.schema.json"
+        "schema_id": "guru-publish-task-delivery-input-delivery-aggregate-3.0",
+        "path": "schemas/public-input-delivery-3.0.schema.json"
       },
       "profiles": [
         {
@@ -681,6 +703,36 @@
           "discriminator": {
             "field": "profile",
             "value": "delivery_return_to_draft"
+          }
+        },
+        {
+          "id": "delivery_remote_draft_recovery",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-remote-draft-recovery-1.0",
+            "path": "schemas/public-delivery-remote-draft-recovery-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_remote_draft_recovery_input",
+            "path": "examples/public-delivery-remote-draft-recovery-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_remote_draft_recovery"
+          }
+        },
+        {
+          "id": "delivery_remote_ready_recovery",
+          "schema": {
+            "schema_id": "guru-publish-task-delivery-input-delivery-remote-ready-recovery-1.0",
+            "path": "schemas/public-delivery-remote-ready-recovery-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "delivery_remote_ready_recovery_input",
+            "path": "examples/public-delivery-remote-ready-recovery-input-1.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_remote_ready_recovery"
           }
         }
       ]

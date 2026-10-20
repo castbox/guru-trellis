@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Archived TaskLifecycleKey.",
+          "description": "Exact shared archived Task key and Git/target anchor.",
           "repeatable": false,
           "conflicts": []
         },

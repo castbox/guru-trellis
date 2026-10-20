@@ -293,7 +293,7 @@ def task_identity_reservation(repo_root: Path, task_id: str, task_ref: str) -> s
 
 
 def _archived_lifecycle_candidates(repo_root: Path, matches: list[tuple[str, str]]) -> list[tuple[str, str]]:
-    """Exclude only the historical source identified by public archive resume."""
+    """Exclude only a retained predecessor related by a public maintenance writer."""
     root = repo_root.resolve()
     historical_sources = set()
     for task_id, ref in matches:
@@ -301,7 +301,9 @@ def _archived_lifecycle_candidates(repo_root: Path, matches: list[tuple[str, str
             continue
         try:
             migration = root / ref / "migration"
-            resumed = json.loads((migration / "archive-resume.json").read_text(encoding="utf-8"))
+            formal = (migration / "formal-archive-reactivation.json").is_file()
+            provenance = migration / ("formal-archive-reactivation.json" if formal else "archive-resume.json")
+            resumed = json.loads(provenance.read_text(encoding="utf-8"))
             if not isinstance(resumed, dict):
                 continue
             source_ref = normalize_task_ref(resumed.get("archive_ref"))
@@ -317,6 +319,15 @@ def _archived_lifecycle_candidates(repo_root: Path, matches: list[tuple[str, str
                     or resumed.get("key") != {"task_id": task_id, "lifecycle_generation": source_generation}
                     or source_generation > current.lifecycle_generation):
                 continue
+            if formal:
+                from .git_facts import commit_path_bytes, inspect_repository
+                if (set(resumed) != {"key", "archive_ref", "original_task_ref", "archive_commit"}
+                        or current.lifecycle_generation <= source_generation
+                        or source.get("status") != "completed"
+                        or source.get("source") != _read_task_metadata(root, ref).get("source")
+                        or commit_path_bytes(inspect_repository(root), resumed["archive_commit"], source_ref + "/task.json")
+                        != (root / source_ref / "task.json").read_bytes()):
+                    continue
             # The public writer retained these exact bytes; Finish only moved
             # their containing task tree. Reservation itself keeps both records.
             if (migration / "source-task.json").read_bytes() == (root / source_ref / "task.json").read_bytes():

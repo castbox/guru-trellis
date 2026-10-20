@@ -55,8 +55,11 @@ merge. The executor recovers only that exact transaction and returns `success`
 only after the remote target baseline contains the final archive and no active
 copy. Before moving the task out of the active tree, the archive projection
 uses the Fixed Fork session API to retire only pointers for this exact TaskId
-and generation. A projected but unsealed archive resumes the original Finish
-transaction by explicit identity; it is not a Reactivate candidate. The archive
+and generation. A projected archive not yet verified on the target resumes the
+original Finish transaction by explicit identity; it is not a Reactivate
+candidate. Once shared Finish is verified in the target history, pending local
+seal, binding exit or Cleanup remains with the original resource owner and
+does not block another environment's Reactivate. The archive
 locator belongs in finish-summary, not in the retired
 `task.json.archive_dir` metadata field. The reviewed payload forbids
 Issue-closing keywords and both legacy `Guru-Delivery-Task` /
@@ -71,9 +74,9 @@ target merge commit separately proves that the archive is persisted. `success` h
 ResourceSealRefDTO to Cleanup; missing terminal ownership returns
 `manual_cleanup_required`. Finish never deletes a resource. This canonical
 manual route records the minimal terminal identity in Git common-dir so it
-survives removal of the original checkout;
-Reactivate requires its matching completed manual Cleanup receipt before using
-the archived generation. The Finish bookkeeping commit and target merge commit
+survives removal of the original checkout. Its matching manual Cleanup receipt
+serves only that environment's resource disposition; shared Reactivate does not
+require it. The Finish bookkeeping commit and target merge commit
 remain distinct identities. The active graph invokes this package only after
 Completion and Closure.
 Before terminal mutation, consume the matching current Architecture

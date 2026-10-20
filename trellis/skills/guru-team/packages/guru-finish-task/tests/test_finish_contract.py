@@ -382,7 +382,8 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     if retained_source:
         # Real matching preset installation; the engineering checkout's complete
         # legacy installation is never reapplied or changed by this fixture.
-        (repo / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        sdk_package = Path(os.environ["GURU_UPSTREAM_DELIVERY_SCRIPTS"]).parents[3] / "package.json"
+        (repo / ".trellis/.version").write_text(json.loads(sdk_package.read_text())["version"] + "\n")
         caller = tmp_path / "installer-source"
         shutil.copytree(ROOT / "runtime", caller / "trellis/skills/guru-team/runtime",
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -421,18 +422,6 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
                   "predecessor_result_id": None, "obligations": [], "evidence": [scope]}
         projection.apply({"api_version": "1.0", "operation": "record_gate", "key": delivery_key,
                           "owner_role": "planning", "owner_id": owners["planning"], "expected_phase": "planning", "result": result})
-    completion = {"result_id": "completion:demo", "owner_id": owners["completion"],
-                  "evidence": [scope], "lifecycle_generation": 0, "accepted_scope": scope,
-                  "delivery_result_ids": [], "outcome": "completed"}
-    if not retained_source:
-        projection.apply({"api_version": "1.0", "operation": "complete_task", "key": key,
-                          "owner_role": "completion", "owner_id": owners["completion"], "result": completion})
-    closure = {"result_id": "closure:demo", "owner_id": owners["closure"], "evidence": [scope],
-               "lifecycle_generation": 0, "completion_result_id": "completion:demo",
-               "disposition": "no_mutation", "source_result": None}
-    if not retained_source:
-        projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
-                          "owner_role": "closure", "owner_id": owners["closure"], "result": closure})
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "initial")
     base_head = git(repo, "rev-parse", "HEAD")
@@ -477,17 +466,16 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     for name, value in env.items():
         if name in {"PATH", "FAKE_GH_STATE", "FAKE_GH_LOG", "FAKE_REPO_PATH", "FAKE_REMOTE_PATH"}:
             monkeypatch.setenv(name, value)
-    closure_path = store.repository.common_dir / "guru-team/closure/demo/0.json"
+    def owner_wrapper(skill, value, review, *flags):
+        inp = tmp_path / (skill + "-input.json"); inp.write_text(json.dumps(value))
+        sem = tmp_path / (skill + "-semantic.json"); sem.write_text(json.dumps(review))
+        result = subprocess.run(["bash", str(wrapper_root / "packages" / skill / "scripts/invoke.sh"),
+            "--root", str(repo), "--input", str(inp), "--semantic-result", str(sem), *flags],
+            env=env, text=True, capture_output=True)
+        assert result.returncode == 0, result.stdout + result.stderr
+        out = json.loads(result.stdout); return out.get("result", out)
     if retained_source:
         Path(env["FAKE_GH_STATE"]).write_text(json.dumps({"issue_state": "OPEN"}))
-        def owner_wrapper(skill, value, review, *flags):
-            inp = tmp_path / (skill + "-input.json"); inp.write_text(json.dumps(value))
-            sem = tmp_path / (skill + "-semantic.json"); sem.write_text(json.dumps(review))
-            result = subprocess.run(["bash", str(wrapper_root / "packages" / skill / "scripts/invoke.sh"),
-                "--root", str(repo), "--input", str(inp), "--semantic-result", str(sem), *flags],
-                env=env, text=True, capture_output=True)
-            assert result.returncode == 0, result.stdout + result.stderr
-            out = json.loads(result.stdout); return out.get("result", out)
         candidate = projection.candidate([str((task / 'prd.md').relative_to(repo))], head_ref=base_head, base_ref=base_head)
         projection.begin_check(delivery_key, candidate)
         for role, outcome in (("check", "passed"), ("full_review", "passed"), ("readiness", "ready")):
@@ -522,9 +510,21 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
         public["closure_result"] = closed["result_ref"]; input_path.write_text(json.dumps(public))
         before_archive = projection.read_record()
     else:
-        closure_path.parent.mkdir(parents=True)
-        closure_path.write_text(json.dumps({"ref": {"task_id": "demo", "lifecycle_generation": 0, "result_id": "closure:demo", "transaction_id": "closure:demo"},
-                                            "frozen": {"source": source, "action_set": []}, "verified": [], "terminal": "no_mutation"}))
+        task_key = {"task_id": "demo", "lifecycle_generation": 0}
+        completion_input = {"profile": "delivery_completion", "mode": "workflow",
+                            "task_ref": ".trellis/tasks/demo", "task_key": task_key}
+        completion_owner = {"profile": "delivery_completion", "mode": "workflow", "reviewed_task_key": task_key,
+                            "reviewed_scope": scope, "reviewed_delivery_result_ids": [], "evidence": [scope],
+                            "remaining_work_refs": [], "result_id": "completion:demo", "route": {"typed_exit": "completed"}}
+        completed = owner_wrapper("guru-review-task-completion", completion_input, completion_owner)
+        closure_input = {"profile": "completion_approved", "source_exit": "completed", "mode": "workflow",
+                         "completion_result": completed["result_ref"], "source": source,
+                         "accepted_scope_identity": scope["revision"], "delivery_target": {"repo_ref": "example/repo", "branch_ref": "main"},
+                         "binding_ref": {**task_key, "binding_revision": 0}, "content_head": base_head,
+                         "evidence_slots": {"completion": completed["result_ref"]["result_id"]}, "action_set": []}
+        closure_owner = {"profile": "completion_approved", "mode": "workflow", "reviewed_action_set": [], "route": {"typed_exit": "apply"}}
+        closed = owner_wrapper("guru-complete-task-closure", closure_input, closure_owner)
+        public["closure_result"] = closed["result_ref"]; input_path.write_text(json.dumps(public))
     def invoke(*flags):
         if retained_source:
             return owner_wrapper("guru-finish-task", public, semantic, *flags)
@@ -549,7 +549,8 @@ def test_finish_publishes_and_merges_one_expected_head_bookkeeping_pr(tmp_path, 
     assert projected == resume and not task.exists() and (repo / archive_ref).is_dir()
     assert "archive_dir" not in json.loads((repo / archive_ref / "task.json").read_text())
     if retained_source:
-        assert json.loads((repo / archive_ref / "task.json").read_text()) == before_archive
+        assert json.loads((repo / archive_ref / "task.json").read_text()) == {
+            **before_archive, "artifact_origin": ".trellis/tasks/demo"}
         assert before_archive["source"] == source and before_archive["lifecycle_generation"] == 0
         assert before_archive["deliveries"][0]["delivery_result"]["result_id"] == "delivery:demo"
         assert "outside current Task scope" in (repo / archive_ref / "prd.md").read_text()

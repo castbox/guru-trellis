@@ -16,57 +16,60 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
-Reactivate owns one normally finished archived TaskLifecycleKey, never Finish
-recovery or implementation activation. The AI reviews the fresh archive,
-source relation, target base and shared checkout acquisition disposition. Entry
-selection starts from the original TaskId and live lifecycle when Direct Source
-is reopened. An active task continues through its earliest affected owner;
-an unfinished Closure/Finish returns to that original closeout transaction.
-Issue reopening alone neither increments generation nor creates a replacement
-task. Only a normally finished archive may enter this Reactivate owner.
-Entry
-requires the archived generation's sealed Finish result, or the exact completed
-manual Cleanup receipt after Finish returned `manual_cleanup_required`, and no
-unfinished visible Finish transaction, not merely `status=completed`. A reviewed
-SourceCorrectionReadyDTO is applied to the archived task with a private
-recoverable receipt before routing to the source owner; it never advances the
-generation. A ready correction accompanying acquisition is also applied in
-the Reactivate transaction and bound to its recovery receipt, including when
-the selected checkout predates the separate archive correction. Confirm source correction or acquisition side effects in the
-current dialogue.
-Archives with retired personnel fields are never Reactivate candidates. They
-may be located only by an exact TaskId or strictly matched Issue clue to return
-the `unsupported_legacy_task` read-only diagnostic; no generation, source
-correction, Finish residue, or summary index can restore them. Only an archive
-that already satisfies the current task schema and current Finish/Cleanup
-contract may enter Reactivate.
+Reactivate owns one exact normally finished Task generation. Use only
+`delivery_reactivate_shared_archive` with its independent closed input schema.
+Read the original Task scope, exact archive Git history, public Task results and
+live bookkeeping PR. AI judges formal completion, legacy family eligibility,
+reason, current scope and next owner; deterministic facts do not establish a
+semantic pass. Do not use an old phase, summary, Issue state or PR state alone.
 
-The executor keeps TaskId, moves the archived artifact into the active locator,
-uses the common `guru-task-scope-projection` to call public `reopen_task`.
-Only that operation increments generation; historical Delivery, Completion and
-Closure facts remain intact. No current Delivery is required: evidence-only
-or closeout work follows its original owner, while new implementation first
-enters `guru-create-delivery`. It composes the shared checkout,
-branch binding and common-dir resource ledger; it never creates task/workspace
-mappings or turns historical Finish/Cleanup results into new authority. A
-resolved old-generation binding may be released for branch reuse, but any
-unresolved prior local resource responsibility blocks that reuse. A
-session needing repair routes to Bind; session binding failure never rolls back
-an established incarnation.
+The anchor contains repository, archive locator/commit, original active locator
+and selected target ref. The original archive result must remove that active
+record, and its exact bookkeeping merge must be reachable from the target.
+Later target commits or a later active successor do not invalidate this history.
+Task2 requires its actual generation's public Completion/Closure relationship.
+The selected formal schema1 family uses its original history and summary without
+inventing old Completion/Closure. Personnel-era/manual archives and unfinished
+closeout stay with their original maintenance/Finish owners.
 
-The package-local transaction identifies the exact acquisition and branch
-successor without a persisted checkout path. Same-transaction recovery reads
-live Git, task and ledger facts without repeating mutations. Partial or stale
-states block; no direct requirements, implementation or evidence-refresh route
-is part of this package. The active #434 workflow router consumes its typed
-result without transferring Reactivate's package-local recovery ownership.
+Read accessible successors first. Verify identity, source and retained public
+history/provenance, then continue the actual key/ref. Do not create a second
+incarnation when private receipts are absent. A successor already archived
+returns to its own archive/Continuation review, never a fabricated active result.
+An active successor needing local controls enters original Establish/Ensure/Bind;
+only a current bound session enters Planning. Report its real binding revision.
 
-Use `delivery_reactivate_completed_task` and its independent input schema.
-The semantic owner supplies `authority` as the exact current overall scope
-reference in the owner result. It validates the completed/closed public Task
-facts plus the existing Finish seal before any acquisition. Resume compares
-the same public new generation and authority; it never resets Task status,
-reuses an old gate pass or creates an empty Delivery. Old profiles are rejected.
+With no successor, review the exact acquisition, active destination and authority.
+Task2 uses the original public reopen operation. Formal schema1 forwards the
+complete AI-reviewed `formal_input` unchanged through the original maintenance
+transport. Before actual conversion, the original tools owner must verify the target
+native installation matches the selected source. Missing target adoption stops
+conversion writes; source proof alone does not satisfy this precondition.
+Production uses an exact source_locked CLI/Core pair; local_candidate
+is isolated development evidence only. Inspect actual capability before SDK
+calls. Only applied returns an active key/ref; pending stays with the same
+public operation. Fixed operation recovery precedes another prepare. Pending returns the existing
+resume TransactionRef: its generation only locates the frozen plan target, not
+an active incarnation. Only this owner consumes it by transaction_id/result_id;
+Planning/Bind must wait for the actual applied key.
 
-Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
-Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+Shared Finish never requires another machine's seal, resource ledger, exit or
+Cleanup. Local branch/worktree ownership remains common-dir scoped. Reusing the
+same unresolved resource still blocks; another Task's resources remain intact.
+Do not release an old unrelated branch or infer ownership from archive success.
+Normal same-operation recovery preserves already-created public work and does
+not increment again, recreate a PR, close an Issue or run Cleanup.
+
+The current profile no longer performs source correction or writes archived
+source bytes. An invalid historical source returns a concrete original-owner
+diagnostic. Old bare-key/seal/correction input and old private transactions use a
+complete pinned installation or reviewed original-owner disposition. See
+`trellis/presets/guru-team/MIGRATION-635.md`; do not reinterpret old input under
+the new schema. Authorization is never written to any state.
+
+After forward behavior, the AI reviews current facts and the exact action plan.
+Obtain dialogue confirmation only for the displayed real acquisition/write
+boundary. Then invoke the original wrapper with input and semantic result.
+Its typed exits retain unique Planning, Bind, same-operation recovery and stop
+consumers. New work enters actual Delivery Creation; evidence-only work enters
+Completion without an empty Delivery. Old gates never become current approval.

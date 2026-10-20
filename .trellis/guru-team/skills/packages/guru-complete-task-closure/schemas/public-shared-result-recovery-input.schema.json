@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "guru-complete-task-closure-input-shared-result-recovery-1.0",
+  "required": [
+    "profile",
+    "mode",
+    "task_ref",
+    "result_ref",
+    "shared_result"
+  ],
+  "properties": {
+    "profile": {
+      "const": "closure_shared_result_recovery"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "task_ref": {
+      "type": "string",
+      "pattern": "^\\.trellis/tasks/(?!archive(?:/|$))[^/]+$"
+    },
+    "result_ref": {
+      "$ref": "#/$defs/result"
+    },
+    "shared_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locator",
+        "revision"
+      ],
+      "properties": {
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation",
+        "result_id"
+      ],
+      "properties": {
+        "task_id": {
+          "$ref": "#/$defs/task_id"
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "result_id": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    }
+  }
+}

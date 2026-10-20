@@ -102,3 +102,16 @@ minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
 
 For explicit selected legacy maintenance, load the legacy section in `references/legacy-maintenance.md` and use `scripts/legacy-maintenance.sh`; ordinary current invocation remains unchanged.
+
+## Shared Open PR recovery
+
+When the original private transaction is unavailable, read
+[Shared Open PR recovery](references/contract.md#shared-open-pr-recovery-635).
+Use its independent `delivery_remote_draft_recovery` or
+`delivery_remote_ready_recovery` input with exact PR and available source commit.
+Review the complete B..H/source/local deltas and public identity/Planning before
+invocation. Remote PR head and local binding are separate facts. Retain the
+same PR and original executor; complete only remaining actions. Ready requires
+current applicable readiness and fresh payload judgment. Draft supplies no gate.
+No remaining remote mutation means no new confirmation. Missing applicability
+returns to its original owner; MERGED recovery stays with Merge.

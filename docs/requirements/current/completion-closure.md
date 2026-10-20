@@ -1,5 +1,6 @@
 # 整体 Completion、Closure 与终态收尾
 
+本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/requirements/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-REQ-COMPLETION`。状态：`current`。前驱为 RDT `.109` 的有效终态能力；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。当前定义适用于已迁移范围；旧 Task 保持其阶段适用来源。
 
 ## Completion 判断整个 accepted scope
@@ -44,7 +45,7 @@ Closure 冻结同一事务的最小恢复输入，授权从不持久化。blocke
 
 `R436-03/04`、`R454-D436-03/04` 保持。原 Finish 只消费当前 Closure ResultRef，从原只读 API 读取冻结 action set，比较当前 source 并重读每个必要 OPEN/CLOSED 状态。漂移返回 closure_refresh_required，不由 Finish 另选 disposition。缺原结果 reader 就在终态写入前停止。
 
-Finish 独占 archive projection、bookkeeping commit/push/PR 和 expected-head merge，各真实副作用沿当前对话边界。它保存整个 scope、Delivery planning/history 和未验证边界，保持 schema-2 aggregate 字节语义，不写 retired status/completedAt/commit/pr_url/archive_dir。归档前只退休 exact Task/generation session pointers。未 sealed archive 恢复原 Finish 事务，不能当 Reactivate。
+Finish 独占 archive projection、bookkeeping commit/push/PR 和 expected-head merge，各真实副作用沿当前对话边界。它保存整个 scope、Delivery planning/history 和未验证边界，保持 schema-2 aggregate 字节语义，不写 retired status/completedAt/commit/pr_url/archive_dir。归档前只退休 exact Task/generation session pointers。仅归档投影且尚未进入目标历史时，恢复唯一原 Finish 事务；共享 Finish 已成立而本机 seal pending 不阻止 Reactivate。
 
 bookkeeping 不是业务 Delivery，无 Issue-closing keyword，无新旧 Delivery trailers，不递归触发 Completion。Finish 不要求 Task 分支包含最新 target，也不重审已交付开发 gates；实际 archive merge 可达当前 target、唯一 archive 和 active copy 移除，才证明 terminal persistence。输出丢失复用原事务；无关后续 target 推进不使其失效。最终 seal 绑定 exact generation、Finish 结果和实际 bookkeeping head，target merge 另证明持久化。Finish 退休 binding，不删除资源。
 
@@ -52,10 +53,22 @@ bookkeeping 不是业务 Delivery，无 Issue-closing keyword，无新旧 Delive
 
 ## Reactivate 和旧状态边界
 
-`R434-03`、`R436-05`、`R454-D436-05` 保持。仅正常完成且 terminal 可唯一验证的 archive 可以 Reactivate。原 owner 读原 scope、实际历史 Deliveries、恢复原因、当前开发选择及终态资源处置；保留 TaskId/source、递增 generation，重新建立合法 session/branch/checkout binding。原 session、Finish/Cleanup authority 不复用；manual Finish 还需匹配 manual Cleanup receipt。active/archive 唯一副本。
+`R434-03`、`R436-05`、`R454-D436-05` 保持。仅正常完成且 terminal 可唯一验证的 archive 可以 Reactivate。原 owner 读原 scope、实际历史 Deliveries、准确共享终态、恢复原因与当前开发选择；优先继续已存在后继，没有后继才保留 TaskId/source 严格增代，并重新建立当前环境的合法 session/branch/checkout binding。原 session、Finish/Cleanup 资源 authority 不复用，也不作为共享 Finish 证明；本机 seal/manual Cleanup 仅保留原资源责任。当前 active/archive 按公共模型保持唯一。
 
 按源 Issue 查 archive 时，实际 committed source/finish summary/Git identity 共同定位；空旧 summary index 不能排除 exact source，未结构化 source 的命中仍只是候选，须原 source correction。正常 Reactivate、显式 legacy manual-archive 恢复和未完 Finish transaction 三者分路，不回填不存在的 Completion/Closure/Finish/seal。新 generation 仅需验证时可直接以新证据进入 Completion，不制造业务 Delivery。旧完整安装/旧 schema 转换归原 maintenance/migration owner，本单元不把 source 已修改当旧业务已恢复。
 
+## 跨 clone 的 Closure 输入与共享终态
+
+`R635-02/03/05 / BEH635-REACTIVATE/RECOVER/MIGRATION` 明确区分共享终态、本机资源责任与缺失必要输入。原 Closure 仅保存其跨 clone consumer 无法从公共结果重新推导的最小动作输入：原 ResultRef、Completion 关系、source 和精确 action set。载体随 Task 在明确 source ref/commit 可获取，并由公共 Closure evidence 关联。它不声明动作完成，不保存授权、原机 binding、工程记录或审查历史。
+
+无私有交易时，原 Closure 可从该载体与公共记录核准确 Task/generation/scope、Completion/source、原 ResultRef 和每项 live provider 状态，只恢复同一已经满足的结果投影，零 provider close。真实动作尚未完成或 authority 漂移时回原 Closure 审查剩余行为；不能把载体变成授权或从 CLOSED 猜原归属。Finish 从原公共 evidence/authority reader 取得准确动作集合，再逐项核当前状态。历史无载体结果不补造原集合；确实缺原动作输入时报告其影响，已完成旧 archive 不追补新载体。
+
+共享 Finish 由准确 archive commit 中的 TaskId/generation/source/scope、该版本 Completion→Closure/summary 关系、精确 bookkeeping PR/target、active 移除和 archive 一致性证明。archive 已进入所选目标历史后，目标后续前进或后继 active 出现不否定该历史；不要求 HEAD 等于旧 merge，不要求把 merge SHA 写回自身 archive，不递归创建 Finish PR。原机 seal、退出和 Cleanup pending 仅保留原机责任。
+
+Reactivate 先读当前可获取后继。唯一合法后继继续其 generation；没有后继才由公共 writer 严格增代，保留 TaskId、source、规划和交付历史，不继承 gate 或创建空 Delivery。当前 Task2 使用公共 reopen 的真实 Completion 条件。受支持正式旧 schema1 固定兼容集包括 Guru `.3`、合法 id/顶层 generation/结构化 source/completed、summary2 和准确归档已合入目标；经 matching formal maintenance 一次收敛，不能补造旧 Completion/Closure/seal 或自动当人工归档。人工历史继续原 maintenance，未完成 closeout 回原 Finish；不扩任意旧格式。
+
+新环境由原 Establish→Ensure→Bind 恢复自己的合法资源，不能清理 A 或另一 Task。再次工作按实际进入新 Delivery 或无 Delivery 的 evidence-refresh，再独立 Completion/Closure/Finish。至少一个独立 clone 原生样本分别证明两条再次完成链；fixture、source 或安装通过不替代它。
+
 ## 关系和来源
 
-前序：[生命周期](./task-delivery-lifecycle.md)。设计：[`RDT-DES-COMPLETION`](../../design/current/completion-closure.md)。测试：[`RDT-TST-COMPLETION`](../../test/current/completion-closure.md)。[迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) 保留各旧 identity 与替代范围。公共 DTO/profile/exit 的精确规格在 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 各原 owner；本能力正文不复制接口或共同因果规范。
+前序：[生命周期](task-delivery-lifecycle.md)。设计：[`RDT-DES-COMPLETION`](../../design/current/completion-closure.md)。测试：[`RDT-TST-COMPLETION`](../../test/current/completion-closure.md)。[迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) 保留各旧 identity 与替代范围。公共 DTO/profile/exit 的精确规格在 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 各原 owner；本能力正文不复制接口或共同因果规范。

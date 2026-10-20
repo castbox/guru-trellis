@@ -168,8 +168,8 @@ known bytes/manifest hash 匹配时删除，本地未知编辑保留 conflict。
 `ARCH-INT-033`（#454 generation 7 current）：固定 official Fork、canonical Guru package、
 dogfood task/session 脚本、installed 和声明平台入口消费同一 TaskId/source 与
 五字段 binding 合同。Cleanup 的显式选择只投影 call-local candidate ID，
-不创建 mapping、resource ownership 或 session 历史；Reactivate 读取本代
-terminal cleaned receipt。`.67` 的旧 Fork pin、Git-ref-safe TaskId 和
+不创建 mapping、resource ownership 或 session 历史；Reactivate 读取本代准确共享 Finish 历史；
+terminal cleaned receipt 仅供对应本机资源 consumer，不作为跨环境准入。`.67` 的旧 Fork pin、Git-ref-safe TaskId 和
 六字段 reader 是 superseded 历史，不是 installed current。
 
 `ARCH-INT-034`（#467 current）：canonical extension `0.6.17-guru.43` 投影到
@@ -239,8 +239,21 @@ Trellis update 明确拒绝 `0.7.0-castbox.1`，不能据此宣称前驱升级�
 
 `ARCH-INT-059`（#153）：共同正文、三个过程示例及四个既有入口沿原 recursive package/preset 分发至完整 installed 和声明平台投影。跨 package 引用指向同一 Clarify 正文及原 Author 来源规则，不复制内容或语言 authority，不改变 public I/O、scanner、mutation executor、freshness 或恢复协议。现有项目完整采用 matching preset/packages 后沿原 reapply、用户内容与 sidecar 机制验证；源码变化不证明旧安装采用。代表 Codex 实际写作/创建/修订及定向分发、目标安装分别由 [唯一 Test](../../requirements-design-test-contributions/153-issue-content-ssot/test.md) 记录；不推定其他平台实际行为、正式 source-lock、软件发布或完整矩阵通过。
 
-`ARCH-INT-060`（#630）：canonical runtime、installer、原source lock与声明平台经完整matching preset分发；本项目固定Fork来源采用`7f050fa11ddd8569e5db4f728ea1b745b7500a98` / `.5`，实际build与目标采用分别验证，替代ARCH-INT-055中本版本继续固定`.4`的来源选择，历史`.4`结果保留。Guru文本属性从实际inventory派生，精确EOL恢复后仍原raw validation；unknown编辑和sidecars按原合同处理，不覆盖上游`trellis-*`。新进程update/maintain、同provider preview/force、同recovery_ref recover/resume后再Guru reapply及真实入口是集成验收。三系统脚本/安装、Windows实际Codex、source/dogfood/projection、软件Release分层记录，不互相替代；实际结果唯一见[#630 Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)。
+`ARCH-INT-060`（#630）：canonical runtime、installer、原source lock与声明平台经完整matching preset分发；本项目具体 Fork 来源由 canonical source lock 单写，CLI/Core `.5`、实际 build 与目标采用分别验证；`7f050fa11ddd8569e5db4f728ea1b745b7500a98` 是 #630 当时采用并替代 ARCH-INT-055 固定`.4`选择的历史来源，原`.4`结果保留。Guru文本属性从实际inventory派生，精确EOL恢复后仍原raw validation；unknown编辑和sidecars按原合同处理，不覆盖上游`trellis-*`。新进程update/maintain、同provider preview/force、同recovery_ref recover/resume后再Guru reapply及真实入口是集成验收。三系统脚本/安装、Windows实际Codex、source/dogfood/projection、软件Release分层记录，不互相替代；实际结果唯一见[#630 Test](../../requirements-design-test-contributions/630-native-compatibility/test.md)。
 
 `ARCH-INT-061`（#636）：TaskCommit早期输入/输出与局部candidate/receipt、Publication Draft/Ready事务、BranchReview早期分析profile及workflow唯一consumer按 [MIGRATION-636](../../../trellis/presets/guru-team/MIGRATION-636.md)成套直接演进。旧完整安装固定；原owners一次性恢复/迁移同key/PR、实际已执行动作和真实gate义务，不从旧意图制造pass，不保留runtime双读。canonical workflow、完整preset/packages/runtime/schema、声明平台和dogfood同步；workflow与preset分别按各自正式支持面应用并保留用户修改/sidecar语义。local matching、真实远端反馈、业务采用与Release矩阵分层报告，实际结果只见 [#636 Test](../../requirements-design-test-contributions/636-early-draft-pr/test.md)。
 
 `ARCH-INT-062`（#637）：唯一共享候选合同、七原 packages、workflow/continuation、22 个受控平台入口与 managed specs 经原 marketplace/preset 成套分发。[MIGRATION-637](../../../trellis/presets/guru-team/MIGRATION-637.md)显式替代无因新 reviewer/相同完整重审，并保留 fresh_final_review wire 的当前最终覆盖含义。旧完整安装固定，或原维护 owner 先恢复实际未完事务，再 matching 切换、同 key 由原阶段判断；source 编辑或验证位置安装不热迁移开发 Task，不读取或重建其它 owner 私有状态。原用户内容/sidecar、mode、reapply/drift 和正式结果绑定保持。#637 的实际 installed/Agent/GitHub/#636 组合及未验证边界唯一见 [#637 Test](../../requirements-design-test-contributions/637-candidate-review-reuse/test.md)；#638 当前组合结果与边界见 [#638 Test](../../requirements-design-test-contributions/638-shared-current-promotion/test.md)。这些结果不推定业务采用、生产、全平台 Agent 或完整 Release 矩阵通过。
+
+
+## 跨环境恢复的匹配分发
+
+`ARCH-INT-063`：正式 schema1 archive reactivation 通过已选完整 Fork 的公开 `inspectFormalArchiveReactivation`、`prepareFormalArchiveReactivation` 及同一维护 executor 消费；Guru transport 只做方法/capability 核验和薄适配。`maintenance_api:1.0` 及普通 conversion、manual resume 保代合同不改义；写前核实际 formal capability，不因相同 CLI/Core 版本推定支持。公共数据/native reader 由 Trellis 官方工具 owner 更新，Guru preset 不补丁接管官方脚本。
+
+唯一框架来源继续是 canonical `trellis-source.json`，installed source 文件只是其投影；历史规划的精确来源不被后续修复 commit 重写。来源采用核准确 merge/parents/tree、成功 main CI、同源 Core→CLI build、build-origin 与实际 capability。它不证明目标已安装或 Guru native 消费成功。正式依赖采用、local matching candidate、目标安装和软件 Release 分层报告。
+
+Reactivate 新 shared-archive aggregate/schema、Publish 两个 remote recovery profiles、Closure 共享结果 profile、独立 payload schema、commands/interfaces/typed consumers、workflow 与声明平台必须成套切换，迁移合同为 [MIGRATION-635](../../../trellis/presets/guru-team/MIGRATION-635.md)。新输入保持闭合；旧 bare-key/seal Reactivate 路径不静默改义。普通 local Publish/Closure 与原 manual archive_resume 保留自身合同，旧完整安装可固定原 source，或由原维护 owner完成 matching 切换。同 key 恢复不从 private 状态补造 gate、Delivery 或授权。
+
+source/dogfood 原 tools-only owner 在保留全部 Task/session 下投影工具；按 AGENTS 实际调用 plain apply 并如实报告旧数据 preflight 拒绝，不能称为 reapply 成功。完整 preset/apply/reapply 在唯一受支持代表安装 profile 证明，不迁移无关旧 archive、绕过 preflight 或强写 `.version`。用户内容、官方 hashes、mode、`.new`/`.bak` 仍按原安装合同处理；同一 candidate 的 Guru 与 Trellis 投影分别检查。原 Task 有后续合法工作时，回退不能覆盖它。
+
+实际 source/package、installed/native、Agent、受控 provider、真实 GitHub、资源隔离及未验证边界仅由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md)记录。独立 common-dir 原生两条再次 Finish、活动 ref、Open Draft/Ready、MERGED、Closure、资源/双 Task 和旧样本是本 Task 的行为范围；不从 unit、SDK inspect、代码投影或知识晋升推定其通过。普通安装最多一个代表 profile，完整 Upgrade/Release 多平台矩阵仍归专门 owner。

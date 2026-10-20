@@ -27,7 +27,7 @@
   "entry_preconditions": [
     {
       "id": "archived_identity",
-      "evidence": "exact archived TaskLifecycleKey and terminal task facts",
+      "evidence": "exact shared archive Git/PR/public Task facts, independently of local resource sealing",
       "binding": "one stable TaskId and archived generation",
       "freshness": "before mutation"
     },
@@ -81,10 +81,6 @@
       "path": "examples/public-resume-output.json"
     },
     {
-      "id": "source_output",
-      "path": "examples/public-source-output.json"
-    },
-    {
       "id": "blocked_output",
       "path": "examples/public-blocked-output.json"
     }
@@ -115,10 +111,6 @@
       "path": "schemas/public-resume-output.schema.json"
     },
     {
-      "id": "source_output",
-      "path": "schemas/public-source-output.schema.json"
-    },
-    {
       "id": "blocked_output",
       "path": "schemas/public-blocked-output.schema.json"
     },
@@ -127,12 +119,8 @@
       "path": "schemas/reactivation-transaction.schema.json"
     },
     {
-      "id": "source_correction_transaction",
-      "path": "schemas/source-correction-transaction.schema.json"
-    },
-    {
-      "id": "delivery_reactivate_completed_task_input",
-      "path": "schemas/public-delivery-reactivate-completed-task-input.schema.json"
+      "id": "delivery_reactivate_shared_archive_input",
+      "path": "schemas/public-delivery-reactivate-shared-archive-input.schema.json"
     }
   ],
   "validators": [
@@ -140,7 +128,7 @@
       "id": "public_invocation",
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-reactivate-task",
-      "objective_scope": "Validate exact archive, shared acquisition, branch/ledger successor and same-transaction recovery."
+      "objective_scope": "Validate exact shared archive, public successor, matching SDK and local acquisition facts."
     }
   ],
   "external_exits": [
@@ -162,18 +150,10 @@
     },
     {
       "id": "resume_reactivation",
-      "evidence": "same transaction recovered without a second mutation",
+      "evidence": "same frozen transaction; pending generation locates its public plan target and does not assert an active Task",
       "consumer": {
         "kind": "workflow",
         "id": "task-reactivation-resume-router"
-      }
-    },
-    {
-      "id": "source_correction_required",
-      "evidence": "reviewed source correction applied to archived task before generation advance",
-      "consumer": {
-        "kind": "workflow",
-        "id": "task-source-correction-router"
       }
     },
     {
@@ -192,7 +172,8 @@
   },
   "tests": [
     "tests/test_reactivate_contract.py",
-    "tests/test_delivery_reactivate.py"
+    "tests/test_delivery_reactivate.py",
+    "tests/test_formal_archive_reactivate.py"
   ],
   "platform_destinations": [
     "shared",
@@ -223,15 +204,15 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-reactivate-task-input-delivery-1.0",
+        "schema_id": "guru-reactivate-task-input-shared-archive-1.0",
         "path": "schemas/public-input.schema.json"
       },
       "profiles": [
         {
-          "id": "delivery_reactivate_completed_task",
+          "id": "delivery_reactivate_shared_archive",
           "schema": {
-            "schema_id": "guru-reactivate-task-input-delivery-reactivate-completed-task-1.0",
-            "path": "schemas/public-delivery-reactivate-completed-task-input.schema.json"
+            "schema_id": "guru-reactivate-task-input-delivery-reactivate-shared-archive-1.0",
+            "path": "schemas/public-delivery-reactivate-shared-archive-input.schema.json"
           },
           "example": {
             "id": "input",
@@ -239,7 +220,7 @@
           },
           "discriminator": {
             "field": "profile",
-            "value": "delivery_reactivate_completed_task"
+            "value": "delivery_reactivate_shared_archive"
           }
         }
       ]
@@ -249,11 +230,11 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "delivery_reactivate_completed_task"
+        "profile_id": "delivery_reactivate_shared_archive"
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-reactivate-task-output-2.0",
+        "schema_id": "guru-reactivate-task-output-3.0",
         "path": "schemas/public-output.schema.json"
       },
       "error_example": {
@@ -271,7 +252,7 @@
       {
         "exit_id": "reactivated_to_planning",
         "schema": {
-          "schema_id": "guru-reactivate-task-output-planning-2.0",
+          "schema_id": "guru-reactivate-task-output-planning-3.0",
           "path": "schemas/public-planning-output.schema.json"
         },
         "example": {
@@ -311,20 +292,6 @@
         ]
       },
       {
-        "exit_id": "source_correction_required",
-        "schema": {
-          "schema_id": "guru-reactivate-task-output-source-2.0",
-          "path": "schemas/public-source-output.schema.json"
-        },
-        "example": {
-          "id": "source_output",
-          "path": "examples/public-source-output.json"
-        },
-        "consumer_use_ids": [
-          "source"
-        ]
-      },
-      {
         "exit_id": "reactivate_blocked",
         "schema": {
           "schema_id": "guru-reactivate-task-output-blocked-2.0",
@@ -349,7 +316,7 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-reactivate-task-route-2.0",
+          "schema_id": "guru-reactivate-task-route-3.0",
           "path": "consumers/workflow/production/reactivate-route.schema.json"
         }
       },
@@ -377,19 +344,6 @@
           "kind": "json_schema",
           "schema_id": "guru-reactivate-resume-route-2.0",
           "path": "consumers/workflow/production/reactivate-resume.schema.json"
-        }
-      },
-      {
-        "id": "source",
-        "consumer": {
-          "kind": "workflow",
-          "id": "task-source-correction-router"
-        },
-        "payload_kind": "structured_json",
-        "contract": {
-          "kind": "json_schema",
-          "schema_id": "guru-reactivate-source-route-2.0",
-          "path": "consumers/workflow/production/reactivate-source.schema.json"
         }
       },
       {
@@ -452,12 +406,6 @@
         "operation": "direct"
       },
       {
-        "id": "source",
-        "exit_id": "source_correction_required",
-        "consumer_input_id": "source",
-        "operation": "direct"
-      },
-      {
         "id": "blocked",
         "exit_id": "reactivate_blocked",
         "consumer_input_id": "blocked",
@@ -469,17 +417,8 @@
         "id": "reactivation_transaction",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "guru-reactivate-task-transaction-1.0",
+          "schema_id": "guru-reactivate-task-transaction-2.0",
           "path": "schemas/reactivation-transaction.schema.json"
-        },
-        "persistence": "ignored_runtime"
-      },
-      {
-        "id": "source_correction_transaction",
-        "kind": "runtime_checkpoint",
-        "schema": {
-          "schema_id": "guru-reactivate-task-source-transaction-1.0",
-          "path": "schemas/source-correction-transaction.schema.json"
         },
         "persistence": "ignored_runtime"
       }

@@ -1,0 +1,8 @@
+{
+  "profile": "closure_shared_result_recovery",
+  "mode": "workflow",
+  "reviewed_action_set": [],
+  "route": {
+    "typed_exit": "apply"
+  }
+}

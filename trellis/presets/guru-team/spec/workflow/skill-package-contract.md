@@ -30,9 +30,25 @@ The current exits stay owned by their respective Interfaces: Delivery Review
 `requirements_revision_required`, and `implementation_revision_required`
 return to their specific active-task owners; only `completed` seeds Closure.
 Closure `closed|no_mutation` seeds Finish, and only Finish `success` seeds
-Cleanup. Reactivate's planning/session/resume/source-correction exits have
+Cleanup. Reactivate's planning/session/resume exits have
 separate consumers. Unknown, multiple, stale or unmapped exits stop; no PR or
 merge status substitutes for a typed Completion result.
+
+The #635 remote Publication and shared Closure recovery profiles remain with
+their original packages and existing exit consumers. Each profile owns a closed
+input; the aggregate is only a schema index. Existing local inputs retain their
+meaning. The registry selects the actual versioned Interface, and matching
+installation updates the package and its consumers together. See
+`trellis/presets/guru-team/MIGRATION-635.md` for the transition.
+
+Closure's task-local shared result is the minimum action input needed by its
+own recovery and the original Finish reader. It is linked through public
+Closure evidence and is neither a public output DTO nor a terminal assertion.
+Its package owns the schema and single writer. Finish uses the original public
+artifact relocation and authority resolution when archiving or reading it;
+no consumer reads another owner's private transaction to reconstruct shared
+history. Missing necessary inputs and current semantic eligibility retain
+their original owners.
 
 ## Ownership
 

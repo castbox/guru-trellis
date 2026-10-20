@@ -63,6 +63,31 @@ class IdentityTests(unittest.TestCase):
         (directory / "task.json").write_text(json.dumps(payload), encoding="utf-8")
         return directory
 
+    def test_formal_predecessor_is_retained_history_after_successor_finish(self):
+        for args in (("init", "-q", "-b", "main"), ("config", "user.name", "Fixture"),
+                     ("config", "user.email", "fixture@example.invalid")):
+            subprocess.run(["git", *args], cwd=self.repo, check=True)
+        original_ref = ".trellis/tasks/archive/2026-09/original"
+        original = self.write_task(original_ref, "formal-task", 0, modern=True)
+        raw = json.loads((original / "task.json").read_text())
+        for field in ("schema_version", "accepted_scope", "deliveries", "completion_results", "closure_results"):
+            raw.pop(field)
+        raw.update(status="completed", completedAt="2026-09-20", commit=None, pr_url=None)
+        (original / "task.json").write_text(json.dumps(raw))
+        subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "formal predecessor"], cwd=self.repo, check=True)
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.repo, text=True).strip()
+        current_ref = ".trellis/tasks/archive/2026-10/successor"
+        current = self.write_task(current_ref, "formal-task", 1, modern=True)
+        migration = current / "migration"; migration.mkdir()
+        (migration / "source-task.json").write_bytes((original / "task.json").read_bytes())
+        (migration / "formal-archive-reactivation.json").write_text(json.dumps({
+            "key": {"task_id": "formal-task", "lifecycle_generation": 0}, "archive_ref": original_ref,
+            "original_task_ref": ".trellis/tasks/original", "archive_commit": commit}))
+        self.assertEqual(resolve_task_id(self.repo, "formal-task").task_ref, current_ref)
+        self.assertEqual(resolve_task_ref(self.repo, current_ref).lifecycle_generation, 1)
+        self.assertIsNotNone(task_identity_reservation(self.repo, "formal-task", ".trellis/tasks/another"))
+
     def test_task_id_and_task_ref_are_separate(self):
         old_ref = ".trellis/tasks/09-20-readable-name"
         new_ref = ".trellis/tasks/09-20-renamed-display"

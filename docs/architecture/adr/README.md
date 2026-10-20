@@ -77,3 +77,5 @@
 - [ADR-034：候选适用性与完整覆盖](./034-candidate-applicability-and-coverage.md)；窄替代 ADR-019/029 及原 finding 流程的无因新 reviewer/相同完整重审，保留首次独立完整、当前正式结果、ADR-028/030/033 和原 owners。
 
 - [ADR-KNOWLEDGE-FINAL-INTEGRATION：稳定身份与最终整合晋升](./knowledge-final-integration.md)；窄承接ADR-030时机与普通全局successor/总入口必写义务，保留最终质量与历史原义。
+
+- [ADR-PORTABLE-SHARED-LIFECYCLE：共享生命周期与本机责任分离](./portable-shared-lifecycle.md)；窄承接 ADR-024/027 的恢复及指定正式 schema1 接受范围，保留公共 writer、原 owners、资源边界和完整最终质量链。

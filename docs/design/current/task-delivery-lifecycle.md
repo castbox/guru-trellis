@@ -1,5 +1,6 @@
 # Task / Delivery 生命周期设计
 
+本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/design/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-DES-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/design/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
 
 ## 稳定设计身份
@@ -70,6 +71,18 @@ ADR-034 明确替代 ADR-019/029 及现行 finding 流程中无条件 fresh revi
 
 原事务在远端已成功但输出/投影丢失时，先确认实际 identity与成功结果，复用同事务完成 projection，零重复 mutation。历史 published/merged结果保留，即使当前 gate stale；该事实不代替新的 Review。已正式关联的人工双亲 merge 由原 Merge recovery读真实 actual head、Publication relation、CI/delta后记录；不再 merge。Completion 再审actual-vs-published与whole scope；独立未完成CI不被合并事实变为pass。
 
+## 跨环境 source 与既有 PR 恢复
+
+`D635-03/04/05 / CON635-PUBLICATION/ENVIRONMENT/DISTRIBUTION` 保留原 public Task/Delivery/session 模型和 step-local owners。Identity 从已选 repository、明确 source ref/commit 与公共 key 验证活动记录和必要代码；Establish/Ensure/Bind 只建立当前 common-dir 的合法 branch/worktree/session 关系。共享记录不携带原机路径或资源资格。原语义 owner 重判当前适用性，可核验工程命令按已有候选合同采用，不复制 gate pass 或要求无变化全链重跑。
+
+Publish 的 `delivery_remote_draft_recovery` 与 `delivery_remote_ready_recovery` 各自使用闭合输入，显式选择已有 `pr_ref` 与承载 Task/Delivery/必要代码的 `source_commit`。source 未入 main 仍可合法；它与 candidate head 不同时，核完整历史关系和内容差额。PR 的 remote head ref 与本地 binding 分开，不用 B 的 branch 查找或新建第二 PR，不改 B 的 binding。
+
+Draft recovery 读取精确 repository/base/head/key 与当前已审 payload，复用原 executor 补剩余 Draft、push 或 metadata。已完成部分只读回；新未审修订先按 #636 退 Draft。Ready recovery 核当前公共 candidate/readiness、reviewed head、payload 和实际 PR 状态；当前资格缺失返回原 Review/Check，不能从历史 Ready/phase 恢复 pass。确有剩余 Ready/metadata 动作时仍用原 writer。两个入口均不创建 PR，remote 更新仍受精确 full ref/expected-head 与当前动作边界约束。
+
+MERGED 保留原 `delivery_merged_recovery`：公共 Publication 与真实 PR 双亲、actual head、target 历史相互关联后只补 Delivery fact，不再次 merge。Completion 独立判断 actual 差额、CI 和整体范围。Closure 的最小共享输入及正式 Finish 历史由终态单元定义；它们不成为 Publication 的第二状态模型。
+
+local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享资源。Cleanup 继续核 generation、ownership、full ref/expected head，未知或推进后资源保留。旧 pending 不成为另一 Task 或不同合法新资源的准入条件；同资源未完责任不放松。matching source/native/Guru 完整迁移归原工具/安装 owner，public profiles 和直接 consumers 成套演进，不手写 dogfood 或 `.version` 绕过旧数据前置。
+
 ## 完整规格与未迁移边界
 
-精确公共 I/O、阶段 profile、typed exit/consumer、hash/HEAD关系、private恢复输入由 [canonical packages](../../../trellis/skills/guru-team/packages/) 与 [workflow](../../../trellis/workflows/guru-team/workflow.md) 单写。本迁移不展开 Git对象摘要算法、provider实现、完整升级迁移矩阵/软件 Release 等专属能力，也不以历史test结果证明当前candidate。它们仍由 [legacy inventory](./README.md) 指向原authority。
+精确公共 I/O、阶段 profile、typed exit/consumer、hash/HEAD关系、private恢复输入由 [canonical packages](../../../trellis/skills/guru-team/packages) 与 [workflow](../../../trellis/workflows/guru-team/workflow.md) 单写。本迁移不展开 Git对象摘要算法、provider实现、完整升级迁移矩阵/软件 Release 等专属能力，也不以历史test结果证明当前candidate。它们仍由 [legacy inventory](README.md) 指向原authority。

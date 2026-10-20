@@ -9,7 +9,8 @@ from pathlib import Path
 
 from runtime.io import CommandError
 from runtime.schema import validate_json
-from runtime.delivery_projection.adapter import DeliveryProjection
+from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
+from runtime.task_lifecycle.closure_result import closure_carrier_path, read_shared_closure_result
 from runtime.task_lifecycle.errors import LifecycleContractError
 from runtime.task_lifecycle.git_facts import inspect_repository
 from runtime.task_lifecycle.identity import resolve_task_id
@@ -64,6 +65,71 @@ def _store(path: Path, transaction: dict) -> None:
     path.write_text(json.dumps(transaction, sort_keys=True), encoding="utf-8")
 
 
+def _project(projection: DeliveryProjection, payload: dict, carrier: dict) -> None:
+    record = projection.read_record()
+    source, actions, result = payload["source"], payload["action_set"], payload["result_ref"]
+    key = {name: result[name] for name in ("task_id", "lifecycle_generation")}
+    source_closed = source["kind"] == "issue" and any(
+        row["issue_ref"] == {"repo_ref": source["repo_ref"], "issue_number": source["number"]}
+        and row["disposition"] in {"close", "already_closed_at_review"} for row in actions)
+    source_fact = ({"locator": f"https://github.com/{source['repo_ref']}/issues/{source['number']}", "revision": "CLOSED"}
+                   if source_closed else None)
+    owner = projection.declaration()["owners"]["closure"]
+    closure = {"result_id": result["result_id"], "owner_id": owner,
+               "evidence": [source_fact or record["accepted_scope"], carrier],
+               "lifecycle_generation": key["lifecycle_generation"],
+               "completion_result_id": payload["completion_result_id"],
+               "disposition": "source_closed" if source_closed else "no_mutation", "source_result": source_fact}
+    operation = {"api_version": "1.0", "operation": "close_task", "key": key,
+                 "owner_role": "closure", "owner_id": owner, "result": closure}
+    store = projection.api.delivery_store
+    context = projection._call(store.artifact_context, projection.task_dir, projection.root, record)
+    operation = projection._call(store.canonical_operation, operation, context)
+    existing = next((row for row in record["closure_results"] if row["result_id"] == result["result_id"]), None)
+    if existing is not None and existing != operation["result"]:
+        raise CommandError("stale_identity", "closure_result", "Recover the exact original public Closure fact.", 3)
+    if existing is None:
+        projection.apply(operation)
+
+
+def _recover(root: Path, package: Path, public: dict, semantic: dict) -> dict:
+    result = public["result_ref"]
+    key = {name: result[name] for name in ("task_id", "lifecycle_generation")}
+    try:
+        artifact = resolve_task_id(root, key["task_id"])
+        if (artifact.lifecycle_state != "active" or artifact.task_ref != public["task_ref"]
+                or artifact.lifecycle_generation != key["lifecycle_generation"]):
+            raise LifecycleContractError("stale_task", "task_ref", "Resolve this exact active Task generation.")
+        projection = DeliveryProjection(root, artifact.task_ref)
+        payload = read_shared_closure_result(projection, result, public["shared_result"])
+        current_source = task_source_with_review(projection.read_record(), payload["source"])
+    except LifecycleContractError as exc:
+        raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    if semantic["route"]["typed_exit"] == "blocked":
+        return {"exit_id": "blocked", "reason": semantic["route"]["reason"]}
+    if semantic["reviewed_action_set"] != payload["action_set"]:
+        raise CommandError("stale_identity", "semantic_result.reviewed_action_set", "Review the complete original shared action set.", 3)
+    transaction_ref = _transaction_ref(key, result["result_id"])
+    if current_source != payload["source"]:
+        return _conflict(transaction_ref, "frozen_closure_changed", "task:source")
+    for row in payload["action_set"]:
+        if row["disposition"] == "no_close_authority":
+            continue
+        issue = row["issue_ref"]
+        state = _state(root, issue)
+        if state is None:
+            return {"exit_id": "blocked", "reason": {"reason_code": "closure_provider_state_missing",
+                    "reason_refs": [f"{issue['repo_ref']}#{issue['issue_number']}"]}}
+        wanted = "OPEN" if row["disposition"] == "retain_open" else "CLOSED"
+        if state != wanted:
+            return _conflict(transaction_ref, "required_open_issue_closed" if wanted == "OPEN" else "required_closed_issue_reopened",
+                             f"{issue['repo_ref']}#{issue['issue_number']}")
+    _project(projection, payload, public["shared_result"])
+    terminal = "closed" if any(row["disposition"] in {"close", "already_closed_at_review"}
+                              for row in payload["action_set"]) else "no_mutation"
+    return {"exit_id": terminal, "result_ref": result}
+
+
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root")
@@ -77,10 +143,15 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     root = Path(args.root or ".").resolve()
     public = _load(root, package_root, args.input, "input")
     semantic = _load(root, package_root, args.semantic_result, "semantic_result")
-    validate_json(public, package_root / "schemas/public-input.schema.json", "input")
-    validate_json(semantic, package_root / "schemas/semantic-result.schema.json", "semantic_result")
+    validate_json(public, package_root / "schemas/public-input-3.0.schema.json", "input")
+    validate_json(semantic, package_root / "schemas/semantic-result-3.0.schema.json", "semantic_result")
     if (public["profile"], public["mode"]) != (semantic["profile"], semantic["mode"]):
         raise CommandError("stale_identity", "semantic_result", "Closure profile or mode changed.", 3)
+
+    if public["profile"] == "closure_shared_result_recovery":
+        output = _recover(root, package_root, public, semantic)
+        validate_json(output, package_root / "schemas/public-output.schema.json", "stdout")
+        return output
 
     completion = public["completion_result"]
     key = {name: completion[name] for name in ("task_id", "lifecycle_generation")}
@@ -163,6 +234,17 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
         if transaction is None:
             transaction = {"frozen": frozen, "ref": ref, "verified": []}
             _store(path, transaction)
+        result_ref = {**key, "result_id": ref["result_id"]}
+        payload = {"schema_version": "1.0", "result_ref": result_ref,
+                   "completion_result_id": completion["result_id"], "source": source, "action_set": actions}
+        validate_json(payload, package_root / "schemas/shared-result.schema.json", "shared_result")
+        carrier_path = root / artifact.task_ref / closure_carrier_path(result_ref)
+        if carrier_path.exists():
+            if _load(root, package_root, str(carrier_path), "shared_result") != payload:
+                raise CommandError("stale_identity", "shared_result", "Preserve the original Closure carrier and recover its exact inputs.", 3)
+        else:
+            _store(carrier_path, payload)
+        carrier = authority_ref(carrier_path, root)
         output = None
         for row in actions:
             issue = row["issue_ref"]
@@ -210,24 +292,10 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             transaction["terminal"] = terminal
             _store(path, transaction)
             if projection is not None:
-                record = projection.read_record()
-                owner = projection.declaration()["owners"]["closure"]
-                source_closed = source_action is not None and source_action["disposition"] in {"close", "already_closed_at_review"}
-                source_fact = ({"locator": f"https://github.com/{source['repo_ref']}/issues/{source['number']}", "revision": "CLOSED"}
-                               if source_closed else None)
-                closure = {"result_id": ref["result_id"], "owner_id": owner,
-                           "evidence": [source_fact or record["accepted_scope"]],
-                           "lifecycle_generation": key["lifecycle_generation"], "completion_result_id": completion["result_id"],
-                           "disposition": "source_closed" if source_closed else "no_mutation", "source_result": source_fact}
-                existing = next((r for r in record["closure_results"] if r["result_id"] == closure["result_id"]), None)
-                if existing is not None and existing != closure:
-                    raise CommandError("stale_identity", "closure_result", "Recover the exact original Closure fact.", 3)
-                if existing is None:
-                    try:
-                        projection.apply({"api_version": "1.0", "operation": "close_task", "key": key,
-                                          "owner_role": "closure", "owner_id": owner, "result": closure})
-                    except LifecycleContractError:
-                        return {"exit_id": "resume_closure", "transaction_ref": ref}
+                try:
+                    _project(projection, payload, carrier)
+                except LifecycleContractError:
+                    return {"exit_id": "resume_closure", "transaction_ref": ref}
             output = {"exit_id": terminal, "result_ref": {
                 **key, "result_id": ref["result_id"],
             }}

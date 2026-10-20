@@ -219,3 +219,56 @@ Target-branch advancement alone is not stale readiness and adds no pair guard,
 Task synchronization or semantic-impact gate. Preserve expected Task/remote
 HEAD, payload and same-PR transaction/recovery checks. Real content/authority
 changes return to their original owners.
+
+## Shared Open PR recovery (#635)
+
+Current aggregate 3.0 adds two independent inputs. Existing local profiles keep
+all original fields and behavior. Matching migration installs this aggregate,
+interface, runtime and callers together. Aggregate 2.0 remains a versioned
+predecessor; it is not an alternate current selector. Existing private
+transactions still use their original same-plan recovery.
+
+Use `delivery_remote_draft_recovery` only for an explicit existing Open PR.
+Supply task/key, `pr_ref:{repo_ref,pr_number}`, available `source_commit`, fixed
+`base_ref`, `candidate_head` and the currently reviewed Chinese title/body.
+Use `delivery_remote_ready_recovery` with the same explicit task/key/PR/source,
+current `readiness_result_id`, `reviewed_head`, title/body and
+`remaining_work_state`. Neither entry creates a PR or changes a branch binding.
+Their original outputs retain the same unique consumers: Draft feedback router,
+Delivery Review for stale readiness, same-owner resume, or Merge for current
+`ready_for_merge`.
+
+The AI reads the exact source and candidate commits, complete fixed B..H range,
+source-to-candidate delta, current local delta, public Task/source/accepted scope,
+selected Delivery Planning and original PR repository/base/head/owner. Necessary
+commits and Planning files must be available. Shared source need not be in main.
+Source and candidate must have an ancestor relationship; a later source commit
+can carry public lifecycle projections beyond candidate H. Review its complete
+delta without treating its phase or prose as a gate. Unknown/mismatched identity,
+missing source, changed Planning, unrelated PR lineage or another target stops
+at the original Publish owner with the concrete gap.
+
+The remote head branch comes from this exact PR. The current checkout's legal
+local binding can name another branch and stays unchanged. Preview lists the
+full remote ref, expected remote head, exact content and only remaining remote
+writes. When a remote write remains, apply the current conversation's exact
+action boundary before invoking the existing writer. A recovered remote ref
+confers no Cleanup ownership. The original transaction is local recovery input;
+it does not become shared authority or carry authorization.
+
+Draft recovery requires applicable accepted Planning in implementation. It
+uses the original ensure-Draft, push, bind and metadata stages. Already complete
+head/payload/state causes no duplicate push, edit or Draft transition. New
+unreviewed publishing revisions first use the existing #636 return-to-Draft
+profile and legal rework; remote recovery cannot bypass that owner. Draft never
+records a final PublicationFact.
+
+Ready recovery requires the actual current public candidate and applicable
+readiness, including its original Check/full Review relationships. The AI
+reviews current payload intent and remaining work; the recorder does not infer
+pass. Missing applicability returns `review_stale` to the original Review owner.
+An already Ready PR at exact head/payload needs no remote write. A Draft PR only
+receives remaining metadata/Ready actions after current readiness review. Final
+readback records the original public Publication result when it exists; a lost
+projection is reconstructed through the same public Publication writer, without
+new Delivery, gate or PR. MERGED recovery remains with the original Merge owner.

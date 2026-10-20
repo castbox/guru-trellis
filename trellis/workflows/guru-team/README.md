@@ -166,11 +166,14 @@ tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.4`
 
 本次目标为尚未发布的 `v0.7.0-guru.5`。当前准备源码的 extension 与 maintenance
 target 为 `0.7.0-guru.5`；它与已发布的 immutable `.4` tag 分开读取。
-正式 Fork lock 固定到 `7f050fa11ddd8569e5db4f728ea1b745b7500a98`，
-tree `8ed0236321d167e809f872efc43056da14b0a4de`，成功 main CI `39215935088`。
+正式 Fork lock 固定到 `e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f`，
+tree `e8db5548b11c90a0707e904c3412e3dcb4c14da8`，成功 main CI `39475768514`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
+本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
+上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
+所选 matching CLI/Core 源码已构建；完整 Guru 适配、目标安装和原生验收仍待完成，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.5`，package manager 为 `pnpm@10.32.1`。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
@@ -197,8 +200,8 @@ smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完�
 `docs/test/README.md` 与 `docs/architecture/README.md` 指定，与软件版本分开读取。
 
 For current-source validation, use the source-locked Trellis Fork checkout
-(`castbox/Trellis@7f050fa11ddd8569e5db4f728ea1b745b7500a98`, successful main CI
-`39215935088`) and that same reviewed Guru source. Stable `.4` installation
+(`castbox/Trellis@e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f`, successful main CI
+`39475768514`) and that same reviewed Guru source. Stable `.4` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
 it. Apply the Guru preset using

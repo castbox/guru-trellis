@@ -60,8 +60,9 @@ For a noncanonical legacy scope with no structured source, freshly review the
 non-exact relation and freeze it in the Closure transaction without writing
 task metadata. An input source mismatch or non-exact close action fails before
 mutation.
-The runtime freezes this entire set in owner-private state, rereads exact Issue
-state, and closes only actions with reviewed close authority.
+The runtime freezes this entire set for same-owner recovery. Before any provider
+action, it also writes the minimal Task-owned shared carrier described below.
+It rereads exact Issue state and closes only reviewed close actions.
 
 `resume_closure` carries `TransactionRefDTO` for same-owner output-loss
 recovery. A changed frozen authority, reopened required-closed Issue or closed
@@ -73,8 +74,8 @@ already-closed action; a pure retain set returns `no_mutation`. Public Task2
 `source_closed` derives only from the exact source action, never another Issue's
 closure. A retained source records public `no_mutation` with `source_result=null`,
 even when another action makes the aggregate terminal `closed`.
-Both results hand the existing reference to Finish, which reads the exact
-frozen action set and required OPEN/CLOSED states. Apply the matching Closure
+Both results hand the existing reference to Finish. Finish reads the public
+Closure and its shared action-set carrier, then checks required OPEN/CLOSED states. Apply the matching Closure
 and Finish packages together before using the additive action; older consumers
 must not receive `retain_open`. Existing action values, refs and exits retain
 their meanings; see the installed task-delivery-migration spec.
@@ -83,3 +84,48 @@ package does not decide Completion or own the workflow projection.
 
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
+
+## Shared result and cross-environment recovery
+
+Current input aggregate 3.0 adds `closure_shared_result_recovery`. The normal
+`completion_approved` input 2.0 and all existing outputs retain their meanings.
+Use the same public invocation for both profiles. Load the closed input from
+`schemas/public-shared-result-recovery-input.schema.json` and the corresponding
+semantic result from `schemas/shared-result-recovery-semantic.schema.json`.
+
+Normal Closure writes `closeout/closure/<base64url-result-id>.json` under the
+selected Task before provider actions. The filename encodes the UTF-8 result id
+with URL-safe base64 and removes padding. The independent shared schema 1.0
+contains only schema version, original ResultRef, Completion result id, source
+and action set. Public `close_task` evidence includes its AuthorityRef and keeps
+the original source evidence. The carrier is necessary input, not authorization
+or proof that provider actions occurred. Closure never overwrites an existing
+carrier with different inputs. The Task and carrier must be committed and
+obtainable from the selected source ref/commit for cross-environment use.
+
+For `closure_shared_result_recovery`, read the exact TaskRef, ResultRef and
+carrier AuthorityRef. Freshly review public Completion, current accepted scope,
+source relation, every original action and current provider state. This is the
+AI Review Gate; the executor only verifies those inputs and provider facts.
+Required CLOSED still OPEN, required OPEN now CLOSED, or changed source returns
+to original Closure through `external_change_conflict`. Missing provider state
+returns `blocked` with the exact missing Issue fact. A blocked review preserves
+its original reason and performs no projection or provider mutation.
+
+After a current semantic review and matching live states, the executor reads
+back an existing identical public result or restores only its missing public
+projection with the original result id. This profile never invokes provider
+close, creates no local transaction, and does not recover a previous dialogue's
+confirmation. If a real close remains necessary, use the normal profile and
+review its current action boundary. `closed|no_mutation` still hand only the
+ResultRef to Finish. Finish keeps snapshot 2.0 and independently rereads source
+and every required provider state.
+
+The existing authority resolver preserves Task-owned locators through archive
+relocation and `artifact_origin`. The carrier follows the Task into its archive;
+new results use new files. No carrier or history is fabricated for old finished
+archives. For old in-flight results, original Closure can produce this minimum
+input only when its actual original action set remains verifiable. Missing
+original inputs stop the affected Closure/Finish step with a concrete gap.
+Apply matching Closure, shared reader and Finish consumers together through
+MIGRATION-635. Pinned old installations retain their original contract.

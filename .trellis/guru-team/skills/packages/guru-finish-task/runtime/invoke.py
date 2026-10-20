@@ -252,7 +252,8 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
         task["source"] = task_source_with_review(task, frozen_source) if frozen_source is not None else task_source(task)
     if task.get("schema_version") == "2.0":
         from runtime.delivery_projection.adapter import DeliveryProjection
-        record = DeliveryProjection(root, public["task_ref"]).read_record()
+        projection = DeliveryProjection(root, public["task_ref"])
+        record = projection.read_record()
         closure = next((r for r in record["closure_results"] if r["result_id"] == public["closure_result"]["result_id"]), None)
         if closure is None or closure["lifecycle_generation"] != record["lifecycle_generation"]:
             raise CommandError("stale_identity", "closure_result", "Recover the current public Closure before Finish archive projection.", 3)
@@ -262,8 +263,15 @@ def project_archive(root: Path, public: dict, task_ref: Path, archive_ref: str, 
         task["completedAt"] = datetime.now(timezone.utc).date().isoformat()
     retire_archived_sessions(root, public["task_id"], task["lifecycle_generation"])
     archive_dir.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(str(task_dir), str(archive_dir))
-    (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
+    if task.get("schema_version") == "2.0":
+        try:
+            task = projection._call(projection.api.delivery_store.relocate_task_directory,
+                                    task_dir, archive_dir, root)
+        except LifecycleContractError as exc:
+            raise CommandError(exc.code, exc.field_path, exc.remediation, 3) from exc
+    else:
+        shutil.move(str(task_dir), str(archive_dir))
+        (archive_dir / "task.json").write_text(json.dumps(task, ensure_ascii=False, indent=2) + "\n")
     branch = git(root, "branch", "--show-current").stdout.strip() or "detached"
     source = task_source(task)
     issue_refs = [f"#{source['number']}"] if source["kind"] == "issue" else []

@@ -1,5 +1,6 @@
 # Task / Delivery 生命周期测试策略
 
+本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
@@ -22,7 +23,7 @@
 
 ## 执行入口与结果消费
 
-完整精确测试命令由受改package的现行tests和其owner选取；公共profiles/DTO以[canonical packages](../../../trellis/skills/guru-team/packages/)为准，不在此固定易漂移计数。历史结果在各原contribution的唯一test中：[#531](../../requirements-design-test-contributions/531-task-delivery-lifecycle/test.md)、[#154](../../requirements-design-test-contributions/154-planning-body-contract/test.md)、[#530](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)、[#600](../../requirements-design-test-contributions/600-promotion-before-check/test.md)、[#557](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)。它们保留原candidate、首次失败和未验证边界，不能由本轮链接宣称重跑。
+完整精确测试命令由受改package的现行tests和其owner选取；公共profiles/DTO以[canonical packages](../../../trellis/skills/guru-team/packages)为准，不在此固定易漂移计数。历史结果在各原contribution的唯一test中：[#531](../../requirements-design-test-contributions/531-task-delivery-lifecycle/test.md)、[#154](../../requirements-design-test-contributions/154-planning-body-contract/test.md)、[#530](../../requirements-design-test-contributions/530-clean-committed-reentry/test.md)、[#600](../../requirements-design-test-contributions/600-promotion-before-check/test.md)、[#557](../../requirements-design-test-contributions/557-manual-merged-delivery-recovery/test.md)。它们保留原candidate、首次失败和未验证边界，不能由本轮链接宣称重跑。
 
 本轮迁移/查询证据是 T331-01/V331-A、T331-05/V331-E及相关新旧对照；实际全部结果唯一写 [#331 test](../../requirements-design-test-contributions/331-current-effective-knowledge/test.md)。测试owner逐次判断完整性，保留首次失败与修复；当前本文只定义预期。Whole Task实际完成另由Completion，Release完整矩阵和外部业务采用不由此推定。
 
@@ -56,6 +57,18 @@
 
 ## T638：候选到真实最终内容
 
-T638-01..07的完整场景由 [knowledge test](./knowledge-maintenance.md#t638稳定身份与最终整合场景) 定义。本单元重点验证实际公共phase为implementing→checking→implementing→checking→reviewing；候选不写finalgate，真实写入后旧candidate不能放行，原implementation重新绑定全部after差额。未晋升不能Ready，no-change不造空贡献/commit，实际Git无整合阻塞可直接晋升。旧pass不转换，三类在途/普通输出丢失恢复同key/B，无第二current。
+T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳定身份与最终整合场景) 定义。本单元重点验证实际公共phase为implementing→checking→implementing→checking→reviewing；候选不写finalgate，真实写入后旧candidate不能放行，原implementation重新绑定全部after差额。未晋升不能Ready，no-change不造空贡献/commit，实际Git无整合阻塞可直接晋升。旧pass不转换，三类在途/普通输出丢失恢复同key/B，无第二current。
 
 实际命令、失败、Agent/fixture/installed/GitHub及未验证边界唯一由 [#638 Test](../../requirements-design-test-contributions/638-shared-current-promotion/test.md)维护。历史T600/T636/T637保留其实际对象和结果，不冒充当前组合通过。
+
+## T635：活动接续、既成副作用与资源隔离
+
+| 稳定身份 | 正常入口和输入 | 必须观察 |
+| --- | --- | --- |
+| T635-02 / R635-01/03 | 已提交但未入默认分支的 source ref/commit；无 A session/binding/checkpoint 的独立 common-dir B | 原 Identity/Establish/Ensure/Bind 继续同 Task/generation 和实际 Delivery；只补受影响判断/命中检查，不重开 Intake/Planning，不继承 pass。 |
+| T635-03 / R635-03 | 精确既有 Draft/metadata 未完与 Ready 已成 PR，B local branch 不同；原私有交易缺失；公共 MERGED 对照 | 原 Publish 显式 source/PR 恢复并只补剩余动作；已完成 create/push/edit/Ready 零重复，当前 readiness 仍审；MERGED 原 recovery 零 merge，只交 Completion。 |
+| T635-04 / R635-04 | 两 common-dir 同名 local branch、旧资源 pending、新代不同合法资源、推进后的 remote full ref、两独立 Task | ownership 不串认；旧 expected head/generation 保留新提交/新代；不同 Task runtime 缺失与 Cleanup pending 不改写或阻止另一方。 |
+| T635-05 / R635-01/03/04 | 实际不可获取 ref/commit、未发布必要代码、归属不唯一、当前语义或 provider 条件变化 | 返回准确缺口与原 owner，保留无关环境；可恢复共享事实不以原机隐藏目录为前置，不把缺语义资格变成绿色。 |
+| T635-07 / R635-05 | matching source、完整 packages/workflow、原工具维护、最多一个代表安装、reapply/drift/sidecar | source、installed/native、Agent、GitHub 和完整 Release 分层；旧安装按显式迁移；不批量迁移无关档或手改版本绕过前置。 |
+
+实际执行与证据边界由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md) 单写。测试预期不等于通过；跨 clone 完整再次 Finish 和固定正式旧格式由终态测试单元定义。
