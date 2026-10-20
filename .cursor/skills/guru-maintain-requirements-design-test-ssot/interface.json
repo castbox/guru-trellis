@@ -121,6 +121,10 @@
     {
       "id": "blocked_output",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "candidate_ready_output",
+      "path": "schemas/public-candidate-ready-output-2.0.schema.json"
     }
   ],
   "validators": [
@@ -199,6 +203,14 @@
         "kind": "stop",
         "id": "requirements-design-test-ssot-blocked"
       }
+    },
+    {
+      "id": "candidate_ready",
+      "evidence": "Complete task-owned proposed definitions reviewed against the applicable authority; shared current is unchanged.",
+      "consumer": {
+        "kind": "workflow",
+        "id": "guru-requirements-design-test-ssot-current-router"
+      }
     }
   ],
   "reentry": {
@@ -210,7 +222,7 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-requirements-design-test-ssot-input-aggregate-1.0",
+        "schema_id": "guru-requirements-design-test-ssot-input-aggregate-2.0",
         "path": "schemas/public-input-aggregate.schema.json"
       },
       "profiles": [
@@ -232,8 +244,8 @@
         {
           "id": "task_impact_sync",
           "schema": {
-            "schema_id": "guru-requirements-design-test-ssot-input-impact-1.0",
-            "path": "schemas/public-input-impact.schema.json"
+            "schema_id": "guru-requirements-design-test-ssot-input-impact-2.0",
+            "path": "schemas/public-input-impact-2.0.schema.json"
           },
           "example": {
             "id": "impact_input",
@@ -247,8 +259,8 @@
         {
           "id": "promotion",
           "schema": {
-            "schema_id": "guru-requirements-design-test-ssot-input-promotion-1.0",
-            "path": "schemas/public-input-promotion.schema.json"
+            "schema_id": "guru-requirements-design-test-ssot-input-promotion-2.0",
+            "path": "schemas/public-input-promotion-2.0.schema.json"
           },
           "example": {
             "id": "promotion_input",
@@ -367,6 +379,20 @@
         "consumer_use_ids": [
           "blocked_projection"
         ]
+      },
+      {
+        "exit_id": "candidate_ready",
+        "schema": {
+          "schema_id": "guru-requirements-design-test-ssot-output-candidate-ready-2.0",
+          "path": "schemas/public-candidate-ready-output-2.0.schema.json"
+        },
+        "example": {
+          "id": "candidate_ready_output",
+          "path": "examples/public-output-candidate-ready-2.0.json"
+        },
+        "consumer_use_ids": [
+          "candidate_ready_projection"
+        ]
       }
     ],
     "consumer_inputs": [
@@ -408,7 +434,9 @@
             "source_exit",
             "mode",
             "continuation_id",
-            "architecture_baseline"
+            "architecture_baseline",
+            "schema_version",
+            "stage"
           ],
           "authoring_example": {
             "id": "promotion_authoring",
@@ -454,6 +482,19 @@
           "schema_id": "blocked_input",
           "path": "consumers/stop/blocked.schema.json"
         }
+      },
+      {
+        "id": "candidate_ready_input",
+        "consumer": {
+          "kind": "workflow",
+          "id": "guru-requirements-design-test-ssot-current-router"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "json_schema",
+          "schema_id": "guru-requirements-design-test-ssot-consumer-candidate-ready-2.0",
+          "path": "consumers/workflow/candidate-ready-2.0.schema.json"
+        }
       }
     ],
     "projections": [
@@ -485,6 +526,12 @@
         "id": "blocked_projection",
         "exit_id": "blocked",
         "consumer_input_id": "blocked_input",
+        "operation": "direct"
+      },
+      {
+        "id": "candidate_ready_projection",
+        "exit_id": "candidate_ready",
+        "consumer_input_id": "candidate_ready_input",
         "operation": "direct"
       }
     ],

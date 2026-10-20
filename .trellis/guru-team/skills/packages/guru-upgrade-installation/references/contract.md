@@ -53,6 +53,14 @@ global npm installations or node_modules to bypass the old-version guard.
    retain the existing per-path byte checks and explicit unknown preimage
    decisions. This does not qualify a complete dirty source or substitute HEAD.
    Clean metadata mismatch and missing source objects still block.
+   A normal local-clone receipt can record an origin directory that no longer
+   exists. Keep that receipt unchanged. The caller's explicitly selected
+   complete target source must contain the recorded exact old commit; read its
+   metadata and original per-path bytes there, without opening the recorded
+   directory. For this receipt, matching tags or current HEAD cannot replace a
+   missing object or clean metadata mismatch. Dirty receipts retain the
+   per-path rule above. Unknown preimages remain visible in read-only preview
+   and require the original preserve/replace judgment before prepare or writes.
    Early upstream-owned overlay claims belong to the Fork
    and cannot be retired by Guru.
 2. AI owns every source/field/relationship projection. Preserve legal TaskId,

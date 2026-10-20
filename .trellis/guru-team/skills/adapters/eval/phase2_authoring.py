@@ -24,7 +24,7 @@ PUBLIC_READS = (
 )
 ARCHITECTURE_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
-    "schemas/semantic-result-delivery-2.0.schema.json", "schemas/public-input-delivery-task-impact-sync-2.0.schema.json",
+    "schemas/semantic-result-delivery-3.0.schema.json", "schemas/public-input-delivery-task-impact-sync-3.0.schema.json",
 )
 
 
@@ -244,7 +244,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
         package.parent / ARCHITECTURE / "schemas/public-input-impact.schema.json"
     ).read_text(encoding="utf-8"))
     architecture_input = {
-        "schema_version": "delivery-2.0", "profile": "delivery_task_impact_sync",
+        "schema_version": "delivery-3.0", "profile": "delivery_task_impact_sync",
         "delivery_key": public["delivery_key"], "planning_root": directory.relative_to(task).as_posix(),
         "source_exit": "implementation_complete", "mode": "workflow",
         "continuation_id": "range-phase2", "stage": "phase2", "task_locator": task_ref,
@@ -258,7 +258,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             ],
         },
         "project_contract": {
-            "guru_contract_identity": f"{ARCHITECTURE}:4.0",
+            "guru_contract_identity": f"{ARCHITECTURE}:5.0",
             "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
             "change_contract_identity": "range-contract-v1",
             "required_concern_set_identity": "range-concerns-v1",

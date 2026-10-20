@@ -25,6 +25,13 @@ upstream migration/default-cutover qualification.
 
 ### Committed content and mutation are distinct
 
+Final profiles consume only a real final Check passed/check_result_id after
+original-owner final integration and implementation candidate rebinding.
+Check candidate_checked and RDT candidate_ready cannot seed a final commit,
+committed reentry or Review. No-change skips knowledge writes, not final Check.
+Early Draft remains independently bounded under its own profiles.
+
+
 Final commit profiles bind `delivery_key` and `check_result_id`; early profiles independently bind `delivery_key` and fixed `base_ref`.
 `delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
 non-metadata clean candidate and nonempty full fixed base-to-HEAD diff. Latest

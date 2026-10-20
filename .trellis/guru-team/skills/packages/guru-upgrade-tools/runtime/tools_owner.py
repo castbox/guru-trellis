@@ -149,7 +149,7 @@ def inventory(package, root, public, descriptor, plan=None):
     source_identity(source, public, old)
     isolated_layout(root, old)
     upstream_source(public, descriptor)
-    manifest = old.old_manifest(root)
+    manifest = old.old_manifest(root, source)
     hashes = old.old_paths(manifest, source, root)
     managed = []
     for path, digest in sorted(hashes.items()):

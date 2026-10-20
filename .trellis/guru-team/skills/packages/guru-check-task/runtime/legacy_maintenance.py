@@ -11,7 +11,7 @@ from runtime.schema import validate_json
 
 OWNER = 'guru-check-task'
 ARTIFACT = 'phase2-check.json'
-GATE_SCHEMA = 'phase2-check.schema.json'
+GATE_SCHEMA = 'phase2-check-5.0.schema.json'
 IDENTITY_FIELD = 'task_ref'
 CONTROL_ROOT = ".trellis/.runtime/guru-team/owner-checkpoints/"
 CHECKPOINT_ROOT = ".trellis/.runtime/guru-team/" + OWNER + "/legacy-retirement/"

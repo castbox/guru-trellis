@@ -25,7 +25,7 @@ upstream migration/default-cutover qualification.
 
 ### Current Check entry and result
 
-Use `delivery_initial_check`, `delivery_finding_fix_rerun`,
+Use `delivery_candidate_check`, `delivery_initial_check`, `delivery_finding_fix_rerun`,
 `delivery_planning_reentry`, or `delivery_resolved_reconciliation`. Every
 profile consumes the exact `planning_accepted_result_id` and selected public
 candidate. Retain the complete nine-dimension semantic payload and current
@@ -37,6 +37,51 @@ must not make the unchanged clean business candidate require another commit.
 A retry can recover the exact recorded result, not a pass inferred from phase.
 The old Task Activation execution checkpoint is retired; this Skill does not
 load `guru-activate-task` or another owner's private checkpoint.
+
+### Candidate Check and final integration
+
+`delivery_candidate_check` uses the same complete nine-dimension judgment,
+qualification, exact Planning result and current public candidate as final
+Check. Implementation first constructs candidate with fixed B, actual HEAD and
+complete B..HEAD plus dirty paths, then legally calls begin_check from
+implementing to checking. Read the complete task-owned proposed definitions and
+fixed applicable sources. Consume Architecture reviewed_candidate/no-change and
+RDT candidate_ready/no-change; proposed content does not claim shared current.
+
+Only `candidate_checked` is a successful candidate exit. Validate the actual
+current reviewed content, then use the original Check role's public rework with
+target_role=implementation and affected_results=[readiness], with the current
+implement plan as reason. This returns checking to implementing, preserves
+Planning and any real historical Check/full_review, and writes no public Check
+gate. Return only task_ref, delivery_key and the existing adjacent
+candidate={head,content_identity} token to guru-knowledge-final-integration-router.
+It supplies no check_result_id, TaskCommit input, full Review or readiness.
+
+The original Architecture/RDT owners perform actual final-integration writes.
+Implementation then reconstructs candidate from the same B and actual HEAD,
+including every body, relationship and navigation change, and calls begin_check
+again. Final Check verifies this new content_ref and checks the complete actual
+candidate and affected unchanged consumers before recording the final public
+gate. Written files cannot be checked against the old candidate. No-change uses
+the same legal return and rebinding, without an empty file or commit. Retained
+old Check/full_review facts are history; their applicability is independently
+validated by the public API and original semantic owners.
+
+Current private schema is 6.0; schema 5.0 remains history with its old meaning.
+Current record/check/invoke reject 5.0 rather than converting an old passed
+result. The local guru-phase2-worktree-content-2.0 token covers business bytes
+and modes and excludes the existing reviewed-content metadata paths, so Task
+result writes do not cause a digest cycle. It remains adjacent freshness only.
+Retire the owner-private candidate checkpoint once its consumer completes.
+
+If candidate output is lost while phase remains checking, reread the same actual
+candidate and personally complete the current Check judgment/rework. If phase
+already became implementing and no promotion occurred, implementation must
+begin_check again before this owner makes a fresh judgment. If actual promotion
+occurred, its original owner recovers the same intent/result, implementation
+binds actual after content, and final Check judges that candidate. Never infer
+candidate_checked from phase, replay the completed write or manufacture a pass.
+Preserve the same DeliveryKey and fixed B throughout recovery.
 
 ### Scope withdrawal in the current stage
 
@@ -127,15 +172,16 @@ implementation candidate binding, fresh formal Check and independent full Review
 
 The global workflow mandatory invokes
 `guru-maintain-architecture-baseline:delivery_task_impact_sync(stage=phase2)` before this
-owner can select `passed`. The Architecture owner rereads the current baseline,
+owner can select `candidate_checked` or final `passed`. The Architecture owner rereads the current baseline,
 design constitution, project change-contract identity, task-local Architecture
 change contract, and applicable project Architecture check results. This Skill
 consumes only the checked current route and the live authorities; it does not
 read Architecture private state or repeat applicability, contribution, ADR,
 promotion, or typed-route judgment.
 
-The Architecture current router consumes the matching nonplanning 4.0 or
-Delivery 2.0 DTO directly. Its `before_authority` locates the immutable
+Candidate Check consumes complete proposed targets before actual promotion.
+Final Check consumes actual-write applicability. The Architecture current router consumes the matching nonplanning 5.0 or
+Delivery 3.0 DTO directly. Its `before_authority` locates the immutable
 pre-promotion baseline/constitution/change contract; its `candidate` identifies
 the actual worktree after any required promotion. This Check owner reads those
 public facts and the current files as its existing stage precondition, without

@@ -18,8 +18,10 @@ docs/design/{README.md,current/**,versions/<version>/**}
 docs/test/{README.md,current/**,versions/<version>/**}
 ```
 
-Each README identifies the current version and preserves historical
-navigation. A repository may supply reviewed compatible locators. Trellis task
+Each README identifies the stable authority and preserves historical
+navigation. Exact content uses a full Git revision and locator. Ordinary
+promotion writes navigation only when its relationships actually change; it
+does not require a new global version or per-Issue summary. A repository may supply reviewed compatible locators. Trellis task
 planning remains task-local input and never becomes repository product
 authority by itself.
 
@@ -78,8 +80,13 @@ Gate, confirmation only for a real choice or side effect, deterministic
 recorder/validator, then one typed exit. Workflow and standalone use identical
 entry, review, freshness, and projection rules.
 
-The five exits are `ssot_current`, `sync_required`, `revision_required`,
+The exits are `candidate_ready`, `ssot_current`, `sync_required`, `revision_required`,
 `baseline_incomplete`, and `blocked`. Each has one public consumer.
+Impact 2.0 at phase2 returns candidate_ready for complete isolated proposed
+content; the existing current router sends it to candidate Check, without
+claiming shared-current success. Promotion 2.0 at final_integration returns
+ssot_current only after actual writes and readback. Bootstrap/repair keep their
+original contracts. See [MIGRATION-638](../../MIGRATION-638.md).
 `sync_required` re-enters the Skill through `promotion`; `revision_required`
 returns to the current planning/implementation owner; `baseline_incomplete`
 enters controlled bootstrap/repair; `blocked` stops fail closed.

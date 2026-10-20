@@ -52,7 +52,7 @@ The deterministic invocation records the reviewed result only in call-local
 memory, then validates the AI gate, mode, profile, continuation, safe locators,
 direct version/freshness bindings, unique consumer, and exactly one minimal
 typed projection. It never decides sufficiency or route and persists no result.
-Public exits are `ssot_current`, `sync_required`,
+Public exits are `candidate_ready`, `ssot_current`, `sync_required`,
 `revision_required`, `baseline_incomplete`, and `blocked`.
 
 ## Profiles
@@ -60,11 +60,17 @@ Public exits are `ssot_current`, `sync_required`,
 - `bootstrap_foundation`: establish, reuse, or migrate one versioned three-layer
   authority; verify provenance, navigation, traceability, and Architecture
   Baseline inheritance.
-- `task_impact_sync`: decide no-op, isolated contribution, narrowly safe direct
-  sync, or current-task revision from the approved task delta.
-- `promotion`: reread one contribution and current authority, then review
+- `task_impact_sync` 2.0 (`schema_version=2.0`, `stage=phase2`): decide no-change,
+  isolated complete proposed definitions, repair, or current-task revision.
+  A complete changed proposal returns `candidate_ready`; do not write shared
+  current here or call the proposal already current. No-change retains
+  `ssot_current` and creates no empty contribution.
+- `promotion` 2.0 (`schema_version=2.0`, `stage=final_integration`): after
+  candidate Check, reread one contribution and the real current target, then review
   traceability, subtraction, version/history, and Architecture inheritance
-  before integrating it into the complete current definitions.
+  before integrating it into the complete current definitions. The original
+  owner writes and reads back the real files before selecting `ssot_current`;
+  the wrapper only validates a completed judgment and performs no document write.
 - `repair`: repair incomplete, stale, conflicting, version, navigation, or
   migration state without expanding business requirements or unrelated history.
 
@@ -79,6 +85,9 @@ declared exit. The runtime validates those AI-authored bindings and never
 overwrites them. Workflow and standalone modes use the same entry,
 review, freshness, and projection rules.
 
+`candidate_ready` hands only contribution and applicable authority locators/version
+to `guru-requirements-design-test-ssot-current-router`, which routes the complete
+proposed definitions into candidate Check. It is not a current-authority update.
 `sync_required` re-enters this Skill through a target-authored `promotion`
 input. `revision_required` returns to the current planning/implementation
 owner. `baseline_incomplete` returns to bootstrap or controlled repair.

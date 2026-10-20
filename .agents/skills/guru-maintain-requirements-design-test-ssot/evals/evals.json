@@ -72,9 +72,9 @@
     },
     {
       "id": "impact-sync",
-      "prompt": "The task-owned contribution is complete and requires controlled promotion; return sync_required.",
-      "expected_exit": "sync_required",
-      "expected_output": "The isolated contribution re-enters this Skill through the promotion profile.",
+      "prompt": "The task-owned contribution and complete proposed definitions are reviewed against the applicable authority, while shared current is unchanged; return candidate_ready.",
+      "expected_exit": "candidate_ready",
+      "expected_output": "The complete isolated proposal returns its locator and applicable authority to the existing current router for candidate Check.",
       "input_profile_id": "task_impact_sync",
       "files": [
         "evals/files/impact-sync-input.json",
@@ -87,7 +87,7 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "sync_required"
+            "expected": "candidate_ready"
           }
         ]
       }

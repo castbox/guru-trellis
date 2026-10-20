@@ -1,10 +1,10 @@
 {
-  "schema_version": "4.0",
+  "schema_version": "5.0",
   "profile": "promotion",
   "source_exit": "sync_required",
   "mode": "workflow",
   "continuation_id": "eval-promotion",
-  "stage": "phase2",
+  "stage": "final_integration",
   "task_locator": ".trellis/tasks/eval-task",
   "baseline": {
     "locator": "docs/architecture/README.md",
@@ -40,7 +40,7 @@
     ]
   },
   "project_contract": {
-    "guru_contract_identity": "guru-maintain-architecture-baseline:4.0",
+    "guru_contract_identity": "guru-maintain-architecture-baseline:5.0",
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"
@@ -64,11 +64,5 @@
   "candidate": {
     "head": "89abcdef0123456789abcdef0123456789abcdef",
     "content_identity": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  },
-  "successor_baseline": {
-    "locator": "docs/architecture/README.md",
-    "identity": "current-v2",
-    "status": "active"
-  },
-  "expected_current_content_identity": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  }
 }

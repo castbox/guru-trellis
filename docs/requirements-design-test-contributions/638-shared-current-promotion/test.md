@@ -81,3 +81,18 @@ V638-07 查询 A 已经原 Sync→Discovery→Clarify→Wording→Readiness→Ta
 | source validator、语法与上下文 | 原 source wrapper PASS：40 packages、124 commands、151 package tests；349 份 Guru Python 内存 compile 通过，改动代码均低于3000行。两份19-entry context 经原 task.py validate 通过；注入截断/代码路径警告仍需 Agent 手动读取 |
 
 `test_delivery_upgrade.py` 的20项因缺 `GURU_UPSTREAM_DELIVERY_CLI` / `GURU_UPSTREAM_LEGACY_CLI` 全部 SKIP；`test_native_install.py` 的1项因未提供 original-writer legacy fixture 与 matching maintenance pair SKIP。没有把 exit 0 的 SKIP 当通过，也没有伪造对应环境。实际 #638 完整 tools preview/prepare/install/recovery 尚未执行，dogfood 原受管切换、最终候选/晋升/质量链和终态仍未完成。完整 Release 矩阵和生产采用边界保持。
+
+## 精确候选 2c772b5 的实际 tools 升级与恢复
+
+本地来源修复已形成提交 `2c772b515ae7aca51b2338848d6fee8b2763c422`，经原 Publication 返回 `draft_published` 并更新同一 Draft PR #646。live 读回 HEAD、中文标题及正文均精确匹配；新 run `39379714642` 的 Ubuntu、macOS、Windows targeted CI 全部 SUCCESS。它们覆盖该提交，不覆盖下方安装产生的未提交 dogfood 投影，也不代表最终质量门禁。
+
+原 canonical `guru-upgrade-tools` 从完整精确 source 执行 `source_locked` preview，9870 个旧受管文件均有已知 preimage；公共 tools 为208 unchanged、1项可选用户 config 冲突，后者显式 preserve。原 prepare 冻结 SDK 操作 `aa2a7a6c-af67-4c44-bb1f-b3a649694062`；其212个公共 action 只有 workflow 存在 bytes/mode 差额，provider 绑定精确2c772b5。原 installer 完成三平台的成套安装，未局部热拷贝 runtime，也未手改 receipt 或 checkpoint。
+
+原 invoke 实际返回 `tools_upgraded`、`installed_version=0.7.0-guru.5`、`unverified=[]`，recovery_ref 为 `cccb50bc-8447-4d4e-a74c-606ac9adcf6f`。该结果表示已使用匹配 Fork 与 Guru 精确来源，不表示完整 Release 矩阵通过。随后用同一 recovery_ref 执行原 `resume`，返回完全相同的正式结果；前后 HEAD 和完整 Git status 相同。这里验证的是已完成操作的结果恢复，未模拟中途 crash 或证明所有故障分支。
+
+- 原 owner 执行目标自己的 Python resolver、installed validator、native continuation 和隔离内存中的公共 operation probe，全部通过；主会话再从目标 resolver 调用实际 native context/continuation 和公共 Delivery current，均成功。
+- 当前 chat 仍绑定原 Task/generation0 与 D1；原 EnsureCheckout 返回 `checkout_resolved`，唯一 checkout 未变。Delivery 仍 `implementing`，Planning `planning-accepted:9d8efec4-205f-4103-b351-5e8b3467cc67` applicable，Check/full_review/readiness 仍 missing；没有把安装写成质量通过。
+- 396个实际 Git status 路径均属于冻结写入集合，Task、docs 和 canonical trellis 当时无差额。三个 peer/common pointer 的 bytes/mode 与 prepare 前相同，零 `.new/.bak`，两个用户配置保持原处置。receipt 由原 installer 生成，精确 commit 为2c772b5；由于同 checkout 的安装投影已有变更，诚实记录 `tree_state=dirty`。
+- 原 `check-dogfood-overlay-drift.sh` exit0：workflow、selected native/shared platform projections 和 spec copies 与 canonical 一致。此前0 missing/6 changed的门禁在本次真实受管切换后已解除；没有执行历史受阻的全量 legacy-archive apply，也不将其改写为本轮通过。
+
+这次 tools 维护未创建提交或修改 PR，未写 shared current，未转换/完成 Task。21项专用 fixture SKIP 仍保留；真实样本全组、主 Task 最终候选/晋升/Check/Review/readiness、交付和整体终态仍待完成。主执行 checkout 的 dogfood 投影与本文新增结果尚待后续正式质量链及独立提交。

@@ -398,6 +398,9 @@ MIGRATION-637 explicitly replaces the old distinct-reviewer requirement while
 retaining the wire value and finding-continuity checks. Never project closure
 or an old pass directly into passed.
 
+Original-owner final integration follows candidate Check; implementation
+rebuilds the actual public candidate before final Check. Candidate_checked or
+reviewed_candidate cannot substitute for that final Check or its predecessor.
 Required Architecture promotion completes before final Check. Independent
 committed Architecture and the complete Branch Review cover the resulting
 promotion files and before/after responsibilities. After a later change, the

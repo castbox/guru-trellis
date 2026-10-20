@@ -2,7 +2,7 @@
 
 This is the shared reading and writing contract for the existing RDT and
 Architecture maintenance owners. It changes document organization and owner
-behavior, not public Skill inputs, profiles, schemas, exits or runtime state.
+behavior. Each original package separately owns its current public contract.
 The project supplies its authority locators and actual migrated scope.
 
 ## Applicable authority and complete units
@@ -16,7 +16,7 @@ requirement, dependency, solution or explicitly applicable rule changes.
 Promotion separately rereads its live shared target and expected-current.
 
 Organize current knowledge into complete units by capability or responsibility.
-Each unit has a stable identity, identifiable applicable version and status,
+Each unit has a stable identity, exact applicable Git revision or real contract version and status,
 complete definition, necessary relationships, exact sources and replacement
 boundaries. These are Markdown responsibilities, not a new record schema.
 Existing canonical interface or engineering specifications keep their complete
@@ -35,7 +35,12 @@ Navigation contains identity, alias, status, locator/version and necessary
 relationship only. It locates the unique body; it does not create another
 business summary or decide which rule prevails. Preserve existing stable
 identities independently of headings, file position or presentation order.
-Ordinary reordering does not renumber unrelated knowledge.
+Ordinary reordering does not renumber unrelated knowledge. Ordinary Tasks do not
+increment a shared global version or append their business summaries to a root
+entry. A complete Git commit and repository-relative locator identify an exact
+snapshot. Real public API versions retain their compatibility meaning. Update
+an entry only when its identity, status, navigation or necessary relationship
+changes; unchanged units and historical references retain their meaning.
 
 ## Reading for a question or stage
 
@@ -80,21 +85,49 @@ definition, directly or at a unique proposed-target locator. It does not edit
 another Task's contribution or compete for shared current. Do not duplicate
 unchanged authority into every delta.
 
-At promotion, the original owner rereads the contribution and actual shared
-target. Reconcile real intervening changes before writing. Integrate the
+After the original Check owner completes the first complete candidate Check,
+actual promotion occurs in the same Delivery final-integration stage. Before
+that boundary, independent Architecture and Check read the complete task-owned
+proposed definitions, their fixed applicable sources and affected consumers.
+A reviewed proposal is not shared current and cannot supply final Check,
+readiness or delivery. No-change follows its original route without empty
+contributions, ADRs or navigation edits.
+
+At final integration, each original maintenance owner fixes one real target
+branch/commit and rereads the contribution, affected shared units and necessary
+relationships/navigation. Reconcile real intervening changes before writing.
+Unrelated units retain their current content. For the same unit, compare the
+applicable source, complete proposal and real target; preserve all still-valid
+conditions from both. The original independent owner applies the shared
+Candidate Applicability And Coverage contract to the complete actual delta and
+affected unchanged consumers before writing a changed combination. Changed
+requirements return to scope/Planning; changed behavior, interfaces or
+validation duties return to the earliest affected quality owner. Integrate the
 delta into the complete current unit, including still-effective predecessor
 conditions and other promoted changes. Update R/D/T relationships and
 navigation consistently. Retain contributions as provenance/history; do not
 leave ordinary readers to assemble the promoted definition from them. A
 changed expected-current uses the original sync/repair route and does not
 authorize overwriting another contribution. Recovery remains with that owner
-and its existing contract.
+and its existing contract. Read back every actual write. Partial writes resume
+only the uniquely matching original pending intent; ambiguous intent or a real
+conflict stops that owner. Lost output recovers the same result from matching
+actual files and original intent, without another successor or audit chain.
+A later target advance alone does not restart the operation. No merge/rebase,
+latest-SHA chase or queue admission is required without a real conflict,
+necessary dependency integration or observed platform update blocker.
 
 Architecture's independent Phase 2 assessment covers the complete candidate
-and proposed targets. The original Architecture owner promotes and checks
-actual-write applicability before final Check. Final Check, Task Commit and
+and proposed targets. Candidate Check returns to implementation through its
+existing public rework and writes no final Check gate. At final integration the
+original Architecture and RDT owners write the reviewed current definitions and
+check actual-write applicability. Implementation then binds a new candidate,
+including all body, relationship and navigation writes, through begin_check.
+Final Check, Task Commit and
 independent committed full-diff Review cover the resulting content. This
-contract adds no separate review owner or gate.
+contract adds no separate review owner. Implementation, public contracts and
+current documents ship in the same final PR; final owners never treat a
+candidate-only result as completed promotion.
 
 ## Technical baseline and project projection
 

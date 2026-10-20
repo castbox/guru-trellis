@@ -1,5 +1,5 @@
 {
-  "schema_version": "delivery-2.0",
+  "schema_version": "delivery-3.0",
   "profile": "delivery_task_impact_sync",
   "source_exit": "implementation_complete",
   "mode": "workflow",
@@ -40,7 +40,7 @@
     ]
   },
   "project_contract": {
-    "guru_contract_identity": "guru-maintain-architecture-baseline:4.0",
+    "guru_contract_identity": "guru-maintain-architecture-baseline:5.0",
     "change_contract_locator": "docs/architecture/06-governance/change-contract.md",
     "change_contract_identity": "project-change-contract-v1",
     "required_concern_set_identity": "project-concerns-v1"
