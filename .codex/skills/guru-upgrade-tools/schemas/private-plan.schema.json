@@ -7,9 +7,19 @@
     "upstream_source",
     "upstream_plan",
     "selected_platforms",
-    "guru_decisions"
+    "guru_decisions",
+    "agents_source"
   ],
   "properties": {
+    "agents_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "mode"],
+      "properties": {
+        "sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "mode": {"type": ["integer", "null"], "minimum": 0, "maximum": 511}
+      }
+    },
     "upstream_source": {
       "type": "object"
     },

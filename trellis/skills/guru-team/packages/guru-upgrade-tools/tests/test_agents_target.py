@@ -1,4 +1,4 @@
-"""Actual public tools writer and Guru block composition share one target."""
+"""The public tools writer and Guru installer retain separate file ownership."""
 from __future__ import annotations
 
 import base64
@@ -72,24 +72,47 @@ class AgentsTargetTests(unittest.TestCase):
         self.assertNotIn('error',result,result)
         return result['result']
 
-    def test_prepared_target_is_installer_idempotent_and_public_rollback_restores(self):
+    def test_preserved_agents_has_one_writer_and_recovery_restores_original(self):
         plan = self.prepare()
         before = copy.deepcopy(plan)
-        owner.project_agents_target(plan,self.module)
-        agents = next(a for a in plan['actions'] if a['path']=='AGENTS.md')
-        other = copy.deepcopy(plan)
-        next(a for a in other['actions'] if a['path']=='AGENTS.md')['target'] = next(
-            a for a in before['actions'] if a['path']=='AGENTS.md')['target']
-        self.assertEqual(other,before)  # Source/operation/guard/receipt stay with their original owners.
+        source = owner.delegate_agents_preservation(plan)
+        self.assertEqual(source, {'sha256':hashlib.sha256(self.original).hexdigest(),'mode':0o644})
+        before['actions'] = [row for row in before['actions'] if row['path'] != 'AGENTS.md']
+        self.assertEqual(plan,before)  # No replacement bytes, guard or receipt are rewritten.
         self.assertEqual((self.root/'AGENTS.md').read_bytes(),self.original)
+        old = owner.legacy_owner(PACKAGE)
+        recovery = self.directory/'guru-recovery'
+        checkpoint = {'controls':{}, 'preimages':old.snapshot(self.root,recovery,{'AGENTS.md'}, {})}
         applied = self.sdk('applyMaintenance',plan)
         self.assertNotIn('error',applied,applied)
-        self.assertEqual((self.root/'AGENTS.md').read_bytes(),base64.b64decode(agents['target']['content_base64']))
+        self.assertEqual((self.root/'AGENTS.md').read_bytes(),self.original)
+        self.assertEqual(self.module.ensure_agents_ai_first_principles(self.root)['action'],'updated')
         self.assertEqual(self.module.ensure_agents_ai_first_principles(self.root)['action'],'unchanged')
+        for method in ('recoverMaintenance','resumeMaintenance'):
+            resumed = self.sdk(method,{'recovery_ref':applied['result']['recovery_ref']})
+            self.assertNotIn('error',resumed,resumed)
+            self.assertEqual(resumed['result']['status'],'applied')
         restored = self.sdk('rollbackMaintenance',{'recovery_ref':applied['result']['recovery_ref']})
         self.assertNotIn('error',restored,restored)
         self.assertEqual(restored['result']['status'],'rolled_back')
+        old.restore(self.root,recovery,checkpoint)
         self.assertEqual((self.root/'AGENTS.md').read_bytes(),self.original)
+
+    def test_prepared_preservation_detects_a_later_project_instruction_edit(self):
+        plan = self.prepare()
+        private = {'agents_source':owner.delegate_agents_preservation(plan)}
+        old = owner.legacy_owner(PACKAGE)
+        owner.validate_agents_source(self.root,private,old)
+        (self.root/'AGENTS.md').write_bytes(self.original+b'\nA later project instruction.\n')
+        with self.assertRaisesRegex(ValueError,'changed since preparation'):
+            owner.validate_agents_source(self.root,private,old)
+
+    def test_core_replacement_is_not_silently_reinterpreted_as_preservation(self):
+        plan = self.prepare()
+        agents = next(row for row in plan['actions'] if row['path']=='AGENTS.md')
+        agents['target'] = None
+        with self.assertRaisesRegex(ValueError,'explicit AGENTS.md preserve'):
+            owner.delegate_agents_preservation(plan)
 
     def test_previous_two_writer_path_exposes_the_original_rollback_conflict(self):
         plan = self.prepare()

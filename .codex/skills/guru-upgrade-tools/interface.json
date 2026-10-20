@@ -207,6 +207,7 @@
   },
   "tests": [
     "tests/test_contract.py",
+    "tests/test_agents_target.py",
     "tests/test_recovery.py",
     "tests/test_native_install.py"
   ],

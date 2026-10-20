@@ -44,15 +44,18 @@ recovery retain their original meaning; this Skill does not call them.
    workflow bytes cannot establish success. Public file decisions retain
    official required/skip/user-edit rules. Call `prepare.sh` once; its receipt
    contains `result.plan`, including the single frozen public operation ID,
-   and exact public/Guru/pointer write facts. The public SDK's exported `PreparedMaintenancePlan` is the declared input
-   to `previewMaintenance` / `applyMaintenance`. Before the first apply and
-   checkpoint, this prepare owner composes the plan's named `AGENTS.md` target
-   with the canonical Guru-owned block through the original installer's pure
-   renderer. The public writer writes that final bytes/mode target; the later
-   Guru installer is byte-idempotent for the block. Keep the original source
-   snapshot, operation ID, candidate, guard and all other actions unchanged.
-   Keep the Core template-hash receipt as the Core template baseline; the Guru
-   block is a customization, not a new Core template. Preparation creates no target
+   and exact public/Guru/pointer write facts. The public SDK's exported
+   `PreparedMaintenancePlan` is the declared input to public preview/apply.
+   Select `preserve` for `AGENTS.md`, including an absent file. Before initial
+   apply, remove only that optional source-equals-target no-write action from
+   the public plan. Freeze its original hash/mode in private `agents_source`;
+   inventory checks it before any target checkpoint or write. A replacement
+   decision stops for an explicit preservation decision, never silently changes
+   meaning. The original Guru installer alone updates its named block, retaining
+   all other instructions. Guru's existing preimages, freshness and restore own
+   the entire file during this operation. Core's operation ID, candidate, guard,
+   remaining actions and template-hash receipt stay unchanged. No public target
+   bytes are composed. Preparation creates no target
    checkpoint. Keep this plan for the same invocation; do not prepare another
    operation to recover a partial one.
 
@@ -108,8 +111,8 @@ external acceptance and release matrices remain separate evidence.
 
 `resume_required` projects only `profile=resume,recovery_ref` to this same
 owner. Use that exact ref in the target checkout, from the unchanged source.
-Read its private phase/failure and public recovery facts. AGENTS composition
-occurs only in initial prepare; resume/recover/rollback consume the original
+Read its private phase/failure and public recovery facts. AGENTS ownership is
+delegated only in initial prepare; resume/recover/rollback consume the original
 frozen plan and never reproject targets or edit an existing checkpoint. Resume uses the
 original public plan/operation ID and original Guru preimages; it never expands
 backups, accepts a replacement plan, replays a completed public write, or
