@@ -5,6 +5,7 @@ import base64
 from collections import Counter
 import hashlib
 import hmac
+import importlib.util
 import json
 import os
 import secrets
@@ -735,6 +736,18 @@ def descriptors(skills: Path) -> dict[str, dict[str, Any]]:
     return output
 
 
+def native_eval_constants():
+    """Read private test capabilities from this matching source/installed bundle."""
+    root = Path(__file__).resolve().parents[1]
+    if not (root / 'adapters/eval/eval_constants.py').is_file():
+        root = root / 'skills'
+    path = root / 'adapters/eval/eval_constants.py'
+    spec = importlib.util.spec_from_file_location('guru_team_native_eval_constants', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def corpus(skills: Path, package: Path, interface: dict[str, Any]) -> tuple[dict[str, Any], bytes]:
     path = package / "evals/evals.json"
     payload = strict_json(path, "evals/evals.json")
@@ -766,6 +779,7 @@ def corpus(skills: Path, package: Path, interface: dict[str, Any]) -> tuple[dict
     exits = {item.get("id") for item in interface.get("external_exits", []) if isinstance(item, dict)}
     output_exits = {item.get("exit_id") for item in contracts.get("outputs", []) if isinstance(item, dict)}
     seen_cases: set[str] = set()
+    NATIVE_IMPLEMENTATION_EXPECTED_OWNERS = native_eval_constants().NATIVE_IMPLEMENTATION_EXPECTED_OWNERS
     for index, case in enumerate(payload.get("evals", [])):
         if case.get("native_authoring_flow") and interface.get("id") != "guru-review-change-request":
             raise error("eval_flow_owner_invalid", f"evals[{index}].native_authoring_flow", "Declare standard_intake only in Readiness.")
@@ -780,7 +794,13 @@ def corpus(skills: Path, package: Path, interface: dict[str, Any]) -> tuple[dict
                 f"evals[{index}].{INPUT_VARIANT_KEY}",
                 "Reference one declared structured input variant.",
             )
-        if case.get("expected_exit") not in exits or case.get("expected_exit") not in output_exits:
+        expected_exits, expected_output_exits = exits, output_exits
+        expected_owner = NATIVE_IMPLEMENTATION_EXPECTED_OWNERS.get((interface['id'], case_id))
+        if expected_owner:
+            _, terminal_interface, _ = package_context(skills, expected_owner)
+            expected_exits = {row['id'] for row in terminal_interface['external_exits']}
+            expected_output_exits = {row['exit_id'] for row in terminal_interface['public_contracts']['outputs']}
+        if case.get("expected_exit") not in expected_exits or case.get("expected_exit") not in expected_output_exits:
             raise error("eval_expected_exit_unknown", f"evals[{index}].expected_exit", "Reference one declared exit with an output schema.")
         for fixture in case.get("files", []):
             relative = Path(fixture)
@@ -944,7 +964,7 @@ def call_adapter(
         env=environment,
     )
     if process.returncode:
-        return adapter_failure(request_path, "adapter command failed")
+        return adapter_failure(request_path, "adapter command failed", process)
     try:
         response = json.loads(process.stdout)
         request = strict_json(request_path, "adapter_request")
@@ -953,13 +973,18 @@ def call_adapter(
             "2.0": "skill-eval-adapter-response-2.0.schema.json",
         }.get(request.get("schema_version"), "skill-eval-adapter-response.schema.json")
         validate_instance(response, skills / f"schemas/{response_schema}", "adapter_response")
-    except (json.JSONDecodeError, CommandError):
-        return adapter_failure(request_path, "adapter response failed validation")
+    except (json.JSONDecodeError, CommandError) as exc:
+        return adapter_failure(request_path, "adapter response failed validation", process, str(exc))
     return response
 
 
-def adapter_failure(request_path: Path, message: str) -> dict[str, Any]:
+def adapter_failure(request_path: Path, message: str, process=None, validation_error: str | None = None) -> dict[str, Any]:
     request = strict_json(request_path, "adapter_request")
+    if process is not None:
+        (request_path.parent / "adapter-error.txt").write_text(json.dumps({
+            "returncode": process.returncode, "stdout": process.stdout, "stderr": process.stderr,
+            **({"validation_error": validation_error} if validation_error is not None else {}),
+        }, ensure_ascii=False, indent=2), encoding="utf-8")
     result = {
         "schema_version": "1.0",
         "capability_status": "execution_error",
@@ -1742,9 +1767,12 @@ def eval_request(args: argparse.Namespace, package: Path, interface: dict[str, A
 
 
 def completed_semantic_case(skill_id: str, case: dict[str, Any]) -> bool:
-    """Only the existing supported native authoring transports have replay evidence."""
+    """Only declared native test transports have completed replay evidence."""
+    constants = native_eval_constants()
+    NATIVE_SEMANTIC_OWNERS, NATIVE_SEMANTIC_CASE_OWNERS = constants.NATIVE_SEMANTIC_OWNERS, constants.NATIVE_SEMANTIC_CASE_OWNERS
     return case.get("native_authoring_flow") == "standard_intake" or (
-        skill_id in {"guru-maintain-architecture-baseline", "guru-check-task"}
+        (skill_id in NATIVE_SEMANTIC_OWNERS
+         or (skill_id, case.get("id", case.get("case_id"))) in NATIVE_SEMANTIC_CASE_OWNERS)
         and case.get("native_execution_mode") == "semantic_authoring"
     )
 
@@ -2066,11 +2094,12 @@ def run(root: Path, skills: Path, args: argparse.Namespace) -> dict[str, Any]:
                     checks = deterministic_results(case.get("assertions", {}).get("deterministic", []), public_output, response["trace_events"], workdir, package)
                     schema_passed = False
                     output_package, actual_outputs = package, outputs
-                    if case.get("native_authoring_flow") == "standard_intake":
+                    if (case.get("native_authoring_flow") == "standard_intake"
+                            or case['id'].startswith('native-implementation-')):
                         trace = strict_json(Path(response["native_trace_locator"]), "native_trace")
                         terminal = trace.get("terminal_skill_id")
                         if not isinstance(terminal, str) or not terminal:
-                            raise error("eval_terminal_owner_invalid", "native_trace", "Use actual Intake terminal producer.")
+                            raise error("eval_terminal_owner_invalid", "native_trace", "Use the actual terminal producer.")
                         output_package, terminal_interface, _ = package_context(package.parents[1], terminal)
                         actual_outputs = {item["exit_id"]: item["schema"] for item in terminal_interface["public_contracts"]["outputs"]}
                     if actual_exit in actual_outputs:

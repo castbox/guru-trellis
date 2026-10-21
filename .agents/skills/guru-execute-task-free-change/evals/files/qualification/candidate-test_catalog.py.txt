@@ -1,0 +1,11 @@
+import unittest
+from catalog import apply
+
+class CandidateCatalogTests(unittest.TestCase):
+    def test_empty_qualification_rejects_display_title(self):
+        with self.assertRaises(ValueError):
+            apply({'active_target': 'release-1', 'display_title': 'Old title'}, {}, 'rename_display', 'New title')
+
+    def test_empty_qualification_rejects_target_selection(self):
+        with self.assertRaises(ValueError):
+            apply({'active_target': 'release-1', 'display_title': 'Old title'}, {}, 'select_target', 'release-2')

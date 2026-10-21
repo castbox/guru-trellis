@@ -1,0 +1,11 @@
+{
+  "profile": "selected_route",
+  "mode": "workflow",
+  "selector_exit": "task_free",
+  "continuation_id": "catalog-qualification-pair",
+  "selection_origin": "automatic",
+  "request_summary": "Update the display guide to explain the observed catalog operation behavior. Keep the catalog contract and code unchanged.",
+  "target_paths": [
+    "docs/display-help.md"
+  ]
+}

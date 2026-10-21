@@ -728,6 +728,87 @@
           }
         ]
       }
+    },
+    {
+      "id": "native-owner-common-expectation",
+      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "expected_exit": "planning_stale",
+      "expected_output": "The owner identifies the accepted half-open plan and green assertions conflicting with the effective inclusive authority, including the unchanged production filter.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-boundary.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "planning_stale"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "common-expectation",
+            "criterion": "The owner determines inclusive upper-endpoint and singleton behavior from the effective requirement and docs before comparing the accepted design, implementation and green tests. It identifies their shared half-open assumption and the unchanged range_filter consumer effect, qualifies the supported normal scenario, and routes the conflicting accepted design to its original planning owner without weakening the authority or assertions to obtain green.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-implementation-code-drift",
+      "prompt": "Continue the previously accepted implementation using the current source files and newly available original evidence. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-implementation-code-drift-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "actual-stop-and-continuation",
+            "criterion": "The native implementation owner reads the accepted plan and newly available source evidence before its next affected write, identifies source clause, actual candidate and consumer impact, and selects the earliest existing owner. It distinguishes a valid authority with an erroneous accepted mechanism, conflicting authority without an effective disposition, and a valid plan with an implementation/assertion deviation. Every continuation consumes actual producer stdout; no DTO, approval or route is supplied by host. Dependent work resumes only after applicable authority, revised planning/reviews and actual candidate agree. Unresolved authority remains stopped, and unrelated work is evaluated by real dependencies. Any claimed stop, revision or resume must be observed in command and write order, not inferred from an expected exit.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

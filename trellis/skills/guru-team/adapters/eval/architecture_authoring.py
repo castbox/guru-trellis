@@ -48,8 +48,11 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         candidate_source = baseline_source.replace("protocol='responses'", "protocol='wire_v2'")
         design = "The candidate selects wire_v2 as transport.send's default protocol. Existing import and summary callers keep their explicit responses selector. All selectors are forwarded to the registered provider without interpreting business stages.\n"
         constraint_file = str(task / "constraints.md")
-        if "constraint-sufficient" in case:
+        if any(name in case for name in ("constraint-sufficient", "constraint-refresh", "constraint-unchanged")):
             constraint = "# Endpoint capability fact\n\nSource: provider wire-v2 integration specification, revision 1. wire_v2 is a registered technical protocol selector on the same transport/provider integration; it accepts and returns the same payload/response shape as responses. Existing explicit responses and chat callers remain supported. The provider allows either selector as the default; no new storage, state or caller lifecycle is required.\n"
+        elif "constraint-refuted" in case:
+            constraint = "# Endpoint capability fact\n\nSource: provider wire-v2 integration specification, revision 2. wire_v2 returns an asynchronous job identifier. A separate polling request retrieves the completed response. Existing responses and chat calls return the completed response in the original call. A wire_v2 request therefore needs a different completion lifecycle.\n"
+            design += "The accepted design assumes wire_v2 returns the completed response in the original call and therefore retains the existing synchronous caller contract without polling.\n"
         else:
             constraint = "# Endpoint capability fact\n\nSource: integration discovery note. The wire_v2 provider capability and response/lifecycle compatibility specification has not yet been supplied. Its endpoint name alone does not establish compatibility or the meaning of completion.\n"
     if "missing-candidate" in case:
@@ -70,6 +73,15 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     if constraint_file:
         files[constraint_file] = constraint
         files[public["baseline"]["locator"]] += "\nProtocol identifiers are forwarded to the registered provider. Provider capability and response/lifecycle compatibility must be established for a new default selector; no required provider version is inferred from its name.\n"
+    if repeated_review(request):
+        files['test_transport_selectors.py'] = (
+            "import unittest\nfrom transport import send\n"
+            "class SelectorTests(unittest.TestCase):\n"
+            "    def test_existing_explicit_selectors(self):\n"
+            "        for protocol in ('responses', 'chat'):\n"
+            "            self.assertEqual(send('x', protocol=protocol)['payload'], 'x')\n"
+            "            self.assertEqual(send('x', protocol=protocol)['protocol'], protocol)\n"
+        )
     files[public["baseline"]["locator"]] = files[public["baseline"]["locator"]].replace(
         "Identity: current-v2.", f"Identity: {public['baseline']['identity']}.")
     for relative, content in files.items():
@@ -131,6 +143,13 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         "design_locator": str(task / "design.md") if design is not None else None,
     }, indent=2) + "\n")
     (evidence / "before-transport.py.txt").write_text(baseline_source)
+    if repeated_review(request):
+        argv = [sys.executable, '-B', '-m', 'unittest', '-v', 'test_transport_selectors']
+        validation = subprocess.run(argv, cwd=fixture, text=True, capture_output=True, check=False)
+        (evidence / 'selector-tests.json').write_text(json.dumps({
+            'argv': argv, 'returncode': validation.returncode,
+            'stdout': validation.stdout, 'stderr': validation.stderr,
+        }, indent=2) + '\n')
     if public["stage"] == "branch_review":
         public["committed_range"] = {"base_ref": "origin/main", "base_head": base, "review_head": head}
     if public.get("planning_purpose") is not None or public.get("schema_version") == "3.0":
@@ -164,6 +183,8 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     reads.extend(["docs/architecture-eval/candidate.patch", "docs/architecture-eval/candidate-inventory.json", "docs/architecture-eval/before-transport.py.txt", "transport.py", "import_pipeline.py", "query_summary.py", public["requirement_authority"], public["behavior_authority"]])
     if candidate_contribution:
         reads.extend(["test_transport_candidate.py", "docs/architecture-eval/candidate-test-result.json"])
+    if repeated_review(request):
+        reads.extend(['test_transport_selectors.py', 'docs/architecture-eval/selector-tests.json'])
     (fixture / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).parent.mkdir(parents=True, exist_ok=True)
     (fixture / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).write_text(json.dumps({
         "schema_version": "1.0", "required_reads": reads,
@@ -171,6 +192,7 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         "public_input_sha256": hashlib.sha256(json.dumps(public, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
         "candidate_inventory": "docs/architecture-eval/candidate-inventory.json",
         **({"candidate_contribution_locator": candidate_contribution} if candidate_contribution else {}),
+        **({"followup_locator": "docs/architecture-eval/provider-followup.md"} if repeated_review(request) else {}),
     }, indent=2) + "\n")
 
 
@@ -237,7 +259,8 @@ def reviewer_context(repository: Path, package: Path, helper_command: str, reads
     return "\n".join([
         "You are a fresh independent Architecture reviewer for this repository candidate.",
         "This fresh ephemeral worker has no candidate-author history. Inspect the actual native prelude before proceeding. If it preloads task PRD, acceptance, implementation summaries or pass narratives, stop with the existing blocked/re-entry contract; do not retroactively claim independence.",
-        "Load the Architecture Skill and contract below for the reviewer method and purpose-selected current authoring/wrapper contract. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
+        "Load the Architecture Skill and contract below for the reviewer method and current authoring/wrapper contracts. Execute every listed contract read command, including all Interface input-profile schemas and their referenced schemas, before authoring or invoking. This complete public-contract read is an execution prerequisite; the current public input still selects only its own profile. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
+        "The trace protocol requires one SKILL.md read as its first event. Execute that listed read once and retain its complete text for this session; do not repeat that helper read during a later review round. Complete the other required reads before the corresponding wrapper invocation.",
         f"Repository locator: {repository}",
         f"Public input locator: {input_locator}",
         *[read(path, "owner_file" if upstream else "skill_contract") for path in public_contract_reads(package, json.loads(input_locator.read_text()))],
@@ -291,3 +314,39 @@ def validate_reviewer_reads(events: list[dict], repository: Path, reads: list[st
         raise ValueError("independent reviewer must read authority before candidate and consumers")
     if phase2 and any(Path(path).name in {"prd.md", "implement.md", "task.json"} for path in observed):
         raise ValueError("independent reviewer read task narrative before Architecture invocation")
+
+
+def repeated_review(request: dict) -> bool:
+    return request.get("case_id") in {"planning-constraint-refresh-native", "planning-constraint-unchanged-native"}
+
+
+def stage_followup(request: dict, repository: Path, projection: Path, private_root: Path):
+    """Reveal original provider evidence only after the first actual owner call."""
+    if not repeated_review(request):
+        return None
+    changed = request['case_id'] == 'planning-constraint-refresh-native'
+    content = ('# Provider integration observation, revision 2\n\n'
+        + ('wire_v2 returns an asynchronous job identifier. Completed output requires a later polling call. '
+           'responses and chat still return completed output in their original call.\n' if changed else
+           'wire_v2, responses and chat still return completed output in their original call with the same payload and response shape. '
+           'No provider lifecycle or supported caller behavior has changed.\n'))
+    calls = []
+    def reveal(process):
+        calls.append({'returncode':process.returncode,'stdout':process.stdout,'stderr':process.stderr})
+        private_root.mkdir(parents=True, exist_ok=True)
+        (private_root / 'review-rounds.json').write_text(json.dumps(calls, indent=2) + '\n')
+        if len(calls) != 1 or process.returncode:
+            return
+        relative = 'docs/architecture-eval/provider-followup.md'
+        for root in (repository, projection):
+            (root / relative).write_text(content)
+    reveal.calls = calls
+    return reveal
+
+
+def validate_followup_reads(events: list[dict], repository: Path) -> None:
+    invokes = [index for index,event in enumerate(events) if event.get('kind') == 'invoke']
+    later = str(repository / 'docs/architecture-eval/provider-followup.md')
+    reads = [index for index,event in enumerate(events) if event.get('kind') == 'read' and event.get('path') == later]
+    if len(invokes) != 2 or not reads or not all(invokes[0] < index < invokes[1] for index in reads):
+        raise ValueError('same-reviewer followup must read newly arrived evidence between the actual wrapper calls')

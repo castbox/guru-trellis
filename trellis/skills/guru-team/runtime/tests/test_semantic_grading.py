@@ -179,12 +179,16 @@ class SemanticGradingTests(unittest.TestCase):
         adapter.assert_called_once()
         regrade.assert_not_called()
 
-    def test_architecture_and_phase2_regrade_actual_completed_execution_without_model_rerun(self):
-        for skill in ("guru-maintain-architecture-baseline", "guru-check-task"):
+    def test_supported_owner_regrades_completed_execution_without_model_rerun(self):
+        for skill, selected_id in (("guru-maintain-architecture-baseline", None), ("guru-check-task", None),
+                      ("guru-author-task-plan", None), ("guru-review-branch", None),
+                      ("guru-execute-task-free-change", None),
+                      ("guru-clarify-requirements", "native-implementation-authority-conflict")):
             with self.subTest(skill=skill):
                 package, interface, _ = runner.package_context(SKILLS, skill)
                 self.corpus, _ = runner.corpus(SKILLS, package, interface)
-                case = next(case for case in self.corpus["evals"] if case.get("native_execution_mode") == "semantic_authoring")
+                case = next(case for case in self.corpus["evals"] if case.get("native_execution_mode") == "semantic_authoring"
+                            and (selected_id is None or case["id"] == selected_id))
                 self.args.skill, self.args.case = skill, case["id"]
                 self.args.run_root = str(self.root / skill)
                 self.args.semantic_grading = None

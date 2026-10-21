@@ -238,11 +238,13 @@ def resolved_base_interpreter(error_prefix: str) -> Path:
         raise ValueError(f"{error_prefix} base interpreter is not executable")
     return interpreter
 
-def qualification_trace_helper_source(intake_read_paths: dict[str, list[str]] | None = None) -> str:
+def qualification_trace_helper_source(intake_read_paths: dict[str, list[str]] | None = None, *, allow_commands: bool = False) -> str:
     interpreter = resolved_base_interpreter("qualification trace helper")
     body = QUALIFICATION_TRACE_HELPER_BODY
     if intake_read_paths is not None:
         body = body.replace("INTAKE_READ_PATHS = {}", f"INTAKE_READ_PATHS = {intake_read_paths!r}", 1)
+    if allow_commands:
+        body = body.replace("COMMAND_FORWARDING_ALLOWED = False", "COMMAND_FORWARDING_ALLOWED = True", 1)
     return f"#!{interpreter}\n{body}"
 
 def permission_probe_interpreter(denied_paths: list[Path]) -> Path:
@@ -763,14 +765,20 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
     intake_flow = request.get("native_authoring_flow") == "standard_intake"
     public_assets = intake_projection_assets(interface) if intake_flow else public_projection_assets(interface)
     if request.get("native_execution_mode") == "semantic_authoring" and not intake_flow:
-        public_assets.add(Path("references/contract.md"))
+        if str(request.get("case_id", "")).startswith("native-implementation-") or request["skill_id"] in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
+            from adapters.eval.native_adapter import additional_authoring_module
+            module = additional_authoring_module(request["skill_id"], request.get("case_id"))
+            paths = module.public_reads(canonical_root) if hasattr(module, "public_reads") else module.PUBLIC_READS
+            public_assets.update(Path(path) for path in paths)
+        else:
+            public_assets.add(Path("references/contract.md"))
         if request["skill_id"] == "guru-maintain-architecture-baseline":
             from adapters.eval.architecture_authoring import public_contract_reads
             from adapters.eval.fixture_io import public_input_path
 
             public = json.loads(public_input_path(request).read_text())
             public_assets.update(path.relative_to(canonical_root) for path in public_contract_reads(canonical_root, public))
-        else:
+        elif not str(request.get("case_id", "")).startswith("native-implementation-") and request["skill_id"] not in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
             public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
     public_assets = schema_projection_closure(canonical_root, public_assets)
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):

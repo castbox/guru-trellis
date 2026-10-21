@@ -17,6 +17,7 @@ FACTS = ".trellis/tasks/phase2-evidence/public-authoring-facts.json"
 ARCHITECTURE_INPUT = ".trellis/tasks/phase2-evidence/architecture-input.json"
 ARCHITECTURE = "guru-maintain-architecture-baseline"
 QUALIFIERS = ("guru-qualify-normal-scenario", "guru-qualify-solution-mechanism")
+ALL_QUALIFIERS = (*QUALIFIERS, "guru-qualify-root-cause")
 PUBLIC_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
     "schemas/phase2-check.schema.json", "schemas/public-input-delivery-1.0.schema.json",
@@ -33,7 +34,9 @@ def write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> None:
+def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
+          seed_bodies: dict[str, str] | None = None,
+          range_authority_body: str | None = None) -> None:
     fixture = fixture.resolve()
     package = package.resolve()
     public = json.loads(public_input_path(request).read_text(encoding="utf-8"))
@@ -138,20 +141,59 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             "docs/architecture/README.md": "# Architecture Baseline\n\nIdentity: range-v1. Active. bounds_policy.py owns pure ordered-bound validation reused by interval.py. interval.py owns the mathematical predicate; range_filter.py is its production caller. Each module has no I/O, external dependency, state or persistence.\n",
             f"{task_ref}/design.md": "# Candidate Design\n\ninterval.py delegates ordered-bound validation to bounds_policy.ordered_bounds and compares both endpoints inclusively. range_filter.py composes the predicate. Tests exercise the predicate, bound validation and production filtering.\n",
         })
+    common_expectation = request["case_id"] == "native-owner-common-expectation"
+    if common_expectation:
+        files[f"{task_ref}/design.md"] = "# Accepted Candidate Design\n\ninterval.py uses lower <= value < upper. The upper endpoint and singleton ranges return false. test_interval.py asserts that behavior. range_filter.py keeps its existing production filtering calls.\n"
+        files[f"{task_ref}/implement.md"] = "# Accepted Implementation\n\nImplement the accepted half-open comparison and validate its upper-endpoint and singleton expectations.\n"
+        files["test_interval.py"] = (
+            "import unittest\nfrom interval import contains\n"
+            "class IntervalTests(unittest.TestCase):\n"
+            "    def test_lower_and_interior(self):\n"
+            "        for value in (2, 3): self.assertTrue(contains(value, 2, 4))\n"
+            "    def test_upper_and_singleton(self):\n"
+            "        self.assertFalse(contains(4, 2, 4))\n"
+            "        self.assertFalse(contains(2, 2, 2))\n"
+            "    def test_outside(self):\n"
+            "        for value in (1, 5): self.assertFalse(contains(value, 2, 4))\n"
+        )
     # Create actual installed public Task/Delivery state before recording any gate.
     from adapters.eval.architecture_authoring import stage_delivery_identity
     from runtime.delivery_projection.adapter import DeliveryProjection
     from adapters.eval.delivery_production import activate
     from adapters.eval.owner_runtime import load_package_owner_runtime, compose_production_fixture_runtime, compose_production_owner_command_runtime
     legacy_task_ref = task_ref
-    directory = stage_delivery_identity(fixture, public, scope_content=files[f"{legacy_task_ref}/prd.md"], scope_anchor="R1")
+    if range_authority_body is not None:
+        files['docs/range.md'] = range_authority_body
+        authority = fixture / 'docs/range.md'
+        authority.parent.mkdir(parents=True, exist_ok=True)
+        authority.write_text(range_authority_body, encoding='utf-8')
+    if seed_bodies is not None:
+        # This opt-in fixture describes existing business files in its plan.
+        # Establish those actual before bytes before Task/Delivery creation.
+        baseline_paths = [relative for relative in files if not Path(relative).is_relative_to(task)]
+        for relative in baseline_paths:
+            target = fixture / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(files[relative], encoding='utf-8')
+        run_git(fixture, 'add', '--', *baseline_paths)
+        run_git(fixture, 'commit', '-qm', 'stage existing integer range business baseline')
+    scope_content = seed_bodies['task-prd.md'] if seed_bodies is not None else files[f"{legacy_task_ref}/prd.md"]
+    directory = stage_delivery_identity(fixture, public, scope_content=scope_content, scope_anchor="R1")
     task_ref = public.pop('task_locator')
     task = fixture / task_ref
     planning_ref = directory.relative_to(fixture).as_posix()
+    seed_base = None
+    if seed_bodies is not None:
+        seed_base = DeliveryProjection(fixture, task_ref).content_base(
+            public['delivery_key'], development_base=run_git(fixture, 'rev-parse', 'HEAD'))
     files.pop(f'{legacy_task_ref}/task.json')
     for name in ('prd.md', 'design.md', 'implement.md'):
         files[f'{planning_ref}/{name}'] = files.pop(f'{legacy_task_ref}/{name}')
-    files[f'{planning_ref}/design.md'] += '\n## Docs SSOT Plan\n\nStrategy: ssot_first. docs/range.md owns range behavior.\n'
+        if seed_bodies is not None:
+            files[f'{planning_ref}/{name}'] = seed_bodies[name].format(
+                task_ref=task_ref, planning_ref=planning_ref, base_ref=seed_base)
+    if seed_bodies is None:
+        files[f'{planning_ref}/design.md'] += '\n## Docs SSOT Plan\n\nStrategy: ssot_first. docs/range.md owns range behavior.\n'
     files[f'{planning_ref}/implement.jsonl'] = ''
     files[f'{planning_ref}/check.jsonl'] = ''
     public['task_ref'] = task_ref
@@ -166,7 +208,10 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     owner_runtime = load_package_owner_runtime(runtime_target, SKILL)
     compose_production_fixture_runtime(runtime_target, owner_runtime)
     compose_production_owner_command_runtime(runtime_target, owner_runtime)
-    public['planning_accepted_result_id'] = activate(owner_runtime, fixture, task, public['delivery_key'])
+    activation_options = ({'preserve_existing_constitution': True}
+        if seed_bodies is not None or range_authority_body is not None else {})
+    public['planning_accepted_result_id'] = activate(
+        owner_runtime, fixture, task, public['delivery_key'], **activation_options)
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-qm", "stage inclusive range requirements and test fixture")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", run_git(fixture, "rev-parse", "HEAD"))
@@ -269,19 +314,22 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     projection = DeliveryProjection(fixture, task_ref)
     candidate_paths = sorted({*files, 'interval.py'})
     projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
-        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'], observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
+        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'],
+            development_base=seed_base, observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
     write_json(evidence / 'check-public-input.json', public)
 
     required = sorted([
         *files, *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
         ARCHITECTURE_INPUT, "docs/phase2-evidence/check-public-input.json",
         *(f".trellis/guru-team/skills/packages/{ARCHITECTURE}/{path}" for path in ARCHITECTURE_READS),
-        *(f".trellis/guru-team/skills/packages/{skill}/{path}" for skill in QUALIFIERS for path in (
+        *(f".trellis/guru-team/skills/packages/{skill}/{path}" for skill in ALL_QUALIFIERS for path in (
             "SKILL.md", "references/contract.md", "schemas/semantic-result.schema.json",
             "schemas/public-phase2-candidate-set-input.schema.json",
         )),
+        ".trellis/guru-team/skills/packages/guru-qualify-root-cause/interface.json",
         ".trellis/guru-team/skills/consumers/workflow/production/normal-scenario-qualification-invocation.schema.json",
         ".trellis/guru-team/skills/consumers/workflow/production/solution-mechanism-qualification-invocation.schema.json",
+        ".trellis/guru-team/skills/consumers/workflow/production/root-cause-qualification-invocation.schema.json",
     ])
     if historical is not None:
         required.extend(["docs/phase2-evidence/legacy-validation.json", "docs/phase2-evidence/external-observation.json"])
@@ -326,6 +374,15 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             "diff_locator": "docs/phase2-evidence/diff.patch",
         },
     })
+
+
+def owner_mutated_paths(repository: Path) -> list[str]:
+    """Resolve the original Check owner's exact Task and private checkpoint paths."""
+    from runtime.delivery_projection.adapter import DeliveryProjection
+    public = json.loads((repository / 'docs/phase2-evidence/check-public-input.json').read_text())
+    DeliveryProjection(repository, public['task_ref']).resolve(public['delivery_key'])
+    return [public['task_ref'] + '/task.json',
+        f".trellis/.runtime/guru-team/owner-checkpoints/{Path(public['task_ref']).name}/phase2-check.json"]
 
 
 def execute(package: Path, repo: Path, envelope: dict, environment: dict) -> subprocess.CompletedProcess:

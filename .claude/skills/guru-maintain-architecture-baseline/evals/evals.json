@@ -459,7 +459,7 @@
     {
       "id": "planning-business-default-native",
       "prompt": "Review the current Planning candidate from current project Architecture authority, actual design/source and unchanged consumers. Execute the Architecture Skill as a fresh independent reviewer and return its actual formal wrapper output.",
-      "expected_exit": "architecture_conflict",
+      "expected_exit": "fitness_regression",
       "expected_output": "The independent reviewer evaluates the real candidate and returns its actual declared result.",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -476,7 +476,7 @@
             "kind": "json_path",
             "pointer": "/exit_id",
             "operation": "equals",
-            "expected": "architecture_conflict"
+            "expected": "fitness_regression"
           },
           {
             "id": "public-invocation-only",
@@ -827,6 +827,147 @@
             "pointer": "/exit_id",
             "operation": "equals",
             "expected": "baseline_current"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-constraint-refuted-native",
+      "prompt": "Review the actual accepted candidate, provider integration specification and unchanged callers through the installed Architecture contract. Author your own judgment and invoke the original wrapper.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "The independent owner checks the accepted completion-lifecycle premise against the actual provider specification and returns the applicable original route.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "architecture_conflict"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "original-provider-evidence",
+            "criterion": "The reviewer distinguishes the provider specification from the accepted design assumption, explains asynchronous job completion versus the synchronous caller contract, and identifies the actual affected caller behavior. Acceptance and the proposed candidate do not establish compatibility. The final wrapper result is the actual owner result, not a host-authored decision.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-constraint-refresh-native",
+      "prompt": "Perform the original Architecture review. After the first actual wrapper call, continue as the same reviewer when the new provider evidence becomes available; assess its applicability and invoke the original owner again.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "The same reviewer returns the second original wrapper result after examining the actual newly available source evidence.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "architecture_conflict"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "same-reviewer-premise-refresh",
+            "criterion": "Both original wrapper invocations occur in one native reviewer session. The later source is unavailable before the first invocation and is read between invocations. The AI separately assesses whether that source changes the completion-lifecycle premise despite unchanged candidate source and tests; it refreshes only affected judgment, preserves still-applicable engineering facts, and explains unchanged applicability for the legitimate control. Neither mere evidence arrival nor unchanged source/test bytes determines its semantic route.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "planning-constraint-unchanged-native",
+      "prompt": "Perform the original Architecture review. After the first actual wrapper call, continue as the same reviewer when the new provider evidence becomes available; assess its applicability and invoke the original owner again.",
+      "expected_exit": "baseline_current",
+      "expected_output": "The same reviewer returns the second original wrapper result after examining the actual newly available source evidence.",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "input_profile_id": "delivery_task_impact_sync",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/planning-semantic-authoring-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "baseline_current"
+          },
+          {
+            "id": "public-invocation-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "evals-not-loaded",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "same-reviewer-premise-refresh",
+            "criterion": "Both original wrapper invocations occur in one native reviewer session. The later source is unavailable before the first invocation and is read between invocations. The AI separately assesses whether that source changes the completion-lifecycle premise despite unchanged candidate source and tests; it refreshes only affected judgment, preserves still-applicable engineering facts, and explains unchanged applicability for the legitimate control. Neither mere evidence arrival nor unchanged source/test bytes determines its semantic route.",
+            "evidence_selector": "transcript"
           }
         ]
       }

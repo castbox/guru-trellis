@@ -1,0 +1,30 @@
+import argparse
+import json
+from pathlib import Path
+
+
+def apply(state, evidence, operation, value):
+    if operation == 'rename_display':
+        state['display_title'] = value
+    elif operation == 'select_target':
+        if value not in evidence.get('qualified_targets', []):
+            raise ValueError('target qualification unavailable')
+        state['active_target'] = value
+    else:
+        raise ValueError('unknown operation')
+    return state
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--state', required=True)
+    parser.add_argument('--qualification', required=True)
+    parser.add_argument('--operation', required=True)
+    parser.add_argument('--value', required=True)
+    args = parser.parse_args()
+    state_path = Path(args.state)
+    state = json.loads(state_path.read_text())
+    evidence = json.loads(Path(args.qualification).read_text())
+    apply(state, evidence, args.operation, args.value)
+    state_path.write_text(json.dumps(state, indent=2) + '\n')
+    print(json.dumps(state))

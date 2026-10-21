@@ -12,8 +12,8 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from adapters.eval import phase2_authoring, native_adapter, owner_staging
-from adapters.eval.eval_support import package_tree_sha256
+from adapters.eval import phase2_authoring, native_adapter, owner_staging, architecture_authoring
+from adapters.eval.eval_support import package_tree_sha256, repository_file_inventory, minimal_native_environment
 from adapters.eval.owner_runtime import load_package_runtime_module
 from runtime.schema import validate_json
 
@@ -42,6 +42,137 @@ def request(root: Path, case_id: str) -> dict:
 
 
 class Phase2AuthoringTests(unittest.TestCase):
+    def test_native_transport_preserves_empty_rejected_and_eligible_candidate_sets(self):
+        # Real original wrappers and trace, with deterministic transport inputs.
+        # These fields are never supplied to an evaluated native Agent.
+        for candidate_kind, case_id in (('empty','native-owner-clean'),
+                ('rejected','native-owner-clean'),('eligible','native-owner-common-expectation')):
+            with self.subTest(candidate_kind=candidate_kind), tempfile.TemporaryDirectory() as temporary:
+                req=request(Path(temporary),case_id)
+                values=native_adapter.build_context(req,'codex')
+                try:
+                    self.native_candidate_roundtrip(req,values,candidate_kind)
+                finally:
+                    values[9].set();values[8].join(timeout=2)
+
+    def native_candidate_roundtrip(self, req, values, candidate_kind):
+        protocol=json.loads(values[4].read_text())
+        actual_context=protocol['implementation_context_id']
+        self.assertEqual(actual_context,os.environ.get('TRELLIS_CONTEXT_ID') or 'architecture-delivery-eval')
+        context_probe=subprocess.run([sys.executable,'-B','-c',
+            'import os; print(os.environ["TRELLIS_CONTEXT_ID"])'],
+            env=minimal_native_environment({},cwd=Path(protocol['model_root']),
+                control={'TRELLIS_CONTEXT_ID':actual_context}),capture_output=True,text=True,check=False)
+        self.assertEqual(context_probe.returncode,0,context_probe.stderr)
+        self.assertEqual(context_probe.stdout.strip(),actual_context)
+        repository=Path(protocol['repository_projection_root'])
+        owner_repository=Path(protocol['owner_repository'])
+        package=Path(protocol['projection_root'])
+        facts=json.loads((repository/phase2_authoring.FACTS).read_text())
+        self.assertFalse(any(path.endswith('/task.json') for path in facts['required_reads']))
+        before=repository_file_inventory(owner_repository)
+        architecture_package=repository/'.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline'
+        architecture=json.loads((repository/phase2_authoring.ARCHITECTURE_INPUT).read_text())
+        helper=[sys.executable,protocol['helper_path'],'--trace',protocol['trace_path'],
+            '--request-sha256',protocol['request_sha256'],'--projection-root',str(package),
+            '--repository-root',str(repository),'--sandbox-root',protocol['model_root'],
+            '--request-fifo',protocol['request_fifo'],'--response-fifo',protocol['response_fifo'],
+            '--skill-sha256',protocol['skill_sha256'],'--wrapper-sha256',protocol['wrapper_sha256']]
+        def read(path,kind='owner_file'):
+            result=subprocess.run([*helper,'read','--kind',kind,'--path',str(path)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+        def invoke(envelope,*arguments):
+            result=subprocess.run([*helper,'invoke','--stdin',*arguments],input=json.dumps(envelope),
+                capture_output=True,text=True,timeout=30)
+            self.assertEqual(result.returncode,0,result.stderr or result.stdout)
+            return result.stdout.strip()
+        for path in architecture_authoring.public_contract_reads(architecture_package,architecture):read(path)
+        for path in facts['architecture_reads']:read(repository/path)
+        props=json.loads((architecture_package/'schemas/semantic-result-delivery-3.0.schema.json').read_text())['oneOf'][0]['properties']
+        architecture_owner={key:value for key,value in architecture.items() if key in props}
+        architecture_owner.update(input_sha256=hashlib.sha256(json.dumps(architecture,ensure_ascii=False,
+            sort_keys=True,separators=(',',':')).encode()).hexdigest(),typed_exit='baseline_current',
+            baseline_identity=architecture['baseline']['identity'],constitution_identity=architecture['constitution']['identity'],
+            impact_kind='no_architecture_impact',impact_reason='Original wrapper transport test.',promotion_state='no_change',
+            consumer={'kind':'workflow','id':'guru-architecture-baseline-current-router'},
+            ai_review_gate={'status':'passed','reviewed_scope':'Deterministic transport input.',
+                'evidence_summary':'Native semantics remain separate.','findings':[],
+                'conclusion':'Original wrapper transport only.'})
+        invoke({'public_input':architecture,'owner_result':architecture_owner},'--upstream-architecture')
+        for name in phase2_authoring.PUBLIC_READS:read(package/name,'skill_contract')
+        read(repository/phase2_authoring.FACTS)
+        for path in facts['required_reads']:read(repository/path)
+        for path in Path(protocol['model_root'],'evidence/case').iterdir():read(path,'case_file')
+        public=json.loads((repository/'docs/phase2-evidence/check-public-input.json').read_text())
+        witness={'requirement_refs':['docs/range.md'],'supported_entry_refs':['interval.py'],
+            'existing_caller_refs':['range_filter.py'],'honest_action_sequence':['Run the upper endpoint operation.'],
+            'defect_observation':'The endpoint probe is within the supported range predicate contract.',
+            'excluded_assumptions':[]}
+        classification={'candidate_ref':'upper-endpoint','decision':
+            'qualified_current' if candidate_kind=='eligible' else 'rejected_not_reproduced',
+            'witness':witness,'consumer_use':'task_commit_preflight'}
+        names=() if candidate_kind=='empty' else ('normal-scenario',) if candidate_kind=='rejected' else (
+            'normal-scenario','solution-mechanism','root-cause')
+        for name in names:
+            qualification={'profile':'phase2_candidate_set','mode':'workflow','caller':'guru-check-task',
+                'target_locator':public['task_ref'],'target':facts['qualification_target'],
+                'candidate_refs':['upper-endpoint'],
+                'candidate_locators':[{'candidate_ref':'upper-endpoint','locators':['interval.py']}]}
+            semantic={'schema_version':'1.0','skill_id':'guru-qualify-'+name,'public_input':qualification,
+                'candidate_results':[{'candidate_ref':'upper-endpoint','decision':classification['decision'],
+                    'witness':witness,'reason':'Objective transport fixture.'}],
+                'ai_review_gate':{'status':'passed','reviewed_candidate_refs':['upper-endpoint'],
+                    'summary':'Objective transport input only.'},'typed_exit':'classified',
+                'consumer':{'kind':'workflow','id':'guru-'+name+'-classified-router'}}
+            if name=='root-cause':
+                semantic['candidate_results']=[{'candidate_ref':'upper-endpoint','goal':'ordinary_feature',
+                    'classification':'not_incident_applicable','reason':'Ordinary range feature.',
+                    'evidence':{'applicability_basis':'The predicate feature is not an incident mechanism.'}}]
+            invoke({'schema_version':'1.0','semantic_result':semantic},'--qualifier',name)
+        source=json.loads((PACKAGE/'examples/phase2-check.json').read_text())
+        authored={key:value for key,value in source.items() if key not in (
+            'schema_version','skill_id','task_ref','phase2_capture_commit','reviewed_content_sha256')}
+        authored['reviewed_paths']=facts['reviewed_paths']
+        authored['docs_ssot']['durable_paths']=['docs/range.md']
+        authored['delivery_policy'].update(task_scope=['R1'],delivery_slice=['R1'],remaining_work=[])
+        authored['candidate_classifications']=[] if candidate_kind=='empty' else [classification]
+        if candidate_kind=='eligible':
+            authored.update(typed_exit='implementation_required',consumer={'kind':'workflow','id':'guru-resume-implementation'})
+            authored['semantic_review'].update(status='implementation_required',findings=[{
+                'id':'endpoint','candidate_ref':'upper-endpoint','severity':'P2','summary':witness['defect_observation'],
+                'path':'interval.py','status':'open'}])
+            authored['delivery_policy']['current_slice_status']='failed'
+        result=invoke({'public_input':public,'owner_result':authored})
+        events=json.loads(Path(protocol['trace_path']).read_text())['events']
+        self.assertEqual(len([event for event in events if event['kind']=='invoke']),2+len(names))
+        native_adapter.validate_native_trace(Path(protocol['trace_path']),protocol['request_sha256'],req,
+            Path(protocol['wrapper_path']),result,values[4])
+        after=repository_file_inventory(owner_repository)
+        changed={path for path in before.keys()|after.keys() if before.get(path)!=after.get(path)}
+        self.assertEqual(changed,set(phase2_authoring.owner_mutated_paths(owner_repository)))
+        for path in phase2_authoring.owner_mutated_paths(owner_repository):
+            before.pop(path,None);after.pop(path,None)
+        self.assertEqual(before,after)
+
+    def test_green_candidate_assertions_share_the_accepted_half_open_assumption(self):
+        with tempfile.TemporaryDirectory() as temp:
+            req = request(Path(temp), 'native-owner-common-expectation')
+            _, target, _ = owner_staging.stage_owner_execution(req, Path(req['workdir']).parent, Path(req['runtime_target']))
+            repo = target.parents[4]
+            validation = json.loads((repo / 'docs/phase2-evidence/validation.json').read_text())
+            self.assertEqual(validation['returncode'], 0, validation['stderr'])
+            facts = json.loads((repo / phase2_authoring.FACTS).read_text())
+            design = next(path for path in facts['required_reads'] if path.endswith('/design.md'))
+            self.assertIn('lower <= value < upper', (repo / design).read_text())
+            self.assertIn('lower <= value <= upper', (repo / next(path for path in facts['required_reads'] if path.endswith('/prd.md'))).read_text())
+            self.assertIn('includes both endpoints', (repo / 'docs/range.md').read_text())
+            self.assertIn('range_filter.py', facts['architecture_reads'])
+            diff = (repo / 'docs/phase2-evidence/diff.patch').read_text()
+            self.assertNotIn('diff --git a/range_filter.py', diff)
+            observed = subprocess.check_output([sys.executable, '-B', '-c', 'from range_filter import select; print(select([2, 3, 4], 2, 4)); print(select([2], 2, 2))'], cwd=repo, text=True)
+            self.assertEqual(observed, '[2, 3]\n[]\n')
+            self.assertNotIn('expected_exit', json.dumps(facts))
+
     def test_source_and_installed_package_identity_excludes_private_tests(self):
         installed = REPO / ".trellis/guru-team/skills/packages/guru-check-task"
         self.assertTrue((PACKAGE / "tests").is_dir())
@@ -254,6 +385,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                 self.assertNotIn("--upstream-architecture", context)
                 self.assertIn("--qualifier normal-scenario", context)
                 self.assertIn("--qualifier solution-mechanism", context)
+                self.assertIn("--qualifier root-cause", context)
                 self.assertNotIn("adapter has already completed", context)
                 native = json.loads(native_path.read_text())
                 self.assertNotIn("expected_exit", native)
@@ -295,7 +427,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                 output = '{"exit_id":"passed"}'
                 wrappers = [
                     repository / ".trellis/guru-team/skills/packages" / skill / "scripts/invoke.sh"
-                    for skill in (phase2_authoring.ARCHITECTURE, *phase2_authoring.QUALIFIERS)
+                    for skill in (phase2_authoring.ARCHITECTURE, *phase2_authoring.ALL_QUALIFIERS)
                 ] + [projection / "scripts/invoke.sh"]
                 for wrapper in wrappers:
                     events.append({
@@ -306,7 +438,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                         "request_sha256": values[6],
                     })
                 # Upstream invocation occurred before the overall owner's task reads.
-                upstream = events.pop(-4)
+                upstream = events.pop(-5)
                 events.insert(reviewer_count, upstream)
                 receipt = {
                     "schema_version": "1.0", "request_sha256": values[6],
@@ -316,10 +448,10 @@ class Phase2AuthoringTests(unittest.TestCase):
                 }
                 trace.write_text(json.dumps(receipt))
                 native_adapter.validate_native_trace(trace, values[6], req, wrappers[-1], output, protocol_path)
-                receipt["events"] = events[:-3] + events[-1:]
+                receipt["events"] = [event for event in events if event['kind'] != 'invoke'
+                    or event['wrapper_path'] in {str(wrappers[0]),str(wrappers[-1])}]
                 trace.write_text(json.dumps(receipt))
-                with self.assertRaisesRegex(ValueError, "public wrapper invocation"):
-                    native_adapter.validate_native_trace(trace, values[6], req, wrappers[-1], output, protocol_path)
+                native_adapter.validate_native_trace(trace, values[6], req, wrappers[-1], output, protocol_path)
                 receipt["events"] = [event for event in events if event.get("path") != str(repository / "test_interval.py")]
                 trace.write_text(json.dumps(receipt))
                 with self.assertRaisesRegex(ValueError, "required authority reads"):

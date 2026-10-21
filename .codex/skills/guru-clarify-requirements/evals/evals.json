@@ -162,6 +162,40 @@
         "evals/files/eval-blocked-facts.json"
       ],
       "input_profile_id": "standard_intake"
+    },
+    {
+      "id": "native-implementation-authority-conflict",
+      "prompt": "Continue the previously accepted implementation using the current source files and newly available original evidence. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "expected_exit": "blocked",
+      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "input_profile_id": "delivery_active_task_scope_change",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-implementation-authority-conflict-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "actual-stop-and-continuation",
+            "criterion": "The native implementation owner reads the accepted plan and newly available source evidence before its next affected write, identifies source clause, actual candidate and consumer impact, and selects the earliest existing owner. It distinguishes a valid authority with an erroneous accepted mechanism, conflicting authority without an effective disposition, and a valid plan with an implementation/assertion deviation. Every continuation consumes actual producer stdout; no DTO, approval or route is supplied by host. Dependent work resumes only after applicable authority, revised planning/reviews and actual candidate agree. Unresolved authority remains stopped, and unrelated work is evaluated by real dependencies. Any claimed stop, revision or resume must be observed in command and write order, not inferred from an expected exit.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

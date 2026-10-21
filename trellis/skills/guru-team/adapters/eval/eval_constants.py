@@ -1,10 +1,38 @@
 from __future__ import annotations
 
 from typing import Any
+import hashlib
+import json
 import sys
 
 
+def stdout_digest(value: str) -> str:
+    """Use the same JSON whitespace normalization as the traced helper."""
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError:
+        normalized = value.strip()
+    else:
+        normalized = json.dumps(parsed, separators=(',', ':'))
+    return hashlib.sha256(normalized.encode()).hexdigest()
+
+
 ADAPTERS = ("shared", "codex", "claude", "cursor")
+NATIVE_SEMANTIC_OWNERS = frozenset({
+    "guru-maintain-architecture-baseline", "guru-check-task", "guru-author-task-plan",
+    "guru-review-branch", "guru-execute-task-free-change",
+})
+NATIVE_SEMANTIC_CASE_OWNERS = frozenset({
+    ("guru-clarify-requirements", "native-implementation-authority-conflict"),
+})
+# Host-only corpus expectations for the bounded implementation test segments.
+# This table never enters native input and selects no workflow route.
+NATIVE_IMPLEMENTATION_EXPECTED_OWNERS = {
+    ('guru-author-task-plan', 'native-implementation-plan-premise'): 'guru-approve-task-plan',
+    ('guru-author-task-plan', 'native-implementation-plan-resume'): 'guru-check-task',
+    ('guru-check-task', 'native-implementation-code-drift'): 'guru-check-task',
+    ('guru-clarify-requirements', 'native-implementation-authority-conflict'): 'guru-clarify-requirements',
+}
 
 OWNER_INPUT = ".trellis/.runtime/guru-team/evals/public-input.json"
 
@@ -195,6 +223,7 @@ import sys
 from pathlib import Path
 
 INTAKE_READ_PATHS = {}
+COMMAND_FORWARDING_ALLOWED = False
 
 
 def digest(value: bytes) -> str:
@@ -274,7 +303,7 @@ def main() -> int:
     invoke_parser = subparsers.add_parser("invoke")
     invoke_parser.add_argument("--stdin", action="store_true")
     invoke_parser.add_argument("--upstream-architecture", action="store_true")
-    invoke_parser.add_argument("--qualifier", choices=("normal-scenario", "solution-mechanism"))
+    invoke_parser.add_argument("--qualifier", choices=("normal-scenario", "solution-mechanism", "root-cause"))
     command_parser = subparsers.add_parser("command")
     command_parser.add_argument("--skill-id", required=True)
     command_parser.add_argument("--command", required=True)
@@ -316,8 +345,8 @@ def main() -> int:
     response_fifo = Path(args.response_fifo)
     stdin_text = sys.stdin.read()
     if args.operation == "command":
-        if args.flow != "standard_intake":
-            raise ValueError("command forwarding requires standard_intake")
+        if args.flow != "standard_intake" and not COMMAND_FORWARDING_ALLOWED:
+            raise ValueError("command forwarding is not declared for this native case")
         arguments = args.arguments[1:] if args.arguments[:1] == ["--"] else args.arguments
         request_payload = {"skill_id": args.skill_id, "command": args.command,
                            "arguments": arguments, "stdin": stdin_text}
@@ -342,7 +371,7 @@ def main() -> int:
             "returncode": response["returncode"], "stdout_sha256": stdout_digest(response["stdout"]),
             "stderr_sha256": digest(response["stderr"].encode()),
         })
-        if args.command == "invoke" and response["returncode"] == 0:
+        if args.command in {"invoke", "independent-review"} and response["returncode"] == 0:
             trace = json.loads(trace_path.read_text())
             trace["terminal_skill_id"] = args.skill_id
             trace_path.write_text(json.dumps(trace, separators=(",", ":")))

@@ -1,0 +1,12 @@
+{
+  "profile": "selected_route",
+  "mode": "workflow",
+  "selector_exit": "task_free",
+  "continuation_id": "catalog-shared-restriction",
+  "selection_origin": "automatic",
+  "request_summary": "Continue the bounded catalog update: the independent display-guide wording edit is done; assess and apply proposal/catalog.py to catalog.py if suitable under the catalog contract.",
+  "target_paths": [
+    "docs/display-help.md",
+    "catalog.py"
+  ]
+}

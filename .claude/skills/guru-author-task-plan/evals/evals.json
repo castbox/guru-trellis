@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-author-task-plan",
+  "evals": [
+    {
+      "id": "native-constraint-design",
+      "prompt": "Execute the original Author solution-writing owner against the complete snapshot-operation source and actual preceding Architecture assessment. Write the actual selected Delivery planning bodies and invoke the original wrapper.",
+      "expected_exit": "plan_ready",
+      "expected_output": "The original Author returns its actual plan handoff after writing the selected Delivery bodies.",
+      "input_profile_id": "delivery_solution_planning",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-solution-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "plan_ready"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "constraint-behavior-placement",
+            "criterion": "The AI authors actual design and implementation bodies from complete source conditions, negation, exception and responsibilities. The single source disposition identifies concrete operation behavior and gate placement; a source link or retain statement alone is insufficient. Snapshot label changes preserve active-target eligibility without qualification; activation has its exact qualification and supported restoration exception. The original wrapper stdout binds the selected Delivery. The host writes only the AI-authored file bytes and never supplies a correct plan.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-implementation-plan-premise",
+      "prompt": "Continue the previously accepted implementation using the current source files and newly available original evidence. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "expected_exit": "approved",
+      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "input_profile_id": "delivery_initial_review",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-implementation-plan-premise-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "actual-stop-and-continuation",
+            "criterion": "The native implementation owner reads the accepted plan and newly available source evidence before its next affected write, identifies source clause, actual candidate and consumer impact, and selects the earliest existing owner. It distinguishes a valid authority with an erroneous accepted mechanism, conflicting authority without an effective disposition, and a valid plan with an implementation/assertion deviation. Every continuation consumes actual producer stdout; no DTO, approval or route is supplied by host. Dependent work resumes only after applicable authority, revised planning/reviews and actual candidate agree. Unresolved authority remains stopped, and unrelated work is evaluated by real dependencies. Any claimed stop, revision or resume must be observed in command and write order, not inferred from an expected exit. This segment ends at actual Planning Approval and preserves the affected implementation until the separate original presentation/acceptance and Activation boundary; plan_ready alone does not complete this segment.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-implementation-plan-resume",
+      "prompt": "Continue the same implementation fixture using the actual preceding owner outputs, current public Delivery facts and current source files. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "input_profile_id": "delivery_initial_review",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-implementation-plan-resume-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "actual-stop-and-continuation",
+            "criterion": "The native implementation owner reads the actual original Activation output and matching current Delivery, approved planning, actual candidate and unchanged caller. It restores affected implementation only after the current plan and applicable owner reviews agree. It runs actual validation and binds a fresh independent Architecture result plus complete final Check to the repaired full candidate at the fixed baseline. Every upstream result is an actual original wrapper output; host transportation supplies no semantic result or authorization. Review the first segment and this same-fixture continuation together for stop, revision and actual resume ordering.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    }
+  ]
+}

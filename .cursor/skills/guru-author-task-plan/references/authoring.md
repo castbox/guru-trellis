@@ -161,7 +161,13 @@ nonempty-file check or force a migrated clean candidate to be recommitted.
 
 Review the complete current profile: source disposition, requirements,
 mechanism/Architecture dependency, policy/Docs plan, official context, scope and
-validation boundary. Invoke scripts/invoke.sh with the exact input and current
+validation boundary. Apply the existing selection contract in planning-body.md:
+compare the live selected scope_ref anchors with the design's in-slice commitments
+and implement's Delivery Policy. Preserve whole-source conditions and exceptions
+as applicable compatibility boundaries; reading them does not select additional
+requirements for this Delivery. Correct wider body promises to match the actual
+selection; only a real scope change returns to the original scope owner.
+Invoke scripts/invoke.sh with the exact input and current
 call-local owner result. The validator checks identity/files/minimal handoff;
 it does not write planning, decide routes, or replace Approval. No persistent
 Author checkpoint or authorization record is created.
