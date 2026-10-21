@@ -53,3 +53,21 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 脚本仅收集原生session events/命令/实际输出字节/usage/改动paths，不做semantic评分；AI逐次判完整性和成本类别。总input包含共同注入，cached单列不扣减造收益；必要正文、导航、重复和无关历史分开。读取/定位改善与维护改动均报告，失败保留首次结果及修复，同口径变更须双方重跑。兼容子项不强求节省，错误不以低成本抵消。无需新telemetry平台或长期raw traces。
 
 唯一实际#331结果由 [contribution test.md](../../requirements-design-test-contributions/331-current-effective-knowledge/test.md) 拥有；三层当前Test单元只拥有策略/场景/预期与结果定位。migration核对/定向tests、一个代表性clean+matching update/reapply/drift证明各自层次，真实Agent证据不能由schema/目录通过代替。
+
+## D648：约束、关键前提与原 owner 承接
+
+需求R648-01..07的完整定义由Requirements同单元拥有；本节定义本仓原模块的职责落点。公共I/O、profile、typed exit、schema、runtime状态、阶段、single-writer和授权边界不变。没有新的Architecture决策，因此no-impact不建立空贡献或ADR。
+
+**D648-01 / CON648-SOURCE**：原Author planning-body/authoring和Delivery design模板承接R648-01。实际设计说明约束如何限定机制、分支、拒绝与依赖；唯一来源处置引用原承诺和具体落点。原Author收尾Gate按既有选择合同，对照live selected scope_ref anchors与design/Delivery Policy的本批承诺。完整来源的条件和例外按其适用性保留，不因读取而自动成为本批交付承诺；正文承诺写宽时按实际选择纠正，真实范围变更仍回原owner。事实或假设不足留原缺口，不能由脚本补成已确认设计。
+
+**D648-02 / CON648-PREMISE**：原Architecture contract与独立读取路径承接R648-02。规范约束、原证据、接受设计和假设分开，before_authority仍是候选比较来源。原native staging提供真实authority、完整候选、原始事实与未改consumer；不能通过隔离隐藏必要约束，也不能把答案或旧pass注入。
+
+**D648-03 / CON648-REENTRY**：原实施协调承担受影响操作停点与原owner路由。scope不变的方案修订使用原当前阶段合法rework和同Delivery Planning continuation；不新建身份或改accepted_scope。真正authority/scope问题回原Clarify，规划有效的实现/断言修复留原implementation/Check。新候选依原资格/机制入口处理；恢复必须与受影响最新规划、判断和实际候选匹配，无冲突工作仅按真实依赖继续。global workflow只定位触发与重入，step-local方法归原Skill。
+
+**D648-04 / CON648-EXPECTATION**：原Check/Branch Review从有效合同确定预期，再核代码/测试和真实消费者。完整当前Check、精确committed B..H Review和受影响未改consumer各自保持。测试私有固定值不能替代源约束；绿测试与一致设计不豁免职责缺陷。
+
+**D648-05 / CON648-APPLICABILITY**：原task-free pre-write/evolution gate判断gate保护语义及依赖必要性。样本以同域catalog的展示重命名A和生效目标选择B表达operation差异，具体业务名不进入公共方法。原实现/测试共同过度限制A时，owner在剩余受影响target write前停止，并沿原机制/evolution/scope consumer处理。A/B实际调用与state前后由测试记录，AI说明不适用理由、必要阻断和evidence职责。
+
+**D648-06 / CON648-COVERAGE**：单一Candidate Applicability And Coverage定义继续拥有复用规则。原owner读取新原证据后判定哪些前提失效、哪些覆盖仍有效；代码/测试未变不豁免，整体版本或身份变化不自动重跑。同一合规独立reviewer可接续，当前阶段结果仍实际发生。
+
+**D648-07 / CON648-VALIDATION**：原Architecture/Check semantic_authoring与原native Adapter扩展本项写作、实施、Review和task-free事实。测试私有运输只执行真实Agent请求、落其原字节、记录原wrapperstdout及状态变化；它不选语义结论或改public DTO。声明多owner连续性时，用同一stateful fixture消费实际前序stdout。预置合法前置只证明起点，不冒充本轮前序判断。RDT以隔离完整proposed目标进入candidate Check，原final_integration整合读回后以实际after重新candidate/begin_check，原最终Check/committedReview不省略。

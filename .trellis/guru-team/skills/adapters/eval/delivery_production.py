@@ -112,7 +112,7 @@ def planning(runtime, fixture, task, key, exit_id):
     return recorded, checked
 
 
-def final_architecture(fixture, task, key):
+def final_architecture(fixture, task, key, *, preserve_existing_constitution=False):
     """Execute fixture-owned final assessment; this is transport, not AI proof."""
     package = fixture / '.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline'
     public = json.loads((package / 'examples/public-input-candidate-assessment-3.0.json').read_text())
@@ -127,7 +127,8 @@ def final_architecture(fixture, task, key):
                   freshness_identity='sha256:' + hashlib.sha256((directory / 'design.md').read_bytes()).hexdigest())
     constitution = fixture / public['constitution']['authority_locator']
     constitution.parent.mkdir(parents=True, exist_ok=True)
-    constitution.write_text('Current production fixture constitution.\n')
+    if not (preserve_existing_constitution and constitution.is_file()):
+        constitution.write_text('Current production fixture constitution.\n')
     owner = {name: copy.deepcopy(public[name]) for name in (
         'schema_version', 'profile', 'mode', 'continuation_id', 'stage', 'task_locator',
         'baseline', 'constitution', 'project_contract', 'freshness_identity',
@@ -150,12 +151,13 @@ def final_architecture(fixture, task, key):
             'baseline_identity', 'constitution_identity', 'constitution_status', 'impact_kind', 'promotion_state')}
 
 
-def activate(runtime, fixture, task, key):
+def activate(runtime, fixture, task, key, *, preserve_existing_constitution=False):
     recorded, checked = planning(runtime, fixture, task, key, 'approved')
     ref = task.relative_to(fixture).as_posix()
     public = {'profile': 'delivery_initial_review', 'mode': 'workflow', 'task_ref': ref,
               'source_exit': 'baseline_current', 'delivery_key': key,
-              'architecture_assessment': final_architecture(fixture, task, key)}
+              'architecture_assessment': final_architecture(fixture, task, key,
+                  preserve_existing_constitution=preserve_existing_constitution)}
     approved = wrapper(fixture, 'guru-approve-task-plan', 'invoke.sh',
                        ['--input', str(write(fixture / '.trellis/.runtime/guru-team/evals/approval.json', public)),
                         '--owner-result', checked['artifact_path']], formal=True)

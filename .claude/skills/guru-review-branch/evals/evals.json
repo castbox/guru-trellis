@@ -288,6 +288,38 @@
         "evals/files/archived-review-blocked-post-owner-facts.json"
       ],
       "native_execution_mode": "post_owner"
+    },
+    {
+      "id": "native-common-expectation",
+      "prompt": "Review the actual full committed candidate range, effective repository contracts, green candidate tests and unchanged production caller through the original independent Branch Review owner.",
+      "expected_exit": "implementation_required",
+      "expected_output": "The independent full committed Review identifies the common erroneous expectation and returns its actual finding route.",
+      "input_profile_id": "delivery_branch_review",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/native-owner-input.json",
+        "evals/files/native-range-boundary.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "implementation_required"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "common-error-and-unchanged-caller",
+            "criterion": "The independent reviewer reads the actual complete committed base-to-HEAD range, derives inclusive endpoint and singleton behavior from effective authority, and detects that accepted design, source and green test assertions share the conflicting half-open expectation. It explains the unchanged range_filter caller effect and routes a qualified supported-normal-path finding through the original owner without rewriting contracts or weakening assertions. Historical fixture Check is only an entry precondition; this sample does not claim native Check-to-Review continuity.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

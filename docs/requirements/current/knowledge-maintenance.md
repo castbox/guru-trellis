@@ -63,3 +63,21 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 ## 关系与完整规格
 
 设计：[`RDT-DES-KNOWLEDGE`](../../design/current/knowledge-maintenance.md)。测试：[`RDT-TST-KNOWLEDGE`](../../test/current/knowledge-maintenance.md)。[迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) 定义来源和未迁移范围。原 [RDT Skill](../../../trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/SKILL.md)、[Architecture Skill](../../../trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md) 和本轮共享 current-knowledge 合同拥有各自公共规格与方法，不复制 private artifact。
+
+## 约束、前提与原 owner 修订
+
+来源：[本项完整来源](https://github.com/castbox/guru-trellis/issues/648)。本节补充原读取、适用性和质量职责，不替代上述 R331/R578/R600/R637/R638 的条件或公共接口。
+
+**R648-01 / BEH648-01**：Author 读取适用约束的来源、对象、完整条件、否定和例外，在本批实际设计及唯一来源设计处置中说明行为落点。引用、retain声明或原则复述不证明符合；不复制基线全文或建立逐约束台账。
+
+**R648-02 / BEH648-02**：Architecture 区分规范性约束、事实证据、已接受设计和关键假设。对影响可行性、职责、拒绝条件或阻塞依赖的前提读取原证据，前序ADR、批准、晋升与实现/测试一致不能豁免。合法例外按真实来源、范围及修订依据判断，不制定无条件文档优先级。比较原适用authority与候选，候选拟改baseline/ADR/预期不能自证；真实修订由原owner取得有效来源后处理。独立审核隔离通过叙述，同时取得必要约束和事实；缺事实保留不确定性并走原incomplete/blocked。
+
+**R648-03 / BEH648-03**：实施发现已批准方案违约、关键前提不成立或无法满足原承诺时，即使scope未扩张也暂停受影响操作，返回条款来源、实际候选落点和影响。需求/约束有效而方案错，回原Author/Architecture修方案、保持accepted scope；承诺、规范来源或例外authority冲突，或确需改scope，回原Clarify，Architecture只提供具体架构冲突，不成为全部来源处理的新前置；规划有效而实现/断言错，回原implementation/Check。实施者不自行修改需求、baseline或错误预期。冲突已解决、受影响规划与审核及实际候选重新匹配后才恢复；无冲突工作按真实依赖继续，脚本通过和旧批准不足以恢复。
+
+**R648-04 / BEH648-04**：Check/Branch Review先从有效合同确定应观察行为，再审实现、测试入口及断言。状态、开关、迁移或执行分支变化时，检查实际前后状态和真实受影响未改consumer，不机械生成全状态矩阵。有原证据的职责违规属于合同缺陷，不要求先发生生产功能故障。设计、实现和测试共同采用错误预期时，仍须指出共同错误，不迁就实现弱化断言。
+
+**R648-05 / BEH648-05**：区分有效约束要求的依赖与机制无依据新增的限制。后者回原机制/Architecture，不能伪装成外部证据待补。task-free目标或执行涉及gate/admission/phase/switch/rollout时，执行owner识别保护对象、不变量、最小触发迁移、不适用operation、缺证据实际阻断范围和真实evidence owner/consumer。无依据跨能力前置导致停止受影响target write，走原evolution/scope route，不扩大编辑。同域A不改变不变量，缺同证据仍成功；B改变不变量，缺证据失败；共同错误限制A仍须检出。通用规则不带业务专属名称。
+
+**R648-06 / BEH648-06**：新增证据否定原结论关键前提时，即使代码/测试未变也刷新受影响判断。其余覆盖与可核验工程事实按原适用性承接；组合影响不能界定时完整评估，不因阶段/reviewer变化无因重跑，不跨读或重建退休private状态。
+
+**R648-07 / BEH648-07**：本项先冻结当前匹配版本，用保留失效关系的去敏真实Agent样本核验，再补实际方法/验证缺口。Agent自己读文件、作判断、写结果并调原wrapper，host期待不注入。改变方法后在相同或严格等价输入、模型、权限和起点复核，逐次审核条款、因果、预期和原owner路由；两边均检错记已有能力。Author落点、实施停点/分流/恢复、Check/Review、未改consumer和A/B在本项实际证明，不延期#649。保留失败和未验证边界；结构/出口/绿命令不独立证明效果。源码分发、实际Agent行为、安装采用分别报告。只用命中定向验证，最多一个代表clean，不扩完整Release/升级矩阵。

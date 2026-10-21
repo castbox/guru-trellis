@@ -20,6 +20,26 @@ PACKAGE = Path(__file__).resolve().parents[2] / 'packages/guru-maintain-architec
 
 
 class ArchitectureAuthoringTests(unittest.TestCase):
+    def test_followup_evidence_arrives_only_after_actual_first_invocation(self):
+        for kind in ('refresh', 'unchanged'):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                repo = self.fixture(root, case=f'planning-constraint-{kind}-native')
+                model = root / 'projection'
+                shutil.copytree(repo, model, ignore=shutil.ignore_patterns('.git'))
+                later = 'docs/architecture-eval/provider-followup.md'
+                self.assertFalse((repo / later).exists())
+                before = (repo / 'transport.py').read_bytes()
+                reveal = authoring.stage_followup({'case_id': f'planning-constraint-{kind}-native'}, repo, model, root / 'private')
+                reveal(subprocess.CompletedProcess([], 0, '{"exit_id":"baseline_current"}', ''))
+                self.assertEqual((repo / later).read_bytes(), (model / later).read_bytes())
+                self.assertEqual((repo / 'transport.py').read_bytes(), before)
+                self.assertIn('asynchronous' if kind == 'refresh' else 'No provider lifecycle', (repo / later).read_text())
+                events = [{'kind':'invoke'}, {'kind':'read','path':str(model / later)}, {'kind':'invoke'}]
+                authoring.validate_followup_reads(events, model)
+                with self.assertRaisesRegex(ValueError, 'between'):
+                    authoring.validate_followup_reads([events[1], events[0], events[2]], model)
+
     def fixture(self, root, case='planning-semantic-authoring', stage='planning'):
         repo = root / 'repository'
         repo.mkdir()
@@ -104,7 +124,7 @@ class ArchitectureAuthoringTests(unittest.TestCase):
             self.assertEqual((repo / inventory['tracked_diff']).read_text().strip(), '')
 
     def test_minimal_task_constraints_are_real_candidate_facts_without_narrative(self):
-        for kind in ("sufficient", "insufficient"):
+        for kind in ("sufficient", "insufficient", "refuted"):
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
                 repo = self.fixture(Path(temp), case=f"planning-constraint-{kind}-native")
                 facts = json.loads((repo / ARCHITECTURE_PUBLIC_AUTHORING_FACTS).read_text())
@@ -117,6 +137,9 @@ class ArchitectureAuthoringTests(unittest.TestCase):
                 self.assertFalse((repo / '.trellis/tasks/eval-task/prd.md').exists())
                 self.assertFalse((repo / '.trellis/tasks/eval-task/implement.md').exists())
                 self.assertNotIn('typed_exit', json.dumps(facts))
+                if kind == 'refuted':
+                    self.assertIn('asynchronous job identifier', (repo / leaf).read_text())
+                    self.assertIn('assumes wire_v2 returns the completed response', (repo / inventory['design_locator']).read_text())
 
     def test_reviewer_launch_is_separate_ephemeral_process_with_actual_error_preserved(self):
         original = ['codex', 'exec', '--ephemeral', '--output-last-message', '/overall.txt', 'overall owner task narrative']

@@ -178,6 +178,18 @@ When a necessary new constraint exists only in the task, obtain only that fact
 and its source; do not import the whole task narrative. Missing constraints or
 evidence remain conditional or use the existing incomplete/blocked route.
 
+Keep normative constraints, source facts, accepted design and design assumptions
+distinct. For an assumption that determines feasibility, responsibility,
+rejection or a dependency, inspect its supporting original evidence and full
+applicable conditions. A complete, applicable source excerpt with an identified
+source and revision can supply that fact even when the excerpt is task-local.
+Do not require another copy of the original document, an integration run or a
+durable-source rewrite solely because the sufficient fact is task-local.
+Judge any additional evidence need from the actual constraint or uncertainty.
+If a necessary fact, source or applicability is missing, name that gap and
+retain the existing incomplete/blocked route. A specification fact supports
+only the judgment it covers; it does not prove actual external execution.
+
 The reviewer independently determines the current complete scope, risks,
 affected consumers and applicable project-check set before inspecting prior
 execution results. It performs every applicable semantic project check for the

@@ -1,0 +1,23 @@
+task_id: 648-constraint-premise-review
+source: https://github.com/castbox/guru-trellis/issues/648
+status: proposed
+strategy: delta_first
+preimage: guru-trellis-rdt
+source_revision: cca65742bc485f8ab4e6399623b70dd5aebc25bd
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_authority_identity: guru-trellis-rdt
+proposed_targets:
+  requirements:
+    - docs/requirements/current/knowledge-maintenance.md
+  design:
+    - docs/design/current/knowledge-maintenance.md
+  test:
+    - docs/test/current/knowledge-maintenance.md

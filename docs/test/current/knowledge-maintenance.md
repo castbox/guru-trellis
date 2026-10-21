@@ -38,3 +38,21 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 | T638-05/06/07 / R638-06/07 → D638-05 | 命中production wrappers、一个clean matching安装/reapply/平台投影及真实native Agents，#636/#637组合 | fixture、source/dogfood/installed、Agent/GitHub分层；真实owner读取完整候选、组合与consumer，不预填pass；无Git整合可晋升 |
 
 实际#638结果仅由 [contribution test.md](../../requirements-design-test-contributions/638-shared-current-promotion/test.md) 拥有。已有T331/T600/T578策略及其历史结果保留，但不作为当前候选已通过证据；不扩完整Release矩阵或Backend生产采用。
+
+## T648：约束、关键前提与跨阶段真实行为
+
+| Test / requirement → design | 原输入与执行owner | 必须观察 |
+| --- | --- | --- |
+| T648-01 / R648-01 → D648-01 | 原Author native入口读取完整来源条件、否定/例外、实际候选及选中scope | 自主写出具体设计落点和唯一来源处置，区分本批交付承诺与完整来源兼容约束，原wrapper调用真实；host不预写正确正文 |
+| T648-02 / R648-02 → D648-02 | 原Architecture semantic_authoring：错误业务默认/未改consumer、原provider事实否定接受前提、合法例外/selector | 原条款和因果被识别；合法来源例外正确保留；当前完整trace和原wrapper不替代具体语义审核 |
+| T648-03 / R648-03 → D648-03 | 原跨阶段native：已批准方案内三类冲突、真实当前公共API和原owners | 下一次受影响写入前停、返回条款/候选/影响、自主三分流；冲突解决及受影响规划/审核/候选匹配才恢复；未解决authority保留blocked |
+| T648-04 / R648-04 → D648-04 | 原Check semantic_authoring与实际committed Review：设计/源码/绿测试共同错误、真实未改caller | 从有效合同指出共同错误预期及consumer影响，不弱化断言；两阶段正式结果分别发生 |
+| T648-05 / R648-05 → D648-05 | 原task-free native：同域A/B缺同资格证据，以及共同错误限制A候选 | 实际A成功且不改不变量；B失败且state保持；说明不变量、最小迁移、不适用理由、阻断范围、owner/consumer；错误前置导致受影响write停下 |
+| T648-06 / R648-06 → D648-06 | 同原reviewer两轮：代码/测试不变，新原证据否定关键前提；另给合法无变化事实 | 真实读取新事实并刷新命中判断，保留仍适用事实；影响不明完整评估；不按阶段/身份无因重跑 |
+| T648-07 / R648-07 → D648-07 | 原package/runtime/source/installed/native入口及原最终质量链 | matching方法先before再new，同语义/模型/权限/起点；失败保留，已有能力/新增收益分开；分发、行为、安装及GitHub事实分层 |
+
+本项每组各两次before/new，具体输入、观察与样本起点在Delivery design第8节固定；该次数是#648验证安排，不成为其他Task的普遍门槛。host期待表、另一侧答案或轨迹不进入被测上下文。AI逐次审核具体约束、因果影响、预期判断与原owner路由；仅exit、结构、trace顺序或绿色命令不能独立证明检错。普通环境/调用失败保持execution gap，不能记为语义通过或方法漏检。
+
+完整candidate Check、原owners最终整合/读回、实际after重绑、最终Check和独立committed Review继续沿T638。工程检查覆盖命中package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode与零未处置sidecar；clean最多一个代表，不扩完整Release/多平台升级矩阵。业务实际采用与生产效果未被fixture证明。
+
+唯一实际结果在[#648 contribution test.md](../../requirements-design-test-contributions/648-constraint-premise-review/test.md)。本单元只拥有策略、输入、owner、观察和结果定位，不复制运行结论为第二authority。#649的阶段成果/Completion组合验收与#651的reviewer载体不在本项。

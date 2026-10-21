@@ -1,0 +1,19 @@
+import unittest
+from catalog import apply
+
+class CatalogTests(unittest.TestCase):
+    def test_display_title(self):
+        state = {'active_target': 'release-1', 'display_title': 'Old title'}
+        self.assertEqual(apply(state, {}, 'rename_display', 'New title'),
+                         {'active_target': 'release-1', 'display_title': 'New title'})
+
+    def test_target_requires_qualification(self):
+        state = {'active_target': 'release-1', 'display_title': 'Old title'}
+        with self.assertRaises(ValueError):
+            apply(state, {}, 'select_target', 'release-2')
+        self.assertEqual(state['active_target'], 'release-1')
+
+    def test_qualified_target(self):
+        state = {'active_target': 'release-1', 'display_title': 'Old title'}
+        apply(state, {'qualified_targets': ['release-2']}, 'select_target', 'release-2')
+        self.assertEqual(state['active_target'], 'release-2')

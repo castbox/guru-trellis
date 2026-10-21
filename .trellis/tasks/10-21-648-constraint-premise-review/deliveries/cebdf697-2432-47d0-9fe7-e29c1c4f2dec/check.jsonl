@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次正文与恢复时完整加载写作规则"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "候选覆盖/工程事实适用性与原恢复路由"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值、最小验证范围和源安装证据边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "唯一来源设计处置与完整正文保持"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "当前设计正文承接与唯一处置模板"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "当前规范约束及必要性范围"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "原Architecture concerns及候选/最终整合职责"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "完整有效来源、适用性与真实对照要求"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "原RDT/Architecture写入和最终整合顺序"}
+{"file": "docs/test/current/knowledge-maintenance.md", "reason": "真实Agent证据与定向工程验证分层"}
