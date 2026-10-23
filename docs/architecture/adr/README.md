@@ -79,3 +79,5 @@
 - [ADR-KNOWLEDGE-FINAL-INTEGRATION：稳定身份与最终整合晋升](./knowledge-final-integration.md)；窄承接ADR-030时机与普通全局successor/总入口必写义务，保留最终质量与历史原义。
 
 - [ADR-PORTABLE-SHARED-LIFECYCLE：共享生命周期与本机责任分离](./portable-shared-lifecycle.md)；窄承接 ADR-024/027 的恢复及指定正式 schema1 接受范围，保留公共 writer、原 owners、资源边界和完整最终质量链。
+
+- [ADR-035：活动续接与scope两次承接](./035-current-continuation-scope-routing.md)；窄替代ADR-011/023/024的旧created/恢复/scope路由片段，保留公共模型、原producer和阶段owners。

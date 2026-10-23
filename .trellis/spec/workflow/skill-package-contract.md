@@ -1021,9 +1021,10 @@ source. A current clean authority produces Discovery-owned `base_observation`.
 A normal HEAD advance returns `refresh_base`; dirty, wrong, missing, ambiguous,
 repo-mismatched, or structurally invalid authority returns `blocked`. Neither
 path imports, accepts, or reconstructs `guru-base-sync-result-1.0` or its
-digests. Direct active task recording/checking binds the live checkout to
-`task.json.branch` while retaining the same independent base-current
-precondition. Active-task invocation identity is
+digests. Direct active task recording/checking binds TaskId/lifecycle
+generation to the Git common-dir branch binding and unique registered checkout;
+retired task.json.branch and Task development status are not identity inputs.
+The same independent base-current precondition remains. Active-task invocation identity is
 supplied ephemerally and does not itself create a checkpoint; only an explicit
 recovery continuation enables lazy same-owner checkpoint persistence. A proposed draft
 that names a created issue carries a separate live issue binding whose body
@@ -1455,7 +1456,12 @@ checker. That profile accepted the exact planning task and mappings and
 projected the old `created` exit; it is not a #434 recovery entry. Current
 `guru-create-task` owns lost-result read-only recovery for the exact TaskId
 and generation; continuation must not create a second Issue, branch, worktree,
-or task. The workflow consumes only its checked `created` exit before planning.
+or task. Only the original creation interval and its immediate whole-scope
+consumer require that checked created result. Existing active continuation,
+including a legitimate branch rebind, uses current TaskId/generation, legal
+binding, unique checkout and actual stage-owner entry conditions. Missing the
+original DTO alone cannot block such writes. Initial creation recovery keeps
+its exact original checks; it is not a general active-task recovery API.
 
 Current Delivery creation and Planning transition belong respectively to
 `guru-create-delivery` and `guru-activate-delivery`. Their independent public
@@ -1468,7 +1474,16 @@ The public runtime owns Delivery identity/phase; Guru original owners retain
 semantic evidence and private transactions. Recovery is producer-local and
 returns its schema-validated minimal output. A public phase alone cannot restore
 Approval, Check, full Review or readiness. Creation checkpoints are consumed
-only by Creation, not read/deleted by Approval or Author. Scope/implementation
+only by Creation, not read/deleted by Approval or Author. The unchanged Delivery
+created DTO is an identity/selection handoff. Its unique workflow consumer
+rereads the exact public current key, generation, planning_root and phase;
+only a planning object with an actual initial-requirements obligation and
+matching Author entry enters initial Author. All others enter the sole
+Task/Delivery continuation at their actual outstanding obligation, including
+existing planning's applicable Author/Wording/Architecture/Approval or current
+approved to Activation. Missing/stale outputs return to the original producer;
+phase alone never restarts initial Author. Preserve plans and applicable results. No phase cache, new DTO or
+phase reset is introduced. Scope/implementation
 projections are stateless modules, not one-command wrapper Skills.
 
 `guru-create-task-commit` keeps its existing `recovery_resume` public input and

@@ -74,5 +74,9 @@ Task-bearing 3.0 inputs, workflow profiles, `not_required`,
 `marketplace-verification.json`, and their recovery contracts are retired.
 Legacy schemas/examples, including private result 4.0, remain immutable
 compatibility assets but are not in
-the current graph. Old input fails closed with remediation to rerun current
-Publication/Finalizer preparation rather than being auto-projected.
+the current graph. Old input fails closed. A caller explicitly requesting
+standalone verification rebuilds this owner's current
+source_repository_verification input. An old in-flight transaction remains
+with its original pinned compatible Publication/Finalizer owner or existing
+per-case disposition. Neither route revives a current Finalizer, adapts old
+input, or makes business workflow owners consume standalone verification.

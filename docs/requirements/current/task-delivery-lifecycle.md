@@ -1,7 +1,7 @@
 # Task 与 Delivery 生命周期
 
-本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
-知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
+本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
 
@@ -10,6 +10,10 @@
 新变更先由原 mode owner 判断 standard intake 或 task-free；Issue 的存在、文件数和路径不能单独决定模式。标准 Intake 依次同步所选 base、发现当前变更上下文、澄清来源/要求、审查措辞及独立可交付性，再由原 Creation 创建 Task 和绑定的执行位置。信息查询不创建 Task。已绑定 Task 的变化走原当前 owner，不从 Intake 重建身份。缺失、重复或不唯一的公共身份、出口、consumer、安装合同或 checkout 关系须停止或进入其原恢复路线，不能由 inventory 的唯一候选猜选。
 
 AI 判断 scope、来源、关联、finding、充分性和路线。确定性工具只执行明确动作、读事实或校验结构/内容绑定。mandatory step 由 global workflow 以稳定 Skill id 调用，step-local Skill 独占完整内部行为。semantic Gate 的脚本成功不代替语义判断。只处理诚实协作中的合法正常路径、普通错误与过期状态，不增加对抗伪造或未要求的并发/崩溃机制。公共 Skill/exit/schema/path 的破坏变化必须有显式迁移。
+
+`R657-01 / BEH657-ADMISSION`：初始 Task 创建和原操作结果恢复保留原 checked created 与精确创建校验。既有活动 Task 经正式 TaskId/generation、合法 binding/rebind、唯一 checkout 及适用 session/explicit-task 解析后，由实际阶段 owner 判断写入；原 created DTO 或原机私有 runtime 不可得不能单独阻塞。正常无范围变化保留仍适用工程结果，真实缺失或歧义回原 owner。每批 source/test/task 写入前仍执行 live checkout boundary，不重建 Task 或空 Delivery，不补造初始创建、资源或历史 pass。
+
+`R657-02 / BEH657-SELECTION`：创建和明确选择已有 Delivery 都保留原 created DTO，其含义是实际 key/root 已建立或选定。唯一 consumer fresh 读取同 key 的公共 current phase；只有 planning 中真实初始需求义务且符合 Author profile 前置时进入 initial Author；已有 Planning 恢复实际 Author/Wording/Architecture/Approval，当前 approved 进入 Activation，缺失或过期结果回原 producer。其余活跃阶段回原 continuation。保留 key、phase、规划、历史及仍适用结果；不能以 created 名称重置阶段或以 phase 冒充门禁。输出丢失经原 producer 恢复同结果，后续按真实阶段承接。
 
 ## 切片建立与唯一 Planning
 
@@ -29,7 +33,7 @@ Planning 在实质 solution 写入前先取得真实 candidate 的独立 Archite
 
 实施只在已核验的当前 Task checkout 写入。每个写批次前重新检查 TaskId/generation、branch binding、注册 worktree 和 cwd；不修改无关 dirty。source/test/task 文件均受同一边界约束。
 
-whole-scope 变化先回原 Clarify；受影响 Delivery 的实际当前阶段 owner 读取新的整体 authority，合法 rework 后交同一 Author。仅清除受影响结果，不以旧 gate 资格阻挡 scope 修订，不改历史已交付事实。整个切片撤回由实际当前 owner 执行公共 stop/release，保留 candidate/commit/PR/history；停止不是交付或整体完成。PR 关闭及资源删除各有原 owner。
+`R657-03 / BEH657-SCOPE`：whole-scope 变化先由原 Clarify 返回不含 task_key 的 pre-Author scope_ready2.0，唯一 scope-only Author 写根 PRD，再由 Clarify acceptance 审查并执行 accept_scope。只有含真实 task_key 的 post-Author scope_ready2.0 才交当前阶段 owner；不重复根需求写入。revised/no_change/withdrawal_required 均保留两段职责，no_change 沿实际适用性续接；无 current Delivery 按义务进入显式 Creation 或 Completion，不为撤回创建空切片。受影响 Delivery 的实际当前阶段 owner 读取已发布的整体 authority，合法 rework 后交同一 Author更新受影响 PRD/design/implement并刷新命中门禁。仅清除受影响结果，不以旧 gate 资格阻挡 scope 修订，不改历史已交付事实。整个切片撤回由实际当前 owner 执行公共 stop/release，保留 candidate/commit/PR/history；停止不是交付或整体完成。PR 关闭及资源删除各有原 owner。
 
 远端 ref、无关共享 CURRENT、archive 或工具版本前进，不强迫换源、同步、重写贡献或整链重审。实际冲突、必需检查具体集成失败、原 Merge 确认的既有服务端更新要求、明确依赖纳入或用户主动同步，才进入原 Reconcile；一次固定目标，按真实差额恢复原阶段，不追赶新目标或制造空提交。立即适用规则、scope、依赖和方案的实质变化仍回原 owner。
 
@@ -100,7 +104,7 @@ Delivery 合并只产生 slice 结果。Task 未分配范围、未完成要求�
 
 remote branch 是 repository identity 与完整 remote ref 标识的共享资源。旧 Cleanup 继续核 generation、ownership 和 expected head；ref 已推进或属于新代时保留新提交并交原资源 owner。A 的旧资源 pending 不否定已证明的共享终态，也不阻止 B 使用不同合法资源；同一确有未完责任的资源仍受原冲突检查。两个 Task 的独立绑定、checkpoint 和清理不得互设准入；B 接续不授予清理 A 的权限。
 
-公共 I/O、唯一 consumer、matching native/Guru packages、workflow、spec、平台和完整 preset 成套迁移。旧完整安装沿 pinned 原 owner 或匹配维护路径处理在途事务，不转换旧 pass。source 采用、实际安装、原生 Agent 和完整 Release 证据分别报告。共享 Finish 与指定旧格式的完整条件由 Completion/Closure 单元拥有。
+`R657-04 / BEH657-CONTRACT`：Discovery 当前身份使用 TaskId/generation、common-dir binding 和唯一 checkout，不要求 metadata branch 或旧 Task development status。Delivery Review 使用真实 current candidate/gates；standalone verifier 的旧输入诊断回合法 source_repository_verification 准备，旧在途事务仍归其固定原 owner。公共 I/O、唯一 consumer、matching native/Guru packages、workflow、spec、平台和完整 preset 成套迁移。旧完整安装沿 pinned 原 owner 或匹配维护路径处理在途事务，不转换旧 pass。source 采用、实际安装、原生 Agent 和完整 Release 证据分别报告。共享 Finish 与指定旧格式的完整条件由 Completion/Closure 单元拥有。
 
 ## 关系和来源边界
 

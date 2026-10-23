@@ -1,0 +1,28 @@
+# ADR候选：活动续接、created consumer与scope两段承接
+
+状态：task-owned proposal；来源#657；正式编号及shared acceptance由原Architecture owner在final_integration处理。本文不改变已接受ADR历史文件的原观察，不宣称当前安装已采用。
+
+## Context
+
+现有官方公共模型和Guru原owners已经支持Task/Delivery实际阶段；全局created写入限制、选择后无条件initial Author及旧scope文字形成互斥current指令。恢复历史初始创建不能承担正式rebind后活动任务资格。仅改exit名称会遗漏current phase或scope acceptance，放宽validator会混淆创建与续接。
+
+## Decision
+
+1. Initial Task Creation及其同操作恢复继续消费原created和精确初始identity/binding/ledger；existing active continuation由当前TaskId/generation、合法binding/唯一checkout及原phase owner校验写入。不得要求复制原机私有runtime。
+2. Delivery Creation/Selection继续返回既有created DTO。唯一consumer fresh读取公共selection/phase；planning中真实尚需initial requirements且满足适用profile才进initial Author；其余按原continuation的实际未完成义务承接，包括planning内部的适用Author/Wording/Architecture/Approval、current approved到Activation。缺失/过期输出回原producer，不由phase重启初始Author。保持key、phase、root与适用gates；停止/历史对象或真实mismatch由原owner精确处置。phase不证明semantic pass。
+3. 当前scope修订先pre-Author scope_ready2.0，再scope-only Author根PRD，再Clarify acceptance执行accept_scope；只有含实际task_key的post-Author结果进入原stage rework/stop。revised/no_change/withdrawal_required均保留该顺序，无Delivery不造空切片。
+4. 原public API与owner不变。旧schema/成功事实保留版本边界，完整matching workflow/preset/packages/consumers是唯一切换；已发生mutation先由原producer恢复，不补造gate或读取其private状态。
+
+## 精确替代与保留
+
+窄替代ADR-011的Task development status、旧activation/checkpoint/Finalizer恢复路由，保留workflow continuation唯一authority、原producer恢复和upstream入口ownership。窄替代ADR-023的private4/scope_ready1、固定active_task_scope_change Author profile、in_progress resume，保留Clarify先判断与Author唯一writer。补足ADR-024下created consumer及scope两段顺序，保留官方Task2/API1、独立Delivery、原语义gates、Refs-only/Closure/Finish等终态责任。
+
+当前workflow/spec/change-contract的冲突段按此决定收敛；明确pinned-old资产不因名称旧被全量删除。无新状态、DTO、Skill、授权存储、digest链或双读兼容层。
+
+## Alternatives与后果
+
+新增phase字段或永久续接store会重复公共模型；将所有选择重置planning破坏阶段与历史；放宽初始创建恢复会掩盖不完整创建；仅改clear为scope_ready会跳过根PRD及acceptance。均不采用。consumer在每次接续读取当前事实增加必要原入口工作，但避免陈旧阶段推断，原门禁按实际影响刷新。
+
+## Adoption
+
+必须完成F1–F6/R1–R7/V1–V12对应验证、真实独立Architecture final_plan、完整候选Check及原owner晋升/readback，再覆盖actual after的最终质量链。至少一个matching installed/native独立clone真实owner写入和scope/selection实际consumer证据不可由fixture代替。原业务采用、远端发布和完整Release矩阵仍未由本决定证明。

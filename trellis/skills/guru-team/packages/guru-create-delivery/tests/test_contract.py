@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from support import installed_fixture, owner_module
+from runtime.delivery_projection.gates import record_gate
 
 
 class CreationTests(unittest.TestCase):
@@ -39,6 +40,38 @@ class CreationTests(unittest.TestCase):
         self.assertNotEqual(first["delivery_key"], second["delivery_key"])
         self.assertEqual((directory / "design.md").read_text(), "D1 unique plan\n")
         self.assertNotIn("status", self.fixture.projection.read_record())
+
+    def test_selection_and_creation_recovery_preserve_each_active_phase(self):
+        """Exercise real public transitions; semantic routing is native evidence."""
+        created = self.invoke()
+        key = created["delivery_key"]
+        projection = self.fixture.projection
+        implementation = self.fixture.root / "implementation.txt"
+        implementation.write_text("Existing implementation survives selection.\n")
+
+        def select_and_recover(phase):
+            before = projection.resolve(key)
+            selected = self.invoke({"profile": "delivery_selection", "mode": "workflow",
+                                    "task_ref": self.fixture.task_ref, "delivery_key": key})
+            recovered = self.invoke({**self.public, "action": "recover_creation"})
+            self.assertEqual(selected, created)
+            self.assertEqual(recovered, created)
+            self.assertEqual(projection.current()["key"], key)
+            self.assertEqual(projection.resolve(key), before)
+            self.assertEqual(before["phase"], phase)
+            self.assertEqual(len(projection.read_record()["deliveries"]), 1)
+            self.assertEqual(implementation.read_text(), "Existing implementation survives selection.\n")
+
+        select_and_recover("planning")
+        self.fixture.planning(key)
+        select_and_recover("implementing")
+        projection.begin_check(key, projection.candidate(["implementation.txt"], kind="git_free"))
+        select_and_recover("checking")
+        record_gate(projection, key, "check", "check:selected", "passed", [self.fixture.scope], [])
+        select_and_recover("reviewing")
+        record_gate(projection, key, "full_review", "review:selected", "passed", [self.fixture.scope], [])
+        record_gate(projection, key, "readiness", "ready:selected", "ready", [self.fixture.scope], [])
+        select_and_recover("publishing")
 
     def test_unsupported_profile_is_rejected_before_pending_write(self):
         failed = self.invoke({**self.public, "delivery_profile": "local_commit"})

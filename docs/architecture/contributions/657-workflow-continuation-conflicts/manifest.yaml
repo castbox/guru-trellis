@@ -1,0 +1,16 @@
+task_id: 657-workflow-continuation-conflicts
+source: https://github.com/castbox/guru-trellis/issues/657
+status: proposed
+change_path: target_native
+authority_identity: guru-trellis-architecture
+before_revision: 319202beab79c7666ecdb855291bf117e43d407e
+contribution: docs/architecture/contributions/657-workflow-continuation-conflicts.md
+decision_candidate: docs/architecture/contributions/657-workflow-continuation-routing-adr.md
+proposed_root: proposed
+proposed_targets:
+  - docs/architecture/01-current/system.md
+  - docs/architecture/03-domains/ownership.md
+  - docs/architecture/04-integrations/distribution.md
+  - docs/architecture/06-governance/change-contract.md
+  - docs/architecture/adr/035-current-continuation-scope-routing.md
+  - docs/architecture/adr/README.md

@@ -23,7 +23,16 @@ choices or new side effects; same-scope approved work and recovery continue.
 Invoke `scripts/invoke.sh --root . --input <json|-> --owner-result <json>` only
 after the semantic outcome exists. Runtime only records/checks public facts.
 Return one declared typed exit to its unique consumer; unknown or stale output
-stops. This package requires the complete compatible Guru preset installation.
+stops. created means the exact identity is selected, not that it is new or in
+planning. Its workflow consumer rereads the actual public phase: only a current
+planning object with an actual initial-requirements obligation and matching
+Author entry goes to initial Author. All others enter the sole Task/Delivery
+continuation at the actual obligation, including existing planning's applicable
+Author/Wording/Architecture/Approval or current approved to Activation.
+Missing/stale outputs return to their original producer; phase alone never
+restarts initial Author. Selection and result recovery preserve phase, plans and applicable
+results, and cannot manufacture a gate pass. This package requires the complete
+compatible Guru preset installation.
 
 ### Unsupported-profile correction in the original Creation interval
 
