@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "写作与审核前完整读取唯一清晰技术写作合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "保持来源条件、正文深度及唯一处置Policy Docs Plan"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核当前Delivery设计九节完成边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核实施验证与唯一Policy Docs Plan"}
+{"file": ".trellis/tasks/archive/2026-10/10-23-657-workflow-continuation-conflicts/deliveries/26065f96-88c8-40fe-aacd-64bbe5ccf949/prd.md", "reason": "完整F1至F6 R1至R7 V1至V12本批需求"}
+{"file": ".trellis/tasks/archive/2026-10/10-23-657-workflow-continuation-conflicts/deliveries/26065f96-88c8-40fe-aacd-64bbe5ccf949/design.md", "reason": "本批原owner和consumer机制、兼容与验证设计"}
+{"file": ".trellis/tasks/archive/2026-10/10-23-657-workflow-continuation-conflicts/deliveries/26065f96-88c8-40fe-aacd-64bbe5ccf949/implement.md", "reason": "有依赖执行、native独立clone与完整验收安排"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "当前continuation created consumer scope两段和写入边界"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "真实九concern与单写最终整合条件"}
+{"file": "docs/architecture/contributions/657-workflow-continuation-conflicts.md", "reason": "本批非空隔离Architecture差额"}
+{"file": "docs/architecture/contributions/657-workflow-continuation-routing-adr.md", "reason": "旧011 023 024路由窄替代及保留边界"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "T531 T635原测试策略与证据层边界"}

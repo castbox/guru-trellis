@@ -460,14 +460,22 @@ hash, size, mtime, absolute path, and freshness facts before serialization.
 Those runtime-derived facts are never required from the Agent-facing public
 input.
 
-For terminal non-current decisions only, the clarification serializer treats `target_disposition=null` as public
-`retained` only for a checker-passed `active_task_scope_change` clear result.
-Initial and standalone null dispositions continue to fail closed.
-Active accepted_current uses private 4.0 and scope_ready 1.0 instead. The
-recorder/checker select the schema and validate supplied content; they neither
-write planning nor reread GitHub. Invoke validates live TaskId/generation and
-the caller-aware task/context envelope, then directly projects AI-selected
-revision_refs. Record/check arguments and stdout receipt contracts stay stable.
+Current Task/Delivery scope serialization uses scope_ready 2.0. The original
+Clarify source/scope profiles return pre-Author source_selection/revision_refs
+and scope_action without task_key. Scope-only Author writes the actual root
+PRD; only Clarify task_scope_requirements_acceptance reviews that AuthorityRef,
+executes public accept_scope and emits post-acceptance scope_ready with task_key.
+The existing clear-router consumes these closed shapes separately. Neither
+recorder/checker nor a pre-Author result writes planning or advances/reworks/
+stops a Delivery. The actual stage owner alone performs legal scope rework or
+withdrawal after acceptance.
+
+The #292 private4.0/scope_ready1.0 and null-target active_task_scope_change clear
+serializer describe pinned-old complete installations only; their retained
+validation assets are not current runtime fallbacks. Initial/standalone null
+rules retain their own contracts. Current original-owner re-entry never
+converts an old successful result or infers selection from files. Record/check
+stdout receipts and the existing current invocation surface remain unchanged.
 
 The Agent remains the semantic owner of scope, adequacy, findings, confirmation,
 and typed route for semantic packages. Runtime may only validate the declared

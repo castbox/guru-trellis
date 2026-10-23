@@ -99,7 +99,9 @@ Classify the initial request before repository or network semantic reads:
   Respect deferred side effects throughout the selected route;
 - `standard_intake` enters guru-sync-base and the existing mapped graph, while
   `task_free` invokes `guru-execute-task-free-change`;
-- only guru-create-task:created enters task planning; Issue creation returns to fresh Intake;
+- new Task intake enters whole-scope Author only through guru-create-task:created;
+  existing active Tasks use the bound Task/Delivery continuation and actual owner.
+  Issue creation returns to fresh Intake;
 - `guru-select-workflow-mode` owns the semantic choice. The shortest explicit
   request is `这次走 task-free` and routes directly. Without explicit intent,
   high-confidence bounded, reversible, low-risk work routes automatically to
@@ -517,10 +519,10 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-bind-task-session-switch-router | Switch only to the explicitly selected TaskId/generation and freshly resolve its phase. |
 | guru-bind-task-session-reactivate-router | Resume the reactivated generation; old Finish/Cleanup receipts remain historical. |
 | guru-bind-task-session-manual-recovery-router | Recheck the restored binding and current task boundary before phase routing. |
-| guru-current-phase-router | Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning invokes Author delivery_initial_review for the exact selected key with fresh original source selection; no-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase. |
+| guru-current-phase-router | Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning resumes the actual outstanding obligation in the sole continuation: only initial slice requirements enter Author delivery_initial_review with fresh original source selection. Existing planning resumes its applicable Author/Wording/Architecture/Approval owner, or current approved goes to Activation; missing/stale outputs re-enter their original producer, never reset planning from phase alone. No-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
 | phase-1-delivery-activation | Present the current Delivery approved plan, then invoke `guru-activate-delivery` after its dialogue boundary. |
-| guru-delivery-planning-author-router | Consume Creation's actual task_ref/delivery_key/planning_root into Author delivery_initial_review with adjacent source_selection and mode. The Author resolves that public planning_root; lost source selection returns to original Clarify. |
+| guru-delivery-planning-author-router | Consume Creation/Selection's unchanged created DTO, then reread that exact public DeliveryKey/current selection and phase through the installed API. Verify current Task generation and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Wording/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it. |
 | guru-delivery-selection-router | Read the exact TaskKey inventory for a real selection; obtain an explicit DeliveryKey before invoking Creation selection. Never infer identity from a sole inventory row. |
 | guru-delivery-activation-planning-router | Return the selected Delivery to its current Planning owner, refresh affected evidence, then invoke Delivery Approval. |
 | guru-delivery-scope-revised-router | Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from delivery_scope_revised; add fixed profile=delivery_active_task_scope_change; explicitly invoke guru-author-task-plan. This is same-slice rework, never a Planning approval. |
@@ -536,13 +538,13 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
 | guru-task-check-planning-router | A planning gap invokes Author delivery_approval_revision with exact key and concrete current actions; actual requirement authority change first invokes original Clarify. Implementation-only repair retains Phase 2. |
-| guru-delivery-resolved-reconciliation-router | Invoke Check owner’s explicit resolved projection with this TaskRef/DeliveryKey/phase2 commit anchor and fresh authoring of the actual Git integration facts. Feed its `delivery_resolved_candidate` input to Reconcile. The integration commit then returns through the reviewing owner’s rework, implementation begin_check and fresh applicable Check; only that Check may seed the first complete Branch Review. |
+| guru-delivery-resolved-reconciliation-router | Invoke Check owner’s explicit resolved projection with this TaskRef/DeliveryKey/phase2 commit anchor and fresh authoring of the actual Git integration facts. Feed its `delivery_resolved_candidate` input to Reconcile. Resolved Check and the integration executor leave the public Delivery in checking without a committed Check gate. The original Check owner legally reworks to implementation; implementation retains B and binds the actual reconciled HEAD through begin_check. Fresh applicable Check then seeds the original independent Branch Review. |
 | guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
 | guru-task-delivery-planning-router | Copy Delivery Review planning_revision_required task_ref/delivery_key unchanged and rename reason_refs to revision_refs for `guru-author-task-plan:delivery_delivery_plan_revision`, adding current mode and revision_reason=delivery_policy_gap. Consume the Review owner's actual same-Delivery planning rework; preserve total accepted scope. |
 | guru-task-delivery-scope-router | Enter fresh requirements clarification for the exact disputed slice. |
 | active-task-continuation | Keep the task active and resume the earliest affected work owner for remaining work. |
-| task-delivery-planning-router | Consume Completion additional_delivery_required's actual task_ref/task_key as the seed for `guru-create-delivery:delivery_creation`; reason stays call-local scope context, not an extra public input field. Creation owns the remaining declared scope_ref/delivery_profile/continuation_id/action inputs, slice judgment and necessary choice/side-effect handling. Only its actual created result enters guru-delivery-planning-author-router, then Author delivery_initial_review with original current source_selection; missing selection returns to original Clarify. Preserve the same TaskId/generation and total accepted scope; no old Delivery planning rewrite or Task-root creation inference. |
+| task-delivery-planning-router | Consume Completion additional_delivery_required's actual task_ref/task_key as the seed for `guru-create-delivery:delivery_creation`; reason stays call-local scope context, not an extra public input field. Creation owns the remaining declared scope_ref/delivery_profile/continuation_id/action inputs, slice judgment and necessary choice/side-effect handling. Only its actual created result enters guru-delivery-planning-author-router for a fresh public phase read; a new planning slice proceeds to Author delivery_initial_review with original current source_selection, while a recovered progressed slice returns to its actual continuation owner. Missing source selection returns to original Clarify. Preserve the same TaskId/generation and total accepted scope; no old Delivery planning rewrite or Task-root creation inference. |
 | task-requirements-revision-router | Consume Completion requirements_revision_required's actual task_ref/task_key/reason in original `guru-clarify-requirements:delivery_task_scope_revision`, with source_exit=requirements_revision_required and current mode/target_locator/resume_target/continuation_id; reason is call-local authority context. Follow actual scope_ready through guru-requirements-clear-router to Author task_scope_requirements, then scope_requirements_ready through guru-task-scope-requirements-ready-router to Clarify task_scope_requirements_acceptance. Only the published scope_ready returns to the clear-router for affected same-Delivery rework/withdrawal, explicit new Creation, or Completion without a Delivery, according to current obligations. Do not preselect old requirements_revision or create an empty slice. |
 | task-closure-refresh-router | Refresh the exact source Issue closure fact before resuming Finish. |
 | task-planning-router | Resolve the reactivated generation's current Task scope and fresh original source route. Required scope revision enters Author task_scope_requirements and original Clarify publication; unchanged scope routes to actual validation/Completion or explicit new Delivery Creation. Prior-generation approvals are not reused. |
@@ -831,8 +833,8 @@ PR or Task inventory never selects the Task or Delivery.
 
 | Current output or change | Consumer / original producer |
 | --- | --- |
-| Task creation output lost | `guru-create-task` exact read-only recovery; no new Issue/Task/branch/worktree. |
-| Delivery creation/select output lost | `guru-create-delivery` same-operation recovery with explicit public selection or its own retained create input, never sole inventory guessing. |
+| Task creation output lost | `guru-create-task` exact read-only recovery within the original creation interval; no new Issue/Task/branch/worktree. Existing active continuation, including formal rebind, uses current identity/binding/checkout and actual owner without reconstructing created. |
+| Delivery creation/select output lost | `guru-create-delivery` same-operation recovery with explicit public selection or its own retained create input, never sole inventory guessing. The unchanged created result re-enters its consumer for a fresh public phase read and original-phase continuation. |
 | Planning incomplete, approval missing/stale | Same Delivery Author/Wording/Architecture/Approval; D2 never overwrites D1's planning_root. |
 | Current approval awaits acceptance | `phase-1-delivery-activation` presents current artifacts and invokes new Activation after its dialogue boundary. |
 | Activation result lost | Original `guru-activate-delivery` recovers the actual recorded result for the same key; no Task-status transition or new Delivery. |
@@ -1130,15 +1132,25 @@ resolved-baseline validation; unimplemented business Check is not a prerequisite
 Consume only declared outputs and original-owner recovery. Revision and scope
 exits return only to their declared consumers.
 
-For `guru-clarify-requirements:clear` in either Delivery scope profile, consume
-`scope_action` explicitly. `no_change` resumes the original current owner;
-`revised` re-enters the earliest affected owner after the Task scope projection.
+For either current Delivery/Task scope profile, consume original Clarify's
+pre-Author `scope_ready` 2.0 through `guru-requirements-clear-router` into
+Author `task_scope_requirements`. The actual root PRD and original source
+selection then enter Clarify `task_scope_requirements_acceptance`; only that
+owner reviews and publishes the real accepted scope. Only its post-acceptance
+`scope_ready` containing the actual `task_key` reaches the affected stage owner.
+Pre-Author output cannot rework, stop or advance a Delivery; post-acceptance
+output cannot repeat root requirements writing. These profiles do not emit the
+retired active `clear` success.
+
+After acceptance, consume `scope_action` explicitly. `no_change` resumes the
+original current owner with applicable evidence; `revised` enters the earliest
+affected owner for legal rework before the same Delivery's affected Planning.
 `withdrawal_required` returns the selected Delivery to its actual current stage
 owner, whose Skill performs the public stop and selection release. Clarify has
-no stage-writer role. With no current Delivery, Task scope revision resumes
-Completion or Creation as selected by the scope judgment and never fabricates
-a Delivery solely to stop it. These are automatic mapped routes; PR closure
-and resource deletion retain their separate exact side-effect boundaries.
+no stage-writer role. With no current Delivery, current obligations determine
+explicit Creation or Completion; never fabricate a Delivery solely to stop it.
+These are automatic mapped routes; PR closure and resource deletion retain
+their separate exact side-effect boundaries.
 For `planning`, invoke `guru-activate-delivery:delivery_scope_withdrawal`;
 for checking/reviewing/publication stages, invoke the actual current stage
 Skill's `delivery_scope_withdrawal` profile. In `implementing`, the current
@@ -1193,9 +1205,13 @@ test, or task-artifact write, validate the live boundary:
 
 The check is read-only at this boundary. Missing or stale task/runtime/worktree
 identity is a fail-closed stop; do not rebuild mappings, switch directories,
-stash, copy, migrate, clean, or continue writing. A `created` result from
-`guru-create-task:created` is required before planning or implementation may
-write anything.
+stash, copy, migrate, clean, or continue writing. Initial Task creation and its
+immediate whole-scope consumer require the original checked
+`guru-create-task:created`. Existing active Tasks instead use current
+TaskId/generation, legal binding, unique checkout and actual stage-owner entry
+conditions; an unavailable original created DTO does not block that legitimate
+continuation. Do not relax initial creation recovery to admit a rebound Task,
+reconstruct created, or treat identity/public phase as semantic approval.
 
 Read the planning artifacts, curated specs, and live diff from that worktree.
 Use the configured Trellis implement/check agents when available; their
@@ -1507,8 +1523,10 @@ to Merge; whole-scope adequacy belongs only to Completion.
   TaskId/generation, current TaskBranchBinding, current repository root/cwd,
   branch and live Git worktree registration still match.
   The check must be repeated before each write, not only once when the phase
-  starts. Missing `created` evidence or any identity/conflict drift blocks the
-  write and routes to explicit recovery or re-selection.
+  starts. Any identity/conflict drift blocks the write and returns to its
+  original resolution owner. Initial creation keeps its checked created gate;
+  existing active continuation uses current identity/binding/checkout and the
+  actual stage owner's applicable gates, without requiring the original DTO.
 - Editors without an explicit working-directory option use absolute paths under
   that confirmed task worktree.
 - The task checkout is the live execution location, not task identity. It never means the

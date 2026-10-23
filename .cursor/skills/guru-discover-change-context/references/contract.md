@@ -161,8 +161,9 @@ envelope and emits one typed DTO only after the recorded owner result passes
 the objective checker. The input transport is not a semantic approval.
 
 An active-task workflow owner passes the direct task identity independently as
-`--active-task`, for both current `planning` source-selection recovery and
-`in_progress` context review. Record, check, and public invoke then bind the live checkout to
+`--active-task`, for source-selection recovery and context review by the
+current Task/Delivery owner without a Task development-status prerequisite.
+Record, check, and public invoke then bind the live checkout to
 the task's TaskId/lifecycle generation, its Git common-dir branch binding,
 registered checkout, and fresh selected-base refs while
 allowing ordinary in-progress worktree edits; this normal mapped route remains

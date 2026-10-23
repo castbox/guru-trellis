@@ -296,8 +296,11 @@ empty owner directory.
 
 ## Requirements Clarification Result
 
-Schema id `guru-requirements-clarification-3.0` is the active closed Draft 2020-12
-result. Top-level fields are exactly `schema_version`, `skill_id`,
+The non-active Clarify profiles retain their closed Draft 2020-12 result
+`guru-requirements-clarification-3.0`. The active_task_scope_change branch in
+that legacy shape is pinned-old validation only; current schema2 Task/Delivery
+scope profiles use the independent semantic-scope-continuation-2.0 and
+scope_ready2.0 contracts below, not this retired active branch. Top-level fields are exactly `schema_version`, `skill_id`,
 `generated_at`, `mode`, `typed_exit`, `invocation_context`, `review_target`,
 `target_disposition`, `context_evidence`, `confirmed_facts`, `repository_answerable_questions`,
 `clarification_rounds`, `open_questions`, `scope_proposals`, `source_actions`,
@@ -2116,22 +2119,35 @@ publication or the full Release matrix.
 
 Root qualification commands consume stdin and emit stdout only. Goal-specific semantic-result branches are call-local checker evidence, separate from public outputs. Git/planning/locator facts are checked by the shared deterministic qualification facts module. Local digests have no cross-stage authority. Public output schemas and root router/stop input schemas are independently owned and directly projected.
 
-## #292 active-scope boundary
+## Current scope judgment, writing and acceptance (#657)
 
-Clarify owns accepted scope before the original Author writes planning.
-Current active private result is 4.0; scope_ready public output and the original
-clear-router's independent consumer input are 1.0. The output is exactly
-exit_id/mode/task_ref/source_selection/revision_refs. The thin router drops
-exit_id, adds fixed profile=active_task_scope_change and passes the remaining
-fields unchanged to Author's existing input 1.0. AI chooses revision_refs from
-actual revisions; scripts do not infer them. Updated planning, planning hashes,
-reentry owners and active_task_scope_update are not Clarify prerequisites.
-Original Sync/Discovery still handles source mutation or missing context.
-Original activation/resume_execution retains TaskId/generation and in_progress.
-Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
-old successful active results require fresh original Clarify, while other
-profiles keep their contracts. This migration does not imply native semantic,
-fixture resume, full installer-matrix or release qualification.
+Clarify's current delivery_active_task_scope_change and
+delivery_task_scope_revision profiles judge live source/scope and return
+pre-Author scope_ready 2.0 with source_selection/revision_refs and scope_action,
+without task_key. The existing clear-router projects only the declared fields
+to Author task_scope_requirements. Author alone writes the whole root PRD;
+its actual scope_requirements_ready locator and original selection then enter
+Clarify task_scope_requirements_acceptance. Only that owner reviews the actual
+AuthorityRef and calls public accept_scope. Its post-acceptance scope_ready 2.0
+contains the real task_key and returns through the clear-router to actual
+current-stage rework/withdrawal, explicit Creation or Completion.
+
+revised, no_change and withdrawal_required all preserve this two-part boundary.
+Pre-Author output cannot advance/rework/stop a Delivery; post-acceptance output
+does not repeat root writing. With no current Delivery, obligations determine
+Creation or Completion, never an empty slice solely for withdrawal. The actual
+stage owner alone performs legal rework/stop and selection release; public
+phase does not prove a gate. Preserve the same Task/Delivery identity/history
+and refresh only affected original-owner judgments.
+
+The prior #292 private4.0/scope_ready1.0, old active_task_scope_change Author
+profile and Task-status activation/resume route describe pinned-old complete
+installations only. Their immutable schemas/examples are not current fallback
+or conversion inputs. Freshly re-enter current original owners; do not append
+a key or reconstruct source selection/pass from PRD or metadata. The complete
+matching workflow/preset/packages/consumers switch and evidence limits are
+specified in MIGRATION-657; source convergence does not establish native or
+Release qualification.
 
 ## Bounded maintenance state
 

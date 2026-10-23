@@ -1,7 +1,7 @@
 # Task / Delivery 生命周期测试策略
 
-本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
-知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；晋升前完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
+本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
 
@@ -20,6 +20,20 @@
 | T531-05 / T557-01..04 | 原Publish/Merge成功后投影/输出丢失；正式发布后人工双亲merge | 实际成功读回且零重复副作用；历史事实不等新gate；actual head/CI/delta交Completion；不执行第二merge。 |
 | BEH567-01..05 / 该源T567链 | 各阶段固定B/H；无关target前进；实际冲突/依赖同步 | 固定候选正常前进、默认零Reconcile；仅真实触发固定一次target，恢复同Delivery，不追赶、不重放无关门禁。 |
 | T531-07 / R531-07 | 完整匹配安装及显式旧数据迁移 | canonical/installed/native/reapply一致，旧公共/私有迁移分owner；source修改不证明旧业务/production已采用。 |
+
+## T657：当前续接、选择与范围修订
+
+| 稳定场景 | 正常入口和观察 | 证据边界 |
+| --- | --- | --- |
+| T657-01 / R657-01 | V1/V2：无原 created/runtime 的独立 common-dir clone，经正式 identity/binding/rebind revision>0/Ensure/Bind 与原 owner合法写入 | 一个 matching installed/native 实际 Agent 样本，不以解析DTO或fixture代替 |
+| T657-02 / R657-01 | V4/V5：同阶段无scope变化，真实stale/mismatch/缺ref/歧义 | 保留适用结果；错误写前停止且原工作及无关Task保持 |
+| T657-03 / R657-01 | V6：初始创建与同操作输出丢失 | 原精确身份/绑定/资源校验保持，恢复同结果而非重复创建 |
+| T657-04 / R657-02 | V11：planning及implementing/checking/reviewing/publishing选择和恢复 | 公共phase保持，真实consumer进入原owner；至少一个实际Agent完整消费 |
+| T657-05 / R657-03 | V3/V12：revised/no_change/withdrawal_required，有/无current Delivery | pre-Author→根PRD→acceptance→post-Author→原stage；真实rework/stop，无旧clear/DTO/空切片；至少一个原生闭环 |
+| T657-06 / R657-04 | V8/V9/V10：Discovery当前身份、Review真实candidate/readiness refresh、verifier旧输入诊断与合法standalone入口 | 原validator严格性保留，不索取旧branch/status或退役current Finalizer |
+| T657-07 / R657-04 | V7：canonical/package/dogfood/installed/platform、reapply/drift/mode/sidecar | 分层报告真实采用，最多一个clean安装；不证明完整Release矩阵或业务现场 |
+
+本批唯一实际结果位于 [#657 Test](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/test.md)。历史结果保留原对象，不能推定当前候选通过。
 
 ## 执行入口与结果消费
 

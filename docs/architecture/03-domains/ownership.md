@@ -130,7 +130,7 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-040`（#521 reviewed）：selector 只判 mode；原 task-free execution owner 单写位置 suitability、有界编辑和扩张回程；Guru workflow caller 消费 upstream 无 Task 返回而不接管 upstream entries/hooks。C6 创建前置拥有 new-primary 拒绝，既有 Task recovery/branch/session/resource、base Sync 与 Cleanup 各自保留 writer。原 Change Request Review 拥有无 Issue/workflow 输入兼容，不改 producer transition 或 Task gates。Architecture/RDT 原 owner 各自 serialized promotion；无 Task-free lifecycle、第二 acquisition owner 或迁移账本。
 
-`ARCH-DOM-041`：Author 单写任务规划及 revision；Clarify 单写 scope/来源角色，Discovery 单写 context evidence，原 normal/solution/root owners 分别判断候选资格，Architecture 单写两目的评估，Wording 单写措辞门禁，Approval 单写批准。scope_ready 的 clear-router、Wording/Approval revision 与 Delivery/Completion 回程只做显式最小 projection，不理解来源语义或重建 producer 私有状态。原 execution/Task writer、Delivery/Completion/Closure/Finish/Reactivate 与 Architecture/RDT serialized promotion owners 保持各自职责。当前设计决策为 ADR-022/023；无第二来源、authority、state store 或审批链。
+`ARCH-DOM-041`：Author单写Task整体scope PRD及所选Delivery规划和revision；Clarify先判断来源/scope，Author根PRD后由原Clarify acceptance核AuthorityRef并accept_scope。pre-Author与post-acceptance scope_ready2.0由原clear-router分别消费；只有post结果交当前stage合法rework/stop，Clarify不取得stage writer。Discovery单写context evidence，原normal/solution/root owners分别判断候选资格；Architecture两目的独立评估、Wording与Approval保持原职责，当前Planning由原Delivery Activation记录。各回程仍为显式最小projection，不解释来源或重建producer private；execution/Task writer、Delivery/Completion/Closure/Finish/Reactivate及RDT/Architecture晋升owners各自保持单写。当前取舍见ADR-022/024/035；ADR-023的旧DTO/profile/status片段只适用固定旧完整安装，原先判断后写作及唯一writer原则继续继承。无第二来源authority、store或审批链。
 
 `ARCH-DOM-042`（#530）：原 TaskCommit 单写 dirty exact commit 或 clean committed candidate 的当前事实核验及原 DTO 投影；Check 单写 Phase2 内容算法与证据，Reconcile 单写 integration commit，BranchReview 单写完整/continuity review，workflow 只路由。BranchReview 不读取 producer 私有 checkpoint；Architecture/RDT shared-current 仍由原 promotion owners 串行更新，不能由 clean 状态代替 gate。
 
@@ -138,7 +138,7 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 `ARCH-DOM-044`（#547）：Completion 审完整当前 scope，Closure 审源剩余责任并冻结完整动作集，以最小共享载体关联原公共结果；Finish 读取精确动作集并核 live 状态后归档/bookkeeping，Cleanup 独占删除；公共 Task2 仍由上游拥有。retain_open 不授予第二处置 owner，aggregate closed 不成为 exact source authority；实现落点与旧 consumer 退出见[贡献](../contributions/547-retain-source-open.md)及 ADR-025。
 
-`ARCH-DOM-045`（#548）：官方 model/session/C4 仍拥有公共事实，Creation 独占其 pending 生命周期，Author 仅调用 retirement 端口；各规划 gate 原 owner 不变。明确选择与 Creation 自动恢复分属原操作边界，详见[已晋升贡献](../contributions/548-creation-recovery.md)。
+`ARCH-DOM-045`（#548，#657 current承接）：官方model/session/C4仍拥有公共事实，Creation独占其pending生命周期，Author只调用producer retirement端口。Creation/Selection保持原created wire，原workflow consumer重读公共current key、generation/root及phase，只有planning中真实尚需初始requirements且符合Author入口才交初始Author；其余按唯一continuation的实际未完成义务交原owner，包括已有planning的适用Author/Wording/Architecture/Approval或当前approved到Activation。缺失/过期输出回原producer，保留phase、规划和适用结果。既有Task写入资格来自当前identity/binding/checkout及stage gates，不要求初始created；原初始恢复validator不变。Discovery/Review不索取退役metadata branch或Task development status，standalone verifier不指向current Finalizer。原说明与证据见[#548贡献](../contributions/548-creation-recovery.md)，当前窄决定见ADR-035；stage/public writer及Task终态owners不变。
 
 `ARCH-DOM-046`（#557）：原 Merge 独占手动终态的归属与 public record_delivery 投影；history 只读既有公共事实，原 Completion 保留 actual content/authority/CI 与整个 Task 证据判断。无新 owner、writer、importer 或 ledger，详见[贡献](../contributions/557-manual-merged-delivery-recovery.md)。
 

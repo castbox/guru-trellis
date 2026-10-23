@@ -1,5 +1,7 @@
 # Guru Team Preset
 
+活动Task续接通过当前身份、合法binding/checkout及实际阶段owner准入，原created只服务初始创建区间。Delivery created wire保持；原consumer重读公共phase，planning才进适用Author，其余沿唯一continuation。范围修订按pre-Author→根PRD Author→Clarify acceptance→post-Author两次承接，退役status/DTO不成为current前置。完整matching切换、在途恢复及证据边界见 [MIGRATION-657](MIGRATION-657.md)。源码修改不证明已有安装或实际Agent已采用。
+
 当前知识读写的唯一共享正文位于原 RDT package 的
 [current-knowledge.md](../../skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)。
 两维护 Skills 实际读取同一文件；原递归 package 安装分发，无新 runtime API。
@@ -41,6 +43,12 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引用同一正文。
 加载要求覆盖无 Task、Task、task-free、独立操作、恢复和子 Agent；写作 owner 自检，
 审核 owner 保持原范围。源码和投影检查不证明实际平台加载与输出行为。
+
+单 checkout 的 tools-only 升级由 `guru-upgrade-tools` 承接。调用方显式提供
+`AGENTS.md` 的 custom 基底正文与原文件快照；Guru 在公共 prepare 前更新其中的
+规则块，公共计划返回后保持不变。目标 Fork 须声明 `tools_custom_instruction`
+能力；缺失能力或最终内容被 `update.skip` 保留为旧块时，准备阶段停止。
+旧失败操作先由未变的原来源合法处置，再从修复来源重新准备；不转换旧 checkpoint。
 
 已有安装须更新匹配的 workflow 并完整 reapply preset。Trellis update/upgrade 后，
 先按官方 marketplace `--create-new` 预览，再显式 `--force` 应用 workflow，最后

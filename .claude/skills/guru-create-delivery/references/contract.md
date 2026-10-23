@@ -22,7 +22,7 @@
 
 ## 公共出口与唯一 consumer
 
-- `created`：明确身份已建立并选中；最小 key、task_ref、上游 planning_root 交 `guru-delivery-planning-author-router`。首次与选择已有对象走同一出口。
+- `created`：明确身份已建立并选中；既有最小 key、task_ref、上游 planning_root 原样交 `guru-delivery-planning-author-router`。首次、选择和原操作恢复走同一出口，wire/schema/exit不变。consumer重新读取同key的公共current selection/phase，核当前generation/root；只有planning中真实尚需初始slice要求且符合Author入口才进delivery_initial_review。其它对象均按唯一continuation的实际义务交原owner，包括已有planning的适用Author/Wording/Architecture/Approval或当前approved到Activation；缺失或过期输出回原producer，不从phase倒推重启初始Author。保留identity、phase、规划及适用结果，不重置阶段、不从created推定gate pass。缺source selection回原Clarify；真实mismatch在原owner停止。
 - `scope_revision_required`：AI 判断整体 authority 必须澄清；明确 TaskKey/task_ref 交原 Clarify owner。
 - `selection_required`：存在真实切片/身份选择；明确 TaskKey/task_ref 交 `guru-delivery-selection-router`，读取公共列表并完成真实选择后以明确 key 调本 owner，不由 script 或 inventory 唯一项选择。
 - `blocked`：具体缺失事实或不支持版本，停止。

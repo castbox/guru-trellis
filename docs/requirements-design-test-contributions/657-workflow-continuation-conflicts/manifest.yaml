@@ -1,0 +1,22 @@
+task_id: 657-workflow-continuation-conflicts
+source: https://github.com/castbox/guru-trellis/issues/657
+status: promoted
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 319202beab79c7666ecdb855291bf117e43d407e
+architecture:
+  locator: docs/architecture/README.md
+  version: 319202beab79c7666ecdb855291bf117e43d407e
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements:
+    - docs/requirements/current/task-delivery-lifecycle.md
+  design:
+    - docs/design/current/task-delivery-lifecycle.md
+  test:
+    - docs/test/current/task-delivery-lifecycle.md

@@ -1,0 +1,35 @@
+# #657：活动续接、created consumer与范围修订合同收敛
+
+## 当前目标与适用边界
+
+本迁移对应F1–F6，沿当前官方Task schema2 / Delivery API1及原Guru owners收敛current可读合同。原Creation created输出、schema、exit和初始创建恢复validator不变；没有新Skill、router脚本、状态字段、phase cache、私有gate reader或legacy双读。
+
+新Task初始创建及同创建区间恢复继续要求原checked created与精确初始binding/resource事实。既有活动Task则通过明确来源、TaskId/generation、当前common-dir合法binding、唯一checkout和实际阶段owner准入；原机created/runtime缺失本身不阻塞正常写入。正式rebind后不调用初始创建恢复冒充续接，不放宽其revision校验。
+
+## created的现有consumer修正
+
+Creation/Selection仍返回原key/task_ref/planning_root。原唯一consumer `guru-delivery-planning-author-router`收到后，重新读同key的当前公共selection、generation/root及实际phase。只有planning中真实尚需初始slice要求且满足Author当前入口才投影delivery_initial_review；其余均进入workflow唯一Bound formal continuation的实际义务，包括已有planning的适用Author/Wording/Architecture/Approval或当前approved到Activation。缺失或过期输出回原producer，不因phase或created重启初始Author。key、phase、规划和适用结果保留，created名称不表示新建或gate通过。
+
+这是对现有Selection“不改变公共阶段”语义的consumer纠正。旧consumer无条件initial Author的处理被本matching版本替代；wire未变不允许只更新一侧。已经发生的创建/选择或副作用由原producer恢复同一结果，再按真实current阶段承接，不重置阶段、复制原机私有状态或创建空Delivery。
+
+## scope两次承接与旧合同退出
+
+当前Clarify两个Task/Delivery scope profiles先输出无task_key的pre-Author scope_ready2.0；唯一Author task_scope_requirements写根PRD，再把实际requirements_locator和原source_selection/revision_refs交Clarify task_scope_requirements_acceptance。只有acceptance核真实AuthorityRef并调用accept_scope；其带实际task_key的post-Author scope_ready才进入当前stage owner的合法rework/stop或按义务显式Creation/Completion。
+
+revised/no_change/withdrawal_required都保留此顺序。pre-Author不能advance/rework/stop，post-acceptance不能重复根写作。无current Delivery不为撤回造空切片。旧active clear/private4/scope_ready1、旧Author profile及Task development-status activation/resume只属于固定旧完整安装；保留必要immutable schemas/examples，不将旧pass加key转为current。
+
+Discovery current身份为TaskId/generation、branch binding及registered checkout；metadata branch和Task旧status不是前置。Delivery Review继续要求真实current candidate/gates，Interface不再索取in_progress。Standalone verifier旧task-bearing输入仍拒绝：明确独立验证caller重建source_repository_verification；旧在途交易回其pinned原owner或既有per-case处置，不存在current Finalizer准备入口。
+
+## matching安装、在途与update/reapply
+
+R5也收敛实际冲突解决后的原owner指令：resolved Check只审未提交的整合树，不写公共Check；原merge executor提交后仍保留checking。原Check owner合法rework到implementation，再由原implementation保持B并以实际整合HEAD执行begin_check，之后重新完成适用Check和原独立Review。原TaskCommit提交后真实处于reviewing的回程保持其原owner，不套用本条。
+
+源码不是安装采用。已有项目以同一受审来源成套更新marketplace workflow、完整preset/packages/consumers/managed spec及选择的平台投影。按官方marketplace先--create-new预览，检查目标修改和sidecar，再显式--force应用同provider workflow，最后完整preset apply/reapply；本仓dogfood可在验证原安装副本无独立修改后同步canonical workflow。旧格式数据/工具必须先经原upgrade/tools owner正式处理，不手写.version或绕过预检。
+
+保留用户修改与原managed hash/.new/.bak机制；逐项核真实sidecar并处理，reapply验证幂等、mode、installed可调用、upstream ownership与drift。旧完整安装在合法matching切换前保持原包；旧在途Finalizer不转新图，既成mutation先由原producer恢复，真实语义缺口回最早owner，不复制或制造pass。
+
+## 验证边界
+
+V1/V2/V7要求一个代表matching installed/native独立clone，无原机created/runtime，正式rebind>0后由真实原owner完成合法写入。V11让created实际consumer进入原phase owner；V3/V12验证scope两段实际消费及有/无Delivery、三种disposition。原package/runtime、initial Creation恢复、Discovery、Review、verifier和source/installed/platform/reapply/drift/sidecar各有定向证据。
+
+任何源码、文本、schema或fixture通过均不替代actual Agent闭环；未完成层必须准确报告。无需再次完整业务发布/Finish、完整verifier或多平台Release矩阵。本文件只定义采用合同，不宣称本批测试、业务现场、部署、外部副作用或Release已通过。
