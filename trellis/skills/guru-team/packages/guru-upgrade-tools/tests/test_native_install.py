@@ -67,11 +67,31 @@ class NativeToolsInstallationTests(unittest.TestCase):
                 'action':'custom','content':(root/'AGENTS.md').read_text()})
             prepared = invoke('prepare.sh', public, write('prepare.json', request))['result']['plan']
             frozen = write('plan.json', prepared)
-            upgraded = invoke('invoke.sh', public, frozen)
+            import sys
+            sys.path.insert(0,str(PACKAGE.parents[1]));sys.path.insert(0,str(PACKAGE/'runtime'))
+            import tools_owner
+            original=tools_owner.legacy_owner(PACKAGE)
+            # A normal directory permission error interrupts Guru retirement
+            # after the real public operation, without changing saved inputs.
+            guru_directory = root/'.trellis/guru-team'
+            directory_mode = guru_directory.stat().st_mode & 0o777
+            try:
+                guru_directory.chmod(directory_mode & ~0o222)
+                interrupted = invoke('invoke.sh', public, frozen)
+                self.assertEqual(interrupted['exit_id'],'resume_required',interrupted)
+                recovery=tools_owner.recovery_path(root,interrupted['recovery_ref'],original)
+                paused=json.loads((recovery/'checkpoint.json').read_text())
+                self.assertEqual(paused['phase'],'guru')
+                self.assertIn('[Errno 13]',paused['failure'])
+                self.assertEqual(json.loads(Path(paused['upstream_ref']).read_text())['phase'],'applied')
+            finally:
+                guru_directory.chmod(directory_mode)
+            resume = write('resume.json', {'profile':'resume','recovery_ref':interrupted['recovery_ref']})
+            upgraded = invoke('invoke.sh', resume)
             self.assertEqual(upgraded['exit_id'], 'tools_upgraded', upgraded)
+            self.assertEqual(upgraded['recovery_ref'],interrupted['recovery_ref'])
             self.assertEqual(upgraded['unverified'], ['formal_fork_source_lock'])
             # Same-candidate output-loss recovery uses the original operation.
-            resume = write('resume.json', {'profile':'resume','recovery_ref':upgraded['recovery_ref']})
             self.assertEqual(invoke('invoke.sh', resume), upgraded)
             for path, before in preserved.items(): self.assertEqual(tree(Path(path)), before)
             runtime = root / '.trellis/guru-team/runtime'
@@ -83,10 +103,6 @@ class NativeToolsInstallationTests(unittest.TestCase):
             self.assertIn('maintenance_required',result.stdout+result.stderr)
             # Real preset reapply through the same supported tools-only boundary.
             # It reuses the actual operation proof and cannot parse old Tasks.
-            import sys
-            sys.path.insert(0,str(PACKAGE.parents[1]));sys.path.insert(0,str(PACKAGE/'runtime'))
-            import tools_owner
-            original=tools_owner.legacy_owner(PACKAGE)
             module=original.installer(SOURCE)
             recovery=tools_owner.recovery_path(root,upgraded['recovery_ref'],original)
             checkpoint=json.loads((recovery/'checkpoint.json').read_text())
@@ -121,6 +137,7 @@ class NativeToolsInstallationTests(unittest.TestCase):
                     self.assertEqual(path.read_bytes(),base64.b64decode(before['content_base64']),str(path))
                     self.assertEqual(path.stat().st_mode & 0o777,before['mode'],str(path))
             for path,before in preserved.items(): self.assertEqual(tree(Path(path)),before)
-            fixture['combination_validation']={'resume':'passed','later_edit_resume_rollback':'blocked_preserved',
+            fixture['combination_validation']={'interrupted_resume':'permission_error_same_ref_passed',
+                'resume':'passed','later_edit_resume_rollback':'blocked_preserved',
                 'rollback':restored,'public_preimages':'bytes_modes_restored'}
             Path(os.environ['GURU_TOOLS_NATIVE_FIXTURE']).write_text(json.dumps(fixture,indent=2)+'\n')

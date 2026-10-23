@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | #658 不预设新增 Fork 接口，先比较最小适配 | retain | 第4节：旧API缺少最终内容输入，后置写入破坏两层恢复；采用#57最薄新增处置，避免临时恢复/补偿桥 |
 | #658 保留块外正文与 preserve/replace 语义 | retain | 第5节：明确custom选择，原旧action不被静默改写；renderer只改Guru块 |
-| #658 原恢复绑定与旧操作合法处置 | retain | 第7节：原来源先回退旧失败操作，新来源重新准备，不迁移checkpoint |
+| #658 原恢复绑定与旧操作合法处置 | retain，按当前范围限制 | 第7节：保留原业务合法回退历史；独立样本沿原来源处置及重新准备，不迁移checkpoint，不再写原业务仓库 |
 | 原Skill prepare后修改target | change | 第4–6节：改为prepare前合成显式输入，保留公共返回计划原样；同步原合同和安装说明 |
 | #566/ARCH-DOM-047 原公共writer与两层恢复 | retain | 公共最终内容/receipt仍由Fork维护，Guru不复制updater或公共rollback算法 |
 | #656 固定原Fork来源 | change，条件依赖协调 | 在采用新来源前由原发布owner更新到#57交付的实际commit/CI，保留已发布前驱来源及版本轴 |
@@ -51,18 +51,18 @@ getMaintenanceContract.tools_custom_instruction={path:AGENTS.md,action:custom}�
 
 同操作恢复只使用初次冻结plan和原来源，不重新合成输入。回滚先检查兼容性与后续工作，再执行原公共rollback及Guru资产恢复。普通重复安装是新操作；多个操作按实际覆盖关系回滚，不要求跨越后续工作回滚旧操作。
 
-原业务失败操作先从未改变的原Guru/Fork来源回读检查，再按原rollback/退出合同处置；完成后使用固定修复来源重新准备。原数据/非目标指针保持。没有Task格式迁移，没有旧checkpoint转换，没有永久旧路径fallback。受支持旧公共action保持原义，新工具准备显式要求所需能力和custom输入；历史成功/失败证据保留来源身份。
+原业务失败操作已在范围调整前由未变的原Guru/Fork来源合法回退，仅保留该历史事实。后续不对guru_ai_roleplay_dev进行实质修改、安装、恢复写入或创建PR，也不以其升级完成为验收。新固定来源的完整维护在真实原writer独立旧安装验证；必要时可用单独clone，但不新增业务交付门槛。原数据/非目标指针保持。没有Task格式迁移，没有旧checkpoint转换，没有永久旧路径fallback。受支持旧公共action保持原义，新工具准备显式要求所需能力和custom输入；历史成功/失败证据保留来源身份。
 
 ## 8. 验证设计
 
 - V1/DAC01：真实匹配CLI/Core测试，含旧块、块外正文、非默认mode；prepare无写入，计划/实际相同，preset renderer幂等，成功回滚原字节/mode。
-- V2/DAC02：真实公共/preset组合正常恢复、重应用及回滚；追加真实项目编辑后恢复/回滚保护。旧双写诊断可保留原冲突预期。
+- V2/DAC02：真实公共/preset组合正常恢复、重应用及回滚；追加真实项目编辑后恢复/回滚保护。正常执行失败样本采用独立旧安装的Guru父目录暂缺写权限：公共阶段完成后，原Guru删除受管文件遇到真实PermissionError并返回resume_required；恢复该目录原mode，再以原引用完成preset及目标验证。目录mode不修改受管文件或checkpoint，不引入故障处理协议。完成后输出丢失恢复单独保留，不能替代此中间失败样本。旧双写诊断可保留原冲突预期。
 - V3/DAC03：完整tools-only真实旧安装样本，比较业务数据/peer指针，目标自身installed/native运行。旧Task只返回受支持维护诊断，不迁移。
-- V4/DAC04：原失败业务操作只读核验、合法处置、固定修复来源重装与目标验证；结果独立于V1–V3和发布证据。
+- V4/DAC04：固定匹配来源及其正式来源约束核验；完整独立旧安装的目标自身installed/native作为主体证据。原业务失败及合法回退只作历史，业务仓库不再写入或创建PR；不强制另建业务clone。
 - V5/DAC05：source/installed package validation、dogfood/平台投影、reapply/drift/sidecar、相关package测试及diff检查。不运行完整发布矩阵。
 
 ## 9. Canonical 引用、本轮差额与实际未决项
 
 requirements/design/test沿#566既有正确行为与职责，执行说明由本次canonical Skill收敛；不改历史贡献中的既有验证结论。Architecture无决策变化，无新ADR或贡献。必要规范为本批PRD第7节列出的完整相关合同，实施前实际加载。
 
-Fork远端交付与其main CI是固定来源采用前置；来源约束由#656原owner协调。业务原操作与安装是整体验收前必要事实。需求无未决选择；若实际机制/范围扩大，回原Author/Architecture，不直接增加新协议。
+Fork远端交付与其main CI是固定来源采用前置；来源约束由#656原owner协调。独立旧安装和组合恢复证据是整体验收前必要事实，业务升级不是条件。最新独立candidate_assessment仍为no_architecture_impact，原责任边界不变。需求无未决选择；若实际机制/范围扩大，回原Author/Architecture，不直接增加新协议。

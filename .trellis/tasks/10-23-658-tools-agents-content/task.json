@@ -25,7 +25,7 @@
   "meta": {},
   "accepted_scope": {
     "locator": ".trellis/tasks/10-23-658-tools-agents-content/prd.md",
-    "revision": "sha256:589ef84ea57832da928665a3af5e3d7ddcd4cd8feee08db77339ae560704cc61"
+    "revision": "sha256:950c61d6c61d3e07c116d68fc4e1f21ea7ec2ad3c3c557e66ac0f7d884ccab78"
   },
   "deliveries": [
     {
@@ -34,7 +34,7 @@
       "scope_ref": {
         "authority": {
           "locator": ".trellis/tasks/10-23-658-tools-agents-content/prd.md",
-          "revision": "sha256:589ef84ea57832da928665a3af5e3d7ddcd4cd8feee08db77339ae560704cc61"
+          "revision": "sha256:950c61d6c61d3e07c116d68fc4e1f21ea7ec2ad3c3c557e66ac0f7d884ccab78"
         },
         "anchors": [
           "AC01",
@@ -51,19 +51,19 @@
       "phase": "implementing",
       "plan_ref": {
         "locator": ".trellis/tasks/10-23-658-tools-agents-content/deliveries/2b83d170-f1c6-485a-a408-06015686313f/design.md",
-        "revision": "sha256:8ebcb72ef7de7909b54e980efc761675b953f28e7058aec8cb61cb2370e48da1"
+        "revision": "sha256:67de64139baef765de2c802a0f2293ed3b08aee63a8ada750ae116f091d1952d"
       },
       "candidate": null,
       "results": {
         "planning": {
-          "result_id": "planning-accepted:2bedffd9-13e7-4a4d-9ea4-5040b38a5e90",
+          "result_id": "planning-accepted:118d62af-e01b-48a4-bc20-3963368c8015",
           "owner_role": "planning",
           "owner_id": "guru-activate-delivery",
           "outcome": "accepted",
           "scope_ref": {
             "authority": {
               "locator": ".trellis/tasks/10-23-658-tools-agents-content/prd.md",
-              "revision": "sha256:589ef84ea57832da928665a3af5e3d7ddcd4cd8feee08db77339ae560704cc61"
+              "revision": "sha256:950c61d6c61d3e07c116d68fc4e1f21ea7ec2ad3c3c557e66ac0f7d884ccab78"
             },
             "anchors": [
               "AC01",
@@ -77,7 +77,7 @@
           },
           "plan_ref": {
             "locator": ".trellis/tasks/10-23-658-tools-agents-content/deliveries/2b83d170-f1c6-485a-a408-06015686313f/design.md",
-            "revision": "sha256:8ebcb72ef7de7909b54e980efc761675b953f28e7058aec8cb61cb2370e48da1"
+            "revision": "sha256:67de64139baef765de2c802a0f2293ed3b08aee63a8ada750ae116f091d1952d"
           },
           "candidate": null,
           "predecessor_result_id": null,
@@ -85,15 +85,15 @@
           "evidence": [
             {
               "locator": ".trellis/tasks/10-23-658-tools-agents-content/deliveries/2b83d170-f1c6-485a-a408-06015686313f/prd.md",
-              "revision": "sha256:806dd880e6a5452c31f1c30723b4e0396e2d05978e02fb44cbbe10d83e81881e"
+              "revision": "sha256:9ed66bfdf71ac3e3bf1480c839088a195382c85e819d3db8e8b0491d0ec68713"
             },
             {
               "locator": ".trellis/tasks/10-23-658-tools-agents-content/deliveries/2b83d170-f1c6-485a-a408-06015686313f/design.md",
-              "revision": "sha256:8ebcb72ef7de7909b54e980efc761675b953f28e7058aec8cb61cb2370e48da1"
+              "revision": "sha256:67de64139baef765de2c802a0f2293ed3b08aee63a8ada750ae116f091d1952d"
             },
             {
               "locator": ".trellis/tasks/10-23-658-tools-agents-content/deliveries/2b83d170-f1c6-485a-a408-06015686313f/implement.md",
-              "revision": "sha256:a6365c9cc7d478b8998642aa1d98a2edbcf23c23dd63faf31fcf5b9dd6938195"
+              "revision": "sha256:bc787f2b120de3a297be79b7696586a0cf87e8971943497398ff702449d57c9c"
             }
           ]
         },
