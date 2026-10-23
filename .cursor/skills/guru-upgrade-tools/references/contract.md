@@ -42,17 +42,21 @@ recovery retain their original meaning; this Skill does not call them.
    native. `preserve` requires AI to establish that the existing workflow is
    compatible with the actual current owner graph; preserving incompatible
    workflow bytes cannot establish success. Public file decisions retain
-   official required/skip/user-edit rules. Call `prepare.sh` once; its receipt
-   contains `result.plan`, including the single frozen public operation ID,
-   and exact public/Guru/pointer write facts. The public SDK's exported `PreparedMaintenancePlan` is the declared input
-   to `previewMaintenance` / `applyMaintenance`. Before the first apply and
-   checkpoint, this prepare owner composes the plan's named `AGENTS.md` target
-   with the canonical Guru-owned block through the original installer's pure
-   renderer. The public writer writes that final bytes/mode target; the later
-   Guru installer is byte-idempotent for the block. Keep the original source
-   snapshot, operation ID, candidate, guard and all other actions unchanged.
-   Keep the Core template-hash receipt as the Core template baseline; the Guru
-   block is a customization, not a new Core template. Preparation creates no target
+   official required/skip/user-edit rules. Require the actual public
+   `getMaintenanceContract.tools_custom_instruction` capability to declare
+   `path=AGENTS.md,action=custom`. Supply exactly one AGENTS decision with
+   `action=custom`, the actual original `source` snapshot (or null), and reviewed
+   `content` as its base. To update upstream template text, explicitly review and
+   supply that base; do not silently convert preserve/replace or copy the updater.
+   The prepare owner copies this input and uses the original installer's pure
+   renderer to update only its Guru block before calling public prepare once.
+   Call `prepare.sh`; its receipt contains `result.plan`, the single frozen public
+   operation ID and public/Guru/pointer facts. The returned public plan is not
+   changed. Validate its AGENTS target is renderer-idempotent; an old block left
+   by `update.skip` stops before writes. Missing capability, missing or duplicate
+   AGENTS decisions also stop before writes. The public writer owns the final
+   content/mode, guard and candidate; the later preset is byte-idempotent.
+   Core template hashes retain their Core baseline meaning. Preparation creates no target
    checkpoint. Keep this plan for the same invocation; do not prepare another
    operation to recover a partial one.
 
@@ -108,14 +112,17 @@ external acceptance and release matrices remain separate evidence.
 
 `resume_required` projects only `profile=resume,recovery_ref` to this same
 owner. Use that exact ref in the target checkout, from the unchanged source.
-Read its private phase/failure and public recovery facts. AGENTS composition
-occurs only in initial prepare; resume/recover/rollback consume the original
+Read its private phase/failure and public recovery facts. AGENTS input composition
+occurs only before initial public prepare; resume/recover/rollback consume the original
 frozen plan and never reproject targets or edit an existing checkpoint. Resume uses the
 original public plan/operation ID and original Guru preimages; it never expands
 backups, accepts a replacement plan, replays a completed public write, or
 imports later business work into rollback eligibility. Complete output loss
 is recovered by the same reference and actual checks. A source/path/runtime
-mismatch or later owned edit stops for review. Sidecar reconciliation must be
+mismatch or later owned edit stops for review. Old failed operations must first
+be inspected and legally rolled back or exited through their unchanged original
+source. A new source prepares a new operation only after that disposition; it
+does not take over or convert the old checkpoint. Sidecar reconciliation must be
 an explicit reviewed canonical resolution; it cannot silently refresh backups.
 
 Rollback is a separately reviewed bounded write. Read the fixed original

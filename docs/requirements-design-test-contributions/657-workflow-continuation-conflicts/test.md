@@ -1,6 +1,6 @@
 # #657 测试与证据
 
-状态：本批工程、分发及所需 installed/native 验证已完成。本文是本批实际结果和证据限制的唯一 RDT 记录，不保留逐轮审查历史或授权。
+状态：本批工程、分发及所需 installed/native 验证已完成；固定 main 的整合候选还须经过实际 resolved Check 和后续交付门禁。本文是本批实际结果和证据限制的唯一 RDT 记录，不保留逐轮审查历史或授权。
 
 ## 工程定向验证
 
@@ -39,6 +39,18 @@ Planning中已有当前approved时，原Selection保持三文档；真实consume
 独立Architecture首次指出样本旧知识只覆盖R1–R3/四观察，正式返回contract_incomplete。原Planning writer补齐六份task-owned完整Architecture/RDT提案后，fresh candidate返回baseline_current/no_architecture_impact。原design/implement实际更新，使用delta_first保留真实知识差额及后续整合义务；shared current未提前写入。原Wording record/check/invoke、独立final_plan、原Approval及原Activation依次完成。最终实际phase为implementing，Task/generation/D1和binding revision1保持；原checkout boundary为status=ok、errors=[]。原实施owner新增test_ideographic_space，目标installed managed Python unittest共5项全部通过；normalize机制保持strip。该完整闭环覆盖V3/V12实际Agent层，另外六分支scope fixture与多phase选择fixture分别提供定向层证据。
 
 样本B通过原guru-upgrade-tools正式tools-only更新至最终matching源码，24个受保护Task/docs/session文件bytes/modes相等。原生样本只到受影响规划门禁、重新Activation、写前boundary及测试，不执行样本自身完整Check、知识晋升、远端发布或再次Finish；这些并非本Issue的样本验收要求。
+
+## 固定 main 整合与 F7
+
+整合前内容基线为 `319202beab79c7666ecdb855291bf117e43d407e`，TaskCommit 为 `af6697707939da79a1a53f7ca1fd16c33846889c`。本次固定 main 目标为 `dbc25dd08e64388e9e78018d287b11202e308f27`。原临时 merge 候选只有 `.trellis/guru-team/extension.json` 冲突，没有可用 tree 或验证结果。原 Reconcile 实际返回 `implementation_required`，原 Publication owner 合法执行 publishing→implementing；Planning 与 accepted scope 保持，旧 Check、Branch Review 和 readiness 不作为整合后候选资格。
+
+F7 是 R5 范围内实际复现的接续冲突：原 resolved Check 和 resolved executor 都不推进 public phase，结果仍为 checking 且 public Check 为空。旧说明要求 full_review owner rework，正常调用得到 owner_mismatch。修订后的 workflow 和 Reconcile 合同要求原 Check owner 返回 implementation，保持内容基线，再针对实际整合 HEAD 执行 begin_check 与 fresh Check。原独立 Architecture owner确认现有 R5、D531-04、CON600 和 ARCH-DOM-048 已覆盖该行为，无需新增架构机制或重复晋升知识。
+
+在原 resolved 测试方法内补充真实 executor→checking/无 Check→原 Check rework→实际整合 HEAD begin_check→fresh Check/reviewing 的观察，1项通过。matching #658 的 AgentsInputTests 另有1项通过。连同前述39项，共41个不同定向测试方法通过；同方法重跑不重复计数。native 样本的5项测试另计。
+
+目标 main 合入 #658 后，Fork source lock 为 `79a97ed60fe19e8f287eaddfa74722b5250ced35`，CLI/Core 仍为 `0.7.0-castbox.5`。实际 matching SDK 声明 `tools_custom_instruction={path:AGENTS.md,action:custom}`。原 tools-only owner使用当前 AGENTS 内容及实际 source snapshot，执行唯一显式 custom 决策；原 pure renderer在 public prepare 前组合 Guru block，没有改写返回的 frozen plan。正式 invoke 返回 `tools_upgraded`，由原 installer生成最终 manifest及三平台安装投影，没有手拼 hash或 provenance。2701个受保护 Task、workspace及 session文件的内容和权限保持一致，目标 managed runtime resolver与 continuation原生入口读取成功，installed package及三平台 drift检查通过，未产生 `.new`/`.bak`，真实 merge HEAD与固定 MERGE_HEAD保持。
+
+该组合仍是 local_candidate，明确保留 `unverified=[formal_fork_source_lock]`。前述完整 native样本基于 e9，未冒称已在79a重跑全部链路；79a组合证据是本节的真实 tools安装、原生读取及定向验证。实际整合提交和后续公开门禁由原 Reconcile、Check及 Review owner承接，不在本文提前声明通过。
 
 ## 未验证边界
 

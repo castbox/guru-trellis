@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import copy
 import hashlib
 import importlib.util
 import json
@@ -30,18 +31,27 @@ def legacy_owner(package):
     return module
 
 
-def project_agents_target(plan, module):
-    """Compose the existing Guru block into the public writer's first target."""
-    for action in plan['actions']:
-        if action.get('kind', 'file') != 'file' or action['path'] != 'AGENTS.md':
-            continue
-        target = action['target']
-        content = None if target is None else base64.b64decode(target['content_base64'])
-        rendered = module.render_agents_ai_first_principles(content)
-        action['target'] = {'content_base64': base64.b64encode(rendered).decode('ascii'),
-                            'sha256': hashlib.sha256(rendered).hexdigest(),
-                            'mode': 0o644 if target is None else target['mode']}
-    return plan
+def compose_agents_input(tools, module, contract):
+    """Render only the caller's explicit custom instruction before public prepare."""
+    if contract.get('tools_custom_instruction') != {'path': 'AGENTS.md', 'action': 'custom'}:
+        raise ValueError('Selected CLI/Core lacks tools_custom_instruction AGENTS.md/custom; use the matching fixed source before preparing tools')
+    decisions = [row for row in tools.get('file_decisions', []) if row.get('path') == 'AGENTS.md']
+    if len(decisions) != 1 or decisions[0].get('action') != 'custom' or not isinstance(decisions[0].get('content'), str):
+        raise ValueError('Supply exactly one explicit AGENTS.md custom decision with reviewed base content; preserve/replace are not converted')
+    prepared = copy.deepcopy(tools)
+    decision = next(row for row in prepared['file_decisions'] if row['path'] == 'AGENTS.md')
+    decision['content'] = module.render_agents_ai_first_principles(decision['content'].encode('utf-8')).decode('utf-8')
+    return prepared
+
+
+def validate_agents_target(plan, module):
+    """Check the public final target without changing its frozen plan."""
+    actions = [row for row in plan['actions'] if row.get('kind', 'file') == 'file' and row['path'] == 'AGENTS.md']
+    if len(actions) != 1 or actions[0]['target'] is None:
+        raise ValueError('Public tools plan must contain one final AGENTS.md target')
+    content = base64.b64decode(actions[0]['target']['content_base64'])
+    if module.render_agents_ai_first_principles(content) != content:
+        raise ValueError('Public AGENTS.md target lacks the current Guru block; review update.skip and explicit custom content before writing')
 
 
 def selected_target(context, public):
@@ -466,8 +476,10 @@ def run(package_root, metadata, argv):
             if Path(tools['root']).resolve() != root:
                 raise ValueError('Public tools input root differs from selected checkout')
             frozen = {key: value for key, value in plan.items() if key != 'tools_input'}
-            frozen['upstream_plan'] = project_agents_target(
-                call(plan['upstream_source'], 'prepareToolsInstallation', tools), old.installer(source))
+            module = old.installer(source)
+            tools = compose_agents_input(tools, module, call(plan['upstream_source'], 'getMaintenanceContract'))
+            frozen['upstream_plan'] = call(plan['upstream_source'], 'prepareToolsInstallation', tools)
+            validate_agents_target(frozen['upstream_plan'], module)
             validate_json(frozen, package_root / 'schemas/private-plan.schema.json', 'plan')
             facts = inventory(package_root, root, public, frozen['upstream_source'], frozen)
             return {'plan': frozen, 'facts': facts}

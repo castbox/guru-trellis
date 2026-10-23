@@ -13,6 +13,12 @@ Phase Index/continuation、公共 Guru Skills 和各平台 Guru finish 入口引
 加载要求覆盖无 Task、Task、task-free、独立操作、恢复和子 Agent；写作 owner 自检，
 审核 owner 保持原范围。源码和投影检查不证明实际平台加载与输出行为。
 
+单 checkout 的 tools-only 升级由 `guru-upgrade-tools` 承接。调用方显式提供
+`AGENTS.md` 的 custom 基底正文与原文件快照；Guru 在公共 prepare 前更新其中的
+规则块，公共计划返回后保持不变。目标 Fork 须声明 `tools_custom_instruction`
+能力；缺失能力或最终内容被 `update.skip` 保留为旧块时，准备阶段停止。
+旧失败操作先由未变的原来源合法处置，再从修复来源重新准备；不转换旧 checkpoint。
+
 已有安装须更新匹配的 workflow 并完整 reapply preset。Trellis update/upgrade 后，
 先按官方 marketplace `--create-new` 预览，再显式 `--force` 应用 workflow，最后
 reapply preset。现有受管哈希与 `.new`/`.bak` 机制保留用户修改；AGENTS 用户区块

@@ -22,6 +22,8 @@ Discovery current身份为TaskId/generation、branch binding及registered checko
 
 ## matching安装、在途与update/reapply
 
+R5也收敛实际冲突解决后的原owner指令：resolved Check只审未提交的整合树，不写公共Check；原merge executor提交后仍保留checking。原Check owner合法rework到implementation，再由原implementation保持B并以实际整合HEAD执行begin_check，之后重新完成适用Check和原独立Review。原TaskCommit提交后真实处于reviewing的回程保持其原owner，不套用本条。
+
 源码不是安装采用。已有项目以同一受审来源成套更新marketplace workflow、完整preset/packages/consumers/managed spec及选择的平台投影。按官方marketplace先--create-new预览，检查目标修改和sidecar，再显式--force应用同provider workflow，最后完整preset apply/reapply；本仓dogfood可在验证原安装副本无独立修改后同步canonical workflow。旧格式数据/工具必须先经原upgrade/tools owner正式处理，不手写.version或绕过预检。
 
 保留用户修改与原managed hash/.new/.bak机制；逐项核真实sidecar并处理，reapply验证幂等、mode、installed可调用、upstream ownership与drift。旧完整安装在合法matching切换前保持原包；旧在途Finalizer不转新图，既成mutation先由原producer恢复，真实语义缺口回最早owner，不复制或制造pass。
