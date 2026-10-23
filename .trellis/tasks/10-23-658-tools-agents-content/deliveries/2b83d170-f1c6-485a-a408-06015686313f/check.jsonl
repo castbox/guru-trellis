@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本次全部文字与代码说明的共同规范"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "工具安装与恢复写集约束"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "公共模板与Guru资产边界"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md", "reason": "实际维护入口及恢复闭环"}
