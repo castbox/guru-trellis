@@ -296,13 +296,15 @@ TaskId 防复用及严格限定的只读 unsupported-legacy 诊断，不再成�
 
 实际原生 caller/partial expansion、runtime 和一个代表性安装的不同证据层由[唯一 Test](../../requirements-design-test-contributions/521-checkout-isolation/test.md)拥有；standard 接管到独立创建/承接边界，不认领未执行 Task/binding/carryover。原 owners、公共 exits、软件轴和 GAP lifecycle 保持，无 Task-free store、mapping 或授权状态。
 
-## ARCH-CUR-058：唯一 Planning writer 与两目的评估（.85）
+## ARCH-CUR-058：唯一 Planning writer 与当前 scope／continuation
 
-`guru-author-task-plan` 是标准 Task 规划语义的唯一 writer，拥有 initial_review、solution_planning、wording_reentry、approval_revision、delivery_plan_revision、active_task_scope_change、architecture_conflict_resolution、requirements_revision 八 profiles，四 exits 为 requirements_ready、plan_ready、clarify_scope、blocked。原 workflow caller 显式调用该 owner；upstream brainstorm 仅提供讨论方法，不成为第二 writer。
+原Author独占Task整体scope-only PRD，以及八个delivery_ profiles的选定Delivery三正文和context。workflow显式调用原owner；upstream brainstorm只提供讨论方法，不成为第二writer。整体范围先经Clarify source/scope判断，再由task_scope_requirements写根PRD；只有原Clarify task_scope_requirements_acceptance审查实际AuthorityRef并accept_scope。pre-Author scope_ready2.0无task_key，post-acceptance结果含实际task_key；后者才按当前义务进入原stage rework/withdrawal、显式Creation或Completion。无current Delivery不造空切片；两次结果不能互换。
 
-同一 Architecture owner 的 planning3.0 candidate_assessment 消费真实当前候选，不依赖未来 contribution；其 current route 回 Author solution_planning。final_plan 消费 Wording-current design 与真实 contribution/必要 ADR，current route 只回相邻 Approval。原独立评估方法、四 profiles、七 exits 保持；合法非 planning2.0 不变。Author 前置资格只消费当前候选/source，Approval 继续使用其原 planning_scenario_set；scope_ready 先完成活动 scope 判断再由 Author 写作，避免前置写作循环。
+同一Architecture owner的planning3.0 candidate_assessment消费真实候选并回Author solution_planning；final_plan消费Wording-current方案及真实贡献/必要ADR，只回相邻Approval。Wording/Approval及Delivery修订经薄projection回唯一Author，实际批准仍交原Delivery Activation记录公共Planning。TaskId/generation、公共模型和各原writer保持。Author按当前source/candidate前置写作，Approval保留planning_scenario_set；bound planning Discovery recovery仍归原context owner，sync purpose只在当前调用承接。无第二Architecture/Approval writer、旧planning dual reader、长期规划cache或授权存储。旧#292 Task-root profiles、private4/scope_ready1、Task development-status activation/resume属于固定旧完整安装，不作为当前入口；精确历史见该单元Git前驱和[原贡献](../contributions/292-unique-planning-author.md)。
 
-Wording/Approval、Delivery policy gap/Completion next independent delivery 的修订分别经薄 projection 回同一 Author；approved 仍由原 execution owner 承接 activate 或 resume_execution，TaskId/generation 与 lifecycle writer 不变。bound planning Discovery recovery 使用原 context owner；sync purpose 只在当前调用承接。没有第二 Architecture/Approval writer、旧 planning dual reader、长期规划 cache 或授权存储。必要决策见 ADR-022/023；机制来源和当前边界见[durable contribution](../contributions/292-unique-planning-author.md)，实际结果与未验证边界见[唯一 Test](../../requirements-design-test-contributions/292-unique-planning-author/test.md)。
+初始Task Creation及其原操作恢复保留精确created准入。既有活动Task通过当前TaskId/generation、合法common-dir binding、唯一checkout和实际阶段owner继续写入，不要求原机created/runtime，不放宽初始恢复validator。Delivery Creation/Selection的created wire保持；其唯一consumer重读同key的current selection/phase和root，planning中真实尚需初始requirements且符合Author前置才进initial Author；其余均走唯一continuation的实际未完成义务，包括已有planning的适用Author/Wording/Architecture/Approval或当前approved到Activation。缺失/过期输出回原producer，phase不重启初始Author。选择和恢复保留key、phase、规划和适用结果，phase不产生gate pass。
+
+本条与[ADR-035](../adr/035-current-continuation-scope-routing.md)窄替代ADR-011/023/024命中的旧恢复和scope路由，保留原producer恢复、唯一continuation、官方API、独立语义门禁和终态责任。current执行细节由canonical workflow/packages单写，matching切换见[MIGRATION-657](../../../trellis/presets/guru-team/MIGRATION-657.md)。[本批Test](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/test.md)分别拥有source、installed/native、Agent及未验证结果；知识接受不证明业务采用、Task完成或Release。
 
 ## ARCH-CUR-059：已提交候选的正式接续（.86）
 

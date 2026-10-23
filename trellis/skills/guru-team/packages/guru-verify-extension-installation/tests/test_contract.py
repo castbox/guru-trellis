@@ -49,6 +49,27 @@ def load_matrix_helper():
 
 
 class ExtensionVerificationContractTests(unittest.TestCase):
+    def test_retired_task_input_diagnoses_the_current_standalone_parser_entry(self) -> None:
+        runtime = load_runtime()
+        with tempfile.TemporaryDirectory() as temp, mock.patch.dict(
+            os.environ, {"GURU_TEAM_INVOKED_PACKAGE_ROOT": str(PACKAGE)}
+        ):
+            root = Path(temp)
+            old = {"profile": "verification_required", "mode": "workflow",
+                   "task_ref": ".trellis/tasks/example", "plan_ref": "plan:original",
+                   "repo_ref": "castbox/guru-trellis", "branch_review_commit": "a" * 40,
+                   "verification_target": "extension-installation"}
+            path = root / "input.json"
+            path.write_text(json.dumps(old), encoding="utf-8")
+            with self.assertRaises(runtime.WorkflowError) as raised:
+                runtime.extension_verification_public_input(root, "input.json")
+            diagnostic = str(raised.exception)
+            self.assertIn("retired_task_bearing_extension_verification", diagnostic)
+            self.assertIn("source_repository_verification standalone input", diagnostic)
+            current = load("examples/public-source-repository-verification-input.json")
+            path.write_text(json.dumps(current), encoding="utf-8")
+            self.assertEqual(runtime.extension_verification_public_input(root, "input.json"), current)
+
     def test_dispatcher_accepts_every_repeated_capability_and_runs_entrypoint(self) -> None:
         runtime = load_runtime()
         capabilities = list(runtime.EXTENSION_VERIFICATION_CAPABILITIES)

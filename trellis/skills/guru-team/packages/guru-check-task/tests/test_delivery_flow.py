@@ -293,6 +293,21 @@ class DeliveryFlow(unittest.TestCase):
         projected=self.wrapper('guru-check-task','project-resolved-reconciliation.sh','--input',self.write('resolved.json',public),'--owner-result',self.write('resolved-owner.json',owner),'--authoring',self.write('resolved-authoring.json',authoring))
         self.assertEqual('delivery_resolved_candidate',projected['profile']);self.assertEqual(self.key,projected['delivery_key']);self.assertEqual(self.head,projected['phase2_commit_anchor'])
         self.assertEqual(self.head,self.git('rev-parse','HEAD').strip())
+        self.assertEqual('checking', self.projection.resolve(self.key)['phase'])
+        reconciled = self.wrapper('guru-reconcile-task-base', 'execute-resolved-base-reconciliation.sh',
+            '--input', self.write('resolved-executor.json', projected))
+        self.assertEqual('committed', reconciled['status'])
+        self.assertEqual('checking', self.projection.resolve(self.key)['phase'])
+        self.assertIsNone(self.projection.resolve(self.key)['results']['check'])
+        rework(self.projection, self.key, 'check', 'implementation',
+               authority_ref(self.repo / 'requirements.md', self.repo), ['readiness'])
+        self.head = reconciled['reconciled_task_head']
+        self.projection.begin_check(self.key, self.projection.candidate(
+            ['app.txt'], head_ref=self.head, base_ref=old_base))
+        refreshed = self.check()
+        self.assertEqual('passed', refreshed['exit_id'])
+        self.assertEqual('reviewing', self.projection.resolve(self.key)['phase'])
+        self.assertEqual(self.head, self.projection.resolve(self.key)['results']['check']['candidate']['head_ref'])
 
     def test_dirty_exact_commit_and_lost_stdout_preserve_unrelated_paths(self):
         from runtime.delivery_projection.gates import rework

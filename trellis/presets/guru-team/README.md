@@ -1,5 +1,7 @@
 # Guru Team Preset
 
+活动Task续接通过当前身份、合法binding/checkout及实际阶段owner准入，原created只服务初始创建区间。Delivery created wire保持；原consumer重读公共phase，planning才进适用Author，其余沿唯一continuation。范围修订按pre-Author→根PRD Author→Clarify acceptance→post-Author两次承接，退役status/DTO不成为current前置。完整matching切换、在途恢复及证据边界见 [MIGRATION-657](MIGRATION-657.md)。源码修改不证明已有安装或实际Agent已采用。
+
 当前知识读写的唯一共享正文位于原 RDT package 的
 [current-knowledge.md](../../skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)。
 两维护 Skills 实际读取同一文件；原递归 package 安装分发，无新 runtime API。

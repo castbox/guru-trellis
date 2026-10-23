@@ -29,8 +29,11 @@ Run source identity preflight before clone, install, temporary-directory
 creation, or owner-result write. Then execute the clean throwaway installation
 catalog, perform the AI adequacy review, record/check only ignored session
 state, and return exactly one of `verified` or `blocked`. Any retired
-task-bearing input fails closed and returns to current Publication/Finalizer
-reprepare; it is never adapted into the standalone input.
+task-bearing input fails closed. An explicit standalone verification caller
+rebuilds the current source_repository_verification input through this owner;
+an old in-flight Publication/Finalizer transaction returns to its original
+pinned compatible owner or existing per-case disposition. There is no current
+Finalizer preparation route and no automatic standalone adaptation.
 
 If the throwaway compatibility matrix fails, consume only its cleanup-safe
 structured terminal facts: `pre-matrix|matrix-cell|post-matrix`, applicable

@@ -134,7 +134,7 @@
   "external_exits": [
     {
       "id": "created",
-      "evidence": "Exact same-owner semantic outcome with public identity/fact verification",
+      "evidence": "Exact same-owner semantic outcome and public identity/selection verification; unchanged DTO consumed with a fresh public phase read, planning-only Author entry or original continuation owner",
       "consumer": {
         "kind": "workflow",
         "id": "guru-delivery-planning-author-router"

@@ -213,10 +213,13 @@ mutation.
 If stdout is lost after that commit, the same request may recover only when
 current `HEAD` has the exact reviewed parents, tree, and message in a clean
 terminal Git state. Recovery returns the existing commit and never creates a
-second commit. Before Full Review, the reviewing owner invokes public rework
-to implementation; the implementation owner binds the reconciled candidate with
-`begin_check`, and the Check owner reviews current applicability and records a
-fresh candidate-bound public Check. This preserves the Delivery identity, plan
+second commit. Resolved Check records no public Check gate, and this executor
+does not advance the public Delivery phase. The Delivery remains in checking.
+Before Full Review, the original Check owner invokes public rework to
+implementation. The implementation owner retains content base B and binds the
+actual reconciled HEAD with `begin_check`; the Check owner reviews current
+applicability and records a fresh candidate-bound public Check.
+This preserves the Delivery identity, plan
 and existing reconciled commit; still-valid test evidence need not be rerun.
 `project-resolved-full-review` combines that checked result with explicit Branch
 Review authoring only after validating the actual current public Check owner,

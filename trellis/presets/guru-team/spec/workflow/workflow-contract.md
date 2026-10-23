@@ -383,7 +383,9 @@ readiness_current -> guru-task-intake-router
 The router uses `ready.transition.target.kind`: `proposed_draft` invokes
 `guru-create-issue` with its own confirmation and then restarts fresh Sync and
 Intake for the new Issue; `existing_issue` and `standalone_request` invoke
-`guru-create-task`. Only the latter's checked `created` exit enters Planning.
+`guru-create-task`. Only that checked created result enters a newly created
+Task's first whole-scope Author step; an existing active Task follows its
+current identity/binding/checkout and actual continuation owner.
 Issue creation is not task creation. Identity, branch binding, checkout and
 session owners resolve the exact TaskId/generation for subsequent phases.
 
@@ -394,7 +396,10 @@ pre-task routing writes no owner-result, prerequisite, or transition file under
 Missing/stale stage identity, unknown or multiple exits, or an unmapped consumer
 stops fail closed. Retired `prepare-task` is never a Phase 0 hop.
 
-Only `guru-create-task:created` enters planning. An incomplete or
+Initial Task intake enters whole-scope writing through
+`guru-create-task:created`. Existing active continuation does not require the
+original creation DTO or replay initial creation; it retains current identity,
+binding/checkout and all applicable stage-owner gates. An incomplete or
 conflicting active-task identity is terminal at the unique `invalid-task-state`
 consumer and never re-enters Intake or automatic recovery. The workflow does not
 create an issue, branch, worktree, or task directly and does not copy their
@@ -580,10 +585,13 @@ an empty slice. D1 and D2 follow the same owners. Ordinary method checks do not
 write formal phases. The public runtime declaration supplies unique writers;
 platform entries and breadcrumbs only load the sole continuation.
 
-When task creation succeeded but its `created` output was lost, return to
-`guru-create-task` read-only result recovery for the exact TaskId/generation.
-It may rematerialize only the checked `created` result, never create a second
-Issue, branch, worktree or task. Issue creation output loss belongs to the
+Within the original creation interval, when task creation succeeded but its
+created output was lost, return to guru-create-task read-only result recovery
+for the exact original TaskId/generation and initial binding/resource facts.
+It may rematerialize only that checked result, never create a second Issue,
+branch, worktree or task. It does not admit formally rebound active Tasks by
+relaxing those checks; existing active continuation uses its current identity,
+legal binding, unique checkout and actual owner without reconstructing created. Issue creation output loss belongs to the
 separate `guru-create-issue` owner and returns through fresh Intake.
 
 For Phase 2, a current retained `passed` checkpoint may be checked again and
@@ -888,22 +896,35 @@ existing facts from proposed-change requirements/design/planning intent. Deferre
 file writes or resource creation preserve that intent and its current Guru route.
 See the marketplace workflow Guru Team Gate for the single routing definition.
 
-## #292 active-scope boundary
+## Current scope judgment, writing and acceptance (#657)
 
-Clarify owns accepted scope before the original Author writes planning.
-Current active private result is 4.0; scope_ready public output and the original
-clear-router's independent consumer input are 1.0. The output is exactly
-exit_id/mode/task_ref/source_selection/revision_refs. The thin router drops
-exit_id, adds fixed profile=active_task_scope_change and passes the remaining
-fields unchanged to Author's existing input 1.0. AI chooses revision_refs from
-actual revisions; scripts do not infer them. Updated planning, planning hashes,
-reentry owners and active_task_scope_update are not Clarify prerequisites.
-Original Sync/Discovery still handles source mutation or missing context.
-Original activation/resume_execution retains TaskId/generation and in_progress.
-Historical private3.0/public-clear3.0/clear-consumer2.0 bytes remain unchanged;
-old successful active results require fresh original Clarify, while other
-profiles keep their contracts. This migration does not imply native semantic,
-fixture resume, full installer-matrix or release qualification.
+Clarify's current delivery_active_task_scope_change and
+delivery_task_scope_revision profiles judge live source/scope and return
+pre-Author scope_ready 2.0 with source_selection/revision_refs and scope_action,
+without task_key. The existing clear-router projects only the declared fields
+to Author task_scope_requirements. Author alone writes the whole root PRD;
+its actual scope_requirements_ready locator and original selection then enter
+Clarify task_scope_requirements_acceptance. Only that owner reviews the actual
+AuthorityRef and calls public accept_scope. Its post-acceptance scope_ready 2.0
+contains the real task_key and returns through the clear-router to actual
+current-stage rework/withdrawal, explicit Creation or Completion.
+
+revised, no_change and withdrawal_required all preserve this two-part boundary.
+Pre-Author output cannot advance/rework/stop a Delivery; post-acceptance output
+does not repeat root writing. With no current Delivery, obligations determine
+Creation or Completion, never an empty slice solely for withdrawal. The actual
+stage owner alone performs legal rework/stop and selection release; public
+phase does not prove a gate. Preserve the same Task/Delivery identity/history
+and refresh only affected original-owner judgments.
+
+The prior #292 private4.0/scope_ready1.0, old active_task_scope_change Author
+profile and Task-status activation/resume route describe pinned-old complete
+installations only. Their immutable schemas/examples are not current fallback
+or conversion inputs. Freshly re-enter current original owners; do not append
+a key or reconstruct source selection/pass from PRD or metadata. The complete
+matching workflow/preset/packages/consumers switch and evidence limits are
+specified in MIGRATION-657; source convergence does not establish native or
+Release qualification.
 
 ## Independent maintenance routing
 

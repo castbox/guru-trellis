@@ -41,7 +41,7 @@
     },
     {
       "id": "active_task",
-      "evidence": "current task.json, branch, worktree, and in_progress status",
+      "evidence": "current public TaskId/generation, exact DeliveryKey, legal branch binding and unique registered checkout; no Task development status",
       "binding": "one exact active task current binding",
       "freshness": "reread before record and check"
     },
