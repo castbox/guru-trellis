@@ -6,6 +6,7 @@ The harness creating the old fixture must invoke its real CLI/preset writers.
 No transport, installer, validation, or runtime call below is mocked.
 """
 from __future__ import annotations
+import base64
 import hashlib
 import json
 import os
@@ -59,8 +60,11 @@ class NativeToolsInstallationTests(unittest.TestCase):
                 'action':'install','template_id':'guru-team','provider':'local-canonical:'+source_ref,
                 'content':(SOURCE/'trellis/workflows/guru-team/workflow.md').read_text(),'ownership':'custom'},
                 'file_decisions':[{'path':row['path'],'source':row['source'],'action':'preserve'}
-                                  for row in preview['public_tools']['files'] if row['status']=='conflict' and not row['required']]},
+                                  for row in preview['public_tools']['files'] if row['path'] != 'AGENTS.md' and row['status']=='conflict' and not row['required']]},
                 'selected_platforms':preview['public_tools']['configured_platforms'], 'guru_decisions':[]}
+            agents = next(row for row in preview['public_tools']['files'] if row['path']=='AGENTS.md')
+            request['tools_input']['file_decisions'].append({'path':'AGENTS.md','source':agents['source'],
+                'action':'custom','content':(root/'AGENTS.md').read_text()})
             prepared = invoke('prepare.sh', public, write('prepare.json', request))['result']['plan']
             frozen = write('plan.json', prepared)
             upgraded = invoke('invoke.sh', public, frozen)
@@ -92,4 +96,31 @@ class NativeToolsInstallationTests(unittest.TestCase):
             self.assertEqual(result['skill_installed_validation']['returncode'],0)
             for path,before in preserved.items():self.assertEqual(tree(Path(path)),before)
             fixture['tools_result']=upgraded;fixture['public_plan']=prepared['upstream_plan'];fixture['upstream_source']=descriptor
+            Path(os.environ['GURU_TOOLS_NATIVE_FIXTURE']).write_text(json.dumps(fixture,indent=2)+'\n')
+            # A real later edit blocks both recovery paths without being adopted.
+            agents_path = root/'AGENTS.md'
+            installed_agents = agents_path.read_bytes()
+            installed_mode = agents_path.stat().st_mode & 0o777
+            agents_path.write_bytes(installed_agents+b'\nLater project instruction.\n')
+            rollback = write('rollback.json', {'profile':'rollback','recovery_ref':upgraded['recovery_ref']})
+            for profile in (resume,rollback):
+                self.assertEqual(invoke('invoke.sh',profile)['exit_id'],'blocked')
+                self.assertEqual(agents_path.read_bytes(),installed_agents+b'\nLater project instruction.\n')
+            # The fixture user undoes that edit before the original rollback.
+            agents_path.write_bytes(installed_agents)
+            agents_path.chmod(installed_mode)
+            restored = invoke('invoke.sh',rollback)
+            self.assertEqual(restored['exit_id'],'rolled_back',restored)
+            for action in prepared['upstream_plan']['actions']:
+                if action.get('kind','file') != 'file': continue
+                path = Path(action['root'])/action['path']
+                before = action['source']
+                if before is None:
+                    self.assertFalse(path.exists(),str(path))
+                else:
+                    self.assertEqual(path.read_bytes(),base64.b64decode(before['content_base64']),str(path))
+                    self.assertEqual(path.stat().st_mode & 0o777,before['mode'],str(path))
+            for path,before in preserved.items(): self.assertEqual(tree(Path(path)),before)
+            fixture['combination_validation']={'resume':'passed','later_edit_resume_rollback':'blocked_preserved',
+                'rollback':restored,'public_preimages':'bytes_modes_restored'}
             Path(os.environ['GURU_TOOLS_NATIVE_FIXTURE']).write_text(json.dumps(fixture,indent=2)+'\n')
