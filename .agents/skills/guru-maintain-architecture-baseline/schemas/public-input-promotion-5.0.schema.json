@@ -145,6 +145,16 @@
         "change_contract_locator": {
           "type": "string",
           "minLength": 1
+        },
+        "absent_locators": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Subset of the three declared authority locators absent at git_revision; omitted or empty means all exist."
         }
       }
     },

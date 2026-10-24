@@ -1,5 +1,9 @@
 # Guru Team Preset
 
+当前正常流程的 repair 投影、归档 Review example、首次 before authority 缺失及
+final promotion 的 Bootstrap 回程，采用三个原 owner 的匹配当前合同。
+直接演进、旧合法输入及成套安装边界见 [MIGRATION-663](MIGRATION-663.md)。
+
 活动Task续接通过当前身份、合法binding/checkout及实际阶段owner准入，原created只服务初始创建区间。Delivery created wire保持；原consumer重读公共phase，planning才进适用Author，其余沿唯一continuation。范围修订按pre-Author→根PRD Author→Clarify acceptance→post-Author两次承接，退役status/DTO不成为current前置。完整matching切换、在途恢复及证据边界见 [MIGRATION-657](MIGRATION-657.md)。源码修改不证明已有安装或实际Agent已采用。
 
 当前知识读写的唯一共享正文位于原 RDT package 的

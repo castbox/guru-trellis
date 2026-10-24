@@ -1,6 +1,7 @@
 # Task / Delivery 生命周期设计
 
-本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/design/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+本轮完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/design/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
+较早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/design/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-DES-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/design/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
 
 ## 稳定设计身份
@@ -90,3 +91,15 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 ## 完整规格与未迁移边界
 
 精确公共 I/O、阶段 profile、typed exit/consumer、hash/HEAD关系、private恢复输入由 [canonical packages](../../../trellis/skills/guru-team/packages) 与 [workflow](../../../trellis/workflows/guru-team/workflow.md) 单写。本迁移不展开 Git对象摘要算法、provider实现、完整升级迁移矩阵/软件 Release 等专属能力，也不以历史test结果证明当前candidate。它们仍由 [legacy inventory](README.md) 指向原authority。
+
+## 流程合同连续性职责
+
+**D663-01 / CON663-REPAIR** 承接 R663-01：Bootstrap Interface 声明出口字段 rename 与 caller 自有上下文 authoring，repair schema/runtime核同 owner profile/continuation；workflow仅按既有回程调用。wire output不承载原 caller 已有的完整输入，不形成持久化 handoff。
+
+**D663-02 / CON663-ARCHIVE** 承接 R663-02：Branch Review 正式 archived example 与其 closed schema 一致，原 recorder/checker/invoke 消费真实归档身份。archive/Completion/Closure/planning/range/PR snapshot和只读职责继续由原 owner核验，成功出口仍停止于原 disposition。
+
+**D663-03 / CON663-BEFORE** 承接 R663-03：原 Architecture validator 在精确 before Git revision核既有三个 locator的存在或显式缺失，原 current/result消费者按 matching schema承接。完整固定B..H及当前新增文件仍由独立Architecture/Review判断，不用缺失事实推导当前文档充分性。具体字段与API以 Architecture canonical package及ADR-CONTRACT-CONTINUITY单写。
+
+**D663-04 / CON663-MAINTENANCE** 承接 R663-04：final integration router仅将维护输入投影为原Bootstrap/repair可消费的phase2，原promotion上下文留在调用期；维护后重读真实authority/targets/candidate，回同一原promotion。维护出口不直接进入final Check，不新增业务状态、route record或第二writer。
+
+**D663-05 / CON663-DISTRIBUTION** 承接 R663-05：canonical package是精确公共合同来源；测试执行public example/schema/projection/consumer组合，AI另核动态职责与正常路径。MIGRATION-663定位直接成套演进；source修改和投影一致不代表旧安装或业务已采用。

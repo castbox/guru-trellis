@@ -1,6 +1,7 @@
 # Task / Delivery 生命周期测试策略
 
-本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+本轮完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/test/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
+较早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
@@ -86,3 +87,16 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 | T635-07 / R635-05 | matching source、完整 packages/workflow、原工具维护、最多一个代表安装、reapply/drift/sidecar | source、installed/native、Agent、GitHub 和完整 Release 分层；旧安装按显式迁移；不批量迁移无关档或手改版本绕过前置。 |
 
 实际执行与证据边界由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md) 单写。测试预期不等于通过；跨 clone 完整再次 Finish 和固定正式旧格式由终态测试单元定义。
+
+## T663：正常合同承接与原 owner行为
+
+| Test / requirement → design | 正常输入与入口 | 必须观察及边界 |
+| --- | --- | --- |
+| T663-01 / R663-01 → D663-01 | 正式Bootstrap repair_required→声明projection→同owner repair；new/existing/standalone及普通missing/profile/continuation mismatch | mode/context/identity保持，consumer无字段失配并实际继续维护；受控wrapper与真实owner分开 |
+| T663-02 / R663-02 → D663-02 | 从Interface指定example填真实schema2 archive/key/HEAD/PR snapshot，经原recorder/checker/invoke | 合法只读出口，archive与snapshot不变，无当前Check/active gate或业务推进；原disposition stop保持 |
+| T663-03 / R663-03 → D663-03 | fixed B无authority，原Planning/Bootstrap建立后Phase2→TaskCommit→committedArchitecture/full Review；B已有文件对照 | 真实before缺失与完整B..H保持，当前新增文件实际审核；受控链不代替native owner |
+| T663-04 / R663-04 → D663-04 | 正式final promotion baseline_incomplete/bootstrap→phase2维护→同原promotion，whole-task/Delivery及repair对照 | identity/root/continuation保持，维护不等promoted/final Check；原后继实际可执行 |
+| T663-05 / R663-05 → D663-05 | current registry全部profile examples及声明output variants，profile/aggregate/schema/projection/consumer | 实际组合可消费、唯一consumer及stop；不以marker/parity或固定数量代替；动态分支另审 |
+| T663-06 / R663-01/05 → D663-01/05 | 一个代表性clean完整安装、真实Bootstrap repair消费、reapply/drift/mode/平台/sidecar | 真实owner修复结果与事实一致，分发实际覆盖分层报告；不证明完整Release矩阵或业务旧安装 |
+
+本项实际结果由 [#663 Test](../../requirements-design-test-contributions/663-contract-continuity/test.md) 单写。以上定义预期；未执行项不能以先前扫描或schema通过冒充。实际最终质量链仍按T638覆盖晋升后真实内容。
