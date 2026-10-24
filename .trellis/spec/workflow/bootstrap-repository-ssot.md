@@ -16,3 +16,7 @@ Bootstrap 自己只负责跨 SSOT 版本、适用范围、行为、设计、测�
 后续 task 通过 #263/#264 的 task-impact/promotion contracts 更新 canonical authority；
 普通并行 task 不直接修改 shared spec index。完整多平台安装矩阵和 upgrade/release
 证据分别由 #260/#267 负责。
+
+`repair_required` 的同 owner re-entry 由原 package 的 Interface 和 contract 定义。
+Caller 使用其声明 rename/authoring，保留原调用上下文后执行实际 repair；不得读取
+producer 私有结果。当前分发及旧输入重入边界见 preset `MIGRATION-663.md`。

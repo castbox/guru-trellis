@@ -120,18 +120,26 @@ class CommittedReentryTest(unittest.TestCase):
     def architecture(self, committed):
         package = SKILLS / 'packages/guru-maintain-architecture-baseline'
         installed = self.install_fixture_packages(package.name)
-        public = json.loads((package / 'examples/public-input-impact.json').read_text())
-        constitution = '.trellis/.runtime/fixture-constitution.md'
-        (self.repo / constitution).write_text('Current fixture design constitution.\n')
-        public['constitution']['authority_locator'] = constitution
-        public.update(schema_version='delivery-1.0', profile='delivery_task_impact_sync',
+        public = json.loads((package / 'examples/public-input-delivery-task-impact-sync-3.0.json').read_text())
+        # Existing fixture authority is app.txt at both ends of the range.
+        # Use real committed bytes without writing after the current Check.
+        public['constitution']['authority_locator'] = 'app.txt'
+        public['baseline']['locator'] = 'app.txt'
+        public['project_contract']['change_contract_locator'] = 'app.txt'
+        public['before_authority'] = {'git_revision': self.git('rev-parse', committed['base_ref']),
+                                    'baseline_locator': 'app.txt', 'constitution_locator': 'app.txt',
+                                    'change_contract_locator': 'app.txt'}
+        from runtime.reviewed_content import reviewed_content_identity
+        public['candidate'] = {'head': self.git('rev-parse', 'HEAD'),
+                               'content_identity': 'sha256:' + reviewed_content_identity(self.repo)['sha256']}
+        public.update(schema_version='delivery-3.0', profile='delivery_task_impact_sync',
                       delivery_key=self.key, planning_root=self.projection.resolve(self.key)['planning_root'],
                       source_exit=committed['exit_id'], stage='branch_review', task_locator=self.task_ref,
                       freshness_identity=committed['branch_review_commit'], committed_range={
                           'base_ref':committed['base_ref'], 'base_head':self.git('rev-parse',committed['base_ref']),
                           'review_head':committed['branch_review_commit']})
         owner = {key:public[key] for key in ('schema_version','profile','mode','continuation_id','stage','task_locator',
-                                            'baseline','constitution','project_contract','freshness_identity','delivery_key','planning_root')}
+                                            'baseline','constitution','project_contract','freshness_identity','delivery_key','planning_root','before_authority','candidate')}
         owner.update(input_sha256=hashlib.sha256(json.dumps(public,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
                      typed_exit='baseline_current', consumer={'kind':'workflow','id':'guru-architecture-baseline-current-router'},
                      baseline_identity=public['baseline']['identity'], constitution_identity=public['constitution']['identity'],

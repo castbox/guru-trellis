@@ -61,7 +61,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     profile = public.get("profile")
     if profile not in PROFILES:
         raise CommandError("schema_mismatch", "profile", "Use one declared Bootstrap profile.")
-    validate_json(public, _schema(package_root, "public-input.schema.json"), "input")
+    validate_json(public, _schema(package_root, "public-input-aggregate.schema.json"), "input")
     if owner.get("profile") != profile or owner.get("continuation_id") != public.get("continuation_id"):
         raise CommandError("stale_identity", "owner_result", "Rerun the profile from current baseline facts.", 3)
     exit_id = owner.get("typed_exit")

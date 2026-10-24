@@ -216,6 +216,138 @@ class PromotionTest(unittest.TestCase):
         self.assertEqual(final["promotion_state"], "reviewed_promoted")
         self.assertEqual(final["planning_root"], continuation["planning_root"])
 
+    def test_final_bootstrap_whole_task_and_delivery_return_to_same_promotion(self):
+        from runtime.schema import validate_json
+        for delivery in (True, False):
+            with self.subTest(delivery=delivery):
+                original = copy.deepcopy(self.public)
+                if not delivery:
+                    original.update(profile="promotion", schema_version="5.0")
+                    original.pop("delivery_key"); original.pop("planning_root")
+                owner = self.owner(original)
+                owner.update(typed_exit="baseline_incomplete", authority_locator=self.baseline,
+                             missing_refs=[self.baseline], repair_profile="bootstrap_foundation",
+                             consumer={"kind": "workflow", "id": "guru-architecture-baseline-bootstrap-router"})
+                requested = self.invoke(owner, original)
+                self.assertEqual(requested.returncode, 0, requested.stdout + requested.stderr)
+                output = json.loads(requested.stdout)
+                interface = json.loads((self.package / "interface.json").read_text())["public_contracts"]
+                projection = next(row for row in interface["projections"] if row["exit_id"] == output["exit_id"])
+                consumer = next(row for row in interface["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
+                validate_json(output, self.package / consumer["contract"]["path"], "bootstrap_router")
+                bootstrap = self.load("public-input-delivery-bootstrap-foundation-1.0.json" if delivery
+                                      else "public-input-bootstrap.json")
+                bootstrap.update(stage="phase2", task_locator=original["task_locator"],
+                                 continuation_id=original["continuation_id"], source_exit=output["exit_id"],
+                                 constitution=copy.deepcopy(original["constitution"]))
+                bootstrap["baseline"].update(locator=self.baseline, status="missing", identity="missing-baseline")
+                bootstrap["successor_baseline"] = copy.deepcopy(original["baseline"])
+                if delivery:
+                    bootstrap.update(delivery_key=original["delivery_key"], planning_root=original["planning_root"])
+                repair_owner = {key: copy.deepcopy(bootstrap[key]) for key in
+                                ("schema_version", "profile", "mode", "continuation_id", "stage", "task_locator",
+                                 "baseline", "constitution", "project_contract", "freshness_identity")}
+                if delivery:
+                    repair_owner.update(delivery_key=bootstrap["delivery_key"], planning_root=bootstrap["planning_root"])
+                # The owner writes and reads back actual foundation contents.
+                (self.repository / self.baseline).write_text("# Current v1\nFoundation repaired by fixture owner.\n")
+                repair_owner.update(input_sha256=self.digest(bootstrap), typed_exit="baseline_current",
+                                    baseline_identity=bootstrap["successor_baseline"]["identity"],
+                                    constitution_identity=bootstrap["constitution"]["identity"],
+                                    impact_kind="no_architecture_impact", promotion_state="no_change",
+                                    impact_reason="The original Bootstrap owner restored current foundation.",
+                                    ai_review_gate=owner["ai_review_gate"],
+                                    consumer={"kind": "workflow", "id": "guru-architecture-baseline-current-router"})
+                maintained = self.invoke(repair_owner, bootstrap)
+                self.assertEqual(maintained.returncode, 0, maintained.stdout + maintained.stderr)
+                maintenance = json.loads(maintained.stdout)
+                self.assertEqual(maintenance["stage"], "phase2")
+                self.assertEqual(maintenance["promotion_state"], "no_change")
+                resumed = copy.deepcopy(original)
+                resumed["source_exit"] = maintenance["exit_id"]
+                resumed["candidate"] = self.production.capture_candidate(self.repository)
+                self.write_targets()
+                promoted = self.invoke(public=resumed)
+                self.assertEqual(promoted.returncode, 0, promoted.stdout + promoted.stderr)
+                final = json.loads(promoted.stdout)
+                self.assertEqual(final["source_profile"], original["profile"])
+                self.assertEqual(final["stage"], "final_integration")
+                self.assertEqual(final["promotion_state"], "reviewed_promoted")
+                self.assertEqual(final.get("delivery_key"), original.get("delivery_key"))
+                self.assertEqual(final.get("planning_root"), original.get("planning_root"))
+                # Restore proposed target before bytes for the next independent case.
+                for row in self.targets:
+                    path = self.repository / row["locator"]
+                    if row["before_content"] is None:
+                        path.unlink(missing_ok=True)
+                    else:
+                        path.write_text(row["before_content"])
+
+    def test_existing_chinese_authority_locators_use_raw_git_tree_paths(self):
+        # Git's normal quotePath setting quotes non-ASCII names without -z.
+        self.git("config", "core.quotePath", "true")
+        # The existing relative-locator contract also permits a leading ./.
+        authority = {"baseline_locator": "./docs/架构/基线.md",
+                     "constitution_locator": "docs/架构/设计原则.md",
+                     "change_contract_locator": "docs/架构/变更合同.md"}
+        for locator in authority.values():
+            path = self.repository / locator
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# 实际既有架构文档\n", encoding="utf-8")
+        self.git("add", *authority.values())
+        self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                 "commit", "-qm", "Existing Chinese authority")
+        authority["git_revision"] = self.git("rev-parse", "HEAD")
+        self.assertNotIn("docs/架构/基线.md", self.git("ls-tree", "HEAD", "--", authority["baseline_locator"]))
+        self.production.check_before_authority(self.repository, {"before_authority": authority})
+
+    def test_first_authority_absence_binds_fixed_before_and_complete_committed_candidate(self):
+        from runtime.schema import validate_json
+        from runtime.io import CommandError
+        locators = [self.public["before_authority"][field] for field in
+                    ("baseline_locator", "constitution_locator", "change_contract_locator")]
+        saved = {locator: (self.repository / locator).read_bytes() for locator in locators}
+        self.git("rm", *locators)
+        self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "Before first authority")
+        before = self.git("rev-parse", "HEAD")
+        for locator, content in saved.items():
+            (self.repository / locator).parent.mkdir(parents=True, exist_ok=True)
+            (self.repository / locator).write_bytes(content)
+        self.git("add", *locators, "implementation.txt", self.unit)
+        self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-qm", "First current authority")
+        public = self.load("public-input-delivery-task-impact-sync-3.0.json")
+        public.update(task_locator=self.upstream.task_ref, delivery_key=self.delivery_key,
+                      planning_root=self.public["planning_root"], stage="branch_review",
+                      candidate=self.production.capture_candidate(self.repository),
+                      committed_range={"base_ref": before, "base_head": before, "review_head": self.git("rev-parse", "HEAD")},
+                      before_authority={**self.public["before_authority"], "git_revision": before, "absent_locators": locators})
+        owner = self.owner()
+        for key in ("promotion_targets", "post_candidate", "postwrite_applicability",
+                    "expected_current_identity", "current_identity", "sync_kind", "sync_target"):
+            owner.pop(key, None)
+        owner.update({key: copy.deepcopy(public[key]) for key in
+                      ("profile", "mode", "continuation_id", "stage", "candidate", "before_authority", "baseline", "freshness_identity")})
+        owner["project_checks"] = [self.project_check(public)]
+        owner.update(input_sha256=self.digest(public), promotion_state="reviewed_promoted",
+                     review={"status": "reviewed", "independent": True, "committed_range": public["committed_range"]})
+        result = self.invoke(owner, public)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        output = json.loads(result.stdout)
+        validate_json(output, self.package / "consumers/workflow/current-5.0.schema.json", "current")
+        self.assertEqual(output["before_authority"], public["before_authority"])
+        self.assertLessEqual(set(locators), set(self.git("diff", "--name-only", before, "HEAD").splitlines()))
+        self.assertEqual(before, public["committed_range"]["base_head"])
+        for absent in ([], locators[:-1], ["unrelated.md"]):
+            invalid = copy.deepcopy(public); invalid["before_authority"]["absent_locators"] = absent
+            with self.assertRaises(CommandError) as raised:
+                self.production.check_before_authority(self.repository, invalid)
+            self.assertEqual(raised.exception.code, "stale_identity")
+        invalid = copy.deepcopy(public)
+        invalid["before_authority"]["git_revision"] = public["committed_range"]["review_head"]
+        with self.assertRaises(CommandError) as raised:
+            self.production.check_before_authority(self.repository, invalid)
+        self.assertEqual(raised.exception.code, "stale_identity")
+
     def test_partial_write_readback_then_same_intent_completion_and_output_loss(self):
         self.write_targets(self.targets[:1])
         self.assertEqual(self.production.target_states(self.repository, self.targets),

@@ -60,7 +60,7 @@
   "schemas": [
     {
       "id": "public_input",
-      "path": "schemas/public-input.schema.json"
+      "path": "schemas/public-input-aggregate.schema.json"
     },
     {
       "id": "completed_output",
@@ -328,14 +328,16 @@
           "input_kind": "structured_json",
           "profile_id": "repair",
           "seed_fields": [
-            "exit_id"
+            "source_exit"
           ],
           "authoring_fields": [
-            "profile"
+            "profile",
+            "mode",
+            "continuation_id"
           ],
           "authoring_example": {
-            "id": "repair_input",
-            "path": "examples/public-input-repair.json"
+            "id": "repair_authoring",
+            "path": "examples/public-repair-authoring.json"
           }
         }
       },
@@ -370,7 +372,13 @@
         "id": "repair_required_projection",
         "exit_id": "repair_required",
         "consumer_input_id": "repair_required_input",
-        "operation": "direct"
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          }
+        ]
       },
       {
         "id": "blocked_projection",

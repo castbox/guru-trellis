@@ -21,3 +21,13 @@ identity and the owner-authored minimal projection. It does not decide
 sufficiency, conflict, status, severity, acceptance or route intent. The only
 external exits are `completed`, `baseline_incomplete`, `repair_required`, and
 `blocked`, each with one direct consumer.
+
+## Same-owner repair continuation
+
+On `repair_required`, the declared rename maps only `exit_id` to `source_exit`.
+The original caller authors `profile=repair`, retains its original `mode` and
+`continuation_id`, and preserves any applicable `repo_locator`, `baseline`,
+`scope`, and `contribution` from its current invocation. These values remain
+call-local. They are not recovered from a producer-private result or added to
+the output DTO. The same owner performs the actual repair and returns its real
+exit; the projection itself grants no maintenance success.
