@@ -339,7 +339,11 @@ The matching nonplanning 4.0 / Delivery 2.0 Architecture current result carries
 `before_authority` and `candidate` to this existing current router. The router
 preserves them for the original stage owner to read the actual comparison origin
 and final candidate; it does not interpret private project checks or decide
-applicability. Planning 3.0 and bootstrap/repair keep their declared contracts.
+applicability. Current before_authority can declare the actual absence of its
+three named files at fixed B through optional absent_locators. The original
+Architecture owner verifies that before state and the complete current files.
+Bootstrap accepts planning|phase2; phase2 maintenance returns only to its original
+final-integration promotion. Detailed field and repair rules remain package-owned.
 
 After a full Review, the original Branch Review owner alone handles
 `delivery_promotion_reference_alignment`. Its formal `passed` covers the final

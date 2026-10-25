@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "读取完整写作规则"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "完整规划来源、深度与唯一职责"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "核对当前 Delivery 正文与责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "核对当前 Delivery 正文与责任"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对当前 Delivery 正文与责任"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 I/O 与私有状态边界"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "脚本只执行确定性事实"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "验证价值与定向范围"}

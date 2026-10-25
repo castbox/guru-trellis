@@ -2,6 +2,8 @@
 
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
+并行 #663 晋升的完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/requirements/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
+
 更早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
@@ -119,3 +121,15 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 **R649-02 / BEH649-CONVERGE**：后继工作满足解除条件时，实施 owner 更新实际行为和适用断言，原 RDT／Architecture owner 在各自边界维护完整当前定义、指南及派生说明。当前正文不再继续指示已解除的限制；旧阶段观察保留来源和截止点，不改写成当时已完成。某能力未交付、未启用或证据缺失，不能泛化为同范围其它能力均不可用。
 
 **R649-03 / BEH649-CHECK**：原 Check 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Delivery Review 分别判断本切片适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
+
+## 正常流程合同连续性
+
+**R663-01 / BEH663-REPAIR**：Bootstrap 返回 repair_required 后，原 caller 使用声明的出口薄投影及自身当前 mode、continuation 和必要基线上下文进入同一 owner 的 repair。字段来源明确；不从 producer 私有结果恢复输入。repair owner 实际继续原维护，原新仓、已有仓及独立修复路径和普通 missing/mismatch 阻塞保持。
+
+**R663-02 / BEH663-ARCHIVE**：归档审核 caller 依 Interface 指定正式 example 填合法 archive/Delivery/HEAD/PR snapshot，即可由原 recorder/checker/invoke 消费。只读范围不要求当前 Check，不写 active gate，不重开 Task或推进业务阶段；结果保持原 disposition stop。
+
+**R663-03 / BEH663-BEFORE**：固定 B 早于本 Delivery 首次建立 Architecture authority 时，原 owner 明确表达 B 中既有路径的真实缺失并核实。完整 B..H、当前 authority与全部新增文件仍独立审核；不能移动 B、以 H 冒充 before、跳过门禁或作通用 freshness 豁免。B 已有文件的原路径保持。
+
+**R663-04 / BEH663-MAINTENANCE**：final_integration promotion 请求 Bootstrap 后，caller 保留同一 Task/DeliveryKey、planning_root 和调用期 continuation，按声明的 phase2 maintenance 输入进入原 owner，再 fresh 回同一次 promotion。whole-task/Delivery 及既有 repair 回程均闭合；维护成功不等于 reviewed_promoted、最终 Check 或业务阶段推进。
+
+**R663-05 / BEH663-DISTRIBUTION**：当前公开输入例子同时匹配 profile/aggregate schemas，出口通过声明 projection 与唯一 consumer 输入组合；动态 stage、首次 before 缺失和正常返工/恢复/stop保持语义。canonical、完整 installed、dogfood 与声明平台按 matching preset 成套采用，明确迁移、mode、sidecar和未验证层次。精确接口仍由原 packages 单写。

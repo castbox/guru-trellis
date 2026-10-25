@@ -189,11 +189,27 @@ class ArchivedReviewTest(unittest.TestCase):
             self.git('add','.');self.git('commit','-qm','archive public Task and Delivery')
             self.head=self.git('rev-parse','HEAD');self.git('push','-q','origin','feat/archive')
             self.pr['headRefOid']=self.head;self.provider_files()
-            self.public.update(profile='delivery_archived_review',delivery_key=key,branch_review_commit=self.head)
+            interface = json.loads((test_contract.PACKAGE / 'interface.json').read_text())
+            profile = next(row for row in interface['public_contracts']['input']['profiles']
+                           if row['id'] == 'delivery_archived_review')
+            self.public = json.loads((test_contract.PACKAGE / profile['example']['path']).read_text())
+            self.public.update(task_ref=self.task_ref, delivery_key=key,
+                               branch_review_commit=self.head, pr_payload_snapshot_sha256=self.snapshot())
             self.write('public.json',self.public)
             before=copy.deepcopy(projection.read_record())
+            archived_files = {path.relative_to(archive): path.read_bytes() for path in archive.rglob('*') if path.is_file()}
+            snapshot = self.snapshot()
             self.record()
+            self.assertEqual('archived_review_passed', self.run_wrapper('check-review-gate.sh', '--task', self.task_ref, '--delivery-key', json.dumps(key))['typed_exit'])
             result=self.invoke();self.assertEqual('archived_review_passed',result['exit_id'])
+            contracts = interface['public_contracts']
+            consumer = next(row for row in contracts['consumer_inputs'] if row['id'] == next(
+                row['consumer_input_id'] for row in contracts['projections'] if row['exit_id'] == result['exit_id']))
+            from runtime.schema import validate_json
+            validate_json(result, test_contract.PACKAGE / consumer['contract']['path'], 'stop')
+            self.assertEqual({'kind': 'stop', 'id': 'legacy-archived-review-disposition-required'}, consumer['consumer'])
+            self.assertEqual(snapshot, self.snapshot())
+            self.assertEqual(archived_files, {path.relative_to(archive): path.read_bytes() for path in archive.rglob('*') if path.is_file()})
             self.assertEqual(before,projection.read_record());self.assertNotIn('status',projection.read_record())
             self.assertEqual('',self.git('status','--porcelain'))
         finally: fixture.doCleanups()

@@ -42,7 +42,7 @@
       "minLength": 1
     },
     "stage": {
-      "const": "planning"
+      "enum": ["planning", "phase2"]
     },
     "task_locator": {
       "type": "string",

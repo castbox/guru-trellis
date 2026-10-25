@@ -54,9 +54,22 @@ def check_before_authority(repo: Path, public: dict) -> None:
     revision = authority["git_revision"]
     if _git(repo, "rev-parse", revision + "^{commit}").decode().strip() != revision:
         _error("before_authority.git_revision", "Use the exact available authority commit.")
-    for field in ("baseline_locator", "constitution_locator", "change_contract_locator"):
-        _path(repo, authority[field])
-        _git(repo, "show", revision + ":" + authority[field])
+    locators = {authority[field] for field in
+                ("baseline_locator", "constitution_locator", "change_contract_locator")}
+    absent = set(authority.get("absent_locators", []))
+    if not absent <= locators:
+        _error("before_authority.absent_locators", "Declare absence only for the three authority locators.")
+    for locator in locators:
+        _path(repo, locator)
+        entries = _git(repo, "ls-tree", "-z", revision, "--", locator).decode().split("\0")
+        present = any(row.split("\t", 1)[-1] == Path(locator).as_posix() for row in entries)
+        if locator in absent:
+            if present:
+                _error("before_authority.absent_locators", "Reread actual presence at the fixed before revision.")
+        else:
+            if not present or _git(repo, "cat-file", "-t", revision + ":" + locator).strip() != b"blob":
+                _error("before_authority", "Read each existing before authority file or declare its actual absence.")
+            _git(repo, "show", revision + ":" + locator)
     committed_range = public.get("committed_range")
     if committed_range and (revision != committed_range["base_head"]
                             or _git(repo, "rev-parse", "HEAD").decode().strip() != committed_range["review_head"]):

@@ -591,8 +591,14 @@ interfaces or verification duties return to their original quality owner.
 Both current impact and promotion additionally supply:
 
 - before_authority: git_revision, baseline_locator, constitution_locator and
-  change_contract_locator. These locate the immutable authority to reread for
-  before/after comparison. For committed Review, git_revision equals the fixed
+  change_contract_locator, with optional absent_locators. The absence list is a
+  unique subset of these three locator values. Omitted or empty means all three
+  files exist at git_revision. The validator reads that fixed Git tree: listed
+  paths must be absent and every unlisted path must be an existing readable
+  authority file. These facts locate the immutable before state for comparison.
+  When Planning/Bootstrap first establishes authority after that revision, the
+  owner reviews the complete new current files and their full candidate delta.
+  Declared absence never waives current authority, candidate or semantic gates. For committed Review, git_revision equals the fixed
   committed_range.base_head. New CURRENT is a reviewed change and cannot prove
   conformity to the original constraints.
 - candidate: head and content_identity, where content_identity is `sha256:`
@@ -661,3 +667,12 @@ or contribution statements require their matching correction and current
 Architecture result. An unchanged completed promotion is not repeated merely
 because HEAD changed. A changed candidate never borrows the old reviewed_promoted
 result; the original owner judges the needed assessment and checks afresh.
+
+Bootstrap `bootstrap_foundation` and `delivery_bootstrap_foundation` accept
+`stage=planning|phase2`. The phase2 input is the existing maintenance projection
+from a final-integration promotion. The caller retains that original promotion's
+profile, stage, Task/DeliveryKey, planning_root and continuation_id during the
+call. After actual Bootstrap maintenance, it rereads authority and candidate,
+then re-enters the same promotion. A maintenance `baseline_current` does not
+become promoted success or a final Check result. Missing original continuation
+returns to fresh original-owner entry.

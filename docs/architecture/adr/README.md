@@ -81,3 +81,5 @@
 - [ADR-PORTABLE-SHARED-LIFECYCLE：共享生命周期与本机责任分离](./portable-shared-lifecycle.md)；窄承接 ADR-024/027 的恢复及指定正式 schema1 接受范围，保留公共 writer、原 owners、资源边界和完整最终质量链。
 
 - [ADR-035：活动续接与scope两次承接](./035-current-continuation-scope-routing.md)；窄替代ADR-011/023/024的旧created/恢复/scope路由片段，保留公共模型、原producer和阶段owners。
+
+- [ADR-CONTRACT-CONTINUITY：固定 before 缺失与维护回程](./contract-continuity.md)；原三个 authority locator 的真实历史缺失、固定 B..H 和同次 promotion 维护回程。

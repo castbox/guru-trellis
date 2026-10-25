@@ -205,8 +205,9 @@ to this same owner. It performs no second semantic assessment and infers no iden
 For maintenance requested by `promotion|delivery_promotion(stage=final_integration)`,
 retain the original promotion profile, stage, Task/DeliveryKey and planning_root
 only in the current call-local continuation. Project the maintenance call to
-the unchanged `repair|bootstrap_foundation(stage=phase2)` profile, or its
-Delivery equivalent. Select its existing 2.0 / delivery-1.0 schema and
+the existing `repair|bootstrap_foundation(stage=phase2)` profile, or its
+Delivery equivalent. Bootstrap accepts `planning|phase2`; phase2 serves this
+final-integration maintenance return. Select its existing 2.0 / delivery-1.0 schema and
 `guru-maintain-architecture-baseline:2.0` contract identity; preserve the actual
 project authority identities and same key/root. After maintenance, return to
 the original 5.0 / delivery-3.0 final-integration promotion. Reread its authority,
@@ -238,3 +239,9 @@ ordinary file tools. The wrapper is a recorder/validator and writes no target
 or persistent intent. Read back the same call-local intent after partial write
 or output loss. Continue only uniquely recoverable, conflict-free pending
 writes; never repeat a completed write or overwrite a conflict.
+
+For current nonplanning `before_authority`, declare `absent_locators` only when
+one or more of its three authority files are truly absent in the fixed before
+Git revision. Omitted or empty means all three files exist. Read each existing
+before file and the full new current authority/candidate. Retain fixed B and
+current H for committed Review; absence does not waive the normal gates.

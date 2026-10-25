@@ -62,7 +62,7 @@ Wording change refs、Approval revision actions与Delivery/Completion修订经�
 
 ## 当前候选、晋升与恢复输入
 
-非 Planning `5.0` / Delivery `3.0` input 显式绑定 `before_authority` 与完整 `candidate`。前者定位固定 Git authority 的 baseline、constitution 和 change-contract，后者绑定当前 head/content identity。Branch Review 的 before Git revision 等于精确 committed range 的 base。新 CURRENT 必须作为受审差额比较，不能以其自身证明符合旧约束。Planning purpose `3.0`、bootstrap/repair、九 concerns、descriptor/check/result identities 与原 owners 保持。
+非 Planning `5.0` / Delivery `3.0` input 显式绑定 `before_authority` 与完整 `candidate`。前者定位固定 Git authority 的 baseline、constitution 和 change-contract，后者绑定当前 head/content identity。Branch Review 的 before Git revision 等于精确 committed range 的 base。 before authority 也须如实表示该固定 revision 中尚不存在的既有 locator；显式缺失集合只覆盖原 baseline、constitution 和 change-contract 三路径，省略仍要求全部存在。原 validator 逐项核 Git tree，当前 authority、完整候选和 B..H 的独立审核保持。具体公共表示由原 Architecture package 单写；决定见 [ADR-CONTRACT-CONTINUITY](../adr/contract-continuity.md)。新 CURRENT 必须作为受审差额比较，不能以其自身证明符合旧约束。Planning purpose `3.0`、bootstrap/repair、九 concerns、descriptor/check/result identities 与原 owners 保持。
 
 promotion发生在final_integration，绑定贡献、原独立Architecture及完整候选Check和完整proposed targets，不要求尚未发生的 committed_range。原 owner 写前重读 live expected-current 及各 target 原文；一致时只写已审内容。写后读取全部实际 targets 并判断语义、依赖与验证义务是否保持，再交implementation重新candidate/begin_check，最终Architecture/Check只消费新的content_ref。发生额外变更、内容缺失或适用性变化时回原 assessment/check，不借用旧结论。
 
