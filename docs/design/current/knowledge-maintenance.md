@@ -1,5 +1,7 @@
 # 当前知识单元与原维护方设计
 
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/design/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
 知识单元：`RDT-DES-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；测试：[RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md)。稳定 `REQ-007 / BEH-007` 的design责任沿原RDT/Architecture owners延续。
 
 ## 稳定设计身份
@@ -71,3 +73,11 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 **D648-06 / CON648-COVERAGE**：单一Candidate Applicability And Coverage定义继续拥有复用规则。原owner读取新原证据后判定哪些前提失效、哪些覆盖仍有效；代码/测试未变不豁免，整体版本或身份变化不自动重跑。同一合规独立reviewer可接续，当前阶段结果仍实际发生。
 
 **D648-07 / CON648-VALIDATION**：原Architecture/Check semantic_authoring与原native Adapter扩展本项写作、实施、Review和task-free事实。测试私有运输只执行真实Agent请求、落其原字节、记录原wrapperstdout及状态变化；它不选语义结论或改public DTO。声明多owner连续性时，用同一stateful fixture消费实际前序stdout。预置合法前置只证明起点，不冒充本轮前序判断。RDT以隔离完整proposed目标进入candidate Check，原final_integration整合读回后以实际after重新candidate/begin_check，原最终Check/committedReview不省略。
+
+## D649：当前成果收敛与结果引用
+
+**D649-06 / CON649-KNOWLEDGE** 承接 R649-07。原 RDT contract／current-knowledge 和 Architecture contract 在其既有职责中读取真实解除条件，更新当前定义、指南、派生说明，保留历史阶段观察。当前 R/D/T 单元展开行为，公共 Skill 内部步骤仍由各原 package 单写；spec 只作最小定位。
+
+隔离贡献提供九个完整 proposed targets，保留原身份及所有有效前驱条件。候选 Check 之后，原 final_integration 才写 shared current 并读回；implementation 以同 B、实际 after 重绑，最终 Check 与独立 committed Review 覆盖真实内容。没有新的晋升时机或状态。
+
+#637 Test 的有限修正只使用原 archive 正式结果、PR #644 和已证 main ancestry；保留原命令、失败、未知、legacy reapply 阻塞及其它未证边界。#649 唯一实际结果记录各运行的真实层次、cutoff 和失败，不从相同 exit 或最后一次重跑推导成功。

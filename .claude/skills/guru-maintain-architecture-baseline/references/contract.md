@@ -65,6 +65,18 @@ independent assessment read order below continue to apply.
 
 ## Constitution applicability and existing revision owners
 
+Apply the shared current-knowledge contract's Stage limits and result
+observations within Architecture's original ownership. When actual implementation
+satisfies a temporary condition, maintain affected current Architecture decisions
+and their derived guidance at the lawful promotion boundary, preserving historical
+observations. General usage or test mismatches remain with implementation, Check
+and the original knowledge owner unless they show an actual Architecture defect.
+Do not classify an ordinary stale guide as Architecture fitness regression solely
+because the candidate makes its described capability available.
+Judge each capability and environment separately; phase not yet open does not
+erase established contract, source or deployment facts. No actual Architecture
+impact still takes the original no-change route, without a contribution or ADR.
+
 Read the project's unique current constitution authority and apply
 `minimum-necessary-complexity` to the complete proposed change at Planning,
 implementation discovery, Phase 2, and independently at Branch Review. Consume

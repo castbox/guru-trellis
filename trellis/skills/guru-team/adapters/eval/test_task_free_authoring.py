@@ -98,6 +98,30 @@ class TaskFreeAuthoringTests(unittest.TestCase):
                 self.assertEqual(position['cwd'],str(repo.resolve()))
                 self.assertEqual(position['git_observations']['head']['stdout'].strip(),run_git(repo,'rev-parse','HEAD'))
                 self.assertEqual(position['task_record_locators'],[])
+                source = (repo / 'docs/display-help.md').read_text()
+                changed = source + '\nTransport write observation.\n'
+                written = subprocess.run([*argv,'command','--skill-id','task-free-authoring','--command','write','--stdin'],
+                    input=json.dumps({'file_updates':{'docs/display-help.md':changed}}),cwd=repo,
+                    capture_output=True,text=True,check=False,timeout=20)
+                self.assertEqual(written.returncode,0,written.stderr)
+                self.assertEqual((repo/'docs/display-help.md').read_text(),changed)
+                check_code = 'from pathlib import Path; import sys; assert Path("docs/display-help.md").read_text() == sys.argv[1]'
+                checked = subprocess.run([*argv,'command','--skill-id','task-free-authoring','--command','run','--stdin'],
+                    input=json.dumps({'argv':[sys.executable,'-B','-c',check_code,source]}),
+                    cwd=repo,capture_output=True,text=True,check=False,timeout=20)
+                self.assertEqual(checked.returncode,0,checked.stderr)
+                actual = json.loads(checked.stdout)
+                self.assertEqual(actual['returncode'],1)
+                self.assertIn('AssertionError',actual['stderr'])
+                rechecked = subprocess.run([*argv,'command','--skill-id','task-free-authoring','--command','run','--stdin'],
+                    input=json.dumps({'argv':[sys.executable,'-B','-c',check_code,changed]}),
+                    cwd=repo,capture_output=True,text=True,check=False,timeout=20)
+                self.assertEqual(rechecked.returncode,0,rechecked.stderr)
+                self.assertEqual(json.loads(rechecked.stdout)['returncode'],0)
+                restored = subprocess.run([*argv,'command','--skill-id','task-free-authoring','--command','write','--stdin'],
+                    input=json.dumps({'file_updates':{'docs/display-help.md':source}}),cwd=repo,
+                    capture_output=True,text=True,check=False,timeout=20)
+                self.assertEqual(restored.returncode,0,restored.stderr)
                 for name in ('normal-scenario', 'solution-mechanism', 'root-cause'):
                     semantic = {'schema_version':'1.0','skill_id':'guru-qualify-' + name,
                         'public_input':public, 'candidate_results':[{'candidate_ref':'transport-fixture',

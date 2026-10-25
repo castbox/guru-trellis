@@ -1,6 +1,8 @@
 # Task / Delivery 生命周期测试策略
 
-本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+更早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/test/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-TST-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/test/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；设计：[RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md)。本单元拥有场景/预期和结果定位；历史结果不等于当前候选通过。
 
 ## 策略与完整性
@@ -86,3 +88,13 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 | T635-07 / R635-05 | matching source、完整 packages/workflow、原工具维护、最多一个代表安装、reapply/drift/sidecar | source、installed/native、Agent、GitHub 和完整 Release 分层；旧安装按显式迁移；不批量迁移无关档或手改版本绕过前置。 |
 
 实际执行与证据边界由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md) 单写。测试预期不等于通过；跨 clone 完整再次 Finish 和固定正式旧格式由终态测试单元定义。
+
+## T649：阶段限制、当前候选与连续交付
+
+| Test / requirement → design | 正常输入及原 owner | 必须观察 |
+| --- | --- | --- |
+| T649-01 / R649-01 → D649-01 | Author 的真实阶段限制及无变化控制 | 对象、原因、解除、阶段、后继责任可核；Policy 与 Docs Plan 各司其职，无空清单 |
+| T649-02 / R649-02/03 → D649-02 | C01 旧当前说明、C02 绿测试保护旧限制、C03 局部 consumer 未完成、C04 合法无变化 | 从有效合同判断实际行为、说明、断言及未改消费者；前三者实际问题被指出，合法对照不制造阻塞 |
+| T649-06 / R649-01/02/03 → D649-01/02 | 同一 Task D1 partial 合同限制→D2 实现，含 R648 冲突、合法修订及原 owner 重入 | 各真实 Planning／candidate／最终链／本地 commit/merge／Delivery；实际前序 stdout 连续消费，限制／说明／断言收敛，不拼接独立 fixture |
+
+实际 source／installed、Agent、受控 provider 与正式 GitHub 交付分层。完整结果唯一见 [#649 Test](../../requirements-design-test-contributions/649-stage-result-convergence/test.md)。预置历史入口门禁不证明本轮连续判断，当前测试策略不预告通过。

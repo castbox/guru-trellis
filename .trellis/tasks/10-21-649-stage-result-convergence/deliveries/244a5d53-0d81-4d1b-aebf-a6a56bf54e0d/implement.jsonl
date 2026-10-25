@@ -1,0 +1,9 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "保持真实阶段限制、来源处置和唯一 Policy/Docs Plan 的正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "核对原六节执行计划及 Policy/Docs Plan 字段，不新增状态协议"}
+{"file": "trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md", "reason": "完成六维状态与四类缺口原 owner 责任"}
+{"file": "trellis/skills/guru-team/adapters/eval/native_adapter.py", "reason": "复用无答案的真实 Agent 与原 wrapper 运输"}
+{"file": "trellis/skills/guru-team/adapters/eval/implementation_authoring.py", "reason": "复用真实当前公共 API 和多 owner 接续测试方法"}
+{"file": "trellis/skills/guru-team/adapters/eval/phase2_authoring.py", "reason": "保持 current Delivery 的实际 candidate 和 Check 入口"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "保留固定范围与最终整合及重绑顺序"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "原 RDT 单写、隔离 proposed 与 final integration"}
+{"file": "docs/requirements-design-test-contributions/637-candidate-review-reuse/test.md", "reason": "有限纠正过期当前描述，保留历史与未证项"}

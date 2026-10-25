@@ -27,6 +27,12 @@ source closure or no-mutation completion, project only the public Closure fact.
 Projection failure returns the same resume transaction; a closed Issue must not
 be closed again. No authorization is persisted. Closure is not Finish archive.
 
+Closure consumes original formal results and Git/PR facts for later terminal
+observations. It does not write shared current Docs, revise a result body to
+record its own final pass/HEAD, or create an empty Delivery/extra commit for that
+purpose. A genuine content gap returns to the original writer and affected
+quality gates; the Closure transaction cannot supply those gates.
+
 
 Consume only the current Completion `completed` ResultRef. Freshly review source
 relation, accepted scope, target, branch binding, content and evidence slots,

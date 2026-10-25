@@ -1851,7 +1851,17 @@ def completed_execution(skills: Path, case_root: Path, request: dict[str, Any],
         for fixture in request["files"]:
             staged_bytes = (workdir / fixture).read_bytes()
             if staged_bytes != (package / fixture).read_bytes():
-                raise ValueError("saved fixture differs from corpus source")
+                from adapters.eval import stage_result_authoring
+                from adapters.eval.fixture_io import public_input_path
+                bound_input = Path(protocol['owner_repository']) / stage_result_authoring.PUBLIC_INPUT
+                if (not request.get('case_id', '').startswith('native-stage-')
+                        or request['skill_id'] not in {
+                            'guru-check-task', 'guru-review-task-delivery',
+                            'guru-review-task-completion', 'guru-execute-task-free-change'}
+                        or (workdir / fixture) != public_input_path(request)
+                        or not bound_input.is_file()
+                        or json.loads(staged_bytes) != json.loads(bound_input.read_bytes())):
+                    raise ValueError("saved fixture differs from corpus source or its actual Task binding")
         if len(native["files"]) != len(request["files"]):
             raise ValueError("saved model-visible fixture set mismatch")
         for visible, fixture in zip(native["files"], request["files"]):

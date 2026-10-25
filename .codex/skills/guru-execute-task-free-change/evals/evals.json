@@ -1,16 +1,457 @@
 {
-  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"guru-team-skill-evals-1.0","schema_version":"1.0","skill_name":"guru-execute-task-free-change","evals":[
-    {"id":"completed","prompt":"Review checkout suitability, perform the bounded edit, run targeted checks, review post-write risk, and return the actual completion exit.","expected_exit":"completed","expected_output":"The complete bounded execution is semantically reviewed.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-completed-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"completed"},{"id":"public-only","kind":"trace","invariant":"public_invocation_only"},{"id":"private-runtime-not-read","kind":"trace","invariant":"private_runtime_not_read_by_agent"}]}},
-    {"id":"non-default-completed","prompt":"The selected checkout is a non-default branch with no conflicts. Complete the bounded edit without branch-protection reads.","expected_exit":"completed","expected_output":"Non-default identity alone does not block completion.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-non-default-completed-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"completed"}]}},
-    {"id":"resume-active-task","prompt":"The active task has the same scope. Do not bypass it; return the exact active-task route.","expected_exit":"resume_active_task","expected_output":"Same-scope work returns to the active task.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-resume-active-task-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"resume_active_task"}]}},
-    {"id":"scope-change","prompt":"The request may expand the active task. Stop writes and enter the existing scope-change route.","expected_exit":"scope_change","expected_output":"Potential expansion is routed to scope clarification.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-scope-change-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"scope_change"}]}},
-    {"id":"unrelated-worktree","prompt":"The worktree is unrelated. Do not write and ask only for the execution location.","expected_exit":"location_required","expected_output":"The location interaction self-reenters the Skill.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-unrelated-worktree-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"location_required"}]}},
-    {"id":"dirty-overlap","prompt":"Dirty work overlaps the target. Do not write and request the execution location.","expected_exit":"location_required","expected_output":"Overlap pauses before writing.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-dirty-overlap-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"location_required"}]}},
-    {"id":"position-insufficient","prompt":"Checkout position evidence is insufficient. Do not write and request the location.","expected_exit":"location_required","expected_output":"Insufficient position evidence pauses before writing.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-position-insufficient-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"location_required"}]}},
-    {"id":"automatic-risk-expansion","prompt":"Automatic task-free execution reveals material risk expansion after a real partial edit. Stop further writes and reselect the mode.","expected_exit":"reselect_mode","expected_output":"Automatic expansion re-enters semantic selection after the remaining tracked target is proven unchanged.","input_profile_id":"selected_route","files":["evals/files/eval-public-expansion-input.json","evals/files/eval-automatic-risk-expansion-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"reselect_mode"}]}},
-    {"id":"explicit-risk-expansion","prompt":"Explicit task-free execution reveals material expansion after a real partial edit. Stop writes and require a narrow-or-Intake choice.","expected_exit":"explicit_choice_required","expected_output":"Explicit expansion self-reenters after the remaining tracked target is proven unchanged.","input_profile_id":"selected_route","files":["evals/files/eval-public-explicit-expansion-input.json","evals/files/eval-explicit-risk-expansion-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"explicit_choice_required"}]}},
-    {"id":"blocked","prompt":"Required local evidence is unavailable. Fail closed without writing or inventing a route.","expected_exit":"blocked","expected_output":"The execution route stops explicitly.","input_profile_id":"selected_route","files":["evals/files/eval-public-input.json","evals/files/eval-blocked-facts.json"],"assertions":{"deterministic":[{"id":"expected-route","kind":"json_path","pointer":"/exit_id","operation":"equals","expected":"blocked"}]}},
-    {"id":"native-owner-qualification-pair","prompt":"Execute the selected bounded catalog request. Inspect actual authority, source, tests, local position and operation observations. Form your own result and invoke the original task-free wrapper.","expected_exit":"completed","expected_output":"The native owner returns its own current semantic judgment after actual local execution and review.","input_profile_id":"selected_route","native_execution_mode":"semantic_authoring","native_execution_adapter":"codex","model_id":"gpt-5.6-sol","files":["evals/files/eval-public-qualification-pair-input.json","evals/files/qualification/catalog.py.txt","evals/files/qualification/contract.md","evals/files/qualification/display-help.md","evals/files/qualification/qualification.json","evals/files/qualification/state.json","evals/files/qualification/test_catalog.py.txt"],"assertions":{"deterministic":[{"id":"public-only","kind":"trace","invariant":"public_invocation_only"},{"id":"private-runtime-not-read","kind":"trace","invariant":"private_runtime_not_read_by_agent"}],"semantic":[{"id":"invariant-and-evidence-boundary","criterion":"The owner explains the protected object and invariant, minimum qualification-triggering target transition, operations that do not change it, actual missing-evidence blocking scope, and evidence producer and consumer.","evidence_selector":"transcript"},{"id":"actual-paired-operations","criterion":"The owner uses actual operation receipts and source: rename_display returns zero without qualification while preserving active_target; select_target returns nonzero without changing state for the same missing qualification evidence.","evidence_selector":"transcript"},{"id":"contract-before-shared-expectation","criterion":"The owner reads the current catalog contract before relying on candidate design, code or green tests; no generic qualification prerequisite is invented for display-only updates.","evidence_selector":"transcript"},{"id":"original-owner-consumption","criterion":"The native owner invokes and consumes the original applicable normal-scenario and solution-mechanism qualifiers, performs only suitable bounded edits, and returns actual original recorder/checker/wrapper output rather than a host-authored result.","evidence_selector":"transcript"},{"id":"actual-target-write-boundary","criterion":"The native owner actually updates the bounded guide, runs the applicable check, and reviews after-write scope/risk. No missing qualification requirement blocks the display-only operation.","evidence_selector":"transcript"}]}},
-    {"id":"native-owner-shared-restriction","prompt":"Execute the selected bounded catalog request. Inspect actual authority, source, tests, local position and operation observations. Form your own result and invoke the original task-free wrapper.","expected_exit":"completed","expected_output":"The native owner returns its own current semantic judgment after actual local execution and review.","input_profile_id":"selected_route","native_execution_mode":"semantic_authoring","native_execution_adapter":"codex","model_id":"gpt-5.6-sol","files":["evals/files/eval-public-shared-restriction-input.json","evals/files/qualification/candidate-catalog.py.txt","evals/files/qualification/candidate-design.md","evals/files/qualification/candidate-test_catalog.py.txt","evals/files/qualification/catalog.py.txt","evals/files/qualification/contract.md","evals/files/qualification/display-help.md","evals/files/qualification/qualification.json","evals/files/qualification/state.json","evals/files/qualification/test_catalog.py.txt"],"assertions":{"deterministic":[{"id":"public-only","kind":"trace","invariant":"public_invocation_only"},{"id":"private-runtime-not-read","kind":"trace","invariant":"private_runtime_not_read_by_agent"}],"semantic":[{"id":"invariant-and-evidence-boundary","criterion":"The owner explains the protected object and invariant, minimum qualification-triggering target transition, operations that do not change it, actual missing-evidence blocking scope, and evidence producer and consumer.","evidence_selector":"transcript"},{"id":"actual-paired-operations","criterion":"The owner uses actual operation receipts and source: rename_display returns zero without qualification while preserving active_target; select_target returns nonzero without changing state for the same missing qualification evidence.","evidence_selector":"transcript"},{"id":"contract-before-shared-expectation","criterion":"The owner reads the current catalog contract before relying on candidate design, code or green tests; no generic qualification prerequisite is invented for display-only updates.","evidence_selector":"transcript"},{"id":"original-owner-consumption","criterion":"The native owner invokes and consumes the original applicable normal-scenario and solution-mechanism qualifiers, performs only suitable bounded edits, and returns actual original recorder/checker/wrapper output rather than a host-authored result.","evidence_selector":"transcript"},{"id":"actual-target-write-boundary","criterion":"The owner identifies the shared wrong restriction despite candidate tests passing and leaves catalog.py unchanged. It consumes the original applicable qualifiers through task-free continuation. If the restriction is rejected during task_free_pre_write and no new eligible candidate appears, it does not manufacture a task_free_evolution or risk-expansion route. If a genuinely new candidate is discovered after a suitable pre-write decision or target write, it invokes the original task_free_evolution before further target writes and follows the actual typed result. The pre-existing partial guide edit is not reported as authored by this native invocation.","evidence_selector":"transcript"}]}}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-team-skill-evals-1.0",
+  "schema_version": "1.0",
+  "skill_name": "guru-execute-task-free-change",
+  "evals": [
+    {
+      "id": "completed",
+      "prompt": "Review checkout suitability, perform the bounded edit, run targeted checks, review post-write risk, and return the actual completion exit.",
+      "expected_exit": "completed",
+      "expected_output": "The complete bounded execution is semantically reviewed.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-completed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "completed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "non-default-completed",
+      "prompt": "The selected checkout is a non-default branch with no conflicts. Complete the bounded edit without branch-protection reads.",
+      "expected_exit": "completed",
+      "expected_output": "Non-default identity alone does not block completion.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-non-default-completed-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "resume-active-task",
+      "prompt": "The active task has the same scope. Do not bypass it; return the exact active-task route.",
+      "expected_exit": "resume_active_task",
+      "expected_output": "Same-scope work returns to the active task.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-resume-active-task-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "resume_active_task"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scope-change",
+      "prompt": "The request may expand the active task. Stop writes and enter the existing scope-change route.",
+      "expected_exit": "scope_change",
+      "expected_output": "Potential expansion is routed to scope clarification.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-scope-change-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "scope_change"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unrelated-worktree",
+      "prompt": "The worktree is unrelated. Do not write and ask only for the execution location.",
+      "expected_exit": "location_required",
+      "expected_output": "The location interaction self-reenters the Skill.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-unrelated-worktree-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "location_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dirty-overlap",
+      "prompt": "Dirty work overlaps the target. Do not write and request the execution location.",
+      "expected_exit": "location_required",
+      "expected_output": "Overlap pauses before writing.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-dirty-overlap-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "location_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "position-insufficient",
+      "prompt": "Checkout position evidence is insufficient. Do not write and request the location.",
+      "expected_exit": "location_required",
+      "expected_output": "Insufficient position evidence pauses before writing.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-position-insufficient-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "location_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "automatic-risk-expansion",
+      "prompt": "Automatic task-free execution reveals material risk expansion after a real partial edit. Stop further writes and reselect the mode.",
+      "expected_exit": "reselect_mode",
+      "expected_output": "Automatic expansion re-enters semantic selection after the remaining tracked target is proven unchanged.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-expansion-input.json",
+        "evals/files/eval-automatic-risk-expansion-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "reselect_mode"
+          }
+        ]
+      }
+    },
+    {
+      "id": "explicit-risk-expansion",
+      "prompt": "Explicit task-free execution reveals material expansion after a real partial edit. Stop writes and require a narrow-or-Intake choice.",
+      "expected_exit": "explicit_choice_required",
+      "expected_output": "Explicit expansion self-reenters after the remaining tracked target is proven unchanged.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-explicit-expansion-input.json",
+        "evals/files/eval-explicit-risk-expansion-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "explicit_choice_required"
+          }
+        ]
+      }
+    },
+    {
+      "id": "blocked",
+      "prompt": "Required local evidence is unavailable. Fail closed without writing or inventing a route.",
+      "expected_exit": "blocked",
+      "expected_output": "The execution route stops explicitly.",
+      "input_profile_id": "selected_route",
+      "files": [
+        "evals/files/eval-public-input.json",
+        "evals/files/eval-blocked-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "expected-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "blocked"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-qualification-pair",
+      "prompt": "Execute the selected bounded catalog request. Inspect actual authority, source, tests, local position and operation observations. Form your own result and invoke the original task-free wrapper.",
+      "expected_exit": "completed",
+      "expected_output": "The native owner returns its own current semantic judgment after actual local execution and review.",
+      "input_profile_id": "selected_route",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/eval-public-qualification-pair-input.json",
+        "evals/files/qualification/catalog.py.txt",
+        "evals/files/qualification/contract.md",
+        "evals/files/qualification/display-help.md",
+        "evals/files/qualification/qualification.json",
+        "evals/files/qualification/state.json",
+        "evals/files/qualification/test_catalog.py.txt"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "invariant-and-evidence-boundary",
+            "criterion": "The owner explains the protected object and invariant, minimum qualification-triggering target transition, operations that do not change it, actual missing-evidence blocking scope, and evidence producer and consumer.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-paired-operations",
+            "criterion": "The owner uses actual operation receipts and source: rename_display returns zero without qualification while preserving active_target; select_target returns nonzero without changing state for the same missing qualification evidence.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "contract-before-shared-expectation",
+            "criterion": "The owner reads the current catalog contract before relying on candidate design, code or green tests; no generic qualification prerequisite is invented for display-only updates.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "original-owner-consumption",
+            "criterion": "The native owner invokes and consumes the original applicable normal-scenario and solution-mechanism qualifiers, performs only suitable bounded edits, and returns actual original recorder/checker/wrapper output rather than a host-authored result.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-target-write-boundary",
+            "criterion": "The native owner actually updates the bounded guide, runs the applicable check, and reviews after-write scope/risk. No missing qualification requirement blocks the display-only operation.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-owner-shared-restriction",
+      "prompt": "Execute the selected bounded catalog request. Inspect actual authority, source, tests, local position and operation observations. Form your own result and invoke the original task-free wrapper.",
+      "expected_exit": "completed",
+      "expected_output": "The native owner returns its own current semantic judgment after actual local execution and review.",
+      "input_profile_id": "selected_route",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/eval-public-shared-restriction-input.json",
+        "evals/files/qualification/candidate-catalog.py.txt",
+        "evals/files/qualification/candidate-design.md",
+        "evals/files/qualification/candidate-test_catalog.py.txt",
+        "evals/files/qualification/catalog.py.txt",
+        "evals/files/qualification/contract.md",
+        "evals/files/qualification/display-help.md",
+        "evals/files/qualification/qualification.json",
+        "evals/files/qualification/state.json",
+        "evals/files/qualification/test_catalog.py.txt"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "private-runtime-not-read",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "invariant-and-evidence-boundary",
+            "criterion": "The owner explains the protected object and invariant, minimum qualification-triggering target transition, operations that do not change it, actual missing-evidence blocking scope, and evidence producer and consumer.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-paired-operations",
+            "criterion": "The owner uses actual operation receipts and source: rename_display returns zero without qualification while preserving active_target; select_target returns nonzero without changing state for the same missing qualification evidence.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "contract-before-shared-expectation",
+            "criterion": "The owner reads the current catalog contract before relying on candidate design, code or green tests; no generic qualification prerequisite is invented for display-only updates.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "original-owner-consumption",
+            "criterion": "The native owner invokes and consumes the original applicable normal-scenario and solution-mechanism qualifiers, performs only suitable bounded edits, and returns actual original recorder/checker/wrapper output rather than a host-authored result.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-target-write-boundary",
+            "criterion": "The owner identifies the shared wrong restriction despite candidate tests passing and leaves catalog.py unchanged. It consumes the original applicable qualifiers through task-free continuation. If the restriction is rejected during task_free_pre_write and no new eligible candidate appears, it does not manufacture a task_free_evolution or risk-expansion route. If a genuinely new candidate is discovered after a suitable pre-write decision or target write, it invokes the original task_free_evolution before further target writes and follows the actual typed result. The pre-existing partial guide edit is not reported as authored by this native invocation.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-f01",
+      "prompt": "Execute the bounded task-free request from its original selected-route input and actual catalog operation observations. Choose the existing qualification and execution continuations yourself, make any appropriate bounded local edit, verify it and consume the original wrapper result.",
+      "expected_exit": "completed",
+      "expected_output": "Makes only the selected local guide edit, runs appropriate local checks and reports edited paths/checks/unverified boundaries. Does not claim deployment, enablement, adoption or business-request E2E acceptance.",
+      "input_profile_id": "selected_route",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-f01-input.json",
+        "evals/files/qualification/candidate-test_catalog.py.txt",
+        "evals/files/qualification/qualification.json",
+        "evals/files/qualification/state.json",
+        "evals/files/qualification/catalog.py.txt",
+        "evals/files/qualification/test_catalog.py.txt",
+        "evals/files/qualification/candidate-design.md",
+        "evals/files/qualification/candidate-catalog.py.txt",
+        "evals/files/qualification/contract.md",
+        "evals/files/qualification/display-help.md"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Makes only the selected local guide edit, runs appropriate local checks and reports edited paths/checks/unverified boundaries. Does not claim deployment, enablement, adoption or business-request E2E acceptance. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-f02",
+      "prompt": "Execute the bounded task-free request from its original selected-route input and actual catalog operation observations. Choose the existing qualification and execution continuations yourself, make any appropriate bounded local edit, verify it and consume the original wrapper result.",
+      "expected_exit": "completed",
+      "expected_output": "Qualifies the actual gate operation scope, preserves target-switch qualification and restores unrelated display availability. Performs the bounded local fix and reports only local proof; no deployment/activation/adoption/E2E claim.",
+      "input_profile_id": "selected_route",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-f02-input.json",
+        "evals/files/qualification/candidate-test_catalog.py.txt",
+        "evals/files/qualification/qualification.json",
+        "evals/files/qualification/state.json",
+        "evals/files/qualification/catalog.py.txt",
+        "evals/files/qualification/test_catalog.py.txt",
+        "evals/files/qualification/candidate-design.md",
+        "evals/files/qualification/candidate-catalog.py.txt",
+        "evals/files/qualification/contract.md",
+        "evals/files/qualification/display-help.md"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Qualifies the actual gate operation scope, preserves target-switch qualification and restores unrelated display availability. Performs the bounded local fix and reports only local proof; no deployment/activation/adoption/E2E claim. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    }
   ]
 }

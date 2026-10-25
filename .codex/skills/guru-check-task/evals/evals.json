@@ -809,6 +809,166 @@
           }
         ]
       }
+    },
+    {
+      "id": "native-stage-c01",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "Finds that actual inclusive source/filter releases the P1 condition while current usage still declares the filter unavailable. Routes the current instruction gap to its original writer and affected gates; preserves historical P1 evidence.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Finds that actual inclusive source/filter releases the P1 condition while current usage still declares the filter unavailable. Routes the current instruction gap to its original writer and affected gates; preserves historical P1 evidence. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-c02",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "Derives expected filter behavior from authority and actual consumer before trusting green tests. Detects that the skipped P1-only assertion and empty selection expectation no longer validate the implemented filter; does not preserve stale expectations merely because tests pass.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Derives expected filter behavior from authority and actual consumer before trusting green tests. Detects that the skipped P1-only assertion and empty selection expectation no longer validate the implemented filter; does not preserve stale expectations merely because tests pass. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-c03",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "implementation_required",
+      "expected_output": "Separates the implemented predicate from the required unimplemented filter consumer. Establishes the actual consumer failure and routes real remaining implementation without erasing predicate facts or asking for deployment evidence.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Separates the implemented predicate from the required unimplemented filter consumer. Establishes the actual consumer failure and routes real remaining implementation without erasing predicate facts or asking for deployment evidence. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-c04",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "passed",
+      "expected_output": "Reviews the ordinary valid candidate without inventing a restriction ledger, contribution or extra validation obligation. Uses actual unchanged applicability and source/consumer observations.",
+      "input_profile_id": "delivery_initial_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Reviews the ordinary valid candidate without inventing a restriction ledger, contribution or extra validation obligation. Uses actual unchanged applicability and source/consumer observations. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

@@ -21,3 +21,5 @@ design保留九节，但接口只写argv→argparse help→stdout/exit0；无新
 最终 [design 第4、5节](delivery-design.md#4-模块职责与设计取舍) 仅替换help参数，保留default/metavar/参数解析和build。最终 [implement I1/V2](delivery-implement.md#2-有依赖顺序的步骤与文件责任) 明确只改help，并复用原默认/显式/存在目录测试验证行为保持。这里展示具体初稿错误与最终落点，不声称真实owner已接受或测试已通过。
 
 本例没有规范性来源设计和新机制；修订恢复原行为，原owner按实际影响刷新相关gates。新会话读取当前来源与这些必要引用；不得复用本例的教学快照当live事实。
+
+本例没有跨批临时限制。原 owner 只维护 help 的实际差额并复用适用回归，不增设限制清单、空贡献或额外状态验证。

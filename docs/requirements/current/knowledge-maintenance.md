@@ -1,5 +1,7 @@
 # 当前适用知识的读取、修订与晋升
 
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
 知识单元：`RDT-REQ-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。前驱 RDT `.109`、Architecture `.100`；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。候选正文须经原 owners 晋升才进入共享 authority，不因目录名 current 自动生效。
 
 ## 唯一 authority 与完整知识
@@ -81,3 +83,11 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 **R648-06 / BEH648-06**：新增证据否定原结论关键前提时，即使代码/测试未变也刷新受影响判断。其余覆盖与可核验工程事实按原适用性承接；组合影响不能界定时完整评估，不因阶段/reviewer变化无因重跑，不跨读或重建退休private状态。
 
 **R648-07 / BEH648-07**：本项先冻结当前匹配版本，用保留失效关系的去敏真实Agent样本核验，再补实际方法/验证缺口。Agent自己读文件、作判断、写结果并调原wrapper，host期待不注入。改变方法后在相同或严格等价输入、模型、权限和起点复核，逐次审核条款、因果、预期和原owner路由；两边均检错记已有能力。Author落点、实施停点/分流/恢复、Check/Review、未改consumer和A/B在本项实际证明，不延期#649。保留失败和未验证边界；结构/出口/绿命令不独立证明效果。源码分发、实际Agent行为、安装采用分别报告。只用命中定向验证，最多一个代表clean，不扩完整Release/升级矩阵。
+
+## R649：解除限制、当前说明与晚到事实
+
+**R649-07 / BEH649-KNOWLEDGE**：原 maintenance owners 从真实解除条件及适用来源维护完整当前单元、使用指南和派生说明。删除或替换当前有效指令中的过期限制，并保留历史观察及其来源、适用阶段和截止点。局部缺口不扩为其它能力的全局否定。具体阶段限制与成果维度由 [生命周期](task-delivery-lifecycle.md#r649阶段限制与当前成果) 和 [Completion](completion-closure.md#r649阶段成果维度与缺口分类) 定义。
+
+结果入口准确定位唯一实际 Test 与后续正式结果。晚到正式事实不要求回填受审正文自身最终结论；需要真实内容修订时，由原 owner 纳入完整候选、实际晋升及最终覆盖。#637 当前 Test 仅修正可证过期描述和观察截止点，并引用原正式结果；原命令、旧失败、当时未知及其它未证项目保持原义，不因 PR 合并全部转为通过。
+
+本规则保留 R331／R578／R637／R638／R648 的完整来源、工程事实适用性、隔离贡献、candidate Check、原 final_integration 实际写入与读回、实际 after 重绑、最终 Check 和完整 committed Review。无变化不造空贡献或 ADR，稳定 identity 与原单写责任保持。

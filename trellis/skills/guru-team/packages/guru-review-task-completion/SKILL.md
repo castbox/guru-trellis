@@ -66,6 +66,49 @@ Follow-up changes do not block completion. Verify necessary updates to the
 repository's actual long-term authority, or a reasoned non-applicability;
 do not impose one Baseline type on every repository.
 
+## Stage facts, gaps and current results
+
+For the whole accepted scope and every actual Delivery, separately express the
+applicable contract authority, source implementation, artifact deployment/entry
+reachability, initialization or enablement, consumer adoption, and original-request
+end-to-end acceptance in existing reason/evidence/summary fields. Name the actual
+capability, object, environment and basis. Explain non-applicability; add no DTO
+fields. One dimension does not prove another. Contract, source and deployment
+facts remain established when the capability is not enabled; initialization, adoption
+and end-to-end claims retain their own evidence gaps. Partial implementation does
+not satisfy unrelated or still-unimplemented accepted scope.
+
+Locate each unsatisfied requirement and its dependent operation before routing:
+
+- Necessary code or a consumer is unimplemented: use the existing remaining-work
+  or implementation/planning revision route. More observation cannot implement it.
+- The mechanism adds an unsupported enablement/migration prerequisite: consume
+  the original qualification's basis, necessity and operation scope; return to
+  the original mechanism/Planning owner and Architecture as applicable. Do not
+  ask for evidence of that unsupported prerequisite. A real source/scope conflict
+  instead uses the original requirements revision owner.
+- An authoritative prerequisite is necessary for the claimed operation, but its
+  external evidence has not arrived: retain `evidence_pending` and its original
+  `evidence_refresh` consumer, concrete acquisition owner and refresh condition.
+- An unknown environment or effect is unrelated to accepted completion: state
+  that unverified boundary and continue the lawful completion judgment.
+
+Missing activation or switch evidence blocks only dependent enablement, adoption,
+acceptance or completion claims. It does not retract established facts or block
+unrelated operations. Mixed gaps keep their actual responsibilities; do not label
+all missing work as external evidence or turn technical elaboration into scope
+revision. Only fully satisfied accepted scope with necessary evidence can complete.
+
+Read Stage limits and result observations in
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Check that current result entries state their observation cutoff and accurately
+reference later original public results and Git/PR facts. Retain raw commands,
+old failures and then-unknown facts; do not require prose to record its own final
+pass/HEAD or archived result. Genuine missing current content returns to its
+original writer and normal affected-coverage review. Completion does not write
+shared current, replay completed promotion or create an empty Delivery/extra
+commit for a terminal-result update. Closure and Finish retain their own boundary.
+
 ## Causal whole-task judgment
 
 Before the whole-task judgment, actually load

@@ -98,7 +98,7 @@ P1-I1：实施在 checker.py 写完整验证、结果/异常和禁用分支，�
 
 ## 5. Delivery Policy（唯一）
 
-选择 partial。独立切片为纯引擎；remaining work 是 CLI 读取、JSON/标准流/exit、入口只读和 version 回归，以及全部真实集成验收。P2 消费引擎而非复刻。整体 Completion 需 R1–R4/AC1–AC5 全覆盖；本批交付不能关闭整体责任。
+选择 partial。独立切片为纯引擎；remaining work 是 CLI 读取、JSON/标准流/exit、入口只读和 version 回归，以及全部真实集成验收。临时限制的对象是 CLI check 入口；原因是本批仅交引擎。解除条件是 P2 实现并验证既有引擎的 CLI adapter；P2 实施 owner 负责解除，原 RDT owner 负责更新当前使用指南。引擎可调用不等于命令可用；version 仍可用，不受该局部限制影响。P2 消费引擎而非复刻。整体 Completion 需 R1–R4/AC1–AC5 全覆盖；本批交付不能关闭整体责任。
 
 ## 6. Docs SSOT Plan（唯一）
 
@@ -188,7 +188,7 @@ P2-V1：真实CLI合法/空/相对路径与混合缺失/目录/后项，观察JS
 
 ## 2. 有依赖顺序的步骤与文件责任
 
-P2-I1：实施先核对P1实际接口和验证，缺失回producer。P2-I2依赖I1，在cli.py写读取/JSON/引擎调用/标准流和exit，保留version。P2-I3依赖I2，在test_cli.py执行真实子进程的P2-V1–V4，同时保留引擎边界测试。P2-I4依赖实际实现/结果，由原docs owners维护差额并在最终Phase2前完成必要晋升，原Check/Review覆盖本批和集成。
+P2-I1：实施先核对P1实际接口和验证，缺失回producer。P2-I2依赖I1，在cli.py写读取/JSON/引擎调用/标准流和exit，保留version。P2-I3依赖I2，在test_cli.py执行真实子进程的P2-V1–V4，同时保留引擎边界测试。P2-I4依赖实际实现/结果，由原docs owners维护差额并在最终Phase2前完成必要晋升，原Check/Review覆盖本批和集成。P2-I4 实际核对 P1 的 CLI 限制解除条件：实施 owner 将当前“check 尚不可调用”说明和只接受 version 的断言更新为真实 check 行为；原 RDT owner 在合法晋升时更新当前 usage 与派生指南。P1 正文和当时模块测试结果保留历史身份。原 Check 比较当前要求、命令行为、指南和断言，不能因旧断言仍绿保留已失效限制。
 
 ## 3. 验证入口、输入与预期观察
 

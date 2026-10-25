@@ -1,6 +1,8 @@
 # 整体 Completion、Closure 与终态收尾
 
-本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/requirements/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/completion-closure.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+更早晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/requirements/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-REQ-COMPLETION`。状态：`current`。前驱为 RDT `.109` 的有效终态能力；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。当前定义适用于已迁移范围；旧 Task 保持其阶段适用来源。
 
 ## Completion 判断整个 accepted scope
@@ -72,3 +74,11 @@ Reactivate 先读当前可获取后继。唯一合法后继继续其 generation�
 ## 关系和来源
 
 前序：[生命周期](task-delivery-lifecycle.md)。设计：[`RDT-DES-COMPLETION`](../../design/current/completion-closure.md)。测试：[`RDT-TST-COMPLETION`](../../test/current/completion-closure.md)。[迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) 保留各旧 identity 与替代范围。公共 DTO/profile/exit 的精确规格在 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 各原 owner；本能力正文不复制接口或共同因果规范。
+
+## R649：阶段成果维度与缺口分类
+
+**R649-04 / BEH649-DIMENSIONS**：原 Delivery Review 和 Completion 按实际对象、能力、operation、环境及声明，分别判断合同 authority、源码实现、制品部署／入口可达、初始化／启用、消费者采用和原业务请求 E2E。每项使用实际证据，或说明不适用的对象及理由；不新增统一证据字段或表格门禁。合同合入、源码存在、部署成功均不推出其余维度。未启用只阻断实际依赖该状态的启用、采用、验收或完成声明，不否定已独立成立的合同、源码及部署。
+
+**R649-05 / BEH649-GAP**：Completion 先确定未满足的 requirement、能力和 operation，再区分四类责任。必要消费者或代码未实现，回原实施／真实后续 Delivery；有效要求已确定而方案自加无依据前置，回原 Author／Architecture 修订机制；来源或 accepted scope 真正冲突，回原 Clarify；有有效要求且必要的外部证据尚未取得，沿原 evidence_refresh，说明缺口、原获取 owner 和恢复条件。无关未知仅保留边界，范围满足时可以合法完成。以上行为消费既有出口，不增加新 disposition 或状态。
+
+**R649-06 / BEH649-CUTOFF**：结果正文限定观察候选、已执行检查及截止点。正文之后才发生的正式 Check、Review、Delivery、Completion 或 Git／PR 事实，由其原公开结果和准确引用承接；正文不追写自己的最终 pass 或 HEAD。确需修正文档时，由原 writer 在合法候选边界修改，纳入受影响 Check／Review，不因“补结果”豁免。Closure／Finish 仍只处置终态、归档及 bookkeeping，不接管共享文档；不为追记完成制造空 Delivery 或额外提交。

@@ -341,6 +341,10 @@ def stage_clean_installed_owner_repo(
             installed_root, fixture / ".trellis/guru-team", dirs_exist_ok=True,
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
         )
+        installed_specs = source_repo / '.trellis/spec'
+        if installed_specs.is_dir():
+            shutil.copytree(installed_specs, fixture / '.trellis/spec',
+                            ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
         copied_paths: set[str] = set()
         for row in [*files, *overlay_files]:
             if not isinstance(row, dict) or not isinstance(row.get("path"), str):

@@ -367,6 +367,25 @@ consumption, capture ancestry, content identity and retirement remain unchanged.
 
 ## Causal stage review
 
+Before choosing the current outcome, compare accepted behavior, actual candidate
+behavior, current specifications/guides/derived descriptions and applicable test
+expectations. Read the real predecessor limit and release condition for a later
+Delivery. If the condition is satisfied, stale current instructions or assertions
+that still protect the old limit are correctness gaps even when commands pass.
+Derive the expected behavior from authority before relying on green tests.
+Implementation owns behavior/assertion fixes; original knowledge owners own
+current definitions and promotion. Historical observations retain their cutoff.
+
+Limit findings and completion claims to the actual slice, capability, object and
+environment. Separately account for implemented and unimplemented capabilities
+within the same scope. Missing activation or external evidence does not negate
+established source or deployment facts; it affects only operations or claims
+that actually depend on it. If no limit changes, a valid ordinary candidate adds
+no documentation or validation obligation. Read Stage limits and result
+observations in
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Apply those cutoff rules and existing candidate coverage to genuine prose edits.
+
 Read `.trellis/spec/workflow/causal-completion-semantics.md` before judging
 current work. Apply its goal-specific evidence to the actual implementation,
 real consumers, failed samples and tests, independently of qualification pass.

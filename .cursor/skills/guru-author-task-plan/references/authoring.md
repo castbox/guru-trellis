@@ -142,6 +142,14 @@ no_docs_update_needed) and name the original RDT writer/direct consumer.
 Reconcile a delta before final Phase 2. Preserve truthful causal and completion
 semantics; package checks are not incident or remote-success proof.
 
+For a real temporary limit, apply planning-body.md §4 in the existing Policy,
+steps and Docs Plan. Name its object, reason, release condition, stage boundary
+and successor owner. On a later Delivery, compare actual predecessor results
+with that condition. Plan necessary current behavior, guidance and assertion
+updates under their original owners; retain historical observations. Review
+these responsibilities before plan_ready, without creating a restriction ledger
+or treating a local limit as a freeze of the whole Task.
+
 Select business context for the installed official `task.py add-context
 <task_ref> <implement|check> <file> <reason> --delivery <actual UUID>`.
 Official scripts execute, while Author judges context relevance. Context JSONL

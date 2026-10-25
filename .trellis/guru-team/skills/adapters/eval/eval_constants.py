@@ -24,6 +24,8 @@ NATIVE_SEMANTIC_OWNERS = frozenset({
 })
 NATIVE_SEMANTIC_CASE_OWNERS = frozenset({
     ("guru-clarify-requirements", "native-implementation-authority-conflict"),
+    *(("guru-review-task-delivery", "native-stage-" + case) for case in ("d01", "d02")),
+    *(("guru-review-task-completion", "native-stage-" + case) for case in ("p01", "p02", "p03", "p04", "p05", "p06")),
 })
 # Host-only corpus expectations for the bounded implementation test segments.
 # This table never enters native input and selects no workflow route.
@@ -343,7 +345,10 @@ def main() -> int:
         raise ValueError("qualification invocation requires stdin")
     request_fifo = Path(args.request_fifo)
     response_fifo = Path(args.response_fifo)
-    stdin_text = sys.stdin.read()
+    if args.stdin and sys.stdin.isatty():
+        sys.stderr.write("--stdin requires piped JSON input; no request was sent.\n")
+        return 2
+    stdin_text = sys.stdin.read() if args.stdin or not sys.stdin.isatty() else ""
     if args.operation == "command":
         if args.flow != "standard_intake" and not COMMAND_FORWARDING_ALLOWED:
             raise ValueError("command forwarding is not declared for this native case")
@@ -371,7 +376,7 @@ def main() -> int:
             "returncode": response["returncode"], "stdout_sha256": stdout_digest(response["stdout"]),
             "stderr_sha256": digest(response["stderr"].encode()),
         })
-        if args.command in {"invoke", "independent-review"} and response["returncode"] == 0:
+        if args.command in {"invoke", "independent-review", "invoke-" + args.skill_id} and response["returncode"] == 0:
             trace = json.loads(trace_path.read_text())
             trace["terminal_skill_id"] = args.skill_id
             trace_path.write_text(json.dumps(trace, separators=(",", ":")))

@@ -143,6 +143,12 @@ detail public. Apply this policy within the current accepted scope and the
 validation ownership below; it does not require historical test cleanup across
 business repositories or a new full-chain gate for every change.
 
+For stage-result changes, the original `guru-check-task` contract owns review
+of current behavior, guidance and assertions after a real restriction ends.
+The original Delivery Review and Completion Skills own applicable result
+dimensions, evidence gaps and claims. Read those methods within their existing
+scope; this guideline adds no new gate or evidence schema.
+
 ## Validation Scope Ownership
 
 Every Issue and task must use the smallest reliable validation set that proves

@@ -1,5 +1,7 @@
 # 当前知识读写与晋升测试策略
 
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
 知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；当前适用性由ADR-028/034拥有，最终整合时序由ADR-KNOWLEDGE-FINAL-INTEGRATION拥有。
 
 ## T331-01..06 与稳定关系
@@ -56,3 +58,11 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 完整candidate Check、原owners最终整合/读回、实际after重绑、最终Check和独立committed Review继续沿T638。工程检查覆盖命中package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode与零未处置sidecar；clean最多一个代表，不扩完整Release/多平台升级矩阵。业务实际采用与生产效果未被fixture证明。
 
 唯一实际结果在[#648 contribution test.md](../../requirements-design-test-contributions/648-constraint-premise-review/test.md)。本单元只拥有策略、输入、owner、观察和结果定位，不复制运行结论为第二authority。#649的阶段成果/Completion组合验收与#651的reviewer载体不在本项。
+
+## T649：当前定义、有限修正与实际晋升
+
+**T649-07 / R649-07 → D649-06**：九个完整 proposed targets 保留原条件、身份及必要关系。限制解除后当前定义、指南及派生说明收敛；历史观察和截止点保留。#637 仅修可证过期项，原失败及未证不升级通过。候选 Check 后原 owner 真实写入读回，再以实际 after 重绑、最终 Check 和完整 committed Review。
+
+**T649-08 / R649-01..07 → D649-01..06**：原 package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode/sidecar、一个代表 clean 及正式 Task 交付分别验证。before/new 使用相同事实、运输、模型、权限和起点，AI 逐次审真实原因、维度和 route；保留 execution_error/no-grade、有效漏检及修复，不以 exit 或绿色命令代替语义。
+
+#648 自身完整结果与 #649 连续组合分别核对；本项不启动 #651，不改 Backend 或业务现场。普通定向验证不扩完整 Release／多平台升级矩阵。全部实际结果和 cutoff 唯一由 [#649 Test](../../requirements-design-test-contributions/649-stage-result-convergence/test.md) 拥有，本单元不复制运行结论。

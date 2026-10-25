@@ -1,6 +1,8 @@
 # Completion、Closure 与终态责任设计
 
-本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/design/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/design/current/completion-closure.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+更早晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/design/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-DES-COMPLETION`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md)；测试：[RDT-TST-COMPLETION](../../test/current/completion-closure.md)。稳定 `D531-06`、`D454-D436-01..05` 与 `D547` 关系保持，公共接口以各原 package 为准。
 
 ## 稳定设计身份
@@ -62,3 +64,11 @@ Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精�
 ## 原规格
 
 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 拥有完整profile、独立schema/exit/consumer及runtime事实校验。本正文替代该能力的历史拼接，不复制其细节成第二接口。各旧ID、继承条件和窄替代关系见 [traceability](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。
+
+## D649：阶段成果与原终态边界
+
+**D649-03 / CON649-DIMENSIONS** 承接 R649-04。原 Delivery Review contract 与 Completion Skill 分别在原 evidence／reason／summary 中说明适用六维及依据、环境或不适用理由。部署或入口探针只证明实际观察层；启用、采用和业务 E2E 保留独立要求。不新增六维 schema、公共 DTO 或统一证明表。
+
+**D649-04 / CON649-GAP** 承接 R649-05。Completion 先比较整个 accepted scope、所有真实 Delivery 和必要证据，再使用原 implementation／additional Delivery、Author／Architecture、Clarify、evidence_refresh 或 completed consumer。必要实现遗漏和无依据机制前置不伪装成外部待补证据；局部 gate 只影响真实依赖 operation。
+
+**D649-05 / CON649-CUTOFF** 承接 R649-06。原 RDT owner 维护当前结果入口，正式后序结果由原 public facts 与 Git／PR 承接。Closure／Finish 仅增加对既有写入责任的说明，不取得 Docs writer 权限。正文确有修订时，原候选适用性合同判断受影响覆盖；不回填自己的最终 pass，不新增完成账本或递归提交。

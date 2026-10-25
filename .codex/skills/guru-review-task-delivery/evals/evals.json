@@ -135,6 +135,84 @@
         "evals/files/delivery-review-input.json",
         "evals/files/blocked-facts.json"
       ]
+    },
+    {
+      "id": "native-stage-d01",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "ready",
+      "expected_output": "Separately expresses contract, source and actual local artifact deployment/reachability; retains their evidence when Control is not open. Initialization, adoption and remote original-request E2E remain unverified or reasoned out of scope. Limits readiness and payload to the actual slice.",
+      "input_profile_id": "delivery_delivery_review",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Separately expresses contract, source and actual local artifact deployment/reachability; retains their evidence when Control is not open. Initialization, adoption and remote original-request E2E remain unverified or reasoned out of scope. Limits readiness and payload to the actual slice. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-stage-d02",
+      "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
+      "expected_exit": "ready",
+      "expected_output": "Uses qualification operation scope: absent release-2 switch evidence restricts only dependent migration/claims, while existing display and source/artifact facts remain established. Does not freeze all capabilities or claim activation/adoption/E2E from local artifact tests.",
+      "input_profile_id": "delivery_delivery_review",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "stage-result-judgment",
+            "criterion": "Uses qualification operation scope: absent release-2 switch evidence restricts only dependent migration/claims, while existing display and source/artifact facts remain established. Does not freeze all capabilities or claim activation/adoption/E2E from local artifact tests. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

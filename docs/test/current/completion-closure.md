@@ -1,6 +1,8 @@
 # Completion / Closure / Finish 测试策略
 
-本次晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/test/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/completion-closure.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+更早晋升的完整前驱：Git `7a7b60743499653ffeb81f6b31e627a02c33f579:docs/test/current/completion-closure.md`。贡献与窄替代边界见 [#635 追踪](../../requirements-design-test-contributions/635-portable-lifecycle/traceability.md)。
 知识单元：`RDT-TST-COMPLETION`。状态：`current`。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-COMPLETION](../../requirements/current/completion-closure.md)；设计：[RDT-DES-COMPLETION](../../design/current/completion-closure.md)。保留 `TST-004/010`、`SCN-003` 的历史与终态能力关系，旧Finalizer推定由原后继替代。
 
 ## 整体范围与证据场景
@@ -41,3 +43,13 @@
 共同因果语义和场景期望以 [canonical causal spec](../../../trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md) 为准。只用正常支持路径和普通状态变化验证，不引入攻击/压力模型。历史 [#383 Test](../../requirements-design-test-contributions/383-causal-completion-semantics/test.md)、[#547 Test](../../requirements-design-test-contributions/547-retain-source-open/test.md)、[#454 D436 Test](../../requirements-design-test-contributions/454-task-lifecycle-d436/test.md)、[#531 Test](../../requirements-design-test-contributions/531-task-delivery-lifecycle/test.md) 保留原样及原适用candidate；workflow fixture不等业务生产效果。
 
 本轮 T331-02/V331-B 一致修订和 T331-03/V331-C 并行/旧Task实验覆盖知识迁移对本能力的影响。全部实际结果、first failure/修复与未验证边界只写 [#331 test](../../requirements-design-test-contributions/331-current-effective-knowledge/test.md)，此处不预填通过。完整接口/执行断言按各终态package当前合同选择，不能用归档存在或link check代替whole-task判断。
+
+## T649：六维、缺口分类及晚到事实
+
+| Test / requirement → design | 正常输入及原 owner | 必须观察 |
+| --- | --- | --- |
+| T649-03 / R649-04 → D649-03 | D01 合同／源码／本地制品成立而未启用，D02 某切换缺证据但其它 operation 已交付；task-free F01/F02 | 适用六维各自有依据或不适用理由；保留独立成立成果，仅阻断依赖声明；task-free 报本地结果和外部边界 |
+| T649-04 / R649-05 → D649-04 | P01/P06 必要 consumer 未实现、P02 无依据前置、P03 有依据外部证据缺口、P04 无关未知 | 实现／机制／authority／外部证据分类及原 consumer 正确；局部不扩大，范围满足时合法完成 |
+| T649-05 / R649-06 → D649-05 | P05 后序正式结果晚于正文，cutoff 与原公开结果可核 | 不要求正文递归回填自己最终 pass／HEAD；真实文件修订归原 writer 且覆盖受影响 gate；Closure／Finish 不写共享 Docs |
+
+本项独立样本、同一 Task 连续组合与正式任务交付各自证明。唯一实际结果在 [#649 Test](../../requirements-design-test-contributions/649-stage-result-convergence/test.md)，受控 provider 不证明真实 GitHub 或业务生产效果。

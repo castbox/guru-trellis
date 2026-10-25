@@ -1,6 +1,6 @@
 # #637 测试策略与本轮实际结果
 
-状态：实施中。以下Test对应Task design V637-01..08；策略不是通过声明。
+状态：正式 Delivery 与 Task Completion 已有原公开结果。以下 Test 对应 Task design V637-01..08；策略不是通过声明。原工程观察保留当时截止点，较晚正式结果见文末，不据此升级其它未证项目。
 
 | ID | 实际入口/输入 | 必须观察 |
 | --- | --- | --- |
@@ -147,6 +147,16 @@ owner先实际补V3，2项/24组合、exit0、0.041989s。原V1/V2的输入、�
 
 另以同一完整H source及原managed Python3.12.8执行普通全仓库preset reapply，实际在写前返回`upstream_delivery_migration_required`，涉及228个历史legacy archive；与先前固定B完整source普通apply的既有边界一致。该次不计成功，不删除、转换或迁移归档来绕过；前后上述38项继续保持。新clean样本上的完整reapply/在途保全已有真实成功证据，但含这些legacy archives的普通全仓库reapply没有通过。原matching tools-only安装、目标native与dogfood drift已通过，不能用它们替代这个单独入口的失败结果，也不为本Issue扩入历史Task迁移。
 
-## 尚未验证
+## 原实施观察截止点与未验证边界
+
+以下段落保留正式最终门禁及 PR #644 合并之前的原观察。“尚待／未完成”只描述当时状态；较晚正式结果由下一节承接。该后序引用不改变本段的原命令、失败、未知或其余未证边界。
 
 canonical实现已形成早期候选，尚待main完整质量门禁。新候选clean安装及其reapply、本Task真实Draft反馈、两套样本首次完整审核、共享Runtime检错/闭合、文档冲突解决稿与实际整合提交及其最终正式当前Check/Review、真实Check finding至修复后完整当前Check/Branch Review、工程缺证据补齐、开发Task matching tools切换/目标native/三平台dogfood drift已经执行，实际计时与测量缺口如上。含legacy archives的普通全仓库reapply仍阻塞，formal_fork_source_lock未验证。main完整当前Check/独立committed Review与#636最终同PR组合仍未完成。本轮RDT/Architecture共享定义已分别晋升至current-main-0.7.0-guru.114/.105；原独立Phase2评估及原owner实际写入适用性由各自真实公开结果承接，本Test不替代它们或后续最终Check。#638未来接口、业务采用/生产效果、完整Release与多平台升级矩阵不由此证明。
+
+## 后序正式结果引用（#649 有限核实）
+
+2026-10-21 核实原 [归档公共 Task](../../../.trellis/tasks/archive/2026-10/10-20-637-candidate-review-reuse/task.json) 的 Delivery `5499bb2d-86d7-4a5c-9747-9b06e00f4ef9` 已为 delivered。其正式结果为 Check `check:50ac1fb9eea8a61e18bfd5b4f5052ebe2e764ec80ee92136e271ab77aadd5d6b`、full_review `full-review:81b66dcf3388ef2edca121d63c5cec22faa46fc7a514739bbdd827fae1e1c0a0`、readiness `readiness:b92f49efb49a6f513002df6530799a76099f8a91b255d5846968606e5c9ebeff`、Delivery `delivery:3a38020b456112fd329e9a6616e4222e589dea12`，以及 Task Completion `completion:3356b089-5f91-473d-8b39-12fbcdb45451`。这些引用说明后序正式门禁已发生，不声称本次重新执行。
+
+live [PR #644](https://github.com/castbox/guru-trellis/pull/644) 为 MERGED，head 为 `0aae5dda625278948d646a6d2027eb7785de93b6`，merge 为 `3a38020b456112fd329e9a6616e4222e589dea12`，mergedAt 为 `2026-10-20T02:06:55Z`。实际祖先检查证明该 merge 可达 #649 固定 main 基线 `319202beab79c7666ecdb855291bf117e43d407e`。原“main 完整当前 Check／独立 committed Review 尚未完成”不再作为当前否定声明。
+
+本次只修上述状态、截止点和引用。含 legacy archives 的普通全仓库 reapply 阻塞、formal_fork_source_lock、原观察时 #636 最终同 PR 组合、当时未来的 #638 接口、业务采用／生产效果以及完整 Release／多平台升级矩阵，均未由本次引用取得新的通过证明。

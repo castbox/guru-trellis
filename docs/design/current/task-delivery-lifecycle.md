@@ -1,6 +1,8 @@
 # Task / Delivery 生命周期设计
 
-本次晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/design/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/design/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+更早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/design/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-DES-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/design/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。需求：[RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md)；测试：[RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md)。本单元定义能力职责与协作，不定义第二套公共 state/schema。
 
 ## 稳定设计身份
@@ -90,3 +92,9 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 ## 完整规格与未迁移边界
 
 精确公共 I/O、阶段 profile、typed exit/consumer、hash/HEAD关系、private恢复输入由 [canonical packages](../../../trellis/skills/guru-team/packages) 与 [workflow](../../../trellis/workflows/guru-team/workflow.md) 单写。本迁移不展开 Git对象摘要算法、provider实现、完整升级迁移矩阵/软件 Release 等专属能力，也不以历史test结果证明当前candidate。它们仍由 [legacy inventory](README.md) 指向原authority。
+
+## D649：原规划、实施与检查职责
+
+**D649-01 / CON649-LIMIT** 承接 R649-01。原 Author 的 planning-body、authoring、Delivery implement 模板及既有示例拥有五项阶段限制写作方法。Policy 定义本批及后继责任，Docs Plan 定位当前规范、指南及派生说明；global workflow 和平台入口不复制方法。
+
+**D649-02 / CON649-CONVERGE** 承接 R649-02/03。实施 owner 修复行为及断言；原 RDT／Architecture owners 在各自知识边界准备完整 proposed 定义。原 Check 读取有效预期、实现、当前说明和真实 consumer，判断过期限制及错误断言；绿色命令不替代判断。Delivery Review 的阶段成果方法归其原 contract，整体维度和缺口路由归 [终态设计](completion-closure.md#d649阶段成果与原终态边界)。公共 API、profile、DTO、state、exit 和 recorder 不改变。
