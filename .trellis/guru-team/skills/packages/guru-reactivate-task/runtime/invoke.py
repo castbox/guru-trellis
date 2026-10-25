@@ -25,6 +25,8 @@ from runtime.task_lifecycle.results import reason, task_artifact, transaction_re
 from runtime.task_lifecycle.schema import validate_dto
 from runtime.task_lifecycle.session_adapter import resolve_session
 from shared_finish import read_shared_archive, find_successor, formal_inspection, require
+from existing_implementation import PROFILE, validate_current, observe, pending_file_paths
+from runtime.task_lifecycle.git_facts import capture_implementation_state
 
 
 def blocked(package, code, refs):
@@ -74,7 +76,7 @@ def acquisition_plan(root: Path, key: TaskLifecycleKey, semantic: dict[str, Any]
         raise LifecycleContractError("reactivation_branch_invalid", "acquisition.branch_ref", "Select a task branch distinct from the base.")
     repository = inspect_repository(root)
     if (local_branch_head(repository, base_ref) != semantic["reviewed_base_head"]
-            or data["decision_head"] != semantic["reviewed_base_head"]):
+            or (semantic["profile"] != PROFILE and data["decision_head"] != semantic["reviewed_base_head"])):
         raise LifecycleContractError("reactivation_base_stale", "reviewed_base_head", "Review the current target base before reactivation.")
     return CheckoutAcquisitionPlan(
         route=data["route"], repository_context=root, task_id=key.task_id,
@@ -85,6 +87,7 @@ def acquisition_plan(root: Path, key: TaskLifecycleKey, semantic: dict[str, Any]
         invocation_checkout=Path(data["invocation_checkout"]) if "invocation_checkout" in data else None,
         target_path=Path(data["target_path"]) if "target_path" in data else None,
         forbidden_branch_refs=(base_ref,), task_artifact_expectation="absent",
+        existing_implementation_state=semantic.get("implementation_state") if semantic["profile"] == PROFILE else None,
     )
 
 
@@ -104,8 +107,21 @@ def release_resolved_prior_binding(branches, resources, key, branch_name):
     branches.retire_generation(key, expected_revision=old.binding_revision, expected_branch_name=old.branch_name)
 
 
+def transaction_schema(value):
+    return "existing-implementation-transaction-3.0.schema.json" if value.get("schema_version") == "3.0" else "reactivation-transaction.schema.json"
+
+
+def implementation_record(record, checkout, public, semantic):
+    if semantic["profile"] == PROFILE:
+        public_files = pending_file_paths(checkout, record["public_plan"]) if record["stage"] == "public_prepared" else ()
+        record.update(schema_version="3.0", base_head=semantic["reviewed_base_head"],
+                      implementation_pr=public["implementation_pr"],
+                      implementation_state=capture_implementation_state(checkout, public_write_paths=public_files))
+    return record
+
+
 def save_transaction(path, value):
-    validate_json(value, Path(__file__).resolve().parents[1] / "schemas/reactivation-transaction.schema.json", "transaction")
+    validate_json(value, Path(__file__).resolve().parents[1] / "schemas" / transaction_schema(value), "transaction")
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
@@ -122,6 +138,8 @@ def finish_public_operation(path, record, source):
         require("reactivated_task" in result, "maintenance", "Read the original operation's actual active key and locator.")
         record["reactivated_task"] = result["reactivated_task"]
         record["stage"] = "public_applied"
+        if record["schema_version"] == "3.0":
+            record["implementation_state"] = capture_implementation_state(record["implementation_state"]["path"])
     save_transaction(path, record)
     return record["reactivated_task"]
 
@@ -194,6 +212,7 @@ def acquire_incarnation(root, key, public, semantic, facts):
                       "public_recovery_ref": str(checkout / ".trellis/.runtime/guru-team/reactivate-public" / (prepared["operation_id"] + ".json")), "public_plan": prepared,
                       "public_state_dir": str(checkout / ".trellis/.runtime/guru-team/reactivate-public"),
                       "resource_ownership": {"branch": acquired.branch_ownership, "worktree": acquired.worktree_ownership}}
+            implementation_record(record, checkout, public, semantic)
             save_transaction(path, record)
             try:
                 actual = finish_public_operation(path, record, source)
@@ -222,8 +241,19 @@ def acquire_incarnation(root, key, public, semantic, facts):
         next_key = TaskLifecycleKey(**actual["key"])
         require(next_key == TaskLifecycleKey(key.task_id, key.lifecycle_generation + 1) and actual["task_ref"] == plan.task_ref,
                 "reactivated_task", "Read the public writer's exact new key and active locator.")
-        # Public work is retained if a subsequent local binding step needs recovery.
-        if facts["family"] == "schema1":
+        # Preserve the public result before local controls, including ordinary
+        # output loss or a failed binding. No implementation file is restaged.
+        path = transaction_path(repository, key)
+        if facts["family"] == "schema2" and semantic["profile"] == PROFILE:
+            record = {"schema_version": "3.0", "stage": "public_applied", "task_id": key.task_id,
+                      "archived_generation": key.lifecycle_generation, "transaction_id": plan.transaction_id,
+                      "result_id": plan.result_id, "branch_ref": canonical_head_ref(plan.branch_ref),
+                      "base_ref": canonical_head_ref(semantic["selected_base_ref"]), "base_head": semantic["reviewed_base_head"],
+                      "archive_anchor": public["archive_anchor"], "reactivated_task": actual, "public_recovery_ref": None,
+                      "resource_ownership": {"branch": acquired.branch_ownership, "worktree": acquired.worktree_ownership}}
+            implementation_record(record, checkout, public, semantic)
+            save_transaction(path, record)
+        if facts["family"] == "schema1" or semantic["profile"] == PROFILE:
             binding = finish_local_binding(checkout, record)
         else:
             release_resolved_prior_binding(branches, resources, key, branch)
@@ -235,8 +265,7 @@ def acquire_incarnation(root, key, public, semantic, facts):
                   "branch_ref": binding.branch_ref, "base_ref": canonical_head_ref(semantic["selected_base_ref"]),
                   "base_head": plan.decision_head, "archive_anchor": public["archive_anchor"],
                   "reactivated_task": actual, "public_recovery_ref": recovery_ref}
-        validate_json(record, package / "schemas/reactivation-transaction.schema.json", "transaction")
-        path = transaction_path(repository, key)
+        implementation_record(record, checkout, public, semantic)
         save_transaction(path, record)
         completed.append((checkout, actual))
     acquire_checkout(plan, post_acquire=after_acquisition)
@@ -245,8 +274,8 @@ def acquire_incarnation(root, key, public, semantic, facts):
 
 def execute(root, public, semantic):
     package = Path(__file__).resolve().parents[1]
-    validate_json(public, package / "schemas/public-input.schema.json", "input")
-    validate_json(semantic, package / "schemas/semantic-result.schema.json", "semantic_result")
+    validate_json(public, package / "schemas/public-input-selected-2.0.schema.json", "input")
+    validate_json(semantic, package / "schemas/semantic-selected-2.0.schema.json", "semantic_result")
     if any(public[field] != semantic[field] for field in ("profile", "mode", "archived_lifecycle", "archive_anchor")):
         return blocked(package, "stale_semantic_result", "archive_anchor")
     key = TaskLifecycleKey(**validate_dto("TaskLifecycleDTO", public["archived_lifecycle"]))
@@ -257,12 +286,15 @@ def execute(root, public, semantic):
         return blocked(package, "session_route_mismatch", "session_outcome")
     if route == "reactivated_to_planning" and semantic.get("session_outcome") not in {"session_bound", "explicit_task_mode"}:
         return blocked(package, "session_route_mismatch", "session_outcome")
+    if public["profile"] == PROFILE and public["implementation_pr"] != semantic["implementation_pr"]:
+        return blocked(package, "stale_semantic_result", "implementation_pr")
     repository = inspect_repository(root)
     path = transaction_path(repository, key)
     stored = json.loads(path.read_text()) if path.is_file() else None
     working = root
     if stored is not None:
-        validate_json(stored, package / "schemas/reactivation-transaction.schema.json", "transaction")
+        validate_json(stored, package / "schemas" / transaction_schema(stored), "transaction")
+        require((stored["schema_version"] == "3.0") == (public["profile"] == PROFILE), "transaction", "Continue the original profile with its matching transaction version.")
         require(stored["archive_anchor"] == public["archive_anchor"] and stored["task_id"] == key.task_id
                 and stored["archived_generation"] == key.lifecycle_generation, "transaction", "Recover only the same predecessor and archive anchor.")
         if "acquisition" in semantic:
@@ -277,17 +309,27 @@ def execute(root, public, semantic):
         rows = [row for row in discover_worktree_facts(repository) if row.branch_ref == selected_ref]
         require(len(rows) == 1, "checkout", "Resolve the original acquired checkout through live Git registration.")
         working = rows[0].path
+        if public["profile"] == PROFILE:
+            validate_current(working, public, semantic, stored)
+            if stored["stage"] == "public_prepared":
+                require("source_ref" in semantic, "source_ref", "Validate the original public write set before recovery.")
+                call(semantic["source_ref"], "previewMaintenance", stored["public_plan"])
     facts = read_shared_archive(working, key, public["archive_anchor"])
     if stored is not None and stored["stage"] in {"public_prepared", "public_applied"}:
-        require("source_ref" in semantic, "source_ref", "Recover the original public operation with its matching source.")
-        if finish_public_operation(path, stored, semantic["source_ref"]) is None:
-            return pending_output(stored)
+        if stored["stage"] == "public_prepared" or stored["public_recovery_ref"] is not None:
+            require("source_ref" in semantic, "source_ref", "Recover the original public operation with its matching source.")
+            if finish_public_operation(path, stored, semantic["source_ref"]) is None:
+                return pending_output(stored)
         finish_local_binding(working, stored)
         save_transaction(path, stored)
     working, successor = find_successor(working, key, public["archive_anchor"], facts, semantic.get("source_ref"), with_checkout=True)
     if successor is None:
         require(stored is None and route != "resume_reactivation", "transaction", "Recover the original public incarnation; do not create another one.")
         require("acquisition" in semantic and "authority" in semantic, "acquisition", "Review the exact new-generation checkout and scope before acquisition.")
+        if public["profile"] == PROFILE:
+            checkout = Path(semantic["acquisition"]["invocation_checkout"]).resolve()
+            state = validate_current(checkout, public, semantic)
+            require(semantic["acquisition"]["decision_head"] == state["head"], "decision_head", "Acquire the exact reviewed implementation HEAD.")
         working, successor = acquire_incarnation(root, key, public, semantic, facts)
         stored = json.loads(path.read_text())
         if isinstance(successor, CommandError):
@@ -322,6 +364,20 @@ def execute(root, public, semantic):
 
 
 def run(package_root, command, argv):
+    if command.get("id") == "observe-task-reactivation-implementation":
+        parser = argparse.ArgumentParser(add_help=False)
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--input", required=True)
+        try:
+            args = parser.parse_args(argv)
+        except SystemExit as exc:
+            raise CommandError("invalid_arguments", "arguments", "Use the implementation observer contract.") from exc
+        public = read_json(args.input, "input")
+        validate_json(public, package_root / "schemas/public-existing-implementation-input-1.0.schema.json", "input")
+        try:
+            return observe(Path(args.root).resolve(), public)
+        except LifecycleContractError as exc:
+            raise CommandError("stale_identity", exc.field_path, "Reread the exact implementation checkout and Draft PR facts.") from exc
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--root", default=".")
     parser.add_argument("--input", required=True)

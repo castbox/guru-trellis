@@ -25,18 +25,38 @@ shared = sys.modules['shared_finish']
 
 
 class Fixture(unittest.TestCase):
-    def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
-        self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name) / 'repo'; self.root.mkdir()
-        self.git(self.root, 'init', '-q', '-b', 'main')
+    def setUp(self, fixture_directory=None, installed_repository=None):
+        if fixture_directory is None:
+            self.temporary = tempfile.TemporaryDirectory()
+            self.addCleanup(self.temporary.cleanup)
+        else:
+            # Explicit native-fixture setup is retained for its real Agent owner.
+            from types import SimpleNamespace
+            fixture_directory.mkdir(parents=True, exist_ok=False)
+            self.temporary = SimpleNamespace(name=str(fixture_directory))
+        self.root = Path(installed_repository).resolve() if installed_repository else Path(self.temporary.name) / 'repo'
+        if installed_repository:
+            if not (self.root / '.trellis/scripts/common/delivery_schema.py').is_file():
+                raise RuntimeError('Install the complete matching Fork and Guru preset before fixture setup.')
+            if any((self.root / '.trellis/tasks').glob('*/task.json')):
+                raise RuntimeError('Use an empty fixture repository without existing Tasks.')
+            if self.git(self.root, 'symbolic-ref', '--short', 'HEAD') != 'main':
+                raise RuntimeError('Use the empty fixture main branch.')
+        else:
+            self.root.mkdir()
+            self.git(self.root, 'init', '-q', '-b', 'main')
+            shutil.copytree(scripts_source(), self.root / '.trellis/scripts')
+            (self.root / '.trellis/workflow.md').write_text('[trellis-runtime-contract]\n' + json.dumps(DECLARATION) + '\n[/trellis-runtime-contract]\n')
+            (self.root / '.trellis/.developer').write_text('fixture\n')
         self.git(self.root, 'config', 'user.name', 'Fixture')
         self.git(self.root, 'config', 'user.email', 'fixture@example.invalid')
-        self.git(self.root, 'remote', 'add', 'origin', 'https://github.com/example/repository.git')
-        shutil.copytree(scripts_source(), self.root / '.trellis/scripts')
-        (self.root / '.trellis/workflow.md').write_text('[trellis-runtime-contract]\n' + json.dumps(DECLARATION) + '\n[/trellis-runtime-contract]\n')
-        (self.root / '.trellis/.developer').write_text('fixture\n')
-        (self.root / '.gitignore').write_text('.trellis/.runtime/\n')
+        if 'origin' in self.git(self.root, 'remote').splitlines():
+            self.git(self.root, 'remote', 'set-url', 'origin', 'https://github.com/example/repository.git')
+        else:
+            self.git(self.root, 'remote', 'add', 'origin', 'https://github.com/example/repository.git')
+        ignore = self.root / '.gitignore'
+        if not ignore.is_file() or '.trellis/.runtime/' not in ignore.read_text():
+            with ignore.open('a') as stream: stream.write('\n.trellis/.runtime/\n')
         (self.root / 'scope.md').write_text('Reviewed fixture scope\n')
         self.git(self.root, 'add', '.'); self.git(self.root, 'commit', '-qm', 'initial')
         self.provider = mock.patch.object(shared, 'github_json', side_effect=self.pr_rows)

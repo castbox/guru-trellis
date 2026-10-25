@@ -401,3 +401,10 @@ workflow/Skill 混入旧安装 graph。
 活动身份，目标 native 和下一实际 Guru owner 必须实际验证。
 正式 source lock 不变，本地 matching candidate 只用于隔离开发；详见
 [兼容与依赖边界](./MIGRATION-577.md)。
+
+## 已有实现分支恢复（#669）
+
+已有实现提交、本地差额及原 Draft PR 的正式归档恢复，进入原
+`guru-reactivate-task` 的独立 `delivery_reactivate_existing_implementation`
+profile。原 clean-base profile 保持；入口、同操作接续、matching 安装和验证边界见
+[迁移合同](MIGRATION-669.md)。恢复身份后由原 Task/Delivery owners 审核当前工作。

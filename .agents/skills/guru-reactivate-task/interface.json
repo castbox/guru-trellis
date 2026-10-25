@@ -1,6 +1,6 @@
 {
-  "$schema": "../../schemas/skill-interface-1.4.schema.json",
-  "schema_version": "1.4",
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
   "id": "guru-reactivate-task",
   "name": "guru-reactivate-task",
   "description": "Reactivate one normally finished archived task while preserving its identity and routing the fresh work.",
@@ -83,6 +83,14 @@
     {
       "id": "blocked_output",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "existing_input",
+      "path": "examples/public-existing-implementation-input.json"
+    },
+    {
+      "id": "existing_semantic",
+      "path": "examples/semantic-existing-implementation.json"
     }
   ],
   "schemas": [
@@ -121,6 +129,26 @@
     {
       "id": "delivery_reactivate_shared_archive_input",
       "path": "schemas/public-delivery-reactivate-shared-archive-input.schema.json"
+    },
+    {
+      "id": "selected_input",
+      "path": "schemas/public-input-selected-2.0.schema.json"
+    },
+    {
+      "id": "existing_input",
+      "path": "schemas/public-existing-implementation-input-1.0.schema.json"
+    },
+    {
+      "id": "selected_semantic",
+      "path": "schemas/semantic-selected-2.0.schema.json"
+    },
+    {
+      "id": "existing_semantic",
+      "path": "schemas/semantic-existing-implementation-1.0.schema.json"
+    },
+    {
+      "id": "existing_transaction",
+      "path": "schemas/existing-implementation-transaction-3.0.schema.json"
     }
   ],
   "validators": [
@@ -129,6 +157,12 @@
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-reactivate-task",
       "objective_scope": "Validate exact shared archive, public successor, matching SDK and local acquisition facts."
+    },
+    {
+      "id": "implementation_observer",
+      "command": "scripts/observe.sh",
+      "runtime_command": "observe-task-reactivation-implementation",
+      "objective_scope": "Read exact implementation checkout content and repository-bound Draft PR facts; no semantic decision."
     }
   ],
   "external_exits": [
@@ -173,7 +207,8 @@
   "tests": [
     "tests/test_reactivate_contract.py",
     "tests/test_delivery_reactivate.py",
-    "tests/test_formal_archive_reactivate.py"
+    "tests/test_formal_archive_reactivate.py",
+    "tests/test_existing_implementation.py"
   ],
   "platform_destinations": [
     "shared",
@@ -204,8 +239,8 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-reactivate-task-input-shared-archive-1.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-reactivate-task-input-selected-2.0",
+        "path": "schemas/public-input-selected-2.0.schema.json"
       },
       "profiles": [
         {
@@ -222,6 +257,21 @@
             "field": "profile",
             "value": "delivery_reactivate_shared_archive"
           }
+        },
+        {
+          "id": "delivery_reactivate_existing_implementation",
+          "schema": {
+            "schema_id": "guru-reactivate-task-input-existing-implementation-1.0",
+            "path": "schemas/public-existing-implementation-input-1.0.schema.json"
+          },
+          "example": {
+            "id": "existing_input",
+            "path": "examples/public-existing-implementation-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "delivery_reactivate_existing_implementation"
+          }
         }
       ]
     },
@@ -230,7 +280,10 @@
       "wrapper": "scripts/invoke.sh",
       "input_binding": {
         "kind": "structured_json",
-        "profile_id": "delivery_reactivate_shared_archive"
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
@@ -419,6 +472,15 @@
         "schema": {
           "schema_id": "guru-reactivate-task-transaction-2.0",
           "path": "schemas/reactivation-transaction.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
+        "id": "existing_transaction",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "guru-reactivate-task-existing-implementation-transaction-3.0",
+          "path": "schemas/existing-implementation-transaction-3.0.schema.json"
         },
         "persistence": "ignored_runtime"
       }

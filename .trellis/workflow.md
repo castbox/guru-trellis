@@ -1428,6 +1428,11 @@ reviewing or deleting the task worktree. If no suitable retained checkout is
 available, stop and report the remaining resources for manual disposition;
 do not run Cleanup from a worktree it must remove.
 
+For a normally finished archive with an existing implementation branch/Draft PR,
+load `guru-reactivate-task` and select its independent
+`delivery_reactivate_existing_implementation` contract. The Skill owns exact
+content/PR review and recovery; its existing typed consumers remain unchanged.
+
 For a normally finished archived task, `guru-reactivate-task` first verifies
 the original TaskId, source, archive Git identity, accepted scope and current
 base. It increments the lifecycle generation and routes to Planning or its

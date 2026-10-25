@@ -16,8 +16,17 @@ Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
 plan, confirmation boundary and execution/recovery contract.
 
-Reactivate owns one exact normally finished Task generation. Use only
-`delivery_reactivate_shared_archive` with its independent closed input schema.
+Reactivate owns one exact normally finished Task generation. Select one closed
+profile from `schemas/public-input-selected-2.0.schema.json`:
+
+- `delivery_reactivate_shared_archive` retains the clean checkout at reviewed
+  base HEAD contract and its original public/semantic schemas and transaction 2.0.
+- `delivery_reactivate_existing_implementation` reuses an exact existing branch
+  and registered checkout containing the reviewed implementation and local
+  differences. Its independent input includes `implementation_pr` (repository
+  and original open Draft PR number). Its semantic schema is
+  `schemas/semantic-existing-implementation-1.0.schema.json`.
+
 Read the original Task scope, exact archive Git history, public Task results and
 live bookkeeping PR. AI judges formal completion, legacy family eligibility,
 reason, current scope and next owner; deterministic facts do not establish a
@@ -38,6 +47,49 @@ incarnation when private receipts are absent. A successor already archived
 returns to its own archive/Continuation review, never a fabricated active result.
 An active successor needing local controls enters original Establish/Ensure/Bind;
 only a current bound session enters Planning. Report its real binding revision.
+The same rule applies without a local receipt: AI rereads the actual successor's
+scope, history, current work and local controls before choosing its route.
+Receipt absence permits no new incarnation; receipt presence proves no current
+semantic gate. An already active successor continues through its original
+owners, rather than acquiring the predecessor again.
+
+For an existing implementation without a successor, read the complete diff and
+local staged/unstaged/untracked files, including actual `.trellis` differences.
+Review current base HEAD separately from implementation HEAD. Select
+`adopt_invocation_checkout` for that exact existing checkout; it can be primary
+or linked. This profile creates no branch or worktree. Caller ownership and
+unresolved resource checks remain with the original C3/C4/C5 owners.
+
+Use `scripts/observe.sh --root <implementation-checkout> --input <input.json>`
+for read-only facts. Its intermediate receipt has `formal_exit=false`; project
+only `result` for this same owner's review. The logical snapshot includes
+repository/checkout, branch/HEAD, index path/OID/mode/stage, tracked/untracked
+bytes, file type and executable mode. Index stat/cache refreshes do not change
+it. It contains no file contents and establishes no semantic pass. Read the
+actual files and Git differences before placing the exact observed
+`implementation_state`, `selected_base_ref` and `reviewed_base_head` in the
+independent semantic result. Acquisition `decision_head` is implementation HEAD.
+
+The original PR must be open and Draft, in the selected repository, with exact
+base branch and implementation head branch/commit. The repo-bound provider only
+reads; this owner never pushes, creates, edits, merges or closes a PR. A mismatch
+stops with the original checkout and resources preserved. Do not stash, reset,
+restage or discard local differences to make recovery pass.
+
+Transaction 3.0 belongs only to this profile. Its single `implementation_state`
+has a stage-specific comparison range. During `public_prepared`, its worktree
+summary excludes only exact file actions derived from that frozen public plan. The full logical index and every other local file remain
+bound. The original read-only public preview validates its own file/directory
+preimages or targets before same-operation recover/resume. This permits an
+applied public write whose caller received pending or lost output, while an
+unrelated business/tool difference still stops. Once the original public writer
+returns applied, overwrite that same value with the complete after-state for
+`public_applied` and `bound`. Output-loss retry checks that after-state, including generated
+Task metadata, before completing the same operation. Changed implementation,
+base or PR facts return to this AI owner for fresh review. Do not ignore all
+`.trellis` paths or reuse an old snapshot as current judgment. Transaction 2.0
+continues only through its original clean-base profile. See
+`trellis/presets/guru-team/MIGRATION-669.md` for matching installation boundaries.
 
 With no successor, review the exact acquisition, active destination and authority.
 Task2 uses the original public reopen operation. Formal schema1 forwards the

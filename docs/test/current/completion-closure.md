@@ -38,6 +38,19 @@
 
 一个代表安装 profile 中完成独立 common-dir 两条原生链，测试 driver 只提供真实 Git/受控 provider 与客观观察；语义 pass 由实际原 AI owner 形成。确定性或 packed 安装结果不能替代 Agent 行为。实际结果唯一见 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md)，其余历史测试仍限原对象。
 
+## T669：已有实现恢复
+
+| Test / requirement → design | 正常输入与原入口 | 观察与边界 |
+| --- | --- | --- |
+| T669-01 / R669-01/02 → D669-01 | 合法前驱、无后继、已有实现 HEAD 不同于 base、原开放 Draft PR；公开 Reactivate | 同 TaskId generation+1 及真实 key/ref/后续 owner；原 clean-base 路径原义不变 |
+| T669-02 / R669-03/05 → D669-02 | staged/unstaged/untracked、文件模式/类型及普通 Git index refresh | 内容保留；逻辑相同不误报，实际变化具体停止；不整体忽略 .trellis |
+| T669-03 / R669-04/06 → D669-03 | 成功输出丢失、同操作重试、receipt丢失后的合法公共后继 | 不重复增代、不创建第二 incarnation；自身合法 metadata 写入不误报原 dirty drift |
+| T669-04 / R669-05 → D669-01/02/03 | 普通 HEAD/branch/仓库/PR/前驱/冲突后继/ownership 失配 | 具体停止并保留现场，无未声明远端写或清理 |
+| T669-05 / R669-07 → D669-04 | canonical/dogfood/installed、reapply/drift/sidecar | matching 独立输入/输出/平台投影一致；不扩完整 Release 矩阵 |
+| T669-06 / R669-07 → D669-04 | 一次代表完整安装、真实 Git/受控 gh、实际 AI 原生公开入口 | 安装与实际恢复分别有证据，不预填当前正式 Delivery Review，不声称真实 GitHub/backend/生产效果 |
+
+实际结果唯一见 [#669 Test](../../requirements-design-test-contributions/669-existing-implementation-reactivation/test.md)。源码/fixture、安装和 Agent 原生行为是不同证据；本表不预填通过。
+
 ## 证据归属
 
 共同因果语义和场景期望以 [canonical causal spec](../../../trellis/presets/guru-team/spec/workflow/causal-completion-semantics.md) 为准。只用正常支持路径和普通状态变化验证，不引入攻击/压力模型。历史 [#383 Test](../../requirements-design-test-contributions/383-causal-completion-semantics/test.md)、[#547 Test](../../requirements-design-test-contributions/547-retain-source-open/test.md)、[#454 D436 Test](../../requirements-design-test-contributions/454-task-lifecycle-d436/test.md)、[#531 Test](../../requirements-design-test-contributions/531-task-delivery-lifecycle/test.md) 保留原样及原适用candidate；workflow fixture不等业务生产效果。
