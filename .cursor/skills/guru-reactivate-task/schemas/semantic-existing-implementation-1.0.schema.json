@@ -1,0 +1,412 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-reactivate-task-semantic-existing-implementation-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "mode",
+    "archived_lifecycle",
+    "route",
+    "reason_refs",
+    "archive_anchor",
+    "implementation_pr"
+  ],
+  "properties": {
+    "profile": {
+      "const": "delivery_reactivate_existing_implementation"
+    },
+    "mode": {
+      "enum": [
+        "workflow",
+        "standalone"
+      ]
+    },
+    "archived_lifecycle": {
+      "$ref": "#/$defs/lifecycle"
+    },
+    "route": {
+      "enum": [
+        "reactivated_to_planning",
+        "session_binding_recovery_required",
+        "resume_reactivation",
+        "reactivate_blocked"
+      ]
+    },
+    "reason_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reason_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_base_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_base_head": {
+      "$ref": "#/$defs/head"
+    },
+    "session_outcome": {
+      "enum": [
+        "session_bound",
+        "explicit_task_mode",
+        "recovery_required"
+      ]
+    },
+    "acquisition": {
+      "$ref": "#/$defs/adopt"
+    },
+    "authority": {
+      "type": "object"
+    },
+    "archive_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "archive_ref",
+        "archive_commit",
+        "original_task_ref",
+        "target_ref"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archive_commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "original_task_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "source_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cli_package_root",
+        "dependency_mode",
+        "expected_candidate"
+      ],
+      "properties": {
+        "cli_package_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependency_mode": {
+          "enum": [
+            "source_locked",
+            "local_candidate"
+          ]
+        },
+        "expected_candidate": {
+          "type": "object"
+        },
+        "guru_source_root": {
+          "type": "string"
+        },
+        "fork_source_root": {
+          "type": "string"
+        }
+      }
+    },
+    "formal_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "root",
+        "key",
+        "task_ref",
+        "original_task_ref",
+        "archive",
+        "active_ref",
+        "projection",
+        "artifacts",
+        "legacy_facts"
+      ],
+      "properties": {
+        "root": {
+          "type": "string"
+        },
+        "key": {
+          "type": "object"
+        },
+        "task_ref": {
+          "type": "string"
+        },
+        "original_task_ref": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "object"
+        },
+        "active_ref": {
+          "type": "string"
+        },
+        "projection": {
+          "type": "object"
+        },
+        "artifacts": {
+          "type": "array"
+        },
+        "legacy_facts": {
+          "type": "array"
+        }
+      }
+    },
+    "implementation_pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_ref",
+        "number"
+      ],
+      "properties": {
+        "repo_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "implementation_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "common_dir",
+        "head",
+        "branch_ref",
+        "index_sha256",
+        "worktree_sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "common_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "branch_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "worktree_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "route": {
+            "const": "reactivate_blocked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "reason_code"
+        ],
+        "not": {
+          "required": [
+            "acquisition"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "route": {
+            "not": {
+              "const": "reactivate_blocked"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "implementation_state",
+          "selected_base_ref",
+          "reviewed_base_head"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "lifecycle_generation"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "common": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "task_ref",
+        "lifecycle_generation",
+        "route",
+        "branch_ref",
+        "decision_head",
+        "task_artifact_expectation",
+        "transaction_id",
+        "result_id"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_ref": {
+          "type": "string",
+          "pattern": "^\\.trellis/tasks/(?!archive/)[^/]+$"
+        },
+        "lifecycle_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "branch_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_head": {
+          "$ref": "#/$defs/head"
+        },
+        "task_artifact_expectation": {
+          "const": "absent"
+        },
+        "transaction_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "adopt": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "invocation_checkout"
+          ],
+          "properties": {
+            "task_id": {},
+            "task_ref": {},
+            "lifecycle_generation": {},
+            "route": {
+              "const": "adopt_invocation_checkout"
+            },
+            "branch_ref": {},
+            "decision_head": {},
+            "task_artifact_expectation": {},
+            "transaction_id": {},
+            "result_id": {},
+            "invocation_checkout": {
+              "type": "string",
+              "pattern": "^/"
+            }
+          }
+        }
+      ]
+    },
+    "provision": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "target_path",
+            "provision_disposition"
+          ],
+          "properties": {
+            "task_id": {},
+            "task_ref": {},
+            "lifecycle_generation": {},
+            "route": {
+              "const": "provision_linked_worktree"
+            },
+            "branch_ref": {},
+            "decision_head": {},
+            "task_artifact_expectation": {},
+            "transaction_id": {},
+            "result_id": {},
+            "target_path": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "provision_disposition": {
+              "enum": [
+                "new_branch",
+                "existing_branch",
+                "existing_checkout"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

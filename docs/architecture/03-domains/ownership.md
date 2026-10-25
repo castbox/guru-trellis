@@ -179,6 +179,12 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 
 先核当前可获取的同 Task 后继；验证匹配则继续实际 generation，不重复 reopen/prepare。不承诺发现其它 clone 的未发布 incarnation。没有后继时，Task2 沿公共 reopen 与 relocation，指定 schema1 沿已核 matching capability 的 formal operation 严格增代一次。真实 applied key/ref 交原环境 owners，再由 Continuation 进入真实新 Delivery 或无空 Delivery 的 Completion validation；不继承旧 gate。人工历史归原 legacy owner，未入 target 的唯一未完 closeout 回原 Finish；无法唯一恢复时返回具体缺口。
 
+对于已存在实现提交和原开放 Draft PR 的恢复，原 Reactivate 提供独立 existing-implementation 输入，不把旧 clean-base profile 改为通用 dirty 准入。AI 分别核准确目标 base、实际实现 HEAD、完整已审核本地内容、PR repository/base/head、前驱及资源责任；只读 observer 提供 Git/gh 事实，摘要只服务当前逻辑内容比较。C3 对准确已审 checkout 承接，public writer 仍唯一增代，C4/C5/Bind 和当前 Delivery gates 保持原职责。现有 raw-index snapshot/rebind consumers 不因本场景更改语义。
+
+逻辑内容比较覆盖 index entries 的 path/OID/mode/stage，以及 tracked/untracked 字节、文件类型和执行位；普通 index 缓存刷新不是内容变化。原操作合法 Task 写入与已审本地差额按精确前后状态区分，不整体忽略 .trellis。当前 HEAD/branch、PR、内容或 ownership 失配时停止并保留现场；输出丢失或合法后继接续不再次增代。恢复不自动提交/推送工具升级差额、不修改原 PR、不关闭 Issue 或清理资源。历史 Completion/Closure 保持历史身份，不能转换为当前 gate。
+
+新增闭合 profile/schema、matching 安装与旧 transaction 语义边界由 [MIGRATION-669](../../../trellis/presets/guru-team/MIGRATION-669.md) 拥有。当前取舍沿 ADR-PORTABLE-SHARED-LIFECYCLE 和 [#669 contribution](../contributions/669-existing-implementation-reactivation.md)；无新 writer、GAP、全链 digest 或授权存储。代表安装的实际 AI 原生样本可以使用真实 Git/受控 provider，只证明其实际层次，不证明真实 GitHub/backend 或生产效果。
+
 原 Closure 独占完整 action_set 和 source disposition，单写 task-local `closeout/closure/<safe-result-id>.json`，仅保留 schema_version、ResultRef、completion_result_id、source、action_set。safe-result-id 仅为 result_id 的 UTF-8 base64url 无 padding 文件名映射。public Closure evidence 关联该 AuthorityRef；原 Closure recovery 与 Finish 是直接 consumers。公共 Completion/scope/source 关系、精确 result/key 和 live required OPEN/CLOSED 状态仍须核验；载体不授予 close 权限，也不断言 terminal。原恢复 profile 只补丢失公共投影且零 provider close，剩余真实 close 回正常 Closure 当前动作边界。Finish 使用原 snapshot 投影逐 Issue 重核，不从 aggregate closed 推导 source_closed。载体随 Task 归档及原 artifact_origin 解析，已有结果不覆盖；旧已完成 archive 不补造载体，未发布必要输入精确阻塞其真实 consumer。
 
 原 Publish 拥有独立闭合的精确 Open PR Draft/Ready recovery profiles。明确 pr_ref 与 source_commit 绑定同 Task/Delivery、Planning、候选和 repo/base/head/owner；source 未入 main 仍可合法，与 candidate head 不同时核真实历史和完整差额。只复用同一个 Open PR并补未完成动作，绝不另建 PR；相同 head/payload 不重复 push/edit，已 Ready 不产生当前 readiness。Draft 不写最终 PublicationFact，新的未审修订仍先退 Draft。当前 Readiness 不适用回原质量 owner。MERGED 沿原 Merge 手动恢复核公共 Publication、真实双亲/actual head/target 后只补 Delivery fact，不重复 merge；Completion 仍判断 actual 差额、CI 和整个 scope。

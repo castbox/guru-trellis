@@ -43,11 +43,49 @@
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
-        "schemas/public-input.schema.json",
-        "schemas/semantic-result.schema.json",
+        "schemas/public-input-selected-2.0.schema.json",
+        "schemas/semantic-selected-2.0.schema.json",
         "schemas/public-output.schema.json"
       ],
       "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    },
+    {
+      "id": "observe-task-reactivation-implementation",
+      "owner": "guru-reactivate-task",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--root",
+          "required": false,
+          "kind": "string",
+          "description": "Repository context.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "Exact shared archived Task key and Git/target anchor.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-existing-implementation-input-1.0.schema.json"
+      ],
+      "validator_id": "implementation_observer",
       "runtime_role": "invoke"
     }
   ]

@@ -71,6 +71,16 @@ Reactivate 先读当前可获取后继。唯一合法后继继续其 generation�
 
 新环境由原 Establish→Ensure→Bind 恢复自己的合法资源，不能清理 A 或另一 Task。再次工作按实际进入新 Delivery 或无 Delivery 的 evidence-refresh，再独立 Completion/Closure/Finish。至少一个独立 clone 原生样本分别证明两条再次完成链；fixture、source 或安装通过不替代它。
 
+## R669：已有实现分支的归档 Task 恢复
+
+**R669-01/02**：合法共享归档尚无后继，而实现已在独立分支及开放 Draft PR 时，由原 Reactivate/acquisition owner 提供独立入口。分别核准确前驱、当前目标 base、实际实现 HEAD、所选 checkout、完整已审本地改动及 PR repository/base/head；不以实现 HEAD 必须等于 base 作为该入口准入，也不取消精确版本和资源校验。
+
+**R669-03/04**：恢复保留原 TaskId/source/Completion/Closure 和提交历史，完整保留 staged、unstaged、untracked 内容及工具升级差额。后继仅由原公共 writer 增代一次；输出丢失及同操作重试继续实际后继，冲突后继停止。现有 Draft PR 不被自动新建、推送、编辑、合并或关闭；恢复不授予资源清理权。
+
+**R669-05/06**：实际 HEAD/branch、仓库/前驱/PR、ownership 或已审内容失配时，具体停止并保留现场。恢复自身合法写入的 Task metadata 必须与原已审内容区分，不能通过忽略整个 .trellis 或覆盖原改动消除失配。当前业务变更仍进入原新 Delivery/Planning/Check/Review owners；历史通过不成为当前通过。
+
+**R669-07**：源码、真实 Git 回归与代表安装后的实际 Agent 原生恢复分别报告。受控 provider 的原生样本限其实际集成层，不证明真实 GitHub/backend 或业务生产效果。原 shared-archive clean-base 入口继续服务当前消费者；新增入口使用独立闭合 profile/schema 和明确迁移，保留旧入口原义。设计：[D669](../../design/current/completion-closure.md#d669已有实现恢复的原-owner-承接)；验证：[T669](../../test/current/completion-closure.md#t669已有实现恢复)。
+
 ## 关系和来源
 
 前序：[生命周期](task-delivery-lifecycle.md)。设计：[`RDT-DES-COMPLETION`](../../design/current/completion-closure.md)。测试：[`RDT-TST-COMPLETION`](../../test/current/completion-closure.md)。[迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) 保留各旧 identity 与替代范围。公共 DTO/profile/exit 的精确规格在 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 各原 owner；本能力正文不复制接口或共同因果规范。

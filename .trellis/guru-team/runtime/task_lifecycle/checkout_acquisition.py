@@ -49,6 +49,7 @@ class CheckoutAcquisitionPlan:
     target_path: Path | None = None
     forbidden_branch_refs: tuple[str, ...] = ()
     task_artifact_expectation: str = "required"
+    existing_implementation_state: dict[str, str] | None = None
 
     def request(self) -> CheckoutRequest:
         return CheckoutRequest(
@@ -61,6 +62,7 @@ class CheckoutAcquisitionPlan:
             expected_head=self.decision_head,
             forbidden_branch_refs=self.forbidden_branch_refs,
             task_artifact_expectation=self.task_artifact_expectation,
+            existing_implementation_state=self.existing_implementation_state,
         )
 
 
@@ -112,6 +114,11 @@ def _validated_plan(plan: CheckoutAcquisitionPlan) -> CheckoutRequest:
             "provision_disposition",
             "Do not attach a provision disposition to the adopt route.",
         )
+    if plan.existing_implementation_state is not None and (
+        plan.task_artifact_expectation != "absent" or plan.expected_status != "active"
+        or (plan.route == "provision_linked_worktree" and plan.provision_disposition != "existing_checkout")
+    ):
+        raise LifecycleContractError("invalid_existing_implementation_plan", "acquisition", "Reuse the exact reviewed existing checkout before Reactivate.")
     return plan.request()
 
 

@@ -43,11 +43,15 @@ def github_json(repo_ref, endpoint):
             raise LifecycleContractError(code, "github.provider", "Restore the selected repository's GitHub fact access and retry.")
     try:
         rows = json.loads(result.stdout)
-        required = {"number", "base", "merge_commit_sha", "merged_at"}
-        if not isinstance(rows, list) or any(not isinstance(row, dict) or not required <= row.keys()
-                or not isinstance(row["base"], dict) or "ref" not in row["base"]
-                or not isinstance(row["base"].get("repo"), dict) or "full_name" not in row["base"]["repo"] for row in rows):
-            raise ValueError("incomplete provider response")
+        if endpoint.startswith("pulls/"):
+            if not isinstance(rows, dict) or not {"number", "state", "draft", "base", "head"} <= rows.keys():
+                raise ValueError("incomplete implementation PR response")
+        else:
+            required = {"number", "base", "merge_commit_sha", "merged_at"}
+            if not isinstance(rows, list) or any(not isinstance(row, dict) or not required <= row.keys()
+                    or not isinstance(row["base"], dict) or "ref" not in row["base"]
+                    or not isinstance(row["base"].get("repo"), dict) or "full_name" not in row["base"]["repo"] for row in rows):
+                raise ValueError("incomplete provider response")
         return rows
     except (ValueError, TypeError) as exc:
         raise LifecycleContractError("github_response_incomplete", "github.response", "Reread complete repository-bound bookkeeping PR facts.") from exc

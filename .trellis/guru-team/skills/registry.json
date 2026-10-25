@@ -962,7 +962,7 @@
       "name": "guru-reactivate-task",
       "package": "packages/guru-reactivate-task",
       "interface": "packages/guru-reactivate-task/interface.json",
-      "interface_schema_id": "guru-team-skill-interface-1.4",
+      "interface_schema_id": "guru-team-skill-interface-1.6",
       "supported_platforms": [
         "shared",
         "claude",

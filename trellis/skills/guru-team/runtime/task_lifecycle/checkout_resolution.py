@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 from .errors import LifecycleContractError
 from .git_facts import (
+    capture_implementation_state,
     RepositoryFacts,
     WorktreeFacts,
     discover_worktree_facts,
@@ -40,6 +41,7 @@ class CheckoutRequest:
     expected_head: str | None = None
     forbidden_branch_refs: tuple[str, ...] = ()
     task_artifact_expectation: TaskArtifactExpectation = "required"
+    existing_implementation_state: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "task_id", normalize_task_id(self.task_id))
@@ -70,6 +72,13 @@ class CheckoutRequest:
                 "expected_status",
                 "Declare the exact task status required by the current owner.",
             )
+        if self.existing_implementation_state is not None and (
+            self.task_artifact_expectation != "absent" or self.expected_status != "active"
+            or self.expected_head != self.existing_implementation_state.get("head")
+            or self.branch_ref != self.existing_implementation_state.get("branch_ref")
+        ):
+            raise LifecycleContractError("invalid_existing_implementation_plan", "checkout_request",
+                                         "Use an exact existing-implementation Reactivate pre-state.")
         if self.task_artifact_expectation not in {"required", "absent"}:
             raise LifecycleContractError(
                 "invalid_task_artifact_expectation",
@@ -154,7 +163,10 @@ def _candidate(
         return CheckoutCandidate(candidate_id, facts, "authority_conflict", artifact_error, (path_ref, request.task_ref))
     if request.expected_head is not None and facts.head != request.expected_head:
         return CheckoutCandidate(candidate_id, facts, "authority_conflict", "head_drift", (path_ref, facts.head or "missing"))
-    if not facts.clean:
+    if request.existing_implementation_state is not None:
+        if capture_implementation_state(facts.path) != request.existing_implementation_state:
+            return CheckoutCandidate(candidate_id, facts, "authority_conflict", "implementation_state_changed", (path_ref,))
+    elif not facts.clean:
         return CheckoutCandidate(candidate_id, facts, "invalid_candidate", "dirty_checkout", (path_ref, *facts.dirty_paths))
     return CheckoutCandidate(candidate_id, facts, "valid", None, ())
 

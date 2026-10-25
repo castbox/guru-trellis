@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质输出前完整读取与写作自检"}
+{"file": ".trellis/spec/workflow/companion-scripts.md", "reason": "确定性脚本/语义AI边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "本批定向验证与分发边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "独立公共profile/schema与最小handoff"}
+{"file": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md", "reason": "原恢复owner与当前入口"}
+{"file": "trellis/skills/guru-team/runtime/task_lifecycle/checkout_acquisition.py", "reason": "唯一acquisition和资源ownership"}
+{"file": "docs/architecture/03-domains/ownership.md", "reason": "ARCH-DOM-060及原shared lifecycle完整职责"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "原整体终态与恢复需求约束"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "唯一完整规划正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求写作与审核基线"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批完整方案骨架与语义"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批执行/验证/Policy/Docs合同"}

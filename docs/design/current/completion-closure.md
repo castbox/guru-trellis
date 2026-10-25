@@ -61,6 +61,16 @@ Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精�
 
 共享 archive 已入 target 历史后，A 的本机 seal、binding 退出与 Cleanup 与 B 的共享准入分离。同一资源的真实责任冲突仍有效，B 不取得 A 的清理权。未进入 target 的唯一未完 closeout 才回原 Finish transaction，无法唯一恢复则报告具体必要输入。版本号、目录、status 或一个 MERGED PR 不代替完整资格。
 
+## D669：已有实现恢复的原 owner 承接
+
+**D669-01 / CON669-ENTRY** 对应 R669-01/02。原 Reactivate 新增独立 existing-implementation profile；旧 clean-base 输入不扩义。公开 input 只选择准确原生命周期、archive anchor 和原 PR；本 owner 的调用期 semantic 输入绑定审核后的 base、实际实现 HEAD、准确 acquisition 和本地内容。Interface 选择独立 schema/aggregate，迁移见 [MIGRATION-669](../../../trellis/presets/guru-team/MIGRATION-669.md)。外部退出保持原真实 key/ref/route，不传审查快照。
+
+**D669-02 / CON669-CONTENT** 对应 R669-03/05。Git facts 提供逻辑 index entries 和 tracked/untracked 内容、类型、执行位；原 C3 在精确 HEAD/branch/注册仓库/任务预期下接受这一已审状态。raw index 的缓存刷新不成为内容漂移；原 capture/rebind consumers 保留原义。observer 只提供 Git/gh 客观事实，AI 仍判断来源、范围和充分性。摘要服务当前比较，不绑定授权或代替语义批准。
+
+**D669-03 / CON669-RECOVERY** 对应 R669-04/06。先发现公共后继，无后继才由原 reopen/formal writer 增代；C4/C5/Bind 保持本机单写与 caller ownership。必要同操作交易将真实 base 与实现 HEAD 分开，合法 Task 写入前后分别比较；旧 transaction2.0 不重解释。输出丢失接续原实际结果，缺私有 receipt 不再创建 incarnation。PR repository/base/head 由 repo-bound gh 只读复核；恢复没有远端 mutation/Cleanup。
+
+**D669-04 / CON669-VALIDATION** 对应 R669-07。一个代表完整安装中，driver 提供真实 Git/public 前驱及受控 provider，实际 AI owner 核全部语义前置并调用 installed 公开入口；安装、恢复、后续正式审核分别记录。完整多平台 Release 矩阵由其独立任务负责。架构完整职责仍由 ARCH-DOM-060/shared lifecycle 拥有，不增加第二 migration owner、allow_dirty policy 或审批账本。
+
 ## 原规格
 
 [Completion](../../../trellis/skills/guru-team/packages/guru-review-task-completion/SKILL.md)、[Closure](../../../trellis/skills/guru-team/packages/guru-complete-task-closure/SKILL.md)、[Finish](../../../trellis/skills/guru-team/packages/guru-finish-task/SKILL.md)、[Cleanup](../../../trellis/skills/guru-team/packages/guru-cleanup-task-resources/SKILL.md)、[Reactivate](../../../trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 拥有完整profile、独立schema/exit/consumer及runtime事实校验。本正文替代该能力的历史拼接，不复制其细节成第二接口。各旧ID、继承条件和窄替代关系见 [traceability](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import subprocess
+import json
+import stat
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -496,6 +498,49 @@ def _worktree_identity(checkout: Path) -> str:
         digest.update(len(payload).to_bytes(8, "big"))
         digest.update(payload)
     return digest.hexdigest()
+
+
+def capture_implementation_state(checkout: Path | str, *, public_write_paths: tuple[str, ...] = ()) -> dict[str, str]:
+    """Logical content for the reviewed existing-implementation Reactivate profile.
+
+    Index cache/stat refreshes are irrelevant. The pending public operation may
+    separately validate its exact file actions; only those working-tree paths
+    are omitted here. The complete logical index remains in the comparison.
+    Keep the older raw-index snapshot unchanged for branch-rebind consumers.
+    """
+    path = Path(checkout).resolve()
+    repository = inspect_repository(path)
+    head = _git(["rev-parse", "--verify", "HEAD^{commit}"], cwd=path).stdout.strip()
+    branch = _git(["symbolic-ref", "-q", "HEAD"], cwd=path, check=False)
+    if branch.returncode:
+        raise LifecycleContractError("detached_checkout", "checkout", "Select the exact branch-bound implementation checkout.")
+    entries = sorted(row for row in _git_bytes(path, ["ls-files", "--stage", "-z"]).split(b"\0") if row)
+    index = sha256(b"\0".join(entries)).hexdigest()
+    names = set(row for row in _git_bytes(path, ["ls-files", "-z", "--cached", "--others", "--exclude-standard"]).split(b"\0") if row)
+    files = []
+    public_files = set(public_write_paths)
+    for raw_name in sorted(names):
+        name = raw_name.decode("utf-8", errors="surrogateescape")
+        if name in public_files:
+            continue
+        item = path / name
+        try:
+            mode = item.lstat().st_mode
+        except FileNotFoundError:
+            files.append([name, "missing", 0, ""])
+            continue
+        if stat.S_ISLNK(mode):
+            kind, payload = "symlink", item.readlink().as_posix().encode("utf-8", errors="surrogateescape")
+        elif stat.S_ISREG(mode):
+            kind, payload = "file", item.read_bytes()
+        elif stat.S_ISDIR(mode):
+            kind, payload = "directory", b""
+        else:
+            raise LifecycleContractError("git_fact_unavailable", name, "Use readable implementation files.")
+        files.append([name, kind, mode & 0o111 if kind == "file" else 0, sha256(payload).hexdigest()])
+    worktree = sha256(json.dumps(files, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
+    return {"path": str(path), "common_dir": str(repository.common_dir), "head": head,
+            "branch_ref": branch.stdout.strip(), "index_sha256": index, "worktree_sha256": worktree}
 
 
 def capture_checkout_state(checkout: Path | str) -> CheckoutStateSnapshot:
