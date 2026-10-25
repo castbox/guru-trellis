@@ -36,7 +36,9 @@ def write_json(path: Path, value: object) -> None:
 
 def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
           seed_bodies: dict[str, str] | None = None,
-          range_authority_body: str | None = None) -> None:
+          range_authority_body: str | None = None,
+          fixture_files: dict[str, str] | None = None,
+          candidate_files: dict[str, str] | None = None) -> None:
     fixture = fixture.resolve()
     package = package.resolve()
     public = json.loads(public_input_path(request).read_text(encoding="utf-8"))
@@ -156,6 +158,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
             "    def test_outside(self):\n"
             "        for value in (1, 5): self.assertFalse(contains(value, 2, 4))\n"
         )
+    files.update(fixture_files or {})
     # Create actual installed public Task/Delivery state before recording any gate.
     from adapters.eval.architecture_authoring import stage_delivery_identity
     from runtime.delivery_projection.adapter import DeliveryProjection
@@ -175,7 +178,10 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
             target = fixture / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(files[relative], encoding='utf-8')
-        run_git(fixture, 'add', '--', *baseline_paths)
+        # Installed tooling is part of the existing fixture environment. Commit
+        # it with the business baseline so the Delivery range contains only its
+        # actual implementation/planning changes.
+        run_git(fixture, 'add', '.')
         run_git(fixture, 'commit', '-qm', 'stage existing integer range business baseline')
     scope_content = seed_bodies['task-prd.md'] if seed_bodies is not None else files[f"{legacy_task_ref}/prd.md"]
     directory = stage_delivery_identity(fixture, public, scope_content=scope_content, scope_anchor="R1")
@@ -238,6 +244,10 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
             tests.write_text(tests.read_text().replace("from interval import contains\n", "from interval import contains\nfrom range_test_support import assert_contains\n").replace("self.assertTrue(contains(2, 2, 2))", "assert_contains(self, 2, 2, 2)"), encoding="utf-8")
         else:
             tests.write_text(tests.read_text().replace("self.assertTrue(contains(4, 2, 4))", "self.assertFalse(contains(4, 2, 4))"), encoding="utf-8")
+    for relative, content in (candidate_files or {}).items():
+        target = fixture / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
     validation_argv = [sys.executable, "-B", "-m", "unittest", "-v", "test_interval"]
     if test_layer:
         validation_argv = [sys.executable, "-B", "-m", "unittest", "-v", *test_modules]
@@ -312,14 +322,14 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         "requirement_authority": "docs/range.md", "behavior_authority": f"{planning_ref}/design.md",
     }
     projection = DeliveryProjection(fixture, task_ref)
-    candidate_paths = sorted({*files, 'interval.py'})
+    candidate_paths = sorted({*files, *(candidate_files or {}), 'interval.py'})
     projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
         head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'],
             development_base=seed_base, observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
     write_json(evidence / 'check-public-input.json', public)
 
     required = sorted([
-        *files, *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
+        *files, *(candidate_files or {}), *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
         ARCHITECTURE_INPUT, "docs/phase2-evidence/check-public-input.json",
         *(f".trellis/guru-team/skills/packages/{ARCHITECTURE}/{path}" for path in ARCHITECTURE_READS),
         *(f".trellis/guru-team/skills/packages/{skill}/{path}" for skill in ALL_QUALIFIERS for path in (

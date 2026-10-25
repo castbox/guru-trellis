@@ -1,7 +1,10 @@
 # Task 与 Delivery 生命周期
 
-本轮完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/requirements/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
-较早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
+本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
+
+并行 #663 晋升的完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/requirements/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
+
+更早晋升的完整前驱：Git `319202beab79c7666ecdb855291bf117e43d407e:docs/requirements/current/task-delivery-lifecycle.md`。贡献与窄替代边界见 [#657 追踪](../../requirements-design-test-contributions/657-workflow-continuation-conflicts/traceability.md)。
 知识单元：`RDT-REQ-LIFECYCLE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由完整Git revision与locator定位；较早历史完整定义为 immutable Git `39169628f5f79cb48673eae96a36670e73f4dbbb:docs/requirements/current/task-delivery-lifecycle.md`（RDT `.113`），更早迁移来源和稳定身份保留。
 
 ## 身份、整体责任与入口
@@ -110,6 +113,14 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 ## 关系和来源边界
 
 设计：[`RDT-DES-LIFECYCLE`](../../design/current/task-delivery-lifecycle.md)。测试：[`RDT-TST-LIFECYCLE`](../../test/current/task-delivery-lifecycle.md)。知识 owner/适用性：[`RDT-REQ-KNOWLEDGE`](knowledge-maintenance.md)。来源及精确替代范围见 [迁移追踪](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md)。公共 profile/DTO/exit 的完整规格仍由 [canonical workflow](../../../trellis/workflows/guru-team/workflow.md) 和对应 [Skill packages](../../../trellis/skills/guru-team/packages) 独占；本单元拥有上述能力行为，不复制 schema。
+
+## R649：阶段限制与当前成果
+
+**R649-01 / BEH649-LIMIT**：存在真实阶段限制时，原 Author 在现有 Planning 内说明受限对象、原因、解除条件、适用阶段及后继责任。仅限制其实际依赖的能力或 operation；无变化时不制造清单、贡献或额外验证。Policy 拥有切片交付责任，Docs Plan 定位需要维护的当前定义、指南及派生说明；不建立第二套限制台账。
+
+**R649-02 / BEH649-CONVERGE**：后继工作满足解除条件时，实施 owner 更新实际行为和适用断言，原 RDT／Architecture owner 在各自边界维护完整当前定义、指南及派生说明。当前正文不再继续指示已解除的限制；旧阶段观察保留来源和截止点，不改写成当时已完成。某能力未交付、未启用或证据缺失，不能泛化为同范围其它能力均不可用。
+
+**R649-03 / BEH649-CHECK**：原 Check 从有效合同确定正确预期，检查实际行为、当前说明、断言及受影响未改 consumer 是否一致。测试仍保护旧限制时，即使命令通过也须指出缺陷。Delivery Review 分别判断本切片适用成果维度；维度及整体缺口的完整定义见 [Completion](completion-closure.md#r649阶段成果维度与缺口分类)。任何局部结果均不替代整体 accepted scope。
 
 ## 正常流程合同连续性
 

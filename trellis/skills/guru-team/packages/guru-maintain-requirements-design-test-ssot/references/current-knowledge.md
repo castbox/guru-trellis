@@ -129,6 +129,38 @@ contract adds no separate review owner. Implementation, public contracts and
 current documents ship in the same final PR; final owners never treat a
 candidate-only result as completed promotion.
 
+## Stage limits and result observations
+
+When an implementation satisfies a temporary limit's actual release condition,
+the original maintenance owner compares the current complete unit, usage guide,
+derived descriptions and applicable assertions with that implementation. Replace
+obsolete current instructions within this owner's normal write boundary; the
+implementation owner updates behavior and tests. Preserve the historical
+limit, its source and observation cutoff. Scope each conclusion to the verified
+capability, object and environment. Do not turn a partial implementation into
+whole-task completion or a local limit into a version-wide freeze. No actual
+change means no empty contribution or additional validation obligation.
+
+Result prose states the candidate or observation cutoff, actual checks and
+remaining boundaries. A statement that something was unverified applies to
+that observation. Later Check, Review, Delivery and Completion facts come from
+their original public results and Git/PR references. A current entry points to
+those results accurately; it does not reproduce a second completion ledger.
+Keep raw commands, old failures and then-unknown facts intact. Update only
+current descriptions whose obsolescence is supported by actual later facts;
+other unverified items stay unverified. Do not require reviewed prose to record
+its own final pass, final HEAD or post-archive result.
+
+If explanatory text genuinely needs revision, its original writer makes that
+change at a lawful content boundary. Apply Candidate Applicability And Coverage
+to the changed files and consumers; an explanatory edit does not exempt review.
+Shared-current writes still require candidate Check, original final_integration,
+actual candidate rebinding, final Check and complete committed Review. Reuse
+applicable engineering facts without repeating completed promotion, merge or
+unaffected validation. Closure/Finish own terminal actions and bookkeeping;
+they do not acquire shared-current writing authority or create an empty Delivery
+or extra commit to chase their own final result.
+
 ## Technical baseline and project projection
 
 A reusable technical-stack baseline owns shared stack choices, constraints

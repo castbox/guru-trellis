@@ -1,0 +1,12 @@
+{
+  "profile": "selected_route",
+  "mode": "workflow",
+  "selector_exit": "task_free",
+  "continuation_id": "stage-local-gate",
+  "selection_origin": "automatic",
+  "request_summary": "Restore display-title changes without qualification while preserving qualification for selecting a different active target, according to the existing catalog contract. Limit this request to the local implementation and its tests.",
+  "target_paths": [
+    "catalog.py",
+    "test_catalog.py"
+  ]
+}

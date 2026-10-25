@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "判断测试有效性、定向验证和矩阵责任"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "候选覆盖适用性、原路由及授权边界"}
+{"file": ".trellis/spec/workflow/causal-completion-semantics.md", "reason": "缺口分类、证据层次与真实完成边界"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "核原整体与 Delivery accepted scope 及最终门禁"}
+{"file": "docs/requirements/current/completion-closure.md", "reason": "核整体 Completion 与 Closure/Finish 独立责任"}
+{"file": "docs/test/current/knowledge-maintenance.md", "reason": "承接 #648 自身行为与 #638 晋升验证而不扩矩阵"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "质量判断遵守当前五原则及最小必要复杂度"}
+{"file": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md", "reason": "原 Check 九维与 candidate/final 的阶段方法"}
+{"file": "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md", "reason": "原交付范围、发布载荷和阶段状态语义"}

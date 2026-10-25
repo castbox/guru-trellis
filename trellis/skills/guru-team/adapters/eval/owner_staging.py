@@ -70,7 +70,14 @@ def stage_owner_execution(
         if request.get("native_authoring_flow") == "standard_intake":
             from adapters.eval.intake_authoring import stage_intake_facts
             return stage_intake_facts(request, execution_root, fixture)
-        if str(request.get("case_id", "")).startswith("native-implementation-") or skill_id in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
+        if request.get("case_id") in {"native-stage-c01", "native-stage-c02", "native-stage-c03", "native-stage-c04"}:
+            from adapters.eval.stage_result_authoring import stage_check
+            package = fixture / ".trellis/guru-team/skills/packages" / skill_id
+            stage_check(request, fixture, package, runtime_target.parents[4])
+            return package, fixture / ".trellis/guru-team/scripts/bash/run-skill-command.sh", {
+                "TRELLIS_CONTEXT_ID": os.environ.get("TRELLIS_CONTEXT_ID") or "architecture-delivery-eval",
+            }
+        if str(request.get("case_id", "")).startswith("native-stage-") or str(request.get("case_id", "")).startswith("native-implementation-") or skill_id in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
             from adapters.eval.native_adapter import additional_authoring_module
             package = fixture / ".trellis/guru-team/skills/packages" / skill_id
             if package_tree_sha256(package) != package_tree_sha256(request_package):

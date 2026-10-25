@@ -4,6 +4,7 @@ import json
 import hashlib
 import ast
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -47,6 +48,33 @@ class ImplementationAuthoringTests(unittest.TestCase):
         self.assertTrue(error['field_path'].startswith('owner_result'),error)
         self.assertEqual(repository_file_inventory(fixture),before)
         self.assertTrue(relay.terminal)
+        stop = threading.Event()
+        request_fifo = fixture.parent / 'terminal-request'
+        response_fifo = fixture.parent / 'terminal-response'
+        thread = native_adapter.start_qualification_runtime_boundary(
+            request_fifo, response_fifo, stop, fixture,
+            fixture / '.trellis/guru-team/skills/packages' / implementation_authoring.RDT,
+            {}, {}, implementation_commands=relay)
+        client = ('import json,sys; from pathlib import Path; '
+            'payload=sys.stdin.read(); '
+            'Path(sys.argv[1]).write_text(payload); '
+            'print(Path(sys.argv[2]).read_text())')
+        marker = fixture / 'should-not-execute.txt'
+        duplicate = {'skill_id':'implementation-authoring','command':'run','arguments':[],
+            'stdin':json.dumps({'argv':[sys.executable,'-c',
+                'from pathlib import Path; Path("should-not-execute.txt").write_text("unexpected")']})}
+        try:
+            for _ in range(2):
+                response = subprocess.run([sys.executable, '-c', client,
+                    str(request_fifo), str(response_fifo)], input=json.dumps(duplicate),
+                    capture_output=True, text=True, check=True, timeout=5)
+                rejected = json.loads(response.stdout)
+                self.assertEqual(rejected['returncode'], 2)
+                self.assertIn('terminal original wrapper', rejected['stderr'])
+                self.assertFalse(marker.exists())
+        finally:
+            stop.set()
+            thread.join(timeout=2)
         required = facts['required_reads']
         prefix = '.trellis/guru-team/skills/packages/' + implementation_authoring.RDT + '/'
         for relative in ('SKILL.md','interface.json','commands.json','references/contract.md',
@@ -308,18 +336,54 @@ class ImplementationAuthoringTests(unittest.TestCase):
                     'import sys; from pathlib import Path; Path(sys.argv[1]).write_text(sys.argv[2])',
                     input_locator,json.dumps(authored)]})})
             self.assertEqual(json.loads(written['stdout'])['returncode'], 0)
-            result = relay.forward({'skill_id':'guru-check-task','command':'record-phase2-check',
+            from adapters.eval.stage_result_authoring import ImplementationCommands as StageCommands
+            stage_relay = StageCommands(fixture, dict(os.environ),
+                fixture.parent / 'stage-check-recorder-receipts.json',
+                facts_relative=implementation_authoring.FACTS)
+            result = stage_relay.forward({'skill_id':'guru-check-task','command':'record-phase2-check',
                 'arguments':['--root',str(fixture),'--task',facts['task_ref'],'--input',input_locator],
                 'stdin':''})
             self.assertEqual(result['returncode'],0,result['stderr'] or result['stdout'])
+            self.assertFalse((fixture / input_locator).exists())
+            self.assertIn(input_locator, stage_relay.consumed_paths)
             receipt = json.loads(result['stdout'])
             self.assertFalse(receipt['formal_exit'])
             checkpoint = Path(receipt['result']['artifact_path']).relative_to(fixture.resolve()).as_posix()
             self.assertFalse(receipt['result']['dry_run'])
-            cleaned = relay.forward({'skill_id':'implementation-authoring','command':'run','arguments':[],
-                'stdin':json.dumps({'argv':[sys.executable,'-B','-c',
-                    'import sys; from pathlib import Path; Path(sys.argv[1]).unlink()',input_locator]})})
-            self.assertEqual(json.loads(cleaned['stdout'])['returncode'], 0)
+            from adapters.eval.stage_result_authoring import additional_mutated_paths
+            self.assertIn(checkpoint, additional_mutated_paths(fixture,
+                {**facts, 'continuous_chain': True}))
+            source_file = fixture / 'interval.py'
+            source_before = source_file.read_text()
+            source_revision = source_before + '\n# Ordinary source revision after capture.\n'
+            def source_write(content):
+                changed = stage_relay.forward({'skill_id':'implementation-authoring','command':'run',
+                    'arguments':[], 'stdin':json.dumps({'argv':[sys.executable,'-B','-c',
+                        'import sys; from pathlib import Path; Path("interval.py").write_text(sys.argv[1])',
+                        content]})})
+                self.assertEqual(json.loads(changed['stdout'])['returncode'], 0)
+            source_write(source_revision)
+            stale_index = len(stage_relay.receipts)
+            stale = stage_relay.forward({'skill_id':'guru-check-task','command':'check-phase2-check',
+                'arguments':['--task',facts['task_ref']], 'stdin':''})
+            self.assertEqual(stale['returncode'], 3)
+            self.assertEqual(json.loads(stale['stdout'])['code'], 'stale_identity')
+            self.assertFalse(stage_relay.terminal)
+            diagnostic = stage_relay.forward({'skill_id':'implementation-authoring','command':'run',
+                'arguments':[], 'stdin':json.dumps({'argv':[sys.executable,'-B','-c',
+                    'from pathlib import Path; print(Path("interval.py").read_text(), end="")']})})
+            self.assertEqual(json.loads(diagnostic['stdout'])['stdout'], source_revision)
+            source_write(source_before)
+            (fixture / input_locator).write_text(json.dumps(authored))
+            refreshed = stage_relay.forward({'skill_id':'guru-check-task','command':'record-phase2-check',
+                'arguments':['--task',facts['task_ref'],'--input',input_locator], 'stdin':''})
+            self.assertEqual(refreshed['returncode'], 0, refreshed['stdout'])
+            checked = stage_relay.forward({'skill_id':'guru-check-task','command':'check-phase2-check',
+                'arguments':['--task',facts['task_ref']], 'stdin':''})
+            self.assertEqual(checked['returncode'], 0, checked['stdout'])
+            self.assertEqual(stage_relay.receipts[stale_index]['response'], stale)
+            self.assertFalse(stage_relay.terminal)
+            self.assertFalse((fixture / input_locator).exists())
             after = repository_file_inventory(fixture)
             changed = {path for path in before.keys() | after.keys() if before.get(path) != after.get(path)}
             self.assertEqual(changed,{checkpoint})
@@ -426,6 +490,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
                     values[9].set();values[8].join(timeout=2)
 
     def test_original_delivery_parse_error_can_be_corrected_through_same_fifo(self):
+        import pty
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
             fixture, source = stage_clean_installed_owner_repo(root / 'execution',
@@ -451,6 +516,22 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 return subprocess.run([*argv, '--skill-id', skill, '--command=' + command, '--', *arguments],
                     input='', capture_output=True, text=True, check=False, timeout=20)
             try:
+                master, slave = pty.openpty()
+                try:
+                    missing_stdin = subprocess.run([*argv, '--skill-id', 'implementation-authoring',
+                        '--command', 'run', '--stdin'], stdin=slave, capture_output=True,
+                        text=True, check=False, timeout=5)
+                    self.assertEqual(missing_stdin.returncode, 2)
+                    self.assertIn('no request was sent', missing_stdin.stderr)
+                    self.assertEqual(relay.receipts, [])
+                    self.assertFalse(relay.terminal)
+                    top_help = subprocess.run([*argv, '--skill-id', 'delivery-api',
+                        '--command=--help'], stdin=slave, capture_output=True,
+                        text=True, check=False, timeout=20)
+                    self.assertEqual(top_help.returncode, 0, top_help.stderr)
+                finally:
+                    os.close(master)
+                    os.close(slave)
                 bad = call('delivery-api', 'apply', ['apply', '--input', '{}'])
                 self.assertEqual(bad.returncode, 2)
                 self.assertIn('unrecognized arguments: apply', bad.stderr)
@@ -460,8 +541,6 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 self.assertEqual(missing.returncode, 2)
                 self.assertIn('delivery.py apply: error:', missing.stderr)
                 self.assertFalse(relay.terminal)
-                top_help = call('delivery-api', '--help')
-                self.assertEqual(top_help.returncode, 0, top_help.stderr)
                 help_result = call('delivery-api', 'apply', ['--help'])
                 self.assertEqual(help_result.returncode, 0, help_result.stderr)
                 self.assertIn('--input INPUT', help_result.stdout)
@@ -477,13 +556,12 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 self.assertEqual(DeliveryProjection(fixture,facts['task_ref']).resolve(facts['delivery_key'])['phase'], 'planning')
                 wrapper_error = call(PACKAGE.name, 'invoke')
                 self.assertNotEqual(wrapper_error.returncode, 0)
-                thread.join(timeout=2)
                 self.assertTrue(relay.terminal)
-                self.assertFalse(thread.is_alive())
+                self.assertTrue(thread.is_alive())
                 rows = json.loads(receipts.read_text())
-                self.assertEqual(rows[0]['request']['arguments'], ['apply', '--input', '{}'])
-                self.assertEqual(rows[0]['response']['stderr'], bad.stderr)
-                self.assertEqual([row['response']['returncode'] for row in rows[:6]], [2,2,0,0,0,0])
+                self.assertEqual(rows[1]['request']['arguments'], ['apply', '--input', '{}'])
+                self.assertEqual(rows[1]['response']['stderr'], bad.stderr)
+                self.assertEqual([row['response']['returncode'] for row in rows[:6]], [0,2,2,0,0,0])
                 self.assertEqual(len(json.loads(trace.read_text())['events']), len(rows))
                 execution_relay = implementation_authoring.ImplementationCommands(fixture, dict(os.environ), root / 'execution-error.json')
                 execution_error = execution_relay.forward({'skill_id':'delivery-api','command':'apply',
@@ -582,6 +660,22 @@ class ImplementationAuthoringTests(unittest.TestCase):
                         'status':'passed','summary':'Objective C5 and original wrapper transport only.'}})],'stdin':''})
             self.assertEqual(authored['returncode'],0,authored['stderr'])
             self.assertEqual(json.loads(authored['stdout']),author_output)
+            from adapters.eval import stage_result_authoring
+            stage_relay=stage_result_authoring.ImplementationCommands(fixture,dict(os.environ),
+                fixture.parent/'author-consumption-receipts.json',
+                facts_relative=implementation_authoring.FACTS)
+            transient=fixture/'.trellis/.runtime/guru-team/evals/author-owner.json'
+            transient.parent.mkdir(parents=True,exist_ok=True)
+            transient.write_text(json.dumps({'public_input':author_public,'output':author_output,
+                'ai_review_gate':{'status':'passed','summary':'Objective file consumption transport only.'}}))
+            facts_before = (fixture / implementation_authoring.FACTS).read_bytes()
+            consumed=stage_relay.forward({'skill_id':'guru-author-task-plan','command':'invoke',
+                'arguments':['--input',json.dumps(author_public),'--owner-result',str(transient)],'stdin':''})
+            self.assertEqual(consumed['returncode'],0,consumed['stderr'])
+            self.assertEqual(json.loads(consumed['stdout']),author_output)
+            self.assertFalse(transient.exists())
+            self.assertIn(transient.relative_to(fixture).as_posix(), stage_relay.consumed_paths)
+            self.assertEqual((fixture / implementation_authoring.FACTS).read_bytes(), facts_before)
             self.assertEqual(facts['task_checkout']['topology'],'linked')
             with self.assertRaisesRegex(ValueError,'fresh independent'):
                 relay.forward({'skill_id':'guru-maintain-architecture-baseline','command':'invoke',
@@ -649,6 +743,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 'owner_result':owner}),capture_output=True,text=True)
             Path(sys.argv[sys.argv.index('--output-last-message')+1]).write_text(result.stdout)
             sys.stdout.write(result.stdout);sys.stderr.write(result.stderr)
+            print('native diagnostic transport only', file=sys.stderr)
             raise SystemExit(result.returncode)
             '''))
         package=fixture/'.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline'
@@ -666,16 +761,42 @@ class ImplementationAuthoringTests(unittest.TestCase):
             'owner_repository':str(fixture),'private_root':str(private),'request_sha256':'a'*64}
         callback=native_adapter.implementation_reviewer(protocol,commands,
             [sys.executable,str(worker),'--ephemeral','--output-last-message',str(root/'unused'),'overall'],dict(os.environ))
+        shutil.rmtree(repository/'.trellis/tasks/implementation-evidence')
+        with self.assertRaisesRegex(ValueError, 'ordered reads'):
+            callback({'public_input':public})
+        self.assertFalse((model/'architecture-worker-01').exists())
+        authorities = ['docs/architecture/00-foundation/design-constitution.md',
+            'docs/architecture/README.md', 'docs/architecture/06-governance/change-contract.md']
+        with self.assertRaisesRegex(ValueError, 'in that order'):
+            callback({'public_input':public,'reads':[authorities[1],authorities[0],authorities[2]]})
+        with self.assertRaisesRegex(ValueError, 'exclude Task PRD'):
+            callback({'public_input':public,'reads':[*authorities,facts['task_ref']+'/prd.md']})
+        self.assertFalse((model/'architecture-worker-01').exists())
         result=callback({'public_input':public,'reads':[
             'docs/architecture/00-foundation/design-constitution.md','docs/architecture/README.md',
             'docs/architecture/06-governance/change-contract.md',facts['planning_root']+'/design.md',
             'interval.py','range_filter.py','docs/range.md']})
         self.assertEqual(result['returncode'],0,result['stderr'])
         self.assertEqual(json.loads(result['stdout'])['exit_id'],'baseline_current')
+        self.assertEqual(result['stderr'], '')
         execution=json.loads((private/'implementation-architecture-executions.json').read_text())[0]
+        self.assertIn('native diagnostic transport only', execution['stderr'])
         trace=json.loads(Path(execution['trace_path']).read_text())
         self.assertEqual(sum(event['kind']=='invoke' for event in trace['events']),1)
         self.assertEqual((model/'native-context.txt').read_text(),'Overall implementation context.')
+        # A normal schema mistake must retain the original wrapper diagnostic
+        # for the next invocation, without turning the failure into a result.
+        invalid = dict(public, schema_version='3.0')
+        failed=callback({'public_input':invalid,'reads':[
+            'docs/architecture/00-foundation/design-constitution.md','docs/architecture/README.md',
+            'docs/architecture/06-governance/change-contract.md',facts['planning_root']+'/design.md',
+            'interval.py','range_filter.py','docs/range.md']})
+        self.assertEqual(failed['returncode'],2)
+        self.assertEqual(failed['stdout'],'')
+        self.assertIn('original Architecture wrapper failed:',failed['stderr'])
+        self.assertIn('schema_mismatch',failed['stderr'])
+        execution=json.loads((private/'implementation-architecture-executions.json').read_text())[-1]
+        self.assertIn(execution['stdout'].strip(),failed['stderr'])
 
     def rdt_terminal_protocol(self, root, fixture, facts, *, revision_code='design_revision'):
         # Only deterministic transport is tested. These owner fields never

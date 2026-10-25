@@ -191,6 +191,45 @@ owner/condition; they do not make a valid independent slice circular.
 Diagnosis or mitigation with an unknown cause can reach `ready` when its own
 slice requirements are met. Keep Refs-only and the existing public I/O.
 
+## Stage facts in this slice and payload
+
+Before readiness, express each actually applicable dimension separately in the
+existing dimensions, reasons/evidence and exact payload: contract authority,
+source implementation, artifact deployment/entry reachability, initialization
+or enablement, consumer adoption, and original-request end-to-end acceptance.
+Give the concrete object, environment and basis; explain non-applicability.
+These are prose responsibilities, not new fields or a mechanical checklist.
+Contract merge does not prove source implementation; source and deployment do
+not prove enablement, adoption or end-to-end acceptance. If the capability is not
+enabled, retain established contract, source and deployment facts and state the
+capability's actual inactive state. Missing switch evidence blocks only the
+operations and claims that require that switch, not unrelated delivered work.
+Consume the original qualification's constraint basis and operation scope.
+Check the exact final payload against these facts before returning `ready`.
+The `pr_payload_truthfulness` judgment checks the actual status statements in
+`pr_payload`, not only an evidence reference or the fact that tests passed.
+Report an applicable established local artifact or entry observation even when
+remote deployment remains unverified; distinguish their actual environments.
+Name the established artifact or reachable entry separately from the capability's
+enablement state. Trace a switch condition from its original policy or qualification
+through the actual operation entry points and unchanged consumers. For the
+operations contrasted by that evidence, state which transition still requires
+the missing evidence and which existing operations remain available under their
+current configuration. Carry both conclusions into the review and exact payload,
+even when the switch is unrelated to the slice's main implementation. Preserve
+their existing status without claiming to have implemented those operations.
+A general statement that the switch does not affect the main feature, or a list
+of unverified environments, does not express that operation boundary. Revise an incomplete payload
+inside this owner before invoking the original readiness wrapper.
+
+Compare current descriptions and assertions with actual released limits. Keep
+partial progress distinct from remaining accepted scope. Read Stage limits and
+result observations in
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Later formal results are referenced from their
+original public results and Git/PR facts, without chasing this prose's own final
+pass or HEAD. A real file revision retains normal affected-coverage review.
+
 ## Route Invariants
 
 - `ready`: all dimensions and conclusions pass, no open finding or proposal,

@@ -765,9 +765,9 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
     intake_flow = request.get("native_authoring_flow") == "standard_intake"
     public_assets = intake_projection_assets(interface) if intake_flow else public_projection_assets(interface)
     if request.get("native_execution_mode") == "semantic_authoring" and not intake_flow:
-        if str(request.get("case_id", "")).startswith("native-implementation-") or request["skill_id"] in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
-            from adapters.eval.native_adapter import additional_authoring_module
-            module = additional_authoring_module(request["skill_id"], request.get("case_id"))
+        from adapters.eval.native_adapter import additional_authoring_module
+        module = additional_authoring_module(request["skill_id"], request.get("case_id"))
+        if module is not None:
             paths = module.public_reads(canonical_root) if hasattr(module, "public_reads") else module.PUBLIC_READS
             public_assets.update(Path(path) for path in paths)
         else:
@@ -778,7 +778,7 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
 
             public = json.loads(public_input_path(request).read_text())
             public_assets.update(path.relative_to(canonical_root) for path in public_contract_reads(canonical_root, public))
-        elif not str(request.get("case_id", "")).startswith("native-implementation-") and request["skill_id"] not in {"guru-author-task-plan", "guru-execute-task-free-change", "guru-review-branch"}:
+        elif module is None:
             public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
     public_assets = schema_projection_closure(canonical_root, public_assets)
     for relative in sorted(public_assets, key=lambda item: item.as_posix()):

@@ -76,6 +76,28 @@ only those edited paths, summarized check results, and unverified boundaries
 needed by the workflow completion response; commands, review narrative, and
 complete execution evidence remain private.
 
+The completion response is bounded to actual edited paths, local targeted checks
+and explicit unverified boundaries. It does not claim artifact deployment,
+capability enablement, consumer adoption or original-request end-to-end acceptance.
+When changing status/gate logic, consume the original qualification's protected
+object, invariant, minimum migration and operation applicability. Missing switch
+evidence restricts only the transition or claim that needs it; do not generalize
+one migration gate into all interfaces or all delivery being unavailable. Retain
+independently established contract, source and deployment facts as such, while
+keeping this result's own claim at the local-edit layer.
+
+For those status/gate changes, identify the supported entry points in the
+selected targets that dispatch the affected operation, then trace their actual
+callers, argument parsing, dispatch and outer guards. Do not select only the
+application helper because existing tests call it. A correct helper does not
+establish that a CLI or other supported entry permits the same call. Before
+declaring the local edit complete, check the requested availability through the
+affected supported entries after writing, and check that the qualified
+transition still requires its evidence. If current tests reach only a lower
+function, use the minimum actual entry checks needed by the request and source.
+Keep unchanged consumers in this review; do not manufacture a full state matrix
+or an obligation for changes that do not affect status/gate behavior.
+
 `reselect_mode` and `explicit_choice_required` are post-write routes. Each
 requires `evolution_evidence` for a real partial edit: actual edited paths, the
 new scope/risk fact, `stop_after_detection=true`, remaining target writes not

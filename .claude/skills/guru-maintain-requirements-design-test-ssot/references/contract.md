@@ -69,6 +69,13 @@ retains its own live expected-current and subtraction/traceability checks.
   the original incomplete/revision/blocked exit. Never infer that an
   unmigrated object is complete because its navigation resolves.
 
+Apply current-knowledge.md's Stage limits and result observations contract
+within these same profiles. On actual release of a limit, maintain affected
+complete current units, guides and derived descriptions; coordinate assertion
+updates with implementation. Review result cutoffs and original formal-result
+references before returning the current route. Neither a historical failure
+nor a later terminal result is rewritten into a different observation.
+
 Only actual completed promotion returns `ssot_current` as an updated authority;
 `candidate_ready` is not a promotion result. The owner writes and reads back
 actual files before invoking the validator. There is no automatic document

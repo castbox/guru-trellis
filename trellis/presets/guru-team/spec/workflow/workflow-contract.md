@@ -707,6 +707,12 @@ Every planning cycle chooses one Docs SSOT strategy:
 `no_docs_update_needed`. Phase 2 executes that decision; Branch Review verifies
 the final reconciliation but must not perform the first merge.
 
+Stage restrictions and their release belong to the original Author and
+maintenance Skill methods. The RDT `references/current-knowledge.md` owns current
+definition and result-cutoff maintenance; Delivery Review and Completion own
+their stage-result and gap judgments. Closure and Finish retain their terminal
+responsibilities. This section only locates those methods.
+
 Delivery Review owns each slice's Refs-only PR payload, even for an Issue-backed
 Delivery to the default branch. Publish and Merge do not close the source
 Issue. Completion owns the whole accepted-scope judgment; only its `completed`

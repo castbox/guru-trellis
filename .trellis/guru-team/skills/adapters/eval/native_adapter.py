@@ -73,6 +73,9 @@ def record_producer_error(transcript: Path, diagnostic: str) -> None:
 
 def additional_authoring_module(skill_id: str, case_id: str | None = None):
     """Select only the existing owners with fact-only native eval transports."""
+    if skill_id in {"guru-review-task-delivery", "guru-review-task-completion"}:
+        from adapters.eval import stage_result_authoring
+        return stage_result_authoring
     if str(case_id or "").startswith("native-implementation-"):
         from adapters.eval import implementation_authoring
         return implementation_authoring
@@ -342,8 +345,9 @@ def start_qualification_runtime_boundary(
                             implementation_commands.terminal = True
                         with response_fifo.open("w", encoding="utf-8") as handle:
                             json.dump(response, handle, separators=(",", ":"))
-                        if implementation_commands.terminal:
-                            return
+                        # Keep the transport available to report an ordinary
+                        # duplicate call after a terminal wrapper. The relay
+                        # rejects it without executing another owner command.
                         continue
                     if intake_commands is not None:
                         try:
@@ -461,10 +465,25 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
     executions = []
 
     def assess(value: dict) -> dict:
+        if (not isinstance(value.get('public_input'), dict)
+                or not isinstance(value.get('reads'), list)
+                or not all(isinstance(path, str) for path in value['reads'])):
+            raise ValueError('independent-review requires public_input and ordered reads locators')
+        public = value['public_input']
+        sections = [public.get(name) if isinstance(public.get(name), dict) else {}
+            for name in ('constitution', 'baseline', 'project_contract')]
+        authorities = [sections[0].get('authority_locator'), sections[1].get('locator'),
+            sections[2].get('change_contract_locator')]
+        if (all(isinstance(path, str) for path in authorities)
+                and value['reads'][:3] != authorities):
+            raise ValueError('independent-review reads must begin with Constitution, Baseline and project change contract in that order')
+        if any(Path(path).name in {'prd.md', 'implement.md', 'task.json'} for path in value['reads']):
+            raise ValueError('independent-review first-round reads must exclude Task PRD, implement and task.json narratives; supply actual design, diff, authority and consumer locators')
         index = len(executions) + 1
         directory = model_root / f'architecture-worker-{index:02d}'
         directory.mkdir()
         input_locator = repository / f'.trellis/tasks/implementation-evidence/architecture-input-{index:02d}.json'
+        input_locator.parent.mkdir(parents=True, exist_ok=True)
         input_locator.write_text(json.dumps(value['public_input']))
         facts_locator = input_locator.with_name(f'architecture-facts-{index:02d}.json')
         facts_locator.write_text(json.dumps({'architecture_input_sha256': hashlib.sha256(json.dumps(
@@ -497,15 +516,17 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
             output = unwrap_native_output('codex', process.stdout, directory / 'last-message.txt')
             events = json.loads(trace.read_text())['events']
             invokes = [event for event in events if event['kind'] == 'invoke']
+            if (len(invokes) == 1 and invokes[0]['returncode']
+                    and invokes[0]['stdout_sha256'] == stdout_digest(output)):
+                raise ValueError('original Architecture wrapper failed: ' + output.strip())
             if (process.returncode or len(invokes) != 1 or invokes[0]['returncode']
                     or invokes[0]['stdout_sha256'] != stdout_digest(output)):
                 raise ValueError('fresh Architecture worker did not return its actual original wrapper stdout')
             architecture_authoring.validate_reviewer_reads(events, repository, reads,
                 phase2=value['public_input'].get('stage') != 'planning')
-            result = {'returncode': 0, 'stdout': output, 'stderr': process.stderr}
+            result = {'returncode': 0, 'stdout': output, 'stderr': ''}
         except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
-            result = {'returncode': 2, 'stdout': '', 'stderr': f'fresh Architecture worker incomplete: {exc}'
-                + ('; ' + process.stderr if 'process' in locals() and process.stderr else '')}
+            result = {'returncode': 2, 'stdout': '', 'stderr': f'fresh Architecture worker incomplete: {exc}'}
         finally:
             stop.set()
             thread.join(timeout=1)
@@ -537,6 +558,11 @@ def build_context(
     threading.Event | None,
     dict[str, str] | None,
 ]:
+    from adapters.eval import stage_result_chain
+    chain_resume = os.environ.get(stage_result_chain.RESUME_PROTOCOL_ENV)
+    chain_interrupted = os.environ.get(stage_result_chain.INTERRUPTED_PROTOCOL_ENV)
+    if chain_resume and chain_interrupted:
+        raise ValueError('conflicting chain continuation invocation: ended and interrupted protocols')
     workdir = Path(request["workdir"]).resolve()
     execution_root = workdir.parent
     projection_root, skill_path, wrapper_path, skill_sha256, wrapper_sha256 = stage_public_projection(request, execution_root)
@@ -551,7 +577,11 @@ def build_context(
             destination.parent.mkdir(exist_ok=True)
             shutil.move(str(projected), destination)
     runtime_target = public_runtime_target(request)
-    if request.get('case_id') == 'native-implementation-plan-resume':
+    if request.get('case_id') == stage_result_chain.CASE and chain_interrupted:
+        runtime_package_root, execution_runtime_target, runtime_environment = stage_result_chain.resume_interrupted_execution(request)
+    elif request.get('case_id') == stage_result_chain.CASE and chain_resume:
+        runtime_package_root, execution_runtime_target, runtime_environment = stage_result_chain.resume_execution(request)
+    elif request.get('case_id') == 'native-implementation-plan-resume':
         from adapters.eval.implementation_authoring import resume_execution
         runtime_package_root, execution_runtime_target, runtime_environment = resume_execution(request)
     elif implementation_authoring.planning_continuation_requested(request):
@@ -641,6 +671,8 @@ def build_context(
                 implementation_receipts_path, facts_relative=extra_authoring.facts_locator(request)) if implementation_flow else None,
             extra_authoring.ObservationCommands(owner_repository, observation_receipts_path) if task_free_flow else None,
         )
+        if implementation_flow:
+            boundary_thread.implementation_commands.projection_repository = model_repository_root
         boundary_path = request_fifo
         projection_root = model_projection_root
         skill_path = projection_root / "SKILL.md"
@@ -948,6 +980,10 @@ def build_context(
                 **({'facts_relative': extra_authoring.facts_locator(request)} if implementation_flow else {}))
             context += f"\nRead the fact sheet with: {helper_path} {qualification_helper_arguments} read --kind owner_file --path {facts_path}\n"
             context += "\nRe-read every staged case file before authoring:\n" + case_read_commands
+            if facts.get('continuous_chain'):
+                # The specialized context replaces the generic case prompt.
+                # Retain operation instructions for the overall owner only.
+                context += "\nCase operation instructions:\n" + request['prompt']
             if not upstream:
                 architecture_context = None
     if (not implementation_flow and request['skill_id'] not in {'guru-author-task-plan', ARCHITECTURE_SKILL}):
@@ -1531,6 +1567,14 @@ def main() -> int:
         if extra_authoring is not None:
             relative = extra_authoring.facts_locator(request) if protocol.get('implementation_commands') else extra_authoring.FACTS
             facts = json.loads((owner_repository / relative).read_text())
+            relay = getattr(boundary_thread, 'implementation_commands', None)
+            for relative in getattr(relay, 'consumed_paths', ()):
+                repository_before.pop(relative, None)
+                repository_after.pop(relative, None)
+            if hasattr(extra_authoring, 'additional_mutated_paths'):
+                for relative in extra_authoring.additional_mutated_paths(owner_repository, facts):
+                    repository_before.pop(relative, None)
+                    repository_after.pop(relative, None)
             for relative in [*facts.get("writable_paths", []), *facts.get("owner_mutated_paths", [])]:
                 repository_before.pop(relative, None)
                 repository_after.pop(relative, None)

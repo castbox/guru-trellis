@@ -87,7 +87,11 @@ Changed applicable Architecture facts and missing review/promotion follow the
 existing routes, while Finish retains its archive/bookkeeping responsibility.
 Do not repeat an already accepted promotion or add a baseline commit solely to
 record the final Review result or HEAD. Use the original formal results and
-Git/PR facts for those observations.
+Git/PR facts for those observations. Preserve the result prose's observation
+cutoff. Finish does not write shared current Docs or revise reviewed prose to
+chase its own final pass, final HEAD or post-archive result. A genuine content
+gap returns to its original writer and affected quality gates; it does not
+create an empty business Delivery or additional result-only commit.
 If the shared Closure result reader is unavailable, Finish stops before
 terminal mutation instead of accepting an unbound caller action list.
 

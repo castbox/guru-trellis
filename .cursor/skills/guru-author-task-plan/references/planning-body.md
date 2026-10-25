@@ -43,6 +43,8 @@
 
 implement 保留唯一 Delivery Policy 和唯一 Docs SSOT Plan，具体策略含义沿 [authoring.md](authoring.md#solution-writing-and-complete-positive-capability)。三份 Delivery 文档各保留命中的 requirement/behavior、design、test、Architecture canonical 引用及本轮差额。模板填充只生成所选规划；不直接写共享 README/index/manifest、Architecture Baseline 或 spec projection，不预建空 contribution/ledger。原 Author 的真实 task-owned Architecture contribution/必要 ADR 候选与原 RDT/Architecture 晋升职责保持。
 
+本批存在真实临时限制时，在现有 Policy、步骤和 Docs Plan 内说明限制的能力／对象、原因、解除条件、当前阶段边界和直接后继责任。后继 Delivery 实际读取前序结果，核对解除条件；条件满足后，实施 owner 更新行为和适用断言，原 RDT／Architecture owner 在自己的合法边界维护当前规范、指南及派生说明。历史正文保留原观察。局部限制不等于整个 Task 冻结，局部实现也不等于整体完成。没有真实限制或变化时，不增加空文档、状态字段或验证义务。
+
 ## 5. 写作自检、原审核与示例
 
 输出前由 Author 对照完整来源、适用模板和实际正文自检：当前阶段是否完成，场景→要求→设计→实施→验证→验收能否对应，引用是否实际读取，来源角色、条件与历史身份是否保持。原审核 owners 只在原范围判断；不新增通用 reviewer。脚本只检查分发、引用、投影及既定机器条件，不能凭章节数、关键词或文件存在证明充分性。

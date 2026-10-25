@@ -133,7 +133,7 @@ def context(repository: Path, package: Path, helper_command: str, reads: list[st
         "Read every contract and fact locator below before judgment. The fact sheet contains source files and observed process results, not owner conclusions.",
         f"Repository locator: {repository}",
         'This directory is an evidence projection and intentionally has no .git. It is not the execution checkout. The fact-sheet local-position.json was observed in the actual owner checkout. Refresh actual checkout Git facts with the private helper command --skill-id task-free-authoring --command inspect; the host runs read-only Git there and returns its actual process receipts. A missing .git in this evidence projection does not establish a missing owner checkout. Do not run Git in the projection or infer live owner state from it.',
-        'For this private read-only observation transport, command help lists its syntax. An unsupported observation command returns its actual error and leaves the transport available for your correction. Original semantic wrapper failures still end the invocation.',
+        'For this private test transport, command help lists its syntax. Command write accepts stdin {file_updates:{relative_path:complete_text}} for the bounded targets and applies those exact bytes in the actual checkout. Command run accepts stdin {argv:[explicit executable and arguments]} and returns the actual process output from that checkout. Use write before running the targeted check, then inspect the actual resulting diff. An unsupported command returns its error and leaves the transport available for correction. Original semantic wrapper failures still end the invocation.',
         *[f"{helper_command} read --kind skill_contract --path {package / path}" for path in PUBLIC_READS],
         *[read(repository / path) for path in reads], read(input_locator),
         "Reread live local topology, status and diff before any target write. Use only the selected bounded targets. Do not create a Task, branch, worktree, commit or external side effect.",
@@ -141,13 +141,13 @@ def context(repository: Path, package: Path, helper_command: str, reads: list[st
         "Read each qualifier's original invocation envelope schema in required_reads before calling it. Invoke normal-scenario using helper invoke --stdin --qualifier normal-scenario; invoke solution-mechanism using --qualifier solution-mechanism. Each original qualifier expects {schema_version: '1.0', semantic_result: <your authored semantic result>}, with public_input inside semantic_result. The schema_version value is a JSON string. The task-free {public_input, owner_result} transport envelope is not a qualifier envelope. Use the original task_free_pre_write or task_free_evolution profile selected under the loaded owner contract. qualification_target provides live target facts; candidate refs, decisions and witnesses remain yours. Consume actual qualifier stdout in the task-free owner. Do not write a qualifier result file.",
         'For the original root-cause owner, load its actual Skill/contract, selected input schema, semantic-result schema and shared root-cause-qualification-invocation schema from required_reads. When its original contract applies, invoke it with helper invoke --stdin --qualifier root-cause, using its actual {schema_version:"1.0",semantic_result:<your own result>} envelope. Consume the actual returned disposition. Do not directly execute projected wrappers: the helper forwards each original wrapper to the complete installed owner fixture. No root-cause judgment or result is supplied by host.',
         "Assess the request and candidate under the Skill's current method. Explain your actual judgment in its existing review fields, including applicable source and consumer effects. Apply its existing qualification and evolution routes when required. Do not copy an example owner result.",
-        "Perform any suitable bounded edit yourself, then run its actual targeted check and post-write review before authoring a result. Native file edits are allowed only within fact-sheet writable_paths. Alternatively, this eval-only transport accepts file_updates mapping each bounded relative path to its complete text; the helper applies those exact bytes before the original record/check/invoke chain. The field is not part of public input or owner_result.",
-        f"Author your own {{public_input, owner_result}} envelope, with optional file_updates only for actual edits, and invoke {helper_command} invoke --stdin. The helper records your fields unchanged and calls the original recorder, checker and public wrapper. A nonzero wrapper result ends the invocation. Return the actual wrapper output without relabeling it.",
+        "Perform any suitable bounded edit yourself through command write, then run its actual targeted check through command run and complete the post-write review before authoring a result. Native file edits are allowed only within fact-sheet writable_paths. The final eval-only envelope also accepts file_updates for compatibility, but those deferred writes have no post-write check yet; earlier fixture observations cannot establish checks of changed bytes. This field is not part of public input or owner_result.",
+        f"Author your own {{public_input, owner_result}} envelope, with optional file_updates only for actual edits, and invoke {helper_command} invoke --stdin. The helper records your fields unchanged and calls the original recorder, checker and public wrapper. A nonzero wrapper result ends the invocation. The final message must contain only the unchanged public wrapper stdout as one JSON object. Send progress and skill-use announcements before the final message. Do not add Markdown or explanatory text around the JSON.",
     ])
 
 
 class ObservationCommands:
-    """Private read-only owner-checkout observations, without a route decision."""
+    """Private bounded writes and actual process observations, without judgment."""
 
     def __init__(self, repository: Path, receipts_path: Path):
         self.repository = repository
@@ -159,13 +159,40 @@ class ObservationCommands:
         write_json(self.receipts_path, self.receipts)
 
     def forward(self, payload: dict) -> dict:
-        if (payload['skill_id'] != 'task-free-authoring' or payload['command'] not in {'inspect','help'}
-                or payload['arguments'] or payload.get('stdin')):
-            raise ValueError('task-free observation accepts command inspect or help with no arguments or stdin')
+        command = payload['command']
+        if (payload['skill_id'] != 'task-free-authoring' or command not in {'inspect','help','write','run'}
+                or payload['arguments'] or (command in {'inspect','help'} and payload.get('stdin'))):
+            raise ValueError('Use task-free-authoring inspect/help without stdin, or write/run with JSON stdin.')
+        if command == 'write':
+            updates = json.loads(payload.get('stdin', ''))['file_updates']
+            facts = json.loads((self.repository / FACTS).read_text())
+            for relative in updates:
+                if relative not in facts['writable_paths']:
+                    raise ValueError('task-free authoring write is outside the bounded targets')
+            for relative, content in updates.items():
+                (self.repository / relative).write_text(content, encoding='utf-8')
+            result = {'returncode': 0, 'stdout': json.dumps({'written_paths': list(updates)}) + '\n', 'stderr': ''}
+            self.record_response(payload, result)
+            return result
+        if command == 'run':
+            argv = json.loads(payload.get('stdin', ''))['argv']
+            if not isinstance(argv, list) or not argv or not all(isinstance(part, str) for part in argv):
+                raise ValueError('run requires a nonempty argv array of strings')
+            try:
+                receipt = observe(self.repository, argv)
+            except OSError as error:
+                receipt = {'argv': argv, 'returncode': 127, 'stdout': '', 'stderr': str(error)}
+            result = {'returncode': 0, 'stdout': json.dumps(receipt) + '\n', 'stderr': ''}
+            self.record_response(payload, result)
+            return result
         if payload['command'] == 'help':
             result = {'returncode':0, 'stdout':
                 'command --skill-id task-free-authoring --command inspect\n'
-                'Inspect runs read-only Git in the actual owner checkout and returns process receipts.\n', 'stderr':''}
+                'command --skill-id task-free-authoring --command write --stdin\n'
+                '  stdin: {"file_updates":{"bounded/relative/path":"complete text"}}\n'
+                'command --skill-id task-free-authoring --command run --stdin\n'
+                '  stdin: {"argv":["executable","argument"]}\n'
+                'Inspect reads Git; write applies bounded bytes; run returns actual process receipts in the owner checkout.\n', 'stderr':''}
             self.record_response(payload, result)
             return result
         receipts = {name: observe(self.repository, ['git', *arguments]) for name, arguments in (
@@ -183,7 +210,7 @@ class ObservationCommands:
 
 
 def validate_observations(events: list[dict], protocol: dict, request_sha256: str) -> None:
-    """Match traced observations to actual host calls; infer no suitability."""
+    """Match traced commands to actual host calls; infer no suitability."""
     import hashlib
     from adapters.eval.eval_constants import stdout_digest
     path = Path(protocol['task_free_observation_receipts_path'])
@@ -198,7 +225,7 @@ def validate_observations(events: list[dict], protocol: dict, request_sha256: st
             'stderr_sha256': hashlib.sha256(response['stderr'].encode()).hexdigest(),
             'request_sha256': request_sha256}
         if event != expected or request['skill_id'] != 'task-free-authoring':
-            raise ValueError('task-free trace differs from its actual read-only checkout observation')
+            raise ValueError('task-free trace differs from its actual checkout command')
 
 
 def execute(package: Path, repo: Path, envelope: dict, environment: dict) -> subprocess.CompletedProcess:

@@ -614,12 +614,14 @@ def context(repository: Path, package: Path, helper_command: str, reads: list[st
         ('This invocation consumes actual prior Activation output and current public Delivery facts for the same fixture. Continue under the installed workflow and the original owners\' current responsibilities. Determine from the current source, plan, applicable reviews and candidate whether affected implementation can resume. If current facts require re-entry, follow the original workflow and owner contracts.'
          if facts_relative == RESUME_FACTS else
          'If this invocation reaches Planning Approval approved, make that original invoke the final call and return its actual stdout. The ordinary workflow plan presentation/acceptance and Activation happen outside this native segment. Do not activate the Delivery, claim acceptance, or restore affected implementation in this segment. A later independently declared test invocation can consume actual Activation/public-current facts. Other original stop/re-entry outcomes remain available under their actual contracts.'),
-        'Return only the final original semantic owner wrapper stdout. Preserve every failed original command. An original Delivery CLI argument-parse error leaves this transport open so you can read its help and correct your own arguments. The host does not change arguments or select a continuation. Other Delivery execution failures and every nonzero original owner wrapper end this invocation; never synthesize a successful result.',
+        'Return only the final original semantic owner wrapper stdout. Preserve every failed original command. An original Delivery CLI argument-parse error leaves this transport open so you can read its help and correct your own arguments. A declared intermediate recorder/checker error also returns control to you for diagnosis and original-owner re-entry; it supplies no formal exit and the transport never retries it. The host does not change arguments or select a continuation. Other Delivery execution failures and every nonzero original public owner wrapper end this invocation; never synthesize a successful result.',
     ])
 
 
 class ImplementationCommands:
     """Private command transport; the native owner selects every continuation."""
+
+    owners = OWNERS
 
     def __init__(self, repository: Path, environment: dict, receipts_path: Path, *, facts_relative: str = FACTS):
         self.repository = repository
@@ -644,7 +646,7 @@ class ImplementationCommands:
         if self.terminal:
             raise ValueError('implementation command follows the terminal original wrapper')
         final = False
-        if stdin:
+        if stdin and not (skill == 'implementation-authoring' and command == 'run'):
             value = json.loads(stdin)
             if isinstance(value, dict) and 'final' in value and 'invocation' in value:
                 final = value['final'] is True
@@ -663,9 +665,20 @@ class ImplementationCommands:
             self.record_response(payload, result)
             return result
         if skill == 'implementation-authoring' and command == 'run':
-            argv = json.loads(stdin)['argv']
-            process = subprocess.run(argv, cwd=self.repository, env=self.environment,
-                text=True, capture_output=True, check=False)
+            try:
+                argv = json.loads(stdin)['argv']
+                if not isinstance(argv, list) or not argv or not all(isinstance(part, str) for part in argv):
+                    raise ValueError('run requires a nonempty argv array of strings')
+            except (ValueError, KeyError, TypeError) as error:
+                result = {'returncode': 0, 'stdout': json.dumps({'request_error': str(error),
+                    'returncode': 2, 'stdout': '', 'stderr': 'Supply run stdin as JSON {"argv":[...]}.'}) + '\n', 'stderr': ''}
+                self.record_response(payload, result)
+                return result
+            try:
+                process = subprocess.run(argv, cwd=self.repository, env=self.environment,
+                    text=True, capture_output=True, check=False)
+            except OSError as error:
+                process = subprocess.CompletedProcess(argv, 127, '', str(error))
             result = {'returncode': 0, 'stdout': json.dumps({'argv': argv,
                 'returncode': process.returncode, 'stdout': process.stdout, 'stderr': process.stderr}) + '\n', 'stderr': ''}
             self.record_response(payload, result)
@@ -681,10 +694,11 @@ class ImplementationCommands:
             result = {'returncode': 0, 'stdout': json.dumps({'written_paths': list(updates)}) + '\n', 'stderr': ''}
             self.record_response(payload, result)
             return result
+        intermediate_command = False
         if skill == 'delivery-api':
             argv = [sys.executable, '-B', str(self.repository / '.trellis/scripts/delivery.py'), command, *arguments]
         else:
-            if skill not in OWNERS:
+            if skill not in self.owners:
                 raise ValueError('implementation command has no supplied existing owner')
             owner = self.repository / '.trellis/guru-team/skills/packages' / skill
             interface = json.loads((owner / 'interface.json').read_text())
@@ -694,8 +708,10 @@ class ImplementationCommands:
             if command_id == 'run-skill-command':
                 command_id = 'invoke-' + skill
             commands = json.loads((owner / 'commands.json').read_text())['commands']
-            if not any(row['id'] == command_id for row in commands):
+            declared = next((row for row in commands if row['id'] == command_id), None)
+            if declared is None:
                 raise ValueError('implementation command is not declared by its original owner')
+            intermediate_command = declared['stdout'] == 'intermediate_receipt'
             if command == 'invoke':
                 relative = interface['public_contracts']['invocation']['wrapper']
             else:
@@ -722,10 +738,11 @@ class ImplementationCommands:
             and not process.stdout and process.stderr.startswith('usage: delivery.py ')
             and any(prefix in process.stderr for prefix in (
                 '\ndelivery.py: error:', f'\ndelivery.py {command}: error:')))
-        if process.returncode and not delivery_parse_error:
+        if process.returncode and not delivery_parse_error and not intermediate_command:
             self.terminal = True
         if final and process.returncode == 0:
-            if skill == 'delivery-api' or command != 'invoke':
+            if skill == 'delivery-api' or (command != 'invoke'
+                    and command_id not in (interface['public_contracts']['invocation']['command_id'], 'invoke-' + skill)):
                 raise ValueError('only an original semantic public wrapper can terminate implementation evidence')
             self.terminal = True
         return result
@@ -790,7 +807,7 @@ def validate_trace(payload: dict, protocol: dict, public_stdout: str) -> list[st
                            for relative in facts['writable_paths']}
     last = receipts[-1]
     final = json.loads(last['request']['stdin'])
-    if (last['request']['command'] not in {'invoke', 'independent-review'} or final.get('final') is not True
+    if (last['request']['command'] not in {'invoke', 'independent-review', 'invoke-' + last['request']['skill_id']} or final.get('final') is not True
             or 'invocation' not in final or last['response']['returncode'] != 0
             or stdout_digest(last['response']['stdout']) != stdout_digest(public_stdout)):
         raise ValueError('implementation terminal stdout is not the final original wrapper result')
