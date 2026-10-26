@@ -1,0 +1,19 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "所有正文输出按唯一清晰写作规范。"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "按Validation Scope Ownership选择本次定向检查，不扩大累计矩阵。"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "本仓公开文档唯一规范，修订稳定/候选/历史版本映射。"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "原preset分发与本地修改/sidecar处置合同。"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "完整两阶段发布边界与原owners副作用、证据和禁止持久化。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "三正文完整承接、唯一来源处置、Delivery Policy和Docs Plan。"}
+{"file": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md", "reason": "完整candidate Check及actual-after最终Check，不混用公共结果。"}
+{"file": ".trellis/guru-team/skills/packages/guru-create-task-commit/references/contract.md", "reason": "原early/final提交、精确路径与真实hooks边界。"}
+{"file": ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md", "reason": "完整独立审查、固定范围和最终公共正式结果条件。"}
+{"file": "trellis/guru-team-extension.json", "reason": "当前Guru与CLI版本轴，目标revision更新。"}
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "唯一Fork锁及CLI/pnpm，保持现有来源。"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py", "reason": "原maintenance目标与正式source约束，成套同步版本。"}
+{"file": "docs/requirements/current/knowledge-maintenance.md", "reason": "当前知识原owner/隔离拟写/最终整合约束。"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "原owner职责、实际after重绑和来源承接。"}
+{"file": "docs/test/current/knowledge-maintenance.md", "reason": "质量与证据层次，不将历史专项实验扩大为本次矩阵。"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "适用Architecture/constitution、原最终整合和恢复边界。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批正文结构及当前阶段完成边界。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批正文结构及当前阶段完成边界。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批正文结构及当前阶段完成边界。"}

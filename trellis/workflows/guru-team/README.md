@@ -171,21 +171,23 @@ accept Delivery Planning or begin implementation.
 
 ## Installation
 
-已发布稳定版本为 `v0.7.0-guru.4`，peeled commit 为
-`855f236850714edc4b78169218c09568c823f336`。默认稳定安装使用同一 immutable `.4`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.4`
-和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。
+已发布稳定版本为 `v0.7.0-guru.5`，peeled commit 为
+`71f432f22acc78df7194a818c27b8e467ceb3048`。默认稳定安装使用同一 immutable `.5`
+tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.5`
+和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
+Fork `7bcbeaad31380e7a29c97898cb947c6120a61775` / CLI-Core
+`0.7.0-castbox.4`，与下述当前源码分开核对。
 
-本次目标为尚未发布的 `v0.7.0-guru.5`。当前准备源码的 extension 与 maintenance
-target 为 `0.7.0-guru.5`；它与已发布的 immutable `.4` tag 分开读取。
-正式 Fork lock 固定到 `e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f`，
-tree `e8db5548b11c90a0707e904c3412e3dcb4c14da8`，成功 main CI `39475768514`。
+本次目标为尚未发布的 `v0.7.0-guru.6`。当前准备源码的 extension 与 maintenance
+target 为 `0.7.0-guru.6`；它与已发布的 immutable `.5` tag 分开读取。
+正式 Fork lock 固定到 `79a97ed60fe19e8f287eaddfa74722b5250ced35`，
+tree `7f83f41031181b1f12b83268e51cbde2b775ec5f`，成功 main CI `39905440951`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
 本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
-所选 matching CLI/Core 源码已构建；完整 Guru 适配、目标安装和原生验收仍待完成，source lock 更新不证明这些步骤通过。
+本来源另包含上游 #58 的 AGENTS 自定义正文维护能力。匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.5`，package manager 为 `pnpm@10.32.1`。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
@@ -193,13 +195,29 @@ CLI/Core 为 `0.7.0-castbox.5`，package manager 为 `pnpm@10.32.1`。
 保留模板原 mode；不以相同版本号选择另一构建或放宽 `source_locked`。
 
 源码试用的 workflow marketplace 与 preset 必须使用同一个真实、远端可寻址的完整
-Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.5` tag。
-准备源码与投影检查不证明 `.5` 安装、业务采用或 Release 通过。
+Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.6` tag。
+准备源码与投影检查不证明 `.6` 安装、业务采用或 Release 通过。
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main`
 重新冻结 exact commit/tree，执行定向安装及 predecessor 升级验证。tag、tag-pinned
 smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完成。
 历史验收只保留原来源身份，不替代本次候选门禁；完整多平台矩阵与真实业务、生产
 验证保持独立。
+
+累计发布集合由 `v0.7.0-guru.5` 到最终 candidate 的实际完整 diff 确定，包含
+#669 已有实现分支恢复。各项验证继续使用其原来源和层次：
+
+- [#630 Test](../../../docs/requirements-design-test-contributions/630-native-compatibility/test.md)
+  记录三系统 Python runtime、安装、维护脚本和公开 wrapper；Windows 实际 Agent
+  会话仍未完成，其超时和早期失败保持原结果，该会话不属于 #630 当前脚本验收范围。
+- [#649 Test](../../../docs/requirements-design-test-contributions/649-stage-result-convergence/test.md)
+  保留独立对照、受控连续 Delivery 样本、合法路线差异、false/no-grade 及历史失败。
+  已完成该 Issue 不表示每个样本通过，也不证明正式来源维护、业务采用或生产 E2E。
+- [#669 Test](../../../docs/requirements-design-test-contributions/669-existing-implementation-reactivation/test.md)
+  的受控原生 Task2 恢复样本、真实 SDK 回归及 local_candidate 维护各有独立边界；
+  它们不证明 source_locked 维护、真实 GitHub/backend #802 或业务生产恢复。
+
+这些结果不代替本次 exact-candidate、tag-pinned smoke 或完整多平台 Release 矩阵。
+原 Test 的历史观察不因准备版本更新而回写。
 
 历史已发布 `v0.7.0-guru.1` 所锁定 Fork 的 update 会在访问旧 `0.6.17` 项目数据前拒绝，原数据保持不变。
 已发布 `v0.7.0-guru.1` 不支持旧安装原地升级；拒绝不代表升级成功。
@@ -208,12 +226,13 @@ smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完�
 显式升级请求从目标 source package 加载该 Skill，不先进入 business Intake。
 见 [迁移说明](../../presets/guru-team/MIGRATION-495.md)；历史 Guru `ecd152add05dbeb6df1873f0917ca3a62914ca7a` 的同源远端验收绑定原 Fork `cc5f9a30652be29cffee9acc7e14d5dc5daaf04c` / CI `37647767799`，由 [唯一系列 Test](../../../docs/requirements-design-test-contributions/495-upgrade-version-families/test.md) / EVD-051 承接，不证明当前新来源，普通 update/reapply 不替代迁移，普通 runtime 无兼容双读或自动迁移。
 迁移保留业务定制、无关 dirty/untracked 与合法当前任务状态；legacy nonterminal 的 pinned-old/deferred 处置及 rollback 恢复实际升级前来源的边界保持 [迁移说明](../../presets/guru-team/MIGRATION-495.md) 合同。
-当前知识 authority 由 `docs/requirements/README.md`、`docs/design/README.md`、
-`docs/test/README.md` 与 `docs/architecture/README.md` 指定，与软件版本分开读取。
+当前知识 authority 为 `guru-trellis-rdt` / `guru-trellis-architecture`，从
+`docs/requirements/README.md`、`docs/design/README.md`、`docs/test/README.md`
+与 `docs/architecture/README.md` 读取完整适用单元及 Git revision，与软件版本分开。
 
 For current-source validation, use the source-locked Trellis Fork checkout
-(`castbox/Trellis@e9fb95fd2eb0fb8441153e77384a9dfd3ea3358f`, successful main CI
-`39475768514`) and that same reviewed Guru source. Stable `.4` installation
+(`castbox/Trellis@79a97ed60fe19e8f287eaddfa74722b5250ced35`, successful main CI
+`39905440951`) and that same reviewed Guru source. Stable `.5` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
 it. Apply the Guru preset using
