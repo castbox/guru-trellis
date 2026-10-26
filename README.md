@@ -45,8 +45,11 @@ Finalizer 或 `ready_for_merge`。当前 Branch Review 的 `archived_review_pass
 本地/远端 HEAD、base 与旧 Finalizer 事实后，在兼容的 pinned-old 版本完成，
 或逐案人工处置；不得伪投影为新 Delivery/Completion/Finish 结果。正常完成的
 旧归档若含退役的任务人员字段，只保留 TaskId 防复用，并可在严格限定的只读
-来源定位后返回拒绝诊断，不进入 Reactivate 或 Finish recovery。符合当前上游
-task schema 的正常完成归档才使用 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md)。
+来源定位后返回拒绝诊断，不进入 Reactivate 或 Finish recovery。正常完成的当前
+Task2 归档与原合同选定的正式 schema1 归档，均由 [Reactivate 合同](trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md) 的原 owner 承接。
+原 owner 先核验并继续合法后继；没有后继且资格满足时，才经匹配公共 SDK/operation
+保持同 TaskId 并将 lifecycle generation 严格递增一次。同操作恢复继续原操作，不重复增代。
+人工历史归档与未完成 closeout 仍回各自原 maintenance/Finish owner。
 旧链在途 residue 不是 Reactivate 的正常结束输入；详见 [当前 workflow](trellis/workflows/guru-team/workflow.md)。
 
 ## 当前框架来源
