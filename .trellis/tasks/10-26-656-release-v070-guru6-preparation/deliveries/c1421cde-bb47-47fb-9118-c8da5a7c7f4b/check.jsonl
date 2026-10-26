@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "原写作和证据边界"}
+{"file": "README.md", "reason": "唯一待修公开入口及完整旧状态分流"}
+{"file": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md", "reason": "原正式family资格、owner和公共操作"}
+{"file": "trellis/workflows/guru-team/workflow.md", "reason": "现行正式schema1及未完成旧链分流"}
+{"file": "trellis/presets/guru-team/MIGRATION-669.md", "reason": "原profile、matching安装和历史证据边界"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md", "reason": "原规划正文与后续方案分界"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前Delivery需求完整性"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批方案与完整恢复路线的原模板"}
+{"file": "trellis/skills/guru-team/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "唯一Policy和Docs Plan的原模板"}
