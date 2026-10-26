@@ -604,32 +604,60 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             self.assertEqual(Path(run.call_args.args[0][0]).name, "preview.sh")
 
     def test_native_bootstrap_tools_freezes_one_original_owner_plan(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            workflow = root / "trellis/workflows/guru-team/workflow.md"
-            workflow.parent.mkdir(parents=True)
-            workflow.write_text("canonical workflow")
-            transport = mock.Mock()
-            transport._invoke.return_value = {"contract": {"cli_version": "cli", "core_version": "core"},
-                                               "core_package_root": str(root / "core")}
-            transport.package_digest.return_value = "digest"
-            responses = [{"result": {"public_tools": {"files": [
-                {"path": "AGENTS.md", "source": {"sha256": "old"}, "status": "conflict", "required": False}]}}},
-                {"result": {"plan": {"upstream_plan": {"operation_id": "original"}}}},
-                {"exit_id": "tools_upgraded", "unverified": []}]
-            with mock.patch.object(self.matrix.importlib.util, "spec_from_file_location"), \
-                 mock.patch.object(self.matrix.importlib.util, "module_from_spec", return_value=transport), \
-                 mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(row) for row in responses]) as run:
-                result = self.matrix._upgrade_native_bootstrap_tools(root, root / "target", root / "fork",
-                    "a" * 40, {"install": {"selected_platforms": ["codex"]}}, root, {})
-            self.assertEqual(result, responses[-1])
-            self.assertEqual([Path(call.args[0][0]).name for call in run.call_args_list],
-                             ["preview.sh", "prepare.sh", "invoke.sh"])
-            self.assertEqual(json.loads((root / "tools-plan.json").read_text()), responses[1]["result"]["plan"])
-            request = json.loads((root / "tools-prepare.json").read_text())
-            self.assertEqual(request["tools_input"]["workflow"]["content"], "canonical workflow")
-            self.assertEqual(request["tools_input"]["file_decisions"][0]["action"], "preserve")
-            self.assertEqual(request["upstream_source"]["dependency_mode"], "source_locked")
+        import base64
+
+        runtime = REPO / "trellis/skills/guru-team"
+        package = runtime / "packages/guru-upgrade-tools"
+        with mock.patch.object(sys, "path", [str(runtime), *sys.path]):
+            spec = importlib.util.spec_from_file_location("matrix_tools_owner", package / "runtime/tools_owner.py")
+            owner = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(owner)
+            installer = owner.legacy_owner(package).installer(REPO)
+        content = "# 项目规则\n保留用户正文。\n"
+        snapshot = {"content_base64": base64.b64encode(content.encode()).decode(),
+                    "sha256": hashlib.sha256(content.encode()).hexdigest(), "mode": 0o644}
+        other = {"path": ".trellis/config.yaml", "source": {"sha256": "other"},
+                 "status": "conflict", "required": False}
+        capability = {"tools_custom_instruction": {"path": "AGENTS.md", "action": "custom"}}
+        for status in ("unchanged", "conflict"):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                workflow = root / "trellis/workflows/guru-team/workflow.md"
+                workflow.parent.mkdir(parents=True)
+                workflow.write_text("canonical workflow")
+                transport = mock.Mock()
+                transport._invoke.return_value = {"contract": {"cli_version": "cli", "core_version": "core"},
+                                                   "core_package_root": str(root / "core")}
+                transport.package_digest.return_value = "digest"
+                responses = [{"result": {"public_tools": {"files": [
+                    {"path": "AGENTS.md", "source": snapshot, "status": status, "required": False}, other]}}},
+                    {"result": {"plan": {"upstream_plan": {"operation_id": "original"}}}},
+                    {"exit_id": "tools_upgraded", "unverified": []}]
+                with mock.patch.object(self.matrix.importlib.util, "spec_from_file_location"), \
+                     mock.patch.object(self.matrix.importlib.util, "module_from_spec", return_value=transport), \
+                     mock.patch.object(self.matrix, "_run", side_effect=[json.dumps(row) for row in responses]) as run:
+                    result = self.matrix._upgrade_native_bootstrap_tools(root, root / "target", root / "fork",
+                        "a" * 40, {"install": {"selected_platforms": ["codex"]}}, root, {})
+                self.assertEqual(result, responses[-1])
+                self.assertEqual([Path(call.args[0][0]).name for call in run.call_args_list],
+                                 ["preview.sh", "prepare.sh", "invoke.sh"])
+                frozen = root / "tools-plan.json"
+                self.assertEqual(json.loads(frozen.read_text()), responses[1]["result"]["plan"])
+                self.assertEqual(run.call_args_list[-1].args[0][-2:], ("--plan", str(frozen)))
+                request = json.loads((root / "tools-prepare.json").read_text())
+                tools = request["tools_input"]
+                self.assertEqual(tools["workflow"]["content"], "canonical workflow")
+                decisions = tools["file_decisions"]
+                self.assertEqual([row for row in decisions if row["path"] == "AGENTS.md"],
+                                 [{"path": "AGENTS.md", "source": snapshot, "action": "custom", "content": content}])
+                self.assertEqual([row for row in decisions if row["path"] != "AGENTS.md"],
+                                 [{"path": other["path"], "source": other["source"], "action": "preserve"}])
+                composed = owner.compose_agents_input(tools, installer, capability)
+                self.assertEqual(composed["file_decisions"][0]["source"], snapshot)
+                self.assertTrue(composed["file_decisions"][0]["content"].startswith(content))
+                self.assertEqual(composed["file_decisions"][0]["content"].count(installer.AGENTS_AI_FIRST_START_MARKER), 1)
+                self.assertEqual(tools["file_decisions"][0]["content"], content)
+                self.assertEqual(request["upstream_source"]["dependency_mode"], "source_locked")
 
     def test_bootstrap_schema_selects_original_owner_and_preserves_artifacts(self) -> None:
         import base64

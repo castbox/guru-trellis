@@ -2172,6 +2172,8 @@ def _upgrade_native_bootstrap_tools(
     installed: Mapping[str, Any], cell_root: Path, env: Mapping[str, str],
 ) -> dict[str, Any]:
     """Maintain tools only; the caller already checked the fixed init fixture."""
+    import base64
+
     runtime = repo_root / "trellis/skills/guru-team"
     sys.path.insert(0, str(runtime))
     try:
@@ -2206,16 +2208,21 @@ def _upgrade_native_bootstrap_tools(
                       capture=True, log=cell_root / ("tools-" + script + ".log"))
         return _require_dict(json.loads(output), "tools owner output")
     preview = call("preview.sh", "--upstream-source", str(save("source", descriptor)))["result"]
+    files = preview["public_tools"]["files"]
+    agents = next(row for row in files if row["path"] == "AGENTS.md")
     prepare = save("prepare", {
         "upstream_source": descriptor,
         "tools_input": {"root": str(target), "workflow": {
             "action": "install", "template_id": "guru-team", "ownership": "custom",
             "provider": "gh:castbox/guru-trellis/trellis#" + source_ref,
             "content": (repo_root / "trellis/workflows/guru-team/workflow.md").read_text(),
-        }, "file_decisions": [
+        }, "file_decisions": [{
+            "path": "AGENTS.md", "source": agents["source"], "action": "custom",
+            "content": base64.b64decode(agents["source"]["content_base64"]).decode("utf-8"),
+        }, *[
             {"path": row["path"], "source": row["source"], "action": "preserve"}
-            for row in preview["public_tools"]["files"]
-            if row["status"] == "conflict" and not row["required"]]},
+            for row in files
+            if row["path"] != "AGENTS.md" and row["status"] == "conflict" and not row["required"]]]},
         "selected_platforms": installed["install"]["selected_platforms"], "guru_decisions": [],
     })
     frozen = save("plan", call("prepare.sh", "--plan", str(prepare))["result"]["plan"])
