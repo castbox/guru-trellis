@@ -396,12 +396,21 @@
       },
       "planning_root": "deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/design.md",
         "revision": "sha256:f0bc8236279fbc872126256c537775dfc0d13cce6624679130ac66add4f99104"
       },
-      "candidate": null,
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ],
+        "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+        "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa"
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:aaff88af-e251-4fb0-bbdb-5942a552a2d8",
@@ -440,12 +449,184 @@
             }
           ]
         },
-        "check": null,
-        "full_review": null,
-        "readiness": null
+        "check": {
+          "result_id": "check:909be16d0b3dc209c198d38cbb5396c0ac32ecca0a73c064edd1922ea869cfff",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+              "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+            },
+            "anchors": [
+              "AC7",
+              "AC8"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/design.md",
+            "revision": "sha256:f0bc8236279fbc872126256c537775dfc0d13cce6624679130ac66add4f99104"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ],
+            "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+            "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa"
+          },
+          "predecessor_result_id": "planning-accepted:aaff88af-e251-4fb0-bbdb-5942a552a2d8",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/prd.md",
+              "revision": "sha256:a3e59bcb052971f29482feb0dd9bfc450575a0cc700795e167187040170db0d1"
+            },
+            {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/design.md",
+              "revision": "sha256:f0bc8236279fbc872126256c537775dfc0d13cce6624679130ac66add4f99104"
+            },
+            {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/implement.md",
+              "revision": "sha256:84ed67b00301ffe99815f3ac579f7a75be6b828b1176b9af6f0e235ed3346736"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:6120e0e23cc2f2b85b36dee8c04271e1bab474fabdc9f7b662c7acfc5178bdab",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+              "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+            },
+            "anchors": [
+              "AC7",
+              "AC8"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/design.md",
+            "revision": "sha256:f0bc8236279fbc872126256c537775dfc0d13cce6624679130ac66add4f99104"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ],
+            "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+            "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa"
+          },
+          "predecessor_result_id": "check:909be16d0b3dc209c198d38cbb5396c0ac32ecca0a73c064edd1922ea869cfff",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/implement.md",
+              "revision": "sha256:84ed67b00301ffe99815f3ac579f7a75be6b828b1176b9af6f0e235ed3346736"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:b9d58646da4650150f17a150656d79b4204417294b7791676833d17da263fd3d",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+              "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+            },
+            "anchors": [
+              "AC7",
+              "AC8"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/design.md",
+            "revision": "sha256:f0bc8236279fbc872126256c537775dfc0d13cce6624679130ac66add4f99104"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ],
+            "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+            "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa"
+          },
+          "predecessor_result_id": "full-review:6120e0e23cc2f2b85b36dee8c04271e1bab474fabdc9f7b662c7acfc5178bdab",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/deliveries/f3ea7321-289e-4c40-be0f-75b5c5d8c21d/implement.md",
+              "revision": "sha256:84ed67b00301ffe99815f3ac579f7a75be6b828b1176b9af6f0e235ed3346736"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:bfdee80dfcb189ad029332f694737e9ca1de82f2f20ef3c323a1451a9a19f252",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/674",
+            "revision": "sha256:ee8f0c74284503cdb96a8756ef6cac1670a9fd8d4fcfde83a22d4cef91581ecd"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa",
+          "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+          "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+          "kind": "git",
+          "paths": [
+            "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+            "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 674,
+        "reviewed_head": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/674",
+          "revision": "sha256:ee8f0c74284503cdb96a8756ef6cac1670a9fd8d4fcfde83a22d4cef91581ecd"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:5299b0052450bae2da3059b2775d9b8a8a585b59",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/674",
+            "revision": "5299b0052450bae2da3059b2775d9b8a8a585b59"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "e70769fb3c48ea05b106809a99161995c8dfcdfa",
+          "content_ref": "sha256:c9872a5db5e0c0766ad1047271dceb0ec14e1b44410b60f642e2cdf1a98aedd8",
+          "head_ref": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+          "kind": "git",
+          "paths": [
+            "trellis/presets/guru-team/scripts/python/test_verify_trellis_upgrade_contract.py",
+            "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 674,
+        "reviewed_head": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a",
+        "merge_commit": "5299b0052450bae2da3059b2775d9b8a8a585b59",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
@@ -476,6 +657,38 @@
         "delivery:6d6a7f7216587895cd713a9139758ec4e37de05c"
       ],
       "outcome": "completed"
+    },
+    {
+      "result_id": "completion:656-preparation-gen1",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+          "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/672",
+          "revision": "6d6a7f7216587895cd713a9139758ec4e37de05c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/674",
+          "revision": "5299b0052450bae2da3059b2775d9b8a8a585b59"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/40295152287",
+          "revision": "34a35f64f8f62e5a192fd9b42a8bcb01168e8a8a"
+        }
+      ],
+      "lifecycle_generation": 1,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+        "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+      },
+      "delivery_result_ids": [
+        "delivery:6d6a7f7216587895cd713a9139758ec4e37de05c",
+        "delivery:5299b0052450bae2da3059b2775d9b8a8a585b59"
+      ],
+      "outcome": "completed"
     }
   ],
   "closure_results": [
@@ -494,6 +707,24 @@
       ],
       "lifecycle_generation": 0,
       "completion_result_id": "completion:656-preparation-stage1",
+      "disposition": "no_mutation",
+      "source_result": null
+    },
+    {
+      "result_id": "closure:1059ab0ca36f617b106b2066",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/prd.md",
+          "revision": "sha256:564f3c7d001c1728bba8a99cf7fab004c33f86139d480c6ea9bb59928f8dbcfc"
+        },
+        {
+          "locator": ".trellis/tasks/10-26-656-release-v070-guru6-preparation/closeout/closure/Y2xvc3VyZToxMDU5YWIwY2EzNmY2MTdiMTA2YjIwNjY.json",
+          "revision": "sha256:dbc22882ee5ea13c188b4c3ed0f159ccf5f7cd244fa7748bf8b35eee1a906870"
+        }
+      ],
+      "lifecycle_generation": 1,
+      "completion_result_id": "completion:656-preparation-gen1",
       "disposition": "no_mutation",
       "source_result": null
     }
