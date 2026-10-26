@@ -19,8 +19,8 @@ from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.identity import task_inventory
 
-TARGET_CORE = "0.7.0-castbox.4"
-TARGET_GURU = "0.7.0-guru.5"
+TARGET_CORE = "0.7.0-castbox.5"
+TARGET_GURU = "0.7.0-guru.6"
 GURU_SOURCE_REPOS = frozenset(
     prefix + "castbox/guru-trellis" + suffix
     for prefix in ("https://github.com/", "git@github.com:", "ssh://git@github.com/")

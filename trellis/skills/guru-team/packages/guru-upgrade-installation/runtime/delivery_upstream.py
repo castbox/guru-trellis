@@ -58,7 +58,7 @@ def packages(fork: Path) -> tuple[Path, Path]:
             other = json.loads(core_manifest.read_text())
         except (OSError, ValueError) as exc:
             raise MigrationError("Cannot read the selected CLI's matching Core package") from exc
-        if (value.get("version") != "0.7.0-castbox.4"
+        if (value.get("version") != "0.7.0-castbox.5"
                 or other.get("name") != "@mindfoldhq/trellis-core"
                 or other.get("version") != value["version"]):
             raise MigrationError("Delivery migration requires the matching installed CLI/Core candidate")
