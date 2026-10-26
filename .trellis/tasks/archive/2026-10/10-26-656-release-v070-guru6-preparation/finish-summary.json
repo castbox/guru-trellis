@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-10-26T09:31:38Z",
+  "generated_at": "2026-10-26T11:12:21Z",
   "generator": "guru-team.finalize-task",
   "task": {
     "slug": "10-26-656-release-v070-guru6-preparation",
@@ -11,7 +11,7 @@
   },
   "git": {
     "base_branch": "main",
-    "branch": "codex/656-existing-agents-custom-recovery",
+    "branch": "codex/656-reactivate-readme-recovery",
     "commits": [],
     "changed_paths": []
   },
@@ -47,7 +47,7 @@
       ],
       "pr_refs": [],
       "branches": [
-        "codex/656-existing-agents-custom-recovery"
+        "codex/656-reactivate-readme-recovery"
       ],
       "paths": [
         ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation",
