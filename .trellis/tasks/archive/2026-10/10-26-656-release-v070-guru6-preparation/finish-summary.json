@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-26T04:47:43Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-26-656-release-v070-guru6-preparation",
+    "title": "准备 v0.7.0-guru.6 正式发布",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-26-656-release-v070-guru6-preparation",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/656-release-v070-guru6-preparation",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "准备 v0.7.0-guru.6 正式发布",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation",
+          ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/prd.md",
+          ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#656"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/656-release-v070-guru6-preparation"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation",
+        ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/prd.md",
+        ".trellis/tasks/archive/2026-10/10-26-656-release-v070-guru6-preparation/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "准备 v0.7.0-guru.6 正式发布；#656；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
