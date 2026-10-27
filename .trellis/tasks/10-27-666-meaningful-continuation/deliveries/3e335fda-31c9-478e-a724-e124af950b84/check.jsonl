@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "会话和实际提示的原范围语义审核"}
+{"file": ".trellis/workflow.md", "reason": "原owner顺序、唯一consumer及停止/恢复边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "完整正文、来源角色和阶段范围合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "切片需求正文及来源完整性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "设计正文、原接口和来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前staged Policy及Docs Plan边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证价值、原生/安装证据与矩阵ownership"}
