@@ -1,5 +1,7 @@
 # Task 与 Delivery 生命周期
 
+本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/requirements/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 并行 #663 晋升的完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/requirements/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
@@ -133,3 +135,15 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 **R663-04 / BEH663-MAINTENANCE**：final_integration promotion 请求 Bootstrap 后，caller 保留同一 Task/DeliveryKey、planning_root 和调用期 continuation，按声明的 phase2 maintenance 输入进入原 owner，再 fresh 回同一次 promotion。whole-task/Delivery 及既有 repair 回程均闭合；维护成功不等于 reviewed_promoted、最终 Check 或业务阶段推进。
 
 **R663-05 / BEH663-DISTRIBUTION**：当前公开输入例子同时匹配 profile/aggregate schemas，出口通过声明 projection 与唯一 consumer 输入组合；动态 stage、首次 before 缺失和正常返工/恢复/stop保持语义。canonical、完整 installed、dogfood 与声明平台按 matching preset 成套采用，明确迁移、mode、sidecar和未验证层次。精确接口仍由原 packages 单写。
+
+## R679：明确接收会话、首失败与文档展示
+
+**R679-01 / BEH679-RECEIVE**：主会话承接创建结果或独立审核会话接收明确 TaskId/generation、DeliveryKey 和 planning_root 后，先核接收者自己的身份、唯一 checkout 与公共 current。存在 context 而缺 Task 绑定时，经原 Identity/Ensure/Bind 恢复该明确对象；同 Task 缺选择时，经原 Creation Selection 选择明确的非终态切片。匹配事实复核复用，不重复写；恢复后重读 key、generation、phase、scope、root，并回原未完 profile/purpose。已有 Planning 不重跑初始 Author，必要前序缺失或过期回原 producer。新绑定不是切片选择，也不是阶段通过。真正无 context 沿原 explicit-task 校验，不用显式 key 隐藏有 context 的缺失、冲突或错误。
+
+**R679-02 / BEH679-FIRST-FAILURE**：接收调用区分 no_current_task、no_current_delivery、current、terminal_delivery、error，以及不同选择和真实 generation/phase/scope 失配。诊断指出本次首先失败条件与原 owner；恢复后再读其余条件。不同合法选择不覆盖，终态不重开，损坏/不可读/API不支持或 checkout 歧义不当作缺绑定。原 Author/Architecture planning 校验保拒绝强度、错误 code 和出口形状，细化具体 field_path/remediation；早于 Delivery guard 的真实 API 错误也保留。精确诊断与 matching 迁移见原 package 及 MIGRATION-679，不新增状态模型。
+
+**R679-03 / BEH679-STANDALONE**：standalone_request 是来源 profile，执行 mode 独立。Readiness 使用真实 Wording producer 请求身份与 mode，调用方定位可不同；source_request_sha256 仍绑定完整当前 draft authority。普通消费者构造错误后，当前 Agent 重读未改 source/适用 producer，完整重建 consumer 并重审自身十维，再消费原 record/check/invoke 的真实结果。不得只补字段、改 producer、手写派生 linkage 或 receipt；真实 source/authority 或前序变化回原 producer。精确字段和可执行 recipe 仍由原 Readiness package 单写。
+
+**R679-04 / BEH679-ARTIFACTS**：明确选定 Delivery 的展示把真实完整 key 传原 resolver，展示实际 planning_root 中存在的文档。尚无或无当前 Delivery 的 Task-only 停点，只展示该精确 TaskRef 内存在的整体根 PRD，不猜选、构造 key 或创建空切片。Finish 后明确切片使用实际 archive TaskRef/key。实际 resolver 调用和正常缺文件行为须验证，文本一致只证明分发。
+
+上述行为保持 R531/R657 的 Task/Delivery 公共模型、单 writer 与原义务，Architecture first-read/独立性和适用结果保持。不能修改 context 环境借用别的会话，不能从 inventory 唯一项或 phase/文件推导身份与 pass。对应职责见 D679-01..04，验证见 T679-01..06；本批来源与窄补充边界见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。

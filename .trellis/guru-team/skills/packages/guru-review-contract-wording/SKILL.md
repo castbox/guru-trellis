@@ -145,7 +145,15 @@ API and scan/review all three current files. Never review Task-root documents as
 a surrogate. With no official context key, its explicit DeliveryKey resolves
 through the original projection's current-generation/C4/public-record checks;
 with context, require the matching official current selection and preserve
-missing/stale/conflict stops. Current change_request and explicit_paths retain their existing
+stale/conflict stops. Before scan/review/invoke, check this receiving session's
+own facts. For missing Task binding invoke original Identity/Ensure/Bind; for
+missing selection invoke `guru-create-delivery:delivery_selection` on the
+explicit applicable key. Execute the installed workflow's `Explicit
+receiving-session continuation` and reread key/generation, phase, scope and
+planning_root. Reuse matching facts and retain this unfinished Wording step;
+terminal, different selection or error returns to its original owner. This
+entry is identical in workflow and standalone mode and never infers pass from
+restored binding. Current change_request and explicit_paths retain their existing
 contracts. The old planning_artifacts activity profile is retired; no Task
 status fallback is supported. Pass carries its continuation; content_changed carries actual change_refs, key and task_ref to
 their selected router. Recorder/checker envelope carries key/task_ref and the

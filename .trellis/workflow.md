@@ -505,7 +505,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-contract-wording-change-router | Delivery planning content_changed copies public task_ref/delivery_key/change_refs unchanged to Author input, adding only profile=delivery_wording_reentry and mode=workflow; never read private Wording revisions. Author re-enters the earliest affected dependency. Other profiles retain their original affected wording/upstream refresh. |
 | guru-task-intake-router | Project `ready.transition.target.kind` exactly once: `proposed_draft` invokes `guru-create-issue`, while `existing_issue` and `standalone_request` invoke `guru-create-task`; never turn an Issue creation result into task creation without fresh Sync and Intake. |
 | guru-sync-base | Re-enter `guru-sync-base` and then fresh Intake. `guru-create-issue:created` supplies the newly created exact source Issue and continues as a live Issue, never as a draft/Issue binding; `guru-create-issue:refresh_review` has no created Issue and retains the proposed draft for renewed review. `guru-create-task:refresh_review` retains its existing reviewed source route. No task creation is implied by this target. |
-| guru-task-created | Resolve live TaskId/generation/session and checkout, retain adjacent source_selection/revision_refs, then invoke Author task_scope_requirements. Missing selection re-enters original Clarify/context; metadata/files do not reconstruct it. |
+| guru-task-created | Resolve live TaskId/generation and checkout, then check the receiving session's own binding through the explicit receiving-session continuation. Retain adjacent source_selection/revision_refs and invoke Author task_scope_requirements only after that Task entry is satisfied; no Delivery is needed for root requirements. Missing source selection re-enters original Clarify/context; metadata/files do not reconstruct it. |
 | guru-current-task-identity-router | Resume the current task owner only after exact TaskId, generation and source authority validation. |
 | guru-task-source-review-router | Return ambiguous legacy source to fresh semantic review; do not guess Issue disposition from branch or PR text. |
 | guru-task-branch-established-router | Re-resolve the active checkout with the established branch binding. |
@@ -523,7 +523,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-current-phase-router | Use current C3/C4/C5-resolved Task identity or explicit task mode, then the sole public Delivery continuation. Planning resumes the actual outstanding obligation in the sole continuation: only initial slice requirements enter Author delivery_initial_review with fresh original source selection. Existing planning resumes its applicable Author/Wording/Architecture/Approval owner, or current approved goes to Activation; missing/stale outputs re-enter their original producer, never reset planning from phase alone. No-current Delivery follows actual scope/Creation/Completion/closeout needs. Missing selection returns to its original producer. No Task status or recovered creation DTO supplies a phase. |
 | guru-task-plan-clarify-scope-router | Enter the Scope Change Gate through guru-clarify-requirements. |
 | phase-1-delivery-activation | Present the current Delivery approved plan, then invoke `guru-activate-delivery` after its dialogue boundary. |
-| guru-delivery-planning-author-router | Consume Creation/Selection's unchanged created DTO, then reread that exact public DeliveryKey/current selection and phase through the installed API. Verify current Task generation and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Wording/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it. |
+| guru-delivery-planning-author-router | Consume Creation/Selection's unchanged created DTO through the explicit receiving-session continuation before entering Author or another stage owner. That continuation checks the receiving caller's own Task/Delivery facts and rereads this exact public key, phase, scope and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Wording/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it. |
 | guru-delivery-selection-router | Read the exact TaskKey inventory for a real selection; obtain an explicit DeliveryKey before invoking Creation selection. Never infer identity from a sole inventory row. |
 | guru-delivery-activation-planning-router | Return the selected Delivery to its current Planning owner, refresh affected evidence, then invoke Delivery Approval. |
 | guru-delivery-scope-revised-router | Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from delivery_scope_revised; add fixed profile=delivery_active_task_scope_change; explicitly invoke guru-author-task-plan. This is same-slice rework, never a Planning approval. |
@@ -765,6 +765,12 @@ Before substantive output on continuation, load the full
 contract. If the complete current text is unavailable after resume or compaction,
 read it again. Short progress and missing-file diagnostics follow that contract.
 
+A caller that receives an explicit TaskId/generation and optional DeliveryKey
+from a real producer or current request first executes the explicit
+receiving-session continuation below. An absent binding in that receiving chat
+does not turn this same-object continuation into a new Intake. Without such an
+explicit object, retain the no-Task route below; inventory never selects one.
+
 For start, ordinary continuation, a resumed/new chat, and explicit
 `trellis-continue`, first read the actual current-chat binding in this Git
 common-dir and the current request. A valid formal Task uses the exact bound
@@ -790,6 +796,38 @@ native entry cannot deliver that upstream return to the Guru caller, stop that
 dependent path and report the exact upstream entry/return and missing caller
 consumption as unverified. Do not patch the upstream entry or claim a DTO/text
 check proves native continuation.
+
+### Explicit receiving-session continuation
+
+Before dispatching the original Author, Wording, Architecture, Approval or
+Activation entry, mandatory invoke `guru-establish-task-identity` and
+`guru-ensure-task-checkout` for the explicit TaskId/generation. Consume their
+actual exits to resolve one current TaskRef and registered checkout. Then read
+the receiving caller's own public Delivery current query. A producer's binding,
+explicit key or working directory never substitutes for this caller's facts.
+
+| Receiving caller fact | Mandatory original owner and continuation |
+| --- | --- |
+| Resolver confirms no context key | Use the existing explicit-task projection for the deliberately supplied key; verify current generation, C4, public relationship and supported profile. Do not write a session. |
+| `no_current_task` with an explicit current Task | Invoke `guru-bind-task-session:delivery_rebind_missing_session`, then reread current. This restores only the missing Task binding; it does not select a Delivery. |
+| Same Task/generation, `no_current_delivery`, and an explicit applicable nonterminal key | Invoke `guru-create-delivery:delivery_selection` on that key, then reread current. Do not allocate another slice. |
+| `current` matching the explicit Task/generation/key | Reuse the facts without another binding or selection write; reread phase, scope and public planning_root before the original entry. |
+| Another Task/key, `terminal_delivery`, or real generation/phase/scope mismatch | Return to the original selection, terminal/release, lifecycle, stage or scope owner for that actual condition. Never overwrite a valid selection or reopen a terminal slice as missing-binding recovery. |
+| `error`, unreadable/corrupt binding, unsupported API, or ambiguous identity/checkout | Preserve the actual first error and its original owner. Stop or recover there; do not classify it as `no_current_task`. |
+
+Each invoked Skill owns its entry checks, semantic judgment and writer; this
+table owns only their mandatory cross-Skill order. After a successful Bind or
+Selection, recheck all remaining conditions against the same explicit object.
+Task-only requirements have no selection step. A same-object recovery needs no
+new scope choice or repeated continuation question.
+
+Return to the original unfinished profile/purpose with its still-applicable
+producer output and source selection. Existing planning does not restart
+initial Author; lost/stale output returns to its original producer. Restoring
+binding or selection preserves plans, applicable results, phase and Git
+resources, and produces no Planning/Check/Review pass. Architecture retains its
+independent reviewer and baseline-first read order. Do not borrow another
+chat's context, change environment identity, or infer a gate from files/phase.
 
 ### Bound formal Task / Delivery continuation
 
@@ -1047,6 +1085,12 @@ Delivery Planning entry, including prompt/start/continue/resume/compression and
 mapped reentries. Load its closed profile from the actual original route.
 The Author Skill owns source-design convergence, writing, policy/Docs plan,
 qualification and dependency judgments; the workflow does not duplicate them.
+
+Before each Delivery Planning owner entry, execute the sole continuation's
+explicit receiving-session route for its actual TaskId/generation/key. This
+also applies to a new independent Architecture receiving chat. Missing session
+facts are restored only through the original Bind/Selection owners; the
+Planning validators remain read-only and cannot supply those writes.
 
 Consume this one chain by stable owner and actual declared exits:
 Author task_scope_requirements → scope_requirements_ready → original Clarify
@@ -1650,11 +1694,17 @@ for Completion or Closure.
 
 Before a planning, Phase 2, Branch Review, Delivery, Completion, Closure, or Finish stop, resolve human-authored artifacts:
 
-    .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path>
+For an explicitly selected Delivery, pass its actual complete key:
+
+    .trellis/guru-team/scripts/bash/resolve-human-artifacts.sh --json --task <task-path> --delivery-key '<DeliveryKey JSON>'
 
 Show links only for existing `prd.md`, `design.md`, and `implement.md`. Resolve
-from the active task through Delivery and Completion, and from the archive only
-after Finish. Do not require a fixed table, and do not expose JSON gates, checkpoints, raw agent
+from that active TaskRef/key through Delivery and Completion. After Finish,
+use the actual archive TaskRef and the same explicit DeliveryKey. At a Task-only
+stop before a Delivery exists or with no current Delivery, show only the
+existing root `prd.md` from the exact TaskRef; do not call the slice resolver
+without a key, guess a slice from inventory, fabricate a key, or create an empty
+Delivery for presentation. Do not require a fixed table, and do not expose JSON gates, checkpoints, raw agent
 reports, payloads, or digests as standard handoff artifacts.
 
 ### Interaction and side effects

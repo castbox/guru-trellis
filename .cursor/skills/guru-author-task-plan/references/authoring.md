@@ -81,7 +81,11 @@ The current stage owner performs legal rework to planning before writing here.
 When the official context resolver has no key, pass this profile's explicit
 DeliveryKey to the original projection for current-generation/C4/public-record
 validation; no session selection is required or written. With context, retain
-official current-selection matching, including missing/stale/conflicting stops.
+official current-selection matching. Before any planning write or invoke,
+the receiving Author executes its Skill's original-owner entry recovery for
+missing binding/selection and rereads the same key, phase, scope and root.
+Actual stale/conflicting/terminal/error conditions stop at their original
+owners; they are never reclassified as missing facts or no-context mode.
 After a successful delivery_initial_review requirements_ready, invoke Creation's
 retire_creation_result port with task_ref/key. Only that producer validates and
 retires its matching pending operation; Author never reads its private input.

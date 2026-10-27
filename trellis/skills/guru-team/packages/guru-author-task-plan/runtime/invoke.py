@@ -42,7 +42,9 @@ def _task(root: Path, task_ref: str) -> Path:
                 != (resources.binding_revision, resources.branch_name)):
             raise CommandError("stale_identity", "task_ref", "Resolve the current bound task checkout.", 3)
         return path
-    except (LifecycleContractError, KeyError, OSError) as exc:
+    except LifecycleContractError as exc:
+        raise CommandError("stale_identity", exc.field_path, f"{exc.code}: {exc.remediation}", 3) from exc
+    except (KeyError, OSError) as exc:
         raise CommandError("stale_identity", "task_ref", "Resolve the current TaskId and checkout through their original owners.", 3) from exc
 
 
@@ -80,11 +82,26 @@ def execute(package_root: Path, root: Path, public: dict, owner: dict) -> dict:
             key = public["delivery_key"]
             delivery = projection.resolve(key)
             current = projection.current(key)
-            if (key["lifecycle_generation"] != projection.read_record()["lifecycle_generation"]
-                    or current.get("kind") != "current" or current.get("key") != key
-                    or delivery["phase"] != "planning"
-                    or delivery["scope_ref"]["authority"] != projection.read_record()["accepted_scope"]):
-                raise CommandError("stale_identity", "delivery_key", "Re-enter the original stage owner for legal rework and exact selection before Author.", 3)
+            kind = current.get("kind")
+            if kind == "no_current_task":
+                raise CommandError("stale_identity", "session.task", "This receiving session has no Task binding. Invoke guru-establish-task-identity, guru-ensure-task-checkout and guru-bind-task-session for the explicit Task, then reread current before Author.", 3)
+            if kind == "no_current_delivery":
+                raise CommandError("stale_identity", "session.delivery", "This receiving session has no Delivery selection. Invoke guru-create-delivery:delivery_selection for the explicit applicable key, then reread current before Author.", 3)
+            if kind == "terminal_delivery":
+                raise CommandError("stale_identity", "delivery.phase", "The receiving session selects a terminal Delivery. Return to its original terminal/release owner; do not reopen it through Author.", 3)
+            if kind == "error":
+                raise CommandError("stale_identity", "current.error", f"Current Delivery query failed ({current['code']}): {current['message']} Return to the original identity/session or installation owner; do not treat this as a missing binding.", 3)
+            if kind != "current":
+                raise CommandError("stale_identity", "current.kind", "Restore the supported public current query through the installation owner before Author.", 3)
+            if current.get("key") != key:
+                raise CommandError("stale_identity", "current.key", "The receiving session selects a different Task/Delivery. Resolve that selection through its original owner; do not overwrite it to enter Author.", 3)
+            record = projection.read_record()
+            if key["lifecycle_generation"] != record["lifecycle_generation"]:
+                raise CommandError("stale_identity", "delivery_key.lifecycle_generation", "Resolve the current Task generation through guru-establish-task-identity before Author.", 3)
+            if delivery["phase"] != "planning":
+                raise CommandError("stale_identity", "delivery.phase", "Return to the actual stage owner for legal rework to planning before Author.", 3)
+            if delivery["scope_ref"]["authority"] != record["accepted_scope"]:
+                raise CommandError("stale_identity", "delivery.scope_ref.authority", "Refresh the changed whole-Task scope through original Clarify and the current stage's scope-revision owner before Author.", 3)
             projection._call(projection.api.delivery_store.verify_authority, root, delivery["scope_ref"]["authority"])
             directory = projection.planning_directory(key)
         except LifecycleContractError as exc:

@@ -50,7 +50,7 @@ class ReadinessAdapterTests(unittest.TestCase):
         shutil.copytree(SKILLS / "runtime", installed / "runtime", ignore=ignore)
         shutil.copytree(SKILLS / "schemas", installed / "skills/schemas", ignore=ignore)
         shutil.copytree(SKILLS / "consumers", installed / "skills/consumers", ignore=ignore)
-        for skill in ("guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements",
+        for skill in ("guru-select-workflow-mode", "guru-sync-base", "guru-discover-change-context", "guru-clarify-requirements",
                       "guru-review-contract-wording", "guru-review-change-request"):
             shutil.copytree(SKILLS / "packages" / skill, cls.packages / skill, ignore=ignore)
         (cls.fixture / ".gitignore").write_text(".trellis/.runtime/\n__pycache__/\n*.pyc\n")
@@ -173,13 +173,14 @@ class ReadinessAdapterTests(unittest.TestCase):
                         self.assertFalse((self.fixture / ".trellis/tasks").exists())
                         self.assertFalse((self.fixture / ".trellis/workspace").exists())
 
-    def draft_seed(self, recipe="readiness-ready", *, source=None):
+    def draft_seed(self, recipe="readiness-ready", *, source=None,
+                   mode="standalone", profile="proposed_draft"):
         package = self.packages / "guru-review-change-request"
         runtime = load_package_owner_runtime(self.target, package.name)
         binary = write_fake_gh(self.root, "readiness-ready")
         with mock.patch.dict(os.environ, {"PATH": f"{binary}:{os.environ['PATH']}"}):
             return prepare_readiness_invocation(
-                runtime, self.fixture, package, recipe, "standalone", "proposed_draft",
+                runtime, self.fixture, package, recipe, mode, profile,
                 source_override=source,
             )
 
@@ -191,26 +192,9 @@ class ReadinessAdapterTests(unittest.TestCase):
         )
         return recorded, envelope, output
 
-    def test_minimal_draft_and_executable_public_recipe_use_real_producers(self):
-        seed, prerequisites, source = self.draft_seed()
-        original_producers = copy.deepcopy(prerequisites["public_outputs"])
-        self.assertEqual(
-            ["context_ready", "clear", "pass"],
-            [output["exit_id"] for output in original_producers.values()],
-        )
-        locator = original_producers["wording"]["transition"]["target_locator"]
-        self.assertEqual(locator, source["draft_id"])
-        self.assertEqual(locator, seed["owner_result"]["target"]["draft_id"])
-        self.assertEqual(locator, seed["public_input"]["target_locator"])
-        self.assertEqual(
-            {"status", "reviewer", "summary"},
-            set(seed["owner_result"]["semantic_review"]["ai_review_gate"]),
-        )
-        self.assertNotIn("prerequisites", seed["owner_result"])
-        self.assertNotIn("evidence_linkage", seed["owner_result"])
-
-        # Execute the public Markdown recipe itself, with actual producer stdout
-        # and an explicitly objective-test semantic sample (not an Agent Gate).
+    def run_public_draft_recipe(self, seed, prerequisites, source, *, mistaken_id=False):
+        # Execute the public Markdown recipe, not a copied target constructor.
+        # The review is an objective fixture sample, not an Agent semantic Gate.
         contract = (SKILLS / "packages/guru-review-change-request/references/contract.md").read_text()
         recipe = contract.split("```python\n", 1)[1].split("```", 1)[0]
         completed_review = {
@@ -219,21 +203,74 @@ class ReadinessAdapterTests(unittest.TestCase):
         }
         driver = recipe + "\nimport sys\ninputs = json.load(sys.stdin)\n" + (
             "envelope = draft_envelope(inputs['source'], inputs['producer'], "
-            "inputs['repo'], inputs['review'])\n"
-            "print(json.dumps(record_check_invoke(envelope)))\n"
+            "inputs['repo'], inputs['review'], profile=inputs['profile'], "
+            "caller_locator=inputs['caller'])\n"
+            "if inputs['mistaken_id']:\n"
+            "    envelope['owner_result']['target']['request_id'] = 'copied-task-name'\n"
+            "try:\n"
+            "    print(json.dumps(record_check_invoke(envelope)))\n"
+            "except subprocess.CalledProcessError as error:\n"
+            "    print(error.stdout, end='')\n"
+            "    print(error.stderr, end='', file=sys.stderr)\n"
+            "    raise SystemExit(error.returncode)\n"
         )
-        result = subprocess.run(
+        return subprocess.run(
             [sys.executable, "-B", "-c", driver], cwd=self.fixture,
-            input=json.dumps({"source": source, "producer": original_producers["wording"],
+            input=json.dumps({"source": source, "producer": prerequisites["public_outputs"]["wording"],
                               "repo": seed["owner_result"]["target"]["repo"],
-                              "review": completed_review}),
+                              "review": completed_review, "profile": seed["public_input"]["profile"],
+                              "caller": "docs/readiness-request.md", "mistaken_id": mistaken_id}),
             text=True, capture_output=True, check=False,
         )
+
+    def assert_public_recipe(self, seed, prerequisites, source):
+        original_producers = copy.deepcopy(prerequisites["public_outputs"])
+        self.assertEqual(
+            ["context_ready", "clear", "pass"],
+            [output["exit_id"] for output in original_producers.values()],
+        )
+        locator = original_producers["wording"]["transition"]["target_locator"]
+        self.assertEqual(locator, source["draft_id"])
+        profile = seed["public_input"]["profile"]
+        self.assertEqual(locator, seed["owner_result"]["target"][
+            "draft_id" if profile == "proposed_draft" else "request_id"
+        ])
+        self.assertEqual(locator, seed["public_input"]["target_locator"])
+        self.assertEqual(
+            {"status", "reviewer", "summary"},
+            set(seed["owner_result"]["semantic_review"]["ai_review_gate"]),
+        )
+        self.assertNotIn("prerequisites", seed["owner_result"])
+        self.assertNotIn("evidence_linkage", seed["owner_result"])
+
+        if profile == "standalone_request":
+            mistaken = self.run_public_draft_recipe(seed, prerequisites, source, mistaken_id=True)
+            self.assertNotEqual(0, mistaken.returncode)
+            self.assertRegex(mistaken.stdout + mistaken.stderr, "stale_identity.*target.request_id")
+        # Rebuild from the complete original source/output after the error.
+        # This proves consumer transport; native AI reconstruction is separate.
+        result = self.run_public_draft_recipe(seed, prerequisites, source)
         self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        self.assertEqual("ready", json.loads(result.stdout)["exit_id"])
+        output = json.loads(result.stdout)
+        self.assertEqual("ready", output["exit_id"])
+        self.assertEqual(seed["transition"]["mode"], output["mode"])
+        target = output["transition"]["target"]
+        self.assertEqual(profile, target["kind"])
+        if profile == "standalone_request":
+            self.assertEqual(locator, target["request_id"])
+            self.assertEqual("docs/readiness-request.md", target["caller_locator"])
+            self.assertNotEqual(target["request_id"], target["caller_locator"])
+        else:
+            self.assertEqual(locator, target["draft_id"])
         self.assertEqual(original_producers, prerequisites["public_outputs"])
         self.assertEqual("", run_git(self.fixture, "status", "--porcelain"))
         self.assertFalse((self.fixture / ".trellis/tasks").exists())
+
+    def test_executable_public_recipe_draft_and_standalone_use_real_producers(self):
+        for mode in ("workflow", "standalone"):
+            for profile in ("proposed_draft", "standalone_request"):
+                with self.subTest(mode=mode, profile=profile):
+                    self.assert_public_recipe(*self.draft_seed(mode=mode, profile=profile))
 
     def test_five_draft_authoring_mistakes_rebuild_consumer_without_producer_changes(self):
         seed, prerequisites, _ = self.draft_seed()

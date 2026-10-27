@@ -4,6 +4,7 @@ import copy
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -137,12 +138,76 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         self.assertEqual(command["runtime_role"], "check")
         self.assertEqual(command["side_effect"], "repo_read")
         fixture, key, directory, path = self.planning_fixture()
+        complete = self.documented_artifacts(fixture, fixture.task_ref, key)["result"]
+        self.assertEqual([item["path"] for item in complete["markdown_artifacts"]],
+                         [(directory / name).relative_to(fixture.root.resolve()).as_posix()
+                          for name in ("prd.md", "design.md", "implement.md")])
+        self.assertTrue(all(item["exists"] for item in complete["markdown_artifacts"]))
         (directory / "implement.md").unlink()
-        result = self.command(fixture, "resolve-human-artifacts.sh", "--task", fixture.task_ref,
-                              "--delivery-key", json.dumps(key), "--json")["result"]
+        result = self.documented_artifacts(fixture, fixture.task_ref, key)["result"]
         self.assertEqual(result["task_dir_relative"], directory.relative_to(fixture.root.resolve()).as_posix())
         self.assertEqual([item["exists"] for item in result["markdown_artifacts"]], [True, True, False])
+        self.assertEqual(result["markdown_artifacts"][2]["link"], "")
         self.assertEqual((fixture.task / "prd.md").read_text(), "整体scope\n")
+
+    def documented_artifacts(self, fixture, task_ref, key):
+        source = self.package.parents[4]
+        workflow = (source / "trellis/workflows/guru-team/workflow.md").read_text()
+        section = workflow.split("### Human artifacts\n", 1)[1].split("### Interaction", 1)[0]
+        line = next(line.strip() for line in section.splitlines()
+                    if line.strip().startswith(".trellis/guru-team/scripts/bash/resolve-human-artifacts.sh "))
+        command = shlex.split(line)
+        # Exercise the actual documented argv through the same compatibility
+        # wrapper; this is behavior evidence, not a text-parity assertion.
+        command[0] = str(source / "trellis/workflows/guru-team/scripts/bash/resolve-human-artifacts.sh")
+        command = [task_ref if arg == "<task-path>" else json.dumps(key) if arg == "<DeliveryKey JSON>" else arg
+                   for arg in command]
+        result = subprocess.run([*command, "--root", str(fixture.root)], cwd=fixture.root,
+                                text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return json.loads(result.stdout)
+
+    def test_task_only_presentation_does_not_select_or_create_a_delivery(self):
+        fixture = installed_fixture(self)
+        before = (fixture.task / "task.json").read_bytes()
+        current = fixture.projection.current()
+        self.assertEqual(fixture.projection.read_record()["deliveries"], [])
+        # Task-only presentation reads the exact existing whole-Task PRD. The
+        # slice resolver still requires a real key and cannot choose one.
+        self.assertEqual((fixture.root / fixture.task_ref / "prd.md").read_text(), "整体scope\n")
+        error = self.command(fixture, "resolve-human-artifacts.sh", "--task", fixture.task_ref,
+                             "--json", expected=2)
+        self.assertEqual((error["code"], error["field_path"]), ("invalid_arguments", "arguments"))
+        self.assertEqual((fixture.task / "task.json").read_bytes(), before)
+        self.assertEqual(fixture.projection.current(), current)
+
+    def test_documented_artifacts_use_actual_archive_ref_and_key(self):
+        fixture, key, directory, _ = self.planning_fixture()
+        fixture.stop(key)
+        task_key = {name: key[name] for name in ("task_id", "lifecycle_generation")}
+        completion = {"result_id": "artifacts-completion", "owner_id": "guru-review-task-completion",
+                      "evidence": [fixture.scope], "lifecycle_generation": 0,
+                      "accepted_scope": fixture.scope, "delivery_result_ids": [], "outcome": "completed"}
+        fixture.projection.apply({"api_version": "1.0", "operation": "complete_task", "key": task_key,
+                                  "owner_role": "completion", "owner_id": completion["owner_id"], "result": completion})
+        closure = {"result_id": "artifacts-closure", "owner_id": "guru-complete-task-closure",
+                   "evidence": [fixture.scope], "lifecycle_generation": 0,
+                   "completion_result_id": completion["result_id"], "disposition": "no_mutation", "source_result": None}
+        fixture.projection.apply({"api_version": "1.0", "operation": "close_task", "key": task_key,
+                                  "owner_role": "closure", "owner_id": closure["owner_id"], "result": closure})
+        archived = subprocess.run([sys.executable, str(fixture.root / ".trellis/scripts/task.py"),
+                                   "archive", fixture.task_ref, "--no-commit"],
+                                  cwd=fixture.root, text=True, capture_output=True)
+        self.assertEqual(archived.returncode, 0, archived.stdout + archived.stderr)
+        archive = next((fixture.root / ".trellis/tasks/archive").glob("*/*/task.json")).parent
+        archive_ref = archive.resolve().relative_to(fixture.root.resolve()).as_posix()
+        before = (archive / "task.json").read_bytes()
+        result = self.documented_artifacts(fixture, archive_ref, key)["result"]
+        self.assertTrue(result["archived"])
+        self.assertTrue(all(row["exists"] for row in result["markdown_artifacts"]))
+        self.assertTrue(all(row["path"].startswith(archive_ref + "/deliveries/" + key["delivery_id"] + "/")
+                            for row in result["markdown_artifacts"]))
+        self.assertEqual((archive / "task.json").read_bytes(), before)
 
 
     def test_artifact_help_and_compatibility_wrapper_route_to_package(self) -> None:
@@ -183,6 +248,7 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
                 ("revision_required", {"kind": "workflow", "id": "guru-task-plan-approval-revision-router"}),
                 ("clarify_scope", {"kind": "workflow", "id": "guru-task-plan-clarify-scope-router"}),
                 ("blocked", {"kind": "stop", "id": "task-plan-approval-blocked"}),
+                ("legacy_controls_retired", {"kind": "workflow", "id": "legacy-maintenance-approve-task-plan-legacy-controls-retired"}),
             ],
         )
         private = self.interface["public_contracts"]["private_artifacts"]

@@ -61,7 +61,7 @@ class PlanningChainTest(unittest.TestCase):
                 name[:-6], '.trellis/workflow.md', 'Current workflow', '--delivery', self.key['delivery_id']],
                 cwd=self.root, check=True, capture_output=True)
 
-    def architecture(self, candidate=None):
+    def architecture_envelope(self, candidate=None):
         package = PACKAGE.parent / 'guru-maintain-architecture-baseline'
         public = json.loads((package / 'examples/public-input-candidate-assessment-3.0.json').read_text())
         public.update(schema_version='delivery-1.0', profile='delivery_task_impact_sync', task_locator=self.ref,
@@ -84,7 +84,11 @@ class PlanningChainTest(unittest.TestCase):
             ai_review_gate={'status':'passed','reviewed_scope':'Fixture current boundary','evidence_summary':'Fixture only','findings':[],'conclusion':'Existing responsibility retained.'})
         if candidate is None:
             owner['promotion_state'] = 'no_change'
-        return self.command(package.name, 'invoke-guru-maintain-architecture-baseline', ['--invocation','-'], {'public_input':public,'owner_result':owner})
+        return {'public_input':public,'owner_result':owner}
+
+    def architecture(self, candidate=None, expected=0):
+        return self.command('guru-maintain-architecture-baseline', 'invoke-guru-maintain-architecture-baseline',
+            ['--invocation','-'], self.architecture_envelope(candidate), expected=expected)
 
     def wording(self, changed=False):
         package = PACKAGE.parent / 'guru-review-contract-wording'
