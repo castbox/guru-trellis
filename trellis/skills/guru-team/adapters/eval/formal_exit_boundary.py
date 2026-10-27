@@ -27,11 +27,13 @@ def main() -> int:
     relative = evidence.relative_to(root).as_posix()
     schemas = root / ".trellis/guru-team/skills/schemas"
     if args.completed.startswith("readiness-"):
-        for name in ("source.json", "public-input.json", "owner-result.json", "producer-output.json"):
-            json.loads((evidence / name).read_text())
+        inputs = {name: json.loads((evidence / name).read_text()) for name in (
+            "source.json", "public-input.json", "owner-result.json", "producer-output.json",
+        )}
+        profile = inputs["public-input.json"]["profile"]
         (evidence / "initial-error.txt").read_text()
         prompt = (
-            "请接续当前 proposed_draft 的 Readiness 调用。"
+            f"请接续当前 {profile} 的 Readiness 调用。"
             + f"实际 source、caller input、失败 consumer owner result、最后实际 producer 公共输出和命令错误都在 {relative}/，"
             "分别是 source.json、public-input.json、owner-result.json、producer-output.json 和 initial-error.txt。"
             "业务源在 docs/source.md。读取当前安装 Skill、合同和所需路由，准确说明当前可用事实，"

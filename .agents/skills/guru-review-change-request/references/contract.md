@@ -316,6 +316,14 @@ label such as `#145`, or a newly invented id for the producer's locator.
 `examples/change-request.json` and `examples/public-proposed-draft-input.json`
 illustrate the same draft identity; they supply no real prerequisite output.
 
+For `standalone_request`, use that same actual producer locator as
+`public_input.target_locator`, current source `draft_id`, and authored
+`target.request_id`. `target.caller_locator` identifies the actual caller and
+can differ from the request identity. Do not use a Task name, Issue label or
+display title as `request_id`. This source profile accepts both execution
+modes; retain `transition.mode` for public input and owner result rather than
+forcing `standalone` from the profile name.
+
 `source_request_sha256` hashes the complete authority projection below using
 UTF-8 canonical JSON (`ensure_ascii=False`, sorted keys, separators `,` and
 `:`). `body_sha256` hashes only the current UTF-8 body bytes. These are distinct
@@ -342,13 +350,15 @@ import hashlib
 import json
 import subprocess
 
-def draft_envelope(draft_source, wording_output, repo_ref, completed_review):
+def draft_envelope(draft_source, wording_output, repo_ref, completed_review,
+                   *, profile="proposed_draft", caller_locator=None):
     transition = copy.deepcopy(wording_output["transition"])
     assert wording_output["exit_id"] == "pass"
     assert transition["stage"] == "wording_current"
     locator = transition["target_locator"]
     source = copy.deepcopy(draft_source)
     assert source["kind"] == "draft" and source["draft_id"] == locator
+    assert profile in {"proposed_draft", "standalone_request"}
     body_sha256 = hashlib.sha256(source["body"].encode("utf-8")).hexdigest()
     authority = {
         "kind": "draft", "repo": repo_ref, "issue_number": None,
@@ -360,14 +370,20 @@ def draft_envelope(draft_source, wording_output, repo_ref, completed_review):
     ).encode("utf-8")).hexdigest()
     owner = copy.deepcopy(completed_review)
     owner["mode"] = transition["mode"]
-    owner["target"] = {
-        "kind": "proposed_draft", "repo": repo_ref, "draft_id": locator,
+    target = {
+        "kind": profile, "repo": repo_ref,
         "source_request_sha256": authority_sha256,
     }
+    if profile == "proposed_draft":
+        target["draft_id"] = locator
+    else:
+        assert isinstance(caller_locator, str) and caller_locator.strip()
+        target.update(caller_locator=caller_locator, request_id=locator)
+    owner["target"] = target
     return {
         "schema_version": "1.0",
         "public_input": {
-            "profile": "proposed_draft", "source_exit": wording_output["exit_id"],
+            "profile": profile, "source_exit": wording_output["exit_id"],
             "mode": transition["mode"], "target_locator": locator,
             "continuation_id": transition["continuation_id"],
         },
@@ -393,6 +409,14 @@ def record_check_invoke(envelope):
     envelope["validation_receipt"] = checked["result"]["validation_receipt"]
     return command("invoke.sh")  # actual formal exit; consume its declared route
 ```
+
+For a standalone request, call this same recipe with
+`profile="standalone_request"` and the real `caller_locator`; the first four
+arguments are the actual current source, Wording output, normalized repository
+and completed review. For example, when the caller is a repository document,
+its repo-relative path can be the caller locator while `request_id` remains
+the producer's distinct draft locator. No example value supplies an identity
+or prerequisite pass. The same call works with either actual producer mode.
 
 The recorder receives minimal authoring, not the old complete
 `examples/issue-review.json` result. Omit `reviewed_linkage_sha256`,
@@ -422,6 +446,7 @@ external or Git side effects retain their existing owner boundaries.
 | Draft target copied from standalone authoring with `caller_locator`/`request_id` | Target normalization may ignore these variant extras; their presence alone does not establish rejection. The public input is still its closed draft profile. Rebuild the draft target using only `kind/repo/draft_id/source_request_sha256`; preserve legal normalization and diagnose actual identity/digest errors separately. |
 | Body SHA used as `source_request_sha256` | The wrong authority digest is rejected. Recompute only the complete public authority projection from the same reviewed body and repository. |
 | Invented or inconsistent `draft_id` | Source, target and public locator must bind to the actual producer locator. Rebuild this consumer from that same real draft source/output; never change the producer to accommodate the invented id. |
+| Standalone `request_id` copied from a Task name or display label | The original normalizer rejects it at `target.request_id` when it differs from current source `draft_id`. Reread the real producer locator and matching source, repeat this owner's ten-dimension judgment, and rebuild the complete consumer with `profile="standalone_request"` and the actual caller locator. Preserve producer, mode and continuation; do not patch only the failed field in an old recorded result. |
 | Gate linkage computed by hashing a linkage object containing `linkage_sha256` itself | An explicitly supplied wrong derived Gate value is rejected. Discard it and omit all three Gate-derived fields; let the existing recorder derive its fixed projection. |
 | Old complete owner result partly patched or recomputed | It may retain stale target/Gate bindings and fail; patching a field does not refresh the whole review. Discard this consumer result, reconstruct fresh minimal authoring, then replace it with the actual whole record `result` before check. Do not patch recorded prerequisites, private linkage, facts digest or receipt. |
 

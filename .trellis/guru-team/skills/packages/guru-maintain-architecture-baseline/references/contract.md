@@ -185,6 +185,16 @@ The reviewer reads and judges in this order:
 6. form an independent Architecture judgment, then inspect necessary design
    explanations/contribution for accurate attribution and responsibility.
 
+After step 1 and before step 2, a receiving Delivery reviewer satisfies this
+Skill's own session entry through original Identity/Ensure/Bind and explicit
+Delivery Selection when those facts are missing. Recheck the same public key,
+generation, phase, scope and root before continuing the original purpose.
+This operational recovery uses the explicit public identity only; it does not
+inject PRD, acceptance, implementation summary or previous pass into the
+independent assessment. A different selection, terminal state or query error
+stays with its original owner. Neither a key nor successful recovery supplies
+an Architecture conclusion.
+
 Prefer durable requirement/design/operations authority for business constraints.
 When a necessary new constraint exists only in the task, obtain only that fact
 and its source; do not import the whole task narrative. Missing constraints or

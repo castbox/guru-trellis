@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期测试策略
 
+本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/test/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 并行 #663 晋升的完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/test/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
@@ -113,3 +115,16 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 | T663-06 / R663-01/05 → D663-01/05 | 一个代表性clean完整安装、真实Bootstrap repair消费、reapply/drift/mode/平台/sidecar | 真实owner修复结果与事实一致，分发实际覆盖分层报告；不证明完整Release矩阵或业务旧安装 |
 
 本项实际结果由 [#663 Test](../../requirements-design-test-contributions/663-contract-continuity/test.md) 单写。以上定义预期；未执行项不能以先前扫描或schema通过冒充。实际最终质量链仍按T638覆盖晋升后真实内容。
+
+## T679：跨会话接续与请求身份
+
+| 稳定身份 → requirement/design | 正常输入与入口 | 必须观察及证据边界 |
+| --- | --- | --- |
+| T679-01 → R679-01/D679-01 | 正常 writer 隔离 Task/D1；真实主接收者与 fresh Architecture 接收者初始未绑定/未选 | 自行读安装合同，经原 owners 补缺并到原 Author/Architecture 正式出口。提示只给事实、目标、边界；人工预绑、环境借用或 mock 不证明原生行为。 |
+| T679-02 → R679-01/02、D679-01/02 | 原正常 Bind/Selection 和公共 phase/scope/reopen 操作形成五种 current、不同选择、真实失配；原 API/读取 error 边界 | 首失败、原 owner 和后续重读正确；已有方案回未完义务，无 context 不写 session，保 Task/gen/key/root、规划、Git 与并行会话。unit/mock error 仅证明该层。 |
+| T679-03 → R679-03/D679-03 | 原 Intake fixtures 执行公开 recipe；两 mode × 两 profile、合法不同 caller_locator、普通错 request_id/mode；一条真实 mode 的 native error replay | package 只证明 transport。原生 Agent 从未改 producer/source 完整重建 consumer、重审十维，经真实 record/check/invoke 到 ready；不能由 helper 代填映射/receipt。fixture 必须包含当前 runtime public-wrapper 检查的真实依赖。 |
+| T679-04 → R679-04/D679-04 | 原 Approval artifacts 测试提取并执行文档命令：selected/missing、Task-only、正常 public closeout 后 archive | 真实 key 返回实际路径；缺文件准确；Task-only 无 slice/selection 副作用，archive 保实际 ref/key。无 key 错误对照不当成正向展示通过。 |
+| T679-05 → 全部行为/职责 | 五 Planning 原 tests、#548 context/no-context、#443 隔离及 #396 proposed_draft | 命中边逐项保留，真实初始/已有进度与合法/失配分开；旧 Interface 测试不可因独立 legacy profile 存在而误拒当前 Planning 合同。 |
+| T679-06 → 分发边界 | 一个代表 clean matching workflow/preset、完整 reapply、dogfood/声明平台、mode/sidecar、当前 Task 保持 | source/package、installed/native 与真实 Agent分别报告；历史archive不为安装手改。含旧数据的原 tools-only路径及其 preservation 单独记录。不证明完整Release/Upgrade、多平台Agent或业务安装采用。 |
+
+实际首失败、机制、命令与观察截止由 [#679 Test](../../requirements-design-test-contributions/679-session-continuation/test.md) 唯一维护。缺原生或环境证据时保留未验证，不能以绿色fixture、文本parity或补绑定关闭对应验收。

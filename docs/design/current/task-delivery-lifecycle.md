@@ -1,5 +1,7 @@
 # Task / Delivery 生命周期设计
 
+本次 #679 拟整合的完整前驱：Git `e6c3b8276d62ac174ab42cba5bca4d5784be2ca3:docs/design/current/task-delivery-lifecycle.md`。来源及窄补充见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/design/current/task-delivery-lifecycle.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 并行 #663 晋升的完整前驱：Git `e9583202b67750d7b3ec2b7eab4b037c0c52a226:docs/design/current/task-delivery-lifecycle.md`；来源及窄修改见 [#663追踪](../../requirements-design-test-contributions/663-contract-continuity/traceability.md)。
@@ -112,3 +114,15 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 **D663-04 / CON663-MAINTENANCE** 承接 R663-04：final integration router仅将维护输入投影为原Bootstrap/repair可消费的phase2，原promotion上下文留在调用期；维护后重读真实authority/targets/candidate，回同一原promotion。维护出口不直接进入final Check，不新增业务状态、route record或第二writer。
 
 **D663-05 / CON663-DISTRIBUTION** 承接 R663-05：canonical package是精确公共合同来源；测试执行public example/schema/projection/consumer组合，AI另核动态职责与正常路径。MIGRATION-663定位直接成套演进；source修改和投影一致不代表旧安装或业务已采用。
+
+## D679：接收者前置事实与原 owner 接续
+
+**D679-01 / CON679-RECEIVE** 承接 R679-01。原 workflow created consumers、唯一 continuation 与 Planning 编排显式调用原 Identity/Ensure，然后按接收者自身事实进入原 Bind 和 Selection。五个 Planning Skills 在自己的 entry 中核相同前置；Architecture 在原 baseline-first 之后补接收事实，再继续原 purpose。workflow 只拥有跨 Skill 顺序，step-local Skills 仍拥有内部判断和写入。adapter.current 的有 context / 无 context 边界不变，不新增绑定 writer、wrapper、状态或全局映射。
+
+**D679-02 / CON679-DIAGNOSTIC** 承接 R679-02。Author/Architecture 原 planning guard 按公共 kind、selected key、generation、phase、scope 顺序检查；更早的 resolve/API 首失败保原具体条件。外层 stale_identity/出口不变，session.task、session.delivery、delivery.phase、current.error/current.kind/current.key、delivery_key.lifecycle_generation 和 delivery.scope_ref.authority 定位实际条件。runtime 只报客观事实，不 bind/select 或决定语义 route。其余 Wording/Approval/Activation 保原 guard，由明确 caller 接续承担补缺与错误分流。
+
+**D679-03 / CON679-PROJECTION** 承接 R679-03。原 Readiness recipe 从真实 Wording transition 投影 locator/mode/continuation，standalone 请求身份与 source 对齐，caller locator 保自己的合法值。normalization 保持；原 recorder 派生、checker receipt 和正式 invoke 唯一出口承接。原 native runner 从实际 public profile 选择提示，不替 Agent 构造身份、判断通过或修复 consumer。
+
+**D679-04 / CON679-PRESENTATION** 承接 R679-04。Human artifacts 调用方提供真实 TaskRef/key；原 Approval package-owned resolver 继续解析精确切片。Task-only 直接检查精确根 PRD；archive 使用实际归档 ref/key。原命中测试执行文档 argv 并观察实际路径/缺文件/不创建与不选择，而非仅断言字符串。
+
+上述变更不改公共 schema/typed exits/phase/helper 参数，不新增兼容双读或 Architecture authority。matching workflow、五 Planning packages、Readiness 与直接 consumers 成套采用，诊断迁移见 MIGRATION-679。历史归档不为工具安装转换；含旧数据的 checkout 沿原 tools-only owner维护工具，普通preset检查继续严格。RDT 完整拟写先经候选 Check，再原 final_integration/readback 和最终质量链；source/package、installed、Agent 及外部采用分别证明。

@@ -25,10 +25,10 @@
     },
     {
       "code": "stale_identity",
-      "trigger": "Official task/session identity is stale or mismatched.",
+      "trigger": "A Task/Delivery/session precondition is missing, stale or mismatched; field_path identifies the first checked condition.",
       "exit_status": 3,
       "locator": "field_path",
-      "remediation": "Reread official TaskId, generation and session state."
+      "remediation": "Reread official current facts and use the named original identity, selection, stage or scope owner."
     },
     {
       "code": "internal_error",

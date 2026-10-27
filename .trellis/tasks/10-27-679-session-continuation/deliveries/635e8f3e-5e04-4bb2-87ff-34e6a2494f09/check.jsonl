@@ -1,0 +1,18 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "实质输出前完整读取唯一写作规范"}
+{"file": ".trellis/workflow.md", "reason": "原mandatory调用、唯一continuation和阶段边界"}
+{"file": ".trellis/tasks/10-27-679-session-continuation/prd.md", "reason": "整体accepted scope R1-R4和六项验收"}
+{"file": ".trellis/tasks/10-27-679-session-continuation/deliveries/635e8f3e-5e04-4bb2-87ff-34e6a2494f09/prd.md", "reason": "当前Delivery完整场景与验收"}
+{"file": ".trellis/tasks/10-27-679-session-continuation/deliveries/635e8f3e-5e04-4bb2-87ff-34e6a2494f09/design.md", "reason": "当前九章设计及唯一来源承诺处置"}
+{"file": ".trellis/tasks/10-27-679-session-continuation/deliveries/635e8f3e-5e04-4bb2-87ff-34e6a2494f09/implement.md", "reason": "当前执行顺序、验证、Policy和Docs Plan"}
+{"file": "docs/requirements/current/task-delivery-lifecycle.md", "reason": "当前完整生命周期需求及前置条件"}
+{"file": "docs/design/current/task-delivery-lifecycle.md", "reason": "当前完整原owner和公共state职责"}
+{"file": "docs/test/current/task-delivery-lifecycle.md", "reason": "当前完整测试策略及分层证据边界"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "当前五原则；实际变化按原Architecture判断"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "当前阶段适用Architecture合同及晋升顺序"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "修改规划时读取共享正文合同"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "维护当前设计九节结构和深度"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "维护当前实施六节及Policy和Docs Plan"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change-request/references/contract.md", "reason": "原Readiness身份、recipe与同范围完整重建"}
+{"file": "trellis/skills/guru-team/runtime/delivery_projection/adapter.py", "reason": "原有context和explicit-task边界，禁止自动绑定"}
+{"file": "docs/requirements-design-test-contributions/548-creation-recovery/test.md", "reason": "历史预选和无context覆盖边界"}
+{"file": "docs/requirements-design-test-contributions/396-draft-intake-recovery/test.md", "reason": "历史proposed_draft覆盖及不得冒称standalone"}

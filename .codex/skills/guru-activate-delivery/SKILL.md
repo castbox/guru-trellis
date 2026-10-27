@@ -20,6 +20,16 @@ plan, confirmation boundary and execution/recovery contract.
 Read the current authority, public Task/Delivery query and exact session before
 positive behavior and AI Review Gate. Obtain dialogue input only for real scope
 choices or new side effects; same-scope approved work and recovery continue.
+For this receiving session, execute the installed workflow's `Explicit
+receiving-session continuation` before Activation: original Identity/Ensure/Bind
+restores only a missing Task binding, and original
+`guru-create-delivery:delivery_selection` restores only a missing explicit
+applicable Delivery selection. Reread key/generation, phase, scope and
+planning_root, reusing matching facts. Different selection, terminal state and
+error stay with their original owners; confirmed no-context retains the
+existing explicit-task path. Preserve the current approved DTO and the original
+presentation boundary; binding recovery neither accepts a plan nor creates a
+new one. Workflow and standalone modes have the same entry.
 Invoke `scripts/invoke.sh --root . --input <json|-> --owner-result <json>` only
 after the semantic outcome exists. Runtime only records/checks public facts.
 Return one declared typed exit to its unique consumer; unknown or stale output

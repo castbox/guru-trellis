@@ -129,6 +129,7 @@ class CreateDeliveryChainTests(unittest.TestCase):
                     unchanged = (chain.task / 'task.json').read_bytes()
                     rejected = chain.author(author_input, ready_output, expected=3)
                     self.assertEqual(rejected['code'], 'stale_identity')
+                    self.assertEqual(rejected['field_path'], 'session.task')
                     # Available context without selection stays no-current;
                     # an explicit key must not turn it into implicit recovery.
                     self.assertEqual(projection.current(chain.key)['kind'], 'no_current_task')

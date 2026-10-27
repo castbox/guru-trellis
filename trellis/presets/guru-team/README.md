@@ -1,5 +1,10 @@
 # Guru Team Preset
 
+明确 Task/Delivery 的接收会话通过原 Identity/Ensure/Bind/Selection 补齐自身缺失事实，
+再继续同对象原未完义务。Planning 首失败诊断、standalone producer 身份构造，以及
+带实际 key 的 Human artifacts 展示须成套采用。具体诊断字段、Task-only/archive
+分支、matching 安装和分层验证边界见 [MIGRATION-679](MIGRATION-679.md)。
+
 当前正常流程的 repair 投影、归档 Review example、首次 before authority 缺失及
 final promotion 的 Bootstrap 回程，采用三个原 owner 的匹配当前合同。
 直接演进、旧合法输入及成套安装边界见 [MIGRATION-663](MIGRATION-663.md)。

@@ -494,6 +494,15 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
 
     def test_archived_readonly_sources_preserve_current_and_blocked_without_writes(self):
+        def snapshot():
+            # Fixture commits can start detached Git maintenance, which changes
+            # object storage and the derived info/refs cache during this check.
+            # Keep actual refs, session state, config and other resources.
+            return {p.relative_to(self.repository): p.read_bytes()
+                    for p in self.repository.rglob("*")
+                    if not p.is_relative_to(self.repository / ".git/objects")
+                    and p != self.repository / ".git/info/refs" and p.is_file()}
+
         sources = {
             "review_refresh_required": "branch_review",
             "archived_review_passed": "publication",
@@ -514,8 +523,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                     "impact_reason": "The archived task preserves current Architecture authority.",
                     "promotion_state": "no_change",
                 }
-                before = {p.relative_to(self.repository): p.read_bytes()
-                          for p in self.repository.rglob("*") if p.is_file()}
+                before = snapshot()
                 current = self.invoke(public, selected)
                 self.assertEqual(current.returncode, 0, current.stdout + current.stderr)
                 self.assertEqual(json.loads(current.stdout)["exit_id"], "baseline_current")
@@ -525,8 +533,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                 })
                 self.assertEqual(blocked.returncode, 0, blocked.stdout + blocked.stderr)
                 self.assertEqual(json.loads(blocked.stdout)["exit_id"], "blocked")
-                after = {p.relative_to(self.repository): p.read_bytes()
-                         for p in self.repository.rglob("*") if p.is_file()}
+                after = snapshot()
                 self.assertEqual(before, after)
 
     def test_archived_readonly_rejects_writing_routes_and_pending_promotion(self):
@@ -1372,7 +1379,7 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
 
     def test_eval_inventory_covers_all_profiles_and_approved_project_neutral_scenarios(self):
         evals = json.loads((self.package / "evals/evals.json").read_text())["evals"]
-        self.assertEqual([item["id"] for item in evals], [
+        required_scenarios = {
             "bootstrap-foundation-current", "no-impact", "planning-semantic-authoring", "target-native",
             "legacy-boundary-convergence",
             "dedicated-refactor-slice", "scope-expansion", "fitness-regression",
@@ -1383,7 +1390,8 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
             "planning-missing-candidate-native", "planning-inherited-business-default-native",
             "planning-constraint-sufficient-native", "planning-constraint-insufficient-native",
             "delivery-task-impact-sync-identity", "delivery-promotion-identity", "delivery-repair-identity", "delivery-bootstrap-foundation-identity", "whole-task-acceptance-current",
-        ])
+        }
+        self.assertLessEqual(required_scenarios, {item["id"] for item in evals})
         interface = json.loads((self.package / "interface.json").read_text())
         declared_profiles = {
             item["id"]

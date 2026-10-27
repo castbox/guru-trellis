@@ -104,6 +104,10 @@ for draft identity, authority digest and receipt consumption, and
 for ordinary construction errors. Rebuild this consumer's minimal authoring
 from the unchanged actual producer output; do not patch private linkage or
 request another confirmation for a same-scope, side-effect-free correction.
+The same recipe covers `standalone_request`: source `draft_id`, target
+`request_id`, and public target locator use the actual producer locator.
+The caller locator can differ. Keep the actual transition's mode; the source
+profile does not select workflow or standalone execution.
 The minimum authored `ai_review_gate` is `status`, `reviewer`, and `summary`.
 Explicit dimensions, findings (including `[]`), scope conclusion and selected
 exit remain AI-owned and required. Record derives both gate digests and the

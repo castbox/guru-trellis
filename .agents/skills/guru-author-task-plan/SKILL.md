@@ -24,6 +24,18 @@ do not treat their links or seed files as completed writing. Workflow and
 standalone modes use the same current
 TaskId/generation, source, checkout, upstream output and dependency checks.
 
+For each Delivery profile, first check this receiving session's own public
+current facts against the explicit key. Missing Task binding invokes original
+Identity/Ensure/Bind; missing Delivery selection invokes original
+`guru-create-delivery:delivery_selection`. Execute the installed workflow's
+`Explicit receiving-session continuation`, then reread key/generation, phase,
+scope and planning_root before writing or invoking Author. Reuse matching facts;
+different selections, terminal state and real errors stay with their original
+owners. Only confirmed no-context uses the existing explicit-task projection.
+This entry recovery applies equally in workflow and standalone mode, preserves
+the interrupted Author profile and applicable producer output, and never
+restarts initial planning or supplies a gate pass.
+
 This is the sole business writer: task_scope_requirements writes only the
 root overall PRD; eight delivery_<original_profile> entries write that
 Delivery planning_root PRD/design/implement and official JSONL. Wording owns only its controlled rewrite; Architecture

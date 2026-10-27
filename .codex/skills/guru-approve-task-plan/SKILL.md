@@ -24,6 +24,16 @@ Activation. No official context key means this profile's explicit DeliveryKey
 is validated by the original projection against current generation, C4 and
 public record; an available context still requires its exact official current
 selection. Missing/stale/conflicting session facts never use explicit fallback.
+Before reading this Delivery's planning bodies or recording Approval, check the
+receiving session's own public current facts. Missing Task invokes original
+Identity/Ensure/Bind; missing selection invokes original
+`guru-create-delivery:delivery_selection` on the explicit applicable key.
+Execute the installed workflow's `Explicit receiving-session continuation`,
+then reread key/generation, phase, scope and planning_root. Reuse matching facts;
+terminal, conflicting selection and real errors remain with their original
+owners. Workflow and standalone use this same entry. Preserve the actual
+unfinished Approval and applicable adjacent final_plan output; restored
+binding is not approval and does not restart Author.
 Use the resulting Delivery planning_root for this approval.
 Load [references/contract.md](references/contract.md) before
 acting.
