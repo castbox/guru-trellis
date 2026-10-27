@@ -1,0 +1,16 @@
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "两阶段发布、真实dogfood、双完整审核与独立副作用边界"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "规划与结果说明保留准确语义和验证层次"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "命中验证范围、测试价值与安装证据边界"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "当前Delivery正文、来源处置和完整承接"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-prd.md", "reason": "当前Delivery需求与验收结构"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-design.md", "reason": "当前Delivery设计和唯一来源处置"}
+{"file": ".agents/skills/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前Delivery Policy与Docs SSOT计划"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "原Architecture阶段、真实整合与after重绑"}
+{"file": ".agents/skills/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "隔离拟晋升正文、no-change与实际最终整合"}
+{"file": ".agents/skills/guru-upgrade-tools/references/contract.md", "reason": "真实source_locked tools-only与用户状态保留"}
+{"file": "trellis/guru-team-extension.json", "reason": "本批唯一canonical extension revision与CLI映射"}
+{"file": "trellis/presets/guru-team/source/trellis-source.json", "reason": "固定Fork来源与实际匹配构建"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "公开stable/candidate来源与版本轴约束"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py", "reason": "maintenance target与真实输出消费者"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_contract.py", "reason": "命中maintenance正常行为断言"}
+{"file": "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upgrade.py", "reason": "真实安装入口与schema消费者回归"}
