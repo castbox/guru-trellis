@@ -14,7 +14,7 @@
       "const": "upgraded"
     },
     "installed_version": {
-      "const": "0.7.0-guru.5"
+      "const": "0.7.0-guru.6"
     },
     "recovery_ref": {
       "type": "string",
