@@ -1,0 +1,7 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文与源条件承接合同"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质输出及实际提示审核规范"}
+{"file": ".trellis/workflow.md", "reason": "原owner顺序、唯一consumer及停止/恢复边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "切片需求正文及来源完整性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "设计正文、原接口和来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "当前staged Policy及Docs Plan边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证价值、原生/安装证据与矩阵ownership"}
