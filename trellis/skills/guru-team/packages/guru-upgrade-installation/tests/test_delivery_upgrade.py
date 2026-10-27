@@ -65,7 +65,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
         self.source = self.directory / "source"
         (self.source / "trellis/workflows/guru-team").mkdir(parents=True)
         (self.source / "trellis/workflows/guru-team/workflow.md").write_bytes((SOURCE / "trellis/workflows/guru-team/workflow.md").read_bytes())
-        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.6"}')
+        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.7"}')
         lock = Path("trellis/presets/guru-team/source/trellis-source.json")
         (self.source / lock).parent.mkdir(parents=True)
         (self.source / lock).write_bytes((SOURCE / lock).read_bytes())
@@ -239,7 +239,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
 
     def test_source_candidate_edit_blocks_before_writes_and_resume_never_refreezes(self):
         plan = self.plan(); before = self.tree()
-        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.6","normal":"new edit"}')
+        (self.source / "trellis/guru-team-extension.json").write_text('{"version":"0.7.0-guru.7","normal":"new edit"}')
         with self.assertRaisesRegex(MigrationError, "frozen candidate"):
             upgrade.begin(PACKAGE, self.root, self.public, plan, self.fork)
         self.assertEqual(self.tree(), before)

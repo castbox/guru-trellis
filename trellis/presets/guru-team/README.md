@@ -150,15 +150,15 @@ full_review、readiness、Ready 和 Merge 保持完整门禁。早期反馈不�
 
 ## Apply And Verify
 
-已发布稳定版本为 `v0.7.0-guru.5`，peeled commit 为
-`71f432f22acc78df7194a818c27b8e467ceb3048`。默认稳定安装使用同一 immutable `.5`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.5`
+已发布稳定版本为 `v0.7.0-guru.6`，peeled commit 为
+`6b3e26b177f747fdde48b43685d8af8827e22614`。默认稳定安装使用同一 immutable `.6`
+tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.6`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
-Fork `7bcbeaad31380e7a29c97898cb947c6120a61775` / CLI-Core
-`0.7.0-castbox.4`，与下述当前源码分开核对。
+Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core
+`0.7.0-castbox.5`，与下述当前源码分开核对。
 
-本次目标为尚未发布的 `v0.7.0-guru.6`。当前准备源码的 extension 与 maintenance
-target 为 `0.7.0-guru.6`；它与已发布的 immutable `.5` tag 分开读取。
+本次目标为尚未发布的 `v0.7.0-guru.7`。当前准备源码的 extension 与 maintenance
+target 为 `0.7.0-guru.7`；它与已发布的 immutable `.6` tag 分开读取。
 正式 Fork lock 固定到 `79a97ed60fe19e8f287eaddfa74722b5250ced35`，
 tree `7f83f41031181b1f12b83268e51cbde2b775ec5f`，成功 main CI `39905440951`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
@@ -174,16 +174,20 @@ CLI/Core 为 `0.7.0-castbox.5`，package manager 为 `pnpm@10.32.1`。
 保留模板原 mode；不以相同版本号选择另一构建或放宽 `source_locked`。
 
 源码试用的 workflow marketplace 与 preset 必须使用同一个真实、远端可寻址的完整
-Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.6` tag。
-准备源码与投影检查不证明 `.6` 安装、业务采用或 Release 通过。
+Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.7` tag。
+准备源码与投影检查不证明 `.7` 安装、业务采用或 Release 通过。
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main`
 重新冻结 exact commit/tree，执行定向安装及 predecessor 升级验证。tag、tag-pinned
 smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完成。
 历史验收只保留原来源身份，不替代本次候选门禁；完整多平台矩阵与真实业务、生产
 验证保持独立。
 
-累计发布集合由 `v0.7.0-guru.5` 到最终 candidate 的实际完整 diff 确定，包含
-#669 已有实现分支恢复。各项验证继续使用其原来源和层次：
+本次发布集合由 `v0.7.0-guru.6` 到最终 candidate 的实际完整 diff 确定。
+当前差额包括 #678 的本地安装与发布收尾合同、#679 的明确 Task/Delivery 接收会话
+续接、首失败诊断与文档展示修正，以及 #666 的已有行为核验。#666 没有新增源码修复；
+它核验的 #419/#657 既有因果不作为本次新增实现。单项证据不替代本次发布验证。
+
+以下前序能力保留原验证来源和层次：
 
 - [#630 Test](../../../docs/requirements-design-test-contributions/630-native-compatibility/test.md)
   记录三系统 Python runtime、安装、维护脚本和公开 wrapper；Windows 实际 Agent
@@ -215,7 +219,7 @@ business Intake，普通 apply 保持严格。
 For current-source validation, use the source-locked, built
 `castbox/Trellis@79a97ed60fe19e8f287eaddfa74722b5250ced35` CLI
 (successful main CI `39905440951`) and that same reviewed Guru source.
-Stable `.5` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
+Stable `.6` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
 applying it. Then run:
 

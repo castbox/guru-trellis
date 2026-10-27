@@ -35,16 +35,16 @@ is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must keep the version axes explicit. The
-published stable release and this release's predecessor are `v0.7.0-guru.5`
-(peeled `71f432f22acc78df7194a818c27b8e467ceb3048`), extension `0.7.0-guru.5`.
-Stable workflow marketplace and preset sources use that same immutable `.5`
+published stable release and this release's predecessor are `v0.7.0-guru.6`
+(peeled `6b3e26b177f747fdde48b43685d8af8827e22614`), extension `0.7.0-guru.6`.
+Stable workflow marketplace and preset sources use that same immutable `.6`
 tag. That tag's own lock selects Fork
-`7bcbeaad31380e7a29c97898cb947c6120a61775` / CLI/core `0.7.0-castbox.4`.
+`79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI/core `0.7.0-castbox.5`.
 Build that checkout's locked Fork; the current source lock or a matching CLI
 version number alone cannot establish the predecessor's matching build.
 
-The next repository target is `v0.7.0-guru.6`, not yet published. Its canonical
-extension and maintenance target are `0.7.0-guru.6`. The current Fork source
+The next repository target is `v0.7.0-guru.7`, not yet published. Its canonical
+extension and maintenance target are `0.7.0-guru.7`. The current Fork source
 lock stays at `castbox/Trellis@79a97ed60fe19e8f287eaddfa74722b5250ced35`, tree
 `7f83f41031181b1f12b83268e51cbde2b775ec5f`, successful main CI `39905440951`,
 with CLI/core `0.7.0-castbox.5` and `pnpm@10.32.1`. This source includes #40
@@ -58,10 +58,10 @@ tarballs do not substitute for the current lock's matching build. Use the clean
 locked source workspace with its normal CLI/Core dependency layout and
 original template modes.
 
-Before `.6` publication, marketplace and preset must use the same actual,
+Before `.7` publication, marketplace and preset must use the same actual,
 remote-addressable full Guru candidate SHA. Do not insert an invented SHA or
-use the unavailable `.6` tag as a provider. Only after publication and remote
-tag identity verification may both use immutable `v0.7.0-guru.6`. The final
+use the unavailable `.7` tag as a provider. Only after publication and remote
+tag identity verification may both use immutable `v0.7.0-guru.7`. The final
 exact-candidate gate starts from fresh main after preparation and Finish
 bookkeeping merge. It performs focused installation and predecessor upgrade
 validation before the separate tag, tag-pinned smoke, GitHub Release and Issue
@@ -72,8 +72,12 @@ installation, native continuation, real-business adoption, production, the full
 cumulative matrix or Release.
 
 Release capability descriptions follow the actual full diff from the
-predecessor tag to the final candidate, including #669 existing-implementation
-reactivation. Preserve
+predecessor tag to the final candidate. The current difference includes
+#678 local-installation and release-closeout contracts, #679 receiving-session
+continuation, first-failure diagnostics and document-display fixes, and #666
+verification of existing behavior. #666 adds no source fix; the #419/#657
+causal history it verifies is not new implementation in this release. These
+individual results do not establish release success. Preserve historical
 #630's three-system script/install/maintenance evidence and failed Windows
 Agent observation separately; that Agent matrix is outside its accepted
 script scope. Preserve #649's historical failures, false/no-grade and valid
@@ -86,7 +90,7 @@ never rewrites their historical cutoff or declares every observation passed.
 
 The older published `v0.7.0-guru.1` used extension `0.7.0-guru.1` and historical
 Fork `9c36002a324c16a09a85b6aa5a380b74aabf801f` / CLI/core `0.7.0-castbox.1` /
-`pnpm@10.32.1`; it is historical evidence, not the predecessor for `.6`.
+`pnpm@10.32.1`; it is historical evidence, not the predecessor for `.7`.
 
 The released `v0.7.0-guru.1` Fork's update rejects old installations before
 accessing legacy project data and preserves that data unchanged. Public docs
