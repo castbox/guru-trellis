@@ -1,6 +1,6 @@
 {
   "exit_id": "tools_upgraded",
-  "installed_version": "0.7.0-guru.6",
+  "installed_version": "0.7.0-guru.7",
   "recovery_ref": "f238905e-9593-439b-9199-52403de7ddcc",
   "unverified": [
     "formal_fork_source_lock"
