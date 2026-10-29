@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-10-29T18:56:03Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "10-30-687-adopt-castbox6",
+    "title": "采用 Castbox Trellis 0.7.0-castbox.6 固定来源",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/10-30-687-adopt-castbox6",
+    "archive_dir": ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/687-adopt-castbox6",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "采用 Castbox Trellis 0.7.0-castbox.6 固定来源",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6",
+          ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/finish-summary.json",
+          ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/prd.md",
+          ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#687"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/687-adopt-castbox6"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6",
+        ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/finish-summary.json",
+        ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/prd.md",
+        ".trellis/tasks/archive/2026-10/10-30-687-adopt-castbox6/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "采用 Castbox Trellis 0.7.0-castbox.6 固定来源；#687；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
