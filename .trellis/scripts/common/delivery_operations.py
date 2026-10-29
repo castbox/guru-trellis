@@ -138,7 +138,7 @@ def apply_operation(input_record: object, request: object, declaration: object) 
     if d is not None and d["lifecycle_generation"] != op["key"]["lifecycle_generation"]:
         fail("delivery_identity_mismatch", d["id"])
     historical = op["operation"] in ("record_delivery", "record_publication") and op.get("historical_success") is True
-    if d is not None and not historical and d["profile"] not in workflow["profiles"]:
+    if d is not None and op["operation"] != "stop" and not historical and d["profile"] not in workflow["profiles"]:
         fail("unsupported_delivery_profile", d["profile"])
     def output(changed: bool, result_id: str | None = None) -> dict:
         return {"record": parse_task_v2(record), "key": op["key"], "phase": d["phase"] if d else None, "result_id": result_id, "changed": changed}

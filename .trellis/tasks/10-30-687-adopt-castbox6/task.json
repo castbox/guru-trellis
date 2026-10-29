@@ -1,0 +1,232 @@
+{
+  "schema_version": "2.0",
+  "id": "687-adopt-castbox6",
+  "name": "687-adopt-castbox6",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 687,
+    "disposition": "exact_source"
+  },
+  "title": "采用 Castbox Trellis 0.7.0-castbox.6 固定来源",
+  "description": "采用已发布17015f98/.6来源，保持严格来源锁和原工具维护合同，验证已保留旧Delivery profile可合法停止。",
+  "dev_type": null,
+  "scope": "#687完整来源采用与定向集成验收；保留Task/session和用户内容，实际业务安装、新Guru软件Release和完整累计矩阵独立。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-30",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-30-687-adopt-castbox6/prd.md",
+    "revision": "sha256:5fea82799369881986719b399814ee390351ba736b12206c9a48fd4137b0afc4"
+  },
+  "deliveries": [
+    {
+      "id": "c973480b-ade3-4b54-85c2-59c63c25fc54",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-30-687-adopt-castbox6/prd.md",
+          "revision": "sha256:5fea82799369881986719b399814ee390351ba736b12206c9a48fd4137b0afc4"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/design.md",
+        "revision": "sha256:2b38ddca976d31885c3e344e0b2200c0f571d436a2ed4f5c1403a11dd2533f95"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:b36e219718fdb66483f0c24f8ac72c7f37fd062b831783744d3cf23e18b41933",
+        "paths": [
+          ".trellis/.template-hashes.json",
+          ".trellis/.version",
+          ".trellis/delivery-contract.md",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+          ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+          ".trellis/guru-team/trellis-source.json",
+          ".trellis/scripts/common/delivery_operations.py",
+          "README.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/04-integrations/distribution.md",
+          "docs/architecture/contributions/687-adopt-castbox6.md",
+          "docs/architecture/contributions/687-adopt-castbox6/manifest.yaml",
+          "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/01-current/system.md",
+          "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/03-domains/ownership.md",
+          "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/04-integrations/distribution.md",
+          "docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/design.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/manifest.yaml",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/design/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/requirements/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/test/current/native-compatibility.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/requirements.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/test.md",
+          "docs/requirements-design-test-contributions/687-adopt-castbox6/traceability.md",
+          "docs/requirements/current/native-compatibility.md",
+          "docs/test/current/native-compatibility.md",
+          "trellis/guru-team-extension.json",
+          "trellis/presets/guru-team/README.md",
+          "trellis/presets/guru-team/source/trellis-source.json",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+          "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upstream_packages.py",
+          "trellis/workflows/guru-team/README.md"
+        ],
+        "head_ref": "7718d129bcb2055d77c7f43d0e4edca9aee313ea",
+        "base_ref": "7718d129bcb2055d77c7f43d0e4edca9aee313ea"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:2867ed09-068d-4876-894b-2fde50c482b6",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/prd.md",
+              "revision": "sha256:5fea82799369881986719b399814ee390351ba736b12206c9a48fd4137b0afc4"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/design.md",
+            "revision": "sha256:2b38ddca976d31885c3e344e0b2200c0f571d436a2ed4f5c1403a11dd2533f95"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/prd.md",
+              "revision": "sha256:b007f986971ea138843b13dce5b7437c98e21e1bd46945c98e9fc1ace31c5353"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/design.md",
+              "revision": "sha256:2b38ddca976d31885c3e344e0b2200c0f571d436a2ed4f5c1403a11dd2533f95"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/implement.md",
+              "revision": "sha256:587b73fe80cbbcc9dee03edc6a6d0b30f9ef8c4ca02d449bc355943d1063ced8"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:ab66dd3e6ac22e61671216259468fbfaf80daf3a903f9a6fd17637ee28266957",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/prd.md",
+              "revision": "sha256:5fea82799369881986719b399814ee390351ba736b12206c9a48fd4137b0afc4"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/design.md",
+            "revision": "sha256:2b38ddca976d31885c3e344e0b2200c0f571d436a2ed4f5c1403a11dd2533f95"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:b36e219718fdb66483f0c24f8ac72c7f37fd062b831783744d3cf23e18b41933",
+            "paths": [
+              ".trellis/.template-hashes.json",
+              ".trellis/.version",
+              ".trellis/delivery-contract.md",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+              ".trellis/guru-team/skills/packages/guru-upgrade-installation/runtime/owner.py",
+              ".trellis/guru-team/trellis-source.json",
+              ".trellis/scripts/common/delivery_operations.py",
+              "README.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/04-integrations/distribution.md",
+              "docs/architecture/contributions/687-adopt-castbox6.md",
+              "docs/architecture/contributions/687-adopt-castbox6/manifest.yaml",
+              "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/01-current/system.md",
+              "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/687-adopt-castbox6/proposed/docs/architecture/04-integrations/distribution.md",
+              "docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/design.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/manifest.yaml",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/design/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/requirements/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/proposed/docs/test/current/native-compatibility.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/requirements.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/test.md",
+              "docs/requirements-design-test-contributions/687-adopt-castbox6/traceability.md",
+              "docs/requirements/current/native-compatibility.md",
+              "docs/test/current/native-compatibility.md",
+              "trellis/guru-team-extension.json",
+              "trellis/presets/guru-team/README.md",
+              "trellis/presets/guru-team/source/trellis-source.json",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upgrade.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/delivery_upstream.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/runtime/owner.py",
+              "trellis/skills/guru-team/packages/guru-upgrade-installation/tests/test_delivery_upstream_packages.py",
+              "trellis/workflows/guru-team/README.md"
+            ],
+            "head_ref": "7718d129bcb2055d77c7f43d0e4edca9aee313ea",
+            "base_ref": "7718d129bcb2055d77c7f43d0e4edca9aee313ea"
+          },
+          "predecessor_result_id": "planning-accepted:2867ed09-068d-4876-894b-2fde50c482b6",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/prd.md",
+              "revision": "sha256:b007f986971ea138843b13dce5b7437c98e21e1bd46945c98e9fc1ace31c5353"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/design.md",
+              "revision": "sha256:2b38ddca976d31885c3e344e0b2200c0f571d436a2ed4f5c1403a11dd2533f95"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-687-adopt-castbox6/deliveries/c973480b-ade3-4b54-85c2-59c63c25fc54/implement.md",
+              "revision": "sha256:587b73fe80cbbcc9dee03edc6a6d0b30f9ef8c4ca02d449bc355943d1063ced8"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

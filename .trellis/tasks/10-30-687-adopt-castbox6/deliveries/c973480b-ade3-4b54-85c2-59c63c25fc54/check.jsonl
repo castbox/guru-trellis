@@ -1,0 +1,13 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整写作与证据边界"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "原安装/受管资产合同"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "官方与Guru所有权边界"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "完整规划正文合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "需求正文读取与审核依据"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "方案正文读取与审核依据"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实施与Docs Policy依据"}
+{"file": "trellis/presets/guru-team/README.md", "reason": "source_locked固定来源与工具维护入口"}
+{"file": "docs/requirements/current/native-compatibility.md", "reason": "当前解释器/安装/来源行为"}
+{"file": "docs/design/current/native-compatibility.md", "reason": "当前原owner与来源责任"}
+{"file": "docs/test/current/native-compatibility.md", "reason": "定向安装与验证分层"}
+{"file": "docs/architecture/contributions/687-adopt-castbox6.md", "reason": "本批实际Architecture差额与原晋升责任"}
+{"file": "docs/architecture/contributions/687-adopt-castbox6/manifest.yaml", "reason": "完整proposed目标定位"}

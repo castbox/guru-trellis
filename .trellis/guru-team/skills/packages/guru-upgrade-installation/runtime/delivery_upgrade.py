@@ -57,7 +57,7 @@ def verify_sources(source: Path, fork: Path, plan: dict) -> None:
         formal_guru_source(source, plan["source_candidate"]["head"])
         lock = json.loads((source / "trellis/presets/guru-team/source/trellis-source.json").read_text())
         cli, core = packages(fork)
-        if lock.get("cli_version") != "0.7.0-castbox.5":
+        if lock.get("cli_version") != "0.7.0-castbox.6":
             raise MigrationError("Formal source lock does not select the Delivery candidate")
         # Formal source mode cannot claim a dirty local tar or installed tree.
         # The installation must come from the lock's exact package integrity.
