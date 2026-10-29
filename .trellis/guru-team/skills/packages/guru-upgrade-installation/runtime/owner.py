@@ -19,7 +19,7 @@ from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 from runtime.task_lifecycle.identity import task_inventory
 
-TARGET_CORE = "0.7.0-castbox.5"
+TARGET_CORE = "0.7.0-castbox.6"
 TARGET_GURU = "0.7.0-guru.7"
 GURU_SOURCE_REPOS = frozenset(
     prefix + "castbox/guru-trellis" + suffix

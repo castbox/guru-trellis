@@ -20,12 +20,12 @@ class PackageResolutionTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name).resolve()
 
-    def package(self, path, name, version="0.7.0-castbox.5"):
+    def package(self, path, name, version="0.7.0-castbox.6"):
         path.mkdir(parents=True)
         (path / "package.json").write_text(json.dumps({"name": name, "version": version}))
         return path
 
-    def workspace(self, *, core_version="0.7.0-castbox.5", link=True):
+    def workspace(self, *, core_version="0.7.0-castbox.6", link=True):
         cli = self.package(self.root / "packages/cli", "@mindfoldhq/trellis")
         core = self.package(self.root / "packages/core", "@mindfoldhq/trellis-core", core_version)
         (cli / "bin").mkdir()

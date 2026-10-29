@@ -80,6 +80,15 @@ fallback may compete with a custom workflow's owners. The one
 `[trellis-continuation]` block routes the AI; runtime does not choose scope,
 affected stages, approval, evidence sufficiency or whole-Task completion.
 
+The current stage owner may stop an existing schema-valid Delivery even when
+its retained profile is no longer enabled by the workflow. This exception
+applies only to `stop`; current-profile execution restrictions and explicit
+historical-success recovery retain their existing behavior. Identity,
+generation, expected phase, owner, result-conflict, terminal-state and existing
+stop payload/evidence checks still apply. An identical original stop result can
+be retried through the existing recovery path. Stopping preserves the retained profile
+and historical facts and creates no delivery, Completion or Closure success.
+
 ## Candidate, gates and result recovery
 
 ### Operation envelope

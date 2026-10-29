@@ -1,0 +1,20 @@
+task_id: 687-adopt-castbox6
+source: https://github.com/castbox/guru-trellis/issues/687
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 7718d129bcb2055d77c7f43d0e4edca9aee313ea
+architecture:
+  locator: docs/architecture/README.md
+  version: 7718d129bcb2055d77c7f43d0e4edca9aee313ea
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/native-compatibility.md
+  - docs/design/current/native-compatibility.md
+  - docs/test/current/native-compatibility.md

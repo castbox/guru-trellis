@@ -1,0 +1,12 @@
+task_id: 687-adopt-castbox6
+source: https://github.com/castbox/guru-trellis/issues/687
+status: proposed
+change_path: target_native
+authority_identity: guru-trellis-architecture
+before_revision: 7718d129bcb2055d77c7f43d0e4edca9aee313ea
+contribution: docs/architecture/contributions/687-adopt-castbox6.md
+proposed_root: proposed
+proposed_targets:
+  - docs/architecture/01-current/system.md
+  - docs/architecture/03-domains/ownership.md
+  - docs/architecture/04-integrations/distribution.md
