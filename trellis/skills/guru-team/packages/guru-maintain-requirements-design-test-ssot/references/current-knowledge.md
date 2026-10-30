@@ -24,6 +24,14 @@ definitions; a unit may reference them without copying their prose. The unit
 must still state its own behavior and conditions. A link list or short summary
 cannot stand in for that definition.
 
+For a decision or adopted mechanism, the complete unit retains its actual
+behavior, owner, applicable scope and conditions, decision rationale, total
+operating and maintenance cost, and conditions that require reconsideration.
+Promotion preserves this basis in the existing unit and necessary relationships;
+it creates no per-mechanism schema or review ledger. Architecture's original
+contract owns the adopted-mechanism judgment, including reused mechanisms and
+their directly affected consumers.
+
 Retain every applicable condition, negation, exception, order, obligation,
 compatibility limit and cross-document constraint. Distinguish confirmed
 current behavior, accepted target behavior, unconfirmed material, history and
@@ -54,6 +62,12 @@ changes; unchanged units and historical references retain their meaning.
    sources. Read history for reasons, former behavior, or a documented
    unmigrated scope that still requires original complete sources. Ordinary
    migrated queries do not replay a contribution chain to assemble meaning.
+   Sufficient RDT and Architecture units can establish existing capabilities,
+   responsibilities and applicability without repeated implementation searches.
+   Inspect code selectively when actual behavior, performance, the complete
+   set of affected consumers or a documentation conflict leaves a material gap.
+   A located design explanation still requires independent necessity and cost
+   judgment by the original semantic owner.
 4. If a source is missing, a reference is broken, definitions conflict or
    migration is incomplete, name the affected object and unsupported
    conclusion. Retain the last usable source and enter the original owner's
@@ -179,6 +193,34 @@ the unavailable generic baseline's contents.
 
 ## Migration and retirement
 
+When correcting an existing decision, analyze the same decision's actual old
+adopters, shared state, data, interfaces, configuration and runtime dependencies.
+The following dispositions concern implementation as well as knowledge:
+
+- If coexistence breaks the same constraint, creates incompatible reads/writes
+  or defeats the correction, the original scope and delivery owners must carry
+  necessary consumer adaptation and old-path exit. A new entry or promoted
+  decision cannot establish completion of that correction on its own.
+- If old adopters can remain independently, state how coexistence preserves
+  constraints, the actual remaining consumers, the retention rationale and scope,
+  its owner, a specific executable successor delivery or observable trigger,
+  and the evidence needed for exit. A named owner, link, schedule pressure or
+  "change it when touched" does not establish an arrangement. Unassigned work
+  remains explicitly unassigned; new consumers do not enter a pattern already
+  judged wrong.
+- If a different scenario still supports the old rationale, preserve it within
+  its stated scope instead of treating every old use as erroneous.
+
+Analysis may exceed the current implementation scope. It does not authorize
+automatic repository-wide migration, a new Issue or cross-repository changes.
+Migration inside accepted Task scope remains unfinished when split into a later
+Delivery. Existing implementations outside scope with sufficient coexistence basis do not
+automatically block the current Task. Distinguish an effective new decision,
+delivery of a new requirement, migration of old implementations and environment
+cutover. Original Completion judges those facts; missing code is not an external
+evidence gap. Check exit at the original successor plan or real trigger rather
+than creating a monitoring system or permanent migration ledger.
+
 Before cutover, identify the old authority/version, exact predecessor clauses,
 target units, stable identities and relations, real old readers, switch
 conditions and recovery. Compare the candidate with all still-effective
@@ -202,6 +244,10 @@ dependency change handled by the original owner. New changes maintain current
 units; do not keep writing old current definitions indefinitely. Historical
 Git/version evidence remains readable after ordinary old readers exit. It is
 provenance, not a second active maintenance path.
+
+Retire an old helper, configuration, key or compatibility path only after its
+real supported consumers and support window have exited under the original
+contract. Migration does not by itself justify a general dual-path framework.
 
 Distribute this contract through existing complete package/preset paths.
 Existing installations adopt matching workflow and packages, preserve local

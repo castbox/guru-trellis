@@ -82,3 +82,9 @@ Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精�
 **D649-04 / CON649-GAP** 承接 R649-05。Completion 先比较整个 accepted scope、所有真实 Delivery 和必要证据，再使用原 implementation／additional Delivery、Author／Architecture、Clarify、evidence_refresh 或 completed consumer。必要实现遗漏和无依据机制前置不伪装成外部待补证据；局部 gate 只影响真实依赖 operation。
 
 **D649-05 / CON649-CUTOFF** 承接 R649-06。原 RDT owner 维护当前结果入口，正式后序结果由原 public facts 与 Git／PR 承接。Closure／Finish 仅增加对既有写入责任的说明，不取得 Docs writer 权限。正文确有修订时，原候选适用性合同判断受影响覆盖；不回填自己的最终 pass，不新增完成账本或递归提交。
+
+## D-MECH-COMPLETION：存量关系的整体判断
+
+**D-MECH-04 / CON-MECH-COMPLETION** 承接 R-MECH-06。原 Completion Skill 在既有 whole-task 与 stage facts 职责中引用 current-knowledge 的存量关系，比较 accepted scope、所有实际 Delivery、必要适配、共存/退出依据与当前证据。新决策、新入口、旧代码和环境分别判断；scope 内后继切片不抹去责任。必要代码缺失回原实施或真实后继 Delivery；真实来源冲突回原 Clarify；有有效依据的外部证据待取得才 evidence_refresh。
+
+可独立共存且真实承接的范围外存量、场景不同而合理的旧采用，不自动扩大当前 scope。Completion 不代替 Architecture/RDT 写入，Closure/Finish 不迁移实现。所有 disposition 使用既有唯一 consumer，不新增完成状态、公共字段或全仓迁移前置。

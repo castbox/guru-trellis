@@ -77,12 +77,12 @@ Judge each capability and environment separately; phase not yet open does not
 erase established contract, source or deployment facts. No actual Architecture
 impact still takes the original no-change route, without a contribution or ADR.
 
-Read the project's unique current constitution authority and apply
-`minimum-necessary-complexity` to the complete proposed change at Planning,
-implementation discovery, Phase 2, and independently at Branch Review. Consume
-its task-applicable conclusion and evidence for every added capability, including
-public contracts and abstractions; do not limit the review to task-local
-persistence. This package does not own or restate principle prose.
+Read the project's unique applicable constitution authority in full at Planning,
+implementation discovery, Phase 2, and independently at Branch Review. Apply
+all five principles to the actual tradeoffs without ranking them or creating
+empty per-principle verdicts. Use the adopted-mechanism review below for the
+complete candidate, including public contracts and abstractions. This package
+does not own or restate principle prose.
 
 Distinguish a current requirement whose mechanism needs revision from a
 requirement-authority conflict. For the former, the current stage's qualification
@@ -100,6 +100,62 @@ this judgment, and this owner never silently deletes accepted scope.
 Use existing impact, evidence, finding and route fields only for applicable
 conclusions. Do not introduce per-capability records, scores, keyword
 classifiers, public fields, or a second constitution checklist.
+
+### Adopted-mechanism review
+
+Review mechanisms newly introduced, modified, reused or used more widely by the
+candidate, together with their direct effects and consumers. A mechanism is a
+choice carrying behavior or constraints, including data authority, responsibility,
+coordination, failure handling or lifecycle. Reuse can bring those constraints
+into a new path even when the original utility has no diff. Ordinary helpers
+and causally unrelated dependencies do not each require a review unit. No actual
+Architecture impact retains the original lightweight route.
+
+First reconstruct supported normal completion and its necessary business, data,
+permission and external constraints. After locating the design basis, independently
+judge whether the adopted choice is necessary, appropriately scoped and worth its
+total operating and maintenance cost. Establish the actual behavior it serves;
+who decides, supplies facts and maintains state; and which objects and periods it
+coordinates or rejects. Examine relevant shared writes, scans, blocking, retries,
+keys, state, dependencies and recovery prerequisites. Compare feasible removal,
+narrowing, replacement or retention and risk-matched evidence. These are focused
+reasoning questions, not a required questionnaire, fixed sequence or global
+optimization exercise. Finally check effects on legitimate normal requests.
+
+Use applicable complete RDT and Architecture units under the shared
+current-knowledge contract. Sufficient documentation can establish capability,
+responsibility and applicability without repeated source archaeology. Read
+implementation selectively when actual behavior, performance, the complete set
+of affected consumers or conflicting documentation leaves a material gap. Finding
+an explanation of how the mechanism works does not establish its necessity.
+Reuse an applicable prior rationale and engineering facts concisely when they
+cover the same constraints; stage or version changes alone do not require all
+commands or all reasoning to be repeated.
+
+Preserve real business and external contracts when comparing alternatives. When
+an existing technical rule is itself under review, it cannot prove its own
+necessity or exclude an alternative merely for omitting that rule. Evaluate the
+candidate through the original reviewed-change contract, implement through its
+lawful owner, and promote at the original stage. Do not change CURRENT first to
+make the candidate conform or demand early promotion before implementation.
+Existing, platform-native or installed capabilities and new code all require
+current applicability. New abstractions, wrappers, conversions, configuration
+and future provisions require a present responsibility and direct consumer.
+Fewer keys or lines alone do not show lower total cost, especially when a new
+ledger or manual coordination carries the displaced burden. A smaller diff must
+not omit necessary responsibility boundaries, consumer adaptation or old-path exit.
+
+For new or strengthened protection, consume the original
+`guru-qualify-root-cause` contract's Protection judgment. Its proposer, including
+an author, reviewer or template, bears the evidence burden. A missing technical
+measure alone does not create a finding or validation obligation. Necessary
+confidentiality or permission protection does not require a prior incident.
+When a new protection lacks basis, obtain evidence, revise or withdraw it before
+making it mandatory. When an existing protection lacks basis, do not delete it
+or treat missing evidence as successful reuse. Limit only the adoption or
+promotion conclusion that depends on that basis; unrelated work continues.
+Established necessity, disproved necessity or scope, and insufficient evidence
+must remain distinct conclusions under the existing revision owners and routes.
 
 ## Public and owner boundary
 
@@ -251,13 +307,15 @@ Original descriptor/result and wrapper freshness checks remain unchanged.
 
 ## Responsibility and change causality
 
-Determine actual responsibility from the changed decisions, consumer graph,
+Determine actual responsibility from the adopted decisions, consumer graph,
 state ownership, assembly and dependency direction. Check whether a generic
 capability interprets business semantics or treats protocol/model/endpoint/
 default configuration as business authority. Compare similar capabilities with
 their real constraints; existing implementation is evidence, not an approved
-precedent. Evaluate a more direct alternative that preserves every affected
-current contract. Technical keywords and utility paths are not classifiers;
+precedent. Evaluate a more direct alternative under the adopted-mechanism
+review above, preserving real business and external contracts while allowing
+the reviewed technical choice to change through its original contract.
+Technical keywords and utility paths are not classifiers;
 do not audit unrelated exported symbols or invent future consumers. A controlled
 extension example may exercise an existing extension point.
 
@@ -280,6 +338,19 @@ causally unrelated debt. A generic "revise the mechanism" conclusion alone does
 not explain the necessary local convergence. This is a causal correction
 explanation for the delivery owner, not severity, a repair authorization, or a
 new acceptance contract; no additional result fields or artifact are required.
+
+When correcting an existing decision, identify its actual adopters, shared
+state, data, interfaces, configuration and runtime dependencies, including
+unchanged consumers. Apply the shared current-knowledge contract's Migration
+and retirement method to the same decision's affected existing implementations. Coexistence that
+breaks the same invariant, causes incompatible reads/writes or defeats the
+correction requires necessary adaptation and exit through the original scope
+and delivery owners. Independent retention needs evidenced coexistence and an
+executable transition; a different scenario with a still-valid rationale may
+remain within its stated scope. Analysis can exceed implementation scope and
+does not authorize a repository-wide migration or cross-repository write.
+New consumers must not expand a pattern already judged wrong. Promotion alone
+does not prove old implementations migrated or the whole Task completed.
 
 The reviewer reports Architecture facts and causal effects; delivery owners
 separately determine current work and qualification before edits/tests/severity.
@@ -445,6 +516,14 @@ check-result contracts remain 2.0. The original Architecture owner promotes
 shared authority in final integration after the independent Architecture and
 candidate-only Check assessments, then returns the actual candidate for final
 Architecture/Check. Planning does not replace that implementation assessment.
+
+For both purposes, distinguish valid current authority identities, a completed
+AI classification round, and the current candidate's eligibility to continue.
+`baseline_current` asserts that eligibility under the applicable checks.
+Planning's lack of an immediate contribution or promotion obligation does not
+waive those checks or turn a candidate failure into current eligibility.
+Use the existing conflict, regression, incomplete, sync or blocked route for
+the actual judgment; the completed AI gate alone does not select a positive exit.
 
 For candidate_assessment, read current baseline/constitution/change contract,
 then call-local design_facts + real source constraint_refs or design_locator,

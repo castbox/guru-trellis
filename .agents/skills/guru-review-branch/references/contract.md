@@ -415,12 +415,18 @@ scope/authority decisions or a separately displayed Git/GitHub side effect.
 
 ## Current constitution consumption
 
-Independently apply `minimum-necessary-complexity` from the unique current
-project authority to all added capabilities in the complete committed range,
-including public contracts and abstractions. Consume task-applicable
-conclusions and current evidence; do not copy principle prose or reuse Phase 2
-approval. Current responsibilities and all applicable contracts govern the
-necessity judgment, including when functional tests pass.
+Read the unique applicable project constitution in full and independently apply
+Adopted-mechanism review in
+`.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md`
+to the complete committed range and directly affected unchanged consumers.
+Consume task-applicable Architecture conclusions and current evidence under all
+five principles, including reuse without an implementation diff and necessary
+convergence of existing implementations. A reviewer proposing new or stronger protection bears the
+original Protection evidence burden. Judge first-failure observations separately
+from retry recovery and preserve the evidence's actual layer and scope. Do not
+copy principle prose, repeat the main method or reuse Phase 2 approval. Current
+responsibilities and all applicable contracts govern the necessity judgment,
+including when functional tests pass.
 
 Qualify concrete observations through existing Branch Review profiles before
 severity or findings. `mechanism_revision_required` returns through the

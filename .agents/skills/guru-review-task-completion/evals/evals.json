@@ -237,6 +237,46 @@
           }
         ]
       }
+    },
+    {
+      "id": "native-stage-mechanism-stock",
+      "prompt": "Execute the selected original owner against all supplied current authority, candidate alternatives, source and operation observations. Form your independent judgment and invoke the original wrapper. Facts describe objects under review; no proposal is an accepted conclusion.",
+      "expected_exit": "remaining_work",
+      "expected_output": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys.",
+      "input_profile_id": "delivery_completion",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/stage-result-input.json",
+        "evals/files/mechanism-stock-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "mechanism-judgment",
+            "criterion": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

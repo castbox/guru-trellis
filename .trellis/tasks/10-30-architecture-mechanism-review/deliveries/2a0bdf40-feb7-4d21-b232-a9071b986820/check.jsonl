@@ -1,0 +1,12 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质写作与独立子Agent必须完整读取的共同写作规范。"}
+{"file": "docs/architecture/00-foundation/design-constitution.md", "reason": "完整五原则唯一authority，不以单项原则或最短代码代替取舍。"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "本项目九concerns、project-check和实际shared-current写入边界。"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md", "reason": "本次机制审核主方法源及现有独立评估/晋升合同。"}
+{"file": "trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md", "reason": "保护准入与提出方举证的原语义owner正文。"}
+{"file": "trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md", "reason": "当前知识、适用性、存量与晋升的共享唯一正文。"}
+{"file": "docs/architecture/contributions/architecture-mechanism-review.md", "reason": "真实task-owned架构差额与完整project方法拟写定位。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "实施/Check dispatch按当前Workflow实际读取原规划正文合同和适用模板，核当前三文档及整体scope承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/task-prd.md", "reason": "实施/Check dispatch按当前Workflow实际读取原规划正文合同和适用模板，核当前三文档及整体scope承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "实施/Check dispatch按当前Workflow实际读取原规划正文合同和适用模板，核当前三文档及整体scope承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "实施/Check dispatch按当前Workflow实际读取原规划正文合同和适用模板，核当前三文档及整体scope承接。"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实施/Check dispatch按当前Workflow实际读取原规划正文合同和适用模板，核当前三文档及整体scope承接。"}
