@@ -41,17 +41,17 @@ their existing owners. Follow the contract's Independent assessment entry
 before reading task narratives or authoring a first result. The caller only
 coordinates and consumes the actual output; it never fills a reviewer pass.
 
-For a receiving Delivery assessment session, after the authority-first reads
-and before candidate review/invoke, execute the installed workflow's `Explicit
-receiving-session continuation`. Check this session's public current facts;
-original Identity/Ensure/Bind restores only a missing Task binding, and original
-`guru-create-delivery:delivery_selection` restores only the missing explicit
-applicable selection. Reread key/generation, phase, scope and planning_root;
-reuse matching facts. Different selection, terminal state and error return to
-their original owners, while confirmed no-context retains explicit-task mode.
-Apply the same entry in workflow and standalone, preserving the interrupted
-purpose and applicable producer output. Recovery does not preload task
-narratives, inherit the caller's binding or manufacture an assessment pass.
+After the authority-first reads, a receiving Delivery reviewer applies the
+contract's purpose-specific entry. Planning `final_plan` validates the complete
+explicit object read-only without creating a Task binding or Delivery selection.
+Other purposes and stages execute the installed workflow's `Explicit
+receiving-session continuation` through the original Identity/Ensure/Bind and
+Selection owners when required. Their ordinary execution recovery may write
+only its owned session runtime. Reuse matching facts; preserve different
+selection, terminal state and actual errors for their original owners.
+Workflow and standalone use the same entry. Preserve the interrupted purpose
+and applicable producer output. Neither entry preloads task narratives,
+inherits the caller's binding or manufactures an assessment pass.
 
 Execute one profile in this order:
 

@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from jsonschema import Draft202012Validator
 
@@ -78,6 +79,10 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("architecture_candidate_fixture", self.package / "runtime/promotion.py")
         self.candidate_runtime = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(self.candidate_runtime)
+        from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+        BranchBindingStore(inspect_repository(self.repository)).establish(
+            TaskLifecycleKey(self.delivery_key["task_id"], 0), "task",
+        )
 
     def tearDown(self):
         self.fixture.cleanup()
@@ -1512,6 +1517,150 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
         stale = self.invoke(public, selected)
         self.assertEqual(stale.returncode, 3, stale.stdout + stale.stderr)
         self.assertEqual(json.loads(stale.stdout)["field_path"], "owner_result.contribution_identity")
+
+    def final_plan_object(self):
+        public = self.load("public-input-final-plan-3.0.json")
+        design = self.repository / public["design_locator"]
+        design.parent.mkdir(parents=True, exist_ok=True)
+        design.write_text("Current Wording design and isolated contribution.")
+        public["freshness_identity"] = "sha256:" + hashlib.sha256(design.read_bytes()).hexdigest()
+        selected = self.architecture_selection(public,
+            contribution_locator=public["design_locator"],
+            contribution_identity=public["freshness_identity"])
+        return public, selected
+
+    def repository_bytes(self):
+        roots = (self.repository / ".trellis", self.repository / "docs",
+                 self.repository / ".git/trellis", self.repository / ".git/guru-team")
+        return {p.relative_to(self.repository).as_posix(): p.read_bytes()
+                for root in roots for p in root.rglob("*") if p.is_file()}
+
+    def test_final_plan_retains_no_context_explicit_entry_without_writes(self):
+        public, selected = self.final_plan_object()
+        environment = {k: v for k, v in os.environ.items()
+                       if not k.startswith(("TRELLIS_", "CODEX_", "CLAUDE_", "CURSOR_"))}
+        with patch.dict(os.environ, environment, clear=True):
+            self.assertFalse(self.upstream.projection.has_context())
+            before = self.repository_bytes()
+            result = self.invoke(public, selected)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(self.repository_bytes(), before)
+            self.assertEqual(self.upstream.projection.current()["kind"], "no_current_task")
+
+    def test_final_plan_reads_explicit_object_without_selecting_in_receiving_session(self):
+        from runtime.task_lifecycle.session_adapter import bind_session
+        from runtime.delivery_projection.adapter import official_session_port
+
+        public, selected = self.final_plan_object()
+        for mode in ("workflow", "standalone"):
+            for entry in ("unbound", "task_only", "matching"):
+                with self.subTest(mode=mode, entry=entry), patch.dict(os.environ, {
+                    "TRELLIS_CONTEXT_ID": "architecture-" + mode + "-" + entry,
+                }):
+                    public["mode"] = mode
+                    if entry == "task_only":
+                        bound = bind_session(official_session_port(self.repository), self.repository,
+                            {k: self.delivery_key[k] for k in ("task_id", "lifecycle_generation")})
+                        self.assertEqual(bound.status, "session_bound")
+                    elif entry == "matching":
+                        self.upstream.projection.select(self.delivery_key)
+                    kind = self.upstream.projection.current()["kind"]
+                    self.assertEqual(kind, {"unbound": "no_current_task", "task_only": "no_current_delivery", "matching": "current"}[entry])
+                    before = self.repository_bytes()
+                    result = self.invoke(public, selected)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertEqual(json.loads(result.stdout)["delivery_key"], self.delivery_key)
+                    self.assertEqual(self.repository_bytes(), before)
+                    self.assertEqual(self.upstream.projection.current()["kind"], kind)
+
+    def test_final_plan_preserves_selected_output_and_adjacent_approval_contract(self):
+        from runtime.schema import validate_json
+
+        public, selected = self.final_plan_object()
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-output"}):
+            result = self.invoke(public, selected)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        output = json.loads(result.stdout)
+        contracts = json.loads((self.package / "interface.json").read_text())["public_contracts"]
+        aggregate = next(o["schema"]["path"] for o in contracts["outputs"] if o["exit_id"] == "baseline_current")
+        consumer = next(c["contract"]["path"] for c in contracts["consumer_inputs"] if c["id"] == "current_input")
+        projection = next(p for p in contracts["projections"] if p["exit_id"] == "baseline_current")
+        self.assertEqual((projection["operation"], projection["consumer_input_id"]), ("direct", "current_input"))
+        for schema in (aggregate, "schemas/public-output-delivery-baseline-current-1.0.schema.json", consumer):
+            validate_json(output, self.package / schema, "stdout")
+        self.assertEqual(output["planning_root"], public["planning_root"])
+        self.assertEqual(output["freshness_identity"], public["freshness_identity"])
+        approval = {"profile": "delivery_initial_review", "mode": public["mode"],
+            "task_ref": output["task_locator"], "source_exit": output["exit_id"],
+            "delivery_key": output["delivery_key"],
+            "architecture_assessment": {k: output[k] for k in (
+                "planning_purpose", "freshness_identity", "baseline_identity",
+                "constitution_identity", "constitution_status", "impact_kind", "promotion_state")}}
+        validate_json(approval, self.package.parent / "guru-approve-task-plan/schemas/public-delivery-initial-review-input-2.0.schema.json", "approval")
+
+    def test_final_plan_does_not_hide_different_selection_or_object_mismatch(self):
+        public, selected = self.final_plan_object()
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-conflict"}):
+            other = self.upstream.create()
+            before = self.repository_bytes()
+            result = self.invoke(public, selected)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "current.key")
+            self.assertEqual(self.upstream.projection.current()["key"], other)
+            self.assertEqual(self.repository_bytes(), before)
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-unselected"}):
+            wrong_root = {**public, "planning_root": "deliveries/other"}
+            result = self.invoke(wrong_root, selected)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "planning_root")
+            # The original planning writer advances the real object normally.
+            self.upstream.planning(self.delivery_key)
+            result = self.invoke(public, selected)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "delivery.phase")
+
+    def test_candidate_assessment_still_requires_receiving_session_selection(self):
+        public = self.load("public-input-candidate-assessment-3.0.json")
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-candidate-unbound"}):
+            result = self.invoke(public, {"typed_exit": "blocked", "reason_code": "authority_missing", "remediation": "Read current authority."})
+            self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "session.task")
+
+    def test_final_plan_reports_real_scope_and_checkout_changes(self):
+        from runtime.delivery_projection.adapter import authority_ref
+
+        public, selected = self.final_plan_object()
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-scope-change"}):
+            scope = self.repository / self.upstream.task_ref / "prd.md"
+            scope.write_text("Normally accepted whole-Task revision.")
+            self.upstream.projection.scope(authority_ref(scope, self.repository))
+            before = self.repository_bytes()
+            result = self.invoke(public, selected)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "delivery.scope_ref.authority")
+            self.assertEqual(self.repository_bytes(), before)
+            subprocess.run(["git", "checkout", "-qb", "other-checkout-branch"],
+                           cwd=self.repository, check=True, capture_output=True)
+            result = self.invoke(public, selected)
+            # The original public identity resolver rejects the changed C4
+            # relation before the package's later checkout guard.
+            self.assertEqual((result.returncode, json.loads(result.stdout)["field_path"]), (3, "task_id"))
+
+    def test_final_plan_rejects_other_task_even_without_delivery_selection(self):
+        from runtime.delivery_projection.adapter import official_session_port
+        from runtime.task_lifecycle.session_adapter import bind_session
+
+        public, selected = self.final_plan_object()
+        created = subprocess.run([sys.executable, str(self.repository / ".trellis/scripts/task.py"),
+            "create", "Another Task", "--description", "Independent receiving selection", "--slug", "other",
+            "--task-id", "other-task", "--schema-version", "2.0", "--source-json", '{"kind":"no_issue"}',
+            "--base-branch", "task", "--no-start"], cwd=self.repository, text=True, capture_output=True)
+        self.assertEqual(created.returncode, 0, created.stdout + created.stderr)
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "architecture-other-task"}):
+            bound = bind_session(official_session_port(self.repository), self.repository,
+                                 {"task_id": "other-task", "lifecycle_generation": 0})
+            self.assertEqual(bound.status, "session_bound")
+            self.assertEqual(self.upstream.projection.current()["kind"], "no_current_delivery")
+            before = self.repository_bytes()
+            result = self.invoke(public, selected)
+            self.assertEqual(json.loads(result.stdout)["field_path"], "current.key")
+            self.assertEqual(self.repository_bytes(), before)
 
     def test_planning_other_exits_preserve_both_purposes(self):
         cases = {

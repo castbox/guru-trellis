@@ -120,7 +120,7 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 
 | 稳定身份 → requirement/design | 正常输入与入口 | 必须观察及证据边界 |
 | --- | --- | --- |
-| T679-01 → R679-01/D679-01 | 正常 writer 隔离 Task/D1；真实主接收者与 fresh Architecture 接收者初始未绑定/未选 | 自行读安装合同，经原 owners 补缺并到原 Author/Architecture 正式出口。提示只给事实、目标、边界；人工预绑、环境借用或 mock 不证明原生行为。 |
+| T679-01 → R679-01/D679-01 | 正常 writer 隔离 Task/D1；真实主接收者与 fresh Architecture 接收者初始未绑定/未选 | 普通执行自行读安装合同，经原 owners 补缺并到原 Author/Architecture 正式出口；独立 final_plan 按 T694-01 只读对象入口评审。提示只给事实、目标、边界；人工预绑、环境借用或 mock 不证明原生行为。 |
 | T679-02 → R679-01/02、D679-01/02 | 原正常 Bind/Selection 和公共 phase/scope/reopen 操作形成五种 current、不同选择、真实失配；原 API/读取 error 边界 | 首失败、原 owner 和后续重读正确；已有方案回未完义务，无 context 不写 session，保 Task/gen/key/root、规划、Git 与并行会话。unit/mock error 仅证明该层。 |
 | T679-03 → R679-03/D679-03 | 原 Intake fixtures 执行公开 recipe；两 mode × 两 profile、合法不同 caller_locator、普通错 request_id/mode；一条真实 mode 的 native error replay | package 只证明 transport。原生 Agent 从未改 producer/source 完整重建 consumer、重审十维，经真实 record/check/invoke 到 ready；不能由 helper 代填映射/receipt。fixture 必须包含当前 runtime public-wrapper 检查的真实依赖。 |
 | T679-04 → R679-04/D679-04 | 原 Approval artifacts 测试提取并执行文档命令：selected/missing、Task-only、正常 public closeout 后 archive | 真实 key 返回实际路径；缺文件准确；Task-only 无 slice/selection 副作用，archive 保实际 ref/key。无 key 错误对照不当成正向展示通过。 |
@@ -128,3 +128,14 @@ T638-01..07的完整场景由 [knowledge test](knowledge-maintenance.md#t638稳�
 | T679-06 → 分发边界 | 一个代表 clean matching workflow/preset、完整 reapply、dogfood/声明平台、mode/sidecar、当前 Task 保持 | source/package、installed/native 与真实 Agent分别报告；历史archive不为安装手改。含旧数据的原 tools-only路径及其 preservation 单独记录。不证明完整Release/Upgrade、多平台Agent或业务安装采用。 |
 
 实际首失败、机制、命令与观察截止由 [#679 Test](../../requirements-design-test-contributions/679-session-continuation/test.md) 唯一维护。缺原生或环境证据时保留未验证，不能以绿色fixture、文本parity或补绑定关闭对应验收。
+
+## T694：显式评审对象与执行选择
+
+| 稳定身份 → requirement/design | 正常入口 | 必须观察及边界 |
+| --- | --- | --- |
+| T694-01 → R694-01/02、D694-01 | 实际 installed upstream public API 形成有 context 无绑定、同 Task 无选择、匹配选择及无 context；原正式 Architecture wrapper | final_plan 通过完整对象校验并返回 typed stdout；Task、session、planning、baseline 和资源字节不变。语义 fixture 只证明集成层，不代替 AI 判断。 |
+| T694-02 → R694-01、D694-01 | 正常不同选择、scope/phase/root/generation/C4 失配、普通读取错误 | 保实际首失败和原 owner，不覆盖或改报成功；其他目的/Planning consumers 原 guard 保持。unit API error 不证明原生恢复。 |
+| T694-03 → R694-02、D694-02 | 实际 invoke stdout 与 Interface 当前 aggregate/分支/projection/current consumer、相邻 Approval 当前输入 | key/root/purpose/design freshness 保持；只允许原成功到 Approval，非成功保原路由；Approval 自身选择规则不变。 |
+| T694-04 → R694-02、D694-02 | canonical/installed/声明平台、matching reapply/drift/mode/sidecar，完整候选 Check 及最终质量链 | 路由/无写与普通恢复 runtime 边界一致；原独立读序保持。source、fixture、installed、Agent 与未验证边界分开，不新增专项或完整矩阵。 |
+
+本项实际观察由 [#694 Test](../../requirements-design-test-contributions/694-final-plan-object/test.md) 唯一维护。历史 T679 的原结果不证明新入口已验证。
