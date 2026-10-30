@@ -1540,6 +1540,75 @@ class ArchitectureBaselineContractTest(unittest.TestCase):
                         from runtime.schema import validate_json
                         validate_json(output, self.package / "consumers/workflow/delivery-1.0/maintain-architecture-baseline-sync-required.schema.json", "consumer")
 
+    def test_delivery_fitness_preserves_discovery_and_existing_stage_routes(self):
+        from runtime.schema import validate_json
+
+        self.upstream.planning(self.delivery_key)
+        self.assertEqual(self.upstream.projection.resolve(self.delivery_key)["phase"], "implementing")
+        contracts = json.loads((self.package / "interface.json").read_text())["public_contracts"]
+        aggregate = next(
+            output["schema"]["path"] for output in contracts["outputs"]
+            if output["exit_id"] == "fitness_regression"
+        )
+        consumer = next(
+            item["contract"]["path"] for item in contracts["consumer_inputs"]
+            if item["id"] == "fitness_input"
+        )
+        for stage in ("implementation_discovery", "phase2", "final_integration"):
+            if stage == "phase2":
+                candidate = self.upstream.projection.candidate(
+                    ["docs/architecture/README.md"], kind="git_free",
+                )
+                self.upstream.projection.begin_check(self.delivery_key, candidate)
+            elif stage == "final_integration":
+                self.upstream.projection.apply({
+                    "api_version": "1.0", "operation": "rework", "key": self.delivery_key,
+                    "owner_role": "check", "owner_id": "guru-check-task",
+                    "expected_phase": "checking", "target_role": "implementation",
+                    "reason": self.upstream.scope, "affected_results": ["readiness"],
+                })
+            self.assertEqual(
+                self.upstream.projection.resolve(self.delivery_key)["phase"],
+                "checking" if stage == "phase2" else "implementing",
+            )
+            for return_route in ("implementation", "check"):
+                with self.subTest(stage=stage, return_route=return_route):
+                    public = self.load("public-input-impact.json")
+                    public["stage"] = stage
+                    public, _ = self.delivery_entry(public, {})
+                    if stage == "final_integration":
+                        promotion = self.load("public-input-delivery-promotion-3.0.json")
+                        for field in ("task_locator", "delivery_key", "planning_root",
+                                      "before_authority", "candidate"):
+                            promotion[field] = public[field]
+                        public = promotion
+                    selected = {
+                        "typed_exit": "fitness_regression",
+                        "regression_refs": ["project-check:target-boundary"],
+                        "return_route": return_route,
+                    }
+                    result = self.invoke(public, selected)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    output = json.loads(result.stdout)
+                    self.assertEqual(output, {
+                        "exit_id": "fitness_regression",
+                        "task_locator": public["task_locator"],
+                        "stage": stage,
+                        "delivery_key": public["delivery_key"],
+                        "planning_root": public["planning_root"],
+                        "regression_refs": selected["regression_refs"],
+                        "return_route": return_route,
+                    })
+                    schemas = [aggregate, consumer]
+                    if stage != "final_integration":
+                        schemas.extend([
+                            "schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+                            "consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+                        ])
+                    for schema in schemas:
+                        with self.subTest(schema=schema):
+                            validate_json(output, self.package / schema, "stdout")
+
     def test_retired_purpose_less_planning_2_0_requires_fresh_producer(self):
         public = self.load("public-input-impact.json")
         public["stage"] = "planning"

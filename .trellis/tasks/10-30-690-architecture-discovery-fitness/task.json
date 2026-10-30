@@ -1,0 +1,209 @@
+{
+  "schema_version": "2.0",
+  "id": "690-architecture-discovery-fitness",
+  "name": "690-architecture-discovery-fitness",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 690,
+    "disposition": "exact_source"
+  },
+  "title": "修复 Architecture 发现阶段 fitness 出口合同",
+  "description": "完成 #690 V1–V4 源码交付，保留 V5 现场验收边界。",
+  "dev_type": null,
+  "scope": "Architecture discovery fitness output/consumer、定向验证及安装投影。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-30",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+    "revision": "sha256:400b4d26abfb52f7404bdae13351a2481948f9bbdf9efa1f67db8f6e8cccb3d2"
+  },
+  "deliveries": [
+    {
+      "id": "1ec01507-6702-48cf-ab94-4e4f52bd6c2f",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+          "revision": "sha256:400b4d26abfb52f7404bdae13351a2481948f9bbdf9efa1f67db8f6e8cccb3d2"
+        },
+        "anchors": [
+          "V1",
+          "V2",
+          "V3",
+          "V4"
+        ]
+      },
+      "planning_root": "deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+        "revision": "sha256:fb0089dbe85ad58c0857fc371ba82d557cd3577a53a24853769becdac57b26c6"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:78ea747826e24aa9220707d91056fb5fa20f856569961a5549774b37599a8362",
+        "paths": [
+          ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/check.jsonl",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.jsonl",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.md",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/prd.md",
+          ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+        ],
+        "head_ref": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b",
+        "base_ref": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:5fb7e2a6-34b0-4667-92f9-44e02674c512",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+              "revision": "sha256:400b4d26abfb52f7404bdae13351a2481948f9bbdf9efa1f67db8f6e8cccb3d2"
+            },
+            "anchors": [
+              "V1",
+              "V2",
+              "V3",
+              "V4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+            "revision": "sha256:fb0089dbe85ad58c0857fc371ba82d557cd3577a53a24853769becdac57b26c6"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/prd.md",
+              "revision": "sha256:6a42e5faf6e32826c9d16e024e1f1d9f109d9cb9f3cfe5fbc1b5b1dd105525b7"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+              "revision": "sha256:fb0089dbe85ad58c0857fc371ba82d557cd3577a53a24853769becdac57b26c6"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.md",
+              "revision": "sha256:72dc14f0ee8cee255a9551ae1ae6d7a51d8dbdd4755ced7b93163ff9fb02acd3"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:af3dbdd0840a4ca0e9a51ee00e22e47ac4c324a889d608ea191e49055594a684",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+              "revision": "sha256:400b4d26abfb52f7404bdae13351a2481948f9bbdf9efa1f67db8f6e8cccb3d2"
+            },
+            "anchors": [
+              "V1",
+              "V2",
+              "V3",
+              "V4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+            "revision": "sha256:fb0089dbe85ad58c0857fc371ba82d557cd3577a53a24853769becdac57b26c6"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:78ea747826e24aa9220707d91056fb5fa20f856569961a5549774b37599a8362",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/check.jsonl",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.jsonl",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.md",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/prd.md",
+              ".trellis/tasks/10-30-690-architecture-discovery-fitness/prd.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py"
+            ],
+            "head_ref": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b",
+            "base_ref": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b"
+          },
+          "predecessor_result_id": "planning-accepted:5fb7e2a6-34b0-4667-92f9-44e02674c512",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/prd.md",
+              "revision": "sha256:6a42e5faf6e32826c9d16e024e1f1d9f109d9cb9f3cfe5fbc1b5b1dd105525b7"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/design.md",
+              "revision": "sha256:fb0089dbe85ad58c0857fc371ba82d557cd3577a53a24853769becdac57b26c6"
+            },
+            {
+              "locator": ".trellis/tasks/10-30-690-architecture-discovery-fitness/deliveries/1ec01507-6702-48cf-ab94-4e4f52bd6c2f/implement.md",
+              "revision": "sha256:72dc14f0ee8cee255a9551ae1ae6d7a51d8dbdd4755ced7b93163ff9fb02acd3"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
