@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 import os
 import shutil
@@ -218,6 +219,38 @@ class RuntimeTest(unittest.TestCase):
         with patch.object(self.port, "repository_facts", side_effect=AssertionError("must not resolve")):
             self.assertEqual(bind.execute(self.root, json.dumps(public), json.dumps(owner), official=self.port)["reason_code"],
                              "stale_semantic_result")
+
+    def test_double_stdin_conflicts_before_either_reader_or_identity_access(self):
+        with patch.object(bind, "read_json", side_effect=AssertionError("must not read either input")), \
+                patch.object(bind, "official_port", side_effect=AssertionError("must not resolve identity")):
+            with self.assertRaises(bind.CommandError) as caught:
+                bind.execute(self.root, "-", "-")
+        error = caught.exception
+        self.assertEqual((error.code, error.field_path, error.exit_status),
+                         ("conflicting_arguments", "arguments.--owner-result", 2))
+        self.assertIn("--input", error.remediation)
+        self.assertIn("--owner-result", error.remediation)
+        self.assertIn("only one", error.remediation)
+        self.assertEqual(self.port.writes, 0)
+
+    def test_complete_file_pair_and_single_stdin_pairs_preserve_resume(self):
+        self.invoke("rebind_missing_session")
+        before = dict(self.port.records)
+        public, owner = request("resume_current_task")
+        input_path = Path(self.temp.name) / "input.json"
+        owner_path = Path(self.temp.name) / "owner.json"
+        input_path.write_text(json.dumps(public), encoding="utf-8")
+        owner_path.write_text(json.dumps(owner), encoding="utf-8")
+        pairs = [(str(input_path), str(owner_path), None),
+                 ("-", json.dumps(owner), json.dumps(public)),
+                 (json.dumps(public), "-", json.dumps(owner))]
+        for input_value, owner_value, stdin in pairs:
+            with self.subTest(input=input_value, owner=owner_value), patch("sys.stdin", io.StringIO(stdin or "")):
+                output = bind.execute(self.root, input_value, owner_value, official=self.port)
+            self.assertEqual(output, {"exit_id": "session_resumed", "task_id": "a",
+                                      "lifecycle_generation": 0, "resume_target": "phase-2"})
+            self.assertEqual(self.port.records, before)
+            self.assertEqual(self.port.writes, 1)
 
 
 class FixedForkIntegrationTest(unittest.TestCase):

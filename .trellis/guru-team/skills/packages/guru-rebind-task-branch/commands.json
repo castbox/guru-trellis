@@ -174,7 +174,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Reviewed execute or read-only recover action.",
+          "description": "Reviewed execute or read-only recover action. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

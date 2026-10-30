@@ -27,7 +27,7 @@
           "flag": "--delivery-key",
           "required": true,
           "kind": "json",
-          "description": "Exact public DeliveryKey for its own planning_root.",
+          "description": "Exact public DeliveryKey for its own planning_root. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -86,7 +86,7 @@
           "flag": "--delivery-key",
           "required": true,
           "kind": "json",
-          "description": "Exact public DeliveryKey for its own planning_root.",
+          "description": "Exact public DeliveryKey for its own planning_root. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -146,7 +146,7 @@
           "flag": "--delivery-key",
           "required": true,
           "kind": "json",
-          "description": "Exact public DeliveryKey for its own planning_root.",
+          "description": "Exact public DeliveryKey for its own planning_root. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

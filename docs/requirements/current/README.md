@@ -2,6 +2,7 @@
 
 | Identity / alias | Status | Locator | Relations |
 | --- | --- | --- | --- |
+| RDT-REQ-JSON-INPUT; R695/BEH695; JSON 输入载体 | current | [json-input-carriers](./json-input-carriers.md) | RDT-DES-JSON-INPUT; RDT-TST-JSON-INPUT |
 | RDT-REQ-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08; R636/BEH636; R637/BEH637 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md); [RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md) |
 | RDT-REQ-COMPLETION; Completion/Closure/Finish; R531-06; R547 | current | [completion-closure](./completion-closure.md) | [RDT-DES-COMPLETION](../../design/current/completion-closure.md); [RDT-TST-COMPLETION](../../test/current/completion-closure.md) |
 | RDT-REQ-KNOWLEDGE; RDT/Architecture; REQ-007/BEH-007; R331 | current | [knowledge-maintenance](./knowledge-maintenance.md) | [RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md); [RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md) |

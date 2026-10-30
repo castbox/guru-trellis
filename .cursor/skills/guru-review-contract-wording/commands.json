@@ -112,7 +112,7 @@
           "flag": "--delivery-key",
           "required": false,
           "kind": "json",
-          "description": "Exact public key for the Delivery planning-artifacts profile.",
+          "description": "Exact public key for the Delivery planning-artifacts profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": [
             "--invocation"
@@ -214,7 +214,7 @@
           "flag": "--delivery-key",
           "required": false,
           "kind": "json",
-          "description": "Exact public key for the Delivery planning-artifacts profile.",
+          "description": "Exact public key for the Delivery planning-artifacts profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": [
             "--invocation"

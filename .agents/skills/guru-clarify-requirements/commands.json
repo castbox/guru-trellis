@@ -32,7 +32,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "AI-reviewed owner result or dash for stdin.",
+          "description": "AI-reviewed owner result or dash for stdin. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -81,7 +81,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Recorded owner result or dash for stdin.",
+          "description": "Recorded owner result or dash for stdin. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -130,7 +130,7 @@
           "flag": "--invocation",
           "required": true,
           "kind": "json",
-          "description": "Semantic owner invocation envelope or dash for stdin.",
+          "description": "Semantic owner invocation envelope or dash for stdin. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

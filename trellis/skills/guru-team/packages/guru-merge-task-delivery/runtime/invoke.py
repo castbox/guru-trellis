@@ -7,13 +7,13 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     # Inspect only the profile before loading the separate legacy owner. Normal
     # current calls keep their original runtime dependencies and preconditions.
     import argparse as _argparse, io as _io, sys as _sys
-    from runtime.io import read_json as _read_json
+    from runtime.io import decode_json as _decode_json, read_json as _read_json, read_stdin as _read_stdin
     _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--input')
     _selected,_rest=_selector.parse_known_args(argv)
     if _selected.input:
         if _selected.input=='-':
-            _content=_sys.stdin.read();_sys.stdin=_io.StringIO(_content)
-            _public=_read_json(_content,'input')
+            _content=_read_stdin('input');_sys.stdin=_io.StringIO(_content)
+            _public=_decode_json(_content,'input')
         else:_public=_read_json(_selected.input,'input')
         if _public.get('profile') in {'legacy_control_retirement','legacy_history_verification'}:
             import importlib.util as _util

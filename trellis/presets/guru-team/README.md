@@ -1,5 +1,9 @@
 # Guru Team Preset
 
+JSON 载体读取、Bind 双 stdin 冲突与完整正常调用见
+[MIGRATION-695](MIGRATION-695.md)。共享 reader 保留原合法 inline、stdin 和普通文件；
+各入口仍遵守自身准入，不支持进程替换。已有安装须采用完整匹配 preset。
+
 明确 Task/Delivery 的接收会话通过原 Identity/Ensure/Bind/Selection 补齐自身缺失事实，
 再继续同对象原未完义务。Planning 首失败诊断、standalone producer 身份构造，以及
 带实际 key 的 Human artifacts 展示须成套采用。具体诊断字段、Task-only/archive
