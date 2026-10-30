@@ -1183,12 +1183,12 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-29T17:15:45Z",
+  "installed_at": "2026-10-30T09:29:32Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "6857919c700c97d7a5946dcfebe0e8699dc508b8",
-    "commit": "6857919c700c97d7a5946dcfebe0e8699dc508b8",
-    "tree_state": "clean",
+    "ref": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b",
+    "commit": "00b1b6f29a5ad7f6591f0ef43573ef8ba798222b",
+    "tree_state": "dirty",
     "is_mutable_ref": false
   },
   "install": {
@@ -1428,7 +1428,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "363bcad32a294cb1180a333df8e77b2c8b95992fe030d4beff6074a942f1890c",
-        "tree_sha256": "3ab8983fd4d76956f1daa77640bf3d5a414949419f8f9e66331278eb3895f279"
+        "tree_sha256": "329dcf746c2d7bd147585617241e54ff4ef5157ad2ca04b52d6c21e032d6bdeb"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -9879,7 +9879,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
-        "sha256": "1c4ad20cf240a99cded3788f24dbf261128a31d438f5eec151eba031cc500cd3",
+        "sha256": "81b4d5af3ae0a2c93de5427ff2e63aae14cfd4e8d0fa3ed057d8792ea491d6d9",
         "executable": false,
         "action": "installed"
       },
@@ -9893,7 +9893,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
-        "sha256": "c023d12d53abedfeffb8d399c881b95fb16d6ec27e8022da445ba2ad4ebbc0dd",
+        "sha256": "cf39bf73f35a1cbae784ff1ba4b3501bc4f9261d53a14d0ea4dfe4515b77354e",
         "executable": false,
         "action": "installed"
       },
@@ -10796,7 +10796,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
-        "sha256": "e0c9c30269e8e71d1e1e9497aa4c61a89cde2ec0ed59ff73bfde141a90b56b52",
+        "sha256": "a5167df42154876d509420df5a4878ce9e7a6e8ff9c7de39745ecd71d500e1ca",
         "executable": false,
         "action": "installed"
       },
@@ -41673,7 +41673,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
-        "sha256": "1c4ad20cf240a99cded3788f24dbf261128a31d438f5eec151eba031cc500cd3",
+        "sha256": "81b4d5af3ae0a2c93de5427ff2e63aae14cfd4e8d0fa3ed057d8792ea491d6d9",
         "executable": false,
         "action": "installed"
       },
@@ -41687,7 +41687,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
-        "sha256": "c023d12d53abedfeffb8d399c881b95fb16d6ec27e8022da445ba2ad4ebbc0dd",
+        "sha256": "cf39bf73f35a1cbae784ff1ba4b3501bc4f9261d53a14d0ea4dfe4515b77354e",
         "executable": false,
         "action": "installed"
       },
@@ -42471,7 +42471,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
-        "sha256": "e0c9c30269e8e71d1e1e9497aa4c61a89cde2ec0ed59ff73bfde141a90b56b52",
+        "sha256": "a5167df42154876d509420df5a4878ce9e7a6e8ff9c7de39745ecd71d500e1ca",
         "executable": false,
         "action": "installed"
       },
@@ -42716,7 +42716,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
-        "sha256": "1c4ad20cf240a99cded3788f24dbf261128a31d438f5eec151eba031cc500cd3",
+        "sha256": "81b4d5af3ae0a2c93de5427ff2e63aae14cfd4e8d0fa3ed057d8792ea491d6d9",
         "executable": false,
         "action": "installed"
       },
@@ -42730,7 +42730,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
-        "sha256": "c023d12d53abedfeffb8d399c881b95fb16d6ec27e8022da445ba2ad4ebbc0dd",
+        "sha256": "cf39bf73f35a1cbae784ff1ba4b3501bc4f9261d53a14d0ea4dfe4515b77354e",
         "executable": false,
         "action": "installed"
       },
@@ -43514,7 +43514,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
-        "sha256": "e0c9c30269e8e71d1e1e9497aa4c61a89cde2ec0ed59ff73bfde141a90b56b52",
+        "sha256": "a5167df42154876d509420df5a4878ce9e7a6e8ff9c7de39745ecd71d500e1ca",
         "executable": false,
         "action": "installed"
       },
@@ -43759,7 +43759,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
-        "sha256": "1c4ad20cf240a99cded3788f24dbf261128a31d438f5eec151eba031cc500cd3",
+        "sha256": "81b4d5af3ae0a2c93de5427ff2e63aae14cfd4e8d0fa3ed057d8792ea491d6d9",
         "executable": false,
         "action": "installed"
       },
@@ -43773,7 +43773,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
-        "sha256": "c023d12d53abedfeffb8d399c881b95fb16d6ec27e8022da445ba2ad4ebbc0dd",
+        "sha256": "cf39bf73f35a1cbae784ff1ba4b3501bc4f9261d53a14d0ea4dfe4515b77354e",
         "executable": false,
         "action": "installed"
       },
@@ -44557,7 +44557,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
-        "sha256": "e0c9c30269e8e71d1e1e9497aa4c61a89cde2ec0ed59ff73bfde141a90b56b52",
+        "sha256": "a5167df42154876d509420df5a4878ce9e7a6e8ff9c7de39745ecd71d500e1ca",
         "executable": false,
         "action": "installed"
       },
@@ -44802,7 +44802,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/delivery-1.0/maintain-architecture-baseline-fitness-regression.schema.json",
-        "sha256": "1c4ad20cf240a99cded3788f24dbf261128a31d438f5eec151eba031cc500cd3",
+        "sha256": "81b4d5af3ae0a2c93de5427ff2e63aae14cfd4e8d0fa3ed057d8792ea491d6d9",
         "executable": false,
         "action": "installed"
       },
@@ -44816,7 +44816,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/consumers/workflow/fitness-regression-5.0.schema.json",
-        "sha256": "c023d12d53abedfeffb8d399c881b95fb16d6ec27e8022da445ba2ad4ebbc0dd",
+        "sha256": "cf39bf73f35a1cbae784ff1ba4b3501bc4f9261d53a14d0ea4dfe4515b77354e",
         "executable": false,
         "action": "installed"
       },
@@ -45600,7 +45600,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/schemas/public-output-delivery-fitness-regression-1.0.schema.json",
-        "sha256": "e0c9c30269e8e71d1e1e9497aa4c61a89cde2ec0ed59ff73bfde141a90b56b52",
+        "sha256": "a5167df42154876d509420df5a4878ce9e7a6e8ff9c7de39745ecd71d500e1ca",
         "executable": false,
         "action": "installed"
       },

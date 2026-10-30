@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整写作规范"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "规划正文与来源条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批需求结构"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "设计与来源处置"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "Policy/Docs Plan 及验证"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "定向验证范围与价值"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 Skill I/O 与分发合同"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "受管 apply/reapply/sidecar 合同"}

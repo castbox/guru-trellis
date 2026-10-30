@@ -24,6 +24,7 @@
         },
         "stage": {
           "enum": [
+            "implementation_discovery",
             "phase2",
             "branch_review",
             "publication",
