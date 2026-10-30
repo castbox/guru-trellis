@@ -91,3 +91,17 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 结果入口准确定位唯一实际 Test 与后续正式结果。晚到正式事实不要求回填受审正文自身最终结论；需要真实内容修订时，由原 owner 纳入完整候选、实际晋升及最终覆盖。#637 当前 Test 仅修正可证过期描述和观察截止点，并引用原正式结果；原命令、旧失败、当时未知及其它未证项目保持原义，不因 PR 合并全部转为通过。
 
 本规则保留 R331／R578／R637／R638／R648 的完整来源、工程事实适用性、隔离贡献、candidate Check、原 final_integration 实际写入与读回、实际 after 重绑、最终 Check 和完整 committed Review。无变化不造空贡献或 ADR，稳定 identity 与原单写责任保持。
+
+## 采用机制审核与决策纠正
+
+**R-MECH-01 / BEH-MECH-ADOPTION**：原 Architecture owner 审核本次新增、修改、复用、扩大使用及直接影响的机制。将数据 authority、职责、协调、失败或生命周期约束带入当前路径的采用，即使共享实现无 diff，也须判断适用性；普通 helper 和无关依赖不逐个建单元。找到设计依据后，仍按完整设计宪法独立判断必要性、范围、整体代价和可行替代，不给予某一原则固定优先级，不以最短代码或更少 finding 证明质量。
+
+**R-MECH-02 / BEH-MECH-PROTECTION**：新增或强化保护的提出方，包括作者、reviewer 和模板要求，说明真实要求或可信事实、现有保障缺口、补齐关系、收益、运行维护代价及合法请求影响。缺少签名、锁或重试本身不成立 finding。真实保密、权限和职责约束不以事故发生为前置。对安全、防御及失败保护的偏好须纠偏，不能以此取消有依据的保护，也不能声称已证明模型训练成因。
+
+**R-MECH-03 / BEH-MECH-EVIDENCE**：适用 RDT/Architecture 已能回答能力、职责、条件和取舍时，不重复源码考古；实际行为、性能、全部相关消费者或文档冲突存在缺口时才定向查实现。正在审查的旧技术选择不能以自身排除替代；真实业务和外部合同保留，修订沿原受审变更合同实施，再按原阶段晋升。既有能力、平台原生能力和已安装依赖均须有当前适用依据；无直接 consumer 的抽象、包装、转换、配置和未来预留不进入实现。
+
+**R-MECH-04 / BEH-MECH-UNCERTAINTY**：新保护缺证时补证、修订或撤回，不先升级为义务。旧保护缺证时不擅删，也不默认复用通过；只限制依赖该结论的采用或晋升，无关工作继续。已有论证确实覆盖当前消费者、条件和代价时简短承接，真实前提或证据变化才补审，不因阶段或版本改变重做全部工程检查。
+
+**R-MECH-05 / BEH-MECH-LEGACY**：纠正旧决策须识别同一决策的实际采用者、共享状态、数据、接口、配置和运行依赖。共存破坏同一约束、不兼容读写或使纠正失效时，承接必要适配与退出。可独立保留时，说明共存如何保持约束、剩余采用者、真实保留依据、owner、可执行后继交付或可观察触发条件及退出证据；未承接须如实标明，工期、改动量、链接或“下次再改”不代表安排。旧场景仍有依据时明确范围后保留，新消费者不扩入已判错模式。分析可大于实现范围，不自动授权跨仓迁移。
+
+晋升完整单元保留决策行为、owner、范围、理由、代价、适用条件、重审触发及存量关系；使用既有正文/change contract，不新增评分、永久台账、审批链或公共字段。方法唯一正文在原 [Architecture contract](../../../trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)、[Protection](../../../trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md) 与 [current knowledge](../../../trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)。设计和测试分别由同名完整单元的 D-MECH 与 T-MECH 承接。

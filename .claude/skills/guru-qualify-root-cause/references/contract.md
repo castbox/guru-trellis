@@ -52,10 +52,37 @@ a persisted questionnaire or public handoff.
   legitimate investigation and independently qualified mitigation.
 - **Protection:** bind protected object, real harm without blocking, direct
   owner, current RDT/Architecture authority, current-layer necessity and
-  legitimate input impact. Credential/permission/integrity/ownership/identity/
+  legitimate input impact. The proposer of new or strengthened protection,
+  including an author, reviewer or template requirement, establishes the real
+  requirement or credible facts, the gap in existing safeguards and how this
+  specific mechanism fills it. Judge its benefit against total operating and
+  maintenance cost, including dependencies, coordination, state, recovery and
+  effects on legitimate requests. Missing a signature, lock, retry or other
+  technical measure alone is not a finding and does not shift the burden to
+  others to disprove it. Real confidentiality and permission requirements do
+  not require a prior incident. Credential/permission/integrity/ownership/identity/
   idempotency/lease/fence mechanisms yield `protection_invariant_eligible` when
   these facts support them. Generic safety or recommended defaults cannot
   create rejection authority.
+
+For protection, first reconstruct supported normal completion and necessary
+business, data and permission constraints. Then assess the concrete abnormal
+condition or timing, mechanism scope and effect, and recheck legitimate normal
+requests. Distinguish confidentiality, integrity, ownership/scope binding and
+proof of issuance according to actual facts; none automatically requires a
+particular cipher, long-lived key, global coordinator or ledger. Preserve
+necessary protection and existing secret/redaction and permission boundaries.
+Use the Architecture contract's adopted-mechanism review for the Architecture
+tradeoff; this owner retains Protection admission and its existing routes.
+
+A new protection without sufficient basis must obtain evidence, be revised or
+be withdrawn before it becomes an acceptance obligation, a required test or a
+finding.
+Missing basis for an existing protection is neither deletion permission nor
+successful reuse. Name the gap and limit the adoption or promotion conclusion
+depending on it while unrelated work continues. Reuse still-applicable evidence
+under the original stage contract; do not restart every qualification merely
+because a stage or version changed.
 
 Range/configuration gates, retry/backoff/budget increases, partial fallback,
 normalization/truncation, error mapping, last-error-only observation and sample

@@ -78,6 +78,18 @@ facts remain established when the capability is not enabled; initialization, ado
 and end-to-end claims retain their own evidence gaps. Partial implementation does
 not satisfy unrelated or still-unimplemented accepted scope.
 
+For a corrected decision, apply Migration and retirement in
+`.trellis/guru-team/skills/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md`.
+Distinguish the new decision taking effect, the new entry or requirement being
+delivered, old implementations migrating and environment cutover. Inspect the
+same decision's remaining adopters and the actual coexistence basis or necessary
+adaptation/exit. Promotion and delivery of a new entry alone do not complete
+that correction. Migration within accepted Task scope remains unfinished when
+assigned to a later Delivery; justified existing implementations outside that
+scope do not
+automatically block completion. Use the actual remaining/revision route for
+missing implementation and reserve `evidence_pending` for a real evidence gap.
+
 Locate each unsatisfied requirement and its dependent operation before routing:
 
 - Necessary code or a consumer is unimplemented: use the existing remaining-work

@@ -66,3 +66,9 @@
 | T649-05 / R649-06 → D649-05 | P05 后序正式结果晚于正文，cutoff 与原公开结果可核 | 不要求正文递归回填自己最终 pass／HEAD；真实文件修订归原 writer 且覆盖受影响 gate；Closure／Finish 不写共享 Docs |
 
 本项独立样本、同一 Task 连续组合与正式任务交付各自证明。唯一实际结果在 [#649 Test](../../requirements-design-test-contributions/649-stage-result-convergence/test.md)，受控 provider 不证明真实 GitHub 或业务生产效果。
+
+## T-MECH-04：纠正决策的存量与完成
+
+**T-MECH-04 / R-MECH-05/06 → D-MECH-03/04**：V4 使用原 Completion native fixture，给出新旧 writer 共享状态、可独立迁移旧入口、场景不同仍合理的旧入口，以及属于整个 Task 但拆在后继 Delivery 的迁移。原 owner 自行读事实、作整体判断并调用原 wrapper；不能因新入口合并或基线晋升声明完成。必须识别共存破坏约束时的必要同步适配、可独立分期的真实共存与可执行承接、场景保留及 scope 内未完成责任。实现遗漏不记为仅待外部证据。
+
+固定原/新各一次，同语义事实、模型、权限和起点；期待不进入受测上下文。逐次具体观察、首次失败/修复与执行边界唯一见 [本批 Test](../../requirements-design-test-contributions/architecture-mechanism-review/test.md)，不把原出口或结构校验当语义通过。候选检查、真实晋升/读回、after 重绑、最终质量和交付分别沿原链路证明。

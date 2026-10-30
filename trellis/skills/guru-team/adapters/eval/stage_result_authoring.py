@@ -382,6 +382,12 @@ def stage(request, fixture, package, source_repo):
     if case.endswith('d02'):
         extra['catalog_operations.py'] = ('def rename_display(state, title):\n    return dict(state, title=title)\n'
             'def select_target(state, target, qualified=False):\n    if not qualified:\n        raise ValueError("target qualification required")\n    return dict(state, active_target=target)\n')
+    mechanism = None
+    for relative in request["files"]:
+        if Path(relative).name == "mechanism-stock-facts.json":
+            mechanism = json.loads((Path(request["workdir"]) / relative).read_text())
+            scope = mechanism["whole_task_scope"]
+            extra.update(mechanism["files"])
     _seed(request, fixture, source_repo, additional=extra, scope=scope)
     check = json.loads((fixture / 'docs/phase2-evidence/check-public-input.json').read_text())
     projection = DeliveryProjection(fixture, check['task_ref'])
@@ -470,6 +476,8 @@ def stage(request, fixture, package, source_repo):
         *(['catalog_operations.py'] if case.endswith('d02') else []),
         'interval.py', 'range_filter.py', 'consumer.py', 'test_interval.py',
         'docs/phase2-evidence/validation.json', '.trellis/workflow.md']
+    if mechanism:
+        required += mechanism["required_reads"]
     planning = projection.planning_directory(key).relative_to(fixture).as_posix()
     required += [planning + '/' + name for name in ('prd.md', 'design.md', 'implement.md')]
     required += [str(path.relative_to(fixture)) for path in package.glob('schemas/*.json')]

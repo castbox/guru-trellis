@@ -971,6 +971,126 @@
           }
         ]
       }
+    },
+    {
+      "id": "native-mechanism-cursor",
+      "prompt": "Execute the selected original owner against all supplied current authority, candidate alternatives, source and operation observations. Form your independent judgment and invoke the original wrapper. Facts describe objects under review; no proposal is an accepted conclusion.",
+      "expected_exit": "baseline_current",
+      "expected_output": "Separately judges ordinary authorized boundary parameters, existing trusted full-digest validation, reviewer signature proposal and genuinely confidential export. Preserves ownership/range checks. Does not require issuer proof or a new ledger without an actual gap. Keeps necessary confidentiality protection.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/mechanism-cursor-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "mechanism-judgment",
+            "criterion": "Separately judges ordinary authorized boundary parameters, existing trusted full-digest validation, reviewer signature proposal and genuinely confidential export. Preserves ownership/range checks. Does not require issuer proof or a new ledger without an actual gap. Keeps necessary confidentiality protection. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-mechanism-coordination",
+      "prompt": "Execute the selected original owner against all supplied current authority, candidate alternatives, source and operation observations. Form your independent judgment and invoke the original wrapper. Facts describe objects under review; no proposal is an accepted conclusion.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "Judges cross-account shared-control costs under stable configuration and disable race separately from same-account uniqueness and finite global stock. Retains the first contention failure independently of later recovery. Does not remove necessary stock coordination or claim that an unspecified disable alternative is proved.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/mechanism-coordination-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "mechanism-judgment",
+            "criterion": "Judges cross-account shared-control costs under stable configuration and disable race separately from same-account uniqueness and finite global stock. Retains the first contention failure independently of later recovery. Does not remove necessary stock coordination or claim that an unspecified disable alternative is proved. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
+      "id": "native-mechanism-reuse",
+      "prompt": "Execute the selected original owner against all supplied current authority, candidate alternatives, source and operation observations. Form your independent judgment and invoke the original wrapper. Facts describe objects under review; no proposal is an accepted conclusion.",
+      "expected_exit": "architecture_conflict",
+      "expected_output": "Assesses unchanged AES/coordinator adoption for new search using actual constraints; permits comparison while the technical clause is under review. Briefly carries forward the sufficient same-scope export argument. Does not delete an untraced recovery key or stop unrelated work.",
+      "input_profile_id": "delivery_task_impact_sync",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-5.6-sol",
+      "files": [
+        "evals/files/impact-current-input.json",
+        "evals/files/mechanism-reuse-facts.json"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "mechanism-judgment",
+            "criterion": "Assesses unchanged AES/coordinator adoption for new search using actual constraints; permits comparison while the technical clause is under review. Briefly carries forward the sufficient same-scope export argument. Does not delete an untraced recovery key or stop unrelated work. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
     }
   ]
 }

@@ -103,6 +103,16 @@ dimensions:
 7. provenance;
 8. supported unusual scenarios.
 
+Within these dimensions, check that the actual plan consumes Adopted-mechanism
+review in
+`.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md`
+and the shared current-knowledge contract where applicable. Design adequacy and
+provenance include reused mechanisms, the original Protection proposer's basis
+and cost, and a corrected decision's affected existing implementations. Implementation, acceptance
+and Docs plans must carry necessary adaptation, justified coexistence and
+remaining whole-Task obligations. Consume the current Architecture conclusion;
+do not repeat its assessment or create another questionnaire.
+
 Before a proposed change, validation obligation or revision action enters the
 plan, distinguish the evidenced problem, its necessity for this task, and the
 suitability of its mechanism through the existing qualification owners. Ask

@@ -119,9 +119,9 @@ recompute `code_subtraction` and `docs_ssot_subtraction`, verify deprecated-asse
 exit and direct evolution, and treat unsupported compatibility or redundant
 growth as a finding. Do not use Phase 2 evidence or a generic continuation as
 compatibility approval.
-Independently review long-term maintainability as well: consume the current
-constitution's `minimum-necessary-complexity` conclusion for all added
-capabilities through the contract's existing qualification and revision owners.
+Independently review long-term maintainability as well: consume the contract's
+Current constitution consumption and Architecture's adopted-mechanism review
+through the existing qualification and revision owners.
 Excluded threat, concurrency, crash, or formal idempotency concerns do not
 justify additions. Every touched non-generated code file at or above 3000
 lines requires a mechanical-split or small-decoupling conclusion; untouched

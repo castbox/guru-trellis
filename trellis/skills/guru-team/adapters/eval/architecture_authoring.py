@@ -24,6 +24,10 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     if public["profile"].startswith("delivery_"):
         task = stage_delivery_identity(fixture, public).relative_to(fixture)
     case = request["case_id"]
+    mechanism = None
+    for relative in request["files"]:
+        if Path(relative).name.startswith("mechanism-") and relative.endswith("-facts.json"):
+            mechanism = json.loads((Path(request["workdir"]) / relative).read_text())
     # These are candidate facts, never pre-authored owner results or pass evidence.
     baseline_source = "def send(payload, protocol='responses', retries=2):\n    if not 0 <= retries <= 8:\n        raise ValueError('retry count out of range')\n    return {'payload': payload, 'protocol': protocol, 'retries': retries}\n"
     candidate_source = baseline_source.replace("{'payload': payload, 'protocol': protocol, 'retries': retries}", "dict(payload=payload, protocol=protocol, retries=retries)")
@@ -84,6 +88,11 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
         )
     files[public["baseline"]["locator"]] = files[public["baseline"]["locator"]].replace(
         "Identity: current-v2.", f"Identity: {public['baseline']['identity']}.")
+    if mechanism:
+        files.update(mechanism["baseline_files"])
+        baseline_source = files["transport.py"]
+        candidate_source = mechanism["candidate_files"].get("transport.py", baseline_source)
+        design = mechanism["candidate_design"]
     for relative, content in files.items():
         target = fixture / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -93,6 +102,11 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     base = run_git(fixture, "rev-parse", "HEAD")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", base)
     (fixture / "transport.py").write_text(candidate_source)
+    if mechanism:
+        for relative, content in mechanism["candidate_files"].items():
+            target = fixture / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content)
     candidate_contribution = None
     if "business-default" in case:
         (fixture / "import_pipeline.py").write_text("from transport import send\ndef import_record(record):\n    return send(record, protocol='responses', retries=0, metric_stage='import_stage2')\n")
@@ -181,6 +195,8 @@ def stage_architecture_facts(request: dict, fixture: Path) -> None:
     if constraint_file:
         reads.append(constraint_file)
     reads.extend(["docs/architecture-eval/candidate.patch", "docs/architecture-eval/candidate-inventory.json", "docs/architecture-eval/before-transport.py.txt", "transport.py", "import_pipeline.py", "query_summary.py", public["requirement_authority"], public["behavior_authority"]])
+    if mechanism:
+        reads.extend(path for path in mechanism["required_reads"] if path not in reads)
     if candidate_contribution:
         reads.extend(["test_transport_candidate.py", "docs/architecture-eval/candidate-test-result.json"])
     if repeated_review(request):
@@ -218,6 +234,17 @@ def public_contract_reads(package: Path, public: dict | None = None) -> list[Pat
     assets.add(Path(inputs["aggregate_schema"]["path"]))
     assets.update(Path(row["schema"]["path"]) for row in inputs["profiles"])
     return [package / path for path in sorted(schema_projection_closure(package, assets))]
+
+
+def projection_assets(package: Path, public: dict | None = None) -> set[Path]:
+    """Carry declared exit/consumer schemas without requiring upfront reads."""
+    from adapters.eval.eval_support import schema_projection_closure
+    interface = json.loads((package / "interface.json").read_text())
+    contracts = interface["public_contracts"]
+    assets = {path.relative_to(package) for path in public_contract_reads(package, public)}
+    assets.update(Path(row["schema"]["path"]) for row in contracts["outputs"])
+    assets.update(Path(row["contract"]["path"]) for row in contracts["consumer_inputs"])
+    return schema_projection_closure(package, assets)
 
 
 def stage_delivery_identity(fixture: Path, public: dict, *, scope_content=None, scope_anchor="R1. Architecture eval") -> Path:
@@ -273,6 +300,7 @@ def reviewer_context(repository: Path, package: Path, helper_command: str, reads
         f"After forming judgment, read the selected exit's output schema and projection declared by Interface using: {helper_command} read --kind " + ("owner_file" if upstream else "skill_contract") + f" --path <absolute-schema-path-under-{package}>. Supply every field required by that selected public output projection in your owner_result; properties optional across the semantic union may still be mandatory on the selected branch. Preserve existing identities and current stage. Do not add fields from other branches.",
         "Existing recorder fact: ai_review_gate.status is blocked only for typed_exit=blocked; all other declared exits, including incomplete/conflict routes, require passed for the completed semantic classification round. This does not assert candidate suitability or completion. Follow the actual selected exit and findings; do not force baseline_current.",
         "Execute applicable checks; missing candidate/constraints or unavailable worker uses existing incomplete/blocked exits. Public-input digest is available in the fact sheet; author your own smallest semantic owner_result and mapped consumer under the schema. Do not copy examples or seek expected outcomes.",
+        "--stdin reads the actual process stdin; it does not construct or supply a payload. Send your own complete JSON envelope with a non-interactive quoted heredoc or pipe. The following example shows shell transport syntax only; replace the placeholder with your independently authored envelope.",
         f"{helper_command} invoke --stdin" + (" --upstream-architecture" if upstream else "") + " <<'GURU_INVOCATION_JSON'\n<your {public_input, owner_result} envelope>\nGURU_INVOCATION_JSON",
         "Invoke the formal wrapper yourself. Return its actual complete single typed-exit JSON, without relabeling or narrative. A nonzero wrapper error ends this invocation; never synthesize a pass.",
     ])

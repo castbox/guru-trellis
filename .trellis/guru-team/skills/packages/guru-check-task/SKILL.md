@@ -90,9 +90,8 @@ for production, test, generated/managed, or documentation growth. Unsupported
 compatibility or redundant state is a current finding, not future cleanup.
 Apply the same maintainability boundary: do not add complexity for excluded
 hostile-input, concurrency-stress, unusual-crash, or formal-idempotency cases;
-consume the current constitution's `minimum-necessary-complexity` conclusion
-for all added capabilities through the contract's existing qualification and
-revision owners; and
+consume the contract's Current constitution consumption and Architecture's
+adopted-mechanism review through the existing qualification and revision owners; and
 review every touched non-generated code file at or above 3000 lines for a
 mechanical split or small decoupling refactor. Untouched historical large files
 are outside this task's scope.

@@ -1,0 +1,26 @@
+task_id: architecture-mechanism-review
+source: .trellis/tasks/10-30-architecture-mechanism-review/prd.md
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 2f70796103406683a2f63adfb6b54d247a7433a5
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_authority_identity: guru-trellis-rdt
+proposed_targets:
+  requirements:
+    - docs/requirements/current/knowledge-maintenance.md
+    - docs/requirements/current/completion-closure.md
+  design:
+    - docs/design/current/knowledge-maintenance.md
+    - docs/design/current/completion-closure.md
+  test:
+    - docs/test/current/knowledge-maintenance.md
+    - docs/test/current/completion-closure.md

@@ -26,7 +26,9 @@ shared-current promotion 自身绑定写前 live expected-current；错配只由
 
 ## Constitution applicability consumption
 
-对完整当前 change 的新增能力读取唯一 current constitution 的 `minimum-necessary-complexity` 适用结论及 evidence；覆盖公共合同与抽象，不局限 task-local 持久化。Applicable concern 绑定真实必要性、具体冲突或证据缺口；不创建空白逐原则 verdict、逐能力 DTO 或评分表。
+在原 Architecture、Planning、Check 与 Review 职责内，按唯一 current constitution 的完整五原则判断本次采用的机制及直接影响，包含没有实现 diff 的复用；不单独提高其中一条的地位。具体必要性、作用范围、代价、替代与证据方法只读取原 `guru-maintain-architecture-baseline/references/contract.md`；保护提出方责任沿原 `guru-qualify-root-cause` 的 Protection 合同消费，完整知识与存量处置沿原 `guru-maintain-requirements-design-test-ssot/references/current-knowledge.md` 消费，不在项目另写第二套方法。
+
+项目原九 concerns 和 project-check 使用既有 reason、evidence、before/after 与真实贡献承接这些判断。改变本项目 Architecture 规范性投影时，由原 Architecture owner 准备隔离完整 proposed 定义，并沿原 candidate Check、final_integration/readback、after 重绑和最终质量链实际写入；RDT owner 只写自身三层 authority。当前 Task 的存量义务仍归原 Planning/Completion，不因基线晋升或拆 Delivery消失；新决策生效、新需求交付、旧实现迁完及环境切换分别表达。无 Architecture 影响保持原轻量路径，不创建空贡献、ADR、逐能力字段、原则评分或永久台账。
 
 当前 Requirement 必要而 mechanism 多余时，由当前阶段 qualification owner 经既有 `mechanism_revision_required` consumer 返回设计/实现 remove/replace，保留 accepted scope。Requirement-authority 本身冲突由 Architecture `architecture_conflict` -> `guru-architecture-baseline-planning-router` 返回 Planning，需修订 source scope 时进入既有澄清并取得新 current 后重审。缺适用证据使用 `contract_incomplete`，真实选择/依赖使用已有澄清/blocked。Phase 2 的真实 scope/authority 变化由 `planning_stale` 承接；Branch Review 的当前 finding 和真实 scope choice 分别由 `implementation_required`、`scope_confirmation_required` 承接。Project-check 在现有九 concern 和 before/after 中判断这一消费，不新增 descriptor、exit 或脚本语义判定。
 

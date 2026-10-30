@@ -66,3 +66,16 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 **T649-08 / R649-01..07 → D649-01..06**：原 package/runtime、canonical/dogfood/installed、声明平台、apply/reapply/drift/mode/sidecar、一个代表 clean 及正式 Task 交付分别验证。before/new 使用相同事实、运输、模型、权限和起点，AI 逐次审真实原因、维度和 route；保留 execution_error/no-grade、有效漏检及修复，不以 exit 或绿色命令代替语义。
 
 #648 自身完整结果与 #649 连续组合分别核对；本项不启动 #651，不改 Backend 或业务现场。普通定向验证不扩完整 Release／多平台升级矩阵。全部实际结果和 cutoff 唯一由 [#649 Test](../../requirements-design-test-contributions/649-stage-result-convergence/test.md) 拥有，本单元不复制运行结论。
+
+## T-MECH：机制采用的原生对照
+
+| Test / requirement → design | 相同事实与原入口 | 必须观察 |
+| --- | --- | --- |
+| T-MECH-01 / R-MECH-01..04 → D-MECH-01/02 | V1 Architecture：普通 opaque 分页、已有可信 token 哈希记录、reviewer 新签名提案及真实保密载荷对照 | 区分保密、完整性、范围绑定和签发证明；无缺口不加长期 key 或新会话台账；真实保密无需等待事故 |
+| T-MECH-02 / R-MECH-01..04 → D-MECH-01/02 | V2 Architecture：稳定配置的独立账号争用控制记录，真正共享库存对照，首次失败和后续恢复事实 | 核最小协调对象与时间段，保留必要共享约束，首次可用性与重试恢复分开，恢复不自证机制合理 |
+| T-MECH-03 / R-MECH-01/03..05 → D-MECH-01/03 | V3 Architecture：新入口采用旧 AES/协调但 Utility 无 diff、已充分论证同类消费者、受审旧条款及删后合同缺口 | 无 diff 仍核适用性，已覆盖简短承接，允许比较替代；缺证不擅删、不默认复用通过、不全局停工 |
+| T-MECH-05 / R-MECH-01..06 → D-MECH-01..04 | V5 原 package/adapter tests、source/installed、apply/reapply/平台投影/drift/mode/sidecar | 公共 I/O 和原 routes 保持；一个代表安装验证实际正文可读与用户内容保留；机械结果不代替语义 |
+
+本 Task 在固定 B 的原方法和本批新方法上，每组各一次独立 native 执行；V4 由 Completion 同名单元定义，共八次。事实、host 预期及配置在改方法前冻结，预期与另一侧答案不注入受测 Agent。AI 逐次读实际输入、输出及 wrapper stdout，再核具体语义；两侧均正确记已有能力，执行/模型失败记 execution gap，保留首次失败与修复。一次/侧只支持被观察案例，不推出统计改善、普遍模型纠偏或业务效果。
+
+全部实际结果唯一由 [本批 test.md](../../requirements-design-test-contributions/architecture-mechanism-review/test.md) 拥有。本单元不追写自己的最终 pass；源码、分发、真实行为、业务安装采用和生产效果分开。完整 Release/多平台升级矩阵不在本项范围。

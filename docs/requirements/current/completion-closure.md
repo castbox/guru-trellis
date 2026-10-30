@@ -92,3 +92,9 @@ Reactivate 先读当前可获取后继。唯一合法后继继续其 generation�
 **R649-05 / BEH649-GAP**：Completion 先确定未满足的 requirement、能力和 operation，再区分四类责任。必要消费者或代码未实现，回原实施／真实后续 Delivery；有效要求已确定而方案自加无依据前置，回原 Author／Architecture 修订机制；来源或 accepted scope 真正冲突，回原 Clarify；有有效要求且必要的外部证据尚未取得，沿原 evidence_refresh，说明缺口、原获取 owner 和恢复条件。无关未知仅保留边界，范围满足时可以合法完成。以上行为消费既有出口，不增加新 disposition 或状态。
 
 **R649-06 / BEH649-CUTOFF**：结果正文限定观察候选、已执行检查及截止点。正文之后才发生的正式 Check、Review、Delivery、Completion 或 Git／PR 事实，由其原公开结果和准确引用承接；正文不追写自己的最终 pass 或 HEAD。确需修正文档时，由原 writer 在合法候选边界修改，纳入受影响 Check／Review，不因“补结果”豁免。Closure／Finish 仍只处置终态、归档及 bookkeeping，不接管共享文档；不为追记完成制造空 Delivery 或额外提交。
+
+## 纠正架构决策后的整体完成
+
+**R-MECH-06 / BEH-MECH-COMPLETION**：Completion 依据 R-MECH-05 的存量关系，分别判断目标生效、新入口交付、旧实现迁完和环境切换。新入口交付或基线晋升不证明存量纠正完成。共存会破坏同一约束的必要适配仍未完成时，不宣称纠正完成。迁移属于 Task accepted scope 时，即使拆到后继 Delivery，也保留整体未完成责任；必要实现遗漏走原 implementation/remaining/additional Delivery 路由，不伪装成 evidence_pending。
+
+范围外存量若有充分的独立共存依据、实际剩余采用者和可执行承接，不自动阻塞当前 Task；场景不同而仍合理的旧机制明确范围保留。真实外部证据缺口才进入原 evidence_refresh。旧能力和配置只在真实支持窗口退出且无消费者后按原合同删除。Closure/Finish 不取得迁移、共享知识或额外写入权限。设计：同名 D-MECH-COMPLETION；验证：同名 T-MECH-04。

@@ -221,13 +221,18 @@ result.
 
 ## Current constitution consumption
 
-Apply `minimum-necessary-complexity` from the unique current project authority
-to every added capability in the complete worktree, including public contracts
-and abstractions, using its applicable conclusion and current evidence. The
-task-local consumer check is part of this review, not its complete coverage.
-Judge necessity against all applicable current contracts and responsibilities;
-passing functional tests alone is insufficient. This package consumes the
-authority and does not restate its principle prose.
+Read the unique applicable project constitution in full and consume
+Adopted-mechanism review in
+`.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md`.
+Apply it to the complete worktree and directly affected unchanged consumers,
+using the current Architecture conclusion and evidence under all five principles.
+Judge actual adoption and necessary convergence of existing implementations,
+including reuse without
+an implementation diff. A reviewer proposing new or stronger protection bears
+the original Protection evidence burden. Inspect first-failure observations
+separately from retry recovery and preserve the evidence's actual layer and
+scope. Passing functional tests alone is insufficient; this consumer does not
+restate principle prose or the main method.
 
 Form concrete candidate observations and qualify them through the existing
 Phase 2 profiles before severity or findings. An unnecessary mechanism returns

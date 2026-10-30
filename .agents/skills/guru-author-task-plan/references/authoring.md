@@ -109,6 +109,15 @@ technical re-entry or missing ephemeral output requires no planning consent.
 
 Converge PRD without lowering accepted scope to fit current Architecture.
 Identify interfaces, mechanisms, ordering, compatibility and semantic owners.
+Use Adopted-mechanism review in
+`.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md`
+when forming and comparing the candidate, including reuse without an original
+implementation diff. New or strengthened protection consumes the original
+Protection qualification with its proposer evidence burden. Necessary adaptation
+of existing implementations and whole-Task responsibility follow the shared current-knowledge
+contract; carry their actual scope and executable transition in the existing
+design, Delivery Policy and Docs Plan. These references do not replace any
+qualification or independent Architecture assessment below.
 Form only the current call-local design_locator, or design_facts with source
 constraint_refs when no substantive design exists. Facts describe mechanisms,
 not PRD narrative, approval or acceptance claims. Do not persist a parallel

@@ -773,11 +773,11 @@ def stage_public_projection(request: dict[str, Any], execution_root: Path) -> tu
         else:
             public_assets.add(Path("references/contract.md"))
         if request["skill_id"] == "guru-maintain-architecture-baseline":
-            from adapters.eval.architecture_authoring import public_contract_reads
+            from adapters.eval.architecture_authoring import projection_assets
             from adapters.eval.fixture_io import public_input_path
 
             public = json.loads(public_input_path(request).read_text())
-            public_assets.update(path.relative_to(canonical_root) for path in public_contract_reads(canonical_root, public))
+            public_assets.update(projection_assets(canonical_root, public))
         elif module is None:
             public_assets.add(Path("schemas/phase2-check.schema.json" if request["skill_id"] == "guru-check-task" else "schemas/semantic-result.schema.json"))
     public_assets = schema_projection_closure(canonical_root, public_assets)
