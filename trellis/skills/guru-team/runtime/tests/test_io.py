@@ -62,6 +62,16 @@ class JsonInputTests(unittest.TestCase):
                     error = self.error(lambda: read_json(value, "input"), "neither an existing regular JSON file nor valid inline JSON")
                     self.assertNotIn("invalid syntax", error.remediation)
 
+    def test_native_alternative_separator_recognizes_explicit_missing_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory) / "working"
+            workspace.mkdir()
+            with chdir(workspace), patch("runtime.io.os.sep", "\\"), patch("runtime.io.os.altsep", "/"):
+                for value in ("./sensitive.json", "../sensitive.json"):
+                    with self.subTest(value=value):
+                        self.error(lambda: read_json(value, "input"), "file does not exist")
+                self.error(lambda: read_json("sensitive/missing.json", "input"), "neither an existing regular JSON file nor valid inline JSON")
+
     def test_nonregular_carriers_are_rejected_without_opening(self):
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "sensitive-directory"

@@ -56,7 +56,12 @@ def read_json(value: str, field_path: str) -> dict[str, Any]:
     try:
         mode = candidate.stat().st_mode
     except FileNotFoundError:
-        if candidate.is_absolute() or value.startswith((f".{os.sep}", f"..{os.sep}")):
+        relative_prefixes = tuple(
+            parent + separator
+            for separator in (os.sep, os.altsep) if separator is not None
+            for parent in (".", "..")
+        )
+        if candidate.is_absolute() or value.startswith(relative_prefixes):
             remediation = "The JSON file does not exist. Provide an existing regular UTF-8 JSON file or another input form supported by this command."
     except OSError:
         remediation = "Cannot inspect the JSON input file. Provide a readable regular UTF-8 JSON file or another input form supported by this command."

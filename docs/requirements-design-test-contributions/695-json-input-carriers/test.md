@@ -31,3 +31,17 @@
 完整 candidate Check、RDT final_integration、实际内容重绑、Architecture/final Check、commit 与独立 Branch Review 均未执行。formal_fork_source_lock 保持未验证；本轮采用证据是同 checkout local_candidate，不冒充正式发布来源采用。
 
 业务 #961 现场、后续串行 Issues、真实全部平台 Agent、额外 clean installation、完整多平台升级/Release 矩阵不由本项验证。源码、单元、实际 source wrapper、installed 及正式 lifecycle 结论分开，未执行结果不预填通过。
+
+## 本机替代分隔符的源码修正
+
+官方 CPython [os.altsep](https://docs.python.org/3/library/os.html#os.altsep) 定义 Windows 同时支持反斜杠与 `/`。只检查 os.sep 的原实现会把正常 `./`、`../` 缺失路径报为 mixed 歧义；生产 reader 的只读平台常量单元复现观察到该差异，未执行原生 Windows。
+
+当前 canonical reader 按 os.sep 及非空 os.altsep 生成 `.`、`..` 明确前缀，继续保留绝对路径和其他 mixed 歧义，不按任意斜杠猜路径。新增回归执行生产 reader，检查 Windows 分隔符常量组合下的 `./`、`../` 和裸相对名边界。修正后 shared suite 13 项、两个变更 Python 文件内存语法及 diff hygiene 通过。
+
+本段观察截止于源码修正；已有 installed reader 尚未同步该修正。前述 source/installed 验证保留其原观察对象，不能自动升级为本次 installed 结果。后续同步、当前 Check 和独立 Review 仍由原 owner 承接，原生 Windows 实测与完整矩阵边界保持。
+
+## 替代分隔符修正的安装采用
+
+后续原 tools-only owner 从 `b8e1380f6817e9dd6f91bad6c69f32aa0c54e044` 加本次 ALTSEP 源码修正执行新的冻结操作，实际返回 tools_upgraded / 0.7.0-guru.7。installed reader 与 canonical 字节一致；使用目标 resolver 加载 installed reader，执行同一 shared suite 的 13 项测试通过。该测试模拟 Windows 分隔符常量，不代表原生 Windows 执行。
+
+本次 installed package validator、ownership、Shared/Claude/Codex/Cursor 投影、dogfood drift、变更 Python 内存语法和 diff hygiene 通过，受管范围 `.new/.bak` 为零。目标原生 get_context.py --json 返回 exit 0，原 Task/Delivery 仍为 implementing。配置、AGENTS、workflow 与 Trellis config 字节保持；原执行器的 peer/common pointer 保持检查通过。先前真实 Bind 和 reapply 结果仅在相关实现、入口合同及 installer 未变的范围内采用；本次新增 installed-reader 行为已实际执行，不以旧安装结果代替。formal_fork_source_lock、业务现场和完整矩阵仍未验证。当前修订 Check 与独立 Branch Review 尚待原 owner 执行。
