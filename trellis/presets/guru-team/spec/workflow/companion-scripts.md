@@ -289,6 +289,37 @@ Use the shared `CommandError` only for deterministic failures declared in the
 owning package's `errors/catalog.json`. Public JSON mode emits exactly one error
 object; diagnostics use stderr and tracebacks are never public output.
 
+### JSON carriers and already-read content
+
+The shared `runtime.io.read_json` accepts an existing regular UTF-8 file first,
+including its existing symlink-to-regular support, or inline JSON. `-` reads
+stdin once. Nonregular file carriers, including zsh process substitution, are
+unsupported and are not opened. A valid inline object remains valid when path
+probing fails, including long inline arguments. An absolute or native `./` or
+`../` path can identify a missing file; a slash or filename suffix alone cannot.
+Unresolved mixed arguments retain their file/inline ambiguity in remediation.
+
+Already-read text goes directly to the shared object decoder. It must not be
+probed again as a filename. This applies to `read_json_file` and the existing
+Publish/Merge/Finish stdin profile inspection. `read_json_file` keeps its own
+regular, non-symlink contract-file precondition. Package-local envelope-only
+loaders and stdin-only admission retain their original supported forms; shared
+reader changes do not add inline admission to those entries.
+
+The shared reader retains `invalid_json`, the original parameter field and
+exit 2. Remediation distinguishes identifiable missing files, read/UTF-8
+failures, unsupported carriers, empty content, syntax errors in read content,
+non-object top levels and unresolved mixed arguments. It never echoes JSON,
+local paths or OS exception details. Successful reading does not replace the
+owning package's schema, identity or semantic checks.
+
+Bind owns its two-parameter conflict: when both `--input` and `--owner-result`
+are `-`, reject before either read with `conflicting_arguments`,
+`field_path=arguments.--owner-result` and exit 2. The correction names both
+parameters: use `-` once and inline JSON or a regular file for the other.
+Both flags remain required and are not an unconditional conflict set. The
+Bind package's `references/json-inputs.md` owns complete normal invocations.
+
 Managed runtime resolution failures emit one stderr JSON object with
 `field_path`, `dependency`, nullable `runtime_identity`, and preset-reapply
 `remediation`. Missing activation uses `runtime_not_bootstrapped`, missing or

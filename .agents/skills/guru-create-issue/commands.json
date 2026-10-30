@@ -133,7 +133,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Reviewed Issue creation or recovery input.",
+          "description": "Reviewed Issue creation or recovery input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

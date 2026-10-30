@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -27,7 +27,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -35,7 +35,7 @@
           "flag": "--upstream-source",
           "required": false,
           "kind": "json",
-          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -72,7 +72,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -80,7 +80,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -88,7 +88,7 @@
           "flag": "--upstream-source",
           "required": false,
           "kind": "json",
-          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -125,7 +125,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -133,7 +133,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan.",
+          "description": "Owner-private reviewed tools plan; prepare accepts private-prepare and emits the frozen private-plan. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -141,7 +141,7 @@
           "flag": "--upstream-source",
           "required": false,
           "kind": "json",
-          "description": "Read-only public CLI/Core source descriptor for initial inventory.",
+          "description": "Read-only public CLI/Core source descriptor for initial inventory. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

@@ -11,10 +11,10 @@
     },
     {
       "code": "invalid_json",
-      "trigger": "A JSON locator is unreadable or invalid.",
+      "trigger": "A JSON argument or input cannot be read, uses an unsupported carrier, is empty, has invalid syntax, or has a non-object top level.",
       "exit_status": 2,
       "locator": "field_path",
-      "remediation": "Provide valid UTF-8 JSON."
+      "remediation": "Use the parameter's declared carrier and provide readable UTF-8 content containing one JSON object. Follow the specific failure remediation."
     },
     {
       "code": "schema_mismatch",

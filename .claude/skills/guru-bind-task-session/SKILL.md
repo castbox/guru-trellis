@@ -50,5 +50,12 @@ workflow routers. `explicit_task_mode` carries TaskLifecycleDTO to
 `task-session-binding-blocked`. Each consumer derives TaskRef afresh if needed.
 Unknown, stale, ambiguous or mismatched official identity stops without writing.
 
+Read [JSON inputs and complete invocations](references/json-inputs.md) before
+choosing the two input carriers. Both parameters accept inline JSON, a regular
+UTF-8 JSON file, or `-` for stdin. Only one parameter may use `-`; the runtime
+rejects two stdin selections before either read. Process substitution and other
+nonregular file carriers are unsupported. Carrier selection does not replace
+the semantic review or identity checks above.
+
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.

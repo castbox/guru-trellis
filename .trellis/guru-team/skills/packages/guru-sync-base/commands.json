@@ -119,7 +119,7 @@
           "flag": "--result-json",
           "required": false,
           "kind": "json",
-          "description": "Executor result JSON or dash for stdin.",
+          "description": "Executor result JSON or dash for stdin. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -167,7 +167,7 @@
           "flag": "--invocation",
           "required": true,
           "kind": "json",
-          "description": "Deterministic invocation envelope or dash for stdin.",
+          "description": "Deterministic invocation envelope or dash for stdin. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

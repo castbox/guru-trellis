@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -27,7 +27,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed migration actions; on resume, unchanged decisions with a reviewed successor workflow provider ref.",
+          "description": "Owner-private reviewed migration actions; on resume, unchanged decisions with a reviewed successor workflow provider ref. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -72,7 +72,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -80,7 +80,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed migration actions.",
+          "description": "Owner-private reviewed migration actions. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },

@@ -11,6 +11,31 @@ from runtime.io import CommandError
 spec=importlib.util.spec_from_file_location('legacy_original_owner',PACKAGE/'runtime/legacy_maintenance.py')
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 class LegacyOwnerTests(unittest.TestCase):
+ def test_stdin_profile_read_failure_is_a_safe_input_error(self):
+  from unittest.mock import patch
+  invoke_spec=importlib.util.spec_from_file_location('finish_input_read_failure',PACKAGE/'runtime/invoke.py')
+  invoke=importlib.util.module_from_spec(invoke_spec);invoke_spec.loader.exec_module(invoke)
+  for failure in (OSError('sensitive read error'),UnicodeDecodeError('utf-8',b'\xff',0,1,'sensitive encoding error')):
+   with self.subTest(failure=type(failure).__name__), patch('sys.stdin') as stream:
+    stream.read.side_effect=failure
+    with self.assertRaises(CommandError) as caught:
+     invoke.run(PACKAGE,{},['--input','-'])
+   error=caught.exception
+   self.assertEqual((error.code,error.field_path,error.exit_status),('invalid_json','input',2))
+   self.assertIn('Cannot read JSON from stdin',error.remediation)
+   self.assertNotIn('sensitive',error.remediation)
+ def test_stdin_profile_text_is_not_reinterpreted_as_a_file(self):
+  import io
+  from contextlib import chdir
+  from unittest.mock import patch
+  with tempfile.TemporaryDirectory() as directory, chdir(directory):
+   Path('1').write_text(json.dumps({'profile':'legacy_history_verification'}),encoding='utf-8')
+   invoke_spec=importlib.util.spec_from_file_location('finish_input_profile',PACKAGE/'runtime/invoke.py')
+   invoke=importlib.util.module_from_spec(invoke_spec);invoke_spec.loader.exec_module(invoke)
+   with patch('sys.stdin',io.StringIO('1')), self.assertRaises(CommandError) as caught:
+    invoke.run(PACKAGE,{},['--input','-'])
+   self.assertEqual((caught.exception.code,caught.exception.field_path),('invalid_json','input'))
+   self.assertIn('top level must be an object',caught.exception.remediation)
  def test_explicit_retirement_reads_preserved_archive_after_active_tree_removed(self):
   with tempfile.TemporaryDirectory() as directory:
    root=Path(directory);key={'task_id':'selected','lifecycle_generation':0};ref='.trellis/tasks/selected'

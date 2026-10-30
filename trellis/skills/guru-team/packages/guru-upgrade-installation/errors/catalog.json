@@ -11,10 +11,10 @@
     },
     {
       "code": "invalid_json",
-      "trigger": "Invalid invocation or runtime failure.",
+      "trigger": "Invalid invocation or runtime failure. A JSON argument or input cannot be read, uses an unsupported carrier, is empty, has invalid syntax, or has a non-object top level.",
       "exit_status": 2,
       "locator": "field_path",
-      "remediation": "Read command help and refresh the current input."
+      "remediation": "Use the parameter's declared carrier and provide readable UTF-8 content containing one JSON object. Follow the specific failure remediation."
     },
     {
       "code": "schema_mismatch",

@@ -1,0 +1,23 @@
+task_id: 695-json-input-carriers
+source: https://github.com/castbox/guru-trellis/issues/695
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 8d746ce561c464ca28af4dc91adf085132e4098c
+architecture:
+  locator: docs/architecture/README.md
+  version: 8d746ce561c464ca28af4dc91adf085132e4098c
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/json-input-carriers.md
+  - docs/design/current/json-input-carriers.md
+  - docs/test/current/json-input-carriers.md
+  - docs/requirements/current/README.md
+  - docs/design/current/README.md
+  - docs/test/current/README.md

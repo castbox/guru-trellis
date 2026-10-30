@@ -133,6 +133,11 @@ def _current_lifecycle(root: Path, lifecycle: dict[str, Any], official: Any) -> 
 
 
 def execute(root: Path, input_value: str, owner_value: str, *, official: Any | None = None) -> dict[str, Any]:
+    if input_value == "-" and owner_value == "-":
+        raise CommandError(
+            "conflicting_arguments", "arguments.--owner-result",
+            "--input and --owner-result cannot both read stdin. Use - for only one argument and inline JSON or a regular UTF-8 JSON file for the other.",
+        )
     package = Path(__file__).resolve().parents[1]
     public = read_json(input_value, "input")
     owner = read_json(owner_value, "owner_result")

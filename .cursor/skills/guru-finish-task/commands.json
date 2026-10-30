@@ -92,7 +92,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Separate original-owner legacy input.",
+          "description": "Separate original-owner legacy input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

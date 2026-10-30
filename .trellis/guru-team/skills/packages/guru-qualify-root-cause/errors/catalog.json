@@ -18,10 +18,10 @@
     },
     {
       "code": "invalid_json",
-      "trigger": "Stdin is not exactly one JSON object.",
+      "trigger": "Stdin cannot be read, uses an unsupported carrier, is empty, has invalid syntax, or has a non-object top level.",
       "exit_status": 2,
       "locator": "field_path",
-      "remediation": "Provide one valid call-local JSON object on stdin."
+      "remediation": "Provide readable UTF-8 stdin containing one JSON object."
     },
     {
       "code": "schema_mismatch",

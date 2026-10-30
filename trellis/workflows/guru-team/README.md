@@ -1,5 +1,9 @@
 # Guru Team Workflow
 
+JSON 载体读取与 Bind 双输入调用保持原 Skill owner 和流程。载体限制、错误变化及
+匹配安装见 [MIGRATION-695](../../presets/guru-team/MIGRATION-695.md)；完整调用由
+[Bind 文档](../../skills/guru-team/packages/guru-bind-task-session/references/json-inputs.md) 定义。
+
 明确 Task/Delivery 的接收会话通过原 Identity/Ensure/Bind/Selection 补齐自身缺失事实，
 再继续同对象原未完义务。Planning 首失败诊断、standalone producer 身份构造，以及
 带实际 key 的 Human artifacts 展示须成套采用。具体诊断字段、Task-only/archive
