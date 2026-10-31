@@ -326,6 +326,15 @@ Original descriptor/result and wrapper freshness checks remain unchanged.
 
 ## Responsibility and change causality
 
+Apply Contract continuity through consumers in
+`.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+when assessing the actual entry and adopted calls. Judge the real consumer's
+success prerequisites and the reused object's existence, state and call order;
+include unchanged consumers. Use the test-boundary method in
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+when deciding what the evidence establishes. These methods serve this owner's
+current independent judgment and project checks, not another authority or gate.
+
 Determine actual responsibility from the adopted decisions, consumer graph,
 state ownership, assembly and dependency direction. Check whether a generic
 capability interprets business semantics or treats protocol/model/endpoint/

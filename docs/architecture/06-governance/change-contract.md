@@ -92,6 +92,8 @@ Architecture 原 owner 保留首次独立读取顺序及当前 project-check 判
 
 唯一执行定义由 [workflow-contract](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage)单写；本合同只拥有项目职责和 concern/project-check 承接，不新增 descriptor/check/result identity。ADR-034 窄替代无因 fresh reviewer/相同完整重审；ADR-028/030/033 及九 concerns、single-writer、最终质量覆盖保持。matching安装沿MIGRATION-638，旧安装固定或原 owner 成套切换，同 key 原阶段恢复，不由新语义豁免当前旧安装的门禁。
 
+合同承接判断由上述唯一执行定义承接：原 Author/Architecture 从实际入口追踪新生产者输出、持久完成状态与真实消费者的使用前提，核对复用参数的对象、存在阶段、状态和顺序；Check/Branch Review 在各自完整当前判断中独立核对消费者可用性。测试声明边界、正式路径条件和合法 fixture 的方法只读取 [Test And Validation Value](../../../trellis/presets/guru-team/spec/workflow/quality-guidelines.md#test-and-validation-value)。入口、默认路径或启用范围扩大后，原 owner 明确保留、失效和补证范围，不用生产者成功、局部绿色或历史 pass 代替当前充分性。项目九 concerns/project-check 消费该方法与真实证据，不复制业务领域定义、不新增阶段或证明台账。Delivery 判断继续区分公共源码、dogfood、目标正式采用与业务效果；项目指导的必要差额仍由所属 authority owner 承接。
+
 ## 稳定知识身份与真实目标
 
 Architecture authority identity为guru-trellis-architecture，RDT为guru-trellis-rdt。完整单元保留既有identity，精确来源用完整Git revision与repo-relative locator；普通promotion允许同authority identity，不强制总README target、global successor或逐Issue摘要。导航只在定位/身份/状态改变时更新，真实public API/schema版本独立保留。bootstrap仍保留distinct successor合同。目标branch/commit、bytes与恢复intent只在原owner调用或有直接consumer的短期private状态；无全仓hash清单、第二current或授权记录。

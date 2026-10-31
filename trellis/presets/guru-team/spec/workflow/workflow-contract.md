@@ -109,6 +109,39 @@ result binding remain required. The retained `fresh_final_review` wire value
 has the explicit successor meaning and matching-install boundary in
 MIGRATION-637; it is not permission to silently reinterpret an old installation.
 
+### Contract continuity through consumers
+
+When replacing an execution chain or expanding an entry, Author and Architecture
+trace the actual entry through the new producer's outputs, persisted completion
+state and meaning of success to the consumers that still use those results.
+Include consumers without a diff. Read the owning contract and actual consumer
+conditions: a producer marking itself successful does not establish that its
+result satisfies the reader. Check and Branch Review independently judge that
+usability within their current complete candidate.
+
+For a reused call, identify what each relevant parameter refers to under the
+new caller. Check whether that object already exists at the call, which state
+must be persisted, and the required call order. Equal types, parameter names or
+a prior review do not establish those prerequisites. Return a real discrepancy
+to the earliest affected original owner under the existing routes.
+
+Compare test evidence with the affected formal path using
+[Test And Validation Value](quality-guidelines.md#test-and-validation-value).
+When an entry, default path or enablement scope expands, identify newly reachable
+inputs and branches before applying the engineering-fact rules below. State
+which original facts remain applicable, which do not and what needs evidence;
+retain valid local tests without making every change a full-chain E2E task.
+
+For historical analysis, compare the rules actually installed then, the exact
+candidate, known conditions, commands and verifiable original stage results.
+Separate a defect's introduction from later expansion of its reach. Code and
+test observations do not establish a historical reviewer's reasoning or which
+old results that reviewer adopted. Identify the adopted parts and basis only
+when records support them; missing records do not prove no review occurred.
+Keep direct evidence, inference and unavailable reasons distinct in existing
+stage explanations. Do not reconstruct another owner's private state or add
+a review ledger to fill the gap.
+
 ### Engineering fact applicability
 
 Before inspecting prior results, determine the current complete scope, risks,

@@ -143,6 +143,28 @@ detail public. Apply this policy within the current accepted scope and the
 validation ownership below; it does not require historical test cleanup across
 business repositories or a new full-chain gate for every change.
 
+### Declared test boundary and formal path
+
+First identify the behavior and boundary the test claims to exercise. Compare
+its actual entry, context, configuration, dependencies, persisted state, branch
+conditions and result observation with the affected formal path. A real database,
+a test name or a green result does not establish that a required branch ran.
+Explain a material difference and limit the claim to the behavior actually
+exercised. Apply the shared
+[engineering-fact applicability rules](workflow-contract.md#candidate-applicability-and-coverage)
+when adopting earlier results after entry, default-path or enablement changes.
+
+Fixtures may establish state that must already exist before the declared
+boundary, and substitutes may isolate dependencies outside it. For example, a
+reader test may seed a valid completed record and prove that reader; it does
+not thereby prove that a changed producer creates that record. If a fixture
+produces a result that the code inside the declared boundary should produce,
+repairs that code's output, or skips a condition needed to reach its branch,
+downstream green assertions cannot prove that boundary. Inspect the actual
+setup, call and observation rather than inferring coverage from fixture labels.
+Valid local evidence remains useful within its scope; this method adds no
+universal E2E requirement, per-test proof file or new review stage.
+
 For stage-result changes, the original `guru-check-task` contract owns review
 of current behavior, guidance and assertions after a real restriction ends.
 The original Delivery Review and Completion Skills own applicable result

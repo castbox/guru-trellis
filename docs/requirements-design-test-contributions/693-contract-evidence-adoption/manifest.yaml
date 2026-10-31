@@ -1,0 +1,20 @@
+task_id: 693-contract-evidence-adoption
+source: https://github.com/castbox/guru-trellis/issues/693
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: e514770dfa03711a4606046232593b9bf782695a
+architecture:
+  locator: docs/architecture/README.md
+  version: e514770dfa03711a4606046232593b9bf782695a
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/knowledge-maintenance.md
+  - docs/design/current/knowledge-maintenance.md
+  - docs/test/current/knowledge-maintenance.md

@@ -354,6 +354,15 @@ cannot prove semantic equivalence or require an unrelated full-chain replay.
 
 ### Dependency-Scoped Validation
 
+Use Contract continuity through consumers in
+`.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+to independently check current consumer usability and reused-call prerequisites.
+Apply the declared-boundary and fixture method in
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+to the actual setup, entry, branch and observation. State any difference from
+the formal path and the resulting proof limit in the existing validation
+summary; producer success or green downstream assertions cannot fill that gap.
+
 Apply the shared Candidate Applicability And Coverage contract in every profile,
 including finding fixes and resolved reconciliation. Determine the current
 complete check set and account for all nine dimensions. Use this owner's
