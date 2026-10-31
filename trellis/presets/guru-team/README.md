@@ -1,5 +1,11 @@
 # Guru Team Preset
 
+跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
+`guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
+分别处理依赖图与严格串行列表，默认协调器 heartbeat 为 2 分钟。
+入口边界、同源规范、个人副本迁移及验证范围见
+[Issue 编排迁移说明](./MIGRATION-ISSUE-ORCHESTRATION.md)。
+
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。无论有无
 Task/Delivery，独立审核都显式调用 `guru-review-change`，由它保留指定范围并返回

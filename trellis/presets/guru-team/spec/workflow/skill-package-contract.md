@@ -52,6 +52,14 @@ their original owners.
 
 ## Ownership
 
+`guru-orchestrate-issue-dag` and `guru-orchestrate-issue-sequence` own explicit
+cross-Issue coordination in Codex. They are `standalone_only` instruction-only
+packages, not phases of the single-Issue workflow. Their common semantic source
+is [issue-orchestration.md](./issue-orchestration.md); each package owns its
+graph or strict-sequence behavior. They read that specification and their
+package from the same source or installation provider. The selected business
+repository retains its own workflow and does not need the coordinator's preset.
+
 `guru-review-change` is a standalone semantic owner for independent review of
 working-tree content or a committed range, optionally narrowed to selected
 paths. It requires no Task/Delivery or target-side preset. Its same-provider
@@ -123,7 +131,7 @@ frontmatter fails source validation. The Markdown body contains only triggering,
 routing, execution entry, and fail-closed rules. Long behavior and authoring
 guidance belong in package-local `references/`.
 
-`interface.json` is validated by `schemas/skill-interface-1.3.schema.json` and
+`interface.json` is validated by the exact schema selected by its registry row and
 declares stable identity, workflow and standalone modes, identical entry
 preconditions, evidence identity and freshness, `judgment_mode`, ordered stages, artifacts,
 schemas, objective validators, external exits, re-entry behavior, tests, and
@@ -167,18 +175,47 @@ revision action, human-confirmation need, semantic pass, or route intent.
 `workflow.routing=global_workflow` means the global workflow loads the package
 through its mandatory marker. `standalone.routing=direct_discovery` means a
 selected platform may discover and invoke the package without global workflow
-routing. Both modes still require the complete, compatible Guru Team preset,
+routing. Runtime-backed packages still require the complete, compatible Guru Team preset,
 extension runtime, shared dispatcher, companion scripts, installed manifest,
 and managed package inventory. `standalone` never means that one copied Skill
 directory is self-contained or portable outside that installation.
 
-Every active interface declares the closed `runtime_dependency` object with
+Every runtime-backed interface declares the closed `runtime_dependency` object with
 extension id, runtime API version, installed manifest path, shared dispatcher
 id, preset distribution id, and package portability. Each validator declares a
 stable `runtime_command` that the extension manifest publishes. Source and
 installed validation bind those fields to the extension capability, and reject
 missing fields, wrong routing, dependency drift, unknown commands, or different
 workflow/standalone preconditions before a package command can run.
+
+### Instruction-Only Standalone Packages
+
+Interface 1.9 selects `execution_kind=instruction_only`, `judgment_mode=semantic`,
+and explicit standalone invocation on Codex. It has no workflow invocation,
+dispatcher command, wrapper, JSON transport, recorder file, or runtime dependency
+declaration. Existing Interfaces retain their original requirements. The registry
+selects this contract explicitly; validators never infer it from missing fields.
+
+The semantic five-stage profile remains required. The recorder/validator stage
+uses native tool results to verify objective action outcomes after the AI gate
+and any necessary dialogue-local choice. It does not create a record merely to
+prove that a gate occurred. Tools do not judge intent, readiness or completion.
+
+The public input is a package-local Markdown conversation contract. Each declared
+exit owns a concise conversation output contract and exactly one stop consumer.
+Progress exits return to observation in the same coordinator conversation;
+terminal exits return the verified result to the user. No serialized DTO, schema,
+approval token or status file is created for these conversation boundaries.
+Discovery returns the declared conversation contracts and agent entrypoint;
+it never fabricates a dispatcher invocation or a machine-validated semantic exit.
+
+Source validation checks the selected interface, frontmatter, reference and test
+paths, exit coverage, and `agents/openai.yaml` explicit invocation policy.
+Preset apply installs the package and metadata through existing managed-hash
+projections. Only Codex projections expose these entries. The installed provider
+and shared specification must match; a copied Skill directory alone is not a
+complete provider. Synthetic forward cases are semantic test inputs for an
+independent Agent, not passing results inferred from source-text matches.
 
 ## Public Skill I/O And Private State
 

@@ -432,32 +432,41 @@ def _validate(root: Path, skills_root: Path, workflow: Path, manifest_path: Path
     package_private_test_count = 0
     for skill_id, entry in active.items():
         package = skills_root / entry["package_rel"]
-        commands = read_json(root, package / "commands.json", f"installed commands for {skill_id}", errors) or {}
-        if commands.get("package_id") != skill_id or not isinstance(commands.get("commands"), list):
-            errors.append(f"installed command ownership is invalid for {skill_id}")
+        if entry["interface_data"].get("execution_kind") == "instruction_only":
+            from .io import CommandError
+            from .validate import validate_instruction_package, validate_interface_contract
+            try:
+                validate_interface_contract(skills_root, package, entry, entry["interface_data"])
+                validate_instruction_package(package, entry, entry["interface_data"], source=False)
+            except CommandError as exc:
+                errors.append(f"installed instruction-only contract is invalid for {skill_id}: {exc.code} ({exc.field_path})")
         else:
-            validators = {
-                item.get("id"): item.get("runtime_command")
-                for item in entry["interface_data"].get("validators", [])
-                if isinstance(item, dict)
-            }
-            seen_validators: set[str] = set()
-            for command in commands["commands"]:
-                if not isinstance(command, dict) or not isinstance(command.get("id"), str):
-                    errors.append(f"installed command metadata is invalid for {skill_id}")
-                    continue
-                command_id = command["id"]
-                previous = command_owners.get(command_id)
-                if previous is not None:
-                    errors.append(f"installed command id {command_id} has multiple owners: {previous}, {skill_id}")
-                else:
-                    command_owners[command_id] = skill_id
-                validator_id = command.get("validator_id")
-                seen_validators.add(str(validator_id))
-                if command.get("owner") != skill_id or validators.get(validator_id) != command_id:
-                    errors.append(f"installed command owner or interface binding is invalid for {skill_id}/{command_id}")
-            if seen_validators != set(validators):
-                errors.append(f"installed command validator coverage is incomplete for {skill_id}")
+            commands = read_json(root, package / "commands.json", f"installed commands for {skill_id}", errors) or {}
+            if commands.get("package_id") != skill_id or not isinstance(commands.get("commands"), list):
+                errors.append(f"installed command ownership is invalid for {skill_id}")
+            else:
+                validators = {
+                    item.get("id"): item.get("runtime_command")
+                    for item in entry["interface_data"].get("validators", [])
+                    if isinstance(item, dict)
+                }
+                seen_validators: set[str] = set()
+                for command in commands["commands"]:
+                    if not isinstance(command, dict) or not isinstance(command.get("id"), str):
+                        errors.append(f"installed command metadata is invalid for {skill_id}")
+                        continue
+                    command_id = command["id"]
+                    previous = command_owners.get(command_id)
+                    if previous is not None:
+                        errors.append(f"installed command id {command_id} has multiple owners: {previous}, {skill_id}")
+                    else:
+                        command_owners[command_id] = skill_id
+                    validator_id = command.get("validator_id")
+                    seen_validators.add(str(validator_id))
+                    if command.get("owner") != skill_id or validators.get(validator_id) != command_id:
+                        errors.append(f"installed command owner or interface binding is invalid for {skill_id}/{command_id}")
+                if seen_validators != set(validators):
+                    errors.append(f"installed command validator coverage is incomplete for {skill_id}")
         files = collect_files(root, package, f"installed package {skill_id}", errors)
         tree_hash = hashlib.sha256()
         for directory in package.rglob("*"):

@@ -454,7 +454,8 @@
           "guru-team-skill-interface-1.5",
           "guru-team-skill-interface-1.6",
           "guru-team-skill-interface-1.7",
-          "guru-team-skill-interface-1.8"
+          "guru-team-skill-interface-1.8",
+          "guru-team-skill-interface-1.9"
         ],
         "public_input_schema_ids": [
           "guru-activate-delivery-input-delivery-1.0",
@@ -964,6 +965,8 @@
           "guru-maintain-legacy-task",
           "guru-maintain-requirements-design-test-ssot",
           "guru-merge-task-delivery",
+          "guru-orchestrate-issue-dag",
+          "guru-orchestrate-issue-sequence",
           "guru-publish-task-delivery",
           "guru-qualify-normal-scenario",
           "guru-qualify-root-cause",
@@ -1191,11 +1194,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-31T08:18:03Z",
+  "installed_at": "2026-10-31T09:59:25Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "6a65ec8afe6d180850760b3b2edf3f94be6e3b20",
-    "commit": "6a65ec8afe6d180850760b3b2edf3f94be6e3b20",
+    "ref": "6ddfd6c3cf58c9acad8e8d8adefd48cce733c313",
+    "commit": "6ddfd6c3cf58c9acad8e8d8adefd48cce733c313",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1255,6 +1258,7 @@
       ".trellis/spec/workflow/clear-technical-writing.md",
       ".trellis/spec/workflow/companion-scripts.md",
       ".trellis/spec/workflow/data-contracts.md",
+      ".trellis/spec/workflow/issue-orchestration.md",
       ".trellis/spec/workflow/quality-guidelines.md",
       ".trellis/spec/workflow/requirements-design-test-ssot.md",
       ".trellis/spec/workflow/semantic-retrieval.md",
@@ -1266,6 +1270,7 @@
     ],
     "managed_asset_hashes": {
       ".trellis/spec/workflow/clear-technical-writing.md": "e16513dcaf004366fa69b3778a359610d7e10ac7f09b9d065b3fe9211fa61ff3",
+      ".trellis/spec/workflow/issue-orchestration.md": "adb1ce0e7a6d82199ad4b7ff88aa2e5f682c0c342f296f9b5971ed027e8f8991",
       ".trellis/spec/workflow/bootstrap-repository-ssot.md": "1986906accbd3fb6bee7a025d4ae5e7a875d97c7d0f1be24b1493d94d1391653",
       ".trellis/spec/workflow/task-delivery-migration.md": "aa63f94fee3e6b67ef3dce7859b3e6b00ab448c783f7badcbf02e72388a118f9",
       ".trellis/spec/workflow/task-delivery-early-draft-migration.md": "fdad191ca9e429836b03e2900924cb56c84c5f5e8caa4cb73822d8ee8277c03f",
@@ -1274,10 +1279,10 @@
       ".trellis/spec/workflow/semantic-retrieval.md": "5a9e7cb44c772310c06c5aac7a139b6b6b2e69d7a1290c51ff1235c98a02da63",
       ".trellis/spec/workflow/subtraction-first-compatibility.md": "d580eb5a83487830550217c79920b3ad8f04661bcb89b369b98b56329b89fba7",
       ".trellis/spec/workflow/workflow-contract.md": "6fa10867d01972e2c6461c8ee849d00710a69c80dfb0dfbc07080dbd51f2ff80",
-      ".trellis/spec/workflow/skill-package-contract.md": "e75e346b9ed3e79007dc1cf9ad9252c343cbc3a6bcb2c8a35273d186f7ee12b1",
-      ".trellis/spec/workflow/data-contracts.md": "471e2f92d6008865a5d68e331d726e6b68eb81ed32ad2ddfbfabb3b7cd64fd57",
-      ".trellis/spec/workflow/companion-scripts.md": "07ab3c11e92ae1a5bba5d041239177a33928141557c51606e33244170e68667d",
-      ".trellis/spec/workflow/quality-guidelines.md": "5a2d219672abe262160cde57fe1fefecbb43f15703223af37b0f0f939e4309b1",
+      ".trellis/spec/workflow/skill-package-contract.md": "22405c6d42d617c524b57f2d3a77ea4172135f810ab42425d5738c8fab6f0b8b",
+      ".trellis/spec/workflow/data-contracts.md": "3954d0c4e73acd4487a56a08bd03dbd0df7f670f60e9119b4c8c9ae32325b54d",
+      ".trellis/spec/workflow/companion-scripts.md": "a9857234cb26c42171572375c7d3c6cbeb48414a967f936e05e10688feab7292",
+      ".trellis/spec/workflow/quality-guidelines.md": "d499ee4dc3ee96cafc06f4b5aa4e29a2cb8b545c7ea7fa9c4f4d85ac80d6a36a",
       ".trellis/guru-team/trellis-source.json": "c9bdf69fa693f67e3225e79fbf1b7c497ae68433f11866ced699050831a580f1"
     },
     "new_copies": [],
@@ -1288,7 +1293,7 @@
   "skill_packages": {
     "schema_version": "1.0",
     "status": "ok",
-    "canonical_registry_sha256": "a70c14a875b1949d238cf104adf2bd3c0410fb2b0ec78fe77e8150dbaf542ecf",
+    "canonical_registry_sha256": "fbb92179c9c5c926de517c7fd2652ddc38bf3540abebecd9b26123490843eedc",
     "registry_schema_version": "1.4",
     "active_ids": [
       "guru-activate-delivery",
@@ -1314,6 +1319,8 @@
       "guru-maintain-legacy-task",
       "guru-maintain-requirements-design-test-ssot",
       "guru-merge-task-delivery",
+      "guru-orchestrate-issue-dag",
+      "guru-orchestrate-issue-sequence",
       "guru-publish-task-delivery",
       "guru-qualify-normal-scenario",
       "guru-qualify-root-cause",
@@ -1455,6 +1462,16 @@
         "tree_sha256": "ef659c7737628b06c2ce47e1db9b4cacb64691e93482f1dada189d7a3cd1cc9d"
       },
       {
+        "id": "guru-orchestrate-issue-dag",
+        "interface_sha256": "fd18af4be24c922db06d1b6f2cf39eb52d7c15d39f994546b7702eb926158034",
+        "tree_sha256": "6a0e10480f99c6293c1c5c2b4b41034687614110c3ff2ff39d12fee2b81182ee"
+      },
+      {
+        "id": "guru-orchestrate-issue-sequence",
+        "interface_sha256": "066ad8914989c0e783b1bb8422ccc943a2b53a06019fa8c43fad47f79a591e40",
+        "tree_sha256": "89e31ca92a56387a9dc3b4f72c9509c63a35dfc165a0fcfd08f643202c765b10"
+      },
+      {
         "id": "guru-publish-task-delivery",
         "interface_sha256": "273a19389a259ea9b9744190086e2c139e34722968a3dc327a3b6f61049c3996",
         "tree_sha256": "4e633cb4f055dd7c1fb2c84c903884e5798bbec2451f5a368fb4800ff95047cd"
@@ -1549,7 +1566,7 @@
       {
         "path": ".trellis/guru-team/skills/registry.json",
         "source": "trellis/skills/guru-team/registry.json",
-        "sha256": "a70c14a875b1949d238cf104adf2bd3c0410fb2b0ec78fe77e8150dbaf542ecf",
+        "sha256": "fbb92179c9c5c926de517c7fd2652ddc38bf3540abebecd9b26123490843eedc",
         "executable": false,
         "action": "installed"
       },
@@ -1785,6 +1802,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/schemas/skill-interface-1.9.schema.json",
+        "source": "trellis/skills/guru-team/schemas/skill-interface-1.9.schema.json",
+        "sha256": "ac8aaa9daa3c668d356a2a448f05c0afa24659931a309e2c26c393d9c77b300e",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/schemas/skill-registry-1.3.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-registry-1.3.schema.json",
         "sha256": "c9ca30490f1ab768f2643804562f96309fee97e66e7ab0b515b9f1a4d2502481",
@@ -1794,7 +1818,7 @@
       {
         "path": ".trellis/guru-team/skills/schemas/skill-registry-1.4.schema.json",
         "source": "trellis/skills/guru-team/schemas/skill-registry-1.4.schema.json",
-        "sha256": "fb9a4a51a6fcbe819dc8f5945b4b2270cb28ee3222904f0374e61480a6f93704",
+        "sha256": "7e45c7e2e868e736f205e67af4a131a07a3361ec52018f84a8492081e48f2ee4",
         "executable": false,
         "action": "installed"
       },
@@ -12425,6 +12449,69 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+        "sha256": "23725f94140d9a60da09bd198da6382b123278dea0db0f8427755006fb9684fe",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/agents/openai.yaml",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/agents/openai.yaml",
+        "sha256": "15126752136c790a64e260938a9b3792f22ea0dacfbab259d3108eca252b2009",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/interface.json",
+        "sha256": "fd18af4be24c922db06d1b6f2cf39eb52d7c15d39f994546b7702eb926158034",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+        "sha256": "72c2d1709f81066756220d54ad2ca1237804e242e381c87891d2a4aadb6f743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/examples.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+        "sha256": "cabd138acb2403ea64f50088f0eaa0ba5c677609e559cf54d80629b4cc38971b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+        "sha256": "3a77fbf7e04411390e89a3d8bc1dcd9250255b3ed5ea0ec72676d8378d471282",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/agents/openai.yaml",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/agents/openai.yaml",
+        "sha256": "db6654b783ca190e5196ba531be5f64e6c7435a5a37448bdb36561391c475ecc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/interface.json",
+        "sha256": "066ad8914989c0e783b1bb8422ccc943a2b53a06019fa8c43fad47f79a591e40",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+        "sha256": "f15feecc71b2524cc571531efe87c9f39ea2dcbfe43857b4f3138f51d2c9bf55",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/skills/packages/guru-publish-task-delivery/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-publish-task-delivery/SKILL.md",
         "sha256": "b5c79e782e5973fe050fdd338bb0e2df93648d4d6c0d025a6facf6268120b86f",
@@ -20491,7 +20578,7 @@
       {
         "path": ".trellis/guru-team/runtime/discovery.py",
         "source": "trellis/skills/guru-team/runtime/discovery.py",
-        "sha256": "2a1f3068d1f8a920ac268ea7ea08241bee50b9833678911f2e913966ab85e0f2",
+        "sha256": "fc86c06ee5daf0576f7078fdeb4845607ebf6310186091118b39a0817a56c179",
         "executable": false,
         "action": "installed"
       },
@@ -20505,7 +20592,7 @@
       {
         "path": ".trellis/guru-team/runtime/installed.py",
         "source": "trellis/skills/guru-team/runtime/installed.py",
-        "sha256": "907fb928c5617fb10a6c88b9193f4a10c2188f0b10e0b720454fc50d2eea4926",
+        "sha256": "ac3346e8705728cbbe41189a940d07ef8a6f69419bb9c8f7d2d4f88194f07ce9",
         "executable": false,
         "action": "installed"
       },
@@ -20610,7 +20697,7 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "361abed4414cbe90b59a507d7d97e45d2c98a548e14a6fba9481dba8306ebdf6",
+        "sha256": "c32a8f290143a22a6b892922b7e472f750350e9bfc5cbb2624d8b6a38a8b0171",
         "executable": false,
         "action": "installed"
       },
@@ -50257,6 +50344,69 @@
         "source": "trellis/skills/guru-team/packages/guru-merge-task-delivery/scripts/invoke.sh",
         "sha256": "332df8df0359e8ba73c77eac6ec3d423950c42d6f6a0c62d2e1f9e27512bfc56",
         "executable": true,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-dag/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+        "sha256": "23725f94140d9a60da09bd198da6382b123278dea0db0f8427755006fb9684fe",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-dag/agents/openai.yaml",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/agents/openai.yaml",
+        "sha256": "15126752136c790a64e260938a9b3792f22ea0dacfbab259d3108eca252b2009",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-dag/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/interface.json",
+        "sha256": "fd18af4be24c922db06d1b6f2cf39eb52d7c15d39f994546b7702eb926158034",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+        "sha256": "72c2d1709f81066756220d54ad2ca1237804e242e381c87891d2a4aadb6f743f",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-dag/references/examples.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/examples.md",
+        "sha256": "cabd138acb2403ea64f50088f0eaa0ba5c677609e559cf54d80629b4cc38971b",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-sequence/SKILL.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+        "sha256": "3a77fbf7e04411390e89a3d8bc1dcd9250255b3ed5ea0ec72676d8378d471282",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-sequence/agents/openai.yaml",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/agents/openai.yaml",
+        "sha256": "db6654b783ca190e5196ba531be5f64e6c7435a5a37448bdb36561391c475ecc",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-sequence/interface.json",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/interface.json",
+        "sha256": "066ad8914989c0e783b1bb8422ccc943a2b53a06019fa8c43fad47f79a591e40",
+        "executable": false,
+        "action": "installed"
+      },
+      {
+        "path": ".codex/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+        "source": "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+        "sha256": "f15feecc71b2524cc571531efe87c9f39ea2dcbfe43857b4f3138f51d2c9bf55",
+        "executable": false,
         "action": "installed"
       },
       {

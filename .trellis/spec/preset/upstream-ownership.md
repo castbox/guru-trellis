@@ -140,6 +140,12 @@ current migration entry.
 
 ## Public Skill And Eval Assets
 
+The two instruction-only Issue orchestrators select Interface 1.9 and
+`standalone_only`, with exact package platform support `codex`. Registry and
+Interface declarations must agree. Other current package Interfaces retain
+their existing full-platform requirement. This package-level selection neither
+changes the pinned platform descriptor inventory nor expands managed claims.
+
 Guru public packages, consumer schemas, eval corpora, adapter runtime, native
 trace contracts, companion scripts, and selected-platform `guru-*` discovery
 copies are additive Guru-owned assets. Their current Interface 1.4 identities

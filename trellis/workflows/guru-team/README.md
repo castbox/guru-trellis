@@ -223,6 +223,12 @@ accept Delivery Planning or begin implementation.
 
 ## Installation
 
+当前源码支持 Codex 独立显式调用受管的 `guru-orchestrate-issue-dag` 和
+`guru-orchestrate-issue-sequence`，协调器 heartbeat 默认为 2 分钟。
+它们协调多个 Issue，不加入本 workflow 的单 Issue mandatory phase。
+分发、执行终点和个人安装迁移见
+[Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
+
 已发布稳定版本为 `v0.7.0-guru.6`，peeled commit 为
 `6b3e26b177f747fdde48b43685d8af8827e22614`。默认稳定安装使用同一 immutable `.6`
 tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.6`

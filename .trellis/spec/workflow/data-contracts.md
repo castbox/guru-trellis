@@ -477,6 +477,12 @@ contract under `public_api.skill_contracts`:
   `private_artifact_schema_ids` are exact inventories from all active
   production packages.
 
+The selected Interface 1.9 instruction-only packages add their interface selector
+to `interface_schema_ids` but contribute no JSON input, output or private-artifact
+schema IDs. Their public contracts are conversation input and per-exit output
+descriptions. They add no authorization fields, orchestration checkpoint,
+scheduler state or dispatcher command to these inventories.
+
 The following Intake cardinalities are pinned-old snapshots, not current #434
 graph assertions. In that graph Intake closure was derived from the live
 registry, Interface 1.4 packages, workflow markers, extension inventories, eval corpora,
