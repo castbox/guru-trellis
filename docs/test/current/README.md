@@ -2,6 +2,7 @@
 
 | Identity / alias | Status | Locator | Relations |
 | --- | --- | --- | --- |
+| RDT-TST-DECISIONS; T-DEC/SC-DEC; 需求歧义探索与分级确认 | current | [requirement-decisions](./requirement-decisions.md) | RDT-REQ-DECISIONS; RDT-DES-DECISIONS |
 | RDT-TST-LOCAL-FIX-INTAKE; T692/SC692; 局部修复 Intake 与诊断 | current | [local-fix-intake](./local-fix-intake.md) | RDT-REQ-LOCAL-FIX-INTAKE; RDT-DES-LOCAL-FIX-INTAKE; RDT-TST-LOCAL-FIX-INTAKE |
 | RDT-TST-JSON-INPUT; R695/BEH695; JSON 输入载体 | current | [json-input-carriers](./json-input-carriers.md) | RDT-REQ-JSON-INPUT; RDT-DES-JSON-INPUT |
 | RDT-TST-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08; R636/BEH636; R637/BEH637 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-REQ-LIFECYCLE](../../requirements/current/task-delivery-lifecycle.md); [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md) |

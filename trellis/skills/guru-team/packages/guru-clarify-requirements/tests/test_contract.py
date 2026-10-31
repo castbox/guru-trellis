@@ -48,7 +48,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
                 self.assertIn("subagent evidence", text)
                 self.assertIn("pre-existing owner result", text)
         contract = " ".join((package / "references/contract.md").read_text(encoding="utf-8").split())
-        self.assertIn("ask exactly one highest-value user question per round", contract)
+        self.assertIn("Each recorded round addresses one `question_id`", contract)
         self.assertIn("Pass only actual public invoke stdout", contract)
         self.assertIn("never read or reconstruct producer-private results", contract)
         self.assertIn("declared blocker or re-entry route when a real gap remains", contract)
@@ -133,7 +133,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         skill = " ".join((self.package / "SKILL.md").read_text(encoding="utf-8").split())
         contract = " ".join((self.package / "references/contract.md").read_text(encoding="utf-8").split())
         for phrase in (
-            "one highest-value question per round",
+            "Questions And Convergence",
             "stdout-only",
             "no mutation executor",
             "not self-contained or portable",
@@ -288,6 +288,80 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotIn("/Users/", serialized)
         self.assertNotIn(".trellis/workspace/", serialized)
         self.assertNotIn(".trellis/.runtime/", serialized)
+
+    def checklist_record(self, question_id, answer, *, status="complete"):
+        return {
+            "round_id": "reply_1_" + question_id,
+            "question_id": question_id,
+            "atomic_group_id": None,
+            "atomic_group_reason": None,
+            "category": "product_intent",
+            "question": "Confirm the displayed recommendation for " + question_id,
+            "answer_summary": answer,
+            "answer_status": status,
+            "authority_impact": "load_bearing",
+            "authority_action_ids": [],
+            "affected_contracts": ["requirements"],
+            "opened_question_ids": [question_id],
+            "closed_question_ids": [question_id] if status == "complete" else [],
+        }
+
+    def check_recorded_owner(self, owner):
+        checked = self.command("check-requirements-clarification.sh", owner, "--input", "-")
+        self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+        return project_intermediate_receipt(json.loads(checked.stdout), self.package.parents[1] / "schemas")
+
+    def test_one_checklist_reply_keeps_distinct_answered_question_records(self) -> None:
+        owner = copy.deepcopy(self.example)
+        owner["clarification_rounds"] = [
+            self.checklist_record("empty", "The user accepted both displayed recommendations."),
+            self.checklist_record("focus", "The same reply accepted retaining input focus."),
+        ]
+        recorded = self.record_owner(owner)
+        self.assertEqual(self.check_recorded_owner(recorded)["typed_exit"], "clear")
+        self.assertEqual(recorded["clarification_rounds"], owner["clarification_rounds"])
+        self.assertEqual(recorded["open_questions"], [])
+        self.assertTrue(all(row["atomic_group_id"] is None for row in recorded["clarification_rounds"]))
+
+    def test_partial_checklist_reply_preserves_corrected_choice_and_open_item(self) -> None:
+        owner = copy.deepcopy(self.example)
+        owner["typed_exit"] = "blocked"
+        owner["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
+        owner["ai_review_gate"].update(status="blocked", summary="Focus behavior remains unresolved.")
+        owner["reason"] = "Only the empty-state choice is settled."
+        owner["error"] = {"codes": ["semantic_gate_blocked"], "summary": "Focus behavior remains unresolved."}
+        owner["clarification_rounds"] = [
+            self.checklist_record("empty", "Use 'No matches' instead of the recommendation."),
+            self.checklist_record("focus", "The user explicitly has not decided focus behavior.", status="partial"),
+        ]
+        owner["open_questions"] = ["focus"]
+        recorded = self.record_owner(owner)
+        self.assertEqual(self.check_recorded_owner(recorded)["typed_exit"], "blocked")
+        self.assertEqual(recorded["open_questions"], ["focus"])
+        self.assertEqual(recorded["clarification_rounds"][0]["answer_summary"],
+                         "Use 'No matches' instead of the recommendation.")
+        self.assertEqual(recorded["clarification_rounds"][1]["closed_question_ids"], [])
+
+        invalid = self.authoring(recorded)
+        invalid["clarification_rounds"][1]["closed_question_ids"] = ["focus"]
+        rejected = self.command("record-requirements-clarification.sh", invalid,
+                                "--mode", invalid["mode"], "--input", "-")
+        self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+        self.assertEqual(json.loads(rejected.stdout)["code"], "schema_mismatch")
+
+    def test_unanswered_checklist_item_is_not_a_fabricated_reply(self) -> None:
+        owner = copy.deepcopy(self.example)
+        owner["typed_exit"] = "blocked"
+        owner["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
+        owner["clarification_rounds"] = [self.checklist_record("empty", "Accept the empty-state wording.")]
+        owner["ai_review_gate"].update(status="blocked", summary="The focus checklist item was asked but not answered.")
+        owner["reason"] = "Focus choice has no answer record; dependent implementation remains paused."
+        owner["error"] = {"codes": ["semantic_gate_blocked"], "summary": "Focus behavior has no user answer."}
+        recorded = self.record_owner(owner)
+        self.assertEqual(self.check_recorded_owner(recorded)["typed_exit"], "blocked")
+        self.assertEqual([row["question_id"] for row in recorded["clarification_rounds"]], ["empty"])
+        self.assertEqual(recorded["open_questions"], [])
+
 
     def test_action_bodies_allow_multiline_markdown_and_reject_controls(self) -> None:
         from jsonschema import Draft202012Validator

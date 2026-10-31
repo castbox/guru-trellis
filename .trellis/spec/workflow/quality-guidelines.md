@@ -614,7 +614,10 @@ For `guru-clarify-requirements`, tests must cover workflow/standalone
 precondition parity; initial issue, proposed draft, active-task scope change,
 and standalone entry kinds; repository-answerable evidence before user
 questions, including rejection of `answered` without evidence;
-one-question and atomic-group rounds; partial/refused answers, empty lifecycle,
+one-question records and indivisible atomic-group rounds; lightweight checklist
+presentation with distinct question ids, full-list acceptance, per-item correction
+and partial/unanswered items without fictional turns or closure;
+partial/refused answers, empty lifecycle,
 close-before-open and reopen rejection;
 comment/body/draft/new-task/select-existing/reopen/active-task actions; current-
 dialogue scope and side-effect choices; static/runtime rejection of any

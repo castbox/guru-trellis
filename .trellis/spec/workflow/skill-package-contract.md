@@ -1119,7 +1119,7 @@ workflow/standalone preconditions: current runtime, current review target,
 current context evidence, source authority, and invocation-context freshness.
 Its Interface 1.8 semantic stages are `forward_behavior -> ai_review_gate ->
 conditional_human_confirmation -> recorder_validator -> typed_exit`. The Skill
-loads `trellis-brainstorm` as its one-question method, but owns question
+loads `trellis-brainstorm` as its exploration method, but owns question
 selection, convergence, scope classification, action selection, confirmation
 necessity, semantic pass/block, and typed route.
 
@@ -1130,7 +1130,12 @@ before the first user
 question. Each clarification round contains one `question_id`; an
 `atomic_group` is permitted only for an indivisible product choice and records
 its reason. Every round's `question_id` must be opened in that round or already
-open; `answer_status=partial` cannot close any question and therefore cannot
+open. Independent lightweight items may share a user-visible recommendation
+checklist under Interaction Budget; each keeps its own question record and actual
+answer. That presentation creates no `atomic_group`, public field, or extra user
+turn. Unanswered items do not acquire fictional answer records. Every round's id
+still refers to one question; the package's Questions And Convergence owns the
+dialogue method. `answer_status=partial` cannot close any question and therefore cannot
 disappear through an empty lifecycle. The reducer keeps exactly
 `open_questions = opened - closed`, rejects closing-before-open and reopening
 after closure. The recorder derives all proposal, action, payload, content, and

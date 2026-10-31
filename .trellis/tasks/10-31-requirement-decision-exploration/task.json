@@ -1,0 +1,286 @@
+{
+  "schema_version": "2.0",
+  "id": "requirement-decision-exploration",
+  "name": "requirement-decision-exploration",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "完善需求歧义探索与分级确认",
+  "description": "增强需求与方案决策探索：先调查事实；所有未明确的需求选择须由用户确认，轻度歧义提供推荐方案供简便确认，重大取舍提供可行选项及影响，纯实现细节自主完成。推荐不是默认决定，未答不是同意。沿用 Clarify/Author，补充具体例子和交互评测，保持现有职责、副作用及授权边界；同步 dogfood 安装副本。不创建 GitHub Issue，不提交、推送或升级业务项目。",
+  "dev_type": null,
+  "scope": "增强需求与方案决策探索：先调查事实；所有未明确的需求选择须由用户确认，轻度歧义提供推荐方案供简便确认，重大取舍提供可行选项及影响，纯实现细节自主完成。推荐不是默认决定，未答不是同意。沿用 Clarify/Author，补充具体例子和交互评测，保持现有职责、副作用及授权边界；同步 dogfood 安装副本。不创建 GitHub Issue，不提交、推送或升级业务项目。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-31",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-31-requirement-decision-exploration/prd.md",
+    "revision": "sha256:8245f90f8d432b2988f6ff2beabed396bc425e71d9a2fcabe01e6cd1bea04d18"
+  },
+  "deliveries": [
+    {
+      "id": "9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-31-requirement-decision-exploration/prd.md",
+          "revision": "sha256:8245f90f8d432b2988f6ff2beabed396bc425e71d9a2fcabe01e6cd1bea04d18"
+        },
+        "anchors": [
+          "DEC-AC1",
+          "DEC-AC2",
+          "DEC-AC3",
+          "DEC-AC4",
+          "DEC-AC5",
+          "DEC-AC6"
+        ]
+      },
+      "planning_root": "deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/design.md",
+        "revision": "sha256:7c38440b84b051445c54ccb7f7690278161359665e40269425f38c546c971022"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:49ef102938860e0ad63f9e229069acbfd6ce4f15fd12a10fecddb8a90709fca8",
+        "paths": [
+          ".agents/skills/guru-author-task-plan/references/authoring.md",
+          ".agents/skills/guru-author-task-plan/references/planning-body.md",
+          ".agents/skills/guru-clarify-requirements/SKILL.md",
+          ".agents/skills/guru-clarify-requirements/examples/decision-exploration.md",
+          ".agents/skills/guru-clarify-requirements/references/contract.md",
+          ".claude/skills/guru-author-task-plan/references/authoring.md",
+          ".claude/skills/guru-author-task-plan/references/planning-body.md",
+          ".claude/skills/guru-clarify-requirements/SKILL.md",
+          ".claude/skills/guru-clarify-requirements/examples/decision-exploration.md",
+          ".claude/skills/guru-clarify-requirements/references/contract.md",
+          ".codex/skills/guru-author-task-plan/references/authoring.md",
+          ".codex/skills/guru-author-task-plan/references/planning-body.md",
+          ".codex/skills/guru-clarify-requirements/SKILL.md",
+          ".codex/skills/guru-clarify-requirements/examples/decision-exploration.md",
+          ".codex/skills/guru-clarify-requirements/references/contract.md",
+          ".cursor/skills/guru-author-task-plan/references/authoring.md",
+          ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+          ".cursor/skills/guru-clarify-requirements/SKILL.md",
+          ".cursor/skills/guru-clarify-requirements/examples/decision-exploration.md",
+          ".cursor/skills/guru-clarify-requirements/references/contract.md",
+          ".trellis/guru-team/skills/adapters/eval/decision-dialogue.md",
+          ".trellis/guru-team/skills/adapters/eval/decision_dialogue.py",
+          ".trellis/guru-team/skills/adapters/eval/decision_dialogue_cases.json",
+          ".trellis/guru-team/skills/adapters/eval/test_decision_dialogue.py",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/decision-exploration.md",
+          ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/skill-package-contract.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          "docs/design/current/README.md",
+          "docs/design/current/requirement-decisions.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/design.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/manifest.yaml",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/design/current/README.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/design/current/requirement-decisions.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/requirements/current/README.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/requirements/current/requirement-decisions.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/test/current/README.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/test/current/requirement-decisions.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/requirements.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/test.md",
+          "docs/requirements-design-test-contributions/requirement-decision-exploration/traceability.md",
+          "docs/requirements/current/README.md",
+          "docs/requirements/current/requirement-decisions.md",
+          "docs/test/current/README.md",
+          "docs/test/current/requirement-decisions.md",
+          "trellis/presets/guru-team/scripts/python/test_planning_body_distribution.py",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+          "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+          "trellis/skills/guru-team/adapters/eval/decision-dialogue.md",
+          "trellis/skills/guru-team/adapters/eval/decision_dialogue.py",
+          "trellis/skills/guru-team/adapters/eval/decision_dialogue_cases.json",
+          "trellis/skills/guru-team/adapters/eval/test_decision_dialogue.py",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/decision-exploration.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py"
+        ],
+        "head_ref": "a4feadd99683e006580ef16b078c44e3ad3648a7",
+        "base_ref": "a4feadd99683e006580ef16b078c44e3ad3648a7"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:988d748c-b9dd-4c2b-b0a2-d17188ad80f9",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/prd.md",
+              "revision": "sha256:8245f90f8d432b2988f6ff2beabed396bc425e71d9a2fcabe01e6cd1bea04d18"
+            },
+            "anchors": [
+              "DEC-AC1",
+              "DEC-AC2",
+              "DEC-AC3",
+              "DEC-AC4",
+              "DEC-AC5",
+              "DEC-AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/design.md",
+            "revision": "sha256:7c38440b84b051445c54ccb7f7690278161359665e40269425f38c546c971022"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/prd.md",
+              "revision": "sha256:e50ad026f5309442d6b3f9cbee603dbe42aa4e718bd792f1ea34d736bc7592d9"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/design.md",
+              "revision": "sha256:7c38440b84b051445c54ccb7f7690278161359665e40269425f38c546c971022"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/implement.md",
+              "revision": "sha256:412d6af5a45241b080099473c1b2e749e0bcae3ddda1e9f6311530225f2cd922"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:4df967a0703bdf010be902b452e32521242aadf5c77e8c2a6db8d626ace0bda8",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/prd.md",
+              "revision": "sha256:8245f90f8d432b2988f6ff2beabed396bc425e71d9a2fcabe01e6cd1bea04d18"
+            },
+            "anchors": [
+              "DEC-AC1",
+              "DEC-AC2",
+              "DEC-AC3",
+              "DEC-AC4",
+              "DEC-AC5",
+              "DEC-AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/design.md",
+            "revision": "sha256:7c38440b84b051445c54ccb7f7690278161359665e40269425f38c546c971022"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:49ef102938860e0ad63f9e229069acbfd6ce4f15fd12a10fecddb8a90709fca8",
+            "paths": [
+              ".agents/skills/guru-author-task-plan/references/authoring.md",
+              ".agents/skills/guru-author-task-plan/references/planning-body.md",
+              ".agents/skills/guru-clarify-requirements/SKILL.md",
+              ".agents/skills/guru-clarify-requirements/examples/decision-exploration.md",
+              ".agents/skills/guru-clarify-requirements/references/contract.md",
+              ".claude/skills/guru-author-task-plan/references/authoring.md",
+              ".claude/skills/guru-author-task-plan/references/planning-body.md",
+              ".claude/skills/guru-clarify-requirements/SKILL.md",
+              ".claude/skills/guru-clarify-requirements/examples/decision-exploration.md",
+              ".claude/skills/guru-clarify-requirements/references/contract.md",
+              ".codex/skills/guru-author-task-plan/references/authoring.md",
+              ".codex/skills/guru-author-task-plan/references/planning-body.md",
+              ".codex/skills/guru-clarify-requirements/SKILL.md",
+              ".codex/skills/guru-clarify-requirements/examples/decision-exploration.md",
+              ".codex/skills/guru-clarify-requirements/references/contract.md",
+              ".cursor/skills/guru-author-task-plan/references/authoring.md",
+              ".cursor/skills/guru-author-task-plan/references/planning-body.md",
+              ".cursor/skills/guru-clarify-requirements/SKILL.md",
+              ".cursor/skills/guru-clarify-requirements/examples/decision-exploration.md",
+              ".cursor/skills/guru-clarify-requirements/references/contract.md",
+              ".trellis/guru-team/skills/adapters/eval/decision-dialogue.md",
+              ".trellis/guru-team/skills/adapters/eval/decision_dialogue.py",
+              ".trellis/guru-team/skills/adapters/eval/decision_dialogue_cases.json",
+              ".trellis/guru-team/skills/adapters/eval/test_decision_dialogue.py",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+              ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/examples/decision-exploration.md",
+              ".trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md",
+              ".trellis/spec/workflow/quality-guidelines.md",
+              ".trellis/spec/workflow/skill-package-contract.md",
+              ".trellis/spec/workflow/workflow-contract.md",
+              "docs/design/current/README.md",
+              "docs/design/current/requirement-decisions.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/design.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/manifest.yaml",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/design/current/README.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/design/current/requirement-decisions.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/requirements/current/README.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/requirements/current/requirement-decisions.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/test/current/README.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/proposed/docs/test/current/requirement-decisions.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/requirements.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/test.md",
+              "docs/requirements-design-test-contributions/requirement-decision-exploration/traceability.md",
+              "docs/requirements/current/README.md",
+              "docs/requirements/current/requirement-decisions.md",
+              "docs/test/current/README.md",
+              "docs/test/current/requirement-decisions.md",
+              "trellis/presets/guru-team/scripts/python/test_planning_body_distribution.py",
+              "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+              "trellis/presets/guru-team/spec/workflow/skill-package-contract.md",
+              "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+              "trellis/skills/guru-team/adapters/eval/decision-dialogue.md",
+              "trellis/skills/guru-team/adapters/eval/decision_dialogue.py",
+              "trellis/skills/guru-team/adapters/eval/decision_dialogue_cases.json",
+              "trellis/skills/guru-team/adapters/eval/test_decision_dialogue.py",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/references/planning-body.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/examples/decision-exploration.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-clarify-requirements/tests/test_contract.py"
+            ],
+            "head_ref": "a4feadd99683e006580ef16b078c44e3ad3648a7",
+            "base_ref": "a4feadd99683e006580ef16b078c44e3ad3648a7"
+          },
+          "predecessor_result_id": "planning-accepted:988d748c-b9dd-4c2b-b0a2-d17188ad80f9",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/prd.md",
+              "revision": "sha256:e50ad026f5309442d6b3f9cbee603dbe42aa4e718bd792f1ea34d736bc7592d9"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/design.md",
+              "revision": "sha256:7c38440b84b051445c54ccb7f7690278161359665e40269425f38c546c971022"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-requirement-decision-exploration/deliveries/9b12cad2-cbe2-4cb3-bc7d-1581ea84a4fc/implement.md",
+              "revision": "sha256:412d6af5a45241b080099473c1b2e749e0bcae3ddda1e9f6311530225f2cd922"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

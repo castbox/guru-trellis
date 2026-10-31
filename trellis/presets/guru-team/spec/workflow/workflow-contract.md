@@ -703,10 +703,43 @@ artifact convenience never creates workflow authority.
 
 ## Interaction Budget
 
-Ask the user only for missing intent, a material scope/plan choice, new external
+Ask the user only for unresolved requirement intent, a material scope/plan choice, new external
 authority, or one fully displayed side-effect set. Use `确认继续` for one current,
 unique, unambiguous plan and accept any clear affirmative reply. Never require
 the user to repeat a SHA, digest, ref, or prescribed sentence.
+
+Resolve repository-answerable facts and verify external-system behavior from
+evidence first. Existing behavior establishes a baseline, not a decision about
+new product intent. Every unresolved requirement choice affecting goals,
+observable behavior, scope, compatibility, or acceptance needs the user's
+confirmation, even when it is small, reversible, or follows a common pattern.
+Do not relabel an unresolved requirement as a non-blocking assumption to implement
+it without an answer. Clear requirements need no manufactured questions.
+
+For lightweight ambiguity, present the concrete recommended behavior and its
+relevant consequence so the user can accept or correct it with a simple reply.
+Independent lightweight choices at the same stage may form a short, explicitly
+itemized recommendation checklist. Each item remains a separate question; a
+checklist is not an indivisible `atomic_group`. For a material trade-off, research
+viable options, explain the recommendation and the options' behavior, cost and
+risk, then ask for the choice. Ask dependent choices in order rather than guessing
+later answers. Weight changes the presentation, never the need to confirm an
+unresolved requirement.
+
+AI owns routine implementation choices within confirmed requirements and existing
+constraints. Do not ask the user to supply functions, classes or code. A technical
+label does not make an unresolved behavior, data, architecture, compatibility,
+risk or cost trade-off a routine implementation detail. The original stage owner
+handles that real choice through its existing clarification/plan route.
+
+Recommendations are not decisions. Accept only the items actually covered by the
+user's answer; partial answers leave the other items unresolved. Pause only work
+that depends on an unresolved choice and continue independent investigation.
+Write the resulting behavior into its owning requirements/design and applicable
+acceptance criteria; before a Task exists, retain it in the current conversation.
+Reuse still-applicable decisions on resume, but handle genuinely new ambiguity.
+Requirement confirmation does not grant a separate side effect or bypass the
+complete-plan presentation/activation boundary.
 
 Ordinary chat is the default channel for confirmations, real choices and
 necessary clarification. Honor an expressed preference for prompt interaction.

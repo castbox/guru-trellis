@@ -1,0 +1,8 @@
+{"file": "AGENTS.md", "reason": "仓库职责、副作用和 canonical 分发边界"}
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "完整写作规则"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "当前交互、候选适用性和验证边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值、定向验证及证据边界"}
+{"file": ".trellis/spec/workflow/skill-package-contract.md", "reason": "公共 I/O 与安装投影约束"}
+{"file": ".trellis/spec/preset/upstream-ownership.md", "reason": "不修改 upstream-owned brainstorm"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "当前正文职责与语义保留"}
+{"file": "trellis/skills/guru-team/packages/guru-clarify-requirements/references/contract.md", "reason": "实际问题探索、逐项回答与原出口 consumer"}
