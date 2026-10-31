@@ -1,0 +1,685 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/10-31-694-architecture-final-plan-object",
+  "id": "694-architecture-final-plan-object",
+  "name": "694-architecture-final-plan-object",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 694,
+    "disposition": "exact_source"
+  },
+  "title": "简化独立Architecture final_plan显式对象接入",
+  "description": "按live #694完成一次性独立final_plan完整显式对象校验、正式评审接入与派发写入边界，保留其他阶段会话语义及原typed消费者。",
+  "dev_type": null,
+  "scope": "仅#694七项行为及其必要RDT/Architecture/canonical/installed投影与现行验证；不包含#693/#692、后端#961、专项评测、额外安装或完整矩阵、release/tag/额外Issue。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-31",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+    "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+  },
+  "deliveries": [
+    {
+      "id": "0982ab15-61b8-41d3-9639-85049e61719e",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+          "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+        },
+        "anchors": [
+          "R694-01",
+          "R694-02",
+          "R694-03",
+          "R694-04",
+          "R694-05",
+          "R694-06",
+          "R694-07",
+          "AC694-01",
+          "AC694-02",
+          "AC694-03",
+          "AC694-04",
+          "AC694-05"
+        ]
+      },
+      "planning_root": "deliveries/0982ab15-61b8-41d3-9639-85049e61719e",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+        "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+        "paths": [
+          ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/extension.json",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+          ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+          ".trellis/workflow.md",
+          "docs/architecture/01-current/system.md",
+          "docs/architecture/03-domains/ownership.md",
+          "docs/architecture/06-governance/change-contract.md",
+          "docs/architecture/adr/README.md",
+          "docs/architecture/adr/explicit-review-object.md",
+          "docs/architecture/contributions/694-final-plan-object.md",
+          "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+          "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+          "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+          "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+          "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+          "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+          "docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+          "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+          "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+          "docs/requirements/current/task-delivery-lifecycle.md",
+          "docs/test/current/task-delivery-lifecycle.md",
+          "trellis/presets/guru-team/MIGRATION-694.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+          "trellis/workflows/guru-team/README.md",
+          "trellis/workflows/guru-team/workflow.md"
+        ],
+        "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+        "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:448b3c7a-ff45-484a-9108-eaac169a09c0",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+            },
+            "anchors": [
+              "R694-01",
+              "R694-02",
+              "R694-03",
+              "R694-04",
+              "R694-05",
+              "R694-06",
+              "R694-07",
+              "AC694-01",
+              "AC694-02",
+              "AC694-03",
+              "AC694-04",
+              "AC694-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+              "revision": "sha256:6b73dd00bf5016b25c542bc6e3912b2bbf58f5f907f17857740c502a50ec2be2"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+              "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              "revision": "sha256:9765c53e7b0d9da7020f8b157ee34c54b8649e7d8d1b3b0627df8715569eaef3"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:231708ba010f9a74b865806c2986b4d10e42cfa108cf4124f44c46988ba580a4",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+            },
+            "anchors": [
+              "R694-01",
+              "R694-02",
+              "R694-03",
+              "R694-04",
+              "R694-05",
+              "R694-06",
+              "R694-07",
+              "AC694-01",
+              "AC694-02",
+              "AC694-03",
+              "AC694-04",
+              "AC694-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              ".trellis/workflow.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/adr/explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object.md",
+              "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/MIGRATION-694.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+            "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a"
+          },
+          "predecessor_result_id": "planning-accepted:448b3c7a-ff45-484a-9108-eaac169a09c0",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+              "revision": "sha256:6b73dd00bf5016b25c542bc6e3912b2bbf58f5f907f17857740c502a50ec2be2"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+              "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              "revision": "sha256:9765c53e7b0d9da7020f8b157ee34c54b8649e7d8d1b3b0627df8715569eaef3"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:eb2aefd3a15932cccafdd2ce0f0dfcbc2abe3d58da3ee303c454b31ddd640806",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+            },
+            "anchors": [
+              "R694-01",
+              "R694-02",
+              "R694-03",
+              "R694-04",
+              "R694-05",
+              "R694-06",
+              "R694-07",
+              "AC694-01",
+              "AC694-02",
+              "AC694-03",
+              "AC694-04",
+              "AC694-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              ".trellis/workflow.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/adr/explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object.md",
+              "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/MIGRATION-694.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+            "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a"
+          },
+          "predecessor_result_id": "check:231708ba010f9a74b865806c2986b4d10e42cfa108cf4124f44c46988ba580a4",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              "revision": "sha256:9765c53e7b0d9da7020f8b157ee34c54b8649e7d8d1b3b0627df8715569eaef3"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:bd1a4a321201e1ab01093dbcbea2a5df6328e0424ad9415b875de79b67012fba",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+            },
+            "anchors": [
+              "R694-01",
+              "R694-02",
+              "R694-03",
+              "R694-04",
+              "R694-05",
+              "R694-06",
+              "R694-07",
+              "AC694-01",
+              "AC694-02",
+              "AC694-03",
+              "AC694-04",
+              "AC694-05"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            "revision": "sha256:ded0485f263626c5e79f0affa8612aba69d35f43e0245cd43e97b64b73a87054"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+            "paths": [
+              ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+              ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/extension.json",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+              ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+              ".trellis/workflow.md",
+              "docs/architecture/01-current/system.md",
+              "docs/architecture/03-domains/ownership.md",
+              "docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/adr/README.md",
+              "docs/architecture/adr/explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object.md",
+              "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+              "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+              "docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+              "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+              "docs/requirements/current/task-delivery-lifecycle.md",
+              "docs/test/current/task-delivery-lifecycle.md",
+              "trellis/presets/guru-team/MIGRATION-694.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+              "trellis/workflows/guru-team/README.md",
+              "trellis/workflows/guru-team/workflow.md"
+            ],
+            "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+            "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a"
+          },
+          "predecessor_result_id": "full-review:eb2aefd3a15932cccafdd2ce0f0dfcbc2abe3d58da3ee303c454b31ddd640806",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+              "revision": "sha256:9765c53e7b0d9da7020f8b157ee34c54b8649e7d8d1b3b0627df8715569eaef3"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:d54863444f885843754b1ea0c1859edd8c169b9610a845a59049cf562b214a5f",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/701",
+            "revision": "sha256:540e1d8f4524914474e40c1ff57662d2ae8690272cfe1fa7f55773a5a6865151"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a",
+          "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+          "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+            ".trellis/workflow.md",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/06-governance/change-contract.md",
+            "docs/architecture/adr/README.md",
+            "docs/architecture/adr/explicit-review-object.md",
+            "docs/architecture/contributions/694-final-plan-object.md",
+            "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/MIGRATION-694.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 701,
+        "reviewed_head": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/701",
+          "revision": "sha256:540e1d8f4524914474e40c1ff57662d2ae8690272cfe1fa7f55773a5a6865151"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:3f76661f08fbfc3352440a89051e49c303c97250",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/701",
+            "revision": "3f76661f08fbfc3352440a89051e49c303c97250"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a",
+          "content_ref": "sha256:0a85a5b70400c139eae7bbdf43754c971422771908a8a5efaab220aa1a80c057",
+          "head_ref": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
+            ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/extension.json",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/check.jsonl",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/design.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.jsonl",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/implement.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/deliveries/0982ab15-61b8-41d3-9639-85049e61719e/prd.md",
+            ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+            ".trellis/workflow.md",
+            "docs/architecture/01-current/system.md",
+            "docs/architecture/03-domains/ownership.md",
+            "docs/architecture/06-governance/change-contract.md",
+            "docs/architecture/adr/README.md",
+            "docs/architecture/adr/explicit-review-object.md",
+            "docs/architecture/contributions/694-final-plan-object.md",
+            "docs/architecture/contributions/694-final-plan-object/adr-explicit-review-object.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/01-current/system.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/03-domains/ownership.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/06-governance/change-contract.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/README.md",
+            "docs/architecture/contributions/694-final-plan-object/proposed/docs/architecture/adr/explicit-review-object.md",
+            "docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/design.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/manifest.yaml",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/design/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/proposed/docs/test/current/task-delivery-lifecycle.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/requirements.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/test.md",
+            "docs/requirements-design-test-contributions/694-final-plan-object/traceability.md",
+            "docs/requirements/current/task-delivery-lifecycle.md",
+            "docs/test/current/task-delivery-lifecycle.md",
+            "trellis/presets/guru-team/MIGRATION-694.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/tests/test_receiving_session.py",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/tests/test_contract.py",
+            "trellis/workflows/guru-team/README.md",
+            "trellis/workflows/guru-team/workflow.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 701,
+        "reviewed_head": "aa233592eaaed858fcb27d8caa61429f03f9f1d5",
+        "merge_commit": "3f76661f08fbfc3352440a89051e49c303c97250",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:38876c41-da97-4ff7-97cf-349c7f22a958",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/701",
+          "revision": "3f76661f08fbfc3352440a89051e49c303c97250"
+        },
+        {
+          "locator": "docs/requirements/current/task-delivery-lifecycle.md",
+          "revision": "sha256:bac8604d2f80fe73d311ecc904bf93a996fbcb96adf9239178900e5ee6523743"
+        },
+        {
+          "locator": "docs/design/current/task-delivery-lifecycle.md",
+          "revision": "sha256:caea273173c3c1fad0419dca101b1338e33233f393c7d311e38f3f0ef441ad81"
+        },
+        {
+          "locator": "docs/test/current/task-delivery-lifecycle.md",
+          "revision": "sha256:1f0aa76706d37c233cf989656d8d070d73c94480abe9449481ec4474deee556b"
+        },
+        {
+          "locator": "docs/architecture/adr/explicit-review-object.md",
+          "revision": "sha256:c171f26c3eda073deaebb9cf868d03ef17cb00382ed4be90ab41bf45328674eb"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/prd.md",
+        "revision": "sha256:c8b6b2475e82802452387ac90810790971d1702b76471ef3c403dd62ee5abc53"
+      },
+      "delivery_result_ids": [
+        "delivery:3f76661f08fbfc3352440a89051e49c303c97250"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:c301aaefb25fad09dfc68715",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/694",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/10-31-694-architecture-final-plan-object/closeout/closure/Y2xvc3VyZTpjMzAxYWFlZmIyNWZhZDA5ZGZjNjg3MTU.json",
+          "revision": "sha256:931875103771d54f055b19b781a429bf7be8f034b65733df0198704efd80fdfe"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:38876c41-da97-4ff7-97cf-349c7f22a958",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/694",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
