@@ -1,8 +1,8 @@
 {"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次实质输出前完整读取；原写作职责内执行。"}
-{"file": ".trellis/tasks/10-31-692-intake-reuse-diagnostics/prd.md", "reason": "整体accepted scope与未知现场边界。"}
-{"file": ".trellis/tasks/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/prd.md", "reason": "本批完整需求、场景与验收。"}
-{"file": ".trellis/tasks/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/design.md", "reason": "实际方案、唯一来源处置与诊断入口类别。"}
-{"file": ".trellis/tasks/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/implement.md", "reason": "步骤、验证、唯一Policy和Docs Plan。"}
+{"file": ".trellis/tasks/archive/2026-10/10-31-692-intake-reuse-diagnostics/prd.md", "reason": "整体accepted scope与未知现场边界。"}
+{"file": ".trellis/tasks/archive/2026-10/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/prd.md", "reason": "本批完整需求、场景与验收。"}
+{"file": ".trellis/tasks/archive/2026-10/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/design.md", "reason": "实际方案、唯一来源处置与诊断入口类别。"}
+{"file": ".trellis/tasks/archive/2026-10/10-31-692-intake-reuse-diagnostics/deliveries/6bbcdf6f-2687-446f-80b7-968f230ba574/implement.md", "reason": "步骤、验证、唯一Policy和Docs Plan。"}
 {"file": "trellis/skills/guru-team/packages/guru-discover-change-context/references/contract.md", "reason": "原record/check/invoke入口、freshness与错误合同。"}
 {"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "原owner与候选承接方法。"}
 {"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "验证价值、适用范围及当前审核方法。"}
