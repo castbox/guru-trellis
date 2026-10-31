@@ -254,6 +254,13 @@ scope; this guideline adds no new gate or evidence schema.
 
 ## Validation Scope Ownership
 
+For the standalone Issue orchestrators, validate the instruction-only interface,
+source/installed discovery, explicit invocation metadata, Codex-only projection,
+reapply and drift. Independently execute the package's synthetic forward cases
+without live child, GitHub or heartbeat side effects. Distinguish that semantic
+evaluation from mechanical packaging checks. Neither proves a live orchestration
+run or the full platform upgrade/Release matrix.
+
 Every Issue and task must use the smallest reliable validation set that proves
 its own accepted scope. Validation ownership is split as follows:
 

@@ -8,6 +8,22 @@ a request to run the old target dispatcher. A platform discovery copy is not
 self-contained. Existing `guru-upgrade-installation` full Plan2 inputs and
 recovery retain their original meaning; this Skill does not call them.
 
+## Entry selection
+
+The AI selects this owner when the actual request updates tools, workflow,
+Skills or managed projections in one existing checkout while preserving all
+Task/session state. Source-repository dogfood synchronization can use this
+same entry under its existing source and write-set requirements.
+
+Ordinary full preset apply/reapply keeps its current-only Task inventory
+precondition. Its `upstream_delivery_migration_required` diagnostic describes
+that invocation's inventory; it neither requires a tools-only request to
+convert unrelated history nor establishes this owner's prerequisites. Read the
+actual goal, target and available maintenance capability before choosing this
+entry. A full installation/migration request stays with its original owner;
+missing tools-only prerequisites stop here without falling back to migration.
+The script diagnostic never chooses that semantic route.
+
 ## Forward behavior
 
 1. Read the selected public profile. For `install`, bind `source_ref` to the

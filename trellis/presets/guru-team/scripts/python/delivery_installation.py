@@ -125,7 +125,7 @@ def diagnose_delivery_installation(source: Path, target: Path) -> dict:
             records.append((locator, record))
     if legacy:
         return {"status": "blocked", "code": "upstream_delivery_migration_required", "task_refs": legacy,
-                "remediation": "Keep the complete pinned existing Guru installation. Run the source-loaded delivery_upgrade with reviewed upstream Plan2 and original-owner private migrations before applying this Delivery candidate."}
+                "remediation": "Keep the complete pinned existing Guru installation and Task records. Full installation requires the source-loaded delivery_upgrade with reviewed upstream Plan2 and original-owner private migrations. For tools-only maintenance, load the complete source-owned guru-upgrade-tools contract; the AI must review that request and its prerequisites separately. This diagnostic does not select a route or permit bypassing the current-only apply gate."}
     if invalid:
         return {"status": "blocked", "code": "invalid_task_inventory", "task_refs": invalid,
                 "remediation": "Resolve the actual Task records with their existing owner before installation."}

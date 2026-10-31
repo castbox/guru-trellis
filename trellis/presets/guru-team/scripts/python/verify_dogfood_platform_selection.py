@@ -9,6 +9,7 @@ import json
 import sys
 from pathlib import Path
 
+from apply_guru_team_trellis_preset import skill_platform_public_files, skill_registry_entries
 from guru_platform_inventory import PLATFORM_BY_FLAG
 from platform_projection_contract import (
     DESCRIPTORS_BY_FLAG,
@@ -37,8 +38,7 @@ def _tree_files(root: Path) -> dict[str, Path]:
     }
 
 
-def _assert_equal_trees(left: Path, right: Path, label: str) -> None:
-    left_files = _tree_files(left)
+def _assert_projection(left_files: dict[str, Path], right: Path, label: str) -> None:
     right_files = _tree_files(right)
     if set(left_files) != set(right_files):
         raise DogfoodDriftError(
@@ -70,7 +70,6 @@ def verify(repo: Path) -> dict[str, object]:
             f"dogfood selection must be {list(DOGFOOD_PLATFORM_FLAGS)}, got {list(selected)}"
         )
 
-    shared = repo / ".agents/skills"
     checked_roots: list[str] = []
     selected_roots = {Path(".agents/skills")}
     for flag in selected:
@@ -78,7 +77,6 @@ def verify(repo: Path) -> dict[str, object]:
             selected_roots.add(relative_root)
             if relative_root == Path(".agents/skills"):
                 continue
-            _assert_equal_trees(shared, repo / relative_root, f"{flag} skill projection")
             checked_roots.append(relative_root.as_posix())
         descriptor = DESCRIPTORS_BY_FLAG[flag]
         entry = repo / descriptor["entry_path"]
@@ -87,6 +85,32 @@ def verify(repo: Path) -> dict[str, object]:
             raise DogfoodDriftError(f"missing selected dogfood entry {descriptor['entry_path']}")
         if source.is_file() and not filecmp.cmp(source, entry, shallow=False):
             raise DogfoodDriftError(f"selected dogfood entry drift {descriptor['entry_path']}")
+
+    canonical_root = repo / "trellis/skills/guru-team"
+    try:
+        _, entries = skill_registry_entries(canonical_root)
+        active = [entry for entry in entries if entry.get("state") == "active"]
+        for relative_root in sorted(selected_roots):
+            root_platforms = {
+                flag for flag in selected
+                if relative_root in PLATFORM_BY_FLAG[flag].skill_roots
+            }
+            if relative_root == Path(".agents/skills"):
+                root_platforms.add("shared")
+            expected: dict[str, Path] = {}
+            for entry in active:
+                interface = json.loads((canonical_root / entry["interface"]).read_text(encoding="utf-8"))
+                if entry.get("supported_platforms") != interface.get("platform_destinations"):
+                    raise DogfoodDriftError(f"canonical registry/interface platform drift for {entry['id']}")
+                supported = set(entry["supported_platforms"])
+                if "shared" not in supported and not root_platforms.intersection(supported):
+                    continue
+                package = canonical_root / entry["package"]
+                for source in skill_platform_public_files(package):
+                    expected[f"{entry['id']}/{source.relative_to(package).as_posix()}"] = source
+            _assert_projection(expected, repo / relative_root, f"{relative_root.as_posix()} skill projection")
+    except (OSError, ValueError, SystemExit) as exc:
+        raise DogfoodDriftError(f"cannot resolve canonical package projections: {exc}") from exc
 
     for flag, core in PLATFORM_BY_FLAG.items():
         if flag in selected:

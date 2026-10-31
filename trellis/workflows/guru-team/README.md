@@ -223,6 +223,12 @@ accept Delivery Planning or begin implementation.
 
 ## Installation
 
+当前源码支持 Codex 独立显式调用受管的 `guru-orchestrate-issue-dag` 和
+`guru-orchestrate-issue-sequence`，协调器 heartbeat 默认为 2 分钟。
+它们协调多个 Issue，不加入本 workflow 的单 Issue mandatory phase。
+分发、执行终点和个人安装迁移见
+[Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
+
 已发布稳定版本为 `v0.7.0-guru.6`，peeled commit 为
 `6b3e26b177f747fdde48b43685d8af8827e22614`。默认稳定安装使用同一 immutable `.6`
 tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.6`
@@ -291,10 +297,17 @@ For current-source validation, use the source-locked Trellis Fork checkout
 `40882919377`) and that same reviewed Guru source. Stable `.6` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
-it. Apply the Guru preset using
+it. For a target meeting the ordinary current-only installation prerequisites,
+apply the Guru preset using
 `trellis/presets/guru-team/scripts/bash/apply.sh --repo <target>` and validate
-the installed graph. The repository root README and source lock identify the
-exact CLI build. Remote marketplace installation is not a #434 gate.
+the installed graph. For tools-only updates in an existing checkout, including
+dogfood synchronization with Task/session preservation, load the complete
+[`guru-upgrade-tools` contract](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md).
+The AI chooses the owner from the actual request and target state; an old-Task
+apply diagnostic does not expand a tools-only request into historical migration.
+Full installation/migration keeps its original owner and gate. The repository
+root README and source lock identify the exact CLI build. Remote marketplace
+installation is not a #434 gate.
 
 ## Migration Boundary
 

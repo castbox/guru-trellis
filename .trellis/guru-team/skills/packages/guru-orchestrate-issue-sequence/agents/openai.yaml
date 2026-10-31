@@ -1,0 +1,6 @@
+interface:
+  display_name: "Guru Issue Sequence Orchestrator"
+  short_description: "Coordinate a strict serial Issue chain"
+  default_prompt: "Use $guru-orchestrate-issue-sequence to preflight and coordinate this ordered Issue chain."
+policy:
+  allow_implicit_invocation: false

@@ -46,6 +46,18 @@ class BytecodeHygieneTests(unittest.TestCase):
             manifest = Path(".trellis/guru-team/extension.json")
             (repo / manifest).parent.mkdir(parents=True)
             shutil.copy2(REPO / manifest, repo / manifest)
+            canonical = Path("trellis/skills/guru-team")
+            (repo / canonical).mkdir(parents=True)
+            shutil.copy2(REPO / canonical / "registry.json", repo / canonical / "registry.json")
+            _, entries = installer.skill_registry_entries(REPO / canonical)
+            for entry in entries:
+                if entry.get("state") != "active":
+                    continue
+                package = REPO / canonical / entry["package"]
+                for source in installer.skill_platform_public_files(package):
+                    target = repo / canonical / entry["package"] / source.relative_to(package)
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(source, target)
             roots = {Path(".agents/skills")}
             for flag in dogfood.DOGFOOD_PLATFORM_FLAGS:
                 roots.update(dogfood.PLATFORM_BY_FLAG[flag].skill_roots)

@@ -17,6 +17,7 @@ CURRENT_INTERFACE_SCHEMA_IDS = {
     "guru-team-skill-interface-1.6",
     "guru-team-skill-interface-1.7",
     "guru-team-skill-interface-1.8",
+    "guru-team-skill-interface-1.9",
 }
 
 
@@ -58,8 +59,19 @@ def discover(skills_root: Path, skill_id: str) -> dict[str, Any]:
         raise CommandError(
             "public_contracts_missing",
             f"skills.{skill_id}.public_contracts",
-            "Declare all six current Interface public/private contract sections.",
+            "Declare the public contract sections required by the selected Interface.",
         )
+    if interface.get("execution_kind") == "instruction_only":
+        return {
+            "status": "ok",
+            "skill_id": skill_id,
+            "interface_schema_id": interface_schema_id,
+            "execution_kind": "instruction_only",
+            "input": contracts["input"],
+            "invocation": contracts["invocation"],
+            "outputs": contracts["outputs"],
+            "external_exits": interface["external_exits"],
+        }
     return {
         "status": "ok",
         "skill_id": skill_id,

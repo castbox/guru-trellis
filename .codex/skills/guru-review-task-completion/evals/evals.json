@@ -7,8 +7,8 @@
     {
       "id": "native-stage-p01",
       "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
-      "expected_exit": "remaining_work",
-      "expected_output": "Reads whole accepted scope and every original Delivery fact. Identifies the necessary consumer NotImplementedError as implementation remaining work, returns its existing implementation/remaining-work route and concrete owner, and does not ask for more external evidence to implement it.",
+      "expected_exit": "additional_delivery_required",
+      "expected_output": "Reads whole accepted scope and every original Delivery fact. Identifies the necessary consumer NotImplementedError as unfinished implementation. The recorded source slice is terminal and no nonterminal Delivery can carry the repair, so additional_delivery_required enters original Creation and Planning before implementation in the same Task. Does not ask for more external evidence to implement it.",
       "input_profile_id": "delivery_completion",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -37,7 +37,7 @@
         "semantic": [
           {
             "id": "stage-result-judgment",
-            "criterion": "Reads whole accepted scope and every original Delivery fact. Identifies the necessary consumer NotImplementedError as implementation remaining work, returns its existing implementation/remaining-work route and concrete owner, and does not ask for more external evidence to implement it. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "criterion": "Reads whole accepted scope and every original Delivery fact. Identifies the necessary consumer NotImplementedError as unfinished implementation. The recorded source slice is terminal and no nonterminal Delivery can carry the repair, so additional_delivery_required enters original Creation and Planning before implementation in the same Task. Does not ask for more external evidence to implement it. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
             "evidence_selector": "transcript"
           }
         ]
@@ -46,8 +46,8 @@
     {
       "id": "native-stage-p02",
       "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
-      "expected_exit": "implementation_revision_required",
-      "expected_output": "Checks the original normative basis and finds no authority for the guide added Control prerequisite. Returns the unsupported mechanism to original implementation/Planning/Architecture owners as applicable; does not demand a receipt for the invented prerequisite.",
+      "expected_exit": "additional_delivery_required",
+      "expected_output": "Checks the original normative basis and finds no authority for the guide added Control prerequisite. The recorded slice is terminal and no nonterminal Delivery can legally carry its correction, so additional_delivery_required enters original Creation and Planning, with the original mechanism/Architecture owners as applicable. Does not demand a receipt for the invented prerequisite or rework the terminal slice.",
       "input_profile_id": "delivery_completion",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -76,7 +76,7 @@
         "semantic": [
           {
             "id": "stage-result-judgment",
-            "criterion": "Checks the original normative basis and finds no authority for the guide added Control prerequisite. Returns the unsupported mechanism to original implementation/Planning/Architecture owners as applicable; does not demand a receipt for the invented prerequisite. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "criterion": "Checks the original normative basis and finds no authority for the guide added Control prerequisite. The recorded slice is terminal and no nonterminal Delivery can legally carry its correction, so additional_delivery_required enters original Creation and Planning, with the original mechanism/Architecture owners as applicable. Does not demand a receipt for the invented prerequisite or rework the terminal slice. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
             "evidence_selector": "transcript"
           }
         ]
@@ -202,8 +202,8 @@
     {
       "id": "native-stage-p06",
       "prompt": "Execute the installed current owner against the supplied Task/Delivery, source, current guidance, tests and process observations. Read the original contracts, judge actual scope and evidence yourself, author your own result and consume the original wrapper output.",
-      "expected_exit": "remaining_work",
-      "expected_output": "Separately retains implemented predicate/filter and local artifact facts while identifying the still-required missing consumer in the same accepted Task scope. Does not turn partial delivery or an unrelated environment unknown into whole-task completion.",
+      "expected_exit": "additional_delivery_required",
+      "expected_output": "Separately retains implemented predicate/filter and local artifact facts while identifying the still-required missing consumer in the same accepted Task scope. With only the terminal source slice and no current implementation Delivery, returns additional_delivery_required to original Creation and Planning. Does not turn partial delivery or an unrelated environment unknown into whole-task completion.",
       "input_profile_id": "delivery_completion",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -232,7 +232,7 @@
         "semantic": [
           {
             "id": "stage-result-judgment",
-            "criterion": "Separately retains implemented predicate/filter and local artifact facts while identifying the still-required missing consumer in the same accepted Task scope. Does not turn partial delivery or an unrelated environment unknown into whole-task completion. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
+            "criterion": "Separately retains implemented predicate/filter and local artifact facts while identifying the still-required missing consumer in the same accepted Task scope. With only the terminal source slice and no current implementation Delivery, returns additional_delivery_required to original Creation and Planning. Does not turn partial delivery or an unrelated environment unknown into whole-task completion. The actual reads, reasoning, operation applicability and original producer stdout must support this conclusion; matching an exit alone is insufficient. Historical fixture gates are not current native review evidence.",
             "evidence_selector": "transcript"
           }
         ]
@@ -241,8 +241,8 @@
     {
       "id": "native-stage-mechanism-stock",
       "prompt": "Execute the selected original owner against all supplied current authority, candidate alternatives, source and operation observations. Form your independent judgment and invoke the original wrapper. Facts describe objects under review; no proposal is an accepted conclusion.",
-      "expected_exit": "remaining_work",
-      "expected_output": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys.",
+      "expected_exit": "additional_delivery_required",
+      "expected_output": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. The later migration Delivery is not yet created or implemented, so additional_delivery_required enters original Creation and Planning while preserving accepted scope. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys.",
       "input_profile_id": "delivery_completion",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -272,7 +272,7 @@
         "semantic": [
           {
             "id": "mechanism-judgment",
-            "criterion": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
+            "criterion": "Keeps the same-Task R2 writer migration incomplete despite D1/new writer/CURRENT promotion. The later migration Delivery is not yet created or implemented, so additional_delivery_required enters original Creation and Planning while preserving accepted scope. Recognizes shared-state adaptation, concrete independent migration conditions and continued confidentiality scope as distinct. Does not classify missing implementation as external evidence_pending or remove still-consumed keys. Matching an exit is insufficient; independently read actual reasoning, facts and original wrapper receipts.",
             "evidence_selector": "transcript"
           }
         ]

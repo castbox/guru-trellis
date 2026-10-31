@@ -61,6 +61,46 @@ class UpstreamOwnershipTest(unittest.TestCase):
             payload = ownership.validate_repository(repo, validate_installed=False)
             self.assertEqual(payload["status"], "ok", payload["errors"])
 
+    def test_instruction_only_registry_uses_codex_without_reducing_global_inventory(self) -> None:
+        registry = json.loads((self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text())
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text())
+        expected = ["guru-orchestrate-issue-dag", "guru-orchestrate-issue-sequence"]
+        selected = {"skills": [row for row in registry["skills"] if row["id"] in expected]}
+        errors: list[dict[str, str]] = []
+        active, planned = ownership._validate_registry(self.repo, selected, inventory, errors)
+        self.assertEqual(active, expected)
+        self.assertEqual(planned, [])
+        self.assertEqual(errors, [])
+        self.assertEqual(ownership.EXPECTED_SKILL_PLATFORMS, ["shared", *ownership.PLATFORM_FLAGS])
+
+    def test_original_registry_platform_fixture_still_rejects_reduced_command_package(self) -> None:
+        fixture_path = self.repo / "trellis/presets/guru-team/scripts/python/fixtures/upstream-ownership/negative-registry-platform-set.json"
+        fixture = json.loads(fixture_path.read_text())
+        mutation = fixture["mutation"]
+        registry = json.loads((self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text())
+        selected = next(row for row in registry["skills"] if row["id"] == mutation["skill_id"])
+        selected["supported_platforms"] = mutation["platforms"]
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text())
+        errors: list[dict[str, str]] = []
+        ownership._validate_registry(self.repo, {"skills": [selected]}, inventory, errors)
+        self.assertEqual({row["code"] for row in errors}, set(fixture["expected_error_codes"]))
+
+    def test_instruction_only_interface_and_registry_platforms_must_match(self) -> None:
+        registry = json.loads((self.repo / ownership.SKILL_REGISTRY_RELATIVE).read_text())
+        inventory = json.loads((self.repo / ownership.INVENTORY_RELATIVE).read_text())
+        selected = next(row for row in registry["skills"] if row["id"] == "guru-orchestrate-issue-dag")
+        interface = json.loads((self.repo / "trellis/skills/guru-team" / selected["interface"]).read_text())
+        # A generator accidentally carries the former shared-platform default.
+        interface["platform_destinations"] = ["shared", "codex"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "trellis/skills/guru-team" / selected["interface"]
+            path.parent.mkdir(parents=True)
+            self.write_json(path, interface)
+            errors: list[dict[str, str]] = []
+            ownership._validate_registry(root, {"skills": [selected]}, inventory, errors)
+        self.assertEqual({row["code"] for row in errors}, {"skill_interface_platform_set_mismatch"})
+
     def test_preset_source_validation_accepts_retired_installed_manifest(self) -> None:
         import apply_guru_team_trellis_preset as preset
 

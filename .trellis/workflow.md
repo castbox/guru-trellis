@@ -585,7 +585,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-draft-revision-router | Consume the original Publication return-to-Draft result and resume the same implementing Delivery. Original TaskCommit and Publication publish its next candidate to the same PR. |
 | guru-draft-content-review-router | Return the call-local complete B/H analysis to the implementation/Check coordinator. Validate actual HEAD before using facts; fresh formal full Review remains mandatory after Check. |
 | guru-draft-content-revision-router | Return immediate concrete revision_refs to the same implementation owner; rerun affected analysis on a changed HEAD. No cross-stage review cache is retained. |
-| guru-resume-implementation | Resume Phase 2 implementation. |
+| guru-resume-implementation | Resume Phase 2 through the original owner's lawful nonterminal Delivery continuation. For a Completion TaskRef/TaskKey return, read that Task's public current continuation and project its actual selected DeliveryKey and planning_root before dispatch. Missing, terminal or mismatched selection returns to Completion for a fresh route; this router neither creates nor reopens a Delivery. |
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
 | guru-task-check-planning-router | A planning gap invokes Author delivery_approval_revision with exact key and concrete current actions; actual requirement authority change first invokes original Clarify. Implementation-only repair retains Phase 2. |
@@ -749,9 +749,9 @@ according to its own review. These routers do not decide completion, production
 permission, scope expansion or publication. Unknown/multiple/unmapped results
 stop at `root-cause-qualification-blocked`, which consumes the concrete reason.
 
-Qualification is candidate admission only. #383 owns the common causal
-completion SSOT and stage completion judgments; its absent file does not
-block this candidate contract or cause a substitute completion owner.
+Qualification remains candidate admission only. Existing stage owners read
+`.trellis/spec/workflow/causal-completion-semantics.md` for the common causal
+evidence and completion semantics, retaining their own current judgments.
 
 ## Phase Index
 
