@@ -193,6 +193,16 @@ slice requirements are met. Keep Refs-only and the existing public I/O.
 
 ## Stage facts in this slice and payload
 
+Consume the contract-continuity and evidence-applicability methods in
+`.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+and the test-boundary method in
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+when judging the exact payload. Limit success claims to the consumers, entries
+and conditions actually established. Keep public source delivery, dogfood
+projection and the target project's formal adoption separate; carry remaining
+adoption under the existing Delivery Policy and whole-Task responsibility.
+Do not repeat unchanged content review or add payload fields for these methods.
+
 Before readiness, express each actually applicable dimension separately in the
 existing dimensions, reasons/evidence and exact payload: contract authority,
 source implementation, artifact deployment/entry reachability, initialization

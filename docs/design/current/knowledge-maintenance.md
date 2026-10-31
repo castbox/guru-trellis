@@ -91,3 +91,13 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 **D-MECH-03 / CON-MECH-KNOWLEDGE** 承接 R-MECH-03..05。原 current-knowledge 单写文档优先取证、完整决策单元和存量处置关系。RDT 足够时不追全部源码；行为、性能、消费者完整性或冲突有缺口才定向查。纠正决策区分必须同步适配、可独立分期和场景保留，在原单元/change contract 承接真实 owner、共存依据、剩余消费者、可执行交付/触发及退出证据，不建永久迁移台账。
 
 项目方法投影由原 Architecture contribution/final_integration 写 change-contract。六个 RDT 完整拟写由原 RDT owner 保留有效前驱，先接受独立 Architecture/候选 Check，再由原 final_integration 写入读回、同 B 的实际 after 重绑及最终 Check/完整 committed Review。公共 I/O、schema、runtime、状态、原则、single-writer 和阶段保持；canonical 经原 preset 完整分发，既有业务安装采用另行证明。
+
+## D693：原方法与原消费者
+
+**D693-01 / CON693-METHOD** 承接 R693-01/02。唯一合同连续性方法位于 [Candidate Applicability And Coverage](../../../trellis/presets/guru-team/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage)，唯一测试边界方法位于 [Test And Validation Value](../../../trellis/presets/guru-team/spec/workflow/quality-guidelines.md#test-and-validation-value)。原 Author 在候选/方案中具体承接，Architecture 判断实际消费者和复用对象前提，Check/Branch Review 各自独立核当前结果与证据范围。step-local references 只加载并消费，不复制方法；无新阶段、public I/O、schema 或脚本语义判定。
+
+**D693-02 / CON693-HISTORY** 承接 R693-03。原当前调查 owner 以固定源码、当时安装规则、公开规划/阶段/交付及原命令形成有来源说明；原阶段对象、已知条件、执行/采用和记录缺口分别表达。不能恢复的 reviewer 理由不由后来规则或代码缺陷补齐。具体静态观察和未知项只由配对 Test contribution 拥有，不建立长期审核台账。
+
+**D693-03 / CON693-ADOPTION** 承接 R693-04。Delivery 原 owner 在真实 payload 中限制 consumer/entry/安装范围，读取原 Policy 保留后端正式采用的整体责任。项目 Architecture change-contract 消费同一方法，RDT 与 Architecture 各自准备完整隔离拟写，原候选 Check 后 final_integration/readback，再由 implementation 绑定全部 actual after，最终质量链覆盖。完整 preset 分发受管副本；目标项目按原正式 Upgrade owner 采用，不复制业务领域定义。
+
+三层稳定关系及本批来源见 [#693 traceability](../../requirements-design-test-contributions/693-contract-evidence-adoption/traceability.md)；原 D648/D-MECH 与前驱晋升/兼容条件保持。

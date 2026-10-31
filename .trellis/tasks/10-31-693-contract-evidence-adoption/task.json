@@ -1,0 +1,234 @@
+{
+  "schema_version": "2.0",
+  "id": "693-contract-evidence-adoption",
+  "name": "693-contract-evidence-adoption",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 693,
+    "disposition": "exact_source"
+  },
+  "title": "完善执行链替换后的合同承接与验证证据有效性",
+  "description": "仅按 #693 完成净差额调查、原 owner 方法及项目指导、原分发与后端正式采用；保留历史未知，业务材料只读。",
+  "dev_type": null,
+  "scope": "live castbox/guru-trellis#693 完整正文；整体完成包含 ai-chat-roleplay-backend 正式采用，不含业务整改或 #692。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-10-31",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/prd.md",
+    "revision": "sha256:4e42e178b4a5d8380226fe2595534d9459a24d5cf60514537ef21553800e81ac"
+  },
+  "deliveries": [
+    {
+      "id": "e20f478c-2398-40ad-a438-c493eef0506a",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/prd.md",
+          "revision": "sha256:4e42e178b4a5d8380226fe2595534d9459a24d5cf60514537ef21553800e81ac"
+        },
+        "anchors": [
+          "AC693-01",
+          "AC693-02",
+          "AC693-03",
+          "AC693-04"
+        ]
+      },
+      "planning_root": "deliveries/e20f478c-2398-40ad-a438-c493eef0506a",
+      "profile": "pull_request",
+      "phase": "checking",
+      "plan_ref": {
+        "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/deliveries/e20f478c-2398-40ad-a438-c493eef0506a/design.md",
+        "revision": "sha256:f645d3ba508842ed77cf5d01370c855594bd78c7d27f8cb96d6edba7ebc446a3"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:d0058ffe9456a788bfba9af1a7cf46a0768ef84f43c3f40e056d63d7ec8739ce",
+        "paths": [
+          ".agents/skills/guru-author-task-plan/references/authoring.md",
+          ".agents/skills/guru-check-task/references/contract.md",
+          ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".agents/skills/guru-review-branch/references/contract.md",
+          ".agents/skills/guru-review-task-delivery/references/contract.md",
+          ".claude/skills/guru-author-task-plan/references/authoring.md",
+          ".claude/skills/guru-check-task/references/contract.md",
+          ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".claude/skills/guru-review-branch/references/contract.md",
+          ".claude/skills/guru-review-task-delivery/references/contract.md",
+          ".codex/skills/guru-author-task-plan/references/authoring.md",
+          ".codex/skills/guru-check-task/references/contract.md",
+          ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".codex/skills/guru-review-branch/references/contract.md",
+          ".codex/skills/guru-review-task-delivery/references/contract.md",
+          ".cursor/skills/guru-author-task-plan/references/authoring.md",
+          ".cursor/skills/guru-check-task/references/contract.md",
+          ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+          ".cursor/skills/guru-review-branch/references/contract.md",
+          ".cursor/skills/guru-review-task-delivery/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+          ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-review-task-delivery/references/contract.md",
+          ".trellis/spec/workflow/quality-guidelines.md",
+          ".trellis/spec/workflow/workflow-contract.md",
+          "docs/architecture/06-governance/change-contract.md",
+          "docs/architecture/contributions/693-contract-evidence-adoption.md",
+          "docs/architecture/contributions/693-contract-evidence-adoption/proposed/docs/architecture/06-governance/change-contract.md",
+          "docs/design/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/design.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/manifest.yaml",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/design/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/requirements/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/test/current/knowledge-maintenance.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/requirements.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/test.md",
+          "docs/requirements-design-test-contributions/693-contract-evidence-adoption/traceability.md",
+          "docs/requirements/current/knowledge-maintenance.md",
+          "docs/test/current/knowledge-maintenance.md",
+          "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+          "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+          "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+          "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md"
+        ],
+        "head_ref": "af73db6673a0d8fd997454a8790901769c9dccc1",
+        "base_ref": "e514770dfa03711a4606046232593b9bf782695a"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:5fdbf6fc-1ad9-47ad-9bb0-af039b7601ff",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/prd.md",
+              "revision": "sha256:4e42e178b4a5d8380226fe2595534d9459a24d5cf60514537ef21553800e81ac"
+            },
+            "anchors": [
+              "AC693-01",
+              "AC693-02",
+              "AC693-03",
+              "AC693-04"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/deliveries/e20f478c-2398-40ad-a438-c493eef0506a/design.md",
+            "revision": "sha256:f645d3ba508842ed77cf5d01370c855594bd78c7d27f8cb96d6edba7ebc446a3"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/deliveries/e20f478c-2398-40ad-a438-c493eef0506a/prd.md",
+              "revision": "sha256:54e228ed89890b216f6a1c6d521bf839db3746d31776c31129f0d573645cfe32"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/deliveries/e20f478c-2398-40ad-a438-c493eef0506a/design.md",
+              "revision": "sha256:f645d3ba508842ed77cf5d01370c855594bd78c7d27f8cb96d6edba7ebc446a3"
+            },
+            {
+              "locator": ".trellis/tasks/10-31-693-contract-evidence-adoption/deliveries/e20f478c-2398-40ad-a438-c493eef0506a/implement.md",
+              "revision": "sha256:616153dfa55f51866a2015613011524ab1ee8015e7bc553806a8e445366474dc"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": {
+        "result_id": "publication:6cd994fa305afd9ba9b22633f40889edc7ed7fabad0b45808526f5a426496940",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/704",
+            "revision": "sha256:7fa7e98ea83658c12ce70b0c2075362fbd3a240079c4793e83b2ccb647e00c04"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "e514770dfa03711a4606046232593b9bf782695a",
+          "content_ref": "sha256:36753bdd01becec206c78bb242e5e72fe445d263eb1f65ddf1bae651a7a54548",
+          "head_ref": "af73db6673a0d8fd997454a8790901769c9dccc1",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-author-task-plan/references/authoring.md",
+            ".agents/skills/guru-check-task/references/contract.md",
+            ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".agents/skills/guru-review-branch/references/contract.md",
+            ".agents/skills/guru-review-task-delivery/references/contract.md",
+            ".claude/skills/guru-author-task-plan/references/authoring.md",
+            ".claude/skills/guru-check-task/references/contract.md",
+            ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".claude/skills/guru-review-branch/references/contract.md",
+            ".claude/skills/guru-review-task-delivery/references/contract.md",
+            ".codex/skills/guru-author-task-plan/references/authoring.md",
+            ".codex/skills/guru-check-task/references/contract.md",
+            ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".codex/skills/guru-review-branch/references/contract.md",
+            ".codex/skills/guru-review-task-delivery/references/contract.md",
+            ".cursor/skills/guru-author-task-plan/references/authoring.md",
+            ".cursor/skills/guru-check-task/references/contract.md",
+            ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
+            ".cursor/skills/guru-review-branch/references/contract.md",
+            ".cursor/skills/guru-review-task-delivery/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md",
+            ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-review-branch/references/contract.md",
+            ".trellis/guru-team/skills/packages/guru-review-task-delivery/references/contract.md",
+            ".trellis/spec/workflow/quality-guidelines.md",
+            ".trellis/spec/workflow/workflow-contract.md",
+            "docs/architecture/06-governance/change-contract.md",
+            "docs/architecture/contributions/693-contract-evidence-adoption.md",
+            "docs/architecture/contributions/693-contract-evidence-adoption/proposed/docs/architecture/06-governance/change-contract.md",
+            "docs/design/current/knowledge-maintenance.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/design.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/manifest.yaml",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/design/current/knowledge-maintenance.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/requirements/current/knowledge-maintenance.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/proposed/docs/test/current/knowledge-maintenance.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/requirements.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/test.md",
+            "docs/requirements-design-test-contributions/693-contract-evidence-adoption/traceability.md",
+            "docs/requirements/current/knowledge-maintenance.md",
+            "docs/test/current/knowledge-maintenance.md",
+            "trellis/presets/guru-team/spec/workflow/quality-guidelines.md",
+            "trellis/presets/guru-team/spec/workflow/workflow-contract.md",
+            "trellis/skills/guru-team/packages/guru-author-task-plan/references/authoring.md",
+            "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-branch/references/contract.md",
+            "trellis/skills/guru-team/packages/guru-review-task-delivery/references/contract.md"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 704,
+        "reviewed_head": "af73db6673a0d8fd997454a8790901769c9dccc1",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/704",
+          "revision": "sha256:7fa7e98ea83658c12ce70b0c2075362fbd3a240079c4793e83b2ccb647e00c04"
+        }
+      },
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

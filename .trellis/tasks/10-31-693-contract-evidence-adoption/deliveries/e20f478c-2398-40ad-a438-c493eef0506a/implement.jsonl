@@ -1,0 +1,4 @@
+{"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "读取既有候选覆盖与工程事实适用性，增补合同连续性方法并保留原条件"}
+{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "读取测试声明边界和验证作用域，补正式路径及fixture判定"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "项目原职责和九concerns，隔离拟写及最终整合的适用authority"}
+{"file": "docs/design/current/knowledge-maintenance.md", "reason": "完整知识与原RDT晋升职责，准备配对三层拟写"}

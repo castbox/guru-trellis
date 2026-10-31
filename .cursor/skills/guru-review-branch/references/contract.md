@@ -241,6 +241,15 @@ identities remain separate.
 
 ### Engineering validation in the complete review
 
+Use Contract continuity through consumers in
+`.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+to independently judge actual consumers and reused-call prerequisites across
+the complete range. Apply the test-boundary and fixture method in
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+to actual test conditions and proof claims. Keep evidence retained from an old
+entry distinct from evidence for newly reachable paths; state their actual
+applicability and limits in this owner's existing summary.
+
 Apply the shared Candidate Applicability And Coverage contract while independently
 judging the complete current range. Determine the current check set before
 inspecting original facts. This owner's existing validation summary states

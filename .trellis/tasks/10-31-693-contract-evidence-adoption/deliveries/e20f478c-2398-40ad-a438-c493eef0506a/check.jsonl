@@ -1,0 +1,4 @@
+{"file": "trellis/presets/guru-team/spec/workflow/workflow-contract.md", "reason": "按唯一覆盖方法检查实际消费者、完整候选和工程事实采用"}
+{"file": "trellis/presets/guru-team/spec/workflow/quality-guidelines.md", "reason": "判断实际验证层与fixture边界，不以package结果替代语义"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "核对当前规划来源承诺、partial责任及Docs计划与实际交付"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "检查隔离候选、原promotion和actual after覆盖"}

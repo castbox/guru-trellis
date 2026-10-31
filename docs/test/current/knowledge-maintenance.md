@@ -79,3 +79,13 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 本 Task 在固定 B 的原方法和本批新方法上，每组各一次独立 native 执行；V4 由 Completion 同名单元定义，共八次。事实、host 预期及配置在改方法前冻结，预期与另一侧答案不注入受测 Agent。AI 逐次读实际输入、输出及 wrapper stdout，再核具体语义；两侧均正确记已有能力，执行/模型失败记 execution gap，保留首次失败与修复。一次/侧只支持被观察案例，不推出统计改善、普遍模型纠偏或业务效果。
 
 全部实际结果唯一由 [本批 test.md](../../requirements-design-test-contributions/architecture-mechanism-review/test.md) 拥有。本单元不追写自己的最终 pass；源码、分发、真实行为、业务安装采用和生产效果分开。完整 Release/多平台升级矩阵不在本项范围。
+
+## T693：合同方法与证据边界
+
+| Test / requirement → design | 本批输入与原 owner | 必须观察及证明边界 |
+| --- | --- | --- |
+| T693-01 / R693-03 → D693-02 | 固定事故源码、当时安装规则、原公开规划/阶段结果与 E30；当前调查 owner 只读核对 | 具体生产者/消费者与参数时序有来源，缺陷引入和入口扩大分开；历史理由不可恢复时保持未知，不推导从未检查或重跑全部测试。 |
+| T693-02 / R693-01/02 → D693-01 | 原 Check/独立 Branch Review 阅读完整当前差额、真实方法 consumers、fixture/正式路径与旧事实采纳方法 | 在本次正常质量链亲自判断共享方法及五个原职责的实际承接、有效局部证据与证明缺口；脚本/路径一致不能证明语义效果或未来不再漏检。 |
+| T693-03 / R693-04 → D693-03 | source/installed、完整 preset apply/drift、声明平台/sidecar、语法与上下文检查；公共交付后的原正式升级 | 各自实际安装和分发一致；候选 Check 后实际晋升读回、after 重绑及最终质量链。目标正式采用另有真实结果，不以公共合并或 dogfood 替代。 |
+
+本批实际结果和观察截止点唯一见 [#693 Test](../../requirements-design-test-contributions/693-contract-evidence-adoption/test.md)。#693 按其 live accepted contract 采用定向验证及原质量链，没有新增业务测试、专项 replay/A-B/native eval、固定次数、额外安装或完整多平台矩阵要求。原 T331/T648/T-MECH 的历史专项安排及原结果保持原义，不自动成为本批义务。未完成的后端正式采用和业务效果分别保留，后者不在本项业务实施范围。

@@ -105,3 +105,15 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 **R-MECH-05 / BEH-MECH-LEGACY**：纠正旧决策须识别同一决策的实际采用者、共享状态、数据、接口、配置和运行依赖。共存破坏同一约束、不兼容读写或使纠正失效时，承接必要适配与退出。可独立保留时，说明共存如何保持约束、剩余采用者、真实保留依据、owner、可执行后继交付或可观察触发条件及退出证据；未承接须如实标明，工期、改动量、链接或“下次再改”不代表安排。旧场景仍有依据时明确范围后保留，新消费者不扩入已判错模式。分析可大于实现范围，不自动授权跨仓迁移。
 
 晋升完整单元保留决策行为、owner、范围、理由、代价、适用条件、重审触发及存量关系；使用既有正文/change contract，不新增评分、永久台账、审批链或公共字段。方法唯一正文在原 [Architecture contract](../../../trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md)、[Protection](../../../trellis/skills/guru-team/packages/guru-qualify-root-cause/references/contract.md) 与 [current knowledge](../../../trellis/skills/guru-team/packages/guru-maintain-requirements-design-test-ssot/references/current-knowledge.md)。设计和测试分别由同名完整单元的 D-MECH 与 T-MECH 承接。
+
+## R693：合同连续性与证据适用性
+
+**R693-01 / BEH693-CONTINUITY**：执行链替换或入口扩大时，原 Author/Architecture 从实际入口追踪新生产者输出、持久完成状态及成功含义，核对仍在使用结果的消费者，包括无 diff 的读取器。复用调用须核参数实际对象、存在阶段、持久前提和顺序。Check/Branch Review 独立判断当前消费者可用性；类型、名称、生产者成功和旧 pass 不代替这些条件。差额回最早受影响原 owner。
+
+**R693-02 / BEH693-EVIDENCE**：原 owners 对照测试声明边界与正式路径的入口/context/配置/依赖/状态/分支/观察点。边界前 fixture 和外部依赖替身可成立；边界内代产出、修正输出或绕过关键条件不能支持该边界的成功声明。入口、默认路径或启用范围变化后，分别判断旧事实保留、失效及补证范围。保留可核验且仍适用的局部证据，不将全部变化升级为全链 E2E。
+
+**R693-03 / BEH693-HISTORY**：历史调查以当时实际规则、精确候选、条件、命令及可核验阶段结果为依据。分别表达合同失配、底层引入、影响扩大和证据适用范围；具体历史理由缺失时保持未知。源码缺陷、绿测试、空槽位或无 GitHub review 不证明某个 reviewer 未检查或如何采纳旧事实。不重建别的 owner 的 private state。
+
+**R693-04 / BEH693-ADOPTION**：只在原方法和职责内补齐真实差额；方法由共享 workflow-contract/quality-guidelines 单写，项目指导由原 authority 承接，领域正文仍引用所属业务设计。公共源码、dogfood 和目标正式采用分别报告；后者仍由 accepted scope 的原 Task/Upgrade owners 承担。保留用户定制及在途 Task/会话，按原安装合同处理冲突/sidecar。安装成功不证明业务修复或环境效果。
+
+对应设计为同名 Design 单元的 D693/CON693，验证为同名 Test 单元的 T693；原 R648/R-MECH 及全部前驱条件保持。

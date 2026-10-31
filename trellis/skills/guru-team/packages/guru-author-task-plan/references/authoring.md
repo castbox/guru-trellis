@@ -118,6 +118,15 @@ of existing implementations and whole-Task responsibility follow the shared curr
 contract; carry their actual scope and executable transition in the existing
 design, Delivery Policy and Docs Plan. These references do not replace any
 qualification or independent Architecture assessment below.
+Apply Contract continuity through consumers in
+`.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
+to the actual candidate and solution. Make the producer-to-consumer and reused
+parameter prerequisites concrete in the existing design; use
+`.trellis/spec/workflow/quality-guidelines.md#test-and-validation-value`
+for the planned test boundary, fixtures and formal-path conditions. Carry
+remaining evidence and adoption obligations in the existing Policy and Docs
+Plan; a successful producer or public source change does not discharge them.
+
 Form only the current call-local design_locator, or design_facts with source
 constraint_refs when no substantive design exists. Facts describe mechanisms,
 not PRD narrative, approval or acceptance claims. Do not persist a parallel
