@@ -1848,20 +1848,28 @@ def completed_execution(skills: Path, case_root: Path, request: dict[str, Any],
             if projected.read_bytes() != source.read_bytes():
                 raise ValueError(f"package projection is stale: {relative}")
         workdir = Path(request["workdir"])
+        phase2_bound_fixtures = []
         for fixture in request["files"]:
             staged_bytes = (workdir / fixture).read_bytes()
             if staged_bytes != (package / fixture).read_bytes():
-                from adapters.eval import stage_result_authoring
-                from adapters.eval.fixture_io import public_input_path
-                bound_input = Path(protocol['owner_repository']) / stage_result_authoring.PUBLIC_INPUT
-                if (not request.get('case_id', '').startswith('native-stage-')
-                        or request['skill_id'] not in {
-                            'guru-check-task', 'guru-review-task-delivery',
-                            'guru-review-task-completion', 'guru-execute-task-free-change'}
-                        or (workdir / fixture) != public_input_path(request)
-                        or not bound_input.is_file()
-                        or json.loads(staged_bytes) != json.loads(bound_input.read_bytes())):
-                    raise ValueError("saved fixture differs from corpus source or its actual Task binding")
+                if request["skill_id"] == "guru-check-task" and request.get("case_id") in {
+                        "native-owner-candidate-final", "native-owner-finding"}:
+                    # This producer binds its one public fixture to the actual
+                    # Task/Delivery before the model reads it. Recheck that
+                    # binding in the selected-skills interpreter below.
+                    phase2_bound_fixtures.append(fixture)
+                else:
+                    from adapters.eval import stage_result_authoring
+                    from adapters.eval.fixture_io import public_input_path
+                    bound_input = Path(protocol['owner_repository']) / stage_result_authoring.PUBLIC_INPUT
+                    if (not request.get('case_id', '').startswith('native-stage-')
+                            or request['skill_id'] not in {
+                                'guru-check-task', 'guru-review-task-delivery',
+                                'guru-review-task-completion', 'guru-execute-task-free-change'}
+                            or (workdir / fixture) != public_input_path(request)
+                            or not bound_input.is_file()
+                            or json.loads(staged_bytes) != json.loads(bound_input.read_bytes())):
+                        raise ValueError("saved fixture differs from corpus source or its actual Task binding")
         if len(native["files"]) != len(request["files"]):
             raise ValueError("saved model-visible fixture set mismatch")
         for visible, fixture in zip(native["files"], request["files"]):
@@ -1883,15 +1891,27 @@ def completed_execution(skills: Path, case_root: Path, request: dict[str, Any],
             [sys.executable, "-B", "-c", """
 import json, sys
 from pathlib import Path
-skills, request, transcript, protocol, output_path = json.load(sys.stdin)
+skills, request, transcript, protocol, output_path, phase2_bound_fixtures = json.load(sys.stdin)
 sys.path.insert(0, skills)
+if phase2_bound_fixtures:
+    from adapters.eval.fixture_io import public_input_path
+    owner = Path(protocol['owner_repository'])
+    facts = json.loads((owner / protocol['implementation_facts_locator']).read_bytes())
+    bound_input = owner / facts['public_input_locator']
+    actual_public_input = public_input_path(request)
+    for fixture in phase2_bound_fixtures:
+        staged = Path(request['workdir']) / fixture
+        if (staged != actual_public_input or not bound_input.is_file()
+                or json.loads(staged.read_bytes()) != json.loads(bound_input.read_bytes())):
+            raise ValueError('saved fixture differs from corpus source or its actual Phase2 Task binding')
 from adapters.eval.native_adapter import unwrap_native_output, validate_native_trace
 stdout = unwrap_native_output(request['adapter_id'], transcript['stdout'], Path(output_path) if output_path else None)
 validate_native_trace(Path(transcript['native_trace_path']), protocol['request_sha256'], request,
                       Path(protocol['wrapper_path']), stdout, Path(transcript['protocol_path']))
 sys.stdout.write(stdout)
 """],
-            input=json.dumps([str(skills), request, transcript, protocol, str(output_path) if output_path else None]),
+            input=json.dumps([str(skills), request, transcript, protocol, str(output_path) if output_path else None,
+                              phase2_bound_fixtures]),
             text=True, capture_output=True, check=False,
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )

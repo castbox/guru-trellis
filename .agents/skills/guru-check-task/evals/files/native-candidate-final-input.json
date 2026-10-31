@@ -1,0 +1,11 @@
+{
+  "profile": "delivery_candidate_check",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/current",
+  "source_exit": "implementation_complete",
+  "delivery_key": {
+    "task_id": "current",
+    "lifecycle_generation": 0,
+    "delivery_id": "43134b50-2c8b-4d70-b114-218a735a82e2"
+  }
+}

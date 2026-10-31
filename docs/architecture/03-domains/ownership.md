@@ -190,3 +190,12 @@ AGENTS core/preset精确projection由正式Fork collector/installer拥有；migr
 原 Publish 拥有独立闭合的精确 Open PR Draft/Ready recovery profiles。明确 pr_ref 与 source_commit 绑定同 Task/Delivery、Planning、候选和 repo/base/head/owner；source 未入 main 仍可合法，与 candidate head 不同时核真实历史和完整差额。只复用同一个 Open PR并补未完成动作，绝不另建 PR；相同 head/payload 不重复 push/edit，已 Ready 不产生当前 readiness。Draft 不写最终 PublicationFact，新的未审修订仍先退 Draft。当前 Readiness 不适用回原质量 owner。MERGED 沿原 Merge 手动恢复核公共 Publication、真实双亲/actual head/target 后只补 Delivery fact，不重复 merge；Completion 仍判断 actual 差额、CI 和整个 scope。
 
 本机 branch/worktree/ignored runtime 责任限定对应 common-dir/generation；共享 remote ref 以 repository/full ref/expected head 核验。旧 seal、binding 退出或 Cleanup pending 不撤销共享 Finish，也不阻塞另一 Task 或不同合法新资源。同一资源未完责任仍冲突；B 不取得 A 清理权。Cleanup 保留未知 ownership、新代资源及已推进 remote ref，不删除或回退新提交。原合法子 Agent 并行职责保持；不引入双主、锁、scheduler、全局恢复台账或第二 authority。
+
+
+## Phase 2 authoring 与结果消费职责
+
+原 guru-check-task AI 独占完整九维语义、finding、验证适用性、Docs/Architecture 消费和出口判断。原 recorder 只接收既有最小语义 authoring，生成 Task 定位、capture commit 与 Phase 2 内容身份；AI 不计算、复制或选择这些结果字段。原 checker 验证 recorder 的同一完整结果，原 public invocation 消费该结果并发唯一出口。字段与 argv 由原 package contract 单写，本单元不建立第二接口。
+
+完整 6.0 是原 recorder 输出及 checker/invoke 的合法消费格式。recorder 的完整结果输入沿 [MIGRATION-710](../../../trellis/presets/guru-team/MIGRATION-710.md)显式退出；当前受控调用同步迁移，不保留无直接 consumer 的双 authoring、compat 开关或自动重绑。既有完整结果的原恢复、freshness 和真实内容变化拒绝保持；Phase 2 与 public candidate 两种内容 token 各服务原 consumer，不能互换。
+
+候选 Check、原 owners 最终整合、implementation 实际 after 重绑与最终 Check 仍沿 ARCH-DOM-053。native 运输只能提供合法 public 身份、前置事实与执行能力，不能代当前语义 owner 填结果或把纠偏重试称首次成功。该选择的理由、范围、迁移和重审触发由 [ADR-PHASE2-RECORDER-INPUT](../adr/phase2-recorder-input.md)拥有；实际命令、native、安装和未验证边界仅由 [#710 Test](../../requirements-design-test-contributions/710-phase2-recorder-authoring/test.md)记录。

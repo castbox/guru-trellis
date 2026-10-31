@@ -27,7 +27,7 @@
           "flag": "--input",
           "required": true,
           "kind": "string",
-          "description": "AI check JSON locator.",
+          "description": "11-field semantic authoring JSON file; complete 6.0 results are output/consumer-only (MIGRATION-710).",
           "repeatable": false,
           "conflicts": []
         },
@@ -124,7 +124,7 @@
           "flag": "--owner-result",
           "required": false,
           "kind": "string",
-          "description": "Completed owner result JSON locator.",
+          "description": "Recorder-written complete result JSON file, obtained from record receipt result.artifact_path.",
           "repeatable": false,
           "conflicts": [
             "--invocation"

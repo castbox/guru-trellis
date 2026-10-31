@@ -168,6 +168,138 @@ projects the Reconcile input. It records no committed public Check gate.
 After the actual reconciliation commit, use legal same-Delivery rework,
 implementation candidate binding, fresh formal Check and independent full Review.
 
+## Recorder Authoring
+
+After the complete Semantic Loop, write one JSON object using
+[examples/phase2-authoring.json](../examples/phase2-authoring.json). This is the
+only normal recorder input for all five Check profiles. The example teaches
+structure; its pass summaries are not a current review. Replace its paths,
+evidence, conclusions and exit with your actual judgment. An empty candidate
+array is valid only after the current complete review finds no candidates.
+
+The closed top-level authoring fields and their direct uses are:
+
+| AI-authored field | Meaning and direct consumer |
+| --- | --- |
+| `mode` | Current public invocation mode; invocation checks equality. |
+| `reviewed_paths` | Complete AI-reviewed candidate and affected paths; recorder/checker validate dirty coverage and invocation validates candidate coverage. |
+| `validation` | Actual applicable command evidence and unverified items; the semantic gate and result schema consume their outcomes and blocking status. |
+| `docs_ssot` | Current original RDT result, strategy and durable paths; the gate and schema consume the Docs conclusion. |
+| `delivery_policy` | Reviewed slice, remaining work, independence and validation boundaries; the semantic gate and TaskCommit consume this conclusion. |
+| `candidate_classifications` | Final qualified candidate dispositions and witnesses; linkage validation and TaskCommit consume them. Use `[]` when no candidates were observed. |
+| `semantic_review` | All nine adequacy dimensions, scope decisions and findings; schema/linkage validation and invocation consume the actual judgment. |
+| `typed_exit` | The AI-selected declared result; invocation validates and emits the matching public exit. |
+| `route` | The existing planning discriminator, or `null`; the planning router consumes it through the public projection. |
+| `reason` | The current AI conclusion supporting the selected route; retained in this owner's semantic result. |
+| `consumer` | The selected exit's existing unique consumer; result validation checks exit/consumer consistency. |
+
+Nested fields and exit conditions are defined once in
+[schemas/phase2-check.schema.json](../schemas/phase2-check.schema.json).
+The recorder adds exactly five result identity fields: `schema_version=6.0`,
+`skill_id=guru-check-task`, `task_ref` from `--task`, `phase2_capture_commit`
+from live HEAD, and `reviewed_content_sha256` from the original Phase 2 content
+owner. Do not author these fields, import private runtime code, copy a result
+example's digest, or fill this private digest from a candidate token.
+
+The candidate's `guru-reviewed-content-1.0` token still serves its original
+public consumer. The recorder's `guru-phase2-worktree-content-2.0` token still
+serves local Phase 2 freshness. Keep the actual public Task/Delivery/Planning
+identity and any legitimate upstream token in their declared public inputs;
+carry producer values unchanged. This input separation does not remove or
+recompute them.
+
+### Installed command sequence
+
+Run the following sequence from the selected repository root after reviewing
+its legal public profile and all semantic prerequisites. `TASK_REF` comes from
+the current public input. `PUBLIC_INPUT` names that original profile JSON file.
+`AUTHORING` names your completed 11-field JSON file. Use regular files in this
+owner's ignored runtime directory for call-local authoring and receipts. Set
+`RECORDER_STDOUT` and `CHECKER_STDOUT` to two such unused file paths before
+running. They contain intermediate receipts, not formal results.
+
+```bash
+set -euo pipefail
+GURU_CHECK_PACKAGE=.trellis/guru-team/skills/packages/guru-check-task
+GURU_CHECK_RUNTIME=.trellis/guru-team/runtime
+GURU_CHECK_SCHEMAS=.trellis/guru-team/skills/schemas
+
+"$GURU_CHECK_PACKAGE/scripts/record-phase2-check.sh" \
+  --root . --task "$TASK_REF" --input "$AUTHORING" > "$RECORDER_STDOUT"
+RECORDED_RESULT="$("$GURU_CHECK_RUNTIME/resolve-python.sh" . "$GURU_CHECK_RUNTIME" - \
+  "$RECORDER_STDOUT" "$GURU_CHECK_SCHEMAS/intermediate-command-receipt-1.0.schema.json" <<'PYTHON'
+import json, sys
+from jsonschema import Draft202012Validator
+with open(sys.argv[1], encoding="utf-8") as stream:
+    receipt = json.load(stream)
+with open(sys.argv[2], encoding="utf-8") as stream:
+    Draft202012Validator(json.load(stream)).validate(receipt)
+print(receipt["result"]["artifact_path"])
+PYTHON
+)"
+
+"$GURU_CHECK_PACKAGE/scripts/check-phase2-check.sh" \
+  --root . --task "$TASK_REF" > "$CHECKER_STDOUT"
+"$GURU_CHECK_RUNTIME/resolve-python.sh" . "$GURU_CHECK_RUNTIME" - \
+  "$CHECKER_STDOUT" "$GURU_CHECK_SCHEMAS/intermediate-command-receipt-1.0.schema.json" \
+  "$RECORDED_RESULT" <<'PYTHON'
+import json, sys
+from jsonschema import Draft202012Validator
+with open(sys.argv[1], encoding="utf-8") as stream:
+    receipt = json.load(stream)
+with open(sys.argv[2], encoding="utf-8") as stream:
+    Draft202012Validator(json.load(stream)).validate(receipt)
+assert receipt["result"]["status"] == "ok"
+assert receipt["result"]["artifact_path"] == sys.argv[3]
+PYTHON
+
+"$GURU_CHECK_PACKAGE/scripts/invoke.sh" \
+  --input "$PUBLIC_INPUT" --owner-result "$RECORDED_RESULT"
+```
+
+Stop on any nonzero command before continuing; use the original diagnostic
+and owner recovery. The recorder's non-dry-run receipt projects
+`result.artifact_path`, which points to its complete JSON checkpoint. The
+checker accepts only `--root` and `--task` here: it reads that Task's original
+checkpoint itself, with no `--input` or stdin body. Its receipt confirms that
+same artifact path. It is not an owner result. Invocation consumes the exact
+recorder-written file, without copying fields from either stdout object or
+rebuilding the result. The alternative `--invocation -` accepts only the
+closed `public_input`/`owner_result` envelope; do not mix it with the two file
+arguments. Only invocation emits a formal exit.
+
+Use the same sequence for `delivery_candidate_check`, `delivery_initial_check`,
+`delivery_finding_fix_rerun`, `delivery_planning_reentry`, and
+`delivery_resolved_reconciliation`. Preserve each profile's schema, source exit,
+rerun reason, finding refs, Planning identity, legal current phase and original
+Architecture/RDT prerequisites. Only candidate Check may select
+`candidate_checked`; only the final ordinary profiles may select `passed`.
+Resolved Check retains `resolved_reconciliation_passed` and its original
+router. Actual finding, planning and blocked outcomes retain their existing
+consumers. A successful command does not choose any of these outcomes.
+
+For resolved reconciliation, use its separate original facts authoring and
+the installed command below. `RECONCILIATION_AUTHORING` names that separate
+completed facts JSON file.
+
+```bash
+"$GURU_CHECK_PACKAGE/scripts/project-resolved-reconciliation.sh" \
+  --root . --input "$PUBLIC_INPUT" --owner-result "$RECORDED_RESULT" \
+  --authoring "$RECONCILIATION_AUTHORING"
+```
+Validate that command's intermediate receipt and pass its `result` unchanged
+to the original Reconcile consumer. Any validation receipt required by the
+selected downstream profile remains in its original declared field; neither
+this checker receipt nor its `status` substitutes for it.
+
+Once their consumer completes, retire the call-local authoring and receipt
+files. Preserve only the original checkpoint lifecycle needed by the declared
+consumer and same-owner recovery. Complete recorded results remain valid
+checker/invocation/recovery inputs under their existing freshness conditions.
+Do not send them through record again or update their identity to extend an
+old semantic conclusion. The recorder's former complete-6.0 input is retired
+under [MIGRATION-710](https://github.com/castbox/guru-trellis/blob/main/trellis/presets/guru-team/MIGRATION-710.md).
+
 ## Architecture Stage Consumption
 
 The global workflow mandatory invokes
@@ -443,7 +575,10 @@ temporary locator, or checkpoint.
 `examples/phase2-rejected-candidates.json` separately illustrates a non-empty
 candidate array after investigating a concrete upper-endpoint concern. Keep
 that array when all actual candidates are rejected; do not collapse it to `[]`.
-Both are deidentified authoring examples, not evidence of an executed review.
+The complete `phase2-check.json` is an output/consumer-only example; the
+rejected-candidates array illustrates a semantic field, not a second recorder
+input. Use the 11-field [authoring example](../examples/phase2-authoring.json)
+for record. None of these teaching examples is executed review evidence.
 
 The invocation checks exact public key, accepted Planning result, actual
 candidate/HEAD, current reviewed paths and owner content identity. `passed`

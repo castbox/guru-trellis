@@ -60,10 +60,8 @@ class CandidateCheckTests(unittest.TestCase):
         return candidate
 
     def owner(self, exit_id='candidate_checked'):
-        value = json.loads((PACKAGE / 'examples/phase2-check.json').read_text())
-        value.update(task_ref=self.fixture.task_ref, phase2_capture_commit=self.git('rev-parse', 'HEAD'),
-                     reviewed_paths=['current.md', 'implementation.txt', 'proposed.md'],
-                     reviewed_content_sha256=self.common.content_identity(self.root), typed_exit=exit_id)
+        value = json.loads((PACKAGE / 'examples/phase2-authoring.json').read_text())
+        value.update(reviewed_paths=['current.md', 'implementation.txt', 'proposed.md'], typed_exit=exit_id)
         value['consumer'] = ({'kind': 'workflow', 'id': 'guru-knowledge-final-integration-router'}
                              if exit_id == 'candidate_checked' else {'kind': 'skill', 'id': 'guru-create-task-commit'})
         return value
@@ -84,13 +82,20 @@ class CandidateCheckTests(unittest.TestCase):
                                   text=True, capture_output=True)
         self.assertEqual(checker.returncode, 0, checker.stdout + checker.stderr)
         self.assertFalse(json.loads(checker.stdout)['formal_exit'])
-        return json.loads(path.read_text())
+        self.assertEqual(path, Path(json.loads(checker.stdout)['result']['artifact_path']))
+        return path
 
     def invoke(self, public, owner, expected=0):
         directory = self.root / '.trellis/.runtime/check-input'
         directory.mkdir(parents=True, exist_ok=True)
         inp, result = directory / 'input.json', directory / 'owner.json'
-        inp.write_text(json.dumps(public)); result.write_text(json.dumps(owner))
+        inp.write_text(json.dumps(public))
+        if isinstance(owner, Path):
+            result = owner
+        elif 'schema_version' not in owner:
+            result = self.recorded_owner(owner)
+        else:
+            result.write_text(json.dumps(owner))
         invocation = subprocess.run([str(PACKAGE / 'scripts/invoke.sh'), '--root', str(self.root),
                                      '--input', str(inp), '--owner-result', str(result)],
                                     text=True, capture_output=True)
@@ -108,7 +113,7 @@ class CandidateCheckTests(unittest.TestCase):
         self.assertEqual(set(checked), {'exit_id', 'task_ref', 'delivery_key', 'candidate'})
         self.assertEqual(p.resolve(self.key)['results']['check'], None)
         self.assertEqual(p.resolve(self.key)['results']['planning']['result_id'], self.plan['result_id'])
-        self.assertEqual(self.common.content_identity(self.root), owner['reviewed_content_sha256'])
+        self.assertEqual(self.common.content_identity(self.root), json.loads(owner.read_text())['reviewed_content_sha256'])
         self.assertEqual((self.root / 'current.md').read_text(), 'Existing complete current\n')
         # The original maintenance owner performs the actual reviewed write.
         (self.root / 'current.md').write_text((self.root / 'proposed.md').read_text())
@@ -118,18 +123,19 @@ class CandidateCheckTests(unittest.TestCase):
         after = self.begin(); phases.append(p.resolve(self.key)['phase'])
         self.assertNotEqual(before['content_ref'], after['content_ref'])
         final = dict(self.public, profile='delivery_initial_check')
-        result = self.invoke(final, self.recorded_owner(self.owner('passed')))
+        recorded_final = self.recorded_owner(self.owner('passed'))
+        result = self.invoke(final, recorded_final)
         phases.append(p.resolve(self.key)['phase'])
         self.assertEqual(phases, ['implementing', 'checking', 'implementing', 'checking', 'reviewing'])
         self.assertEqual(p.resolve(self.key)['results']['check']['candidate'], after)
         # Real final gate output recovery is allowed and creates no new commit.
-        self.assertEqual(result, self.invoke(final, self.owner('passed')))
+        self.assertEqual(result, self.invoke(final, recorded_final))
         self.assertEqual(self.git('rev-parse', 'HEAD'), self.base)
         self.assertEqual(p.content_base(self.key), self.base)
 
     def test_lost_candidate_output_requires_begin_check_and_new_judgment_even_no_change(self):
         p = self.fixture.projection
-        before = self.begin(); owner = self.owner()
+        before = self.begin(); owner = self.recorded_owner(self.owner())
         first = self.invoke(self.public, owner)
         self.invoke(self.public, owner, expected=3)
         self.assertEqual(p.resolve(self.key)['phase'], 'implementing')
@@ -161,6 +167,75 @@ class CandidateCheckTests(unittest.TestCase):
         self.invoke(self.public, self.owner('passed'), expected=2)
         self.invoke(dict(self.public, profile='delivery_initial_check'), self.owner(), expected=2)
         self.assertEqual(self.fixture.projection.resolve(self.key)['results']['check'], None)
+
+    def test_recorded_candidate_content_change_rejects_without_rewriting_result(self):
+        self.begin()
+        artifact = self.recorded_owner(self.owner())
+        original = artifact.read_bytes()
+        (self.root / 'implementation.txt').write_text('Ordinary later implementation change\n')
+        checked = subprocess.run([str(PACKAGE / 'scripts/check-phase2-check.sh'), '--root', str(self.root),
+                                  '--task', self.fixture.task_ref], text=True, capture_output=True)
+        self.assertEqual(checked.returncode, 3, checked.stdout + checked.stderr)
+        self.assertEqual(json.loads(checked.stdout)['field_path'], 'reviewed_content_sha256')
+        self.assertEqual(original, artifact.read_bytes())
+        self.invoke(self.public, artifact, expected=3)
+
+    def test_complete_recorder_output_is_consumer_only_not_new_record_input(self):
+        self.begin()
+        artifact = self.recorded_owner(self.owner())
+        original = artifact.read_bytes()
+        result = subprocess.run([str(PACKAGE / 'scripts/record-phase2-check.sh'), '--root', str(self.root),
+            '--task', self.fixture.task_ref, '--input', str(artifact)], text=True, capture_output=True)
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        error = json.loads(result.stdout)
+        self.assertEqual(('schema_mismatch', 'input'), (error['code'], error['field_path']))
+        self.assertIn('MIGRATION-710', error['remediation'])
+        self.assertEqual(original, artifact.read_bytes())
+        self.assertEqual('candidate_checked', self.invoke(self.public, artifact)['exit_id'])
+
+    def test_checker_identifies_task_locator_after_normal_archive_move(self):
+        self.begin()
+        artifact = self.recorded_owner(self.owner())
+        previous = self.root / self.fixture.task_ref
+        archived = self.root / '.trellis/tasks/archive/2026-10' / previous.name
+        archived.parent.mkdir(parents=True)
+        previous.rename(archived)
+        checked = subprocess.run([str(PACKAGE / 'scripts/check-phase2-check.sh'), '--root', str(self.root),
+            '--task', archived.relative_to(self.root).as_posix()], text=True, capture_output=True)
+        self.assertEqual(checked.returncode, 3, checked.stdout + checked.stderr)
+        error = json.loads(checked.stdout)
+        self.assertEqual(('stale_identity', 'task_ref'), (error['code'], error['field_path']))
+        self.assertTrue(artifact.is_file())
+
+    def test_checker_preserves_capture_ancestry_after_normal_history_replacement(self):
+        self.begin()
+        artifact = self.recorded_owner(self.owner())
+        original = artifact.read_bytes()
+        # A new root history can contain the same business bytes. It still
+        # cannot consume a Check captured on the unrelated old history.
+        self.git('checkout', '--orphan', 'replacement-history')
+        self.git('add', '.')
+        self.git('commit', '-qm', 'Replacement root with the same business content')
+        checked = subprocess.run([str(PACKAGE / 'scripts/check-phase2-check.sh'), '--root', str(self.root),
+                                  '--task', self.fixture.task_ref], text=True, capture_output=True)
+        self.assertEqual(checked.returncode, 3, checked.stdout + checked.stderr)
+        error = json.loads(checked.stdout)
+        self.assertEqual(('stale_identity', 'phase2_capture_commit'), (error['code'], error['field_path']))
+        self.assertEqual(original, artifact.read_bytes())
+
+    def test_checker_identifies_coverage_after_normal_index_change(self):
+        self.begin()
+        artifact = self.recorded_owner(self.owner())
+        original = artifact.read_bytes()
+        # Removing a file only from the index leaves its worktree bytes and
+        # content token unchanged, but adds a real dirty path to review.
+        self.git('rm', '--cached', '.gitignore')
+        checked = subprocess.run([str(PACKAGE / 'scripts/check-phase2-check.sh'), '--root', str(self.root),
+                                  '--task', self.fixture.task_ref], text=True, capture_output=True)
+        self.assertEqual(checked.returncode, 3, checked.stdout + checked.stderr)
+        error = json.loads(checked.stdout)
+        self.assertEqual(('stale_identity', 'reviewed_paths'), (error['code'], error['field_path']))
+        self.assertEqual(original, artifact.read_bytes())
 
     def test_metadata_is_not_content_but_actual_mode_changes_are(self):
         candidate = self.begin(); before = self.common.content_identity(self.root)

@@ -257,3 +257,12 @@ Reactivate 新 shared-archive aggregate/schema、Publish 两个 remote recovery 
 source/dogfood 原 tools-only owner 在保留全部 Task/session 下投影工具；按 AGENTS 实际调用 plain apply 并如实报告旧数据 preflight 拒绝，不能称为 reapply 成功。完整 preset/apply/reapply 在唯一受支持代表安装 profile 证明，不迁移无关旧 archive、绕过 preflight 或强写 `.version`。用户内容、官方 hashes、mode、`.new`/`.bak` 仍按原安装合同处理；同一 candidate 的 Guru 与 Trellis 投影分别检查。原 Task 有后续合法工作时，回退不能覆盖它。
 
 实际 source/package、installed/native、Agent、受控 provider、真实 GitHub、资源隔离及未验证边界仅由 [#635 Test](../../requirements-design-test-contributions/635-portable-lifecycle/test.md)记录。独立 common-dir 原生两条再次 Finish、活动 ref、Open Draft/Ready、MERGED、Closure、资源/双 Task 和旧样本是本 Task 的行为范围；不从 unit、SDK inspect、代码投影或知识晋升推定其通过。普通安装最多一个代表 profile，完整 Upgrade/Release 多平台矩阵仍归专门 owner。
+
+
+## Phase 2 recorder 输入退出的匹配分发
+
+原 Check package 的 Recorder Authoring、最小语义示例、完整结果用途、原命令和受控调用按 [MIGRATION-710](../../../trellis/presets/guru-team/MIGRATION-710.md)成套采用。新安装只使用既有语义 authoring 作为正常 record 输入，保留完整 6.0 输出、checker/public invocation 合法消费与原 stale 恢复；旧完整安装未成套采用前保持原合同，不单 patch recorder，不重算旧结果制造新审查。
+
+canonical 仍经原 preset/工具 owner 投影 dogfood、installed 和声明平台；当前 Task/session、用户定制、mode、hash 与 sidecar 由原机制保护。不因普通 apply 的历史数据前置而迁移无关 Task。目标实际采用、定向 reapply/drift 与一个必要代表 clean 安装分别验证，不扩完整 Upgrade/Release 矩阵。local_candidate 的正式 source-lock 未验证必须在原结果保留，不能从版本相同推定通过。
+
+#710 的原 native 适配器沿同一 fixture 消费实际前序公开输出，原 mandatory 语义 owner 亲自完成前置；候选与最终 Check 各保留首次输入、实际命令和结果承接。预期出口只在模型输入外比较，装配失败与修订后新案例分开，不以静态投影或消费者单测代替首次行为。实际结果唯一见 [#710 Test](../../requirements-design-test-contributions/710-phase2-recorder-authoring/test.md)；#713仍亲自执行其完整链中的当前 Check，不消费本项旧出口作为新候选门禁。

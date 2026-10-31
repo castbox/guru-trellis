@@ -1,0 +1,24 @@
+task_id: 710-phase2-recorder-authoring
+source: https://github.com/castbox/guru-trellis/issues/710
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 2fc49bda6552d1a8bf95dff243ab2de9a9ea8e30
+architecture:
+  locator: docs/architecture/README.md
+  version: 2fc49bda6552d1a8bf95dff243ab2de9a9ea8e30
+  status: active
+delivery:
+  lifecycle_generation: 0
+  delivery_id: 63d55014-9fec-48da-a106-2a7403305977
+  planning_root: .trellis/tasks/10-31-710-phase2-recorder-authoring/deliveries/63d55014-9fec-48da-a106-2a7403305977
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/knowledge-maintenance.md
+  - docs/design/current/knowledge-maintenance.md
+  - docs/test/current/knowledge-maintenance.md

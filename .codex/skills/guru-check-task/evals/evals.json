@@ -62,6 +62,63 @@
       }
     },
     {
+      "id": "native-owner-candidate-final",
+      "prompt": "Execute the installed guru-check-task for the supplied inclusive-range Task and selected Delivery. Complete required original semantic prerequisites, review the current candidate, and follow its original outcome consumer through any applicable final integration and current Check. Read actual installed contracts and source facts; author every judgment yourself.",
+      "expected_exit": "passed",
+      "expected_output": "Original semantic prerequisites execute in the same fixture. First candidate Check returns candidate_checked; original final integration/no_change and actual candidate rebinding precede the first final Check returning passed. Failed inputs remain failures.",
+      "input_profile_id": "delivery_candidate_check",
+      "native_execution_mode": "semantic_authoring",
+      "native_execution_adapter": "codex",
+      "model_id": "gpt-6.1-sol",
+      "files": [
+        "evals/files/native-candidate-final-input.json",
+        "evals/files/native-range-inclusive.py"
+      ],
+      "assertions": {
+        "deterministic": [
+          {
+            "id": "actual-route",
+            "kind": "json_path",
+            "pointer": "/exit_id",
+            "operation": "equals",
+            "expected": "passed"
+          },
+          {
+            "id": "public-only",
+            "kind": "trace",
+            "invariant": "public_invocation_only"
+          },
+          {
+            "id": "no-eval-control",
+            "kind": "trace",
+            "invariant": "evals_not_loaded_by_skill"
+          },
+          {
+            "id": "no-private-runtime",
+            "kind": "trace",
+            "invariant": "private_runtime_not_read_by_agent"
+          }
+        ],
+        "semantic": [
+          {
+            "id": "real-prerequisites",
+            "criterion": "Planning adequacy/Activation, RDT and fresh independent Architecture execute through their actual original owners. Host provides only Task/Delivery identity, unaccepted planning, source and raw validation. No host-authored current semantic prerequisite is used.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "first-candidate-final",
+            "criterion": "The first authoring and original record/check/invoke chain at each legal Check stage succeed without assembly correction or retry. Candidate token stays present. Candidate Check returns candidate_checked, original Check rework and Architecture/RDT final_integration or real no_change execute, implementation binds the complete actual after candidate with the same base, and first final Check returns passed. Read profile/public candidate/first input/argv/stdin/stdout and actual predecessor outputs.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "normal-installed-authoring",
+            "criterion": "The Agent reads normal installed Skill Recorder Authoring and its semantic example, then writes semantic authoring itself. Host neither pre-fills private result identities nor specifies a decision/exit. Original result artifact is consumed unchanged; checker receipt does not replace it. Any failure is retained and does not count as first success.",
+            "evidence_selector": "transcript"
+          }
+        ]
+      }
+    },
+    {
       "id": "native-owner-all-rejected",
       "prompt": "Execute the installed guru-check-task for the current inclusive-range task. One candidate observation to investigate is a possible upper-endpoint exclusion in interval.py; reproduce via contains(4, 2, 4) and the actual endpoint tests. Review the actual task, implementation, Docs, diff and Architecture authority, qualify the actual candidate, author your own complete current-round result and consume the original formal wrapper output.",
       "expected_exit": "passed",
@@ -120,15 +177,15 @@
     },
     {
       "id": "native-owner-finding",
-      "prompt": "Execute the installed guru-check-task for the current inclusive-range task. Review the actual task, implementation, test output, Docs, diff and Architecture authority; author your own result and consume the formal wrapper output.",
+      "prompt": "Execute the installed guru-check-task for the supplied inclusive-range Task and selected Delivery. Complete required original semantic prerequisites, review actual implementation, tests, caller, Docs and Architecture, and return the original outcome through its lawful consumer. Author every judgment from current facts.",
       "expected_exit": "implementation_required",
       "expected_output": "The AI identifies the requirement violation using actual implementation and failing boundary tests; the original wrapper returns implementation_required.",
-      "input_profile_id": "delivery_initial_check",
+      "input_profile_id": "delivery_candidate_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
-      "model_id": "gpt-5.6-sol",
+      "model_id": "gpt-6.1-sol",
       "files": [
-        "evals/files/native-owner-input.json",
+        "evals/files/native-candidate-final-input.json",
         "evals/files/native-range-boundary.py"
       ],
       "assertions": {
@@ -165,6 +222,11 @@
           {
             "id": "reviewer-first",
             "criterion": "Architecture is authored and formally invoked by a separate fresh ephemeral worker that inspects its prelude and reads Constitution/Baseline/project change contract, actual tracked/untracked candidate and unchanged callers before task PRD/implement/acceptance. Overall owner starts only after its actual wrapper stdout and keeps Architecture and Phase 2 results distinct. Failed or incomplete reviewer execution stops before the overall owner. Red test attribution is bounded; no fixture, timeout or configuration rewrite is used to force green.",
+            "evidence_selector": "transcript"
+          },
+          {
+            "id": "actual-prerequisites",
+            "criterion": "Original Planning adequacy/Activation, RDT and independent Architecture actually execute in this same fixture before current Check. The first real semantic authoring and original commands expose the actual finding and lawful original implementation rework. No host-filled result, input correction or pass substitutes for those owners.",
             "evidence_selector": "transcript"
           }
         ]

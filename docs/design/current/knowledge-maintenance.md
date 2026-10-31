@@ -101,3 +101,23 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 **D693-03 / CON693-ADOPTION** 承接 R693-04。Delivery 原 owner 在真实 payload 中限制 consumer/entry/安装范围，读取原 Policy 保留后端正式采用的整体责任。项目 Architecture change-contract 消费同一方法，RDT 与 Architecture 各自准备完整隔离拟写，原候选 Check 后 final_integration/readback，再由 implementation 绑定全部 actual after，最终质量链覆盖。完整 preset 分发受管副本；目标项目按原正式 Upgrade owner 采用，不复制业务领域定义。
 
 三层稳定关系及本批来源见 [#693 traceability](../../requirements-design-test-contributions/693-contract-evidence-adoption/traceability.md)；原 D648/D-MECH 与前驱晋升/兼容条件保持。
+
+## D710：语义 authoring、完整结果与原消费者
+
+来源：[Issue #710](https://github.com/castbox/guru-trellis/issues/710)及 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。R710/BEH710 定义完整能力；原 D331/D638/D648/D693 的条件、单写责任和最终整合保持。精确字段、参数、schema、回执 projection 和 profile 出口由 [Check contract](../../../trellis/skills/guru-team/packages/guru-check-task/references/contract.md)、interface 与 schemas 单写，以下不建立第二接口。
+
+**D710-01 / CON710-AUTHORING** 承接 R710-01。原 Check SKILL/contract 的 Recorder Authoring 与最小语义示例组成正常路径；完整结果示例标明消费用途。AI 先做完整判断，原 record 才基于语义输入、调用定位和 live facts 生成完整结果。复用已有能力可消除手工装配身份的必要性；双 authoring 选择会保留原歧义。无需新公共 DTO、wrapper、owner、状态或全链 token。
+
+**D710-02 / CON710-CONSUMPTION** 承接 R710-02。原 record/check/invoke 各有独立真实命令与输入职责。按原 stdout 合同读取 recorder receipt 的实际结果位置，checker 从原 checkpoint 验证同一结果，invoke 使用真实完整文件；checker 状态或 recorder receipt 不作为 owner result。profile-specific 回执原样承接。public candidate token 和 Phase 2 局部 token 的生成与消费保持独立，合法公共 Task/Delivery/Planning 身份不被删除或换算。候选成功仍进入原 final-integration router，最终 passed 才进入原 TaskCommit consumer。
+
+**D710-03 / CON710-RETIREMENT** 承接 R710-03。MIGRATION-710 拥有实际 consumer 清单、matching source 切换和明确 record 输入退出；原 runtime 直接演进为唯一语义输入。完整结果 schema/output、原 checker/invoke 与 maintenance 恢复不随之退休，原 checkpoint 不重新 record。测试和 eval 的受控 record callers 同批迁移；旧固定完整安装独立保留旧义，新 matching 安装不加长期双 parser、compat flag 或历史 Task 迁移。清单出现不能同步迁移的真实支持调用时，原 Author/Architecture 先修方案再继续。Architecture 独占兼容退出和 ADR 判断，RDT 只继承公开 baseline。
+
+**D710-04 / CON710-STALE** 承接 R710-04。原 checker 细分已存在的客观比较诊断，保持错误 code、capture ancestry、路径覆盖、业务 bytes/modes 和既有 metadata 排除。诊断只指出确定的不一致，不推测语义根因；原 Check 恢复 owner 重新审当前事实。不能更新旧结果的客观身份来延续过期判断，也不通过参数修正或私有算法补算冒充首次 authoring 正确。
+
+**D710-05 / CON710-BOUNDARY** 承接 R710-05。原 package tests 分开语义输入命令链与完整结果消费者单元；合同测试核实际正文、引用及示例入口。原 eval adapter 只运输 Agent 自己 authored 的原字节并执行真实请求，mock 只声明运输。五 profiles 的原成功、finding、规划、blocked 和 resolved 行为不因统一 authoring 改变；缺必要证据仍由原 owner 路由。共享 Candidate Applicability And Coverage 与 Test And Validation Value 继续单写方法。
+
+**D710-06 / CON710-FIRST-NATIVE** 承接 R710-06。原 native-owner-clean/finding 与候选 fixture 运输扩展为同一 stateful 候选到最终案例；必需语义 owners 亲自读事实并调用原 public wrappers。implementation 用固定 B 和全量实际 paths 构造候选/begin_check；原 Architecture/RDT 前置和候选 Check 后，原 owners 执行 final integration 或实际 no-change，implementation 重绑 actual after，再进入匹配最终 Architecture/Check。host 不预填本阶段结果、摘要、内部选择或预期，不事后修参数、字段或发送纠偏提示。既有 repo 外 run-root 保留原输入、argv/stdin/stdout/stderr 和首次结果；验收在模型输入外比较预期，无新长期状态。setup、装配、能力缺失和真实语义 finding 分开表述。
+
+**D710-07 / CON710-ADOPTION** 承接 R710-07。原 guru-upgrade-tools/完整 preset 成套分发，保留用户定制及 Task/session；定向核 canonical/dogfood/installed、声明平台、reapply/drift/mode/sidecar，一个确有必要的代表 clean 只证明该安装边界。源码或 CLI 可用不等同 native 或业务采用。原 Test contribution 记录实际观察，后继引用固定可获取候选与 matching 安装，自行完成其当前质量链。
+
+本批原 RDT/Architecture 各写完整 isolated proposed，候选 Check 后才 final_integration/readback。implementation 按同 B 绑定全部实际 after，最终 Check 与完整 committed Review 覆盖真实内容。既有 current 单元定位和 authority identity 保持，不为本项制造导航改动或共享版本推进。

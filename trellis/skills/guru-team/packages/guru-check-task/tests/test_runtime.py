@@ -180,9 +180,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
   with tempfile.TemporaryDirectory() as temporary:
    repo,_=self.gitlink_fixture(temporary);self.git(repo,"submodule","deinit","-f","--","module")
    task_dir=repo/".trellis/tasks/test-task";task_dir.mkdir(parents=True)
-   example=json.loads((PACKAGE/"examples/phase2-check.json").read_text())
-   fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
-   authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["module"]
+   authoring=json.loads((PACKAGE/"examples/phase2-authoring.json").read_text());authoring["reviewed_paths"]=["module"]
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
    recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task","test-task","--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
@@ -299,7 +297,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    tracked.write_text("reviewed current candidate\n")
 
    fields={"mode","reviewed_paths","validation","docs_ssot","delivery_policy","candidate_classifications","semantic_review","typed_exit","route","reason","consumer"}
-   authoring={key:copy.deepcopy(value) for key,value in example.items() if key in fields};authoring["reviewed_paths"]=["tracked.txt"]
+   authoring=json.loads((PACKAGE/"examples/phase2-authoring.json").read_text());authoring["reviewed_paths"]=["tracked.txt"]
    input_path=repo/".trellis/.runtime/phase2-authoring.json";input_path.parent.mkdir(parents=True);input_path.write_text(json.dumps(authoring))
    environment={**os.environ,"PYTHONDONTWRITEBYTECODE":"1"}
    recorded=subprocess.run([str(PACKAGE/"scripts/record-phase2-check.sh"),"--root",str(repo),"--task",task_ref,"--input",str(input_path),"--json"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=environment,check=True)
