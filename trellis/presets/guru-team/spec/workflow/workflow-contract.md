@@ -44,6 +44,30 @@ schemas, consumer input contracts, and `public_contracts.projections[]` are the
 only public I/O graph authority. Workflow prose must never infer a route from a
 private checkpoint, digest, recorder result, example, or runtime implementation.
 
+## Independent Change Review
+
+Independent review of code, engineering documents or tests explicitly invokes the standalone
+`guru-review-change` owner with the user's selected target and scope, whether
+or not a Task/Delivery exists. Its own package defines the complete review,
+same-provider framework methods, read-only Git validation and user report.
+The selected target repository need not contain a Trellis installation.
+
+Review verbs such as 审核、审查、评审、复审 and review do not select the object.
+Issue content, requirements themselves and initiatives/proposals retain their
+existing review owners under the global workflow's object routing. Reviewing
+whether code and tests implement a requirement is implementation review;
+reviewing whether that requirement is complete or reasonable is source review.
+An Issue or initiative used as implementation authority does not change that
+distinction. A clear conversational object supplies a short follow-up's scope;
+an unresolved object requires clarification before owner invocation.
+
+Its `reviewed` and `blocked` outputs terminate at the package-declared response
+consumers. They do not enter Task or Delivery lifecycle, provide a formal pass,
+or replace missing formal prerequisites. Check and Branch Review read the
+same package-owned `references/review-method.md` within their original order,
+qualification and result contracts; they do not invoke the standalone owner
+to obtain their stage result. The global workflow retains only this routing.
+
 ## Candidate Applicability And Coverage
 
 This section is the single shared rule for Architecture, Check, TaskCommit,

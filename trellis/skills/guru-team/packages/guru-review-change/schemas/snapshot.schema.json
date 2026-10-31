@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-change-snapshot-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repository_root",
+    "base_oid",
+    "head_oid",
+    "content_identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "repository_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base_oid": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "head_oid": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "content_identity": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "base_oid": {
+          "type": "string"
+        },
+        "head_oid": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "properties": {
+        "base_oid": {
+          "type": "null"
+        },
+        "head_oid": {
+          "type": "null"
+        }
+      }
+    }
+  ]
+}

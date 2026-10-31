@@ -57,7 +57,8 @@ generate synonyms, translate queries, count hits as a gate, or decide semantic
 pass or route.
 
 The Guru semantic retrieval owners are `guru-discover-change-context`,
-`guru-clarify-requirements`, `guru-check-task`, and `guru-review-branch`.
+`guru-clarify-requirements`, `guru-review-change`, `guru-check-task`, and
+`guru-review-branch`.
 Upstream workers and providers may supply evidence, but they do not own or
 consume this Guru SSOT. The Guru caller remains responsible for the applicable
 concept family, combined evidence coverage, and conclusion sufficiency before

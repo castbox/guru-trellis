@@ -52,6 +52,25 @@ their original owners.
 
 ## Ownership
 
+`guru-review-change` is a standalone semantic owner for independent review of
+working-tree content or a committed range, optionally narrowed to selected
+paths. It requires no Task/Delivery or target-side preset. Its same-provider
+package and framework specs own the review method; scripts read Git facts and
+validate this invocation's selected-content continuity without persisting a
+report or gate. The terminal `reviewed|blocked` DTO is minimal and the owner
+shows its call-local report directly to the user. Formal Check and Branch
+Review reuse the package's common method, retaining their existing inputs,
+qualification, writers and exits. It is not a replacement formal-stage profile.
+The common method composes the original semantic SSOTs. Independent review
+actually assesses Architecture applicability and requirement implementation;
+it does not replace those methods with a dimension list. Original Architecture
+stage protocols and results remain with that owner, including the bounded
+explicit-object `final_plan` entry.
+Its local contract requires actual subagents for the independent review's
+different perspectives and an independent semantic owner to integrate their
+original evidence. These local dispatch duties do not change formal Check or
+Branch Review's worker policy.
+
 `guru-upgrade-installation` is a standalone-only semantic boundary for explicit
 old-installation upgrade, loaded with the complete reviewed target source and
 its current runtime before the old target can satisfy installed validation.

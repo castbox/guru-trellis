@@ -1,0 +1,7 @@
+{
+  "profile": "committed_range",
+  "mode": "standalone",
+  "repository": ".",
+  "base": "main",
+  "head": "HEAD"
+}
