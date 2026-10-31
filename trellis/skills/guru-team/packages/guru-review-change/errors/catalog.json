@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "package_id": "guru-review-change",
+  "errors": [
+    {
+      "code": "invalid_arguments",
+      "trigger": "Required command arguments are missing or unsupported.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "conflicting_arguments",
+      "trigger": "A scalar argument is repeated.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "invalid_json",
+      "trigger": "The selected JSON carrier cannot be read as one object.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "schema_mismatch",
+      "trigger": "The input or owner result does not match its declared contract.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "invalid_scope",
+      "trigger": "A path selector is outside the selected repository.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "git_unavailable",
+      "trigger": "Git cannot read the selected working tree or commit reference.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "content_unavailable",
+      "trigger": "A selected working-tree file cannot be read.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "unsupported_content",
+      "trigger": "A selected untracked item is not a regular file or symlink.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "runtime_dependency_missing",
+      "trigger": "A declared runtime dependency is unavailable.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "missing_contract",
+      "trigger": "A declared package contract is missing.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "internal_error",
+      "trigger": "An unexpected package runtime failure occurred.",
+      "exit_status": 70,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    },
+    {
+      "code": "stale_identity",
+      "trigger": "The selected input, commit references or content changed after capture.",
+      "exit_status": 3,
+      "locator": "field_path",
+      "remediation": "Reread the named input or dependency, repair the reported gap and retry the owning step."
+    }
+  ]
+}

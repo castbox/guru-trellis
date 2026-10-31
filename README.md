@@ -2,6 +2,39 @@
 
 [三系统定向 CI：运行、对照与诊断](docs/ci/README.md)
 
+“审核 / 审查 / 评审 / 复审 / review”先识别对象和目的。代码、修改、分支/PR、
+测试覆盖及需求实现情况的审核，再区分独立只读审核与
+正式阶段结果。独立审核由 [guru-review-change](trellis/skills/guru-team/packages/guru-review-change/SKILL.md)
+承接，无论有无 Task/Delivery，都保留指定范围，不推进生命周期或生成正式 pass。
+只有 workflow 调用或用户要求正式阶段结果时，才按原前置与
+完整范围进入现有 Guru Check、Branch Review 或 Completion。
+
+Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`，即使对象是
+Git 中的改动文件。Issue 使用现有 Issue 审核 owner，需求文档使用适用专项，
+动议使用项目已有的动议或上游需求审核入口。“审核需求是否已实现”仍属实现审核。
+只说“审核一下”时承接对话中明确的对象；对象不明时先澄清，不凭关键词抢入口。
+
+独立 owner 支持工作区的 staged、unstaged、untracked 改动、已提交范围和指定路径。
+被审仓库不需要安装 Trellis；Skill 和只读校验命令由完整匹配的 Guru 来源提供。
+它与正式 Check、Branch Review 读取同一份 [审核方法](trellis/skills/guru-team/packages/guru-review-change/references/review-method.md)，
+正式阶段保留各自身份、Planning、Architecture、结果和接续条件。
+
+共享方法直接加载原 Check、Branch Review、Architecture 和 current-knowledge 的
+语义 SSOT。独立审核先按原方法评估架构基线吻合度与基线技术规则的适用性，再判断
+实际需求的实现和测试覆盖；报告须交代两项结论及证据缺口。正式 Architecture 的
+显式对象入口仍受其原 profile 限制，不为无 Task 审核伪造身份或阶段结果。
+独立 owner 必须使用不同 subagent 分别审核架构、业务实现、测试及跨层证据，
+核对原始证据后作最终判断。分工与并发受限时的调度由该 skill 合同定义；
+正式 Check、Branch Review 保留自己的 worker 政策。
+
+专项需求、概要设计、详细设计、Go-Guru 实现和集成测试计划方法仍由
+`guru-ai-guides` 的对应 Skills 及同源标准
+提供，按项目实际采用情况加载；完整选择边界见
+[专项审核标准](trellis/presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
+不为独立审核创建 Task；普通 review 关键词和 Task 存在本身不选择正式门禁。
+专项 Skills 不随 preset 安装；已有项目须更新匹配 workflow 并 reapply preset，
+再独立确认所需专项来源已安装。源码更新不证明旧安装或实际 Agent 已采用。
+
 架构变化先在现有 Phase2 独立评估中审查完整候选及拟晋升内容，再由原 owner
 在执行分支晋升，随后完成最终 Check、Task Commit、committed 独立架构判断和
 完整 Branch Review。安装切换、在途恢复及完整审查后的窄引用/状态对齐见

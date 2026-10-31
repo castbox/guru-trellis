@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "public_input": {
+    "profile": "working_tree",
+    "mode": "standalone",
+    "repository": "."
+  },
+  "owner_result": {
+    "exit_id": "blocked",
+    "reason": "The requested review scope is not yet clear."
+  }
+}

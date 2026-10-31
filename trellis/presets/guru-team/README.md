@@ -1,5 +1,39 @@
 # Guru Team Preset
 
+审核、审查、评审、复审和 review 先按对象与目的分流。代码、PR、测试覆盖和
+需求实现情况的审核，再区分独立只读审核与正式阶段结果。无论有无
+Task/Delivery，独立审核都显式调用 `guru-review-change`，由它保留指定范围并返回
+用户报告，不创建 Task、推进生命周期或生成正式 Guru pass。
+workflow 调用或用户要求正式阶段结果时，才按原前置与完整范围进入
+现有 Check、Branch Review 或 Completion。普通 review 关键词和 Task 存在本身
+不选择正式门禁。专项选择方法唯一见
+[Specialist Review Standards](./spec/workflow/quality-guidelines.md#specialist-review-standards)。
+`guru-ai-guides` 的需求、概要设计、详细设计、Go-Guru 实现与集成测试计划审核
+提供适用标准和方法；它们未被通用流程门禁替代，也不随本 preset 安装。
+按项目技术栈、已采用标准和当前产物选择实际需要的 Skill 及同源标准包，
+专项结果由原 Guru owner 在自己的职责内审查，不能替代正式阶段结论。
+
+Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`；它们保留
+现有 Issue、需求专项或项目动议/上游需求入口，Git 文件是否有改动不改变该边界。
+“审核需求是否已被代码和测试实现”属于实现审核。仅有 review 动词时承接明确的
+对话对象；对象不明时先澄清。完整入口选择以 workflow 为准。
+
+完整 preset 分发 `guru-review-change` 的独立合同、共享审核方法和无状态只读命令。
+它可审核未安装 Trellis 的 Git 仓库，输入选择工作区或已提交范围及可选路径。
+`reviewed` 表示完成本次审核，可以包含 Findings；它不代表正式门禁通过。
+Check 与 Branch Review 直接读取同源方法，并继续各自的正式流程。
+方法直接组合原语义 SSOT，并要求实际形成架构基线吻合度、基线规则适用性和需求
+实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
+独立审核不调用或伪造正式 Task/Delivery 架构结果。
+独立审核的不同角度由多个独立 subagent 实际执行，最终 owner 核对证据并汇总判断。
+原正式阶段的 worker 政策保持在各自 owner 内。
+
+已有安装需要更新匹配的 marketplace workflow 并完整 reapply preset，才能采用
+本次入口匹配、六个原 owner 与 managed quality spec 的变化。专项 Skills 在其
+原来源单独维护和安装；缺少当前必须的专项证据时明确受影响结论，不静默降级。
+继续检查受管投影、drift 和 `.new`/`.bak`，保留用户修改。源码与分发检查不证明
+真实 Agent 已采用，也不代表完整多平台 upgrade/update 或 Release 矩阵通过。
+
 JSON 载体读取、Bind 双 stdin 冲突与完整正常调用见
 [MIGRATION-695](MIGRATION-695.md)。共享 reader 保留原合法 inline、stdin 和普通文件；
 各入口仍遵守自身准入，不支持进程替换。已有安装须采用完整匹配 preset。

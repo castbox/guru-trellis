@@ -1,6 +1,6 @@
 ---
 name: guru-review-branch
-description: Review committed task content, bounded base continuity, or a completed archive through independent semantic review.
+description: Review committed formal task content when invoked by the workflow or requested as a formal stage result, plus bounded base continuity and completed-archive review. Retain each profile's prerequisites and scope. 审核分支, 审核 PR or code review alone does not select formal Branch Review; independent read-only review belongs to guru-review-change even when a Task/Delivery exists.
 ---
 
 # Guru Review Branch
@@ -11,6 +11,23 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Enter this Skill for its declared stage/profile purpose under the workflow's
+review entry. An independent read-only request retains its selected range even
+with a bound Task/Delivery and enters `guru-review-change` in standalone mode.
+
+Read `.trellis/guru-team/skills/packages/guru-review-change/references/review-method.md`
+within this owner's existing independent read order. Apply the shared semantic
+method to the complete selected range, preserving each profile's qualification,
+Architecture, formal result and consumer requirements. Reading that method does
+not invoke the standalone Skill or convert its report into Branch Review pass.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this Skill's existing independent read order and complete selected
+range. Load applicable specialist methods and same-source standards; assess
+current evidence and affected consumers yourself. A specialist report does
+not replace full-range coverage, current Architecture, qualification or this
+owner's formal result. Retain all profile entry conditions.
 
 Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
 for shared candidate coverage, engineering facts and recovery. This package

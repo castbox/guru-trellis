@@ -1,5 +1,40 @@
 # Guru Team Workflow
 
+审核、审查、评审、复审和 review 先按对象与目的分流。代码、分支/PR、测试覆盖和
+需求实现情况的审核，再区分独立只读审核与正式阶段结果。上述独立审核
+无论有无 Task/Delivery，都显式调用 `guru-review-change`，由它完成指定范围的
+只读审核和用户报告，不创建 Task、推进生命周期或生成正式 Guru pass。
+workflow 调用或用户要求正式阶段结果时，才按原前置与完整范围进入
+现有 Check、Branch Review 或 Completion。普通 review 关键词和 Task 存在本身
+不选择正式门禁。显式需求、概要设计、详细设计和测试计划文档审核按当前对象
+选择专项方法。选择方法唯一见
+[Specialist Review Standards](../../presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
+
+Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即使它们是改动文件。
+它们保留现有 Issue、需求专项或项目动议/上游需求审核入口。需求用于判断实现覆盖时，
+可作为本 skill 的来源；判断需求本身是否完整合理时，使用其上游 owner。
+短句承接对话中明确的对象；对象不明时先澄清。完整入口选择以 workflow 为准。
+
+独立审核的完整步骤归 [guru-review-change](../../skills/guru-team/packages/guru-review-change/SKILL.md)；
+workflow 只负责显式调用和消费终端出口。`reviewed`、`blocked` 分别停止在该 owner
+声明的用户响应消费者，不进入正式交付阶段。通用语义方法由该包唯一维护，
+Check 与 Branch Review 在原职责内读取 [同一正文](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
+该正文组合原 Check、Branch Review、Architecture 和 current-knowledge 的语义
+SSOT。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
+报告依据和缺口。正式阶段的独立评估、重审适用性及公共结果仍遵守各自原合同。
+独立 owner 还必须按其本地合同使用不同 subagent 完成不同角度的审核，并核对
+原始证据作最终判断。正式 Check 和 Branch Review 不继承这项本地调度要求。
+
+Guru Team 拥有流程、完整范围和正式结论；`guru-ai-guides` 的专项 Skills 与同源
+标准包提供项目实际采用的需求/设计/Go-Guru 实现/集成测试计划方法。通用流程
+尚未替代这些专项能力。本 workflow/preset 不安装该外部目录，适用时实际加载，
+不向其他技术栈强加 Go-Guru 规则或完整文档套件。专项 pass 不替代原 owner 的
+当前判断，测试计划审核也不证明测试实现有效或实际执行成功。
+
+已有安装须采用匹配的 workflow、原 Guru packages 和 managed quality spec，再
+完整 reapply preset 并检查 discovery、drift 及 `.new`/`.bak`；专项来源另行更新。
+源码或投影一致不能证明实际 Agent 采用；完整平台升级与 Release 矩阵保留原职责。
+
 JSON 载体读取与 Bind 双输入调用保持原 Skill owner 和流程。载体限制、错误变化及
 匹配安装见 [MIGRATION-695](../../presets/guru-team/MIGRATION-695.md)；完整调用由
 [Bind 文档](../../skills/guru-team/packages/guru-bind-task-session/references/json-inputs.md) 定义。
