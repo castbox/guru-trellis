@@ -29,6 +29,29 @@ def load_invocation(repo,package_root,value):
  return envelope
 def digest(v):return hashlib.sha256(json.dumps(v,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
 
+def diagnostic(error):
+ return {"code":error.code,"field_path":error.field_path,"remediation":error.remediation}
+def first_difference(actual,expected,field):
+ """Locate an existing equality failure without exposing either value."""
+ if actual==expected:return None
+ if isinstance(actual,dict) and isinstance(expected,dict):
+  for key in sorted(set(actual)|set(expected)):
+   child=f"{field}.{key}"
+   if key not in actual or key not in expected:return child
+   found=first_difference(actual[key],expected[key],child)
+   if found:return found
+ elif isinstance(actual,list) and isinstance(expected,list):
+  for index,(left,right) in enumerate(zip(actual,expected)):
+   found=first_difference(left,right,f"{field}[{index}]")
+   if found:return found
+  return f"{field}[{min(len(actual),len(expected))}]"
+ return field
+def base_failure(classification,reason,field):
+ remediation=("Return to guru-sync-base scripts/invoke.sh for a fresh base_current, then rerun this Discovery owner through record/check/invoke."
+              if classification=="refresh_base" else
+              "Reread the indicated base-authority evidence. Resolve it through the original Sync/checkout owner, then obtain fresh base_current from guru-sync-base scripts/invoke.sh and rerun Discovery record/check/invoke.")
+ return {"classification":classification,"reason":reason,"diagnostic":{"code":"stale_identity","field_path":field,"remediation":remediation}}
+
 def _git(repo,*args):
  proc=subprocess.run(["git","-C",str(repo),*args],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
  return proc.returncode,proc.stdout.strip()
@@ -61,30 +84,31 @@ def observe_base_current(package_root,public_input,transition,expected_repo=None
  """Read the Sync public transition against live Git authority without mutation."""
  validate_public_input(package_root,public_input);validate_transition(package_root,transition)
  if public_input["mode"]!=transition["mode"]:
-  return {"classification":"blocked","reason":"mode_mismatch"}
+  return base_failure("blocked","mode_mismatch","transition.mode")
  locator=Path(transition["repo_locator"]).resolve()
- if not locator.exists() or locator.is_symlink():return {"classification":"blocked","reason":"missing_authority"}
+ if not locator.exists() or locator.is_symlink():return base_failure("blocked","missing_authority","transition.repo_locator")
  code,top=_git(locator,"rev-parse","--show-toplevel")
- if code or Path(top).resolve()!=locator:return {"classification":"blocked","reason":"repo_locator_mismatch"}
+ if code or Path(top).resolve()!=locator:return base_failure("blocked","repo_locator_mismatch","transition.repo_locator")
  base=transition["base"];selected=base["selected_base"];remote=base["remote"]
  code,branch=_git(locator,"symbolic-ref","--short","HEAD")
- if code or branch!=selected:return {"classification":"blocked","reason":"wrong_authority_branch"}
+ if code or branch!=selected:return base_failure("blocked","wrong_authority_branch","base_current.authority_branch")
  worktrees=[row for row in _worktree_branches(locator) if row.get("branch")==f"refs/heads/{selected}"]
  if len(worktrees)!=1 or Path(worktrees[0].get("worktree","")).resolve()!=locator:
-  return {"classification":"blocked","reason":"ambiguous_authority"}
+  return base_failure("blocked","ambiguous_authority","base_current.worktree_ownership")
  code,status=_git(locator,"status","--porcelain=v1")
- if code or status:return {"classification":"blocked","reason":"dirty_authority"}
+ if code or status:return base_failure("blocked","dirty_authority","base_current.clean")
  code,remote_url=_git(locator,"remote","get-url",remote);repo_name=_github_repo(remote_url) if not code else None
- if not repo_name:return {"classification":"blocked","reason":"repository_identity_unavailable"}
- if expected_repo and str(expected_repo).casefold()!=repo_name.casefold():return {"classification":"blocked","reason":"repository_mismatch"}
+ if not repo_name:return base_failure("blocked","repository_identity_unavailable","base_current.repository")
+ if expected_repo and str(expected_repo).casefold()!=repo_name.casefold():return base_failure("blocked","repository_mismatch","owner_result.repository.repo")
  refs={}
  for key,ref in (("decision_head","HEAD"),("local_head",f"refs/heads/{selected}"),("remote_head",f"refs/remotes/{remote}/{selected}")):
   code,value=_git(locator,"rev-parse","--verify",ref)
-  if code or not re.fullmatch(r"[0-9a-f]{40}",value):return {"classification":"blocked","reason":"missing_base_ref"}
+  if code or not re.fullmatch(r"[0-9a-f]{40}",value):return base_failure("blocked","missing_base_ref",f"base_current.{key}")
   refs[key]=value
  expected={"decision_head":base["decision_head"],"local_head":base["local_base_head"],"remote_head":base["remote_base_head"]}
  if refs!=expected:
-  return {"classification":"refresh_base","reason":"base_head_advanced","repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote}
+  field=first_difference(refs,expected,"base_current")
+  return {**base_failure("refresh_base","base_head_advanced",field),"repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote}
  observation={"repo":repo_name,"repo_locator":str(locator),"selected_base":selected,"remote":remote,"authority_branch":branch,**refs,"clean":True,"current":True}
  return {"classification":"current","reason":"base_current","repo":locator,"observation":observation}
 def validate_return_task(repo,public_input):
@@ -98,22 +122,31 @@ def bind_owner_to_public(package_root,repo,public_input,transition,owner_result)
  validate_return_task(repo,public_input)
  repository=owner_result.get("repository") if isinstance(owner_result.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
- if observation["classification"]!="current":raise CommandError("stale_identity","base_current",observation["reason"],3)
+ if observation["classification"]!="current":
+  info=observation["diagnostic"];raise CommandError(info["code"],info["field_path"],info["remediation"],3)
  value=copy.deepcopy(owner_result);value["mode"]=public_input["mode"];value["change_input"]=copy.deepcopy(public_input["change_input"]);value["base_observation"]=observation["observation"]
  live=observation["observation"]
- if repository.get("selected_base")!=live["selected_base"] or repository.get("decision_branch")!=live["authority_branch"]:
-  raise CommandError("schema_mismatch","repository","Match the live base authority.")
+ for key,expected in (("selected_base",live["selected_base"]),("decision_branch",live["authority_branch"])):
+  if repository.get(key)!=expected:
+   raise CommandError("schema_mismatch",f"repository.{key}","Reread current base_current and live authority in this Discovery owner; rebuild repository authoring and rerun record/check/invoke.")
  value["canonical_query"]=canonical_query(value["change_input"]);value["history_preview"]=preview(repo,value["change_input"],value.get("history_preview",{}).get("limit",20));value["result_identity"]=identity(value);validate(package_root,value);return value
 def check_owner_binding(package_root,repo,public_input,transition,value):
  validate_return_task(repo,public_input)
  repository=value.get("repository") if isinstance(value.get("repository"),dict) else {}
  observation=observe_base_current(package_root,public_input,transition,repository.get("repo"))
  if observation["classification"]!="current":return observation
- if value.get("mode")!=public_input["mode"] or value.get("change_input")!=public_input["change_input"] or value.get("base_observation")!=observation["observation"]:
-  raise CommandError("stale_identity","owner_result","Rerun discovery from current public input and base authority.",3)
+ for key,expected in (("mode",public_input["mode"]),("change_input",public_input["change_input"]),("base_observation",observation["observation"])):
+  field=first_difference(value.get(key),expected,f"owner_result.{key}")
+  if field:
+   raise CommandError("stale_identity",field,"Reread current public input and Sync base_current in this Discovery owner; rebuild its complete result through record/check/invoke. Do not edit recorded bindings.",3)
  rebuilt=preview(repo,value["change_input"],value["history_preview"]["limit"])
- if any(value["history_preview"].get(k)!=rebuilt.get(k) for k in ("query_sha256","archive_manifest_sha256","preview_sha256","manifest","candidates","invalid")) or value["result_identity"]!=identity(value):
-  raise CommandError("stale_identity","owner_result","Rerun discovery from current history.",3)
+ for key in ("query_sha256","archive_manifest_sha256","preview_sha256","manifest","candidates","invalid"):
+  field=first_difference(value["history_preview"].get(key),rebuilt.get(key),f"owner_result.history_preview.{key}")
+  if field:
+   raise CommandError("stale_identity",field,"Reread current history preview in this Discovery owner, review selection and affected evidence, then rebuild through record/check/invoke.",3)
+ field=first_difference(value["result_identity"],identity(value),"owner_result.result_identity")
+ if field:
+  raise CommandError("stale_identity",field,"Reread this Discovery owner's current evidence and complete recorder output, then rebuild through record/check/invoke. A binding mismatch does not establish a UTF-8 decoding cause; do not patch digests.",3)
  return observation
 
 QUERY_KINDS=("issue_refs","pr_refs","branches","paths","commands","config_keys","schema_fields","symbols","terms","queries")

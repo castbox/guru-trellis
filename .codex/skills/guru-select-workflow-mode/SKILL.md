@@ -59,6 +59,11 @@ selected, mapped exits, ordinary recovery, and same-scope retries reuse the
 selection. Material scope, authority, or risk changes require a fresh semantic
 decision.
 
+For a local fix, use the actual behavior and unchanged consumers to distinguish
+a purchase prompt from pricing, charging or payment-protocol changes. UI
+appearance alone does not establish low risk. Apply the concrete impact review
+in [the contract](references/contract.md) before selecting the existing owner.
+
 `task_free` selects a bounded change mode, independent of execution location.
 Needing a linked worktree does not imply `standard_intake`; branch identity
 and isolation alone do not classify scope or risk. This selection never

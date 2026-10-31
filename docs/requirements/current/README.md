@@ -2,6 +2,7 @@
 
 | Identity / alias | Status | Locator | Relations |
 | --- | --- | --- | --- |
+| RDT-REQ-LOCAL-FIX-INTAKE; R692/BEH692; 局部修复 Intake 与诊断 | current | [local-fix-intake](./local-fix-intake.md) | RDT-REQ-LOCAL-FIX-INTAKE; RDT-DES-LOCAL-FIX-INTAKE; RDT-TST-LOCAL-FIX-INTAKE |
 | RDT-REQ-JSON-INPUT; R695/BEH695; JSON 输入载体 | current | [json-input-carriers](./json-input-carriers.md) | RDT-DES-JSON-INPUT; RDT-TST-JSON-INPUT |
 | RDT-REQ-LIFECYCLE; Task/Delivery; BEH-001..006; R531-01..05/08; R636/BEH636; R637/BEH637 | current | [task-delivery-lifecycle](./task-delivery-lifecycle.md) | [RDT-DES-LIFECYCLE](../../design/current/task-delivery-lifecycle.md); [RDT-TST-LIFECYCLE](../../test/current/task-delivery-lifecycle.md) |
 | RDT-REQ-COMPLETION; Completion/Closure/Finish; R531-06; R547 | current | [completion-closure](./completion-closure.md) | [RDT-DES-COMPLETION](../../design/current/completion-closure.md); [RDT-TST-COMPLETION](../../test/current/completion-closure.md) |

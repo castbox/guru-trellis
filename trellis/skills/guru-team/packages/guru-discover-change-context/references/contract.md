@@ -91,6 +91,18 @@ Execute in this exact order:
 Current-state review must finish before history preview. Duplicate reuse or new
 target selection is handed to `guru-clarify-requirements`.
 
+After a draft becomes an Issue, or base/source facts change, first validate the
+fresh Sync transition and reread the formal identity and complete live body.
+Then compare previously read Docs/code/tests with their actual revisions, the
+base delta and this target. Where complete evidence remains available and its
+conditions still apply, adopt those investigation facts without repeating an
+unchanged broad search. Reread changed or unavailable bodies and affected
+unchanged consumers. Perform this target's duplicate search, history preview,
+evidence-coverage judgment and AI Gate in their original order. An old target's
+pass or private producer result is not reusable current authority. Missing
+historical installation/chat records stay unknown. Pass only the new checked
+public result to Clarify, which owns intent, source roles and disposition.
+
 For an issue, author `live_change.identity` as the canonical issue URL from
 the captured GitHub source response's `url`. This is the origin of
 the normal Issue chain's `handoff_target_locator` and `transition.target_locator`.
@@ -321,6 +333,42 @@ commands; this migration does not enable recovery for normal pre-task calls.
 Malformed JSON returns `invalid_json`; missing or malformed envelope fields
 return `schema_mismatch`. Existing nested validation, dirty/wrong authority,
 stale-base classification, and interrupted-owner recovery behavior are retained.
+
+### Current-owner mismatch diagnostics
+
+After JSON reading succeeds, check preserves its existing receipt
+`result.status`, `typed_exit` and `reason`. An objective binding/base failure
+also supplies `result.diagnostic={code,field_path,remediation}` to this executing
+Discovery AI. Invoke preserves its public DTO and emits that same three-field
+diagnostic to stderr where it previously narrowed the failure to blocked or
+base refresh. Record retains its direct error object/status. Errors already
+returned directly by parameter, schema or target checks keep their original
+stdout shape and exit status; they are not universally converted to blocked.
+This is diagnostic information for this owner, not a Skill handoff, new Gate,
+recovery store or authority token. `status=passed` means the checker completed;
+the actual `typed_exit` still determines whether context can continue.
+
+| Field/evidence class | Current owner's recovery |
+| --- | --- |
+| `owner_result.mode`, `change_input` or `base_observation` difference | Reread current public input and the actual Sync transition; rebuild this owner's complete result through record/check/invoke. Nested equality failures identify the first differing key or array position. |
+| `owner_result.history_preview` difference | Reread current preview, review selection and affected evidence, then rebuild through the same original sequence. |
+| `owner_result.result_identity` binding difference | Reread current source evidence and complete recorder output, then rebuild. A digest only identifies the binding/evidence class; it does not locate a source byte or establish a UTF-8 root cause. |
+| `base_current`/`transition` authority evidence | Preserve the existing blocked/refresh classification. Resolve wrong, dirty, missing or mismatched authority with its original owner; obtain fresh `base_current` through `guru-sync-base/scripts/invoke.sh`, then re-enter Discovery. |
+| `repository.selected_base` or `repository.decision_branch` during record | Match current live base authority in this owner's authoring, then record/check/invoke. |
+| `return_identity.target_locator` | Return through the original Clarify `needs_context` and Discovery `context_request` for the current target. Preserve the original direct `stale_identity`, field and exit status. |
+
+Do not patch recorded digests, another producer's transition or a previous pass.
+Capture complete external-command bytes before UTF-8 decoding, or use a
+streaming decoder that preserves partial characters across chunk boundaries.
+Do not independently decode chunks and concatenate their replacement text.
+The diagnostics contain only code, field/evidence location and recovery
+instructions, never expected/actual values, body text, raw byte fragments or
+OS exception details. These deterministic comparisons do not add provider
+reads or automatically compare the current live Issue body. This AI still
+reads that complete body and judges applicability before invoking the original
+chain. Ordinary same-scope assembly repair follows its mapped recovery without
+another continuation question; real scope choices and side effects retain
+their original boundaries.
 
 ## Caller-aware context requests (#250)
 

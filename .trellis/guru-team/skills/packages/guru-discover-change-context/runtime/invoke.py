@@ -1,20 +1,23 @@
 from __future__ import annotations
-import argparse
+import argparse,json,sys
 from pathlib import Path
-from common import active_task,check_owner_binding,check_recovery,consume_recovery,load_invocation,observe_base_current,parse,root,validate
+from common import active_task,check_owner_binding,check_recovery,consume_recovery,diagnostic,load_invocation,observe_base_current,parse,root,validate
 from runtime.io import CommandError
 from runtime.schema import validate_json
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);e=load_invocation(repo,package_root,a.invocation);public=e["public_input"];up=e["transition"];owner=e["owner_result"]
  repository=owner.get("repository") if isinstance(owner.get("repository"),dict) else {}
  try:observation=observe_base_current(package_root,public,up,repository.get("repo"))
- except CommandError as exc:observation={"classification":"blocked","reason":exc.code}
+ except CommandError as exc:observation={"classification":"blocked","reason":exc.code,"diagnostic":diagnostic(exc)}
+ if observation["classification"]!="current":print(json.dumps(observation["diagnostic"],ensure_ascii=False,sort_keys=True),file=sys.stderr)
  classification=observation["classification"];owner_bound=False
  if classification=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json";exit_id="blocked"
  elif classification=="refresh_base":out={"exit_id":"refresh_base","handoff_mode":public["mode"],"handoff_repo_root":up.get("repo_locator") or ".","handoff_base_branch":up["base"]["selected_base"],"handoff_route":"repo_change"};schema="public-refresh-base-output.schema.json";exit_id="refresh_base"
  else:
   try:validate(package_root,owner);check_owner_binding(package_root,repo,public,up,owner)
-  except CommandError:out={"exit_id":"blocked"};schema="public-blocked-output.schema.json";exit_id="blocked"
+  except CommandError as exc:
+   print(json.dumps(diagnostic(exc),ensure_ascii=False,sort_keys=True),file=sys.stderr)
+   out={"exit_id":"blocked"};schema="public-blocked-output.schema.json";exit_id="blocked"
   else:
    owner_bound=True;exit_id=owner["typed_exit"]
    if exit_id=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json"
@@ -27,7 +30,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
     returning=public.get("return_identity")
     profile=returning["profile"] if returning else public["clarify_profile"]
     if returning and returning["target_locator"]!=transition["target_locator"]:
-     raise CommandError("stale_identity","return_identity.target_locator","Return to the original context owner for a changed target.",3)
+     raise CommandError("stale_identity","return_identity.target_locator","Return to the original Discovery/Clarify context request for the current target. Reread its full authority and use the original needs_context -> context_request -> context_ready entry; do not retarget the old return identity.",3)
     transition["clarify_profile"]=profile
     out={"exit_id":"context_ready","handoff_profile":profile,"handoff_mode":owner["mode"],"handoff_target_locator":transition["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":transition};schema="public-context-ready-output-4.0.schema.json"
     if profile in {"standard_intake","reviewed_plan_intake"}:out["duplicate_snapshot"]=duplicate_snapshot

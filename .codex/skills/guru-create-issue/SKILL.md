@@ -88,5 +88,14 @@ guru-sync-base`, `blocked -> issue-creation-blocked`. A created Issue is only
 an Intake candidate; it never goes directly to task creation. The output
 contains only repository, number and URL.
 
+After live readback, the new canonical Issue identity and complete live body,
+including the creation marker, become the fresh Intake target. Keep still
+verifiable investigation facts available in the current conversation as clues
+for the original Discovery owner after Sync. Discovery must check their actual
+revision, base delta and relevance to the new target before adopting them.
+Do not add those facts to `created`, carry the old draft pass, or reconstruct
+another owner's private result. Fresh Sync and each original Intake judgment
+remain required; unchanged applicable investigation need not start from zero.
+
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
