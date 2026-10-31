@@ -67,6 +67,18 @@ not run yet.
 
 ## Forward Behavior
 
+On fresh Intake after Issue creation or a same-scope context return, read the
+formal target identity, complete current authority and actual Discovery public
+output first. Compare the new target/body and scope with the investigation
+already available in this conversation. Reuse facts only where their sources
+and conditions still apply; resolve evidence-answerable gaps from those facts
+before asking another product question. Do not repeat an interview for an
+already clear same-scope fact or rebuild Discovery's private result. This owner
+still personally judges current intent, source roles, duplicate disposition
+and scope, then produces its own result for Wording or the original Author.
+Changed or unavailable authority returns to the affected original context or
+scope owner; an old-target pass cannot supply the current judgment.
+
 For repository-answerable questions, duplicate evidence, and recalled
 decisions, first read `.trellis/spec/workflow/semantic-retrieval.md`. The AI
 constructs the minimal applicable concept family and assesses coverage inside

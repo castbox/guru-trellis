@@ -1,6 +1,6 @@
 ---
 name: guru-check-task
-description: Check complete Delivery candidates and final content through the original semantic owner.
+description: Perform complete formal Delivery Check when invoked by the workflow or requested as a formal stage result. Retain all Check prerequisites and scope. 审核当前实现 or 检查未提交改动 alone does not select formal Check; independent read-only review belongs to guru-review-change even when a Task/Delivery exists.
 ---
 
 # Guru Check Task
@@ -11,6 +11,24 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Enter this Skill for its formal stage purpose under the workflow's review entry.
+An independent read-only request retains its selected scope even with a bound
+Task/Delivery and enters `guru-review-change` in standalone mode.
+
+Read `.trellis/guru-team/skills/packages/guru-review-change/references/review-method.md`
+within this owner's existing read order. Apply that shared semantic method to
+the complete Check candidate, retaining this owner's nine dimensions,
+qualification profiles, Architecture prerequisites, result writer and exits.
+Reading the shared method does not invoke the standalone Skill or substitute
+its report for a formal Check result.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this Skill's existing read order and complete Check scope. Load
+applicable specialist methods and same-source standards for the current
+artifacts; personally judge their evidence alongside implementation and actual
+test effectiveness. Specialist conclusions never replace this owner's formal
+entry, nine-dimension judgment, qualification or result.
 
 Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
 for shared candidate coverage, engineering facts and recovery. This package

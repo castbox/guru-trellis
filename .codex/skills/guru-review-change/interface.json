@@ -1,0 +1,318 @@
+{
+  "$schema": "../../schemas/skill-interface-1.6.schema.json",
+  "schema_version": "1.6",
+  "id": "guru-review-change",
+  "name": "guru-review-change",
+  "description": "使用多个不同 subagent 从架构、业务实现、测试及跨层证据等角度独立只读审核代码、变更文档和测试，无需 Task 或 Delivery。适用于审核、审查、评审、复审、review、code review、代码审核，以及审核需求完成情况、需求审核（实现完成度）、检查需求是否已实现/做完、审核这些修改、改动是否闭环、需求→设计→代码→测试一致性、测试计划与用例覆盖、重复实现/重复测试覆盖、测试自证、反模式，或审核当前分支、PR、未提交修改、明确文件/范围。先按对象和目的作 AI 语义匹配；关键词本身不触发。Issue 内容、需求本身是否完整合理、动议/initiative/proposal 本身均不属于本 Skill。仅说“review/审核一下/再看一遍”时继承当前对话明确对象，仍不清楚才作最小澄清。讨论 Skill 或触发词不发起真实审核。正式 Check、Branch Review、Completion 保留原 owner 与前置。",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "modes": {
+    "workflow": {
+      "routing": "not_applicable",
+      "entry_precondition_ids": []
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "review_scope",
+        "content_continuity"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "review_scope",
+      "evidence": "The current request and one explicit Git repository, profile and optional literal path selection.",
+      "binding": "The complete requested review scope; no Task or Delivery is required.",
+      "freshness": "Resolve the target and scope in the current invocation."
+    },
+    {
+      "id": "content_continuity",
+      "evidence": "Current selected commit identities and staged, unstaged or untracked content as applicable.",
+      "binding": "One call-local content snapshot serving only the final continuity validator.",
+      "freshness": "Recompute the same scope after the AI review; changed content requires affected re-review."
+    }
+  ],
+  "runtime_dependency": {
+    "extension_id": "guru-team",
+    "api_version": "1.0",
+    "manifest_path": ".trellis/guru-team/extension.json",
+    "dispatcher": "run-skill-command",
+    "distribution": "guru-team-preset",
+    "package_portability": "not-self-contained"
+  },
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "artifacts": [
+    {
+      "id": "blocked_invocation",
+      "path": "examples/blocked-invocation.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_committed_range_input",
+      "path": "examples/public-committed-range-input.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_reviewed_output",
+      "path": "examples/public-reviewed-output.json"
+    },
+    {
+      "id": "public_working_tree_input",
+      "path": "examples/public-working-tree-input.json"
+    },
+    {
+      "id": "reviewed_invocation",
+      "path": "examples/reviewed-invocation.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "invocation",
+      "path": "schemas/invocation.schema.json"
+    },
+    {
+      "id": "public_blocked_output",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_committed_range_input",
+      "path": "schemas/public-committed-range-input.schema.json"
+    },
+    {
+      "id": "public_input",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_reviewed_output",
+      "path": "schemas/public-reviewed-output.schema.json"
+    },
+    {
+      "id": "public_working_tree_input",
+      "path": "schemas/public-working-tree-input.schema.json"
+    },
+    {
+      "id": "snapshot",
+      "path": "schemas/snapshot.schema.json"
+    }
+  ],
+  "validators": [
+    {
+      "id": "review_context_capture",
+      "command": "scripts/capture.sh",
+      "runtime_command": "capture-review-change-context",
+      "objective_scope": "Validate scope selectors and read selected Git and content facts without writing repository state or making review judgments."
+    },
+    {
+      "id": "public_invocation",
+      "command": "scripts/invoke.sh",
+      "runtime_command": "invoke-guru-review-change",
+      "objective_scope": "Validate the owner-selected exit and exact call-local content continuity before serializing a minimal terminal result. No semantic judgment is inferred."
+    }
+  ],
+  "external_exits": [
+    {
+      "id": "reviewed",
+      "evidence": "The AI completed the requested review and current selected content continuity was validated; findings may remain.",
+      "consumer": {
+        "kind": "stop",
+        "id": "independent-review-response"
+      }
+    },
+    {
+      "id": "blocked",
+      "evidence": "The AI identified a concrete gap that prevents completing the requested review.",
+      "consumer": {
+        "kind": "stop",
+        "id": "independent-review-blocked"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "The explicit repository, profile, paths and current selected content.",
+    "freshness": "A scope, reference or content change invalidates the affected draft judgment; recapture and re-review before retry.",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/test_runtime.py"
+  ],
+  "platform_destinations": [
+    "shared",
+    "claude",
+    "cursor",
+    "opencode",
+    "codex",
+    "kilo",
+    "kiro",
+    "gemini",
+    "antigravity",
+    "devin",
+    "qoder",
+    "codebuddy",
+    "copilot",
+    "droid",
+    "dsh",
+    "pi",
+    "reasonix",
+    "zcode",
+    "trae",
+    "omp",
+    "grok",
+    "kimi",
+    "snow"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "structured_json",
+      "aggregate_schema": {
+        "schema_id": "guru-review-change-input-aggregate-1.0",
+        "path": "schemas/public-input.schema.json"
+      },
+      "profiles": [
+        {
+          "id": "working_tree",
+          "schema": {
+            "schema_id": "guru-review-change-input-working-tree-1.0",
+            "path": "schemas/public-working-tree-input.schema.json"
+          },
+          "example": {
+            "id": "public_working_tree_input",
+            "path": "examples/public-working-tree-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "working_tree"
+          }
+        },
+        {
+          "id": "committed_range",
+          "schema": {
+            "schema_id": "guru-review-change-input-committed-range-1.0",
+            "path": "schemas/public-committed-range-input.schema.json"
+          },
+          "example": {
+            "id": "public_committed_range_input",
+            "path": "examples/public-committed-range-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "committed_range"
+          }
+        }
+      ]
+    },
+    "invocation": {
+      "command_id": "run-skill-command",
+      "wrapper": "scripts/invoke.sh",
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
+      },
+      "stdout_contract": "single_typed_exit",
+      "error_schema": {
+        "schema_id": "guru-review-change-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
+      },
+      "error_example": {
+        "id": "public_invocation_error",
+        "path": "examples/public-invocation-error.json"
+      },
+      "call_local": {
+        "flag": "--invocation",
+        "stdin": "-",
+        "envelope": {
+          "schema_id": "guru-review-change-invocation-1.0",
+          "path": "schemas/invocation.schema.json"
+        }
+      },
+      "example_argv": [
+        "--invocation",
+        "-"
+      ]
+    },
+    "outputs": [
+      {
+        "exit_id": "reviewed",
+        "schema": {
+          "schema_id": "guru-review-change-output-reviewed-1.0",
+          "path": "schemas/public-reviewed-output.schema.json"
+        },
+        "example": {
+          "id": "public_reviewed_output",
+          "path": "examples/public-reviewed-output.json"
+        },
+        "consumer_use_ids": [
+          "project_reviewed"
+        ]
+      },
+      {
+        "exit_id": "blocked",
+        "schema": {
+          "schema_id": "guru-review-change-output-blocked-1.0",
+          "path": "schemas/public-blocked-output.schema.json"
+        },
+        "example": {
+          "id": "public_blocked_output",
+          "path": "examples/public-blocked-output.json"
+        },
+        "consumer_use_ids": [
+          "project_blocked"
+        ]
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "id": "reviewed_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "independent-review-response"
+        },
+        "payload_kind": "zero_payload"
+      },
+      {
+        "id": "blocked_stop_input",
+        "consumer": {
+          "kind": "stop",
+          "id": "independent-review-blocked"
+        },
+        "payload_kind": "zero_payload"
+      }
+    ],
+    "projections": [
+      {
+        "id": "project_reviewed",
+        "exit_id": "reviewed",
+        "consumer_input_id": "reviewed_stop_input",
+        "operation": "select",
+        "mappings": []
+      },
+      {
+        "id": "project_blocked",
+        "exit_id": "blocked",
+        "consumer_input_id": "blocked_stop_input",
+        "operation": "select",
+        "mappings": []
+      }
+    ],
+    "private_artifacts": []
+  }
+}

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse,json
 from pathlib import Path
-from common import active_task,check_owner_binding,check_recovery,load_invocation,parse,preview,root,validate
+from common import active_task,check_owner_binding,check_recovery,diagnostic,load_invocation,parse,preview,root,validate
 from runtime.io import CommandError
 def run(package_root:Path,command:dict,argv:list[str])->dict:
  if command["id"]=="preview-change-context-history":
@@ -12,8 +12,8 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   return preview(repo,q,a.limit)
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"];transition=envelope["transition"]
  try:v=validate(package_root,envelope["owner_result"]);observation=check_owner_binding(package_root,repo,public,transition,v)
- except CommandError as exc:return {"status":"passed","typed_exit":"blocked","reason":exc.code}
- if observation["classification"]!="current":return {"status":"passed","typed_exit":"refresh_base" if observation["classification"]=="refresh_base" else "blocked","reason":observation["reason"]}
+ except CommandError as exc:return {"status":"passed","typed_exit":"blocked","reason":exc.code,"diagnostic":diagnostic(exc)}
+ if observation["classification"]!="current":return {"status":"passed","typed_exit":"refresh_base" if observation["classification"]=="refresh_base" else "blocked","reason":observation["reason"],"diagnostic":observation["diagnostic"]}
  if a.recovery_continuation_id and not a.active_task:raise CommandError("invalid_arguments","recovery_continuation_id","Provide active-task identity for recovery.")
  if a.active_task:
   if v["mode"]!="workflow":raise CommandError("schema_mismatch","mode","Active-task context discovery is workflow-only.")

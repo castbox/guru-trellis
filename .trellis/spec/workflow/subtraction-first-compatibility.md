@@ -106,6 +106,9 @@ contracts.
 
 ## Owner Integration
 
+- `guru-review-change` owns these judgments for its explicitly selected
+  independent review target, using its shared review method. It reports findings
+  and evidence limits without creating a formal task gate or migration action.
 - `guru-approve-task-plan` checks the direct-evolution choice, affected-asset
   exit plan, support contract, and any concrete compatibility candidate before
   approval.

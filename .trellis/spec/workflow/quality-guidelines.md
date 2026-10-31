@@ -1,5 +1,86 @@
 # Workflow Quality Guidelines
 
+## Specialist Review Standards
+
+The standalone `guru-review-change` owner and formal Check/Branch Review read
+the same generic method from
+`.trellis/guru-team/skills/packages/guru-review-change/references/review-method.md`.
+This section owns specialist applicability, not the complete review procedure.
+That method composes the existing Check, Branch Review, Architecture and
+current-knowledge semantic contracts from the same provider. Independent
+change review must perform the applicable Architecture assessment and
+requirements-implementation judgment, not infer them from nine dimension names
+or passing commands. Formal owners retain their stage-specific results and
+entry conditions; loading the composition does not repeat an already applicable
+independent assessment or supply a formal stage result.
+The independent owner's required subagent perspectives are defined in its
+local contract. Formal Check and Branch Review retain their original worker
+policy; this shared method does not impose the independent entry's dispatch.
+
+Before reviewing, identify the requested object, purpose, candidate range and
+current authority. Read the project's applicable current Requirements, Design
+and Test authority, Architecture Baseline, design constitution, architecture
+constraints and affected consumers, where they exist and apply. Preserve the
+original owner's read order and do not generate extra documents merely to
+perform a review. Read the selected technology stack and adopted requirements,
+design, implementation and test standards. Select specialist
+methods from that evidence and the actual artifact being reviewed; a request
+such as “审核代码” or “code review” does not itself select a technology stack,
+whole-task completion, or a full document suite.
+Select methods within the requested review scope; this section does not expand
+that scope or select formal execution. The workflow routes independent requests
+to `guru-review-change`; each selected owner retains its local procedure.
+
+Independent implementation review may compare code and tests against an Issue,
+requirement or initiative. Review of that source's own content, scope or value
+belongs to its existing upstream owner, not `guru-review-change`. Pure product
+or technical requirements-document review uses the corresponding specialist
+below. A source filename or review verb alone does not select either purpose.
+
+| Applicable object and adopted standard | Existing specialist Skill | Standard owned by that Skill's source |
+| --- | --- | --- |
+| Completed product requirements with App/Web, API or CLI entry semantics | `requirement-review` | `requirement-doc-standard` |
+| Technical requirements covering technical scope, behavior and acceptance | `technical-requirement-review` | That Skill's referenced review rules |
+| Backend system overview design and readiness for detailed design | `backend-design-overview-review` | `backend-design-overview-doc-standard` |
+| Backend detailed design, including the selected chapter or directory chain | `backend-design-detail-review` | `backend-design-detail-doc-standard` |
+| Implementation in a project that actually uses the Go-Guru implementation standard | `backend-implementation-go-guru-review` | `backend-implementation-go-guru-standard` |
+| Integration test plan and its detailed-design sources | `integration-test-plan-review` | `integration-test-plan-doc-standard` |
+
+For each applicable specialist, load its actual installed Skill and required
+same-source standard and references. Apply its input and scope contract to the
+selected artifact. These Skills and their standards are maintained separately
+in `guru-ai-guides`; the Guru Team preset does not bundle or install them.
+Do not copy their rule bodies into workflow, Guru Skills or this table.
+Unmatched projects use their own current applicable review methods. Do not
+apply Go-Guru rules to other Go stacks or frontend code, turn a Delivery PRD
+into a required full product-document package, or require an integration test
+plan for every code review.
+
+Within formal Guru execution, the existing semantic owner retains its entry
+preconditions, complete scope, current judgment, normal-scenario qualification,
+finding severity, revision route and declared result. It personally reads the
+current specialist evidence and affected consumers within its responsibility.
+A specialist's pass or a prior-stage report cannot supply Architecture, Check,
+Branch Review or Completion pass. A request to judge whole-task completion
+still covers every accepted obligation and actual Delivery, including work
+that a selected specialist did not inspect.
+
+If an applicable specialist or source cannot be read, state the missing source
+and the conclusion it leaves unsupported. Continue the review supported by
+available evidence. Block a specific required conclusion only when the
+current accepted scope or adopted standard actually requires that missing
+evidence; never silently substitute a generic checklist or claim specialist
+coverage. Discoverable optional Skills do not become universal prerequisites.
+
+Keep design-document quality, implementation correctness, test-plan quality
+and actual test effectiveness distinct. Integration-plan review does not prove
+that tests exist, exercise the real entry or dependencies, detect defects, or
+have run successfully. Inspect those facts separately when they are within
+the requested scope. Report findings with their applicable rule, concrete
+trigger, evidence and impact, followed by coverage and unverified boundaries.
+Severity follows actual impact and the owning review contract; duplication or
+a document/code difference alone is not automatically the highest severity.
+
 ## GitHub Channel Regression Gate
 
 Bounded static guards cover current canonical workflow, public Skill, shared

@@ -1,0 +1,23 @@
+task_id: 692-intake-reuse-diagnostics
+source: https://github.com/castbox/guru-trellis/issues/692
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 6a65ec8afe6d180850760b3b2edf3f94be6e3b20
+architecture:
+  locator: docs/architecture/README.md
+  version: 6a65ec8afe6d180850760b3b2edf3f94be6e3b20
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/local-fix-intake.md
+  - docs/design/current/local-fix-intake.md
+  - docs/test/current/local-fix-intake.md
+  - docs/requirements/current/README.md
+  - docs/design/current/README.md
+  - docs/test/current/README.md

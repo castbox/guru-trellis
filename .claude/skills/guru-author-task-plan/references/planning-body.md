@@ -13,6 +13,8 @@
 
 整体范围仍由公共 `accepted_scope` 承载。Delivery 写作先解析本次实际 DeliveryKey、`scope_ref/planning_root`，另读整体 PRD 和真实前序事实。scope-only Task PRD 写作不要求存在 Delivery。不得从目录盘点猜选切片，不创建 Task 根 design/implement，不覆盖历史 Delivery。原生 seed 是合法起点，不代表正文已完成。
 
+从整体进入切片时，Author 先核对来源、范围和已读调查的实际差额。来源和条件仍适用且完整内容仍可用时，不重新广搜或重复访谈。Task PRD 拥有整体定义；Delivery PRD 引用必要定义并展开本批目标、起点、边界、行为和验收。design 拥有本批方案和唯一来源设计处置，implement 拥有步骤、验证、Policy 和 Docs Plan。不得为减少重复而删掉各正文自己的完整判断。来源或范围变化回原 Clarify；机制变化按原 Architecture 路径承接。
+
 ## 2. 从来源到正文
 
 1. 读取完整当前请求、选定 Issue/评论、相关仓库事实及 canonical authority。不要先把详细来源缩成摘要，再只从摘要推导。

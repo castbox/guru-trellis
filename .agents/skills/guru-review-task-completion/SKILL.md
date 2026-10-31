@@ -1,6 +1,6 @@
 ---
 name: guru-review-task-completion
-description: Review all current task Delivery and evidence facts and select one bounded completion route.
+description: Judge formal Task-wide Completion when invoked by the workflow or requested as a formal stage result, covering all Deliveries and evidence under existing prerequisites and routes. 检查需求是否做完 or 审核需求完成度 alone does not select formal Completion; independent read-only assessment belongs to guru-review-change even when a Task exists.
 ---
 
 # Guru Review Task Completion
@@ -11,6 +11,18 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Enter this Skill for formal whole-Task Completion under the workflow's review
+entry. An independent read-only assessment of requirement coverage retains its
+requested scope even with a bound Task and enters `guru-review-change` in
+standalone mode.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this owner's whole-task evidence review. Read applicable specialist
+evidence against current accepted obligations and actual Delivery results;
+identify uncovered work and required evidence gaps. Preserve this Skill's
+formal Task entry and completion routes; specialist or individual Delivery
+passes never establish whole-task Completion.
 
 Use this semantic owner for Task-wide completion, including Delivery merge,
 withdrawal, evidence-only refresh or Reactivate validation with no current

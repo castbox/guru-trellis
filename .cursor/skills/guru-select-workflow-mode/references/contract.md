@@ -27,6 +27,16 @@ including explicit intent and the one real mode choice when needed.
 Issue presence, file count, paths, and keywords
 cannot independently decide the outcome.
 
+For a local fix, trace the actual changed behavior and its unchanged consumers
+before judging risk. A purchase-eligibility prompt or its display condition does
+not by itself change pricing, charging, entitlement, or a payment protocol.
+Conversely, a UI-only diff may alter one of those behaviors through a shared
+consumer. Read the relevant condition, data source and call path, then choose
+the route from the actual effect and required validation. Reuse investigation
+facts whose current inputs and dependencies still apply; redo the current mode
+judgment when scope, authority or risk changes. An already relevant formal Task
+continues through its original lifecycle rather than this no-task selection.
+
 Checkout suitability is owned by `guru-execute-task-free-change`, not this DTO.
 That Skill reads live local topology, binding, scope and dirty facts and owns
 linked non-base execution location selection before writes; isolation alone

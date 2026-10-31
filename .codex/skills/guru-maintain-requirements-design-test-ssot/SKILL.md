@@ -1,6 +1,6 @@
 ---
 name: guru-maintain-requirements-design-test-ssot
-description: Maintain one traceable Requirements, Design, and Test repository authority through semantic profiles.
+description: Maintain and reconcile the repository 需求、设计、测试 SSOT and their traceability through existing semantic profiles. Dedicated requirements/design/test-plan document reviews use applicable specialist standards; this Skill retains authority maintenance and its profile prerequisites.
 ---
 
 # Guru Maintain Requirements Design Test SSOT
@@ -11,6 +11,13 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this owner's current-authority reading and maintenance scope. Load the
+applicable requirements, design or test-plan specialist and its same-source
+standards when the selected artifact requires that review. Consume current
+evidence without copying standard bodies or treating specialist conclusions
+as authority promotion, a formal Guru gate or Task Completion.
 
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action

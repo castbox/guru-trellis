@@ -107,6 +107,18 @@ technical re-entry or missing ephemeral output requires no planning consent.
 
 ## Requirements and candidate before substantive solution writing
 
+For a newly created Task or a later Delivery, compare the current complete
+source, accepted whole-Task requirements and actual slice with the investigation
+already read. Reuse verified applicable facts and necessary whole-Task
+definitions by reference; reread changed source sections, affected dependencies
+and any complete content no longer available. Do not restart the same code
+investigation or product interview merely because Task or Delivery identity was
+created. Each profile still owns its current completeness and mechanism
+judgment. Source/scope changes return to Clarify; stale or missing source
+evidence returns to its original owner. The resulting requirements still enter
+Architecture, and the complete plan still enters Wording and final Architecture
+before Approval.
+
 Converge PRD without lowering accepted scope to fit current Architecture.
 Identify interfaces, mechanisms, ordering, compatibility and semantic owners.
 Use Adopted-mechanism review in

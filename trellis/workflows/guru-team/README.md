@@ -39,6 +39,12 @@ JSON 载体读取与 Bind 双输入调用保持原 Skill owner 和流程。载�
 匹配安装见 [MIGRATION-695](../../presets/guru-team/MIGRATION-695.md)；完整调用由
 [Bind 文档](../../skills/guru-team/packages/guru-bind-task-session/references/json-inputs.md) 定义。
 
+局部修复的实际影响判断见原 [selector 合同](../../skills/guru-team/packages/guru-select-workflow-mode/references/contract.md)。
+草稿转正式 Issue 后的调查事实适用性与当前字段诊断见原
+[Discovery 合同](../../skills/guru-team/packages/guru-discover-change-context/references/contract.md#current-owner-mismatch-diagnostics)；
+Clarify 和 Author 继续各自的当前判断。已有安装采用完整匹配 preset 后检查
+installed、平台投影、drift 和 sidecar；源码说明不证明业务安装或实际耗时改善。
+
 明确 Task/Delivery 的接收会话通过原 Identity/Ensure/Bind/Selection 补齐自身缺失事实，
 再继续同对象原未完义务。Planning 首失败诊断、standalone producer 身份构造，以及
 带实际 key 的 Human artifacts 展示须成套采用。具体诊断字段、Task-only/archive

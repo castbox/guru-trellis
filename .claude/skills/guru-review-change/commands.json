@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.1",
+  "package_id": "guru-review-change",
+  "commands": [
+    {
+      "id": "capture-review-change-context",
+      "owner": "guru-review-change",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--input",
+          "required": true,
+          "kind": "json",
+          "description": "One JSON object or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "invalid_scope",
+        "git_unavailable",
+        "content_unavailable",
+        "unsupported_content",
+        "runtime_dependency_missing",
+        "missing_contract",
+        "internal_error"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/public-input.schema.json"
+      ],
+      "validator_id": "review_context_capture",
+      "runtime_role": "check"
+    },
+    {
+      "id": "invoke-guru-review-change",
+      "owner": "guru-review-change",
+      "entrypoint": "runtime/invoke.py",
+      "arguments": [
+        {
+          "flag": "--invocation",
+          "required": true,
+          "kind": "json",
+          "description": "One JSON object or dash for stdin.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "single_typed_exit",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "invalid_scope",
+        "git_unavailable",
+        "content_unavailable",
+        "unsupported_content",
+        "runtime_dependency_missing",
+        "missing_contract",
+        "internal_error",
+        "stale_identity"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [
+        "schemas/invocation.schema.json"
+      ],
+      "validator_id": "public_invocation",
+      "runtime_role": "invoke"
+    }
+  ]
+}
