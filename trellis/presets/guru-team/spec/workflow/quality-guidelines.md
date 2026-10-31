@@ -623,14 +623,23 @@ recoverable. New facts or changed obligations cannot use that narrow path. Actua
 owner behavior and module effects are evidence; fixed-text assertions or
 host-staged semantic passes alone are not.
 
-For pre-Check Architecture promotion, targeted coverage observes the real
-independent assessment of the candidate and proposed delta, original-owner
-write, actual-write applicability, final Check, Task Commit, committed
-independent judgment and complete Review. Prove normal exact-write progress,
-changed content returning to affected assessment, expected-current mismatch,
-recoverable partial/output-loss handling, no-change, finding-fix impact and the
-three in-flight migration states. Structure and DTO tests prove their declared
-layer only; they cannot establish actual AI choices or runtime adoption.
+For final-integration Architecture promotion, targeted coverage follows the
+current `guru-maintain-architecture-baseline` contract. Observe the real
+independent assessment of the complete candidate and proposed targets, then the
+original Check owner's candidate-only Check. Only actual `candidate_checked`
+after legal return to implementation enters final integration. Observe the
+original Architecture owner's reviewed write and actual-write applicability,
+then candidate reconstruction including all written content, relationships and
+navigation. Final Architecture/Check, Task Commit, committed independent
+Architecture judgment and complete Branch Review cover that actual candidate.
+Prove normal exact-write progress, changed content returning to affected
+assessment, expected-current mismatch, recoverable partial/output-loss handling,
+no-change, finding-fix impact and the applicable in-flight migration states.
+Apply Candidate Applicability And Coverage to still-applicable facts and exact
+reviewed writes; a stage change alone does not repeat same-content assessment.
+Structure and DTO tests prove their declared layer only; they cannot establish
+actual AI choices or runtime adoption. This coverage definition does not require
+an unrelated documentation change to replay the full lifecycle or platform matrix.
 
 Workflow/static and semantic eval coverage must additionally prove the checked
 approved exit remains semantic adequacy only and the consumer presents all
