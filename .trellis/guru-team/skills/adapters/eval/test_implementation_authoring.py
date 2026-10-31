@@ -316,9 +316,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             implementation_authoring.stage({'case_id':'native-implementation-plan-premise'}, fixture, package, source)
             facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
             observed = implementation_authoring.observe_candidate(fixture, facts)
-            example = json.loads((SKILLS / 'packages/guru-check-task/examples/phase2-check.json').read_text())
-            authored = {key:value for key,value in example.items() if key not in (
-                'schema_version','skill_id','task_ref','phase2_capture_commit','reviewed_content_sha256')}
+            authored = json.loads((SKILLS / 'packages/guru-check-task/examples/phase2-authoring.json').read_text())
             authored.update(reviewed_paths=observed['reviewed_paths'], typed_exit='blocked',
                 consumer={'kind':'stop','id':'task-check-blocked'}, reason='Original recorder transport fixture only.')
             authored['semantic_review'].update(status='blocked', summary='No native semantic result is asserted.')

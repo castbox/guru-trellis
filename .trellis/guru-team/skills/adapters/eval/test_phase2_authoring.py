@@ -4,6 +4,7 @@ import json
 import hashlib
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import sys
@@ -129,9 +130,7 @@ class Phase2AuthoringTests(unittest.TestCase):
                     'classification':'not_incident_applicable','reason':'Ordinary range feature.',
                     'evidence':{'applicability_basis':'The predicate feature is not an incident mechanism.'}}]
             invoke({'schema_version':'1.0','semantic_result':semantic},'--qualifier',name)
-        source=json.loads((PACKAGE/'examples/phase2-check.json').read_text())
-        authored={key:value for key,value in source.items() if key not in (
-            'schema_version','skill_id','task_ref','phase2_capture_commit','reviewed_content_sha256')}
+        authored=json.loads((PACKAGE/'examples/phase2-authoring.json').read_text())
         authored['reviewed_paths']=facts['reviewed_paths']
         authored['docs_ssot']['durable_paths']=['docs/range.md']
         authored['delivery_policy'].update(task_scope=['R1'],delivery_slice=['R1'],remaining_work=[])
@@ -464,6 +463,324 @@ class Phase2AuthoringTests(unittest.TestCase):
         cases = json.loads((PACKAGE / "evals/evals.json").read_text())["evals"]
         existing = {item["expected_exit"] for item in cases if item.get("native_execution_mode", "post_owner") == "post_owner"}
         self.assertEqual(existing, {"passed", "resolved_reconciliation_passed", "delivery_stopped", "implementation_required", "planning_stale", "blocked"})
+
+
+class CandidateFinalTransportTests(unittest.TestCase):
+    """Original fixture/command transport only; these tests run no native model."""
+
+    def stage(self, temporary):
+        req = request(Path(temporary), phase2_authoring.STATEFUL_CASE)
+        with patch('adapters.eval.delivery_production.activate',
+                   side_effect=AssertionError('host must not author Planning/Activation')):
+            package, target, control = owner_staging.stage_owner_execution(
+                req, Path(req['workdir']).parent, Path(req['runtime_target']))
+        owner = target.parents[4]
+        from adapters.eval.phase2_candidate_final import ImplementationCommands
+        relay = ImplementationCommands(owner, {**os.environ, **control},
+            Path(temporary) / 'commands.json')
+        return req, owner, package, relay
+
+    def test_stateful_entry_has_no_host_semantic_prerequisites_and_keeps_public_candidate(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, owner, _, relay = self.stage(temporary)
+            facts = json.loads((owner / phase2_authoring.FACTS).read_text())
+            from runtime.delivery_projection.adapter import DeliveryProjection
+            projection = DeliveryProjection(owner, facts['task_ref'])
+            delivery = projection.resolve(facts['delivery_key'])
+            self.assertEqual(delivery['phase'], 'planning')
+            self.assertIsNone(delivery['results']['planning'])
+            self.assertIsNone(delivery['candidate'])
+            self.assertFalse(any((owner / '.trellis/.runtime/guru-team/owner-checkpoints').rglob('*.json')))
+            public = json.loads((owner / facts['public_input_locator']).read_text())
+            self.assertNotIn('planning_accepted_result_id', public)
+            self.assertNotIn(phase2_authoring.ARCHITECTURE_INPUT, facts['required_reads'])
+            self.assertNotIn('architecture_input_sha256', facts)
+            observed = json.loads(relay.forward({'skill_id': 'implementation-authoring',
+                'command': 'inspect', 'arguments': [], 'stdin': ''})['stdout'])
+            self.assertEqual(observed['fixed_base'], facts['initial_head'])
+            self.assertTrue(observed['candidate']['content_ref'])
+            self.assertIn('interval.py', observed['candidate']['paths'])
+            self.assertNotIn('reviewed_content_sha256', observed)
+            self.assertEqual(observed['architecture_candidate']['content_identity'].split(':')[0], 'sha256')
+            validation = json.loads((owner / 'docs/phase2-evidence/validation.json').read_text())
+            self.assertEqual(validation['returncode'], 0, validation['stderr'])
+            for path in facts['required_reads']:
+                self.assertTrue((owner / path).is_file(), path)
+
+    def test_real_recorder_preserves_first_authoring_and_same_result_consumer_input(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, owner, package, relay = self.stage(temporary)
+            facts = json.loads((owner / phase2_authoring.FACTS).read_text())
+            semantic = json.loads((PACKAGE / 'examples/phase2-authoring.json').read_text())
+            semantic['reviewed_paths'] = facts['reviewed_paths']
+            semantic['docs_ssot']['durable_paths'] = ['docs/range.md']
+            # This is an explicit deterministic recorder fixture, not native judgment.
+            raw = json.dumps(semantic, ensure_ascii=False, indent=3) + '\n'
+            source = owner / '.trellis/.runtime/guru-team/evals/first-authoring.json'
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text(raw)
+            payload = {'skill_id': 'guru-check-task', 'command': 'record-phase2-check',
+                'arguments': ['--root', '.', '--task', facts['task_ref'], '--input', str(source)],
+                'stdin': ''}
+            result = relay.forward(payload)
+            self.assertEqual(result['returncode'], 0, result)
+            self.assertFalse(source.exists())
+            receipt = relay.receipts[0]
+            self.assertEqual(receipt['request'], payload)
+            self.assertEqual(receipt['input_files']['--input']['text'], raw)
+            artifact = Path(json.loads(result['stdout'])['result']['artifact_path'])
+            checked = json.loads(artifact.read_text())
+            self.assertEqual(checked['reviewed_paths'], semantic['reviewed_paths'])
+            self.assertIn('reviewed_content_sha256', checked)
+            original = artifact.read_bytes()
+            check = relay.forward({'skill_id': 'guru-check-task', 'command': 'check-phase2-check',
+                'arguments': ['--root', '.', '--task', facts['task_ref']], 'stdin': ''})
+            self.assertEqual(check['returncode'], 0, check)
+            self.assertEqual(artifact.read_bytes(), original)
+
+    def test_first_recorder_failure_is_retained_and_stops_this_sample(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, owner, _, relay = self.stage(temporary)
+            facts = json.loads((owner / phase2_authoring.FACTS).read_text())
+            # Ordinary incomplete authoring must remain the first failed input.
+            payload = {'skill_id': 'guru-check-task', 'command': 'record-phase2-check',
+                'arguments': ['--root', '.', '--task', facts['task_ref'], '--input', '-'],
+                'stdin': '{"mode":"workflow"}\n'}
+            result = relay.forward(payload)
+            self.assertNotEqual(result['returncode'], 0)
+            self.assertEqual(json.loads(relay.receipts_path.read_text())[0]['request'], payload)
+            self.assertEqual(relay.receipts[0]['response'], result)
+            self.assertTrue(relay.terminal)
+            with self.assertRaisesRegex(ValueError, 'terminal'):
+                relay.forward({'skill_id': 'implementation-authoring',
+                    'command': 'inspect', 'arguments': [], 'stdin': ''})
+
+    def test_virtual_request_errors_leave_original_pre_execution_correction_open(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, _, relay = self.stage(temporary)
+            for command, arguments in (('--help', []), ('write', ['--help'])):
+                with self.subTest(command=command):
+                    response = relay.forward({'skill_id': 'implementation-authoring',
+                        'command': command, 'arguments': arguments, 'stdin': ''})
+                    self.assertIn('request_error', json.loads(response['stdout']))
+                    self.assertFalse(relay.terminal)
+                    observed = relay.forward({'skill_id': 'implementation-authoring',
+                        'command': 'inspect', 'arguments': [], 'stdin': ''})
+                    self.assertEqual(observed['returncode'], 0)
+                    self.assertIn('current_delivery', json.loads(observed['stdout']))
+            self.assertEqual(len(relay.receipts), 4)
+
+    def test_delivery_parse_error_leaves_original_cli_help_available(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, _, relay = self.stage(temporary)
+            response = relay.forward({'skill_id': 'delivery-api',
+                'command': 'current', 'arguments': ['--unknown-option'], 'stdin': ''})
+            self.assertEqual(response['returncode'], 2)
+            self.assertIn('delivery.py: error:', response['stderr'])
+            self.assertFalse(relay.terminal)
+            help_response = relay.forward({'skill_id': 'delivery-api',
+                'command': 'current', 'arguments': ['--help'], 'stdin': ''})
+            self.assertEqual(help_response['returncode'], 0, help_response)
+            self.assertIn('usage: delivery.py current', help_response['stdout'])
+            self.assertFalse(relay.terminal)
+
+    def test_unknown_skill_command_executes_no_owner_and_explicit_wrapper_help_succeeds(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, _, relay = self.stage(temporary)
+            for skill in ('guru-approve-task-plan', 'guru-activate-delivery'):
+                with self.subTest(skill=skill):
+                    request = {'skill_id': skill, 'command': '--help', 'arguments': [], 'stdin': ''}
+                    with patch('adapters.eval.phase2_candidate_final._StageCommands.forward',
+                               side_effect=AssertionError('undeclared ID must not reach original execution')):
+                        response = relay.forward(request)
+                    self.assertIn('request_error', json.loads(response['stdout']))
+                    self.assertEqual(relay.receipts[-1]['request'], request)
+                    self.assertFalse(relay.terminal)
+                    help_response = relay.forward({'skill_id': skill, 'command': 'invoke',
+                        'arguments': ['--help'], 'stdin': ''})
+                    self.assertEqual(help_response['returncode'], 0, help_response)
+                    self.assertIn('usage:', help_response['stdout'])
+                    self.assertFalse(relay.terminal)
+
+    def test_new_case_uses_existing_command_and_fresh_reviewer_transport(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            req = request(Path(temporary), phase2_authoring.STATEFUL_CASE)
+            values = native_adapter.build_context(req, 'codex')
+            try:
+                protocol = json.loads(values[4].read_text())
+                self.assertTrue(protocol['implementation_commands'])
+                self.assertIsNone(protocol['architecture_context'])
+                self.assertIsNotNone(values[8].implementation_commands)
+                model = json.loads(values[5].read_text())
+                self.assertNotIn('expected_exit', json.dumps(model))
+                self.assertNotIn('owner_result', model)
+                example = Path(protocol['projection_root']) / 'examples/phase2-authoring.json'
+                self.assertEqual(example.read_bytes(), (PACKAGE / 'examples/phase2-authoring.json').read_bytes())
+                # Execute the context's actual operation recipes. This verifies
+                # their helper/CLI assembly, without native semantic claims.
+                instructions = values[0]
+                contract = instructions.split('Read actual Delivery API capabilities with ', 1)[1].split('. Read top-level syntax with ', 1)
+                top_help, remainder = contract[1].split(', and selected syntax with ', 1)
+                selected_help = remainder.split(' before choosing its exact arguments.', 1)[0]
+                for command in (contract[0], top_help, selected_help.replace('<subcommand>', 'current')):
+                    result = subprocess.run(shlex.split(command), input='', text=True,
+                        capture_output=True, timeout=30)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                receipts = json.loads(Path(protocol['implementation_receipts_path']).read_text())
+                self.assertEqual([row['request']['command'] for row in receipts], ['contract', '--help', 'current'])
+                self.assertFalse(values[8].implementation_commands.terminal)
+            finally:
+                values[9].set()
+                values[8].join(timeout=2)
+
+    def test_finding_uses_same_real_prerequisites_and_keeps_failing_business_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            req = request(Path(temporary), 'native-owner-finding')
+            self.assertEqual(native_adapter.additional_authoring_module(req['skill_id'], req['case_id']).__name__,
+                             'adapters.eval.phase2_candidate_final')
+            with patch('adapters.eval.delivery_production.activate', side_effect=AssertionError('host semantic pass')):
+                _, target, _ = owner_staging.stage_owner_execution(
+                    req, Path(req['workdir']).parent, Path(req['runtime_target']))
+            owner = target.parents[4]
+            facts = json.loads((owner / phase2_authoring.FACTS).read_text())
+            from runtime.delivery_projection.adapter import DeliveryProjection
+            state = DeliveryProjection(owner, facts['task_ref']).resolve(facts['delivery_key'])
+            self.assertIsNone(state['results']['planning'])
+            self.assertIsNone(state['candidate'])
+            validation = json.loads((owner / 'docs/phase2-evidence/validation.json').read_text())
+            self.assertNotEqual(validation['returncode'], 0)
+            self.assertIn('test_singleton', validation['stderr'])
+            self.assertIn('AssertionError', validation['stderr'])
+
+    def test_stage_observer_does_not_accept_final_pass_without_real_intermediate_owners(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        def call(skill, public, exit_id):
+            return {'request': {'skill_id': skill, 'command': 'invoke', 'arguments': ['--invocation', '-'],
+                                'stdin': json.dumps({'public_input': public})},
+                    'response': {'returncode': 0, 'stdout': json.dumps({'exit_id': exit_id}), 'stderr': ''}}
+        rows = [call('guru-check-task', {'profile': 'delivery_initial_check'}, 'passed')]
+        with self.assertRaisesRegex(ValueError, 'required original owner'):
+            check_stage_sequence(rows, {'exit_id': 'passed'})
+        rows[:0] = [call('guru-approve-task-plan', {}, 'approved'),
+            call('guru-activate-delivery', {}, 'delivery_started'),
+            call('guru-maintain-requirements-design-test-ssot', {'stage': 'phase2'}, 'current'),
+            call('guru-maintain-architecture-baseline', {'stage': 'planning', 'planning_purpose': 'final_plan'}, 'baseline_current'),
+            call('guru-maintain-architecture-baseline', {'stage': 'phase2'}, 'baseline_current')]
+        with self.assertRaisesRegex(ValueError, 'separate first candidate and final Checks'):
+            check_stage_sequence(rows, {'exit_id': 'passed'})
+
+    def test_public_input_observer_reads_original_filename_and_inline_invocation(self):
+        from adapters.eval.phase2_candidate_final import public_command_input
+        public = {'profile': 'delivery_candidate_check', 'planning_accepted_result_id': 'actual-producer-id'}
+        row = {'request': {'skill_id': 'guru-check-task', 'command': 'invoke',
+                          'arguments': ['--input', 'retired.json'], 'stdin': ''},
+               'input_files': {'--input': {'path': 'retired.json', 'text': json.dumps(public)}}}
+        self.assertEqual(public_command_input(row), public)
+        row['request'].update(arguments=['--invocation', '-'],
+            stdin=json.dumps({'final': True, 'invocation': {'public_input': public, 'owner_result': {}}}))
+        self.assertEqual(public_command_input(row), public)
+
+    def observed_candidate_final_sequence(self, *, architecture_state='no_change', rdt_exit='ssot_current'):
+        # Handwritten original-command observations test this observer only.
+        # They provide no native semantic or lifecycle evidence.
+        def call(skill, public, output):
+            return {'request': {'skill_id': skill, 'command': 'invoke', 'arguments': ['--invocation', '-'],
+                                'stdin': json.dumps({'public_input': public})},
+                    'response': {'returncode': 0, 'stdout': json.dumps(output), 'stderr': ''}}
+        def intermediate(command):
+            return {'request': {'skill_id': 'guru-check-task', 'command': command,
+                                'arguments': [], 'stdin': ''},
+                    'response': {'returncode': 0, 'stdout': '{}', 'stderr': ''}}
+        rows = [call('guru-approve-task-plan', {}, {'exit_id': 'approved'}),
+            call('guru-activate-delivery', {}, {'exit_id': 'delivery_started'}),
+            call('guru-maintain-requirements-design-test-ssot', {'stage': 'phase2'}, {'exit_id': rdt_exit}),
+            call('guru-maintain-architecture-baseline', {'stage': 'planning', 'planning_purpose': 'final_plan'},
+                 {'exit_id': 'baseline_current'}),
+            call('guru-maintain-architecture-baseline', {'stage': 'phase2', 'candidate': {'head': 'actual-head'}},
+                 {'exit_id': 'baseline_current', 'promotion_state': architecture_state}),
+            intermediate('record-phase2-check'), intermediate('check-phase2-check'),
+            call('guru-check-task', {'profile': 'delivery_candidate_check'}, {'exit_id': 'candidate_checked'}),
+            {'request': {'skill_id': 'delivery-api', 'command': 'begin-check', 'arguments': ['--input', '-'],
+                         'stdin': json.dumps({'operation': 'begin_check',
+                             'candidate': {'base_ref': 'fixed-base', 'head_ref': 'actual-head'}})},
+             'response': {'returncode': 0, 'stdout': '{}', 'stderr': ''}},
+            call('guru-maintain-architecture-baseline', {'stage': 'phase2', 'candidate': {'head': 'actual-head'}},
+                 {'exit_id': 'baseline_current', 'promotion_state': 'no_change'}),
+            intermediate('record-phase2-check'), intermediate('check-phase2-check'),
+            call('guru-check-task', {'profile': 'delivery_initial_check'}, {'exit_id': 'passed'})]
+        return rows
+
+    def test_observer_accepts_original_no_change_without_promotion(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        check_stage_sequence(self.observed_candidate_final_sequence(), {'exit_id': 'passed'})
+
+    def test_observer_excludes_actual_wrapper_help_but_rejects_nonhelp_bad_output(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, _, relay = self.stage(temporary)
+            response = relay.forward({'skill_id': 'guru-review-contract-wording',
+                'command': 'invoke', 'arguments': ['--help'], 'stdin': ''})
+            self.assertEqual(response['returncode'], 0, response)
+            self.assertIn('usage:', response['stdout'])
+            observed = relay.receipts[-1]
+            original = json.dumps(observed, sort_keys=True)
+            check_stage_sequence([observed, *self.observed_candidate_final_sequence()], {'exit_id': 'passed'})
+            self.assertEqual(json.dumps(observed, sort_keys=True), original)
+            # The same real usage bytes are malformed for a non-help semantic
+            # observation. This tests only observer rejection, not a producer.
+            nonhelp = json.loads(original)
+            nonhelp['request']['arguments'] = ['--invocation', '-']
+            nonhelp['request']['stdin'] = '{}'
+            with self.assertRaises(json.JSONDecodeError):
+                check_stage_sequence([nonhelp, *self.observed_candidate_final_sequence()], {'exit_id': 'passed'})
+            failed = json.loads(original)
+            failed['response']['returncode'] = 2
+            with self.assertRaisesRegex(ValueError, 'failed original semantic invocation'):
+                check_stage_sequence([failed, *self.observed_candidate_final_sequence()], {'exit_id': 'passed'})
+
+    def test_observer_keeps_preexecution_diagnostics_outside_semantic_owner_calls(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        rows = self.observed_candidate_final_sequence()
+        rows[:0] = [
+            {'request': {'skill_id': 'implementation-authoring', 'command': 'invoke', 'arguments': [], 'stdin': ''},
+             'response': {'returncode': 0, 'stdout': json.dumps({'request_error': 'unknown virtual operation'}), 'stderr': ''}},
+            {'request': {'skill_id': 'delivery-api', 'command': 'invoke', 'arguments': ['--help'], 'stdin': ''},
+             'response': {'returncode': 2, 'stdout': '', 'stderr': 'usage: delivery.py\ndelivery.py: error: unknown command'}},
+        ]
+        check_stage_sequence(rows, {'exit_id': 'passed'})
+
+    def test_observer_requires_promotion_only_for_actual_owner_candidate_outputs(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        for architecture_state, rdt_exit, owner in (
+                ('reviewed_candidate', 'ssot_current', 'guru-maintain-architecture-baseline'),
+                ('no_change', 'candidate_ready', 'guru-maintain-requirements-design-test-ssot')):
+            with self.subTest(owner=owner):
+                rows = self.observed_candidate_final_sequence(architecture_state=architecture_state, rdt_exit=rdt_exit)
+                with self.assertRaisesRegex(ValueError, 'required original promotion: ' + owner):
+                    check_stage_sequence(rows, {'exit_id': 'passed'})
+                rows.insert(8, {'request': {'skill_id': owner, 'command': 'invoke',
+                    'arguments': ['--invocation', '-'], 'stdin': json.dumps({'public_input': {'stage': 'final_integration'}})},
+                    'response': {'returncode': 0, 'stderr': '', 'stdout': json.dumps({
+                        'exit_id': 'baseline_current' if architecture_state == 'reviewed_candidate' else 'ssot_current',
+                        'promotion_state': 'reviewed_promoted'})}})
+                check_stage_sequence(rows, {'exit_id': 'passed'})
+
+    def test_observer_requires_rebinding_and_matching_final_architecture_on_no_change(self):
+        from adapters.eval.phase2_candidate_final import check_stage_sequence
+        rows = self.observed_candidate_final_sequence()
+        rows.pop(8)
+        with self.assertRaisesRegex(ValueError, 'actual implementation candidate rebinding'):
+            check_stage_sequence(rows, {'exit_id': 'passed'})
+        rows = self.observed_candidate_final_sequence()
+        rows.pop(9)
+        with self.assertRaisesRegex(ValueError, 'matching final Architecture'):
+            check_stage_sequence(rows, {'exit_id': 'passed'})
+        rows = self.observed_candidate_final_sequence()
+        public = json.loads(rows[9]['request']['stdin'])
+        public['public_input']['candidate']['head'] = 'earlier-head'
+        rows[9]['request']['stdin'] = json.dumps(public)
+        with self.assertRaisesRegex(ValueError, 'matching final Architecture'):
+            check_stage_sequence(rows, {'exit_id': 'passed'})
 
 
 if __name__ == "__main__":

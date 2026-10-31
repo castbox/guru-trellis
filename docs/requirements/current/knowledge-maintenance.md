@@ -117,3 +117,23 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 **R693-04 / BEH693-ADOPTION**：只在原方法和职责内补齐真实差额；方法由共享 workflow-contract/quality-guidelines 单写，项目指导由原 authority 承接，领域正文仍引用所属业务设计。公共源码、dogfood 和目标正式采用分别报告；后者仍由 accepted scope 的原 Task/Upgrade owners 承担。保留用户定制及在途 Task/会话，按原安装合同处理冲突/sidecar。安装成功不证明业务修复或环境效果。
 
 对应设计为同名 Design 单元的 D693/CON693，验证为同名 Test 单元的 T693；原 R648/R-MECH 及全部前驱条件保持。
+
+## R710：Phase 2 正常 authoring 与完整结果
+
+来源：[Issue #710](https://github.com/castbox/guru-trellis/issues/710)；固定前驱 Git `2fc49bda6552d1a8bf95dff243ab2de9a9ea8e30`。本节承接 R331/R638 的原 owner 与最终整合、R648 的来源预期及 R693 的正式入口证据边界，保留其全部适用条件。精确输入、字段、argv、profile 前置及 typed exit 仍由 [原 Check package](../../../trellis/skills/guru-team/packages/guru-check-task/references/contract.md) 和其 interface/schema 单写；本节定义能力与证据责任。
+
+**R710-01 / BEH710-AUTHORING**：正常 Check AI 从实际安装 Skill 读取完整合同和最小语义示例，完成当前九维、finding、验证适用性、Docs/Architecture 与出口判断后，只 author 本轮语义内容。调用定位来自合法公共入口。recorder 生成客观结果身份；示例不能要求 AI 手填、计算或复制私有摘要、候选摘要、HEAD 或结果身份占位。最小语义输入是唯一正常 authoring 路径，完整结果示例只说明输出或合法消费。脚本、示例及 worker 不产生 semantic pass。
+
+**R710-02 / BEH710-CONSUMPTION**：正式说明应可执行地承接审查后 authoring、原 recorder、原 checker 和 public invocation。checker 读取本次 recorder 实际写入的同一完整结果；invocation 消费该结果和真实公共 profile。中间回执只定位或证明其声明事实，不替代完整 owner result，也不由 caller 重组结果。真实 producer 的 Task/Delivery/Planning 身份、候选及 profile 要求的合法上游回执原样传递；两类 token 各有原 consumer，不能互换或统一算法。五个适用 Check profiles 保留原语义、前置、出口及唯一 consumer。
+
+**R710-03 / BEH710-RETIREMENT**：record 的完整结果输入与 checker/invoke 消费完整结果是不同入口。原实现 owner 以实际调用、输入模板和结果消费者核对前者；本批通过 [MIGRATION-710](../../../trellis/presets/guru-team/MIGRATION-710.md) 显式退出 record 的完整输入，并同步迁移本仓正常调用。原 checker/invoke/maintenance 合法消费和恢复已生成完整结果保持，schema 输出与原 freshness 不因输入退出改变。旧完整安装成套采用 matching source 前保留原合同，采用后不保留长期双 reader 或兼容开关。若发现不能同步迁移的真实支持 consumer，先回原 Author/Architecture 修兼容方案，不能静默移除或自行追加桥接。
+
+**R710-04 / BEH710-STALE**：普通字段、路径覆盖或身份不匹配沿原错误合同给出机器可确定字段和原恢复 owner。摘要不同只证明绑定不符，不能据此断言算法、内容或编码根因。真实业务内容变化仍拒绝旧完整结果；生命周期/结果 metadata 保持原排除规则，不产生摘要循环。旧语义结论不能通过重算摘要、HEAD 或重新包装自动延续；恢复须由原 owner 读取当前事实并完成适用语义轮次。诊断改善不构成根因修复或首次正确行为证据。
+
+**R710-05 / BEH710-EVIDENCE**：正常 authoring 命令测试从正式语义输入经过真实 record/check/invoke，host 不预填完整结果私有摘要。完整结果的 schema/checker/invoke/恢复单元测试可构造自身真实入口，只证明该消费入口。合同检查发现缺正文、坏引用或示例入口不一致，AI 仍须亲读可执行性。其余 profiles 的成功、真实 finding、规划变化及 blocked 路由按原正式入口定向验证，不能以关键词、mock 运输或下游绿断言冒充 Agent 行为。
+
+**R710-06 / BEH710-FIRST-NATIVE**：首次 native 验收从正常安装 Skill 和合法候选 Check 起点开始。必需 Planning、RDT 和独立 Architecture 语义前置由原 owners 实际完成；host 可提供起点事实与确定性环境，不能代填本阶段结果、私有摘要、内部 authoring 选择或预期出口。无 finding 的合法案例须首次正确完成候选 authoring/命令/承接，随后原 owners 最终整合、implementation 重绑，再首次正确完成最终阶段；两阶段转换不是失败重试。真实 finding 沿原 implementation_required 或 planning_stale 返回原 owner，不为成功样本隐去。模型外验收比较预期。保留阶段 profile、候选、前置、首次输入、命令、承接及实际出口；装配错误、纠偏和修订后新案例分开，不能重命名为首次成功。缺 mandatory 前置或 native 能力则如实未验证，不删验收或补 pass。
+
+**R710-07 / BEH710-DISTRIBUTION**：canonical 由原工具/preset owner 同步到 dogfood、实际安装和声明平台，保留用户内容、在途 Task/session，定向验证 reapply/drift、mode 与 sidecar。普通本项最多使用确有必要的一个代表 clean，不承担完整 Release/多平台升级矩阵。后继使用固定可获取提交、matching 安装来源、适用 profiles、实际命令和原 native 证据定位 fresh 核验；其当前完整生命周期 Check 仍由后继原 owner 亲自完成。本项不新建交接 DTO、长期台账或业务现场迁移。
+
+对应设计为本完整 Design 单元的 D710/CON710，测试为 Test 单元的 T710/SC710；来源和替代边界见 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。只有本节新增目标与 record 完整输入退出；其它既有职责、历史含义和范围不扩大。

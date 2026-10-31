@@ -18,15 +18,23 @@ ARCHITECTURE_INPUT = ".trellis/tasks/phase2-evidence/architecture-input.json"
 ARCHITECTURE = "guru-maintain-architecture-baseline"
 QUALIFIERS = ("guru-qualify-normal-scenario", "guru-qualify-solution-mechanism")
 ALL_QUALIFIERS = (*QUALIFIERS, "guru-qualify-root-cause")
+STATEFUL_CASE = "native-owner-candidate-final"
+STATEFUL_CASES = {STATEFUL_CASE, "native-owner-finding"}
 PUBLIC_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
     "schemas/phase2-check.schema.json", "schemas/public-input-delivery-1.0.schema.json",
     "schemas/public-delivery-initial-check-input-1.0.schema.json",
 )
+
+
 ARCHITECTURE_READS = (
     "SKILL.md", "references/contract.md", "interface.json",
     "schemas/semantic-result-delivery-3.0.schema.json", "schemas/public-input-delivery-task-impact-sync-3.0.schema.json",
 )
+
+
+def public_reads(package: Path) -> tuple[str, ...]:
+    return (*PUBLIC_READS, "commands.json", "examples/phase2-authoring.json")
 
 
 def write_json(path: Path, value: object) -> None:
@@ -41,7 +49,19 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
           candidate_files: dict[str, str] | None = None) -> None:
     fixture = fixture.resolve()
     package = package.resolve()
+    stateful = request.get("case_id") in STATEFUL_CASES
+    acquisition = None
+    if stateful:
+        from adapters.eval.planning_authoring import acquire_authoring_checkout
+        from adapters.eval.implementation_authoring import (
+            _code_drift_seed_bodies, _implementation_range_authority,
+        )
+        acquisition = acquire_authoring_checkout(fixture, branch_name="eval/phase2-authoring")
+        seed_bodies = _code_drift_seed_bodies()
+        range_authority_body = _implementation_range_authority(STATEFUL_CASE)
     public = json.loads(public_input_path(request).read_text(encoding="utf-8"))
+    if stateful:
+        public.pop("planning_accepted_result_id", None)
     task_ref = public["task_ref"]
     task = Path(task_ref)
     if task.is_absolute() or ".." in task.parts:
@@ -185,6 +205,9 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         run_git(fixture, 'commit', '-qm', 'stage existing integer range business baseline')
     scope_content = seed_bodies['task-prd.md'] if seed_bodies is not None else files[f"{legacy_task_ref}/prd.md"]
     directory = stage_delivery_identity(fixture, public, scope_content=scope_content, scope_anchor="R1")
+    if stateful:
+        from adapters.eval.planning_authoring import register_authoring_resources
+        register_authoring_resources(fixture, public["delivery_key"], acquisition)
     task_ref = public.pop('task_locator')
     task = fixture / task_ref
     planning_ref = directory.relative_to(fixture).as_posix()
@@ -216,8 +239,9 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
     compose_production_owner_command_runtime(runtime_target, owner_runtime)
     activation_options = ({'preserve_existing_constitution': True}
         if seed_bodies is not None or range_authority_body is not None else {})
-    public['planning_accepted_result_id'] = activate(
-        owner_runtime, fixture, task, public['delivery_key'], **activation_options)
+    if not stateful:
+        public['planning_accepted_result_id'] = activate(
+            owner_runtime, fixture, task, public['delivery_key'], **activation_options)
     run_git(fixture, "add", ".")
     run_git(fixture, "commit", "-qm", "stage inclusive range requirements and test fixture")
     run_git(fixture, "update-ref", "refs/remotes/origin/main", run_git(fixture, "rev-parse", "HEAD"))
@@ -323,10 +347,15 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
     }
     projection = DeliveryProjection(fixture, task_ref)
     candidate_paths = sorted({*files, *(candidate_files or {}), 'interval.py'})
-    projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
-        head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'],
-            development_base=seed_base, observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
+    if not stateful:
+        projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
+            head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'],
+                development_base=seed_base, observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
     write_json(evidence / 'check-public-input.json', public)
+    if stateful:
+        # Case evidence carries the original identity producer's actual values,
+        # rather than the input template's pre-creation placeholder identity.
+        write_json(public_input_path(request), public)
 
     required = sorted([
         *files, *(candidate_files or {}), *spec_paths, "docs/phase2-evidence/validation.json", "docs/phase2-evidence/diff.patch",
@@ -384,6 +413,25 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
             "diff_locator": "docs/phase2-evidence/diff.patch",
         },
     })
+    if stateful:
+        facts = json.loads((fixture / FACTS).read_text())
+        # These are supplied source/entry facts. Every semantic prerequisite
+        # and the candidate itself must still be produced by its original owner.
+        facts.update(task_ref=task_ref, delivery_key=public["delivery_key"],
+            planning_root=directory.relative_to(task).as_posix(),
+            public_input_locator="docs/phase2-evidence/check-public-input.json",
+            initial_head=seed_base, python_executable=sys.executable,
+            writable_paths=["docs/phase2-evidence/diff.patch", "docs/phase2-evidence/validation.json"],
+            owner_mutated_paths=[task_ref + "/task.json"],
+            boundary="Task/Delivery identity, unaccepted complete planning, source candidate and raw tests only. No Planning acceptance, Activation, Architecture, RDT or Check judgment is staged.")
+        facts["required_reads"] = sorted({
+            *(path for path in facts["required_reads"] if path != ARCHITECTURE_INPUT), task_ref + "/prd.md",
+            ".trellis/workflow.md", ".trellis/spec/workflow/clear-technical-writing.md",
+        })
+        facts["architecture_reads"] = [path for path in facts["architecture_reads"] if path != ARCHITECTURE_INPUT]
+        facts.pop("architecture_input_sha256")
+        facts["boundary"] += " architecture-input.json is an optional future phase2 blueprint, not current Planning input or freshness."
+        write_json(fixture / FACTS, facts)
 
 
 def owner_mutated_paths(repository: Path) -> list[str]:

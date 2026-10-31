@@ -93,6 +93,10 @@
   ],
   "artifacts": [
     {
+      "id": "phase2_semantic_authoring_example",
+      "path": "examples/phase2-authoring.json"
+    },
+    {
       "id": "phase2_check_example",
       "path": "examples/phase2-check.json"
     },

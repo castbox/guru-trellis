@@ -89,3 +89,23 @@ R331-06 / D331-06 是上述真实对照方法与结果责任，横切 T331-01..0
 | T693-03 / R693-04 → D693-03 | source/installed、完整 preset apply/drift、声明平台/sidecar、语法与上下文检查；公共交付后的原正式升级 | 各自实际安装和分发一致；候选 Check 后实际晋升读回、after 重绑及最终质量链。目标正式采用另有真实结果，不以公共合并或 dogfood 替代。 |
 
 本批实际结果和观察截止点唯一见 [#693 Test](../../requirements-design-test-contributions/693-contract-evidence-adoption/test.md)。#693 按其 live accepted contract 采用定向验证及原质量链，没有新增业务测试、专项 replay/A-B/native eval、固定次数、额外安装或完整多平台矩阵要求。原 T331/T648/T-MECH 的历史专项安排及原结果保持原义，不自动成为本批义务。未完成的后端正式采用和业务效果分别保留，后者不在本项业务实施范围。
+
+## T710：正常 authoring、首次执行与消费兼容
+
+R710/BEH710、D710/CON710 的来源为 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。下表只定义本批策略与观察，不引用旧 Task 的专项次数作为新义务。精确命令和输入合同读原 Check package 与 matching 安装。
+
+| Test / scenario | Requirement → design | 原入口、输入与必须观察 | 证明边界 |
+| --- | --- | --- | --- |
+| T710-01 / SC710-CONTRACT | R710-01/05 → D710-01/05 | 实际 Skill、Recorder Authoring、最小语义示例和完整结果示例；引用可达、示例能进入原 record、正常输入无手填客观身份，AI 亲读可执行性 | 合同/结构检查不单独证明 Agent 首次行为 |
+| T710-02 / SC710-COMMAND | R710-02/05 → D710-02/05 | 五 profiles 的合法起点、正式语义输入与真实 record/check/invoke；同一完整结果和要求回执正确承接，实际成功/finding/规划/blocked/resolved 出口保留 | host 无私有结果摘要；真实命令仍不是 native |
+| T710-03 / SC710-RECOVERY | R710-03/04 → D710-03/04 | 原已录完整结果消费/恢复、正常业务 bytes 改变、结果 metadata 更新 | 业务变化拒旧结果，metadata 连续，不自动 record 旧语义；不删合法完整消费 |
+| T710-04 / SC710-DIAGNOSTIC | R710-04 → D710-04 | 普通定位不匹配、遗漏 reviewed path、真实内容或历史变化；原 wrapper/error | 保原 code、确定字段与原恢复 owner，不用诊断证明根治，不引入故意伪造案例 |
+| T710-05 / SC710-INPUT-EXIT | R710-03/05 → D710-03/05 | 本批真实调用/模板/消费者清单、record 输入退出和原完整结果消费单元、受影响 adapter tests | matching retirement 明确，完整 schema/消费/恢复保持；mock 只证明运输 |
+| T710-06 / SC710-CANDIDATE-FINAL | R710-02/06 → D710-02/06 | 正常 installed native 同 fixture，真实 mandatory owners→合法候选 Check→原最终整合/no-change→actual after 重绑→匹配最终 Check | 第一输入/命令分别真实获得 candidate_checked 与 passed；预期在模型外，无本阶段答案或装配纠偏；能力缺失未验证 |
+| T710-07 / SC710-FINDING | R710-05/06 → D710-05/06 | 现有真实 finding native、实际原因及原合法 rework | 当前 finding 对应 implementation_required/planning_stale 并回原 owner，不只比较出口，不隐去失败 |
+| T710-08 / SC710-INSTALL | R710-07 → D710-07 | 同 canonical 的原工具升级、source/dogfood/installed/声明平台、定向 reapply/drift/mode/sidecar，最多一个必要代表 clean | 受管正文/argv 一致、用户内容保留，无未处置 sidecar；不证明完整发布矩阵或业务采用 |
+| T710-09 / SC710-FINAL-COVERAGE | R710-01..07 → D710-01..07 | 本 Task 完整 isolated proposed 与实现，原独立 Architecture/候选 Check→两 maintenance owners 晋升/readback→after 重绑→最终 Check→完整 committed Review | eval 不是本 Task 正式门禁；晚到正式结果读原公共结果和 Git/PR |
+
+每个 native 阶段保留 profile、候选、前置公开事实、首次 authored 输入、实际命令/结果承接及出口，原始轨迹在已有 repo 外 run-root。装配错误保留为该案例失败；修订后新 run 的来源和边界明确，不把重试改名首次。host 不提供本阶段 owner result、私有摘要、内部 authoring 选择或预期出口，不改写 Agent 原字节，也不给报错后纠偏提示。真实 finding 是合法语义出口；setup、execution gap 与 semantic 判断分别表达。
+
+实际结果与观察截止点唯一由 [#710 Test](../../requirements-design-test-contributions/710-phase2-recorder-authoring/test.md) 拥有。本正文不预填自身最终 pass、最终 HEAD 或交付，不把示例/命令计划/CLI 可用当作成功。原完整结果消费者测试保留其实际价值，不能因此声称正常 authoring/native 已证明。源码、命令、Agent、matching 安装和后继正式采用分别报告；历史失败保持原义，未验证完整 Release/多平台升级矩阵不成为本普通 Task 的新增义务。

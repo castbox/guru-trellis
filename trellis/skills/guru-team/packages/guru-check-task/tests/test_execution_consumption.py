@@ -163,6 +163,55 @@ class ExecutionConsumptionTests(unittest.TestCase):
                 self.assertEqual("stale_identity", result["code"])
                 self.assertEqual(before, (fixture.repo / fixture.task_ref / "task.json").read_bytes())
 
+    def test_semantic_authoring_real_commands_keep_final_profile_routes(self):
+        """Command evidence only; the fixture does not claim native judgment."""
+        for profile in PROFILES:
+            for result in ("success", "implementation_required", "planning_stale", "blocked"):
+                with self.subTest(profile=profile, result=result):
+                    fixture = self.fixture(profile)
+                    public = self.public(fixture, profile)
+                    authored = json.loads((PACKAGE / "examples/phase2-authoring.json").read_text())
+                    authored["reviewed_paths"] = ["app.txt"]
+                    exit_id = ("resolved_reconciliation_passed" if profile == "delivery_resolved_reconciliation" else "passed") if result == "success" else result
+                    authored["typed_exit"] = exit_id
+                    if exit_id == "resolved_reconciliation_passed":
+                        authored["consumer"] = {"kind": "skill", "id": "guru-reconcile-task-base"}
+                    elif exit_id == "blocked":
+                        authored["consumer"] = {"kind": "stop", "id": "task-check-blocked"}
+                        authored["semantic_review"]["status"] = "blocked"
+                        authored["semantic_review"]["adequacy_dimensions"][-1]["status"] = "blocked"
+                        authored["validation"]["unverified_items"] = [{"id": "U-command", "summary": "Required command evidence is unavailable.", "blocking": True}]
+                    elif exit_id in {"implementation_required", "planning_stale"}:
+                        finding = exit_id == "implementation_required"
+                        authored["consumer"] = {"kind": "workflow", "id": "guru-resume-implementation" if finding else "guru-task-check-planning-router"}
+                        authored["semantic_review"]["status"] = exit_id
+                        authored["candidate_classifications"] = [self.candidate("qualified_current" if finding else "qualified_approved_expansion")]
+                        ref = authored["candidate_classifications"][0]["candidate_ref"]
+                        authored["semantic_review"]["scope_decisions"] = [{"id": "scope-command", "candidate_ref": ref,
+                            "disposition": "current_scope" if finding else "scope_change_required", "summary": "The endpoint requires current review.", "finding_id": "F-command" if finding else None}]
+                        if finding:
+                            authored["semantic_review"]["adequacy_dimensions"][2]["status"] = "failed"
+                            authored["semantic_review"]["findings"] = [{"id": "F-command", "candidate_ref": ref, "severity": "P2", "summary": "Supported endpoint fails.", "path": "app.txt", "status": "open"}]
+                        else:
+                            authored["route"] = "reapprove_plan"
+                    # The host supplies only semantics. No private content helper
+                    # or result identity is used before the real recorder.
+                    recorded = fixture.wrapper("guru-check-task", "record-phase2-check.sh", "--task", fixture.task_ref,
+                        "--input", fixture.write("semantic-command.json", authored))
+                    artifact = Path(recorded["artifact_path"])
+                    before = artifact.read_bytes()
+                    checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref)
+                    self.assertEqual(recorded["artifact_path"], checked["artifact_path"])
+                    output = fixture.wrapper("guru-check-task", "invoke.sh", "--input", fixture.write("public-command.json", public),
+                        "--owner-result", artifact)
+                    self.assertEqual(exit_id, output["exit_id"])
+                    self.assertEqual(before, artifact.read_bytes())
+                    if exit_id == "passed":
+                        # Recover the exact recorded result after its metadata write.
+                        fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref)
+                        self.assertEqual(output, fixture.wrapper("guru-check-task", "invoke.sh", "--input", fixture.write("public-command.json", public),
+                            "--owner-result", artifact))
+
     def test_current_planning_predecessor_is_required(self):
         public = self.public(self, "delivery_initial_check")
         public["planning_accepted_result_id"] = "planning:previous"

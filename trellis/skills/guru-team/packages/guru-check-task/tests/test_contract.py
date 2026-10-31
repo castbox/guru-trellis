@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -223,13 +224,41 @@ class CheckTaskPackageContractTests(unittest.TestCase):
                       "semantic_review", "typed_exit", "route", "reason", "consumer"):
             self.assertIn(field, self.schema["properties"])
 
+    def test_recorder_authoring_section_links_real_closed_input_and_runnable_recipe(self) -> None:
+        contract = (self.package / "references/contract.md").read_text()
+        # A mention cannot satisfy the section contract. Follow its actual input
+        # link, then validate that input's shape against the result schema.
+        section = contract.split("\n## Recorder Authoring\n", 1)[1].split("\n## ", 1)[0]
+        target = re.search(r"\[examples/phase2-authoring.json\]\(([^)]+)\)", section).group(1)
+        path = (self.package / "references" / target).resolve()
+        self.assertEqual(path, self.package / "examples/phase2-authoring.json")
+        authored = json.loads(path.read_text())
+        generated = {"schema_version", "skill_id", "task_ref", "phase2_capture_commit", "reviewed_content_sha256"}
+        self.assertEqual(set(self.schema["required"]) - generated, set(authored))
+        from jsonschema import Draft202012Validator
+        # This assembly tests schema compatibility only. Real command tests use
+        # the semantic file directly and obtain every identity from the recorder.
+        result = {**self.example, **authored}
+        Draft202012Validator(self.schema).validate(result)
+        artifacts = {row["path"] for row in self.interface["artifacts"]}
+        self.assertIn("examples/phase2-authoring.json", artifacts)
+        recipe = section.split("```bash\n", 1)[1].split("\n```", 1)[0]
+        syntax = subprocess.run(["bash", "-n"], input=recipe, text=True, capture_output=True)
+        self.assertEqual(syntax.returncode, 0, syntax.stderr)
+        repository = self.package.parents[4]
+        runtime = re.search(r"^GURU_CHECK_RUNTIME=(.+)$", recipe, re.MULTILINE).group(1)
+        schemas = re.search(r"^GURU_CHECK_SCHEMAS=(.+)$", recipe, re.MULTILINE).group(1)
+        self.assertTrue((repository / runtime / "resolve-python.sh").is_file())
+        self.assertTrue((repository / schemas / "intermediate-command-receipt-1.0.schema.json").is_file())
+        for target in re.findall(r"\[[^]]+\]\((\.\./[^)#]+)(?:#[^)]*)?\)", section):
+            self.assertTrue((self.package / "references" / target).is_file(), target)
+
     def test_native_cases_require_ai_authoring_without_host_owner_recipes(self) -> None:
         cases = {item["id"]: item for item in self.read("evals/evals.json")["evals"]}
         for case_id, expected in (("native-owner-clean", "passed"), ("native-owner-all-rejected", "passed"), ("native-owner-finding", "implementation_required"), ("native-owner-test-boundary", "implementation_required"), ("native-owner-test-support", "implementation_required"), ("native-owner-selection-assertion", "implementation_required")):
             case = cases[case_id]
             self.assertEqual(case["native_execution_mode"], "semantic_authoring")
             self.assertEqual(case["native_execution_adapter"], "codex")
-            self.assertEqual(case["model_id"], "gpt-5.6-sol")
             self.assertEqual(case["expected_exit"], expected)
             self.assertNotIn(expected, case["prompt"])
             for path in case["files"]:

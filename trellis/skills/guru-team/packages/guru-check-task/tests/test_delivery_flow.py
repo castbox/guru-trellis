@@ -122,18 +122,17 @@ class DeliveryFlow(unittest.TestCase):
         return value.get("result", value)
 
     def check(self):
-        local = PACKAGE / "runtime"
-        sys.path.insert(0, str(local))
-        spec = importlib.util.spec_from_file_location("flow_check_common", local / "common.py")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        owner = json.loads((PACKAGE / "examples/phase2-check.json").read_text())
-        owner.update(task_ref=self.task_ref, phase2_capture_commit=self.head,
-                     reviewed_content_sha256=module.content_identity(self.repo), reviewed_paths=self.projection.resolve(self.key)["candidate"]["paths"])
+        authoring = json.loads((PACKAGE / "examples/phase2-authoring.json").read_text())
+        authoring["reviewed_paths"] = self.projection.resolve(self.key)["candidate"]["paths"]
+        recorded = self.wrapper("guru-check-task", "record-phase2-check.sh", "--task", self.task_ref,
+                                "--input", self.write("check-authoring.json", authoring))
+        checked = self.wrapper("guru-check-task", "check-phase2-check.sh", "--task", self.task_ref)
+        self.assertEqual(recorded["artifact_path"], checked["artifact_path"])
+        self.check_artifact_path = recorded["artifact_path"]
         public = {"profile": "delivery_initial_check", "mode": "workflow", "task_ref": self.task_ref,
                   "delivery_key": self.key, "source_exit": "implementation_complete", "planning_accepted_result_id": "planning:flow"}
         return self.wrapper("guru-check-task", "invoke.sh", "--input", self.write("check.json", public),
-                            "--owner-result", self.write("check-owner.json", owner))
+                            "--owner-result", recorded["artifact_path"])
 
     def test_fresh_check_metadata_does_not_force_second_commit_and_full_review(self):
         checked = self.check()
@@ -501,7 +500,7 @@ class DeliveryFlow(unittest.TestCase):
         blocked = self.wrapper("guru-review-branch","review-branch.sh","--task",self.task_ref,"--skill-input",self.write("review-no-binding.json",public),"--semantic-review-file",self.write("review-no-binding-owner.json",auth),"--typed-exit","passed",success=False)
         self.assertEqual("stale_identity",blocked["code"])
         check_public = {"profile":"delivery_initial_check","mode":"workflow","task_ref":self.task_ref,"delivery_key":self.key,"source_exit":"implementation_complete","planning_accepted_result_id":"planning:flow"}
-        blocked = self.wrapper("guru-check-task","invoke.sh","--input",self.write("check-no-binding.json",check_public),"--owner-result",str(self.inputs/"check-owner.json"),success=False)
+        blocked = self.wrapper("guru-check-task","invoke.sh","--input",self.write("check-no-binding.json",check_public),"--owner-result",self.check_artifact_path,success=False)
         self.assertEqual("stale_identity",blocked["code"])
         self.assertEqual(self.head,self.git("rev-parse","HEAD").strip())
         self.assertIsNone(self.projection.resolve(self.key)["results"]["full_review"])

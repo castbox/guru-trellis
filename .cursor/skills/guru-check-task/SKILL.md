@@ -35,6 +35,9 @@ for shared candidate coverage, engineering facts and recovery. This package
 retains its own current judgment, formal result and action boundary.
 
 Read the current Delivery integration contract in [references/contract.md](references/contract.md) first.
+After your semantic review, follow its [Recorder Authoring](references/contract.md#recorder-authoring)
+section and [semantic input example](examples/phase2-authoring.json). The complete
+6.0 example explains recorder output and result consumption only.
 
 Read `.trellis/spec/workflow/causal-completion-semantics.md` alongside this
 package contract before the stage judgment; the contract owns its local routes.
