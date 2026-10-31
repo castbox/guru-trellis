@@ -1,0 +1,5 @@
+{
+  "code": "stale_identity",
+  "field_path": "owner_result.snapshot",
+  "remediation": "Reread changed content, recapture and complete the affected review before retrying."
+}

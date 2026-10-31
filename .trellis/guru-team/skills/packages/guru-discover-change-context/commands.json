@@ -127,7 +127,7 @@
           "flag": "--invocation",
           "required": true,
           "kind": "string",
-          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read; owner_result is recorder stdout.",
+          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read; owner_result is recorder stdout. Binding/base failures retain reason and add result.diagnostic (code, field_path, remediation) for the current Discovery owner.",
           "repeatable": false,
           "conflicts": []
         },
@@ -189,7 +189,7 @@
           "flag": "--invocation",
           "required": true,
           "kind": "string",
-          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read.",
+          "description": "Closed semantic-owner 1.0 envelope JSON file or dash for one stdin read. Narrowed binding/base failures emit a three-field diagnostic on stderr; stdout remains one declared typed exit.",
           "repeatable": false,
           "conflicts": []
         },

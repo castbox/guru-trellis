@@ -1,6 +1,6 @@
 ---
 name: guru-maintain-architecture-baseline
-description: Maintain a repository Architecture Baseline through semantic bootstrap, task impact synchronization, promotion, and repair profiles.
+description: Maintain and assess the repository Architecture Baseline, including 审核任务架构影响, through existing bootstrap, task-impact, promotion and repair profiles. Backend overview/detail document review uses applicable specialist standards; retain this owner's profile prerequisites.
 ---
 
 # Guru Maintain Architecture Baseline
@@ -11,6 +11,14 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this owner's authority-first independent assessment order. When the
+project adopts backend overview or detailed-design standards and the current
+object requires their review, load the corresponding specialist methods and
+same-source standards. Judge their current evidence within the existing
+Architecture concerns and project checks; a specialist pass neither replaces
+this stage's assessment nor changes authority, promotion or route ownership.
 
 Read and apply `.trellis/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage`
 for shared candidate coverage, engineering facts and recovery. This package

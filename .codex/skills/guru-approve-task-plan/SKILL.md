@@ -1,6 +1,6 @@
 ---
 name: guru-approve-task-plan
-description: Approve current Delivery planning through one AI-owned semantic review, compact private evidence, and four minimal typed exits.
+description: Review whether current formal Delivery planning is sufficient to implement, including 审核规划是否可实施, through the existing semantic approval loop and four typed exits. Standalone product or system-design document review uses its applicable specialist; retain Approval prerequisites.
 ---
 
 # Guru Approve Task Plan
@@ -11,6 +11,13 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this Skill's existing entry and planning review. Load applicable
+specialist methods and same-source standards for the actual planned artifacts,
+then judge their evidence against this Delivery's requirements, solution and
+validation plan. Do not require unrelated full product or system-design
+packages, or accept a specialist pass as this owner's planning approval.
 
 Read `.trellis/spec/workflow/workflow-contract.md#interaction-budget` before
 any confirmation, choice or clarification. This Skill retains its own action
