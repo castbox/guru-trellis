@@ -125,6 +125,26 @@ class ReceivingSessionTests(unittest.TestCase):
         self.assertEqual(len(self.projection.read_record()["deliveries"]), 1)
         self.assertEqual(self.projection.current()["key"], chain.key)
 
+    def test_final_plan_object_does_not_grant_approval_execution_selection(self):
+        chain = self.chain
+        envelope = chain.architecture_envelope()
+        package = planning.PACKAGE.parent / "guru-approve-task-plan"
+        seed = json.loads((package / "examples/planning-approval-delivery.json").read_text())
+        authored = {k: seed[k] for k in (
+            "mode", "authority_refs", "delivery_policy", "docs_ssot_plan",
+            "semantic_review", "typed_exit", "consumer", "reason")}
+        with patch.dict(os.environ, {"TRELLIS_CONTEXT_ID": "one-off-final-plan"}):
+            self.assertEqual(self.projection.current()["kind"], "no_current_task")
+            final = chain.command("guru-maintain-architecture-baseline",
+                "invoke-guru-maintain-architecture-baseline", ["--invocation", "-"], envelope)
+            self.assertEqual(final["planning_purpose"], "final_plan")
+            self.assertEqual(self.projection.current()["kind"], "no_current_task")
+            error = chain.command(package.name, "record-planning-approval",
+                ["--task", chain.ref, "--delivery-key", json.dumps(chain.key), "--input", "-"],
+                authored, expected=3)
+            self.assertEqual((error["code"], error["field_path"]), ("stale_identity", "delivery_key"))
+            self.assertEqual(self.projection.current()["kind"], "no_current_task")
+
     def test_real_generation_advance_preserves_earlier_explicit_key_diagnostic(self):
         chain = self.chain
         chain.fixture.stop(chain.key)

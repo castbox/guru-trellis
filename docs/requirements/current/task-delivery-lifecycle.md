@@ -138,7 +138,7 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 
 ## R679：明确接收会话、首失败与文档展示
 
-**R679-01 / BEH679-RECEIVE**：主会话承接创建结果或独立审核会话接收明确 TaskId/generation、DeliveryKey 和 planning_root 后，先核接收者自己的身份、唯一 checkout 与公共 current。存在 context 而缺 Task 绑定时，经原 Identity/Ensure/Bind 恢复该明确对象；同 Task 缺选择时，经原 Creation Selection 选择明确的非终态切片。匹配事实复核复用，不重复写；恢复后重读 key、generation、phase、scope、root，并回原未完 profile/purpose。已有 Planning 不重跑初始 Author，必要前序缺失或过期回原 producer。新绑定不是切片选择，也不是阶段通过。真正无 context 沿原 explicit-task 校验，不用显式 key 隐藏有 context 的缺失、冲突或错误。
+**R679-01 / BEH679-RECEIVE**：主会话承接创建结果或独立审核会话接收明确 TaskId/generation、DeliveryKey 和 planning_root 后，普通执行接收先核接收者自己的身份、唯一 checkout 与公共 current。存在 context 而缺 Task 绑定时，经原 Identity/Ensure/Bind 恢复该明确对象；同 Task 缺选择时，经原 Creation Selection 选择明确的非终态切片。匹配事实复核复用，不重复写；恢复后重读 key、generation、phase、scope、root，并回原未完 profile/purpose。已有 Planning 不重跑初始 Author，必要前序缺失或过期回原 producer。新绑定不是切片选择，也不是阶段通过。真正无 context 沿原 explicit-task 校验。独立 Architecture final_plan 使用下述 R694-01 的只读对象入口；其他入口不用显式 key 隐藏有 context 的缺失、冲突或错误。
 
 **R679-02 / BEH679-FIRST-FAILURE**：接收调用区分 no_current_task、no_current_delivery、current、terminal_delivery、error，以及不同选择和真实 generation/phase/scope 失配。诊断指出本次首先失败条件与原 owner；恢复后再读其余条件。不同合法选择不覆盖，终态不重开，损坏/不可读/API不支持或 checkout 歧义不当作缺绑定。原 Author/Architecture planning 校验保拒绝强度、错误 code 和出口形状，细化具体 field_path/remediation；早于 Delivery guard 的真实 API 错误也保留。精确诊断与 matching 迁移见原 package 及 MIGRATION-679，不新增状态模型。
 
@@ -147,3 +147,11 @@ remote branch 是 repository identity 与完整 remote ref 标识的共享资源
 **R679-04 / BEH679-ARTIFACTS**：明确选定 Delivery 的展示把真实完整 key 传原 resolver，展示实际 planning_root 中存在的文档。尚无或无当前 Delivery 的 Task-only 停点，只展示该精确 TaskRef 内存在的整体根 PRD，不猜选、构造 key 或创建空切片。Finish 后明确切片使用实际 archive TaskRef/key。实际 resolver 调用和正常缺文件行为须验证，文本一致只证明分发。
 
 上述行为保持 R531/R657 的 Task/Delivery 公共模型、单 writer 与原义务，Architecture first-read/独立性和适用结果保持。不能修改 context 环境借用别的会话，不能从 inventory 唯一项或 phase/文件推导身份与 pass。对应职责见 D679-01..04，验证见 T679-01..06；本批来源与窄补充边界见 [#679 追踪](../../requirements-design-test-contributions/679-session-continuation/traceability.md)。
+
+## R694：一次性 final_plan 评审对象
+
+**R694-01 / BEH694-OBJECT**：仅独立 Architecture `delivery_task_impact_sync / planning / final_plan` 接收完整显式对象时，无 Task 绑定或同 Task/generation 无 Delivery 选择可直接只读校验并正式评审，不先调用 Identity/Ensure/Bind/Selection，不创建持久执行选择。匹配选择复用，真正无 context 的原显式入口保持。对象校验覆盖当前 TaskId/generation、C4、唯一注册 checkout、公开 Task/Delivery 关系及 profile、非终态 planning、accepted_scope/scope_ref、planning_root 和实际 design freshness。其他 Task/key、terminal、损坏绑定、API/read error 和真实失配保实际首失败及原 owner。
+
+**R694-02 / BEH694-BOUNDARY**：一次性评审不改业务、规划、shared baseline、生命周期、session 或资源。原空历史独立 reviewer 先读 constitution/baseline/change-contract，再核对象、设计与实际 consumers，最后读解释归属；AI 独立形成结论。实际 typed stdout 保 key/root/purpose/freshness，只有原成功出口进入相邻 Approval。Approval 仍满足自身合法选择。其他 Planning owners、实施和 Architecture purposes/stages 保原选择与恢复职责；普通恢复允许原 owner 必要 session runtime 写入。
+
+上述两项仅替代 R679-01 中独立 final_plan 的持久绑定前置。R679 其他条件、原错误/出口/consumer 和 public I/O 不变。职责见 D694-01/02，验证见 T694-01..04；来源与替代见 [#694 追踪](../../requirements-design-test-contributions/694-final-plan-object/traceability.md)。

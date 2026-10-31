@@ -117,7 +117,7 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 
 ## D679：接收者前置事实与原 owner 接续
 
-**D679-01 / CON679-RECEIVE** 承接 R679-01。原 workflow created consumers、唯一 continuation 与 Planning 编排显式调用原 Identity/Ensure，然后按接收者自身事实进入原 Bind 和 Selection。五个 Planning Skills 在自己的 entry 中核相同前置；Architecture 在原 baseline-first 之后补接收事实，再继续原 purpose。workflow 只拥有跨 Skill 顺序，step-local Skills 仍拥有内部判断和写入。adapter.current 的有 context / 无 context 边界不变，不新增绑定 writer、wrapper、状态或全局映射。
+**D679-01 / CON679-RECEIVE** 承接 R679-01。普通执行的原 workflow created consumers、唯一 continuation 与 Planning 编排显式调用原 Identity/Ensure，然后按接收者自身事实进入原 Bind 和 Selection。五个 Planning Skills 在自己的 entry 中核相同前置；Architecture 在原 baseline-first 之后按 purpose 核接收事实；final_plan 按 D694-01 只读核对象，其他 purpose 保原恢复。workflow 只拥有跨 Skill 顺序，step-local Skills 仍拥有内部判断和写入。adapter.current 的有 context / 无 context 边界不变，不新增绑定 writer、wrapper、状态或全局映射。
 
 **D679-02 / CON679-DIAGNOSTIC** 承接 R679-02。Author/Architecture 原 planning guard 按公共 kind、selected key、generation、phase、scope 顺序检查；更早的 resolve/API 首失败保原具体条件。外层 stale_identity/出口不变，session.task、session.delivery、delivery.phase、current.error/current.kind/current.key、delivery_key.lifecycle_generation 和 delivery.scope_ref.authority 定位实际条件。runtime 只报客观事实，不 bind/select 或决定语义 route。其余 Wording/Approval/Activation 保原 guard，由明确 caller 接续承担补缺与错误分流。
 
@@ -126,3 +126,11 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 **D679-04 / CON679-PRESENTATION** 承接 R679-04。Human artifacts 调用方提供真实 TaskRef/key；原 Approval package-owned resolver 继续解析精确切片。Task-only 直接检查精确根 PRD；archive 使用实际归档 ref/key。原命中测试执行文档 argv 并观察实际路径/缺文件/不创建与不选择，而非仅断言字符串。
 
 上述变更不改公共 schema/typed exits/phase/helper 参数，不新增兼容双读或 Architecture authority。matching workflow、五 Planning packages、Readiness 与直接 consumers 成套采用，诊断迁移见 MIGRATION-679。历史归档不为工具安装转换；含旧数据的 checkout 沿原 tools-only owner维护工具，普通preset检查继续严格。RDT 完整拟写先经候选 Check，再原 final_integration/readback 和最终质量链；source/package、installed、Agent 及外部采用分别证明。
+
+## D694：Architecture 本地只读对象入口
+
+**D694-01 / CON694-OBJECT** 承接 R694-01。原 Architecture package invoke 的 Planning 本地 helper 使用已有 planning_purpose，只对 final_plan 读取真实 current 后复用原显式 Task/C4/checkout、public relationship/profile 校验。no_current_task、匹配 Task 的 no_current_delivery 及匹配 current 可核对象；不同 key、terminal、error 保原处理。原非终态 planning、scope/root/design freshness 及 owner-result 校验继续执行。共享 DeliveryProjection.current(key) 和 official session/selection writers 不变，不新增持久状态、wrapper、public field/profile 或全局 fallback。
+
+**D694-02 / CON694-ROUTE** 承接 R694-02。workflow 只路由一次性 final_plan 到原 Architecture Skill，Skill 独占 authority-first、对象校验、独立判断和无写入边界。其实际 output 沿 Interface 当前 aggregate、Delivery planning branch、direct current projection 到 current router，再按 purpose 投影相邻 Approval 当前输入。Approval 自身 guard 保持。其他出口回原 consumer，普通恢复仍由原 Identity/Ensure/Bind/Selection 写必要 runtime。matching workflow/package/preset 成套采用，无数据迁移；理由及取舍由 [ADR-EXPLICIT-REVIEW-OBJECT](../../architecture/adr/explicit-review-object.md) 拥有。
+
+本差额窄修订 D679-01，保留其他原职责和错误合同。候选完整拟写先 Check，再原 owner final_integration/readback；最终候选重绑、Check 和 committed Review 覆盖实际内容。

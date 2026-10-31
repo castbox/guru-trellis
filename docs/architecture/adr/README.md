@@ -83,3 +83,5 @@
 - [ADR-035：活动续接与scope两次承接](./035-current-continuation-scope-routing.md)；窄替代ADR-011/023/024的旧created/恢复/scope路由片段，保留公共模型、原producer和阶段owners。
 
 - [ADR-CONTRACT-CONTINUITY：固定 before 缺失与维护回程](./contract-continuity.md)；原三个 authority locator 的真实历史缺失、固定 B..H 和同次 promotion 维护回程。
+
+- [ADR-EXPLICIT-REVIEW-OBJECT：独立 final_plan 只读评审对象](./explicit-review-object.md)；窄替代普遍接收选择前置，保留普通执行恢复、原事实校验与相邻Approval资格。

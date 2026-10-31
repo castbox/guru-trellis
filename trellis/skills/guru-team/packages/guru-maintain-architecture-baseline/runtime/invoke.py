@@ -534,6 +534,28 @@ def _check_owner_result(package_root: Path, public: dict, owner: dict) -> dict:
     return recorded
 
 
+def _planning_current(projection, public: dict) -> dict:
+    """Read the final-plan object without changing execution selection."""
+    key = public["delivery_key"]
+    current = projection.current(key)
+    if public["planning_purpose"] != "final_plan":
+        return current
+    kind = current.get("kind")
+    selected = current.get("key")
+    if kind == "no_current_delivery":
+        task_key = {field: key[field] for field in ("task_id", "lifecycle_generation")}
+        if selected != task_key:
+            raise CommandError("stale_identity", "current.key", "The receiving session binds a different Task/generation. Resolve that binding through its original owner; do not overwrite it to enter Architecture.", 3)
+    elif kind == "current":
+        if selected != key:
+            return current
+    elif kind != "no_current_task":
+        return current
+    # Reuse the original Task/C4/checkout, relationship and profile checks.
+    # This view belongs to this invocation only; current(key) stays unchanged.
+    return projection._explicit_current(key)
+
+
 def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--json", action="store_true")
@@ -574,7 +596,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             if public["planning_root"] != delivery["planning_root"]:
                 raise CommandError("stale_identity", "planning_root", "Read the exact public Delivery planning_root.", 3)
             if planning:
-                current = projection.current(public["delivery_key"])
+                current = _planning_current(projection, public)
                 kind = current.get("kind")
                 if kind == "no_current_task":
                     raise CommandError("stale_identity", "session.task", "This receiving session has no Task binding. Invoke guru-establish-task-identity, guru-ensure-task-checkout and guru-bind-task-session for the explicit Task, then reread current before Architecture.", 3)

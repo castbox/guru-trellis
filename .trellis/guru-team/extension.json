@@ -1183,11 +1183,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-10-30T20:44:54Z",
+  "installed_at": "2026-10-30T23:08:34Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "b8e1380f6817e9dd6f91bad6c69f32aa0c54e044",
-    "commit": "b8e1380f6817e9dd6f91bad6c69f32aa0c54e044",
+    "ref": "2dbaf308e6d5137bf640cfe546a078497c1c713a",
+    "commit": "2dbaf308e6d5137bf640cfe546a078497c1c713a",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1428,7 +1428,7 @@
       {
         "id": "guru-maintain-architecture-baseline",
         "interface_sha256": "363bcad32a294cb1180a333df8e77b2c8b95992fe030d4beff6074a942f1890c",
-        "tree_sha256": "1cf782c58886e1bbb9188ced14c6b19cb810126ca51357576374919f434a4357"
+        "tree_sha256": "a2e0f39f3b18ced1835f2db34576a3fab7f321167d1dd722d7ce8115376da7a9"
       },
       {
         "id": "guru-maintain-legacy-task",
@@ -9760,7 +9760,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "ad66e5f385e256657d24e57c7d58689ae1c2c8560cc13cb42d6f551941753bf6",
+        "sha256": "bf4511d50bfd763f7b633fcc2896120f4fd1005b6cdc14416c67f142a72b1c84",
         "executable": false,
         "action": "installed"
       },
@@ -10404,14 +10404,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "3e2fd77b509a3fc8c9b820e3de9810669432e680e3ca28a0b070eab636348a4d",
+        "sha256": "02dcfddd172d19d2c89c2ac2121df4cddb323842898861004a7feeff22b0b386",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/runtime/invoke.py",
-        "sha256": "4ed669d123e8c5d2c069727d069457fc182f0f925735afd9a4078eca68ace59a",
+        "sha256": "1ab650f5cb6e5c9050487fdd6d9981319c78dcb9ab51bbc756559a311c85a627",
         "executable": false,
         "action": "installed"
       },
@@ -41610,7 +41610,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "ad66e5f385e256657d24e57c7d58689ae1c2c8560cc13cb42d6f551941753bf6",
+        "sha256": "bf4511d50bfd763f7b633fcc2896120f4fd1005b6cdc14416c67f142a72b1c84",
         "executable": false,
         "action": "installed"
       },
@@ -42149,7 +42149,7 @@
       {
         "path": ".agents/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "3e2fd77b509a3fc8c9b820e3de9810669432e680e3ca28a0b070eab636348a4d",
+        "sha256": "02dcfddd172d19d2c89c2ac2121df4cddb323842898861004a7feeff22b0b386",
         "executable": false,
         "action": "installed"
       },
@@ -42674,7 +42674,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "ad66e5f385e256657d24e57c7d58689ae1c2c8560cc13cb42d6f551941753bf6",
+        "sha256": "bf4511d50bfd763f7b633fcc2896120f4fd1005b6cdc14416c67f142a72b1c84",
         "executable": false,
         "action": "installed"
       },
@@ -43213,7 +43213,7 @@
       {
         "path": ".codex/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "3e2fd77b509a3fc8c9b820e3de9810669432e680e3ca28a0b070eab636348a4d",
+        "sha256": "02dcfddd172d19d2c89c2ac2121df4cddb323842898861004a7feeff22b0b386",
         "executable": false,
         "action": "installed"
       },
@@ -43738,7 +43738,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "ad66e5f385e256657d24e57c7d58689ae1c2c8560cc13cb42d6f551941753bf6",
+        "sha256": "bf4511d50bfd763f7b633fcc2896120f4fd1005b6cdc14416c67f142a72b1c84",
         "executable": false,
         "action": "installed"
       },
@@ -44277,7 +44277,7 @@
       {
         "path": ".claude/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "3e2fd77b509a3fc8c9b820e3de9810669432e680e3ca28a0b070eab636348a4d",
+        "sha256": "02dcfddd172d19d2c89c2ac2121df4cddb323842898861004a7feeff22b0b386",
         "executable": false,
         "action": "installed"
       },
@@ -44802,7 +44802,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/SKILL.md",
-        "sha256": "ad66e5f385e256657d24e57c7d58689ae1c2c8560cc13cb42d6f551941753bf6",
+        "sha256": "bf4511d50bfd763f7b633fcc2896120f4fd1005b6cdc14416c67f142a72b1c84",
         "executable": false,
         "action": "installed"
       },
@@ -45341,7 +45341,7 @@
       {
         "path": ".cursor/skills/guru-maintain-architecture-baseline/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-maintain-architecture-baseline/references/contract.md",
-        "sha256": "3e2fd77b509a3fc8c9b820e3de9810669432e680e3ca28a0b070eab636348a4d",
+        "sha256": "02dcfddd172d19d2c89c2ac2121df4cddb323842898861004a7feeff22b0b386",
         "executable": false,
         "action": "installed"
       },

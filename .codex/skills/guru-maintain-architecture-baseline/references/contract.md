@@ -241,15 +241,34 @@ The reviewer reads and judges in this order:
 6. form an independent Architecture judgment, then inspect necessary design
    explanations/contribution for accurate attribution and responsibility.
 
-After step 1 and before step 2, a receiving Delivery reviewer satisfies this
-Skill's own session entry through original Identity/Ensure/Bind and explicit
-Delivery Selection when those facts are missing. Recheck the same public key,
-generation, phase, scope and root before continuing the original purpose.
-This operational recovery uses the explicit public identity only; it does not
-inject PRD, acceptance, implementation summary or previous pass into the
-independent assessment. A different selection, terminal state or query error
-stays with its original owner. Neither a key nor successful recovery supplies
-an Architecture conclusion.
+After step 1 and before step 2, a receiving Delivery reviewer applies this
+Skill's entry for the original purpose. For `delivery_task_impact_sync`,
+`stage=planning`, `planning_purpose=final_plan`, the complete explicit object is
+the review input; it is not execution selection. Read the receiving session's
+actual current facts first. With no Task binding, or a matching Task/generation
+without Delivery selection, validate the explicit object without invoking
+Identity/Ensure/Bind/Selection or writing session state. Reuse an exact matching
+selection. The original explicit-task entry remains valid when the resolver
+confirms no context. A different Task/key, terminal selection, corrupt binding
+or query error retains its actual first failure and original owner.
+
+All these final-plan paths validate the current TaskId/generation, C4 branch
+relationship, unique registered checkout, public Task/Delivery relationship,
+supported profile, nonterminal planning phase, accepted_scope/scope_ref,
+planning_root and actual design content freshness. The package-local entry
+reuses the existing explicit projection checks; it does not change shared
+`current(key)` behavior. This one-off review writes no business code, planning,
+shared baseline, lifecycle, session selection or resource record. The original
+formal invoke still validates the AI-authored judgment and returns its typed
+result; object validation alone supplies no semantic conclusion.
+
+Other purposes and stages use original Identity/Ensure/Bind and explicit
+Delivery Selection when required by their entry. Ordinary execution recovery
+may write only the original owner's necessary session runtime. Recheck the same
+public key, generation, phase, scope and root, then continue the original
+unfinished purpose. Neither entry injects PRD, acceptance, implementation
+summary or previous pass, borrows another context or changes environment
+identity. Recovery does not establish an Architecture pass.
 
 Prefer durable requirement/design/operations authority for business constraints.
 When a necessary new constraint exists only in the task, obtain only that fact
@@ -576,11 +595,12 @@ Delivery's three planning documents and the Task's overall scope separately.
 The installed public API validates key/relationship and planning_root; the
 semantic owner result binds both fields and its exact public input. Independent
 assessment, required concerns, contribution, ADR, project checks and promotion
-retain their contracts. Planning uses the profile's existing explicit key when
-the official context resolver has none, validated through the original
-projection's current-generation/C4/public-record checks. Available context
-still requires matching official selection; missing/stale/conflict does not
-enable fallback. Independent review and the original stage responsibilities
+retain their contracts. Planning `final_plan` uses the read-only explicit-object
+entry above, including when the receiving context has no binding or matching
+Task has no selection. Other Planning purposes require matching official
+selection when context exists. Confirmed no-context retains the existing
+explicit-key entry with current-generation/C4/public-record checks. Stale,
+conflict and errors never enable fallback. Independent review and the original stage responsibilities
 remain under this original Architecture owner and contract. No second judgment
 or public Planning writer is added. Whole-task acceptance_finish may have no
 current Delivery and retains task_impact_sync; other development invocations

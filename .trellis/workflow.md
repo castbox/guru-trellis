@@ -799,8 +799,16 @@ check proves native continuation.
 
 ### Explicit receiving-session continuation
 
+For an independent Architecture `delivery_task_impact_sync / planning /
+final_plan` assessment with a complete explicit object, invoke
+`guru-maintain-architecture-baseline` directly. Its step-local read-only entry
+owns object validation after authority-first reading. Do not run the ordinary
+binding/selection recovery below as a prerequisite for that one-off review.
+Only its declared successful final-plan result enters adjacent Approval;
+Approval still satisfies its own execution selection entry.
+
 Before dispatching the original Author, Wording, Architecture, Approval or
-Activation entry, mandatory invoke `guru-establish-task-identity` and
+Activation entry in ordinary execution, mandatory invoke `guru-establish-task-identity` and
 `guru-ensure-task-checkout` for the explicit TaskId/generation. Consume their
 actual exits to resolve one current TaskRef and registered checkout. Then read
 the receiving caller's own public Delivery current query. A producer's binding,
@@ -820,6 +828,9 @@ table owns only their mandatory cross-Skill order. After a successful Bind or
 Selection, recheck all remaining conditions against the same explicit object.
 Task-only requirements have no selection step. A same-object recovery needs no
 new scope choice or repeated continuation question.
+Ordinary recovery permits the original Bind/Selection owners' necessary
+session runtime writes. It does not authorize business, planning or shared
+baseline writes by the receiving reviewer.
 
 Return to the original unfinished profile/purpose with its still-applicable
 producer output and source selection. Existing planning does not restart
@@ -1087,10 +1098,11 @@ The Author Skill owns source-design convergence, writing, policy/Docs plan,
 qualification and dependency judgments; the workflow does not duplicate them.
 
 Before each Delivery Planning owner entry, execute the sole continuation's
-explicit receiving-session route for its actual TaskId/generation/key. This
-also applies to a new independent Architecture receiving chat. Missing session
-facts are restored only through the original Bind/Selection owners; the
-Planning validators remain read-only and cannot supply those writes.
+purpose-specific explicit receiving-session route for its actual
+TaskId/generation/key. Independent Architecture `final_plan` enters its
+original Skill's read-only object entry; other Planning calls restore missing
+execution facts only through the original Bind/Selection owners. Planning
+validators remain read-only and cannot supply those writes.
 
 Consume this one chain by stable owner and actual declared exits:
 Author task_scope_requirements → scope_requirements_ready → original Clarify

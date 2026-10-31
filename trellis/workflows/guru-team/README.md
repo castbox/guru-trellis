@@ -128,6 +128,8 @@ owns reviewer method and input boundaries; this workflow routes the real result.
 Delivery/Completion consume current conclusions and matching-stage eligibility.
 Actual native and projection evidence is owned by [#404 Test](../../../docs/requirements-design-test-contributions/404-independent-architecture-review/test.md).
 
+独立 Architecture `final_plan` 的完整显式对象由原 Skill 只读校验，不为一次性评审写 Task/Delivery 选择。普通执行恢复及相邻 Approval 保原选择合同。采用时更新同源 workflow 和完整 preset；见 [MIGRATION-694](../../presets/guru-team/MIGRATION-694.md)。源码与分发一致不代表现有业务安装或所有平台 Agent 已采用。
+
 ## 候选变化后的审核与验证
 
 [唯一候选适用性合同](../../presets/guru-team/spec/workflow/workflow-contract.md#candidate-applicability-and-coverage) 由七个原 owner 在各自职责内读取。
