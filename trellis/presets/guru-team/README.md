@@ -261,12 +261,21 @@ For current-source validation, use the source-locked, built
 (successful main CI `40882919377`) and that same reviewed Guru source.
 Stable `.6` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
-applying it. Then run:
+applying it. For a target meeting the ordinary current-only installation
+prerequisites, run:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/apply.sh --repo <target>
 .trellis/guru-team/scripts/bash/check-skill-packages.sh --root <target> --mode installed --json
 ```
+
+For tools-only updates in an existing checkout, including source-repository
+dogfood synchronization, load the complete
+[`guru-upgrade-tools` contract](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md).
+The AI selects that owner from the requested scope and actual target state.
+An ordinary apply blocked by old Tasks does not make historical migration part
+of a tools-only request; preserve the records and follow the selected owner's
+preconditions. Full installation/migration retains its original owner and gate.
 
 The installer uses managed-file provenance. Known managed updates may create
 backups during the transaction; successful reapply must leave no unresolved

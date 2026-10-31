@@ -285,10 +285,17 @@ For current-source validation, use the source-locked Trellis Fork checkout
 `40882919377`) and that same reviewed Guru source. Stable `.6` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
-it. Apply the Guru preset using
+it. For a target meeting the ordinary current-only installation prerequisites,
+apply the Guru preset using
 `trellis/presets/guru-team/scripts/bash/apply.sh --repo <target>` and validate
-the installed graph. The repository root README and source lock identify the
-exact CLI build. Remote marketplace installation is not a #434 gate.
+the installed graph. For tools-only updates in an existing checkout, including
+dogfood synchronization with Task/session preservation, load the complete
+[`guru-upgrade-tools` contract](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md).
+The AI chooses the owner from the actual request and target state; an old-Task
+apply diagnostic does not expand a tools-only request into historical migration.
+Full installation/migration keeps its original owner and gate. The repository
+root README and source lock identify the exact CLI build. Remote marketplace
+installation is not a #434 gate.
 
 ## Migration Boundary
 

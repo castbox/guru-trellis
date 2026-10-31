@@ -1,6 +1,6 @@
 ---
 name: guru-review-task-completion
-description: Review all current task Delivery and evidence facts and select one bounded completion route.
+description: Judge formal Task-wide Completion when invoked by the workflow or requested as a formal stage result, covering all Deliveries and evidence under existing prerequisites and routes. 检查需求是否做完 or 审核需求完成度 alone does not select formal Completion; independent read-only assessment belongs to guru-review-change even when a Task exists.
 ---
 
 # Guru Review Task Completion
@@ -11,6 +11,18 @@ use only short progress messages or concrete missing-dependency diagnostics.
 State the current action or missing item; make no unverified claim. If the file
 cannot be read, pause substantive output, then read it and resume the same
 request when available. No additional approval is needed for that recovery.
+
+Enter this Skill for formal whole-Task Completion under the workflow's review
+entry. An independent read-only assessment of requirement coverage retains its
+requested scope even with a bound Task and enters `guru-review-change` in
+standalone mode.
+
+Apply `.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`
+within this owner's whole-task evidence review. Read applicable specialist
+evidence against current accepted obligations and actual Delivery results;
+identify uncovered work and required evidence gaps. Preserve this Skill's
+formal Task entry and completion routes; specialist or individual Delivery
+passes never establish whole-task Completion.
 
 Use this semantic owner for Task-wide completion, including Delivery merge,
 withdrawal, evidence-only refresh or Reactivate validation with no current
@@ -92,8 +104,9 @@ missing implementation and reserve `evidence_pending` for a real evidence gap.
 
 Locate each unsatisfied requirement and its dependent operation before routing:
 
-- Necessary code or a consumer is unimplemented: use the existing remaining-work
-  or implementation/planning revision route. More observation cannot implement it.
+- Necessary code or a consumer is unimplemented: identify the actual Delivery
+  that can legally carry the change before choosing the continuation below.
+  More observation cannot implement it.
 - The mechanism adds an unsupported enablement/migration prerequisite: consume
   the original qualification's basis, necessity and operation scope; return to
   the original mechanism/Planning owner and Architecture as applicable. Do not
@@ -153,11 +166,14 @@ No fixed evidence-field checklist or recorder output proves cause removal.
 
 Ordinary features complete their accepted RDT scope. Diagnosis, mitigation and
 implementation-only repairs may complete their own requirements without
-claiming production root-cause closure. Inspect source/parent requirements
-before selecting a closure disposition: do not choose `close_source` for one
-still requiring root-cause repair or production closure. If the accepted
-source scope truly needs revision, use `requirements_revision_required`;
-Closure executes the current reviewed disposition rather than inventing one.
+claiming production root-cause closure. Read source/parent requirements and
+retain their remaining responsibilities in the completion evidence. Completion
+judges the accepted Task scope; it does not select an Issue disposition or
+author Closure's action set. A satisfied Task may return `completed` while its
+source still has repair responsibility. Closure independently reviews that
+source and decides its actual action, including `retain_open`, under its own
+contract. If the accepted Task scope truly needs revision, use
+`requirements_revision_required`.
 A diagnosis that itself requires identifying the cause remains unfinished
 while the cause is unknown. Required investigation/work uses `remaining_work`
 or the actual existing revision owner, not automatic production pending.
@@ -176,10 +192,25 @@ current scope and all actual Delivery facts. Historical Completion/Finish never
 substitutes for fresh evidence. The refresh profile does not require a current
 Delivery or reuse an old merge DTO as current approval.
 
-After merge/deploy, new facts may require `requirements_revision_required`,
-`implementation_revision_required` or `additional_delivery_required` in the
-same active task. Normal unfinished work remains `remaining_work`. Use
-`blocked` only for a concrete missing authority/dependency or inability to form
+After merge/deploy or Reactivate validation, new facts may require further work
+in the same active Task. Choose the implementation continuation from the actual
+current public Delivery facts:
+
+- Use `implementation_revision_required` only when an actual current nonterminal
+  Delivery owns that work and can legally rework through its original phase
+  owner. Identify that Delivery and its reviewed planning in the existing
+  reason/evidence fields; the consumer resolves its real continuation before
+  Phase 2.
+- If the implementation needs a new slice, or no current nonterminal Delivery
+  can legally carry it, use `additional_delivery_required`. Its existing
+  consumer enters original Delivery Creation and Planning before implementation.
+  A merged or stopped Delivery is historical; do not reopen it, manufacture a
+  selection, or implement before the new slice's required planning and activation.
+- Changed accepted authority uses `requirements_revision_required`. Ordinary
+  unfinished investigation or other work that needs no new implementation slice
+  retains `remaining_work`; required external evidence retains `evidence_pending`.
+
+Use `blocked` only for a concrete missing authority/dependency or inability to form
 a reliable judgment, not ordinary pending evidence. Only the whole accepted
 scope with all required evidence complete can return `completed` to the sole
 `guru-complete-task-closure` consumer, then Finish; Finalizer stays historical.

@@ -68,8 +68,16 @@ classify Issue creation as an independent manual Git/GitHub operation or
 create it directly with a CLI/provider. Preserve the requested Issue-only
 scope and existing Task/resource confirmation boundaries.
 
-An explicit GitHub Issue review request must load its semantic owner:
-“审核 Issue” / “评审 Issue” / requirements-completeness checks load
+Treat “审核” / “审查” / “评审” / “复审” / “review” as review intent, then
+select the owner from the actual object and purpose. A bare “审核一下” or
+“review 一遍” inherits a clear object from the current conversation; if no
+object is identifiable, clarify that object before invoking a review Skill.
+Discussing a Skill or quoting its trigger phrases is not a request to review
+an Issue or implementation.
+
+An explicit GitHub Issue content review request must load its semantic owner:
+“审核 Issue” / “审查 Issue” / “评审 Issue” / “review Issue” and Issue
+requirements-completeness checks load
 `guru-clarify-requirements` for the existing independent review profile;
 explicit readiness or independent-deliverability review loads
 `guru-review-change-request`; explicit wording review loads
@@ -78,6 +86,45 @@ behavior; use the existing entry/context graph when prerequisites are missing.
 Review-only intent is distinct from a status lookup or a request to implement
 or revise the Issue. It grants no mutation or Task/resource-creation authority;
 keep existing profile consumers and side-effect boundaries.
+
+Review of Issue content, requirements themselves, or an initiative/proposal
+itself is outside `guru-review-change`, including when that object is a changed
+Git file. Product and technical requirements documents use their applicable
+specialists below; other requirements reviews retain their current source and
+requirements owner. An initiative (“动议”, “initiative”, “proposal”) retains
+the project's declared initiative or upstream-requirements review entry and
+its actual prerequisites. Do not invent a Guru initiative profile or use
+generic change review as a fallback for a missing applicable owner. Preserve
+review-only scope; no review request alone authorizes change Intake or creation.
+
+For “审核代码” / “代码审核” / “审查修改” / “评审当前分支” / “复审 PR” /
+“review these changes” / “检查需求是否已实现”, first
+determine whether the requested purpose is an independent read-only assessment
+or a formal Guru stage result. Review keywords or an existing Task/Delivery
+alone do not select formal execution. When the workflow invokes a formal stage
+or the user requests its formal result, current-candidate Check uses
+`guru-check-task`, committed-range Branch Review uses `guru-review-branch`, and
+whole-Task Completion uses `guru-review-task-completion`. Each owner retains
+all declared prerequisites, complete scope and result consumers. Missing formal
+preconditions remain with their original owner; do not manufacture them.
+An explicit requirements, overview-design, detailed-design or test-plan
+document review loads the applicable existing specialist under
+`.trellis/spec/workflow/quality-guidelines.md#specialist-review-standards`.
+That shared section also governs specialist evidence used by formal owners.
+An implementation review may use an Issue, requirement or initiative as source
+authority. That reference does not turn it into a review of the source itself.
+“审核需求是否完整” reviews the requirement; “审核需求是否已被代码和测试实现”
+reviews implementation coverage. Classify by that purpose, not one keyword.
+
+For independent read-only review, explicitly load and invoke
+`guru-review-change` in standalone mode, whether or not a Task/Delivery exists.
+That Skill owns target and scope resolution, the complete review method,
+specialist consumption, semantic judgment, current-content validation and the
+user report. A request to inspect selected functions/files without advancing
+the workflow enters that owner, not formal Check or Branch Review.
+Its `reviewed` and `blocked` exits terminate at their declared user-response
+consumers; neither enters a business lifecycle stage. Missing that mandatory
+Skill stops this entry instead of leaving the workflow to perform the review.
 
 Explicit independent Git/GitHub requests use
 [Manual Git/GitHub Operations](#manual-gitgithub-operations), not task-mode
@@ -88,6 +135,9 @@ Classify the initial request before repository or network semantic reads:
 - simple conversation or information-only requests about existing facts:
   answer directly without creating a GitHub Issue or Trellis task and without
   asking whether one should be created;
+- review-only requests follow the purpose distinction above, preserving their
+  exact scope without entering change Intake or manufacturing Task/Delivery
+  identity; formal stage requests retain their original prerequisites;
 - requests to clarify requirements, design a proposed feature, or plan a change
   express change intent even when the user defers file writes or resource
   creation. “讨论需求”, “设计新功能”, and “先做规划” enter the current Guru owner
@@ -535,7 +585,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-draft-revision-router | Consume the original Publication return-to-Draft result and resume the same implementing Delivery. Original TaskCommit and Publication publish its next candidate to the same PR. |
 | guru-draft-content-review-router | Return the call-local complete B/H analysis to the implementation/Check coordinator. Validate actual HEAD before using facts; fresh formal full Review remains mandatory after Check. |
 | guru-draft-content-revision-router | Return immediate concrete revision_refs to the same implementation owner; rerun affected analysis on a changed HEAD. No cross-stage review cache is retained. |
-| guru-resume-implementation | Resume Phase 2 implementation. |
+| guru-resume-implementation | Resume Phase 2 through the original owner's lawful nonterminal Delivery continuation. For a Completion TaskRef/TaskKey return, read that Task's public current continuation and project its actual selected DeliveryKey and planning_root before dispatch. Missing, terminal or mismatched selection returns to Completion for a fresh route; this router neither creates nor reopens a Delivery. |
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
 | guru-task-check-planning-router | A planning gap invokes Author delivery_approval_revision with exact key and concrete current actions; actual requirement authority change first invokes original Clarify. Implementation-only repair retains Phase 2. |
@@ -699,9 +749,9 @@ according to its own review. These routers do not decide completion, production
 permission, scope expansion or publication. Unknown/multiple/unmapped results
 stop at `root-cause-qualification-blocked`, which consumes the concrete reason.
 
-Qualification is candidate admission only. #383 owns the common causal
-completion SSOT and stage completion judgments; its absent file does not
-block this candidate contract or cause a substitute completion owner.
+Qualification remains candidate admission only. Existing stage owners read
+`.trellis/spec/workflow/causal-completion-semantics.md` for the common causal
+evidence and completion semantics, retaining their own current judgments.
 
 ## Phase Index
 
@@ -933,6 +983,16 @@ For general Issue review intent (审核 / 评审 Issue), explicitly load
 `guru-review-change-request`; wording review loads `guru-review-contract-wording`.
 Follow the selected Skill's entry contract and preserve review-only scope.
 A status lookup remains an information query.
+For 审核 / 审查 / 评审 / 复审 / review, first use the Guru Team Gate's object
+and purpose distinctions above. Issue content, requirements themselves and
+initiative/proposal review retain their upstream owners. Independent code/PR
+or implementation-coverage review explicitly invokes
+`guru-review-change` in standalone mode even when a Task/Delivery exists;
+its declared exits terminate at the user response. Only workflow invocation
+or a request for a formal stage result enters its original
+Check/Branch Review/Completion owner with all prerequisites. Explicit document
+reviews use applicable specialist methods. Do not enter change Intake solely
+for independent review or substitute a formal pass for its report.
 For an explicit independent Git/GitHub request, read Manual Git/GitHub Operations
 in this workflow; missing context is not proof of no task.
 Every change-intent request first resolves task identity for the current

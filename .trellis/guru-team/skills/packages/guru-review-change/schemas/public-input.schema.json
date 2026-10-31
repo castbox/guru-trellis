@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-review-change-input-aggregate-1.0",
+  "oneOf": [
+    {
+      "$ref": "public-working-tree-input.schema.json"
+    },
+    {
+      "$ref": "public-committed-range-input.schema.json"
+    }
+  ]
+}
