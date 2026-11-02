@@ -1,6 +1,6 @@
 task_id: 718-runtime-location-decoupling
 source: https://github.com/castbox/guru-trellis/issues/718
-status: proposed
+status: promoted
 strategy: delta_first
 authority_identity: guru-trellis-rdt
 source_revision: c65f2571f8269c04819cce42e3f0f20f8c64178d
