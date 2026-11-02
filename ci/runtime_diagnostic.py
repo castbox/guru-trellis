@@ -138,7 +138,7 @@ def collect(target, python, report):
 
 
 def installed(root, report):
-    """Call the actual installed wrapper against its activated runtime pointer."""
+    """Resolve the target's active runtime and call its actual installed wrapper."""
     assets = root / ".trellis/guru-team/runtime"
     fixture = json.loads((assets / "python-runtime.json").read_text(encoding="utf-8"))["public_wrapper_check"]
     wrapper = assets.parent / "skills/packages" / fixture["package"] / "scripts/invoke.sh"
@@ -146,9 +146,15 @@ def installed(root, report):
     transport = importlib.import_module("bootstrap_transport") if (assets / "bootstrap_transport.py").is_file() else None
     bash = Path(find_bash())
     report["installed_root"] = str(root)
-    bootstrap = importlib.import_module("bootstrap")
-    pointer = json.loads(bootstrap.active_pointer_path(root).read_text(encoding="utf-8"))
-    report["active_runtime"] = {key: pointer[key] for key in ("runtime_id", "interpreter")}
+    resolved = subprocess.run([
+        report["python"], str(assets / "bootstrap.py"), "--repo", str(root),
+        "--runtime-assets", str(assets), "--resolve-active", "--json",
+    ], cwd=root, text=True, encoding="utf-8", stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, check=True)
+    active = json.loads(resolved.stdout)
+    report["active_runtime"] = {
+        "runtime_id": active["runtime_identity"], "interpreter": active["interpreter"],
+    }
     report["python_role"] = "diagnostic_process"
     report["declared_cases"] = len(fixture["cases"])
     observer = WrapperObserver(subprocess.run, fixture["cases"], report["calls"],

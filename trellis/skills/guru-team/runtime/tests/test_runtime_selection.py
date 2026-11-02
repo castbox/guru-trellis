@@ -245,6 +245,41 @@ class RuntimeSelectionTests(unittest.TestCase):
         self.assertEqual(self.first["runtime_identity"], json.loads(selected.stdout)["runtime_identity"])
         self.assertEqual("explicit", owner.read_selection(self.repo)["selection_mode"])
 
+    def test_windows_dispatch_waits_and_preserves_business_streams(self):
+        # Exercise the Windows dispatch branch with a real child on this host.
+        driver = """
+import os, sys
+from types import SimpleNamespace
+from runtime import bootstrap
+def unexpected_exec(*arguments):
+    raise AssertionError("Windows dispatch must wait for the selected child")
+bootstrap.os = SimpleNamespace(**{**vars(os), "name": "nt", "execv": unexpected_exec})
+bootstrap.validate_active = lambda *args, **kwargs: {
+    "runtime_identity": "selected-runtime", "interpreter": sys.executable,
+}
+sys.argv = ["bootstrap.py", *sys.argv[1:]]
+raise SystemExit(bootstrap.main())
+"""
+        business = """
+import json, sys
+sys.stdout.buffer.write(sys.stdin.buffer.read())
+sys.stderr.write(json.dumps(sys.argv[1:], ensure_ascii=False))
+raise SystemExit(int(sys.argv[1]))
+"""
+        payload = "stdin 中文\x00\n".encode("utf-8")
+        environment = {**os.environ, "PYTHONPATH": str(ASSETS.parent)}
+        for returncode in (0, 2):
+            with self.subTest(returncode=returncode):
+                arguments = [str(returncode), "中文 空格", "--python=application-value"]
+                result = subprocess.run([
+                    self.first["interpreter"], "-c", driver,
+                    "--repo", str(self.repo), "--runtime-assets", str(ASSETS),
+                    "--exec-active", "--", "-c", business, *arguments,
+                ], input=payload, capture_output=True, env=environment, check=False)
+                self.assertEqual(returncode, result.returncode, result.stderr)
+                self.assertEqual(payload, result.stdout)
+                self.assertEqual(arguments, json.loads(result.stderr))
+
     def test_validate_active_rejects_other_available_cache(self):
         second_python = os.environ.get("GURU_RUNTIME_SECOND_PYTHON")
         if not second_python:

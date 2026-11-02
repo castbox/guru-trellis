@@ -560,6 +560,8 @@ def main() -> int:
                     command = command[1:]
                 if not command:
                     raise BootstrapError("managed runtime command is missing")
+                if os.name == "nt":
+                    return subprocess.run([result["interpreter"], *command], check=False).returncode
                 os.execv(result["interpreter"], [result["interpreter"], *command])
         else:
             runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), select_python(args.python or "python3"))

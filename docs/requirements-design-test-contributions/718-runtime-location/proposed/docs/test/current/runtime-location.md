@@ -53,3 +53,19 @@ Focused早期末段汇总脚本按平面对象读取现有公共diagnostic envel
 刷新时曾额外同时启动三项validator，其中installed与target-wrapper-source共用TARGET选择器；该次target-wrapper-source返回runtime_dependency_missing且runtime identity为null。随后独立重跑及原脚本顺序逐项均通过，原最终断言也通过。额外重叠执行的该次拒绝保留为观察，不表述为全部尝试通过；本项不扩展为并发竞态机制或额外required测试。
 
 最后runtime差额后的真实718 dogfood原owner更新与目标自身读回已完成，观察见上表。下一阶段仍须对最终完整候选执行正式Check/Review；本单元不预写该阶段结论，也不代替Task Completion。完整Release矩阵与业务采用由其原owners另行验证。
+
+## PR719首次CI后的观察修订
+
+上述完整策略、早期失败和当时的阶段边界保留原六目标晋升提交`c65f2571f8269c04819cce42e3f0f20f8c64178d`的观察截止。以下为同一Delivery的后继Test观察，完整需求、设计条件和原覆盖边界继续适用。
+
+| 观察 | 实际入口与结果 | 覆盖边界 |
+| --- | --- | --- |
+| T718-07 / 首次远端CI | PR719的[run 41468760261](https://github.com/castbox/guru-trellis/actions/runs/41468760261)在Ubuntu、macOS、Windows三端均failed，候选为c65提交；B=`610a810d45bb30173906d55c77709389adf1cf31`的[run 41401016503](https://github.com/castbox/guru-trellis/actions/runs/41401016503)三端均success | 原候选的首次失败保持。B结果只证明该固定B运行，不证明修复候选的三平台结果或Release |
+| T718-07 / CI installed collector | Ubuntu/macOS的安装步骤已经成功，随后installed-wrapper collector在调用case前读取旧flat pointer字段runtime_id，产生KeyError；报告calls为空。Windows该轮没有installed-wrapper报告 | 安装成功与collector失败分别成立；不得把Windows缺报告同化为相同KeyError或相同case结果 |
+| T718-07 / 公开resolver消费 | CI collector改用报告中的diagnostic Python调用目标实际bootstrap.py的公开--resolve-active --json，并薄投影runtime_identity到原active_runtime.runtime_id。真实旧B目标与当前installed目标均collector completed、fixture passed，原两case实际返回0/2；原报告保留 | 两目标均执行自己的installed wrapper，原预期和参数保持；没有读取新选择文件布局、fallback或新API。该本地对照不替代远端三平台重跑 |
+| T718-07 / CI driver回归 | 当前修订的ci/test_targeted_ci.py全11项通过，包含公开resolver消费及原wrapper结果保留；原观察器4项定向检查也通过 | 证明driver及fixture消费者的命中行为，不能据此宣称全部runtime或原三平台CI已通过 |
+| T718-01/07 / Linux locale对照 | 使用H archive，在真实python:3.12-bookworm Linux容器内按hash lock安装依赖，并以PYTHONUTF8=0运行原Unicode wrapper用例。仅删除manage-python.sh中的LC_ALL=C强制设置前，status=1、stdout为空且stderr为runtime_dependency_missing/jsonschema；同输入删除后status=0，原用例通过 | 原日志保留两次结果。该对照支持强制locale与此入口失败的因果关系；没有另行probe内部受管解释器，不能把外层jsonschema诊断写成实际缺包，也不等同Ubuntu CI通过 |
+| T718-01/07 / Windows执行机制 | Windows分支由原exec替换改为等待受管子进程并传回其退出状态；macOS上的四项定向自检通过 | 这是分支、stdin/stdout及退出状态的机制验证，尚不是实际Windows runner通过；原Windows CI待修复候选重跑 |
+| T718-07 / 本轮dogfood | 原source-loaded工具更新返回tools_upgraded 0.7.0-guru.7。目标自身公开--check为ok，get_context原native退出0并识别718；installed validator通过43 active packages/128 commands，sidecars=0、conflicts=0。原drift脚本退出0，shared及Claude/Codex/Cursor、spec/workflow与canonical一致，bootstrap/manage字节一致 | Task元数据bytes保持；这些是目标本次安装与读回结果，不是formal_fork_source_lock、三平台CI或Release通过 |
+
+当前截止：修复后的原三平台CI尚待执行。原报告、Linux对照及本地机制结果保留各自对象和环境边界；后继完整候选的Check、晋升、Review、Publication与Task Completion继续由原owner消费实际结果，本单元不预写其结论。

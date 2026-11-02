@@ -1197,11 +1197,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-02T13:59:48Z",
+  "installed_at": "2026-11-02T16:04:58Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "610a810d45bb30173906d55c77709389adf1cf31",
-    "commit": "610a810d45bb30173906d55c77709389adf1cf31",
+    "ref": "c65f2571f8269c04819cce42e3f0f20f8c64178d",
+    "commit": "c65f2571f8269c04819cce42e3f0f20f8c64178d",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -20812,7 +20812,7 @@
       {
         "path": ".trellis/guru-team/runtime/bootstrap.py",
         "source": "trellis/skills/guru-team/runtime/bootstrap.py",
-        "sha256": "2f4ce2079aa160011a184388b7bea0816cf421a31beff3228aa086e028ace8f8",
+        "sha256": "29173015e2164699912cabd3fe9cadb15f6639c26e778749cfc35815af9c55b7",
         "executable": true,
         "action": "installed"
       },
@@ -20903,7 +20903,7 @@
       {
         "path": ".trellis/guru-team/runtime/manage-python.sh",
         "source": "trellis/skills/guru-team/runtime/manage-python.sh",
-        "sha256": "60e1f3a1435f9fd110d6aa18f771d0823e7e53eebd7173d7ce081e74d4d16c8a",
+        "sha256": "4933d8d5076fbaf72ec8b2af68e2333a61b1f1d618e9c23badcccb455fe0d68f",
         "executable": true,
         "action": "installed"
       },
