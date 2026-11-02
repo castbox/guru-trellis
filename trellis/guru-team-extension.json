@@ -452,7 +452,8 @@
         "guru-team-skill-interface-1.5",
         "guru-team-skill-interface-1.6",
         "guru-team-skill-interface-1.7",
-        "guru-team-skill-interface-1.8"
+        "guru-team-skill-interface-1.8",
+        "guru-team-skill-interface-1.9"
       ],
       "public_input_schema_ids": [
         "guru-activate-delivery-input-delivery-1.0",
@@ -962,6 +963,8 @@
         "guru-maintain-legacy-task",
         "guru-maintain-requirements-design-test-ssot",
         "guru-merge-task-delivery",
+        "guru-orchestrate-issue-dag",
+        "guru-orchestrate-issue-sequence",
         "guru-publish-task-delivery",
         "guru-qualify-normal-scenario",
         "guru-qualify-root-cause",

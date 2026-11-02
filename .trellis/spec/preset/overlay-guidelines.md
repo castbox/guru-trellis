@@ -72,6 +72,10 @@ Preset apply installs byte-identical active package copies to:
 - every other selected upstream platform: the descriptor's `skill_root`.
 
 These package projections are managed-hash installation, not overlay files.
+Codex-only instruction-only orchestration packages are projected only to selected
+Codex discovery root. They do not enter the shared discovery root. Their
+`agents/openai.yaml` is a managed public asset and requires explicit invocation.
+Selecting another platform alone does not expose these Codex entries.
 Selected platforms may differ only in discovery root or native adapter
 protocol; public Interface, exits, projections, eval corpus, and behavior remain
 identical.
@@ -86,7 +90,8 @@ not by frontmatter auto-match or patched upstream entries.
 
 ## Installer Selection
 
-Shared `guru-*` package discovery is always installed. Platform flags select
+Shared `guru-*` package discovery is installed for packages declaring shared
+support. Codex-only orchestration packages are excluded. Platform flags select
 only the corresponding platform package root and explicit Guru finish entry:
 
 - default: Shared + Claude, Codex, and Cursor;

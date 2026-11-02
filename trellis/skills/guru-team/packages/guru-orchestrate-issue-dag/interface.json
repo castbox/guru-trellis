@@ -1,0 +1,161 @@
+{
+  "$schema": "../../schemas/skill-interface-1.9.schema.json",
+  "schema_version": "1.9",
+  "id": "guru-orchestrate-issue-dag",
+  "name": "guru-orchestrate-issue-dag",
+  "description": "Explicitly coordinate a GitHub Issue dependency graph across Codex chats and worktrees, with bounded parallel execution, heartbeat supervision and live endpoint proof. Invoke by name for DAG, fan-out or fan-in orchestration. Discussing this Skill, drawing a graph or requesting a dry-run does not start execution. Single-Issue workflow stages retain their original owners.",
+  "state": "active",
+  "judgment_mode": "semantic",
+  "execution_kind": "instruction_only",
+  "modes": {
+    "workflow": {
+      "routing": "not_applicable",
+      "entry_precondition_ids": []
+    },
+    "standalone": {
+      "routing": "direct_discovery",
+      "entry_precondition_ids": [
+        "provider_and_tools",
+        "run_scope",
+        "live_ownership"
+      ]
+    }
+  },
+  "entry_preconditions": [
+    {
+      "id": "provider_and_tools",
+      "evidence": "The complete same-provider package and shared method, current native Codex capabilities and supported explicit child model/effort settings.",
+      "binding": "This instruction-only invocation and the exact saved target project.",
+      "freshness": "Read current provider files and tool contracts before preflight; verify native heartbeat readback before dispatch."
+    },
+    {
+      "id": "run_scope",
+      "evidence": "Current selected repository/Issues, live prerequisite and accepted scope facts, and actual human messages in the current coordinator conversation.",
+      "binding": "One current run; endpoint and execution authorization remain dialogue-only.",
+      "freshness": "Resolve before first child/heartbeat; recover original same-run human messages after context loss or changed scope."
+    },
+    {
+      "id": "live_ownership",
+      "evidence": "Actual existing chat/Task/heartbeat ownership, pending creation results, Git/PR/check state and original-owner gate results.",
+      "binding": "Each selected Issue and its exact existing or prospective child owner.",
+      "freshness": "Inspect overlap before creation and refresh affected facts before continuation, merge, completion or settlement."
+    }
+  ],
+  "ordered_stages": [
+    "forward_behavior",
+    "ai_review_gate",
+    "conditional_human_confirmation",
+    "recorder_validator",
+    "typed_exit"
+  ],
+  "external_exits": [
+    {
+      "id": "dry_run_ready",
+      "evidence": "Ready read-only preflight for the requested run.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-dry-run-response"
+      }
+    },
+    {
+      "id": "dry_run_blocked",
+      "evidence": "A concrete preflight condition or real choice remains unresolved.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-preflight-choice"
+      }
+    },
+    {
+      "id": "auto_started",
+      "evidence": "The native heartbeat and first admitted child bindings are verified.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-next-observation"
+      }
+    },
+    {
+      "id": "progressing",
+      "evidence": "Permitted work, observation recovery, a bounded wait or safe settlement remains pending.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-next-observation"
+      }
+    },
+    {
+      "id": "dag_blocked",
+      "evidence": "The requested endpoint remains unmet, no permitted work can advance, and safe child/heartbeat settlement is verified.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-blocked-response"
+      }
+    },
+    {
+      "id": "dag_stage_completed",
+      "evidence": "The human-requested earlier stage and package-specific stage eligibility are verified, with safe child/heartbeat settlement.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-stage-response"
+      }
+    },
+    {
+      "id": "dag_completed",
+      "evidence": "All selected Issues pass fresh full completion proof and safe child/heartbeat settlement is verified.",
+      "consumer": {
+        "kind": "stop",
+        "id": "orchestration-completed-response"
+      }
+    }
+  ],
+  "reentry": {
+    "identity": "The current coordinator conversation, exact repository/Issue selection and existing formal or pending child bindings.",
+    "freshness": "Recover original human messages and current native/GitHub facts; preserve existing owners and refresh affected gates without repeating sufficient current delegation.",
+    "stale_behavior": "fail_closed"
+  },
+  "tests": [
+    "tests/forward-cases.md"
+  ],
+  "platform_destinations": [
+    "codex"
+  ],
+  "public_contracts": {
+    "input": {
+      "kind": "conversation",
+      "contract": "references/dag-contract.md"
+    },
+    "invocation": {
+      "kind": "agent",
+      "entrypoint": "SKILL.md",
+      "explicit_only": true
+    },
+    "outputs": [
+      {
+        "exit_id": "dry_run_ready",
+        "contract": "Normalized selection and settings, live facts, gates, prospective effects and verification limits for the user; no mutation."
+      },
+      {
+        "exit_id": "dry_run_blocked",
+        "contract": "Concrete failed conditions and the minimal missing facts or choice for same-run preflight re-entry."
+      },
+      {
+        "exit_id": "auto_started",
+        "contract": "Initial Issue/chat or pending-creation bindings and verified heartbeat identity for this coordinator’s next observation."
+      },
+      {
+        "exit_id": "progressing",
+        "contract": "Changed results, actual blockers or incomplete settlement, and the next observation condition."
+      },
+      {
+        "exit_id": "dag_blocked",
+        "contract": "Incomplete Issues, exact blockers, partial completed results and verified safe child/heartbeat disposition for user resolution."
+      },
+      {
+        "exit_id": "dag_stage_completed",
+        "contract": "Verified stage results, actual remaining Issue/Task work, and safe child/heartbeat disposition; full-completion meaning is unchanged."
+      },
+      {
+        "exit_id": "dag_completed",
+        "contract": "Per-Issue verified delivery, applicable release identities, validation limits and verified heartbeat stop for the final user response."
+      }
+    ]
+  }
+}

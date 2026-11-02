@@ -289,9 +289,9 @@
     "id": "C21-completion",
     "case_id": "C21",
     "stage": "completion",
-    "facts": "The first Delivery merged in this active task and generation, but whole accepted scope also requires repair of the same task's background consumer. Current implementation is incomplete there. That required implementation work remains and will require a second independent business Delivery under the same task after it is fixed; no scope change or new task is needed.",
+    "facts": "The first Delivery merged in this active task and generation and its selection was released. There is no current nonterminal Delivery. Whole accepted scope still requires repair of the same task's background consumer, which remains unimplemented. This work requires a second independent business Delivery under the same accepted Task scope; that slice has not been created or planned. No scope change or new Task is needed.",
     "expected": {
-      "exit": "implementation_revision_required",
+      "exit": "additional_delivery_required",
       "goal": "repair",
       "disposition": "external_effect_unverified"
     }
@@ -333,7 +333,7 @@
     "id": "C21-delivery",
     "case_id": "C21",
     "stage": "second_delivery",
-    "facts": "After the first Completion implementation_revision_required output, the same task generation 0 implements its required background-consumer repair. This second independent business slice fixes the observed background cause, preserves first failure evidence and complete consumer outcome, has qualified causal/counterfactual support and current required code/integration tests. Publish only this slice with Refs, truthfully keeping whole-task matching production observation for Completion. No accepted scope change.",
+    "facts": "After the first Completion additional_delivery_required output, original Delivery Creation and Planning established and activated the second independent business slice in the same Task generation 0. Its required background-consumer repair now fixes the observed background cause, preserves first failure evidence and complete consumer outcome, has qualified causal/counterfactual support and current required code/integration tests. Publish only this slice with Refs, truthfully keeping whole-task matching production observation for Completion. No accepted scope change.",
     "expected": {
       "exit": "ready",
       "goal": "repair",

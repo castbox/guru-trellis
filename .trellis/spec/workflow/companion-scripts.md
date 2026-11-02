@@ -398,6 +398,14 @@ fixed. See `trellis/presets/guru-team/MIGRATION-453.md` for installation steps.
 
 ## Skill Contract Discovery
 
+For an explicitly selected instruction-only Interface 1.9 package, discovery
+returns the conversation input/output contracts and the agent `SKILL.md`
+entrypoint. There is no package wrapper, dispatcher command or JSON invocation
+probe. The ordinary source and installed validators still check package
+identity, declared paths, Codex projection and explicit invocation metadata.
+Native orchestration tools execute actions and report facts; all scheduling,
+continuation, authorization and completion judgments remain in Markdown.
+
 `scripts/bash/discover-skill-contract.sh` is the thin installed wrapper for
 the deterministic `discover-skill-contract` subcommand. Its public CLI is
 exactly:

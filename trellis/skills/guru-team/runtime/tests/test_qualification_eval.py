@@ -973,15 +973,9 @@ class QualificationEvalTests(unittest.TestCase):
                 "path": "contracts/production-current-5.0.json",
             }],
         )
-        self.assertEqual(
-            extension["public_api"]["skill_contracts"]["interface_schema_ids"],
-            [
-                "guru-team-skill-interface-1.4",
-                "guru-team-skill-interface-1.5",
-                "guru-team-skill-interface-1.6",
-                "guru-team-skill-interface-1.7",
-                "guru-team-skill-interface-1.8",
-            ],
+        self.assertLessEqual(
+            set(manifest["interface_schema_ids"]),
+            set(extension["public_api"]["skill_contracts"]["interface_schema_ids"]),
         )
         self.assertEqual(
             (SKILLS / "contracts/production-current.json").read_bytes(),

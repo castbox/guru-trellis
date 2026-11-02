@@ -1,0 +1,6 @@
+interface:
+  display_name: "Guru Issue DAG Orchestrator"
+  short_description: "Coordinate Issue dependencies in serial and parallel"
+  default_prompt: "Use $guru-orchestrate-issue-dag to preflight this Issue graph and coordinate eligible Issues within its concurrency limit."
+policy:
+  allow_implicit_invocation: false

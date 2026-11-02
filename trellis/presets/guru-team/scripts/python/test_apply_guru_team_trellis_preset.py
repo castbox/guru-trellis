@@ -1009,6 +1009,36 @@ class PlatformOverlayInstallerTest(RetiredScriptReapplyTests, unittest.TestCase)
             (self.guru_root / source_relative).read_bytes(),
         )
 
+    def test_issue_orchestration_spec_installs_with_provenance_and_preserves_local_edits(self) -> None:
+        target_relative = Path(".trellis/spec/workflow/issue-orchestration.md")
+        source_relative = Path("trellis/presets/guru-team/spec/workflow/issue-orchestration.md")
+        canonical = (self.guru_root / source_relative).read_bytes()
+        target = self.repo / target_relative
+        first = self.install({"codex", "cursor"})
+        self.assertEqual(first["skill_packages"]["status"], "ok")
+        self.assertEqual(first["skill_installed_validation"]["status"], "passed")
+        self.assertEqual(target.read_bytes(), canonical)
+        manifest_path = self.install_dst / "extension.json"
+        initial_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        self.assertIn(target_relative.as_posix(), initial_manifest["install"]["managed_assets"])
+        self.assertEqual(initial_manifest["install"]["managed_asset_hashes"][target_relative.as_posix()], hashlib.sha256(canonical).hexdigest())
+
+        second = self.install({"codex", "cursor"})
+        self.assertEqual(second["skill_packages"]["status"], "ok")
+        self.assertIn(target_relative.as_posix(), second["unchanged"])
+        self.assertEqual(second["skill_packages"]["sidecars"], [])
+        self.assertEqual(target.read_bytes(), canonical)
+        manifest_before = manifest_path.read_bytes()
+
+        local = canonical + b"\n# Local orchestration preference\n"
+        target.write_bytes(local)
+        third = self.install({"codex", "cursor"})
+        self.assertEqual(third["skill_packages"]["status"], "conflict")
+        self.assertEqual(target.read_bytes(), local)
+        self.assertEqual(target.with_name(target.name + ".new").read_bytes(), canonical)
+        self.assertEqual(manifest_path.read_bytes(), manifest_before)
+        self.assertIn({"path": target_relative.as_posix(), "reason": "unknown_local_spec_edit", "sidecar": target_relative.as_posix() + ".new"}, third["skill_packages"]["conflicts"])
+
     def test_managed_spec_declared_managed_upgrade_uses_backup(self) -> None:
         source_relative, target_relative = preset.MANAGED_SPEC_PATHS[0]
         target = self.repo / target_relative
@@ -2568,6 +2598,7 @@ class ExtensionManifestInstallerTest(unittest.TestCase):
                 "guru-team-skill-interface-1.6",
                 "guru-team-skill-interface-1.7",
                 "guru-team-skill-interface-1.8",
+                "guru-team-skill-interface-1.9",
             ],
         )
         self.assertIn("check-skill-packages", public_api["companion_scripts"])

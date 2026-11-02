@@ -1,5 +1,11 @@
 # Guru Team Preset
 
+跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
+`guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
+分别处理依赖图与严格串行列表，默认协调器 heartbeat 为 2 分钟。
+入口边界、同源规范、个人副本迁移及验证范围见
+[Issue 编排迁移说明](./MIGRATION-ISSUE-ORCHESTRATION.md)。
+
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。无论有无
 Task/Delivery，独立审核都显式调用 `guru-review-change`，由它保留指定范围并返回
@@ -267,12 +273,21 @@ For current-source validation, use the source-locked, built
 (successful main CI `40882919377`) and that same reviewed Guru source.
 Stable `.6` installation uses its original source pair described above. For the local workflow sample, compare the canonical `workflow.md`
 with the target `.trellis/workflow.md` and preserve target edits before
-applying it. Then run:
+applying it. For a target meeting the ordinary current-only installation
+prerequisites, run:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/apply.sh --repo <target>
 .trellis/guru-team/scripts/bash/check-skill-packages.sh --root <target> --mode installed --json
 ```
+
+For tools-only updates in an existing checkout, including source-repository
+dogfood synchronization, load the complete
+[`guru-upgrade-tools` contract](../../skills/guru-team/packages/guru-upgrade-tools/references/contract.md).
+The AI selects that owner from the requested scope and actual target state.
+An ordinary apply blocked by old Tasks does not make historical migration part
+of a tools-only request; preserve the records and follow the selected owner's
+preconditions. Full installation/migration retains its original owner and gate.
 
 The installer uses managed-file provenance. Known managed updates may create
 backups during the transaction; successful reapply must leave no unresolved

@@ -3,7 +3,7 @@
   "schema_version": "1.6",
   "id": "guru-qualify-root-cause",
   "name": "guru-qualify-root-cause",
-  "description": "Qualify new or materially changed incident mechanisms against first-failure, causal, counterfactual and protection evidence while allowing bounded diagnosis and mitigation.",
+  "description": "在 Guru 当前步骤中评估新增或实质变更的诊断、缓解、根因修复与保护机制，判断候选是否有充分因果依据、是否仅掩盖症状，并返回原步骤。用于真实 caller/profile 下的机制准入；独立 review 复用其语义方法，直接故障排查由当前项目执行职责承接。",
   "state": "active",
   "judgment_mode": "semantic",
   "modes": {
@@ -37,7 +37,7 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "one of ten closed input profiles with its fixed caller, mode, current target identity, and resume mapping",
+      "evidence": "one declared closed input profile from the current interface selector with its fixed caller, mode, current target identity, and resume mapping",
       "binding": "the exact semantic Owner that is about to promote a candidate into a stage judgment",
       "freshness": "the caller authors a new closed input for every invocation"
     },

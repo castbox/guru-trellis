@@ -293,15 +293,23 @@ def _validate_registry(
         else:
             errors.append(ownership_error("skill_registry_contract_invalid", f"skills[{index}].state", "expected active or planned"))
             continue
-        if skill.get("supported_platforms") != EXPECTED_SKILL_PLATFORMS:
-            errors.append(ownership_error("skill_platform_set_mismatch", skill_id, "expected shared plus all 22 cli flags"))
         interface_path = skill.get("interface")
         if not isinstance(interface_path, str):
             errors.append(ownership_error("skill_package_path_mismatch", skill_id, "missing interface path"))
             continue
         interface = read_json(repo_root / "trellis/skills/guru-team" / interface_path, "skill_interface", errors)
-        if isinstance(interface, dict) and interface.get("platform_destinations") != EXPECTED_SKILL_PLATFORMS:
-            errors.append(ownership_error("skill_interface_platform_set_mismatch", skill_id, "interface destinations disagree with complete inventory"))
+        instruction_only = (
+            skill.get("interface_schema_id") == "guru-team-skill-interface-1.9"
+            and skill.get("workflow_integration_state") == "standalone_only"
+            and isinstance(interface, dict)
+            and interface.get("schema_version") == "1.9"
+            and interface.get("execution_kind") == "instruction_only"
+        )
+        expected_platforms = ["codex"] if instruction_only else EXPECTED_SKILL_PLATFORMS
+        if skill.get("supported_platforms") != expected_platforms:
+            errors.append(ownership_error("skill_platform_set_mismatch", skill_id, f"expected {expected_platforms!r}"))
+        if isinstance(interface, dict) and interface.get("platform_destinations") != expected_platforms:
+            errors.append(ownership_error("skill_interface_platform_set_mismatch", skill_id, "interface destinations disagree with the package's declared platform contract"))
     return active, planned
 
 

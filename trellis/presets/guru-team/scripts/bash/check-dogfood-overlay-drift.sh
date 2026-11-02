@@ -103,7 +103,7 @@ if [[ "$missing" -gt 0 || "$changed" -gt 0 ]]; then
     printf 'Restore or switch .trellis/workflow.md through the official Trellis workflow marketplace using the intended immutable Guru Team source; preset apply does not manage this path. See trellis/presets/guru-team/README.md.\n' >&2
   fi
   if [[ "$preset_drift" -gt 0 ]]; then
-    printf 'For Guru preset-owned overlay/spec copies, run trellis/presets/guru-team/scripts/bash/apply.sh --repo %q and inspect any .new/.bak files.\n' "$REPO_ROOT" >&2
+    printf 'For Guru preset-owned overlay/spec copies, the AI selects the owner from the actual update scope and target state. Ordinary current-only apply/reapply uses trellis/presets/guru-team/scripts/bash/apply.sh --repo %q. Existing-checkout tools-only maintenance uses the complete source-owned guru-upgrade-tools contract while preserving Task/session state; an old-Task apply diagnostic does not select migration or permit bypassing the gate. Inspect any .new/.bak files through the selected owner.\n' "$REPO_ROOT" >&2
   fi
   exit 1
 fi

@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/castbox/guru-trellis/schemas/guru-team-skill-interface-1.9.json",
+  "title": "Guru Team Codex instruction-only standalone skill interface",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "id",
+    "name",
+    "description",
+    "state",
+    "judgment_mode",
+    "modes",
+    "entry_preconditions",
+    "ordered_stages",
+    "external_exits",
+    "reentry",
+    "tests",
+    "platform_destinations",
+    "execution_kind",
+    "public_contracts"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "../../schemas/skill-interface-1.9.schema.json"
+    },
+    "schema_version": {
+      "const": "1.9"
+    },
+    "id": {
+      "$ref": "#/$defs/skillId"
+    },
+    "name": {
+      "$ref": "#/$defs/skillId"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "const": "active"
+    },
+    "judgment_mode": {
+      "const": "semantic"
+    },
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow",
+        "standalone"
+      ],
+      "properties": {
+        "workflow": {
+          "const": {
+            "routing": "not_applicable",
+            "entry_precondition_ids": []
+          }
+        },
+        "standalone": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "routing",
+            "entry_precondition_ids"
+          ],
+          "properties": {
+            "routing": {
+              "const": "direct_discovery"
+            },
+            "entry_precondition_ids": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/localId"
+              }
+            }
+          }
+        }
+      }
+    },
+    "entry_preconditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/precondition"
+      }
+    },
+    "ordered_stages": {
+      "const": [
+        "forward_behavior",
+        "ai_review_gate",
+        "conditional_human_confirmation",
+        "recorder_validator",
+        "typed_exit"
+      ]
+    },
+    "external_exits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/exit"
+      }
+    },
+    "reentry": {
+      "$ref": "#/$defs/reentry"
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?!.*(?:^|/)\\.\\.(?:/|$))tests/.+$"
+      }
+    },
+    "platform_destinations": {
+      "const": [
+        "codex"
+      ]
+    },
+    "execution_kind": {
+      "const": "instruction_only"
+    },
+    "public_contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input",
+        "invocation",
+        "outputs"
+      ],
+      "properties": {
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "contract"
+          ],
+          "properties": {
+            "kind": {
+              "const": "conversation"
+            },
+            "contract": {
+              "type": "string",
+              "pattern": "^references/[a-z0-9-]+\\.md$"
+            }
+          }
+        },
+        "invocation": {
+          "const": {
+            "kind": "agent",
+            "entrypoint": "SKILL.md",
+            "explicit_only": true
+          }
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "exit_id",
+              "contract"
+            ],
+            "properties": {
+              "exit_id": {
+                "$ref": "#/$defs/localId"
+              },
+              "contract": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "skillId": {
+      "type": "string",
+      "pattern": "^guru-[a-z0-9]+(?:-[a-z0-9]+)+$"
+    },
+    "localId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"
+    },
+    "precondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "evidence",
+        "binding",
+        "freshness"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binding": {
+          "type": "string",
+          "minLength": 1
+        },
+        "freshness": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reentry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "freshness",
+        "stale_behavior"
+      ],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "minLength": 1
+        },
+        "freshness": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stale_behavior": {
+          "const": "fail_closed"
+        }
+      }
+    },
+    "exit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "evidence",
+        "consumer"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/localId"
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "id"
+          ],
+          "properties": {
+            "kind": {
+              "const": "stop"
+            },
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

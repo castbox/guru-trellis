@@ -7,11 +7,44 @@ Caller first consumes actual normal-scenario outcomes for real/current/supported
 scope and solution-mechanism outcomes for authority placement, supplying only
 eligible refs and current evidence locators. Root owner does not recursively
 invoke them, duplicate their judgment, classify severity or decide completion.
-Workflow and standalone have identical preconditions and review.
+Workflow and standalone have identical preconditions and review. The current
+`interface.json` input selector owns the declared profiles and their schemas;
+use its actual caller, target identity and consumer binding.
+
+Before goal-specific judgment, read the complete provider's
+`causal-completion-semantics.md`: `.trellis/spec/workflow/` after installation,
+or `trellis/presets/guru-team/spec/workflow/` in source. That common authority
+owns evidence dimensions and completion claims. This package applies them to
+candidate admission and retains its own return routes.
+
+### Entry boundaries and missing prerequisites
+
+Choose the actual entry before authoring public input:
+
+| Current purpose | Behavior |
+| --- | --- |
+| A current Guru caller qualifies an eligible new or materially changed mechanism | Consume that caller's actual normal-scenario and solution-mechanism outcomes; use its declared profile and current target. Workflow and standalone follow the same semantic method and runtime dependency. |
+| `guru-review-change` performs an independent review | Read and apply this contract's causal method and the common causal semantics under the independent review owner. This is method reuse, not a qualification invocation, and supplies no root typed exit or formal stage result. |
+| The user directly asks to investigate a failure | Keep evidence collection and action permissions with the current project's actual investigation/execution entry. That owner may later submit a candidate through its real profile. Do not manufacture a Task or caller to begin diagnosis. |
+| The user discusses this Skill or its wording | Answer that discussion without qualification. |
+
+A missing actual caller/profile, current candidate set or consumed upstream
+outcome prevents entry to this invocation. Explain the specific missing input
+and return control to the actual caller or current project entry; do not
+construct placeholder identities, invent upstream conclusions, or emit a root
+qualification exit for an invocation that did not occur. Existing Guru entry
+and resource-acquisition owners retain their own decisions and permissions.
+This handback is an entry boundary, not a new profile or typed exit.
+
+For an entered qualification with a real caller, eligible candidate and current
+input, unavailable authority or evidence may require the declared `blocked`
+result under the goal-specific method below. An unknown cause does not by
+itself block diagnosis or mitigation. Invalid runtime inputs retain the runtime
+diagnostic; do not convert a transport failure into a semantic disposition.
 
 Read accepted scope, current Issue/RDT/Architecture, code/tests, available
-failure evidence and actual proposed behavior. Public input has ten closed
-caller profiles, current targets, refs and locators; it accepts no goal,
+failure evidence and actual proposed behavior. Public input contains the
+declared closed caller profile, current target, refs and locators; it accepts no goal,
 classification, pass, prior root result or private checkpoint. Infer actual
 goal from scope and behavior, never labels, paths or keywords. A repair with
 side effects cannot escape review by naming itself diagnosis. Existing code,
@@ -144,11 +177,11 @@ through the existing stage owner and then resubmits. Branch Review changes use
 its existing implementation route. Delivery owns its planning/implementation/
 scope/blocked routing; no new task-work exit is invented.
 
-Read `.trellis/spec/workflow/causal-completion-semantics.md` for the common
-evidence/disposition authority. This owner continues to judge candidate
-admission under the goal-specific contract above; it does not judge completion
-or duplicate the common semantics. Each subsequent stage applies that same
-authority to its own actual work/evidence and retains its existing routes.
+Under the common causal authority loaded at entry, this owner continues to
+judge candidate admission under the goal-specific contract above; it does not
+judge completion or duplicate the common semantics. Each subsequent stage
+applies that same authority to its own actual work/evidence and retains its
+existing routes.
 Qualification alone establishes neither a stage pass nor whole-task completion.
 
 ## Author candidate set

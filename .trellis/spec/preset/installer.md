@@ -12,6 +12,20 @@ cover the current managed inventory.
 
 ## Boundary
 
+### Existing checkout tools maintenance
+
+Before selecting an installation entry, the AI reads the actual requested
+operation and target state. For an existing checkout whose requested change is
+limited to tools, workflow, Skills or managed projections while preserving
+Task/session state, load the complete source-owned
+[`guru-upgrade-tools` contract](../../../trellis/skills/guru-team/packages/guru-upgrade-tools/references/contract.md).
+That owner defines the maintenance preconditions, reviewed write set and result.
+Ordinary apply/reapply retains its current-only inventory prerequisite; its
+`upstream_delivery_migration_required` diagnostic does not decide the user's
+maintenance scope or require unrelated historical Task conversion. A requested
+full installation/migration keeps its original owner. Scripts report these
+facts and available owners; they do not select a route or relax the checks.
+
 ### Explicit old-installation migration
 
 `guru-upgrade-installation` owns the independent #495 legacy boundary for

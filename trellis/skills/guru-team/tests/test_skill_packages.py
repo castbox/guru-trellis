@@ -197,7 +197,7 @@ class SkillPackageIntegrationTests(unittest.TestCase):
             for row in json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))["skills"]
         )
         self.assertEqual(payload["active_packages"], active_count)
-        self.assertEqual(payload["complete_package_commands"], active_count)
+        self.assertEqual(payload["complete_package_commands"] + payload["instruction_only_packages"], active_count)
         self.assertGreater(payload["commands"], 0)
         self.assertGreater(payload["package_test_count"], 0)
 

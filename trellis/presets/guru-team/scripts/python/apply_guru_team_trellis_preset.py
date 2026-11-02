@@ -109,6 +109,7 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "skill-interface-1.6.schema.json",
     "skill-interface-1.7.schema.json",
     "skill-interface-1.8.schema.json",
+    "skill-interface-1.9.schema.json",
     "skill-registry-1.3.schema.json",
     "skill-registry-1.4.schema.json",
     "skill-registry.schema.json",
@@ -150,6 +151,10 @@ MANAGED_SPEC_PATHS = (
     (
         Path("trellis/presets/guru-team/spec/workflow/clear-technical-writing.md"),
         Path(".trellis/spec/workflow/clear-technical-writing.md"),
+    ),
+    (
+        Path("trellis/presets/guru-team/spec/workflow/issue-orchestration.md"),
+        Path(".trellis/spec/workflow/issue-orchestration.md"),
     ),
     (
         Path("trellis/presets/guru-team/spec/workflow/bootstrap-repository-ssot.md"),

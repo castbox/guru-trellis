@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .io import CommandError, fail, read_json_file, write_json
-from .installed import validate_skill_installed
+from .installed import platform_projection_maps, validate_skill_installed
 from .schema import validate_json
 
 
@@ -207,6 +207,61 @@ def validate_interface_contract(
             )
 
 
+def validate_instruction_package(
+    package: Path,
+    row: dict[str, Any],
+    interface: dict[str, Any],
+    *,
+    source: bool,
+) -> None:
+    """Validate managed assets, without evaluating an orchestration decision."""
+    package_id = str(row["id"])
+    if (
+        row.get("interface_schema_id") != "guru-team-skill-interface-1.9"
+        or row.get("workflow_integration_state") != "standalone_only"
+        or row.get("supported_platforms") != ["codex"]
+        or interface.get("platform_destinations") != ["codex"]
+        or interface.get("name") != package_id
+    ):
+        raise CommandError("owner_mismatch", f"{package_id}.instruction_only", "Keep instruction-only packages Codex-only, standalone-only, and bound to Interface 1.9.")
+    outputs = interface["public_contracts"]["outputs"]
+    exit_ids = [item["id"] for item in interface["external_exits"]]
+    output_ids = [item["exit_id"] for item in outputs]
+    precondition_ids = [item["id"] for item in interface["entry_preconditions"]]
+    if (
+        len(set(exit_ids)) != len(exit_ids)
+        or output_ids != exit_ids
+        or len(set(precondition_ids)) != len(precondition_ids)
+        or interface["modes"]["standalone"]["entry_precondition_ids"] != precondition_ids
+    ):
+        raise CommandError("owner_mismatch", f"{package_id}.contracts", "Give every declared exit one conversation output and select each entry precondition exactly once.")
+    allowed_roots = {"references", "agents"} | ({"tests"} if source else set())
+    for path in package.rglob("*"):
+        relative = path.relative_to(package)
+        if "__pycache__" in relative.parts or path.suffix in {".pyc", ".pyo"}:
+            continue
+        if path.is_symlink() or (
+            relative.parts[0] not in allowed_roots
+            and relative.as_posix() not in {"SKILL.md", "interface.json"}
+        ):
+            raise CommandError("contract_asset_invalid", f"{package_id}/{relative.as_posix()}", "Install instruction-only Markdown, metadata and Interface assets; keep tests source-only and omit runtime wrappers or state.")
+    required = ["SKILL.md", "agents/openai.yaml", interface["public_contracts"]["input"]["contract"]]
+    if source:
+        required.extend(interface["tests"])
+    for relative in required:
+        path = package / relative
+        if not path.is_file() or path.is_symlink():
+            raise CommandError("missing_contract", f"{package_id}/{relative}", "Restore the declared regular package asset.")
+    metadata = (package / "agents/openai.yaml").read_text(encoding="utf-8")
+    policy = re.search(r"(?m)^policy:\s*\n((?:[ \t]+[^\n]*\n?)*)", metadata)
+    if policy is None or not re.search(r"(?m)^  allow_implicit_invocation: false\s*$", policy.group(1)):
+        raise CommandError("projection_invalid", f"{package_id}.agents/openai.yaml", "Declare the native explicit-only policy in block-mapping form.")
+    source_text = (package / "SKILL.md").read_text(encoding="utf-8")
+    expected_frontmatter = f"---\nname: {package_id}\ndescription: {interface['description']}\n---\n"
+    if not source_text.startswith(expected_frontmatter):
+        raise CommandError("owner_mismatch", f"{package_id}.frontmatter", "Keep Skill name and description byte-identical to the Interface.")
+
+
 def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[str, Any]:
     skills, registry_path, packages, kernel = _package_paths(root, mode)
     registry = read_json_file(registry_path, "registry")
@@ -216,19 +271,34 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
     commands_seen: dict[str, str] = {}
     complete = 0
     public_only = 0
+    instruction_only = 0
     package_test_count = 0
+    projection_platforms: set[str] = set()
+    if platform_root is not None:
+        manifest_path = root / ("trellis/guru-team-extension.json" if mode == "source" else ".trellis/guru-team/extension.json")
+        manifest = read_json_file(manifest_path, "extension")
+        extension = manifest if mode == "source" else manifest.get("extension", {})
+        errors: list[str] = []
+        roots, _, _ = platform_projection_maps(extension.get("public_api", {}).get("platform_capabilities", {}), errors)
+        for platform, relative in roots.items():
+            if platform_root.parts[-len(relative.parts):] == relative.parts:
+                projection_platforms.add(platform)
+        if errors or not projection_platforms:
+            raise CommandError("projection_invalid", str(platform_root), "Select one declared platform Skill root from the matching extension manifest.")
     for row in active:
         package_id = row["id"]
         package = packages / package_id
         if platform_root is not None:
             projection = platform_root / package_id
-            if not (projection / "SKILL.md").is_file() or (projection / "runtime").exists() or (projection / "errors").exists() or (projection / "tests").exists():
-                raise CommandError("projection_invalid", str(projection), "Install only the declared public package projection.")
-            public_only += 1
-        metadata_path = package / "commands.json"
-        if not metadata_path.is_file():
-            raise CommandError("missing_contract", str(metadata_path), "Restore commands.json for every active package.")
-        complete += 1
+            supported = set(row.get("supported_platforms", []))
+            expected = "shared" in supported or bool(projection_platforms & supported)
+            if not expected:
+                if projection.exists() or projection.is_symlink():
+                    raise CommandError("projection_invalid", str(projection), "Remove the package projection from a platform it does not support.")
+            else:
+                if not (projection / "SKILL.md").is_file() or (projection / "runtime").exists() or (projection / "errors").exists() or (projection / "tests").exists():
+                    raise CommandError("projection_invalid", str(projection), "Install only the declared public package projection.")
+                public_only += 1
         if mode == "source":
             package_test_count += sum(
                 1
@@ -237,13 +307,21 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                 and not path.is_symlink()
                 and "tests" in path.relative_to(package).parts
             )
+        interface = read_json_file(package / "interface.json", f"{package_id}.interface")
+        validate_interface_contract(skills, package, row, interface)
+        if interface.get("execution_kind") == "instruction_only":
+            validate_instruction_package(package, row, interface, source=mode == "source")
+            instruction_only += 1
+            continue
+        metadata_path = package / "commands.json"
+        if not metadata_path.is_file():
+            raise CommandError("missing_contract", str(metadata_path), "Restore commands.json for every command-backed package.")
+        complete += 1
         metadata = read_json_file(metadata_path, f"{package_id}.commands")
         catalog = read_json_file(package / "errors/catalog.json", f"{package_id}.errors")
         validate_json(metadata, command_schema, f"{package_id}.commands")
         validate_json(catalog, error_schema, f"{package_id}.errors")
         codes = {item["code"] for item in catalog["errors"]}
-        interface = read_json_file(package / "interface.json", f"{package_id}.interface")
-        validate_interface_contract(skills, package, row, interface)
         declared = {item["id"]: item["command"] for item in interface["validators"]}
         public_wrapper = str(
             interface.get("public_contracts", {})
@@ -370,7 +448,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
                 (row["id"], read_json_file(packages / row["id"] / "interface.json", f"{row['id']}.interface"))
                 for row in active
             )
-            for item in interface["validators"]
+            for item in interface.get("validators", [])
         }
         for wrapper in compatibility_root.glob("*.sh"):
             source = wrapper.read_text(encoding="utf-8")
@@ -391,6 +469,7 @@ def validate(root: Path, mode: str, platform_root: Path | None = None) -> dict[s
         "mode": mode,
         "active_packages": len(active),
         "complete_package_commands": complete,
+        "instruction_only_packages": instruction_only,
         "public_projections": public_only,
         "commands": len(commands_seen),
         "package_test_count": package_test_count,

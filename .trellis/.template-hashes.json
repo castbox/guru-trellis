@@ -183,7 +183,7 @@
     ".claude/agents/trellis-implement.md": "71e0033f59e7e9a7a0457a86895fde06139d9e12581098f046a06f5765d575a9",
     ".claude/agents/trellis-research.md": "add4aa4259ded425b04ec992802c646490352bb4eb3730a7ab450beea87d4faa",
     ".trellis/.gitignore": "97df642174ce8ce99725241dc080fbeae11beed6545e17c5fdfe2ef45b4554d4",
-    "AGENTS.md": "a965ff4068fb4026ce900e7cd932e88d9ac141057d1c1fe5f8a6e441af7c5fe5",
+    "AGENTS.md": "c39c8cfcea24a15399a809269d54d61be33d61b5465b01dfdb6ea787c9803c7d",
     ".claude/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".cursor/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
     ".agents/skills/trellis-meta/references/local-architecture/session-memory.md": "644a3c27707c0aa9e2f03a8fcbeb5d1b2b2c843ac48ac2195765374fdaf9ddc8",
