@@ -3,7 +3,7 @@
   "schema_version": "1.8",
   "id": "guru-sync-base",
   "name": "guru-sync-base",
-  "description": "Resolve, safely synchronize, and deterministically validate the selected Git base before Guru Team reads repository task context or starts intake side effects.",
+  "description": "Resolve a fixed Git baseline for read-only Intake, or safely synchronize a selected base checkout.",
   "state": "active",
   "judgment_mode": "deterministic",
   "modes": {
@@ -37,27 +37,27 @@
     },
     {
       "id": "decision_checkout",
-      "evidence": "Git toplevel, current branch and HEAD",
-      "binding": "the repository and checkout whose base freshness gates this invocation",
-      "freshness": "unchanged from resolution through execution"
+      "evidence": "Git repository toplevel and available objects; sync additionally checks checkout identity",
+      "binding": "execution location is independent of the read baseline",
+      "freshness": "read uses the selected immutable commit; sync checks live checkout facts"
     },
     {
       "id": "selected_base_resolution",
-      "evidence": "canonical internal resolution facts plus the synced output's closed eight-field base_current provenance",
-      "binding": "explicit, scalar config, ordered existing candidate or remote-default resolution projected source-preservingly to Discovery and compatibility-only prepare-task",
-      "freshness": "the public wrapper checks the pre-sync digest before fetch; downstream validates complete base_current provenance, and prepare-task requires the exact reviewed provenance before any read or fetch"
+      "evidence": "operation-specific fixed Git object source or original synced provenance",
+      "binding": "read requires explicit/config-selected ref and fixes a commit; sync preserves its original resolution",
+      "freshness": "read never follows later ref movement; sync retains complete base_current provenance validation"
     },
     {
       "id": "clean_checkout",
       "evidence": "NUL-safe Git status before and after synchronization",
-      "binding": "decision checkout has no tracked, untracked or staged changes",
+      "binding": "sync profile only: selected checkout has no tracked, untracked or staged changes",
       "freshness": "checked before fetch, before fast-forward and after synchronization"
     },
     {
       "id": "result_facts",
-      "evidence": "guru-base-sync-result-1.0 stdout JSON, pre/post resolution digests, facts_sha256 and live Git facts",
-      "binding": "decision checkout, local base and remote-tracking base identity",
-      "freshness": "objective validator matches current clean Git state"
+      "evidence": "baseline_ready Git-object identity or guru-base-sync-result-1.0 sync facts",
+      "binding": "the selected read object or actual synchronized checkout roles",
+      "freshness": "immutable object available; actual sync retains clean/ff/equality checks"
     }
   ],
   "runtime_dependency": {
@@ -97,6 +97,10 @@
     {
       "id": "public_output_blocked_example",
       "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "public_output_baseline_ready_example",
+      "path": "examples/public-baseline-ready-output.json"
     }
   ],
   "schemas": [
@@ -123,6 +127,10 @@
     {
       "id": "public_output_blocked",
       "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "public_output_baseline_ready",
+      "path": "schemas/public-baseline-ready-output.schema.json"
     }
   ],
   "validators": [
@@ -149,6 +157,14 @@
     {
       "id": "synced",
       "evidence": "validator-passed fresh stdout result facts carrying the post-sync resolution digest",
+      "consumer": {
+        "kind": "skill",
+        "id": "guru-discover-change-context"
+      }
+    },
+    {
+      "id": "baseline_ready",
+      "evidence": "available fixed Git commit with source-preserving selection; no checkout synchronization",
       "consumer": {
         "kind": "skill",
         "id": "guru-discover-change-context"
@@ -237,6 +253,24 @@
           "flag": "--route",
           "type": "ascii_enum",
           "required": false
+        },
+        {
+          "id": "operation",
+          "flag": "--operation",
+          "type": "ascii_enum",
+          "required": false
+        },
+        {
+          "id": "base_ref",
+          "flag": "--base-ref",
+          "type": "string",
+          "required": false
+        },
+        {
+          "id": "base_commit",
+          "flag": "--base-commit",
+          "type": "string",
+          "required": false
         }
       ],
       "example_argv": [
@@ -262,7 +296,10 @@
           "mode",
           "repo_root",
           "base_branch",
-          "route"
+          "route",
+          "operation",
+          "base_ref",
+          "base_commit"
         ]
       },
       "stdout_contract": "single_typed_exit",
@@ -300,6 +337,20 @@
         },
         "consumer_use_ids": [
           "project_synced"
+        ]
+      },
+      {
+        "exit_id": "baseline_ready",
+        "schema": {
+          "schema_id": "guru-stage0-sync-base-output-baseline-ready-1.0",
+          "path": "schemas/public-baseline-ready-output.schema.json"
+        },
+        "example": {
+          "id": "baseline_ready_output",
+          "path": "examples/public-baseline-ready-output.json"
+        },
+        "consumer_use_ids": [
+          "project_baseline_ready"
         ]
       },
       {
@@ -350,18 +401,34 @@
             "mode",
             "continuation_id"
           ],
-          "authoring_fields": ["change_input", "clarify_profile"],
+          "authoring_fields": [
+            "change_input",
+            "clarify_profile"
+          ],
           "authoring_example": {
             "id": "pre_task_input",
             "path": "examples/public-pre-task-input-3.0.json"
           },
-          "alternate_authoring": [{"id": "reviewed_plan", "authoring_fields": ["change_input", "clarify_profile", "source_locators"], "authoring_example": {"id": "pre_task_reviewed_input", "path": "examples/public-pre-task-reviewed-input.json"}}]
+          "alternate_authoring": [
+            {
+              "id": "reviewed_plan",
+              "authoring_fields": [
+                "change_input",
+                "clarify_profile",
+                "source_locators"
+              ],
+              "authoring_example": {
+                "id": "pre_task_reviewed_input",
+                "path": "examples/public-pre-task-reviewed-input.json"
+              }
+            }
+          ]
         },
         "transition": {
           "source_field": "transition",
           "stage": "base_current",
-          "schema_id": "guru-stage0-transition-base-current-1.0",
-          "path": "consumers/workflow/stage0/transitions/base-current.schema.json"
+          "schema_id": "guru-stage0-transition-base-current-2.0",
+          "path": "consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
         }
       },
       {
@@ -384,6 +451,54 @@
           "id": "base-sync-blocked"
         },
         "payload_kind": "zero_payload"
+      },
+      {
+        "id": "baseline_ready_pre_task_input",
+        "consumer": {
+          "kind": "skill",
+          "id": "guru-discover-change-context"
+        },
+        "payload_kind": "structured_json",
+        "contract": {
+          "kind": "skill_input_authoring_seed",
+          "interface_path": "packages/guru-discover-change-context/interface.json",
+          "input_kind": "structured_json",
+          "profile_id": "pre_task",
+          "seed_fields": [
+            "source_exit",
+            "profile",
+            "mode",
+            "continuation_id"
+          ],
+          "authoring_fields": [
+            "change_input",
+            "clarify_profile"
+          ],
+          "authoring_example": {
+            "id": "pre_task_input",
+            "path": "examples/public-pre-task-input-3.0.json"
+          },
+          "alternate_authoring": [
+            {
+              "id": "reviewed_plan",
+              "authoring_fields": [
+                "change_input",
+                "clarify_profile",
+                "source_locators"
+              ],
+              "authoring_example": {
+                "id": "pre_task_reviewed_input",
+                "path": "examples/public-pre-task-reviewed-input.json"
+              }
+            }
+          ]
+        },
+        "transition": {
+          "source_field": "transition",
+          "stage": "base_current",
+          "schema_id": "guru-stage0-transition-base-current-2.0",
+          "path": "consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
+        }
       }
     ],
     "projections": [
@@ -423,6 +538,30 @@
         "consumer_input_id": "blocked_stop_input",
         "operation": "select",
         "mappings": []
+      },
+      {
+        "id": "project_baseline_ready",
+        "exit_id": "baseline_ready",
+        "consumer_input_id": "baseline_ready_pre_task_input",
+        "operation": "rename",
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_profile",
+            "target": "profile"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_continuation_id",
+            "target": "continuation_id"
+          }
+        ]
       }
     ],
     "private_artifacts": [

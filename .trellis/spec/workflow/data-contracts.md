@@ -97,7 +97,7 @@ object:
 | `wording_current` | current clarity identity, fixed wording profile, target content identity and wording checker token | `guru-review-change-request` |
 | `readiness_current` | current wording identity, ready scope projection, target/content/linkage identity | `guru-task-intake-router` (current Issue/task creation route) |
 
-The base provenance is a closed source-preserving value containing resolution
+The synchronized base provenance is a closed source-preserving value containing resolution
 source, selected base, remote, ordered candidates, decision HEAD, local base
 HEAD, remote base HEAD, and `post_sync_resolution_sha256`. These HEAD roles are
 distinct contract fields and must not be folded into one generic `base_head`.
@@ -107,6 +107,26 @@ source as `config-candidate`. Discovery receives this `base_current` separately
 from its own caller-authored public input and compares the public identity with
 live Git before any semantic authority read. It never receives
 `guru-base-sync-result-1.0`, its facts digest, or a reconstruction of either.
+
+The current source union additionally accepts the distinct `kind=git_object`
+base. It contains `source`, `selected_ref`, a fixed 40-hex `commit`, and one
+`identity_sha256` checked by Discovery. The transition carries the repository
+locator. This variant does not contain checkout, local-base, or remote-base
+HEAD roles and does not establish synchronization. The current transition
+schemas use versioned paths: `base-current-2.0.schema.json` and
+`{context,clarity,wording,readiness}-current-3.0.schema.json`. Read-only source
+transitions carry `schema_version=2.0`; the preserved sync variant carries
+`schema_version=1.0`. Earlier published schema files remain unchanged.
+
+Discovery's caller-owned `pre_task` 4.0 and `context_request` 2.0 inputs may
+name a `candidate_file` for a file-backed draft body. The fixed Git tree owns
+baseline Docs/code/tests/archive bytes. The separate candidate locator/body
+identity is reread by the actual Clarify, Wording and Readiness consumers.
+An ordinary candidate change refreshes affected results; it never rewrites the
+baseline or establishes committed Review/publication eligibility. Current
+private Discovery result 4.0 separates Git-object repository/observation fields
+from the original synchronized 3.0 result. The owner index validates these
+distinct current formats; only the minimal public transition crosses Skills.
 
 Each later stage contains only the prior identity plus fields directly consumed
 by its next checker. Complete issue bodies, scan or review history, findings,
@@ -141,32 +161,16 @@ and base authority remain exclusively in the independent `base_current` stage.
 The published 1.0 pre-task input remains an immutable legacy asset and is not
 selected by the current Interface.
 
-`prepare-task.base_freshness` is the current query projection and
-adds pre-sync resolution source/digest, post-sync resolution/digest, decision
-checkout, local/remote refs, and three-way equality facts from the same core.
-It also exposes `reviewed_resolution_sha256` as the digest consumed by the
-current guard and `post_sync_resolution_sha256` as the digest to pass to the
-next guard, while `resolution.source` remains the
-`explicit`, `config`, `config-candidate`, or `remote-default` provenance rather than a
-prepare-generated explicit override. No task artifact persists the complete
-base resolution/result payload, process output, or machine path. Current task
-identity comes from the canonical TaskId/generation artifact, its Git common-dir
-branch binding, and live registered worktree facts. Retired task/workspace
-mappings and `task.json.branch` are not current identity inputs.
-
-`prepare-task` is compatibility-only and never produces a current transition.
-An explicit call must receive the complete reviewed base provenance above.
-It supplies that exact `base_current.base` object as one JSON scalar through
-`--reviewed-base-provenance`; the value is not a file locator. Optional
-`--base-branch` only asserts selected-base equality and cannot rebuild source.
-Missing provenance returns the stable local diagnostic
-`missing_reviewed_base_provenance`; changed provenance/state returns a stable
-base-provenance or base-state diagnostic. Both stop before GitHub reads, fetch,
-duplicate search, or semantic Intake. A digest alone cannot reconstruct the
-resolution source or ordered candidates. Whether a missing remote ref is legal
-for a particular query state is defined by the formal closed schema/runtime
-status matrix; callers must not infer a nullable fallback or synthesize a remote
-HEAD.
+The historical `prepare-task.base_freshness` and
+`prepare-task --reviewed-base-provenance '<JSON>'` reader belong only to
+pinned-old complete installations. The fixed implementation baseline and
+current registry/commands no longer contain that executable consumer. Do not
+revive it as an Intake fallback or feed the new Git-object union into its old
+synchronized provenance contract. Current Task Creation projects the selected
+local branch ref and fixed reviewed commit into its existing
+`selected_base_ref` / `reviewed_base_head` contract. Its original source,
+branch/head, checkout suitability, Task and generation checks remain required.
+A commit-only read result does not supply a missing creation branch.
 
 The YAML parser in `load_config()` is intentionally small. It supports simple
 scalars, lists, and one level of nested dictionaries used by the current config.

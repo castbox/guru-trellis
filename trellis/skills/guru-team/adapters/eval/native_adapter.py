@@ -15,8 +15,12 @@ import tempfile
 import threading
 import time
 
-# The CLI is also executed directly by the platform shell adapters.
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+# Direct platform entrypoints load their own matching skills and kernel in
+# both source and installed layouts.
+_SKILLS_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(_SKILLS_ROOT))
+if (_SKILLS_ROOT.parent / "runtime").is_dir():
+    sys.path.insert(0, str(_SKILLS_ROOT.parent))
 
 from adapters.eval.eval_constants import (
     ADAPTERS,
@@ -47,6 +51,7 @@ from adapters.eval.eval_support import (
     qualification_trace_helper_source,
     recorded_native_environment,
     repository_file_inventory,
+    runtime_residue,
     response,
     run_codex_permission_probe,
     stage_public_projection,
@@ -1587,8 +1592,7 @@ def main() -> int:
             residue_error = "isolated Codex authoring changed repository file inventory"
             repository_changed_paths = sorted(path for path in repository_before.keys() | repository_after.keys()
                 if repository_before.get(path) != repository_after.get(path))
-        runtime_root = owner_repository / ".trellis/.runtime"
-        if runtime_root.exists() and not phase2 and extra_authoring is None:
+        if runtime_residue(owner_repository) and not phase2 and extra_authoring is None:
             residue_error = "isolated Codex authoring created ignored runtime residue"
     transcript.write_text(json.dumps({
         "adapter": args.adapter,

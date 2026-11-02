@@ -91,9 +91,11 @@ class PythonSelectionTests(unittest.TestCase):
             installer.ensure_managed_python_runtime(REPO, REPO)
             command = run.call_args.args[0]
             self.assertEqual(command[command.index("--python") + 1], os.path.abspath(shutil.which("python3")))
+            self.assertIn("--automatic-selection", command)
             installer.ensure_managed_python_runtime(REPO, REPO, python=sys.executable)
             command = run.call_args.args[0]
             self.assertEqual(command[command.index("--python") + 1], sys.executable)
+            self.assertNotIn("--automatic-selection", command)
 
 
 class RuntimeUpdateFailureTests(unittest.TestCase):
@@ -121,7 +123,7 @@ class RuntimeUpdateFailureTests(unittest.TestCase):
         self.environment = mock.patch.dict(os.environ, {"GURU_TEAM_PYTHON_CACHE_ROOT": str(self.cache)})
         self.environment.start()
         self.addCleanup(self.environment.stop)
-        managed.write_active(self.repo, self.baseline["runtime_identity"])
+        managed.bootstrap(self.repo, ROOT, Path(sys.executable))
 
     def snapshot(self):
         return {path.relative_to(self.target).as_posix():

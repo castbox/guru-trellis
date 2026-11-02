@@ -354,12 +354,20 @@ def bind_sync_call_local_invocation(
 def clarity_target(
     payload: dict[str, Any],
     *,
+    target_locator: str,
     state: str = "open",
     body: str = "Issue 145 owner staging body",
 ) -> dict[str, Any]:
+    repo = payload["review_target"]["repo"]
+    if target_locator.startswith("https://github.com/"):
+        owner, name, _, number = target_locator.removeprefix("https://github.com/").split("/")
+        repo = f"{owner}/{name}"
+    else:
+        number = target_locator.removeprefix("#")
+    issue_number = int(number)
     target = {
-        "kind": "issue", "repo": "example/guru-extension", "issue_number": 145,
-        "url": "https://github.com/example/guru-extension/issues/145", "state": state,
+        "kind": "issue", "repo": repo, "issue_number": issue_number,
+        "url": f"https://github.com/{repo}/issues/{issue_number}", "state": state,
         "updated_at": "2026-01-01T00:00:00Z",
         "body_sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
     }
@@ -388,7 +396,9 @@ def clarity_disposition(
     }
     return payload
 
-def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[str, Any]:
+def build_clarity_owner(
+    runtime: Any, package_root: Path, recipe: str, public_input: dict[str, Any],
+) -> dict[str, Any]:
     payload = json.loads(
         (package_root / "examples/requirements-clarification.json").read_text(encoding="utf-8")
     )
@@ -400,8 +410,10 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         del proposal["proposal_digest"]
     for action in payload["source_actions"]:
         del action["payload_sha256"], action["action_digest"]
-    if recipe != "clarity-clear":
-        payload["mode"] = "workflow"
+    target_locator = public_input["target_locator"]
+    if target_locator.startswith(("#", "https://github.com/")):
+        payload = clarity_target(payload, target_locator=target_locator)
+        payload = clarity_disposition(payload, "keep_current_open_issue")
     if recipe == "clarity-clear":
         pass
     elif recipe == "clarity-needs-context":
@@ -413,14 +425,13 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         }
         payload["reason"] = "A named repository fact is required before clarification can continue."
     elif recipe == "clarity-refresh-context":
-        payload["mode"] = "standalone"
         payload["typed_exit"] = "refresh_context"
         payload["consumer"] = {"kind": "skill", "id": "guru-sync-base"}
         payload["context_evidence"]["status"] = "stale"
         payload["context_evidence"]["missing_reason"] = "The reviewed source binding changed."
         payload["reason"] = "The context snapshot must be refreshed from current authority."
     elif recipe == "clarity-blocked":
-        payload = clarity_target(payload)
+        payload = clarity_target(payload, target_locator=target_locator)
         payload = clarity_disposition(payload, "keep_current_open_issue")
         payload["typed_exit"] = "blocked"
         payload["consumer"] = {"kind": "stop", "id": "requirements-clarification-blocked"}
@@ -431,7 +442,7 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         }
         payload["reason"] = "The unresolved load-bearing decision blocks the clarification loop."
     elif recipe == "clarity-retarget":
-        payload = clarity_target(payload)
+        payload = clarity_target(payload, target_locator=target_locator)
         projection = {
             "repo": "example/guru-extension", "number": 146, "identity": "#146",
             "url": "https://github.com/example/guru-extension/issues/146", "state": "open",
@@ -461,7 +472,7 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
             selected_issue=selected, role="related",
         )
     elif recipe == "clarity-new-task":
-        payload = clarity_target(payload, state="closed")
+        payload = clarity_target(payload, target_locator=target_locator, state="closed")
         payload["typed_exit"] = "new_task"
         payload["consumer"] = {"kind": "workflow", "id": "guru-full-task-intake-chain"}
         payload["source_actions"] = [{
@@ -476,6 +487,12 @@ def build_clarity_owner(runtime: Any, package_root: Path, recipe: str) -> dict[s
         )
     else:
         raise ValueError(f"unsupported clarification owner staging recipe: {recipe}")
+    payload["mode"] = public_input["mode"]
+    if public_input["profile"] == "standalone_review":
+        payload["invocation_context"] = {
+            "kind": "standalone_review", "caller": "stage0 eval owner staging",
+            "task_locator": None, "resume_target": public_input["resume_target"],
+        }
     return stage0_command(
         package_root.parents[4], "guru-clarify-requirements",
         "record-requirements-clarification", payload,

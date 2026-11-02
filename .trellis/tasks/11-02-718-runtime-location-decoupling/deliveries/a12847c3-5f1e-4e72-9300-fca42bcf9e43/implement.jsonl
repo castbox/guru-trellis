@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次输出前完整读取；保持工程文字清晰及来源语义"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "当前旧pointer和来源合同迁移需直接consumer及退出"}
+{"file": "trellis/skills/guru-team/runtime/bootstrap.py", "reason": "复用原identity/cache/candidate/probe，不复制环境算法"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "原共享来源承接与方案正文合同；实施前读取必要条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "实际规划模板：核对当前需求、方案和验证责任，不把标题当充分性"}

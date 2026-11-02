@@ -22,7 +22,7 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
             projection = next(row for row in contracts["projections"] if row["id"] == projection_id)
             output_contract = next(row for row in contracts["outputs"] if row["exit_id"] == projection["exit_id"])
             output = json.loads((self.package / output_contract["example"]["path"]).read_text())
-            seed = {row["target"]: output[row["source"]] for row in projection["mappings"]}
+            seed = {row["target"]: output[row["source"]] for row in projection["mappings"] if row["source"] in output}
             consumer = next(row for row in contracts["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
             contract = consumer["contract"]
             if contract["kind"] == "json_schema":

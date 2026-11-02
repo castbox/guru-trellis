@@ -1,5 +1,9 @@
 # Guru Team Preset
 
+只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
+再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
+并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](MIGRATION-718.md)。
+
 跨 Issue 编排通过 Codex 显式调用 `guru-orchestrate-issue-dag` 或
 `guru-orchestrate-issue-sequence`。当前源码将它们作为受管 `standalone_only` 包分发，
 分别处理依赖图与严格串行列表，默认协调器 heartbeat 为 2 分钟。
@@ -451,20 +455,32 @@ python3 trellis/skills/guru-team/runtime/bootstrap.py --repo "$TARGET" \
 只要求 CPython 3，不维护 minor 白名单。identity 继续绑定 lock、runtime API/layout、
 Python implementation/major/minor、OS、architecture、ABI/platform。相同有效 identity
 复用；minor 变化选择对应 cache。patch 或解释器路径变化本身不要求重建，也不保证
-受管环境 patch 与 Homebrew 最新版本同步。日常 Skill 只用已激活 managed venv，
-Homebrew 更新不会触发自动更新或退回全局 site-packages。旧 identity 不自动清理。
+受管环境 patch 与 Homebrew 最新版本同步。日常 Skill 按实际工具需求验证并选择已有共享 cache；
+无自动 pointer 的普通 worktree 也可发现匹配环境。有效 hint 或真实显式类别不因 Homebrew/PATH 更新
+自动变化，也不退回全局 site-packages。旧 identity 不自动清理。
 
 激活前必须完成 hash-locked 依赖安装、Draft 2020-12 probe、真实公开 schema wrapper
 正/普通不完整输入检查，以及完整 staged source/installed 验证。wrapper 的隔离 capability
 fixture 只证明传输/运行能力，不代表用户业务语义判断。安装或 runtime-check 失败时保留
-原 active pointer 和原环境；同 identity repair 也在检查通过后才替换旧环境。
+原合法选择和原环境；同 identity repair 也在检查通过后才替换旧环境。
+当前选择写入 checkout-private selection-v3.json，旧 active.json 原文保留给旧消费者。
+仅当新载体不存在时一次迁移旧有效选择；日常缺环境不会隐式安装。独立公开入口为：
+
+```bash
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --check --json
+.trellis/guru-team/runtime/manage-python.sh . .trellis/guru-team/runtime --repair --python /path/to/python3 --json
+```
+
+从完整 matching source 恢复时，把实际目标 repo 和该来源 runtime assets 显式传给同一脚本。
+格式、稳定选择、直接 consumer 和原维护回滚的完整边界见 [MIGRATION-718](MIGRATION-718.md)。
 
 | 错误 code | 修复和重试 |
 | --- | --- |
 | `interpreter_unavailable` | 运行 `command -v python3` 和 `python3 --version`；检查可执行权限，或用上面的 `--python /path/to/python3` 明确选择。 |
 | `python3_required` / `python_implementation_unsupported` | 选择可运行的 CPython 3；不修改框架 manifest 来添加 minor。 |
-| `venv_bootstrap_failed` | 检查所选 Python 的 `-m venv` / ensurepip 支持，再使用同一 apply 命令。 |
-| `dependency_install_failed` | 检查 PyPI 访问及锁定依赖对所选解释器的 wheel 可用性，再重试；可显式选另一 CPython 3，不改 lock 或系统 Python。 |
+| `venv_bootstrap_failed` | 检查所选 Python 的 `-m venv` / ensurepip 支持，再使用同一环境 repair 命令。 |
+| `dependency_install_failed` | 检查 PyPI 访问及锁定依赖对所选解释器的 wheel 可用性，再通过环境 repair 重试；可显式选另一 CPython 3，不改 lock 或系统 Python。 |
+| `runtime_not_bootstrapped` / `managed_runtime_missing` / `explicit_runtime_unavailable` | 先运行独立 `--check`，再由原环境 owner 执行 `--repair`；显式类别失配不静默换环境。 |
 | `managed_runtime_check_failed` | 从完整 matching Guru 源/preset 重试，检查公开 wrapper/runtime 资产；可显式选择解释器。原 active 和旧环境保留，不手动覆盖 cache。 |
 
 未枚举 minor 的 identity admission 成功并不证明其 wheel/依赖兼容。这里的聚焦检查不替代

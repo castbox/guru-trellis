@@ -16,14 +16,14 @@ def ensure_managed_python_runtime(
     guru_root: Path,
     *,
     activate: bool = False,
-    python: str = "python3",
+    python: str | None = None,
     checkout_local: bool = False,
 ) -> dict[str, Any]:
     runtime_assets = guru_root / "trellis/skills/guru-team/runtime"
     bootstrap = runtime_assets / "bootstrap.py"
     if not bootstrap.is_file() or bootstrap.is_symlink():
         raise_managed_runtime_error()
-    selected = shutil.which(python) or python
+    selected = shutil.which(python or "python3") or python or "python3"
     if os.path.dirname(selected):
         selected = os.path.abspath(selected)
     command = [
@@ -37,6 +37,8 @@ def ensure_managed_python_runtime(
             selected,
             "--json",
         ]
+    if python is None:
+        command.append("--automatic-selection")
     if checkout_local:
         command.append("--checkout-local")
     if not activate:

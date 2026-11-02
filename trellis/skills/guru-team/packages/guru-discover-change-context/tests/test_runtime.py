@@ -231,7 +231,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertEqual(("stale_identity","branch_binding",3),(missing.exception.code,missing.exception.field_path,missing.exception.exit_status))
    binding=store.establish(key,"feat/other")
    with self.assertRaises(CommandError) as wrong:active_task(repo,ref)
-   self.assertEqual(("stale_identity","worktree",3),(wrong.exception.code,wrong.exception.field_path,wrong.exception.exit_status))
+   self.assertEqual(("stale_identity","task_id",3),(wrong.exception.code,wrong.exception.field_path,wrong.exception.exit_status))
    payload=binding.as_dict();payload["branch_name"]="feat/context";store.path_for(key).write_text(json.dumps(payload))
    self.assertEqual((td.resolve(),task),active_task(repo,ref))
    # Legacy status cannot become a current execution authority.

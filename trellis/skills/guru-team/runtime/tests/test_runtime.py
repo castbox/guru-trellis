@@ -87,12 +87,12 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertEqual(second["action"], "reused")
         self.assertEqual(second["runtime_identity"], self.runtime_result["runtime_identity"])
 
-        from runtime.bootstrap import active_pointer_path
+        from runtime.bootstrap import active_pointer_path, validate_active
 
         active = json.loads(active_pointer_path(self.repo).read_text())
         managed_python = Path(str(self.runtime_result["interpreter"]))
         self.assertEqual(active["cache_scope"], "user")
-        self.assertEqual(active["runtime_id"], self.runtime_result["runtime_identity"])
+        self.assertIn(self.runtime_result["runtime_identity"], active["hints"].values())
         probe = subprocess.run(
             [str(managed_python), str(ROOT / "probe.py"), "--manifest", str(ROOT / "python-runtime.json"), "--json"],
             text=True,
@@ -307,7 +307,7 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertRegex(payload["runtime_identity"], r"^[0-9a-f]{24}$")
 
     def test_resolver_failure_is_stable_json_without_traceback(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "empty-cache")}):
             repo = Path(tmp)
             result = subprocess.run(
                 [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
@@ -326,33 +326,8 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertEqual(payload["code"], "runtime_not_bootstrapped")
         self.assertNotIn("Traceback", result.stderr)
 
-    def test_resolver_distinguishes_missing_shared_cache_entry(self) -> None:
-        from runtime.bootstrap import active_pointer_path, canonical_json
-
-        with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp)
-            pointer = active_pointer_path(repo)
-            pointer.parent.mkdir(parents=True)
-            pointer.write_bytes(canonical_json({
-                "schema_version": "2.0",
-                "cache_scope": "user",
-                "runtime_id": "0" * 24,
-                "interpreter": "venv/bin/python",
-            }) + b"\n")
-            result = subprocess.run(
-                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-        self.assertEqual(result.returncode, 2)
-        payload = json.loads(result.stderr)
-        self.assertEqual(payload["code"], "managed_runtime_missing")
-        self.assertEqual(payload["runtime_identity"], "0" * 24)
-
     def test_linked_worktree_uses_git_common_pointer_and_shared_runtime(self) -> None:
-        from runtime.bootstrap import active_pointer_path
+        from runtime.bootstrap import active_pointer_path, validate_active
 
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -366,7 +341,7 @@ class SharedRuntimeTests(unittest.TestCase):
             subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
             installed = bootstrap_runtime(repo)
             subprocess.run(["git", "worktree", "add", "-q", "-b", "test/worktree", str(worktree)], cwd=repo, check=True)
-            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            self.assertNotEqual(active_pointer_path(repo), active_pointer_path(worktree))
             result = subprocess.run(
                 [str(ROOT / "resolve-python.sh"), str(worktree), str(ROOT), "-c", "import jsonschema;print(jsonschema.__version__)"],
                 text=True,
@@ -376,10 +351,10 @@ class SharedRuntimeTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result)
             self.assertTrue(result.stdout.strip())
-            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+            self.assertEqual(installed["runtime_identity"], validate_active(worktree, ROOT)["runtime_identity"])
 
     def test_linked_worktree_resolves_common_pointer_without_git_on_path(self) -> None:
-        from runtime.bootstrap import active_pointer_path
+        from runtime.bootstrap import active_pointer_path, validate_active
 
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
@@ -395,7 +370,7 @@ class SharedRuntimeTests(unittest.TestCase):
             subprocess.run(["git", "commit", "-q", "-m", "test: initial"], cwd=repo, check=True)
             installed = bootstrap_runtime(repo)
             subprocess.run(["git", "worktree", "add", "-q", "-b", "test/no-git-path", str(worktree)], cwd=repo, check=True)
-            for command in ("bash", "sed", "tr"):
+            for command in ("bash", "dirname"):
                 command_path = shutil.which(command)
                 self.assertIsNotNone(command_path)
                 (command_bin / command).symlink_to(str(command_path))
@@ -411,11 +386,11 @@ class SharedRuntimeTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result)
             self.assertEqual(result.stdout.strip(), "ok")
-            self.assertEqual(active_pointer_path(repo), active_pointer_path(worktree))
-            self.assertEqual(installed["runtime_identity"], json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
+            self.assertNotEqual(active_pointer_path(repo), active_pointer_path(worktree))
+            self.assertEqual(installed["runtime_identity"], validate_active(worktree, ROOT)["runtime_identity"])
 
     def test_linked_worktrees_with_different_contracts_keep_independent_runtime_selection(self) -> None:
-        from runtime.bootstrap import active_pointer_path
+        from runtime.bootstrap import active_pointer_path, validate_active
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -443,8 +418,8 @@ class SharedRuntimeTests(unittest.TestCase):
 
             self.assertNotEqual(first["runtime_identity"], second["runtime_identity"])
             self.assertNotEqual(active_pointer_path(first_worktree), active_pointer_path(second_worktree))
-            self.assertEqual(first["runtime_identity"], json.loads(active_pointer_path(first_worktree).read_text())["runtime_id"])
-            self.assertEqual(second["runtime_identity"], json.loads(active_pointer_path(second_worktree).read_text())["runtime_id"])
+            self.assertEqual(first["runtime_identity"], validate_active(first_worktree, first_assets)["runtime_identity"])
+            self.assertEqual(second["runtime_identity"], validate_active(second_worktree, second_assets)["runtime_identity"])
             for worktree, assets, expected in (
                 (first_worktree, first_assets, first["runtime_identity"]),
                 (second_worktree, second_assets, second["runtime_identity"]),
@@ -458,33 +433,7 @@ class SharedRuntimeTests(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result)
                 self.assertEqual(result.stdout.strip(), "ok")
-                self.assertEqual(expected, json.loads(active_pointer_path(worktree).read_text())["runtime_id"])
-
-    def test_resolver_preserves_validator_error_classification(self) -> None:
-        from runtime.bootstrap import active_pointer_path
-
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
-            os.environ,
-            {"GURU_TEAM_PYTHON_CACHE_ROOT": str(Path(tmp) / "cache")},
-        ):
-            repo = Path(tmp) / "repo"
-            repo.mkdir()
-            bootstrap_runtime(repo)
-            pointer_path = active_pointer_path(repo)
-            pointer = json.loads(pointer_path.read_text())
-            pointer["cache_scope"] = "checkout"
-            pointer_path.write_text(json.dumps(pointer, sort_keys=True, separators=(",", ":")) + "\n")
-            result = subprocess.run(
-                [str(ROOT / "resolve-python.sh"), str(repo), str(ROOT), "-c", "print('unexpected')"],
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,
-            )
-        self.assertEqual(result.returncode, 2)
-        payload = json.loads(result.stderr)
-        self.assertEqual(payload["code"], "managed_runtime_missing")
-        self.assertEqual(payload["dependency"], "python-runtime")
+                self.assertEqual(expected, validate_active(worktree, assets)["runtime_identity"])
 
     def test_public_wrapper_uses_managed_runtime_when_path_python_has_no_jsonschema(self) -> None:
         no_site_packages = subprocess.run(
@@ -611,11 +560,18 @@ class SharedRuntimeTests(unittest.TestCase):
                     "private_artifacts": contracts["private_artifacts"],
                 })
 
+    def isolated_source_wrapper(self, relative: str) -> tuple[Path, Path]:
+        root = Path(tempfile.mkdtemp(dir=self.repo_directory.name, prefix="source-wrapper-"))
+        shutil.copytree(ROOT.parents[3] / "trellis", root / "trellis",
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        (root / ".trellis").mkdir()
+        shutil.copy2(root / "trellis/workflows/guru-team/workflow.md", root / ".trellis/workflow.md")
+        bootstrap_runtime(root, root / "trellis/skills/guru-team/runtime")
+        return root / relative, root
+
     def test_contract_discovery_wrapper_and_unknown_skill_error(self) -> None:
-        wrapper = Path(__file__).resolve().parents[4] / "workflows/guru-team/scripts/bash/discover-skill-contract.sh"
-        root = Path(__file__).resolve().parents[5]
+        wrapper, root = self.isolated_source_wrapper("trellis/workflows/guru-team/scripts/bash/discover-skill-contract.sh")
         current_checkout_environment = os.environ.copy()
-        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
         success = subprocess.run(
             [str(wrapper), "--root", str(root), "--mode", "source", "--skill", "guru-sync-base", "--json"],
             env=current_checkout_environment,
@@ -633,10 +589,9 @@ class SharedRuntimeTests(unittest.TestCase):
         self.assertEqual(set(json.loads(failure.stderr)), {"code", "field_path", "remediation"})
 
     def test_launcher_direct_contract_and_missing_arguments(self) -> None:
-        launcher = ROOT / "launch.sh"
-        package = SKILLS / "packages/guru-sync-base"
+        launcher, root = self.isolated_source_wrapper("trellis/skills/guru-team/runtime/launch.sh")
+        package = root / "trellis/skills/guru-team/packages/guru-sync-base"
         current_checkout_environment = os.environ.copy()
-        current_checkout_environment.pop("GURU_TEAM_PYTHON_CACHE_ROOT", None)
         direct = subprocess.run(
             [str(launcher), str(package), "sync-base", "--help"],
             env=current_checkout_environment,
@@ -1982,9 +1937,9 @@ class QualificationNativeIsolationTests(unittest.TestCase):
                     runtime_target,
                 )
             owner_repository = installed_target.parents[4]
-            active = json.loads(
-                (owner_repository / ".git/guru-team/python/active.json").read_text(encoding="utf-8")
-            )
+            from runtime.bootstrap import validate_active
+            with mock.patch.dict(os.environ, environment):
+                active = validate_active(owner_repository, owner_repository / ".trellis/guru-team/runtime")
             self.assertEqual(
                 environment,
                 {"GURU_TEAM_PYTHON_CACHE_ROOT": str(cache_root.resolve())},

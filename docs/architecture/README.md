@@ -7,6 +7,7 @@ Identity：`guru-trellis-architecture`；状态：`active`。精确内容由完�
 | FOUNDATION | accepted_constraints | [baseline](./00-foundation/baseline.md) / [constitution](./00-foundation/design-constitution.md) | 横向约束；constitution-v1 |
 | ARCH-FND-STACK-001 | accepted_selection | [项目栈选择](./00-foundation/stack-selection.md) | [trellis-extension-stack@1.0](../../trellis/knowledge/technology-baselines/trellis-extension/versions/1.0/baseline.md) |
 | CURRENT | evidence_bound | [system](./01-current/system.md) | [EVIDENCE](./evidence/current-evidence.md) |
+| ARCH-RUNTIME-LOCATION | current | [runtime-location](./01-current/runtime-location.md) | ADR-RUNTIME-LOCATION; RDT-REQ-RUNTIME-LOCATION |
 | TARGET | accepted_target | [target](./02-target/target.md) | [GAP](./05-gaps/current-to-target.md) / [PLAN](./07-plans/roadmap.md) |
 | DOMAIN | current_boundaries | [ownership](./03-domains/ownership.md) | [INTEGRATION](./04-integrations/distribution.md) |
 | ARCH-GOV-001..012 | current | [rules](./06-governance/rules.md) | [change contract](./06-governance/change-contract.md) / ADR-005/028/030/031/033/034 / ADR-KNOWLEDGE-FINAL-INTEGRATION |

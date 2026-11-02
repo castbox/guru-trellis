@@ -19,7 +19,7 @@ try:
 except ImportError:
     from bootstrap_check import check_public_wrapper
 
-REPAIR_COMMAND = "trellis/presets/guru-team/scripts/bash/apply.sh --repo ."
+REPAIR_COMMAND = "Run matching runtime/manage-python.sh REPO ASSETS --repair; provide --python /path/to/python3 when required."
 
 
 class BootstrapError(RuntimeError):
@@ -66,10 +66,25 @@ def select_python(value: str | Path = "python3") -> Path:
     return Path(os.path.abspath(selected))
 
 
+def runtime_requirements(assets: Path) -> tuple[dict[str, Any], str]:
+    try:
+        manifest = read_json(assets / "python-runtime.json")
+    except BootstrapError as exc:
+        raise BootstrapError("matching runtime manifest is unavailable", code="runtime_assets_missing",
+                             dependency="runtime-manifest",
+                             remediation="Restore the complete matching runtime assets, including python-runtime.json; retry manage-python.sh REPO ASSETS --check or --repair.") from exc
+    try:
+        lock_digest = hashlib.sha256((assets / str(manifest["lock_file"])).read_bytes()).hexdigest()
+    except (OSError, KeyError) as exc:
+        raise BootstrapError("matching locked dependency source is unavailable", code="runtime_assets_missing",
+                             dependency="runtime-lock",
+                             remediation="Restore requirements.lock from the same complete matching runtime assets; retry manage-python.sh REPO ASSETS --repair.") from exc
+    return manifest, lock_digest
+
+
 def runtime_identity(assets: Path, python: Path) -> tuple[str, dict[str, Any]]:
     python = select_python(python)
-    manifest = read_json(assets / "python-runtime.json")
-    lock_digest = hashlib.sha256((assets / str(manifest["lock_file"])).read_bytes()).hexdigest()
+    manifest, lock_digest = runtime_requirements(assets)
     proc = subprocess.run(
         [
             str(python),
@@ -194,7 +209,12 @@ def runtime_target(runtime_id: str) -> Path:
 
 
 def active_pointer_path(repo: Path, *, for_write: bool = False, checkout_local: bool = False) -> Path:
-    return repository_state_root(repo, for_write=for_write, checkout_local=checkout_local) / "active.json"
+    """Current writer locator; legacy consumers keep their separate active.json."""
+    return repo / ".trellis/.runtime/guru-team/python/selection-v3.json"
+
+
+def legacy_pointer_path(repo: Path) -> Path:
+    return repository_state_root(repo) / "active.json"
 
 
 def run_probe(python: Path, assets: Path) -> dict[str, Any]:
@@ -236,18 +256,79 @@ def existing_state(target: Path, runtime_id: str, identity: dict[str, Any], asse
     return "reusable"
 
 
-def write_active(repo: Path, runtime_id: str, *, checkout_local: bool = False) -> None:
-    runtime_root = repository_state_root(repo, for_write=True, checkout_local=checkout_local)
-    runtime_root.mkdir(parents=True, exist_ok=True)
-    pointer = {
-        "schema_version": "2.0",
-        "cache_scope": "user",
-        "runtime_id": runtime_id,
-        "interpreter": venv_python(runtime_target(runtime_id) / "venv").as_posix(),
+REQUIREMENT_KEYS = ("runtime_api_version", "venv_layout_version", "lock_sha256")
+
+
+def requirements_key(assets: Path) -> str:
+    manifest, lock_digest = runtime_requirements(assets)
+    requirement = {
+        "runtime_api_version": manifest["runtime_api_version"],
+        "venv_layout_version": manifest["venv_layout_version"],
+        "lock_sha256": lock_digest,
+        "python": manifest["python"],
     }
-    temporary = runtime_root / "active.json.tmp"
+    return hashlib.sha256(canonical_json(requirement)).hexdigest()
+
+
+def interpreter_class(identity: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in identity.items() if key not in REQUIREMENT_KEYS}
+
+
+def read_selection(repo: Path) -> dict[str, Any]:
+    pointer = active_pointer_path(repo)
+    if pointer.exists() or pointer.is_symlink():
+        try:
+            payload = read_json(pointer)
+            if (pointer.is_symlink() or payload.get("schema_version") != "3.0"
+                    or payload.get("cache_scope") != "user"
+                    or payload.get("selection_mode") not in ("automatic", "explicit")
+                    or not isinstance(payload.get("hints"), dict)):
+                raise BootstrapError("invalid current selection")
+            if any(not isinstance(key, str) or not isinstance(value, str) for key, value in payload["hints"].items()):
+                raise BootstrapError("invalid runtime hints")
+            if payload["selection_mode"] == "explicit" and not isinstance(payload.get("interpreter_class"), dict):
+                raise BootstrapError("invalid explicit interpreter class")
+            return payload
+        except BootstrapError as exc:
+            raise BootstrapError("current runtime selection is invalid", code="runtime_selection_invalid",
+                                 remediation="Repair the current selection with manage-python.sh REPO ASSETS --repair --python /path/to/python3; legacy active.json is preserved.") from exc
+    # The absence of the current file is the sole one-time migration boundary.
+    legacy = legacy_pointer_path(repo)
+    if legacy.is_file() and not legacy.is_symlink():
+        try:
+            payload = read_json(legacy)
+            if payload.get("schema_version") == "2.0":
+                return payload
+        except BootstrapError:
+            pass
+    return {}
+
+
+def write_active(
+    repo: Path, runtime_id: str, *, assets: Path,
+    selection_class: dict[str, Any] | None = None,
+    checkout_local: bool = False,
+) -> None:
+    # All current writes are checkout-private. Legacy Git pointers are read once.
+    pointer_path = active_pointer_path(repo)
+    runtime_root = pointer_path.parent
+    try:
+        prior = read_selection(repo)
+    except BootstrapError:
+        # Explicit bootstrap/repair replaces an unusable current selection only
+        # after the candidate and real wrapper have passed.
+        prior = {}
+    hints = dict(prior.get("hints", {})) if prior.get("schema_version") == "3.0" else {}
+    hints[requirements_key(assets)] = runtime_id
+    pointer = {"schema_version": "3.0", "cache_scope": "user",
+               "selection_mode": "explicit" if selection_class is not None else "automatic",
+               "hints": hints}
+    if selection_class is not None:
+        pointer["interpreter_class"] = selection_class
+    runtime_root.mkdir(parents=True, exist_ok=True)
+    temporary = runtime_root / "selection-v3.json.tmp"
     temporary.write_bytes(canonical_json(pointer) + b"\n")
-    temporary.replace(runtime_root / "active.json")
+    temporary.replace(pointer_path)
 
 
 def resolve_runtime(assets: Path, runtime_id: str) -> dict[str, Any]:
@@ -275,40 +356,60 @@ def resolve_runtime(assets: Path, runtime_id: str) -> dict[str, Any]:
     return {"status": "ok", "runtime_identity": runtime_id, "interpreter": str(python)}
 
 
-def validate_active(repo: Path, assets: Path, runtime_id: str | None = None) -> dict[str, Any]:
-    pointer_path = active_pointer_path(repo)
-    if not pointer_path.is_file() or pointer_path.is_symlink():
-        raise BootstrapError(
-            "managed runtime is not bootstrapped for this repository",
-            code="runtime_not_bootstrapped",
-        )
-    try:
-        pointer = read_json(pointer_path)
-    except BootstrapError as exc:
-        raise BootstrapError(
-            "managed runtime pointer is invalid",
-            code="managed_runtime_missing",
-            runtime_identity=runtime_id,
-        ) from exc
-    active_id = pointer.get("runtime_id")
-    expected_interpreter = venv_python(runtime_target(str(active_id)) / "venv").as_posix()
-    if (
-        pointer.get("schema_version") != "2.0"
-        or pointer.get("cache_scope") != "user"
-        or not isinstance(active_id, str)
-        or len(active_id) != 24
-        or pointer.get("interpreter") != expected_interpreter
-        or (runtime_id is not None and active_id != runtime_id)
-    ):
-        raise BootstrapError(
-            "managed runtime pointer is stale",
-            code="managed_runtime_missing",
-            runtime_identity=runtime_id if runtime_id is not None else (active_id if isinstance(active_id, str) else None),
-        )
-    return resolve_runtime(assets, active_id)
+def validate_active(
+    repo: Path, assets: Path, runtime_id: str | None = None, *, cache_selection: bool = False,
+) -> dict[str, Any]:
+    requirement = requirements_key(assets)
+    selection = read_selection(repo)
+    selection_class = None
+    hint = None
+    if selection.get("schema_version") == "3.0":
+        if selection.get("selection_mode") == "explicit":
+            selection_class = selection.get("interpreter_class")
+            if not isinstance(selection_class, dict) or not selection_class:
+                raise BootstrapError("explicit interpreter class is invalid", code="runtime_selection_invalid")
+        hint = selection.get("hints", {}).get(requirement)
+    elif selection.get("schema_version") == "2.0":
+        # v2 did not record provenance. Keep its valid environment, otherwise
+        # treat it as an automatic hint; never invent historical explicit intent.
+        hint = selection.get("runtime_id")
+    candidates = []
+    if isinstance(hint, str) and len(hint) == 24:
+        candidates.append(hint)
+    cache = user_cache_root()
+    if cache.is_dir():
+        candidates.extend(sorted(path.name for path in cache.iterdir()
+                                 if path.is_dir() and len(path.name) == 24
+                                 and all(char in "0123456789abcdef" for char in path.name)
+                                 and path.name not in candidates))
+    hint_error = None
+    for candidate in candidates:
+        try:
+            result = resolve_runtime(assets, candidate)
+            metadata = read_json(runtime_target(candidate) / "metadata.json")
+        except BootstrapError as exc:
+            if candidate == hint:
+                hint_error = exc
+            continue
+        if selection_class is not None and interpreter_class(metadata["identity"]) != selection_class:
+            continue
+        # The normal selection has now succeeded. An expected-id assertion
+        # cannot turn another available cache into the active selection.
+        if runtime_id is not None and candidate != runtime_id:
+            raise BootstrapError("active runtime differs from requested identity", code="managed_runtime_missing",
+                                 runtime_identity=runtime_id)
+        if cache_selection:
+            write_active(repo, candidate, assets=assets, selection_class=selection_class)
+        return result
+    if selection_class is not None:
+        raise BootstrapError("no compatible environment for explicit interpreter class",
+                             code="explicit_runtime_unavailable", runtime_identity=hint)
+    if hint_error is not None:
+        raise hint_error
+    raise BootstrapError("no compatible managed environment exists", code="runtime_not_bootstrapped")
 
 
-def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True, *, checkout_local: bool = False) -> dict[str, Any]:
+def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True, *, checkout_local: bool = False, explicit_python: bool = True) -> dict[str, Any]:
     runtime_root = user_cache_root()
     runtime_root.mkdir(parents=True, exist_ok=True)
     runtime_id, identity = runtime_identity(assets, python)
@@ -321,7 +422,7 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True, *, 
         if state == "reusable":
             run_public_wrapper(assets, runtime_id, target)
             if activate:
-                write_active(repo, runtime_id, checkout_local=checkout_local)
+                write_active(repo, runtime_id, assets=assets, selection_class=interpreter_class(identity) if explicit_python else None, checkout_local=checkout_local)
             return {
                 "status": "ok",
                 "action": "reused",
@@ -374,7 +475,7 @@ def bootstrap(repo: Path, assets: Path, python: Path, activate: bool = True, *, 
         else:
             candidate.replace(target)
         if activate:
-            write_active(repo, runtime_id, checkout_local=checkout_local)
+            write_active(repo, runtime_id, assets=assets, selection_class=interpreter_class(identity) if explicit_python else None, checkout_local=checkout_local)
         return {
             "status": "ok",
             "action": "repaired" if repair_target else "installed",
@@ -403,7 +504,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--runtime-assets", type=Path, required=True)
-    parser.add_argument("--python", default="python3", help="Interpreter command or path; defaults to current PATH python3.")
+    parser.add_argument("--python", default=None, help="Interpreter command or path; defaults to current PATH python3.")
+    parser.add_argument("--automatic-selection", action="store_true", help="Installer default selected PATH Python; save automatic mode.")
+    parser.add_argument("--check", action="store_true", help="Check existing selection/cache without writes or installation.")
+    parser.add_argument("--repair", action="store_true", help="Build or repair via locked bootstrap and activate after validation.")
     parser.add_argument("--print-identity", action="store_true")
     parser.add_argument("--validate-active")
     parser.add_argument("--resolve-active", action="store_true")
@@ -418,6 +522,8 @@ def main() -> int:
     runtime_id: str | None = None
     try:
         modes = sum(bool(value) for value in (
+            args.check,
+            args.repair,
             args.print_identity,
             args.validate_active,
             args.resolve_active,
@@ -428,12 +534,14 @@ def main() -> int:
         if modes > 1:
             raise BootstrapError("select exactly one runtime operation")
         if args.print_identity:
-            print(runtime_identity(args.runtime_assets.resolve(), select_python(args.python))[0])
+            print(runtime_identity(args.runtime_assets.resolve(), select_python(args.python or "python3"))[0])
             return 0
         if args.print_active_pointer:
             print(active_pointer_path(args.repo.resolve(), checkout_local=args.checkout_local))
             return 0
-        if args.validate_active:
+        if args.check:
+            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve())
+        elif args.validate_active:
             runtime_id = args.validate_active
             result = validate_active(
                 args.repo.resolve(),
@@ -444,7 +552,7 @@ def main() -> int:
             runtime_id = args.resolve_runtime
             result = resolve_runtime(args.runtime_assets.resolve(), runtime_id)
         elif args.resolve_active or args.exec_active:
-            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve())
+            result = validate_active(args.repo.resolve(), args.runtime_assets.resolve(), cache_selection=True)
             runtime_id = str(result["runtime_identity"])
             if args.exec_active:
                 command = list(args.command)
@@ -452,15 +560,18 @@ def main() -> int:
                     command = command[1:]
                 if not command:
                     raise BootstrapError("managed runtime command is missing")
+                if os.name == "nt":
+                    return subprocess.run([result["interpreter"], *command], check=False).returncode
                 os.execv(result["interpreter"], [result["interpreter"], *command])
         else:
-            runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), select_python(args.python))
+            runtime_id, _ = runtime_identity(args.runtime_assets.resolve(), select_python(args.python or "python3"))
             result = bootstrap(
                 args.repo.resolve(),
                 args.runtime_assets.resolve(),
-                select_python(args.python),
+                select_python(args.python or "python3"),
                 activate=not args.no_activate,
                 checkout_local=args.checkout_local,
+                explicit_python=args.python is not None and not args.automatic_selection,
             )
     except Exception as exc:
         payload = {

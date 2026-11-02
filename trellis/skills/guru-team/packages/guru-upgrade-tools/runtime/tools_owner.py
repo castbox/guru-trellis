@@ -118,14 +118,34 @@ def peer_pointers(root, old):
     if not common.is_absolute():
         common = root / common
     paths.add(common.resolve() / 'guru-team/python/active.json')
-    target_override = root / '.trellis/.runtime/guru-team/python/active.json'
+    target_override = active_pointer_path(root, for_write=True)
+    paths.add(root / '.trellis/.runtime/guru-team/python/active.json')
     for other in peers(root, old):
         gitdir = Path(old.git(other, 'rev-parse', '--absolute-git-dir'))
         paths.add(gitdir / 'guru-team/python/active.json')
         if other != root:
             paths.add(other / '.trellis/.runtime/guru-team/python/active.json')
             paths.add(active_pointer_path(other))
-    return {str(path): old.state(path) for path in sorted(paths) if path != target_override}
+    result = {str(path): old.state(path) for path in sorted(paths) if path != target_override}
+    # Ask each peer's own environment owner for its actual selection without
+    # activating a pointer, installing dependencies, or borrowing source code.
+    for other in peers(root, old):
+        if other == root:
+            continue
+        for assets in (other / '.trellis/guru-team/runtime', other / 'trellis/skills/guru-team/runtime'):
+            if not (assets / 'bootstrap.py').is_file():
+                continue
+            operation = '--check' if (assets / 'manage-python.sh').is_file() else '--resolve-active'
+            checked = subprocess.run([sys.executable, '-S', str(assets / 'bootstrap.py'),
+                                      '--repo', str(other), '--runtime-assets', str(assets), operation, '--json'],
+                                     text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            try:
+                selected = json.loads(checked.stdout.strip() or checked.stderr.strip())
+            except ValueError:
+                selected = {'code': 'runtime_check_failed'}
+            result['runtime:' + str(assets)] = {key: selected.get(key) for key in
+                                               ('status', 'code', 'runtime_identity', 'interpreter')}
+    return result
 
 
 def unchanged_peers(root, cp, old):
@@ -172,7 +192,8 @@ def inventory(package, root, public, descriptor, plan=None):
     projections = module.managed_source_projections(root, root / '.trellis/guru-team', selected)
     paths = {path.as_posix() for path in module.managed_transaction_paths(root, root / '.trellis/guru-team', selected, None, tools_only=True)}
     paths |= {row['path'] for row in managed}
-    paths |= {'.trellis/guru-team/extension.json', '.trellis/.runtime/guru-team/python/active.json'}
+    paths |= {'.trellis/guru-team/extension.json', '.trellis/.runtime/guru-team/python/active.json',
+              '.trellis/.runtime/guru-team/python/selection-v3.json'}
     paths |= {path + suffix for path in list(paths) if not path.startswith('.trellis/.runtime/') for suffix in ('.new', '.bak')}
     forbidden = [path for path in paths if path.startswith(('.trellis/tasks/', '.trellis/workspace/', '.trellis/agent-traces/'))]
     if forbidden:

@@ -366,6 +366,15 @@
       "ordinal": 1
     },
     {
+      "id": "helper-python_subprocess_second_hop-d2db55d4b1f9",
+      "owner": "trellis/skills/guru-team/adapters/eval/eval_support.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "d2db55d4b1f9ca848b5d9d1e2d9c6c14979c0ddc14921607d0208dfe0a65e11a",
+      "ordinal": 1
+    },
+    {
       "id": "helper-generated_shebang-59310c797e82",
       "owner": "trellis/skills/guru-team/adapters/eval/fixture_io.py",
       "kind": "generated_shebang",
@@ -454,6 +463,15 @@
       "expected_launcher": "managed dynamic sys.executable",
       "anchor_sha256": "1ce00a5eb26e47ef9cf9b8c90dd1bb82002607a05a0e779a2f710e66648c59d1",
       "ordinal": 1
+    },
+    {
+      "id": "package-runtime-python_subprocess_second_hop-235f659f9393",
+      "owner": "trellis/skills/guru-team/packages/guru-upgrade-tools/runtime/tools_owner.py",
+      "kind": "python_subprocess_second_hop",
+      "classification": "installed_managed",
+      "expected_launcher": "sys.executable",
+      "anchor_sha256": "235f659f9393ea384712ff379d97aa1a9a22139fa309261fa5308a264b580931",
+      "ordinal": 1
     }
   ],
   "transitive_python_helpers": [
@@ -484,7 +502,7 @@
       "expected_launcher": "native_adapter.py explicit module import under installed managed Python",
       "launch_owner": "trellis/skills/guru-team/adapters/eval/native_adapter.py",
       "launch_token": "from adapters.eval.eval_support import (",
-      "sys_executable_subprocesses": 0,
+      "sys_executable_subprocesses": 1,
       "managed_shebang_bindings": 0
     },
     {

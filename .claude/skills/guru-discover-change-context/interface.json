@@ -75,8 +75,110 @@
     "recorder_validator",
     "typed_exit"
   ],
-  "artifacts": [{"id": "change_context_owner_result_example", "path": "examples/change-context-owner-result-3.0.json"}, {"id": "legacy_change_context_owner_result_example_2_0", "path": "examples/change-context-owner-result.json"}, {"id": "public_input_pre_task_example", "path": "examples/public-pre-task-input-3.0.json"}, {"id": "public_invocation_error_example", "path": "examples/public-invocation-error.json"}, {"id": "public_output_context_ready_example_3_0", "path": "examples/public-context-ready-output-4.0.json"}, {"id": "public_output_refresh_base_example", "path": "examples/public-refresh-base-output.json"}, {"id": "public_output_blocked_example", "path": "examples/public-blocked-output.json"}, {"id": "context_request_artifacts", "path": "examples/public-context-request-input.json"}],
-  "schemas": [{"id": "change_context_owner_result_schema", "path": "schemas/change-context-owner-result-3.0.schema.json"}, {"id": "legacy_change_context_owner_result_schema_2_0", "path": "schemas/change-context-owner-result.schema.json"}, {"id": "change_context_recovery_schema", "path": "schemas/change-context-recovery.schema.json"}, {"id": "public_input_pre_task", "path": "schemas/public-pre-task-input-3.0.schema.json"}, {"id": "public_input_aggregate", "path": "schemas/public-input.schema.json"}, {"id": "public_invocation_error", "path": "schemas/public-invocation-error.schema.json"}, {"id": "public_output_context_ready_3_0", "path": "schemas/public-context-ready-output-4.0.schema.json"}, {"id": "public_output_refresh_base", "path": "schemas/public-refresh-base-output.schema.json"}, {"id": "public_output_blocked", "path": "schemas/public-blocked-output.schema.json"}, {"id": "context_request_schemas", "path": "schemas/public-context-request-input.schema.json"}],
+  "artifacts": [
+    {
+      "id": "change_context_owner_result_example",
+      "path": "examples/change-context-owner-result-3.0.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_example_2_0",
+      "path": "examples/change-context-owner-result.json"
+    },
+    {
+      "id": "public_input_pre_task_example",
+      "path": "examples/public-pre-task-input-3.0.json"
+    },
+    {
+      "id": "public_invocation_error_example",
+      "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "public_output_context_ready_example_3_0",
+      "path": "examples/public-context-ready-output-4.0.json"
+    },
+    {
+      "id": "public_output_refresh_base_example",
+      "path": "examples/public-refresh-base-output.json"
+    },
+    {
+      "id": "public_output_blocked_example",
+      "path": "examples/public-blocked-output.json"
+    },
+    {
+      "id": "context_request_artifacts",
+      "path": "examples/public-context-request-input.json"
+    }
+  ],
+  "schemas": [
+    {
+      "id": "change_context_owner_result_schema",
+      "path": "schemas/change-context-owner-result-3.0.schema.json"
+    },
+    {
+      "id": "legacy_change_context_owner_result_schema_2_0",
+      "path": "schemas/change-context-owner-result.schema.json"
+    },
+    {
+      "id": "change_context_recovery_schema",
+      "path": "schemas/change-context-recovery.schema.json"
+    },
+    {
+      "id": "public_input_pre_task",
+      "path": "schemas/public-pre-task-input-4.0.schema.json"
+    },
+    {
+      "id": "public_input_aggregate",
+      "path": "schemas/public-input-4.0.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
+    },
+    {
+      "id": "public_output_context_ready_3_0",
+      "path": "schemas/public-context-ready-output-5.0.schema.json"
+    },
+    {
+      "id": "public_output_refresh_base",
+      "path": "schemas/public-refresh-base-output-2.0.schema.json"
+    },
+    {
+      "id": "public_output_blocked",
+      "path": "schemas/public-blocked-output.schema.json"
+    },
+    {
+      "id": "context_request_schemas",
+      "path": "schemas/public-context-request-input-2.0.schema.json"
+    },
+    {
+      "id": "legacy_718_public_context_ready_output_4_0",
+      "path": "schemas/public-context-ready-output-4.0.schema.json"
+    },
+    {
+      "id": "legacy_pre_task_718",
+      "path": "schemas/public-pre-task-input-3.0.schema.json"
+    },
+    {
+      "id": "git_object_owner_result",
+      "path": "schemas/change-context-owner-result-4.0.schema.json"
+    },
+    {
+      "id": "legacy_context_request_718",
+      "path": "schemas/public-context-request-input.schema.json"
+    },
+    {
+      "id": "legacy_718_public_refresh_base_output",
+      "path": "schemas/public-refresh-base-output.schema.json"
+    },
+    {
+      "id": "legacy_public_input_718",
+      "path": "schemas/public-input.schema.json"
+    },
+    {
+      "id": "owner_result_index",
+      "path": "schemas/change-context-owner-result-index-1.0.schema.json"
+    }
+  ],
   "validators": [
     {
       "id": "history_previewer",
@@ -101,6 +203,12 @@
       "command": "scripts/invoke.sh",
       "runtime_command": "invoke-guru-discover-change-context",
       "objective_scope": "Caller-owned input validation, optional ephemeral active-task binding, optional same-owner recovery consumption and deterministic typed-exit serialization after the owner closed loop"
+    },
+    {
+      "id": "source_reader",
+      "command": "scripts/read-change-context-source.sh",
+      "runtime_command": "read-change-context-source",
+      "objective_scope": "Read UTF-8 Docs, code, tests and archive blobs from the explicitly adopted fixed Git tree."
     }
   ],
   "external_exits": [
@@ -167,15 +275,52 @@
     "input": {
       "kind": "structured_json",
       "aggregate_schema": {
-        "schema_id": "guru-stage0-discover-change-context-input-aggregate-3.0",
-        "path": "schemas/public-input.schema.json"
+        "schema_id": "guru-stage0-discover-change-context-input-aggregate-4.0",
+        "path": "schemas/public-input-4.0.schema.json"
       },
-      "profiles": [{"id": "pre_task", "schema": {"schema_id": "guru-stage0-discover-change-context-input-pre-task-3.0", "path": "schemas/public-pre-task-input-3.0.schema.json"}, "example": {"id": "pre_task_input", "path": "examples/public-pre-task-input-3.0.json"}, "discriminator": {"field": "profile", "value": "pre_task"}}, {"id": "context_request", "schema": {"schema_id": "guru-stage0-discover-change-context-input-context-request-1.0", "path": "schemas/public-context-request-input.schema.json"}, "example": {"id": "context_request_input", "path": "examples/public-context-request-input.json"}, "discriminator": {"field": "profile", "value": "context_request"}}]
+      "profiles": [
+        {
+          "id": "pre_task",
+          "schema": {
+            "schema_id": "guru-stage0-discover-change-context-input-pre-task-4.0",
+            "path": "schemas/public-pre-task-input-4.0.schema.json"
+          },
+          "example": {
+            "id": "pre_task_input",
+            "path": "examples/public-pre-task-input-3.0.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "pre_task"
+          }
+        },
+        {
+          "id": "context_request",
+          "schema": {
+            "schema_id": "guru-stage0-discover-change-context-input-context-request-2.0",
+            "path": "schemas/public-context-request-input-2.0.schema.json"
+          },
+          "example": {
+            "id": "context_request_input",
+            "path": "examples/public-context-request-input.json"
+          },
+          "discriminator": {
+            "field": "profile",
+            "value": "context_request"
+          }
+        }
+      ]
     },
     "invocation": {
       "command_id": "run-skill-command",
       "wrapper": "scripts/invoke.sh",
-      "input_binding": {"kind": "structured_json", "profile_selector": {"source": "aggregate_public_input", "field": "profile"}},
+      "input_binding": {
+        "kind": "structured_json",
+        "profile_selector": {
+          "source": "aggregate_public_input",
+          "field": "profile"
+        }
+      },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
         "schema_id": "guru-stage0-discover-change-context-invocation-error-1.0",
@@ -202,8 +347,8 @@
       {
         "exit_id": "context_ready",
         "schema": {
-          "schema_id": "guru-stage0-discover-change-context-output-context-ready-4.0",
-          "path": "schemas/public-context-ready-output-4.0.schema.json"
+          "schema_id": "guru-stage0-discover-change-context-output-context-ready-5.0",
+          "path": "schemas/public-context-ready-output-5.0.schema.json"
         },
         "example": {
           "id": "context_ready_output",
@@ -216,8 +361,8 @@
       {
         "exit_id": "refresh_base",
         "schema": {
-          "schema_id": "guru-stage0-discover-change-context-output-refresh-base-1.0",
-          "path": "schemas/public-refresh-base-output.schema.json"
+          "schema_id": "guru-stage0-discover-change-context-output-refresh-base-2.0",
+          "path": "schemas/public-refresh-base-output-2.0.schema.json"
         },
         "example": {
           "id": "refresh_base_output",
@@ -250,12 +395,20 @@
           "id": "guru-clarify-requirements"
         },
         "payload_kind": "structured_json",
-        "contract": {"kind": "skill_input", "interface_path": "packages/guru-clarify-requirements/interface.json", "input_kind": "structured_json", "profile_selector": {"source": "producer_output", "field": "handoff_profile"}},
+        "contract": {
+          "kind": "skill_input",
+          "interface_path": "packages/guru-clarify-requirements/interface.json",
+          "input_kind": "structured_json",
+          "profile_selector": {
+            "source": "producer_output",
+            "field": "handoff_profile"
+          }
+        },
         "transition": {
           "source_field": "transition",
           "stage": "context_current",
-          "schema_id": "guru-stage0-transition-context-current-2.0",
-          "path": "consumers/workflow/stage0/transitions/context-current.schema.json"
+          "schema_id": "guru-stage0-transition-context-current-3.0",
+          "path": "consumers/workflow/stage0/transitions/context-current-3.0.schema.json"
         }
       },
       {
@@ -286,7 +439,52 @@
         "exit_id": "context_ready",
         "consumer_input_id": "context_ready_clarify_input",
         "operation": "rename",
-        "mappings": [{"source": "exit_id", "target": "source_exit"}, {"source": "handoff_profile", "target": "profile"}, {"source": "handoff_mode", "target": "mode"}, {"source": "handoff_target_locator", "target": "target_locator"}, {"source": "handoff_continuation_id", "target": "continuation_id"}, {"source": "duplicate_snapshot", "target": "duplicate_snapshot"}, {"source": "source_locators", "target": "source_locators"}, {"source": "handoff_task_locator", "target": "task_locator"}, {"source": "handoff_task_id", "target": "task_id"}, {"source": "handoff_lifecycle_generation", "target": "lifecycle_generation"}, {"source": "handoff_resume_target", "target": "resume_target"}]
+        "mappings": [
+          {
+            "source": "exit_id",
+            "target": "source_exit"
+          },
+          {
+            "source": "handoff_profile",
+            "target": "profile"
+          },
+          {
+            "source": "handoff_mode",
+            "target": "mode"
+          },
+          {
+            "source": "handoff_target_locator",
+            "target": "target_locator"
+          },
+          {
+            "source": "handoff_continuation_id",
+            "target": "continuation_id"
+          },
+          {
+            "source": "duplicate_snapshot",
+            "target": "duplicate_snapshot"
+          },
+          {
+            "source": "source_locators",
+            "target": "source_locators"
+          },
+          {
+            "source": "handoff_task_locator",
+            "target": "task_locator"
+          },
+          {
+            "source": "handoff_task_id",
+            "target": "task_id"
+          },
+          {
+            "source": "handoff_lifecycle_generation",
+            "target": "lifecycle_generation"
+          },
+          {
+            "source": "handoff_resume_target",
+            "target": "resume_target"
+          }
+        ]
       },
       {
         "id": "project_refresh_base",
@@ -313,6 +511,14 @@
           {
             "source": "handoff_route",
             "target": "route"
+          },
+          {
+            "source": "handoff_operation",
+            "target": "operation"
+          },
+          {
+            "source": "handoff_base_ref",
+            "target": "base_ref"
           }
         ]
       },
@@ -329,8 +535,8 @@
         "id": "change_context_owner_result",
         "kind": "gate_evidence",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-change-context-owner-result-3.0.json",
-          "path": "schemas/change-context-owner-result-3.0.schema.json"
+          "schema_id": "guru-change-context-owner-result-index-1.0",
+          "path": "schemas/change-context-owner-result-index-1.0.schema.json"
         },
         "persistence": "stdout_only_owner_private"
       },

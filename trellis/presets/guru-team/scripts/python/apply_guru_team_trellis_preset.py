@@ -2426,7 +2426,7 @@ def install_assets(
     platforms: set[str] | None = None,
     *,
     migration_preserved_paths: set[str] | None = None,
-    python: str = "python3",
+    python: str | None = None,
     checkout_local: bool = False,
     tools_only: bool = False,
     tools_maintenance: dict[str, Any] | None = None,
@@ -2894,7 +2894,7 @@ def main() -> int:
     supported_platforms, default_platforms = platform_capability_sets(manifest)
     parser = argparse.ArgumentParser(description="Apply Guru team Trellis preset")
     parser.add_argument("--repo", help="Target repository root. Defaults to current directory.")
-    parser.add_argument("--python", default="python3", help="Interpreter command or path; defaults to current PATH python3. Explicit selection never falls back.")
+    parser.add_argument("--python", default=None, help="Interpreter command or path; defaults to current PATH python3. Explicit selection never falls back.")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--version", action="store_true", help="Print the Guru Team extension version from the canonical manifest and exit.")
     parser.add_argument(

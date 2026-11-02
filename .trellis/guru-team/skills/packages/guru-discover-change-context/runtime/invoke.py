@@ -12,7 +12,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
  if observation["classification"]!="current":print(json.dumps(observation["diagnostic"],ensure_ascii=False,sort_keys=True),file=sys.stderr)
  classification=observation["classification"];owner_bound=False
  if classification=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json";exit_id="blocked"
- elif classification=="refresh_base":out={"exit_id":"refresh_base","handoff_mode":public["mode"],"handoff_repo_root":up.get("repo_locator") or ".","handoff_base_branch":up["base"]["selected_base"],"handoff_route":"repo_change"};schema="public-refresh-base-output.schema.json";exit_id="refresh_base"
+ elif classification=="refresh_base":out={"exit_id":"refresh_base","handoff_mode":public["mode"],"handoff_repo_root":up.get("repo_locator") or ".","handoff_base_branch":__import__("common").source_ref(up["base"]),"handoff_route":"repo_change"};schema="public-refresh-base-output-2.0.schema.json";exit_id="refresh_base"
  else:
   try:validate(package_root,owner);check_owner_binding(package_root,repo,public,up,owner)
   except CommandError as exc:
@@ -21,9 +21,10 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   else:
    owner_bound=True;exit_id=owner["typed_exit"]
    if exit_id=="blocked":out={"exit_id":"blocked"};schema="public-blocked-output.schema.json"
-   elif exit_id=="refresh_base":out={"exit_id":"refresh_base","handoff_mode":owner["mode"],"handoff_repo_root":up.get("repo_locator") or ".","handoff_base_branch":owner["repository"]["selected_base"],"handoff_route":"repo_change"};schema="public-refresh-base-output.schema.json"
+   elif exit_id=="refresh_base":out={"exit_id":"refresh_base","handoff_mode":owner["mode"],"handoff_repo_root":up.get("repo_locator") or ".","handoff_base_branch":__import__("common").source_ref(up["base"]),"handoff_route":"repo_change"};schema="public-refresh-base-output-2.0.schema.json"
    else:
-    ri=owner["result_identity"];live=owner["live_change"];transition={"schema_version":"1.0","transition_id":"context_current:"+ri["result_sha256"][:24],"stage":"context_current","mode":owner["mode"],"repo_locator":up["repo_locator"],"base":up["base"],"target_locator":live.get("url") or live.get("identity"),"continuation_id":public["continuation_id"],"context_result_sha256":ri["result_sha256"],"authority_content_sha256":live["body_sha256"]}
+    ri=owner["result_identity"];live=owner["live_change"];transition={"schema_version":up["schema_version"],"transition_id":"context_current:"+ri["result_sha256"][:24],"stage":"context_current","mode":owner["mode"],"repo_locator":up["repo_locator"],"base":up["base"],"target_locator":live.get("url") or live.get("identity"),"continuation_id":public["continuation_id"],"context_result_sha256":ri["result_sha256"],"authority_content_sha256":live["body_sha256"]}
+    if owner.get("candidate_observation"):transition["candidate"]=owner["candidate_observation"]
     duplicate=owner["duplicate_search"]
     duplicate_snapshot={"query":duplicate["query"],"checked_at":duplicate["checked_at"],"target_locator":transition["target_locator"],"authority_content_sha256":live["body_sha256"],"candidates":[{key:item[key] for key in ("repo","number","url","updated_at","facts_sha256")} for item in duplicate["candidates"]]}
     duplicate_snapshot["facts_sha256"]=__import__("common").digest(duplicate_snapshot)
@@ -32,7 +33,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
     if returning and returning["target_locator"]!=transition["target_locator"]:
      raise CommandError("stale_identity","return_identity.target_locator","Return to the original Discovery/Clarify context request for the current target. Reread its full authority and use the original needs_context -> context_request -> context_ready entry; do not retarget the old return identity.",3)
     transition["clarify_profile"]=profile
-    out={"exit_id":"context_ready","handoff_profile":profile,"handoff_mode":owner["mode"],"handoff_target_locator":transition["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":transition};schema="public-context-ready-output-4.0.schema.json"
+    out={"exit_id":"context_ready","handoff_profile":profile,"handoff_mode":owner["mode"],"handoff_target_locator":transition["target_locator"],"handoff_continuation_id":public["continuation_id"],"transition":transition};schema="public-context-ready-output-5.0.schema.json"
     if profile in {"standard_intake","reviewed_plan_intake"}:out["duplicate_snapshot"]=duplicate_snapshot
     source=returning or public
     if profile=="reviewed_plan_intake":
@@ -46,6 +47,7 @@ def run(package_root:Path,command:dict,argv:list[str])->dict:
   if owner["mode"]!="workflow":raise CommandError("schema_mismatch","mode","Active-task context discovery is workflow-only.")
   td,task=active_task(repo,a.active_task)
   if a.recovery_continuation_id:checkpoint=check_recovery(package_root,repo,td,task,owner,a.recovery_continuation_id)
+ if out["exit_id"]=="refresh_base" and up["base"].get("kind")=="git_object":out.update(handoff_operation="read",handoff_base_ref=up["base"]["commit"])
  validate_json(out,package_root/"schemas"/schema,"stdout")
  if checkpoint is not None:consume_recovery(checkpoint)
  return out

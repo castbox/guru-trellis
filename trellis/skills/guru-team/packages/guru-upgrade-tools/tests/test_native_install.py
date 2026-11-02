@@ -97,7 +97,7 @@ class NativeToolsInstallationTests(unittest.TestCase):
             runtime = root / '.trellis/guru-team/runtime'
             resolved = command(['bash',str(runtime/'resolve-python.sh'),str(root),str(runtime),'-c','import sys; print(sys.executable)']).strip()
             self.assertTrue(Path(resolved).is_file())
-            self.assertTrue((root/'.trellis/.runtime/guru-team/python/active.json').is_file())
+            self.assertTrue((root/'.trellis/.runtime/guru-team/python/selection-v3.json').is_file())
             result = subprocess.run(['/usr/bin/python3' if os.name!='nt' else 'python', str(root/'.trellis/scripts/get_context.py'),'--mode','continuation'],cwd=root,text=True,capture_output=True,env=env)
             self.assertNotEqual(result.returncode,0)
             self.assertIn('maintenance_required',result.stdout+result.stderr)

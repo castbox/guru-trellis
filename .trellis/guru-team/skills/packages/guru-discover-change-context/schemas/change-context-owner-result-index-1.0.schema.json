@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-change-context-owner-result-index-1.0",
+  "oneOf": [
+    {
+      "$ref": "change-context-owner-result-3.0.schema.json"
+    },
+    {
+      "$ref": "change-context-owner-result-4.0.schema.json"
+    }
+  ]
+}
