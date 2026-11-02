@@ -98,10 +98,13 @@ Execute in this order:
 4. inspect current Docs/code/tests/history/GitHub/Git evidence until every
    repository-answerable question is `answered` with checked evidence or
    `not_answerable` with checked evidence and a missing reason;
-5. ask exactly one highest-value user question per round. Use one
-   `atomic_group` only for an indivisible product choice and record why it
-   cannot be split. A partial answer closes no question. Classify each answer
-   as `load_bearing` or `non_load_bearing` and bind its authority actions;
+5. discover and present the unresolved choices using Questions And Convergence
+   below and the shared Interaction Budget. Each recorded round addresses one
+   `question_id`; independent lightweight questions may share one user-visible
+   checklist, not one `atomic_group`. Use `atomic_group` only for an indivisible
+   product choice and record why it cannot be split. A partial answer closes no
+   question. Classify each answer as `load_bearing` or `non_load_bearing` and bind
+   its authority actions;
 6. propose exact scope decisions and source-of-truth actions;
 7. execute the AI Review Gate;
 8. when required, show the exact target, target disposition, payload, scope
@@ -117,6 +120,45 @@ confirmation necessity, semantic pass/block and route intent. Scripts never
 perform those judgments.
 
 ## Questions And Convergence
+
+### Discover the actual choices
+
+Apply `.trellis/spec/workflow/workflow-contract.md#interaction-budget` as the
+single shared rule for requirement confirmation, lightweight recommendations,
+material options and routine implementation autonomy. Loading brainstorm supplies
+an exploration method, not a second owner or a conflicting per-message question
+limit; this owner organizes the actual dialogue under the rules below.
+
+Before declaring clarity, compare the requested outcome with the current behavior
+and still-applicable decisions. Use concrete normal examples to distinguish two
+plausible interpretations. Inspect affected entry points, existing consumers,
+relevant historical defects and applicable recovery/compatibility boundaries when
+they can change the answer. Retain only examples that resolve real ambiguity or
+material risk; do not require an unrelated matrix or ask a quota of questions.
+Identify what changes and what must remain unchanged. A missing screen state in a
+design does not alone authorize removing its existing business behavior.
+
+Separate evidence-answerable facts, existing constraints/decisions, unresolved
+requirement choices and routine implementation details. Verify what a backend or
+platform actually does; the user chooses the product response, not the external
+fact. When facts and intent are already clear, proceed without an interview.
+Otherwise explain the example, why the choice matters and a researched
+recommendation. Use a lightweight recommendation/checklist or material options as
+defined by the shared rule. Ask the highest-value dependent or material question
+first. Never implement a guessed requirement while waiting.
+
+### Carry the answer, not the recommendation
+
+A recommendation checklist is only a presentation. Give each independent item a
+distinct `question_id`. One actual reply may answer several items; map its actual
+content to each item's record without inventing additional user turns. A clear
+acceptance of the fully displayed checklist can answer every listed item. A reply
+about one item cannot accept the rest, and disagreement with a recommendation
+must change the owning requirement/design and applicable acceptance criteria.
+Preserve unresolved items and continue the next question without re-interviewing
+already decided same-scope behavior. The examples in
+[decision exploration](../examples/decision-exploration.md) illustrate this method;
+they are teaching scenarios, not current user answers or behavior evidence.
 
 Record only clarification rounds and answers that actually occurred. Unknown,
 unasked, or unanswered choices are not refused, deferred, or answered. In
@@ -143,6 +185,11 @@ that round or already belong to the current open set. The reducer enforces
 `open_questions = opened - closed`, rejects close-before-open and
 reopen-after-close, and does not allow an empty lifecycle to hide a partial
 answer. `answer_status=partial` cannot close its own or another question. An
+unanswered checklist item has no fabricated answer record: describe that gap in
+the blocked Gate, as above. If a partial reply explicitly leaves an opened item
+unresolved, retain its real partial record and the existing open set. Separate
+question records may describe the same actual reply; unique `round_id` values
+identify those records, not a claim that the user sent separate messages. An
 unresolved load-bearing decision can produce `blocked`; a rejected/deferred
 expansion that leaves current confirmed
 scope complete is classified as related, followup, new task or out-of-scope and
@@ -474,9 +521,9 @@ Read Direct Source, explicitly selected comments and introduced requirements or
 design sections fresh. Distinguish normative interfaces, mechanisms, order and
 compatibility constraints from advisory candidates; the presence of a design
 does not make its normative clauses optional. Clear technical sources need zero
-questions. Answer repository-searchable questions from evidence first. Ask at
-most one highest-value unresolved question per round, with evidence, options,
-a recommendation and trade-offs. An actual partial answer stays unresolved.
+questions. Answer repository-searchable questions from evidence first. Use the
+Questions And Convergence method above to expose real choices and carry actual
+answers. An actual partial answer stays unresolved.
 
 `standard_intake` is the ordinary initial owner. `reviewed_plan_intake` requires
 `source_locators` for the selected existing requirements/design; its name never

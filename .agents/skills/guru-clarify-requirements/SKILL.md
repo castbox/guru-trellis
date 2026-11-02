@@ -106,7 +106,8 @@ single-language zero result or expose the query process through the public DTO.
 From the repository root, load
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/references/contract.md`;
 when brainstorm is loaded, apply the current owner/stage/return constraint in that contract. Execute the semantic closed loop in its declared order,
-ask at most one highest-value question per round, complete the AI Review Gate
+apply its Questions And Convergence method and the shared Interaction Budget,
+complete the AI Review Gate
 and any real action/proposal choice before calling recorder/checker,
 keep that authorization in the current dialogue, then return exactly one
 declared typed exit.
@@ -222,8 +223,10 @@ Apply its source-role, completeness and reference rules within this owner's
 requirements scope. Read the current sources and their linked conditions in
 full; a source summary or an existing link does not establish that read.
 Investigate repository-answerable gaps before asking a real product or scope
-choice. Unsettled implementation details belong to Author/Architecture when
-the requirements are already clear; do not ask the user to design the mechanism.
+choice. Routine implementation details belong to Author/Architecture when
+requirements are already clear. Apply the shared Interaction Budget to distinguish
+them from unresolved requirements and material technical trade-offs; do not ask
+the user to provide code or silently decide product behavior as implementation.
 
 For `task_scope_requirements_acceptance`, also read
 `.trellis/guru-team/skills/packages/guru-author-task-plan/templates/task-prd.md`

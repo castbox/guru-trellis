@@ -119,6 +119,15 @@ evidence returns to its original owner. The resulting requirements still enter
 Architecture, and the complete plan still enters Wording and final Architecture
 before Approval.
 
+Use `.trellis/spec/workflow/workflow-contract.md#interaction-budget` when
+candidate/solution work exposes a choice. Reusing a completed interview does not
+close a newly discovered requirement ambiguity. Research facts and viable options,
+then return the actual unresolved requirement through the existing `clarify_scope`
+route. Routine implementation remains this owner/Architecture's responsibility;
+do not transfer coding decisions to the user or hide behavior/risk/cost choices
+under a technical label. Carry the actual answer into the affected requirements,
+solution and acceptance, refreshing only dependent judgments.
+
 Converge PRD without lowering accepted scope to fit current Architecture.
 Identify interfaces, mechanisms, ordering, compatibility and semantic owners.
 Use Adopted-mechanism review in
