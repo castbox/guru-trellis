@@ -29,6 +29,7 @@ APPROVED_KERNEL_FILES = {
     "lifecycle_helpers.py",
     "maintenance_transport.py",
     "launch.sh",
+    "manage-python.sh",
     "probe.py",
     "python-runtime.json",
     "reviewed_content.py",

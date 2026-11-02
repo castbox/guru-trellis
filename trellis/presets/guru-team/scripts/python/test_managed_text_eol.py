@@ -183,7 +183,7 @@ class ManagedTextInstallTests(unittest.TestCase):
                     self.assertFalse(list(runtime.rglob("*.new")))
                     self.assertFalse(list(runtime.rglob("*.bak")))
                     if autocrlf == "true":
-                        pointer = checkout / ".git/guru-team/python/active.json"
+                        pointer = checkout / ".trellis/.runtime/guru-team/python/selection-v3.json"
                         pointer_before = pointer.read_bytes()
                         attributes_before = (checkout / ".gitattributes").read_bytes()
                         registry_before = (runtime / "skills/registry.json").read_bytes()

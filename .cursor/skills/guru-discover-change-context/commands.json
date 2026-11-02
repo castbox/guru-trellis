@@ -30,9 +30,17 @@
           "description": "Maximum result count.",
           "repeatable": false,
           "conflicts": []
+        },
+        {
+          "flag": "--source-transition",
+          "required": false,
+          "kind": "json",
+          "description": "Current base_current from baseline_ready; preview the fixed Git archive tree.",
+          "repeatable": false,
+          "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
@@ -41,7 +49,8 @@
         "schema_mismatch",
         "unsafe_path",
         "stale_identity",
-        "internal_error"
+        "internal_error",
+        "git_failed"
       ],
       "side_effect": "git_read",
       "schema_bindings": [],
@@ -103,7 +112,8 @@
         "schema_mismatch",
         "unsafe_path",
         "stale_identity",
-        "internal_error"
+        "internal_error",
+        "git_failed"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
@@ -165,7 +175,8 @@
         "schema_mismatch",
         "unsafe_path",
         "stale_identity",
-        "internal_error"
+        "internal_error",
+        "git_failed"
       ],
       "side_effect": "git_read",
       "schema_bindings": [],
@@ -219,12 +230,52 @@
         "schema_mismatch",
         "unsafe_path",
         "stale_identity",
-        "internal_error"
+        "internal_error",
+        "git_failed"
       ],
       "side_effect": "runtime_write",
       "schema_bindings": [],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
+    },
+    {
+      "id": "read-change-context-source",
+      "owner": "guru-discover-change-context",
+      "entrypoint": "runtime/check.py",
+      "arguments": [
+        {
+          "flag": "--source-transition",
+          "required": true,
+          "kind": "json",
+          "description": "base_current from baseline_ready.",
+          "repeatable": false,
+          "conflicts": []
+        },
+        {
+          "flag": "--path",
+          "required": true,
+          "kind": "string",
+          "description": "Repository-relative UTF-8 file in the fixed tree.",
+          "repeatable": false,
+          "conflicts": []
+        }
+      ],
+      "stdin": "optional_json",
+      "stdout": "intermediate_receipt",
+      "errors": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "unsafe_path",
+        "stale_identity",
+        "internal_error",
+        "git_failed"
+      ],
+      "side_effect": "git_read",
+      "schema_bindings": [],
+      "validator_id": "source_reader",
+      "runtime_role": "check"
     }
   ]
 }

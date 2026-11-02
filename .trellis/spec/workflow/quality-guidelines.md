@@ -858,6 +858,18 @@ recorder, checker, fixture, or re-entry route.
 
 ### Phase 0 Public Transition Gate
 
+For the #718 read-only source route, run the original public Sync read profile,
+Discovery source reads and record/check/invoke, Clarify including its context
+return, Wording, Readiness, and the unchanged target-creation projection.
+Observe one fixed tree and independent uncommitted draft from an external
+worktree without Task creation, implicit fast-forward, commit, or push.
+Validate actual stdout against the selected consumer schemas. Separately prove
+that real sync still rejects dirty/non-ff authority, incorrect expected source
+is rejected, and ordinary candidate changes refresh affected results. Existing
+synchronized transcript evidence continues to cover that distinct profile.
+This targeted route does not become the full platform or Release matrix, and
+deterministic success does not replace the accepted representative Agent test.
+
 The current Phase 0 graph requires one stateful clean-install
 transcript in addition to package-local contract tests. The harness runs the
 installed production wrappers and feeds each producer's actual stdout through

@@ -2,14 +2,28 @@ from __future__ import annotations
 import argparse,json
 from pathlib import Path
 from common import active_task,check_owner_binding,check_recovery,diagnostic,load_invocation,parse,preview,root,validate
-from runtime.io import CommandError
+from runtime.io import CommandError,read_json
+from runtime.base_selection import check_object_source,source_blob
 def run(package_root:Path,command:dict,argv:list[str])->dict:
+ if command["id"]=="read-change-context-source":
+  p=argparse.ArgumentParser(add_help=False);p.add_argument("--source-transition",required=True);p.add_argument("--path",required=True);a=parse(p,argv)
+  transition=read_json(a.source_transition,"source_transition");__import__("common").validate_transition(package_root,transition)
+  repo=root(package_root,transition["repo_locator"]);base=transition["base"]
+  if base.get("kind")!="git_object":raise CommandError("schema_mismatch","source_transition.base","Use baseline_ready from the read profile.")
+  commit=check_object_source(repo,base);oid,data=source_blob(repo,commit,a.path)
+  try:content=data.decode("utf-8")
+  except UnicodeDecodeError as exc:raise CommandError("schema_mismatch","path","Select a UTF-8 source file.") from exc
+  return {"commit":commit,"path":a.path,"blob":oid,"content":content}
  if command["id"]=="preview-change-context-history":
-  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--query-json");p.add_argument("--limit",type=int,default=20);a=parse(p,argv);repo=root(package_root,a.root)
+  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--query-json");p.add_argument("--source-transition");p.add_argument("--limit",type=int,default=20);a=parse(p,argv);repo=root(package_root,a.root)
   try:q=json.loads(a.query_json) if a.query_json else {}
   except Exception as exc:raise CommandError("invalid_json","query_json","Provide one query object.") from exc
   if not 1<=a.limit<=100:raise CommandError("invalid_arguments","limit","Use 1 through 100.")
-  return preview(repo,q,a.limit)
+  commit=None
+  if a.source_transition:
+   transition=read_json(a.source_transition,"source_transition");__import__("common").validate_transition(package_root,transition)
+   repo=root(package_root,transition["repo_locator"]);commit=check_object_source(repo,transition["base"])
+  return preview(repo,q,a.limit,commit)
  p=argparse.ArgumentParser(add_help=False);p.add_argument("--root");p.add_argument("--invocation",required=True);p.add_argument("--expected-result-sha256");p.add_argument("--active-task");p.add_argument("--recovery-continuation-id");a=parse(p,argv);repo=root(package_root,a.root);envelope=load_invocation(repo,package_root,a.invocation);public=envelope["public_input"];transition=envelope["transition"]
  try:v=validate(package_root,envelope["owner_result"]);observation=check_owner_binding(package_root,repo,public,transition,v)
  except CommandError as exc:return {"status":"passed","typed_exit":"blocked","reason":exc.code,"diagnostic":diagnostic(exc)}

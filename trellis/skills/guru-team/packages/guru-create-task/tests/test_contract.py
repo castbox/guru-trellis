@@ -47,7 +47,7 @@ class CreateTaskTests(unittest.TestCase):
         self.git("config", "user.email", "test@example.invalid")
         scripts = scripts_source()
         shutil.copytree(scripts, self.root / ".trellis/scripts")
-        (self.root / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        (self.root / ".trellis/.version").write_text(json.loads((scripts.parents[3] / "package.json").read_text())["version"] + "\n")
         (self.root / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n"+json.dumps(DECLARATION)+"\n[/trellis-runtime-contract]\n")
         (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
         self.git("add", ".")

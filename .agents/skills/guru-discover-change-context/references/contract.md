@@ -64,6 +64,35 @@ declared blocker or re-entry route when a real gap remains. Do not bypass the
 workspace gate or ask for a corrective Prompt merely because your review has
 not run yet.
 
+## Fixed Git Tree And Draft Candidate
+
+Accept actual `baseline_ready` stdout through the declared thin projection.
+The current pre-task input is 4.0; context-request is 2.0. Their optional
+`candidate_file` intentionally identifies a draft body file. For a file-backed
+draft, supply it so the runtime rereads its bytes and binds
+`live_change.body_sha256`. The recorder emits a separate candidate locator/body
+identity; downstream Wording and Readiness reread it. Ordinary changes require
+fresh affected review. This does not commit, publish, or turn the draft into
+baseline authority.
+
+For `base.kind=git_object`, `repository` uses `repo`,
+`source_kind=git_object`, `selected_ref`, and `commit`. Recorder derives the
+owner-private 4.0 observation without checkout branch or cleanliness fields.
+Read each current source file through `scripts/read-change-context-source.sh
+--source-transition <base_current JSON> --path <path>`; its receipt contains
+`commit`, `path`, `blob`, and exact UTF-8 `content`. The same command reads
+selected archive bodies. History preview receives `--source-transition` and
+enumerates only the adopted tree's archive index. Record/check validate current
+Docs/code/tests identities against that tree. Neither dirty checkout bytes nor
+a later ref advance can replace the selected objects.
+
+The original `synced` source keeps its distinct eight-field provenance and
+live checkout validation. It is not reconstructed from a Git-object source.
+Clarify's needs_context return carries the original fixed base and candidate
+file into Discovery's current context-request input. A source refresh explicitly
+returns to `operation=read` with the adopted commit; choosing a newer baseline
+requires the caller's new source selection.
+
 ## Forward Behavior
 
 Before the current-state, duplicate, and history searches below, read
@@ -116,7 +145,7 @@ Each duplicate candidate fact projection is exactly `repo`, `number`,
 AI-authored reason/observation. Recorder/checker validate that same projection;
 they do not issue a second duplicate search or re-read candidates after review.
 
-`context_ready` schema 4.0 projects one minimal immutable
+`context_ready` schema 5.0 projects one minimal immutable
 `duplicate_snapshot` for `standard_intake` and `reviewed_plan_intake` to the sole
 Clarification consumer. Active-task and standalone returns omit this snapshot
 and retain their original caller identity and resume consumer. The snapshot binds the query,
@@ -199,8 +228,8 @@ chain.
 
 The caller supplies the Sync public `base_current` transition separately from
 Discovery public input. Before any issue, Docs, code, test, or history read, a
-read-only Discovery observer validates that transition and reads the authority
-checkout, GitHub repository identity, selected branch, local ref, remote-tracking
+read-only Discovery observer validates the source variant. For the original
+synchronized variant it reads the authority checkout, GitHub repository identity, selected branch, local ref, remote-tracking
 ref, HEAD, cleanliness, and worktree ownership. It never fetches, checks out,
 resets, stashes, or writes a ref. A current transition becomes the owner-private
 `base_observation`; a normal HEAD advance returns `refresh_base`, while dirty,
@@ -219,7 +248,8 @@ binding: after Sync it enters fresh Intake as a live `issue`, with
 creation-attempt marker. The original draft is not carried across Sync as
 source authority. An ordinary Issue edit is reviewed against that fresh live
 Issue, not a stale draft binding. Every 40-character
-reviewed Git identity resolves from `HEAD:<path>` to exactly a `blob`;
+reviewed Git identity resolves from the selected Git tree to exactly a `blob` (the synchronized
+profile uses `HEAD:<path>`);
 64-character content evidence is checked by exact byte digest.
 
 - `context_ready` -> Skill `guru-clarify-requirements`;
@@ -232,14 +262,14 @@ self-contained or portable.
 
 ## Interface 1.8 Public Handoff
 
-The public profiles are `pre_task` (schema 3.0) and `context_request` (schema
-1.0). After the owner loop,
+The public profiles are `pre_task` (schema 4.0) and `context_request` (schema
+2.0). After the owner loop,
 `scripts/invoke.sh --invocation -` validates the closed call-local public input,
 `base_current` transition, current live base observation, and checker-passed
 owner result, then derives the matching per-exit DTO without another duplicate
 search. Recorder and checker receive that same envelope via `--invocation -`;
 they do not accept a private Sync artifact.
-`context_ready` schema 4.0 contains route/profile/mode/target/continuation
+`context_ready` schema 5.0 contains route/profile/mode/target/continuation
 identity and the original `return_identity`. Standard and reviewed Intake also
 receive the minimal checker-bound `duplicate_snapshot`; Clarification consumes
 it without repeating duplicate search or candidate reads. Active and standalone

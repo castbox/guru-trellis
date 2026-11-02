@@ -125,9 +125,7 @@ def bootstrap_installed_runtime(root: Path) -> dict[str, Any]:
             root,
         ).stdout
     )
-    pointer = Path(git(root, "rev-parse", "--git-path", "guru-team/python/active.json"))
-    if not pointer.is_absolute():
-        pointer = root / pointer
+    pointer = root / ".trellis/.runtime/guru-team/python/selection-v3.json"
     if payload.get("status") != "ok" or not pointer.is_file():
         raise ParallelFinishError("installed runtime bootstrap did not bind the clone")
     return payload

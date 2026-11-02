@@ -1,0 +1,17 @@
+# ADR：runtime、位置与明确 Git 基线解耦
+
+状态：accepted；identity=`ADR-RUNTIME-LOCATION`。来源为Issue #718；适用before为 `610a810d45bb30173906d55c77709389adf1cf31`，Architecture `guru-trellis-architecture`。本决定不单独证明目标安装、Delivery、Completion或Release。
+
+原共享环境已按完整工具依赖与Python/平台兼容类别隔离。自动active pointer只提供本机定位，Task、branch、worktree各有独立身份。将pointer缺失当成启动失败，使普通外部预建位置无法复用已存在环境；将Sync的clean/checked-out条件施加给只读来源，使草案审核在读取Git对象前被拒绝。
+
+决定：原runtime owner按当前assets验证显式选择及自动hint。无有效自动hint时稳定枚举现有兼容cache，成功后缓存解析结果；日常不安装依赖。真实显式选择的类别约束不能被fallback消除。旧v2无来源信息，仅保留当前兼容的有效环境，失效按公开自动规则恢复；用户通过当前显式入口表达持久类别，不编造历史意图。
+
+明确Git来源以repo/ref/固定commit表示，工作区候选另行绑定；只读访问不要求所读分支已检出或无关checkout干净。原Sync继续验证实际副作用目标的clean/ff/identity。来源结果通过版本与薄projection成套传递，不能将只读成功改名为synced，或让失败转移到Discovery及其直接consumer。
+
+窄替代范围：替代ADR-027及#566中“checkout-local/gitdir/common指针是日常启动必要前置”的组合解释，保留其单目标维护、peer隔离、source-loaded匹配来源、目标自身验证和公共数据兼容先于rollback。ADR-006的selected-base-first与实际同步authority约束保持；其约束不再用于拒绝独立Git对象读取。公共Task/Delivery/session authority不改变。
+
+不采用：每位置/Task venv、全局偏好authority、时间顺序metadata、按源码HEAD分配环境、日常隐式pip、复制上游Task模型，或只修producer不迁移consumer。自动hint只是可重建定位缓存，不能建立Task/阶段或授权资格。
+
+迁移由原runtime、Sync/Discovery、installer和维护owners成套执行。selection-v3.json成为当前目标唯一选择writer；旧active.json原文保留给旧installed，新文件不存在时才一次读取v2兼容迁移，新文件无效不回退旧选择，旧完整版本仍按其固定合同执行。原tools rollback同时快照并恢复目标新旧选择载体的实际存在/原文及原工具，保留peer实际选择。旧调用参数、schema与退出条件由同批MIGRATION-718给出可执行合同；没有新compatibility authority或永久双写。
+
+当前必要成本是原owner的需求匹配、解析缓存及直接consumer来源union；这些分别服务无pointer启动、合法选择稳定和明确只读内容。只有显式类别、实际依赖/接口/平台需求、合法消费者或原副作用合同变化时才重新评估。完整Release矩阵和业务采用由其原owners承担。

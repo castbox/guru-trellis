@@ -85,3 +85,5 @@
 - [ADR-CONTRACT-CONTINUITY：固定 before 缺失与维护回程](./contract-continuity.md)；原三个 authority locator 的真实历史缺失、固定 B..H 和同次 promotion 维护回程。
 
 - [ADR-EXPLICIT-REVIEW-OBJECT：独立 final_plan 只读评审对象](./explicit-review-object.md)；窄替代普遍接收选择前置，保留普通执行恢复、原事实校验与相邻Approval资格。
+
+- [ADR-RUNTIME-LOCATION：runtime、位置与明确Git基线解耦](./runtime-location-decoupling.md)；窄替代 ADR-027 的pointer启动前置及ADR-006对独立只读来源的组合解释，保留单目标维护、旧消费者和实际Sync。

@@ -17,6 +17,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("lifecycle_helpers.py"),
     Path("maintenance_transport.py"),
     Path("launch.sh"),
+    Path("manage-python.sh"),
     Path("probe.py"),
     Path("python-runtime.json"),
     Path("reviewed_content.py"),

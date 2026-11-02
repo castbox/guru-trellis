@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+from unittest import mock
 import subprocess
 import sys
 import tempfile
@@ -38,11 +39,15 @@ class EffectivePythonPointerTests(unittest.TestCase):
                 git('init','-b','main')
                 git('-c','user.name=Test','-c','user.email=t@example.invalid','commit','--allow-empty','-m','initial')
                 git('worktree','add','-b','dev',str(peer))
-                common=bootstrap.active_pointer_path(primary,for_write=True)
+                isolated_cache = mock.patch.dict(os.environ, {'GURU_TEAM_PYTHON_CACHE_ROOT': str(directory/'cache')})
+                isolated_cache.start()
+                self.addCleanup(isolated_cache.stop)
+                common=primary/'.git/guru-team/python/active.json'
+                common_before=None
                 bootstrap.bootstrap(primary,ASSETS,first)
-                common_before=common.read_bytes()
-                self.assertNotIn('python_effective',owner.controls(primary,{'controls':[]}))
-                self.assertNotIn('python_effective',owner.controls(peer,{'controls':[]}))
+                bootstrap.bootstrap(peer,ASSETS,first)
+                self.assertIn('python_effective',owner.controls(primary,{'controls':[]}))
+                self.assertIn('python_effective',owner.controls(peer,{'controls':[]}))
                 for index,target in enumerate((primary,peer)):
                     other=peer if target==primary else primary
                     bootstrap.bootstrap(target,ASSETS,first,checkout_local=True)
@@ -65,7 +70,7 @@ class EffectivePythonPointerTests(unittest.TestCase):
                     self.assertEqual(native.returncode,0,native.stderr)
                     expected=subprocess.check_output([str(second),'-c','import sys;print(str(sys.version_info.major)+"."+str(sys.version_info.minor))'],text=True)
                     self.assertEqual(native.stdout,expected)
-                    self.assertEqual(common.read_bytes(),common_before)
+                    self.assertEqual((common.read_bytes() if common.exists() else None),common_before)
                     self.assertEqual(other_pointer.read_bytes(),other_before)
                     self.assertEqual(files.control_token(checkpoint),control_before)
                     # Exercise the original full-upgrade snapshot/restorer, including mode.
@@ -73,7 +78,7 @@ class EffectivePythonPointerTests(unittest.TestCase):
                     self.assertEqual(pointer.read_bytes(),before)
                     self.assertEqual(pointer.stat().st_mode & 0o777,0o640)
                     self.assertEqual(bootstrap.validate_active(target,ASSETS)['runtime_identity'],first_id)
-                    self.assertEqual(common.read_bytes(),common_before)
+                    self.assertEqual((common.read_bytes() if common.exists() else None),common_before)
                     self.assertEqual(other_pointer.read_bytes(),other_before)
         finally:
             sys.path.remove(str(UPGRADE))

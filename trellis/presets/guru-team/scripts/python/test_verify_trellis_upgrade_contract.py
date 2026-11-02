@@ -1006,22 +1006,28 @@ class VerifyTrellisUpgradeContractTests(unittest.TestCase):
             for path in (runtime, state, probes, interpreter.parent):
                 path.mkdir(parents=True)
             interpreter.symlink_to(sys.executable)
-            (state / "active.json").write_text(json.dumps(
-                {"runtime_id": identity, "interpreter": str(interpreter)}, separators=(",", ":")))
-            shutil.copy2(REPO / "trellis/skills/guru-team/runtime/resolve-python.sh",
-                         runtime / "resolve-python.sh")
-            # Real shell and Python processes; only bootstrap/probe bodies are fixtures.
-            for script, receipt in ((runtime / "bootstrap.py", work / "bootstrap-argv.json"),
-                                    (probes / "fork_session_probe.py", work / "probe-argv.json")):
-                script.write_text(
-                    "import json, sys\nfrom pathlib import Path\n"
-                    f"Path({str(receipt)!r}).write_text(json.dumps(sys.argv))\n")
-            with mock.patch.object(self.matrix, "SCRIPT_ROOT", probes):
+            for name in ("resolve-python.sh", "manage-python.sh"):
+                shutil.copy2(REPO / "trellis/skills/guru-team/runtime" / name, runtime / name)
+            # Real shell and Python processes; only the environment owner's
+            # resolve/exec body and the final probe are unit substitutes.
+            receipt = work / "bootstrap-argv.json"
+            (runtime / "bootstrap.py").write_text(
+                "import json, os, sys\nfrom pathlib import Path\n"
+                f"Path({str(receipt)!r}).write_text(json.dumps(sys.argv))\n"
+                "command=sys.argv[sys.argv.index('--')+1:]\n"
+                f"os.execv({str(interpreter)!r}, [{str(interpreter)!r}, *command])\n")
+            (probes / "fork_session_probe.py").write_text(
+                "import json, sys\nfrom pathlib import Path\n"
+                f"Path({str(work / 'probe-argv.json')!r}).write_text(json.dumps(sys.argv))\n")
+            with mock.patch.object(self.matrix, "SCRIPT_ROOT", probes), \
+                 mock.patch.dict(os.environ, {"GURU_TEAM_PYTHON_CACHE_ROOT": str(work / "cache")}):
                 result = self.matrix._verify_focused_sessions(target, "codex", work)
             self.assertEqual(result["status"], "passed")
             self.assertEqual(json.loads((work / "bootstrap-argv.json").read_text()), [
                 str(runtime / "bootstrap.py"), "--repo", str(target),
-                "--runtime-assets", str(runtime), "--validate-active", identity, "--json"])
+                "--runtime-assets", str(runtime), "--exec-active", "--",
+                str(probes / "fork_session_probe.py"), str(target / ".trellis/scripts"),
+                str(target / ".codex/hooks")])
             self.assertEqual(json.loads((work / "probe-argv.json").read_text()), [
                 str(probes / "fork_session_probe.py"), str(target / ".trellis/scripts"),
                 str(target / ".codex/hooks")])

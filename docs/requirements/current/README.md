@@ -11,6 +11,8 @@
 
 | RDT-REQ-NATIVE; R630/BEH630; 三系统兼容 | current | [native-compatibility](./native-compatibility.md) | [RDT-DES-NATIVE](../../design/current/native-compatibility.md); [T630](../../test/current/native-compatibility.md) |
 
+| RDT-REQ-RUNTIME-LOCATION; R718/D718/T718; runtime与Git来源 | current | [runtime-location](./runtime-location.md) | RDT-REQ-RUNTIME-LOCATION; RDT-DES-RUNTIME-LOCATION; RDT-TST-RUNTIME-LOCATION |
+
 | Legacy scope identity | Status | Locator | Relations |
 | --- | --- | --- | --- |
 | RDT109-LEGACY; 未列入迁移关系的身份/范围 | legacy_unmigrated | [immutable .109](../versions/current-main-0.6.17-guru.109/requirement-main.md) | [migration inventory](../../requirements-design-test-contributions/331-current-effective-knowledge/traceability.md) |

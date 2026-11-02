@@ -34,6 +34,7 @@ from adapters.eval.stage0_fixtures import (
     prepare_readiness_invocation,
     record_readiness_invocation,
     stage0_command,
+    stage0_eval_transition,
 )
 
 
@@ -118,11 +119,31 @@ class ReadinessAdapterTests(unittest.TestCase):
         }
         for recipe, exit_id in recipes.items():
             with self.subTest(recipe=recipe):
+                if recipe in {"clarity-clear", "clarity-refresh-context"}:
+                    source = ("eval-clear-input.json" if recipe == "clarity-clear"
+                              else "eval-refresh-context-input.json")
+                    public_input = json.loads((package / "evals/files" / source).read_text())
+                else:
+                    public_input = {
+                        "profile": "standard_intake", "source_exit": "start",
+                        "mode": "workflow", "target_locator": "#145",
+                        "continuation_id": "stage0-current",
+                    }
                 with mock.patch(
                     "adapters.eval.stage0_fixtures.stage0_command", wraps=stage0_command,
                 ) as record:
-                    owner = build_clarity_owner(runtime, package, recipe)
+                    owner = build_clarity_owner(runtime, package, recipe, public_input)
                 authored = record.call_args.args[3]
+                self.assertEqual(public_input["mode"], authored["mode"])
+                self.assertEqual(145, authored["review_target"]["issue_number"])
+                self.assertEqual("issue", authored["review_target"]["kind"])
+                expected_kind = ("standalone_review" if public_input["profile"] == "standalone_review"
+                                 else "initial_issue")
+                self.assertEqual(expected_kind, authored["invocation_context"]["kind"])
+                if expected_kind == "standalone_review":
+                    self.assertEqual(
+                        public_input["resume_target"], authored["invocation_context"]["resume_target"],
+                    )
                 self.assertNotIn("content_identity", authored)
                 self.assertNotIn("facts_sha256", authored["review_target"])
                 if authored["target_disposition"] is not None:
@@ -135,6 +156,17 @@ class ReadinessAdapterTests(unittest.TestCase):
                     owner, "--input", "-",
                 )
                 self.assertEqual(exit_id, owner["typed_exit"])
+                if expected_kind == "standalone_review":
+                    output = stage0_command(self.fixture, package.name, "invoke", {
+                        "schema_version": "1.0", "public_input": public_input,
+                        "transition": stage0_eval_transition(
+                            package.name, self.fixture, public_input, owner,
+                        ),
+                        "owner_context": {}, "owner_result": owner,
+                    }, "--invocation", "-")
+                    self.assertEqual(exit_id, output["exit_id"])
+                    if exit_id == "clear":
+                        self.assertEqual(public_input["resume_target"], output["resume_target"])
 
     def test_draft_and_standalone_source_profiles(self):
         package = self.packages / "guru-review-change-request"

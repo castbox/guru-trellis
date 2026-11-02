@@ -228,10 +228,11 @@ class ThrowawayPythonRoutingTests(unittest.TestCase):
             json.dumps({"runtime_id": runtime_id, "identity": identity}),
             encoding="utf-8",
         )
-        pointer = repo / ".trellis/.runtime/guru-team/python/active.json"
-        pointer.parent.mkdir(parents=True)
-        pointer.write_text(
-            json.dumps({"runtime_id": runtime_id, "interpreter": str(interpreter)}),
+        # This unit fixture substitutes only the environment owner's public
+        # check response; the verifier still checks actual launch/metadata bytes.
+        (runtime_assets / "bootstrap.py").write_text(
+            "import json\nprint(" + repr(json.dumps({"status": "ok", "runtime_identity": runtime_id,
+                                                      "interpreter": str(interpreter)})) + ")\n",
             encoding="utf-8",
         )
         return repo, runtime_assets, runtime_root, interpreter, runtime_id

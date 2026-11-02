@@ -1,5 +1,9 @@
 # Guru Team Workflow
 
+只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
+再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
+并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](../../presets/guru-team/MIGRATION-718.md)。
+
 审核、审查、评审、复审和 review 先按对象与目的分流。代码、分支/PR、测试覆盖和
 需求实现情况的审核，再区分独立只读审核与正式阶段结果。上述独立审核
 无论有无 Task/Delivery，都显式调用 `guru-review-change`，由它完成指定范围的

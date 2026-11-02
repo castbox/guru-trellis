@@ -110,7 +110,7 @@
     },
     {
       "id": "public_output_needs_context_example",
-      "path": "examples/public-needs-context-output.json"
+      "path": "examples/public-needs-context-output-3.0.json"
     },
     {
       "id": "public_output_refresh_context_example",
@@ -212,19 +212,19 @@
     },
     {
       "id": "public_output_clear_2_0",
-      "path": "schemas/public-clear-output-3.0.schema.json"
+      "path": "schemas/public-clear-output-4.0.schema.json"
     },
     {
       "id": "public_output_needs_context",
-      "path": "schemas/public-needs-context-output.schema.json"
+      "path": "schemas/public-needs-context-output-3.0.schema.json"
     },
     {
       "id": "public_output_refresh_context",
-      "path": "schemas/public-refresh-context-output.schema.json"
+      "path": "schemas/public-refresh-context-output-2.0.schema.json"
     },
     {
       "id": "public_output_retarget_context",
-      "path": "schemas/public-retarget-context-output.schema.json"
+      "path": "schemas/public-retarget-context-output-2.0.schema.json"
     },
     {
       "id": "public_output_new_task",
@@ -268,7 +268,7 @@
     },
     {
       "id": "delivery_clear_output_index",
-      "path": "schemas/public-clear-output-delivery-index.schema.json"
+      "path": "schemas/public-clear-output-delivery-index-2.0.schema.json"
     },
     {
       "id": "semantic_delivery_scope",
@@ -289,6 +289,26 @@
     {
       "id": "semantic_scope_continuation_2_0",
       "path": "schemas/semantic-scope-continuation-2.0.schema.json"
+    },
+    {
+      "id": "legacy_718_public_clear_output_3_0",
+      "path": "schemas/public-clear-output-3.0.schema.json"
+    },
+    {
+      "id": "legacy_718_public_needs_context_output",
+      "path": "schemas/public-needs-context-output.schema.json"
+    },
+    {
+      "id": "legacy_718_public_clear_output_delivery_index",
+      "path": "schemas/public-clear-output-delivery-index.schema.json"
+    },
+    {
+      "id": "legacy_718_public_refresh_context_output",
+      "path": "schemas/public-refresh-context-output.schema.json"
+    },
+    {
+      "id": "legacy_718_public_retarget_context_output",
+      "path": "schemas/public-retarget-context-output.schema.json"
     }
   ],
   "validators": [
@@ -568,8 +588,8 @@
       {
         "exit_id": "clear",
         "schema": {
-          "schema_id": "guru-clarify-requirements-output-clear-delivery-index-1.0",
-          "path": "schemas/public-clear-output-delivery-index.schema.json"
+          "schema_id": "guru-clarify-requirements-output-clear-delivery-index-2.0",
+          "path": "schemas/public-clear-output-delivery-index-2.0.schema.json"
         },
         "example": {
           "id": "clear_output",
@@ -596,12 +616,12 @@
       {
         "exit_id": "needs_context",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-needs-context-2.0",
-          "path": "schemas/public-needs-context-output.schema.json"
+          "schema_id": "guru-stage0-clarify-requirements-output-needs-context-3.0",
+          "path": "schemas/public-needs-context-output-3.0.schema.json"
         },
         "example": {
           "id": "needs_context_output",
-          "path": "examples/public-needs-context-output.json"
+          "path": "examples/public-needs-context-output-3.0.json"
         },
         "consumer_use_ids": [
           "project_needs_context"
@@ -610,8 +630,8 @@
       {
         "exit_id": "refresh_context",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-refresh-context-1.0",
-          "path": "schemas/public-refresh-context-output.schema.json"
+          "schema_id": "guru-stage0-clarify-requirements-output-refresh-context-2.0",
+          "path": "schemas/public-refresh-context-output-2.0.schema.json"
         },
         "example": {
           "id": "refresh_context_output",
@@ -624,8 +644,8 @@
       {
         "exit_id": "retarget_context",
         "schema": {
-          "schema_id": "guru-stage0-clarify-requirements-output-retarget-context-1.0",
-          "path": "schemas/public-retarget-context-output.schema.json"
+          "schema_id": "guru-stage0-clarify-requirements-output-retarget-context-2.0",
+          "path": "schemas/public-retarget-context-output-2.0.schema.json"
         },
         "example": {
           "id": "retarget_context_output",
@@ -674,14 +694,14 @@
         "payload_kind": "structured_json",
         "contract": {
           "kind": "json_schema",
-          "schema_id": "guru-consumer-guru-clarify-requirements-clear-delivery-1.0",
-          "path": "consumers/workflow/delivery-1.0/clarify-requirements-clear.schema.json"
+          "schema_id": "guru-consumer-guru-clarify-requirements-clear-delivery-2.0",
+          "path": "consumers/workflow/delivery-1.0/clarify-requirements-clear-2.0.schema.json"
         },
         "transition": {
           "source_field": "transition",
           "stage": "clarity_current",
-          "schema_id": "guru-stage0-transition-clarity-current-2.0",
-          "path": "consumers/workflow/stage0/transitions/clarity-current.schema.json"
+          "schema_id": "guru-stage0-transition-clarity-current-3.0",
+          "path": "consumers/workflow/stage0/transitions/clarity-current-3.0.schema.json"
         }
       },
       {
@@ -727,8 +747,8 @@
         "transition": {
           "source_field": "transition",
           "stage": "base_current",
-          "schema_id": "guru-stage0-transition-base-current-1.0",
-          "path": "consumers/workflow/stage0/transitions/base-current.schema.json"
+          "schema_id": "guru-stage0-transition-base-current-2.0",
+          "path": "consumers/workflow/stage0/transitions/base-current-2.0.schema.json"
         }
       },
       {
@@ -875,6 +895,14 @@
           {
             "source": "handoff_route",
             "target": "route"
+          },
+          {
+            "source": "handoff_operation",
+            "target": "operation"
+          },
+          {
+            "source": "handoff_base_ref",
+            "target": "base_ref"
           }
         ]
       },
@@ -903,6 +931,14 @@
           {
             "source": "handoff_route",
             "target": "route"
+          },
+          {
+            "source": "handoff_operation",
+            "target": "operation"
+          },
+          {
+            "source": "handoff_base_ref",
+            "target": "base_ref"
           }
         ]
       },

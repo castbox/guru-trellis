@@ -854,6 +854,19 @@ New Delivery profiles reject legacy Task-status inputs; the old whole installed
 version stays pinned until the public D2 and Guru private migrations are ready.
 See [task-delivery-migration.md](task-delivery-migration.md) for the supported switch boundary.
 
+### Fixed Git Source Compatibility (#718)
+
+Current Intake preserves the synchronized base and adds a closed Git-object
+source variant. The selected Interfaces reference versioned successor stages,
+outputs and consumer schemas; old published DTO files retain their bytes.
+Interface 1.8's transition descriptor grammar accepts those bounded versioned
+paths and stage ids while continuing to accept the original paths/ids. This is
+an additive descriptor extension, not permission to relabel a read result as
+`synced` or infer missing HEAD roles. The exact package contracts and
+MIGRATION-718 own public argument, version and projection details. The actual
+Task/Issue creation consumers retain their own necessary identity and mutation
+preconditions.
+
 ### Normal-scenario qualification public package
 
 `guru-qualify-normal-scenario` is a public Interface 1.6 semantic Skill and the
