@@ -1,5 +1,7 @@
 # 局部修复 Intake 与一致性诊断测试策略
 
+导航别名：`局部修复 Intake 与诊断`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-TST-LOCAL-FIX-INTAKE`；T692/SC692；适用基线 `6a65ec8afe6d180850760b3b2edf3f94be6e3b20`。完整 current 定义在原 final_integration 后生效；精确内容由 Git revision 与 locator 定位。要求：[R692/BEH692](../../requirements/current/local-fix-intake.md)；设计：[D692/CON692](../../design/current/local-fix-intake.md)。实际命令、首次失败及恢复唯一由 [#692 Test](../../requirements-design-test-contributions/692-local-fix-intake/test.md) 拥有，本文不预告通过。
 
 | Identity 与关系 | 正常输入/原入口 | 必须观察与证明边界 |

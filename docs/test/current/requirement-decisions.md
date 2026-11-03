@@ -1,5 +1,7 @@
 # 需求探索与确认验证策略
 
+导航别名：`T-DEC/SC-DEC`；`需求歧义探索与分级确认`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-TST-DECISIONS`；定义 T-DEC-01..04 / SC-DEC。承接 [R-DEC](../../requirements/current/requirement-decisions.md) 与 [D-DEC](../../design/current/requirement-decisions.md)，适用同一来源与基线。以下是策略，不是预填通过结果。
 
 | 策略/场景 | 输入与受测层 | 预期观察 |

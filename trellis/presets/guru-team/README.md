@@ -87,9 +87,13 @@ Issue 创建与修订的共同内容正文由原 Clarify package 的
 首次完整候选 Check 审核隔离贡献和完整拟写正文；`candidate_checked` 只进入
 原维护 owners 的最终整合。实际晋升后由 implementation 重建 candidate/begin_check，
 再完成最终 Check、TaskCommit 和完整 committed Review。Ready/Publication 不接受
-未晋升候选。普通知识晋升保留稳定 authority identity，根导航只在定位关系改变时写入，
+未晋升候选。普通知识晋升保留稳定 authority identity，根导航仅在入口自身合同实际变化时写入，
 不要求全局版本递增。当前 schema/consumer 成套切换和三类在途恢复见
 [MIGRATION-638](MIGRATION-638.md)。源码变更不证明安装采用或真实 Agent 验证完成。
+
+并行知识采用稳定入口、限定目录及稳定 ID 查找完整正文；独立主题不在共享入口逐项登记。
+共同方法、既有项目切换条件、未迁移范围、在途最终整合与旧写退出见
+[MIGRATION-711](MIGRATION-711.md)。安装新规则与项目文档切换分别完成。
 
 规划正文的唯一 writer 是原 `guru-author-task-plan`。其
 [正文合同](../../skills/guru-team/packages/guru-author-task-plan/references/planning-body.md)

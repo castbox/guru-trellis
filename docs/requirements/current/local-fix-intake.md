@@ -1,5 +1,7 @@
 # 局部修复 Intake 与一致性诊断
 
+导航别名：`R692/BEH692`；`局部修复 Intake 与诊断`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-REQ-LOCAL-FIX-INTAKE`；定义 R692-01..04 / BEH692。来源：live [Issue #692](https://github.com/castbox/guru-trellis/issues/692)，适用基线 `6a65ec8afe6d180850760b3b2edf3f94be6e3b20`。隔离 proposed 经原最终整合后成为此完整 current 定义；精确内容由完整 Git revision 与 locator 定位。前驱有效合同为 [Task/Delivery](task-delivery-lifecycle.md)、[JSON 载体](json-input-carriers.md) 和 [知识方法](knowledge-maintenance.md)，本单元仅新增下述具体行为。
 
 ## R692-01 / BEH692-ROUTE：实际影响选路

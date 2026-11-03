@@ -45,7 +45,9 @@ replace either default without changing this package contract.
 
 Before executing any profile, read
 [references/current-knowledge.md](references/current-knowledge.md) in full.
-It owns complete-unit reading, revision, promotion and migration behavior.
+It owns complete-unit reading, stable directory/identity discovery, isolated
+navigation, revision, promotion and migration behavior. Ordinary independent
+units do not register in root/current README or another shared index.
 Use applicable complete bodies and necessary relationships; navigation and
 historical contributions do not replace a migrated current definition.
 

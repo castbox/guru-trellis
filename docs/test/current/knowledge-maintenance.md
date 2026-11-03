@@ -1,5 +1,7 @@
 # 当前知识读写与晋升测试策略
 
+导航别名：`RDT/Architecture`；`REQ-007/BEH-007`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/test/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 知识单元：`RDT-TST-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；设计：[RDT-DES-KNOWLEDGE](../../design/current/knowledge-maintenance.md)。保留 `TST-006 / SCN-006` 三层SSOT、`TST-018/023/024` 的Architecture/并行/晋升关系；当前适用性由ADR-028/034拥有，最终整合时序由ADR-KNOWLEDGE-FINAL-INTEGRATION拥有。
@@ -109,3 +111,18 @@ R710/BEH710、D710/CON710 的来源为 [#710 traceability](../../requirements-de
 每个 native 阶段保留 profile、候选、前置公开事实、首次 authored 输入、实际命令/结果承接及出口，原始轨迹在已有 repo 外 run-root。装配错误保留为该案例失败；修订后新 run 的来源和边界明确，不把重试改名首次。host 不提供本阶段 owner result、私有摘要、内部 authoring 选择或预期出口，不改写 Agent 原字节，也不给报错后纠偏提示。真实 finding 是合法语义出口；setup、execution gap 与 semantic 判断分别表达。
 
 实际结果与观察截止点唯一由 [#710 Test](../../requirements-design-test-contributions/710-phase2-recorder-authoring/test.md) 拥有。本正文不预填自身最终 pass、最终 HEAD 或交付，不把示例/命令计划/CLI 可用当作成功。原完整结果消费者测试保留其实际价值，不能因此声称正常 authoring/native 已证明。源码、命令、Agent、matching 安装和后继正式采用分别报告；历史失败保持原义，未验证完整 Release/多平台升级矩阵不成为本普通 Task 的新增义务。
+
+## T711：导航隔离、真实读取与迁移
+
+| Test / scenario | Requirement → design | 正常入口、输入与必须观察 |
+| --- | --- | --- |
+| T711-01 / SC711-INDEPENDENT | R711-01/02/05 → D711-01/02/03 | 等价旧新基线，两个未含对方贡献的正常独立 Task 分别新增审计 CSV 与通知 locale 预览，原 maintenance/匹配 Check/晋升后固定候选；保旧首次冲突，新 A→B/B→A 均无共享导航/全局版本/历史冲突，完整文件集无下层共享登记，双方条件与关系保留。 |
+| T711-02 / SC711-READ-WRITE | R711-02/03/04/06 → D711-01/02 | 实际 installed Agent 从稳定入口发现两主题，核 current/accepted target/未晋升/历史，读完整条件/来源和 RDT/Architecture 关系；既有审计修改 UTC 字段仍保租户和无 secret，写原完整单元，不建 Issue current 或登记总索引。 |
+| T711-03 / SC711-OVERLAP | R711-05 → D711-03 | 同审计导出分别加最多100行超限拒绝、UTC及空结果列头；原 owner 在真实 target 整合，保租户校验/无secret与双方三条件，审组合及消费者，不以文本合并冒充一致。 |
+| T711-04 / SC711-MIGRATION | R711-03/07 → D711-04 | 先缺测试关系、后补齐经原链切换，保未迁移账单与旧 Git；旧阶段 Task final integration 写真实迁移目标，不双写旧索引；audit-csv 改名 audit-export 保 ID，替换/删除维护存活关系与旧意义。 |
+| T711-05 / SC711-INSTALL | R711-08 → D711-05 | 一个代表 clean 取得 matching old/new snapshots，原 tools owner 同步 dogfood/实际安装，定向 source/installed/平台/reapply/drift/mode/sidecar。安装、实际 Agent 与业务采用分别陈述，不扩大矩阵。 |
+| T711-06 / SC711-FINAL | R711-01..08 → D711-01..05 | 本 Task 完整 isolated proposed 及 implementation 经独立 Architecture/候选 Check→原 owners final integration/readback→actual after 重绑→最终 Architecture/Check→commit/独立完整 Review；样本不是本 Task 正式 pass。 |
+
+固定事实、必答条件及入口由本 Delivery design 第8节在实施前给出。旧新保持相同实际模型、工具权限和等价任务起点，不向受测 Agent 注入另一侧答案、轨迹或 host 期待。保首次失败、execution gap 与修订重跑，不预填通过。确定性脚本只收集路径/Git/命令事实，AI 原 owner 判断完整性、状态与组合语义。
+
+唯一实际结果由 [#711 Test](../../requirements-design-test-contributions/711-knowledge-navigation-isolation/test.md) 拥有。本单元只定义策略与结果 locator；历史专项次数不转为本项通用义务。未完成真实 Agent/安装/正式质量链不以文本、目录、schema 或绿命令替代；完整多平台 Upgrade/Release 与业务仓采用未由本项证明。

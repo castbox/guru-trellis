@@ -1,5 +1,7 @@
 # 当前知识单元与原维护方设计
 
+导航别名：`REQ-007/BEH-007`；`R331`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/design/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 知识单元：`RDT-DES-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。固定前驱 RDT `.109` / Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。需求：[RDT-REQ-KNOWLEDGE](../../requirements/current/knowledge-maintenance.md)；测试：[RDT-TST-KNOWLEDGE](../../test/current/knowledge-maintenance.md)。稳定 `REQ-007 / BEH-007` 的design责任沿原RDT/Architecture owners延续。
@@ -12,7 +14,7 @@
 
 原RDT维护Skill的 `references/current-knowledge.md` 单写可复用读取/修订合同，由原package distribution安装。两维护Skill按原职责加载同一通用合同；没有新公共Skill、schema、service或parser。项目根为docs/requirements/current、docs/design/current、docs/test/current；按task-delivery-lifecycle、completion-closure、knowledge-maintenance三个capability/responsibility组织完整正文。
 
-每层current/README仅列identity、alias、status、locator和必要关系，另定位明确legacy范围。单元标明适用版本/状态、完整定义/条件、必要关系、来源和替代范围；目录名current不具有semantic authority。共享根入口使用稳定 authority identity guru-trellis-rdt，仅在关系、身份或状态真实变化时由原promotion owner修改；普通晋升不强制全局递增或总README写入。未切换前candidate保持proposed；不能以新导航或新CURRENT自证正确。当前正文revision用包含其完整内容的Git snapshot，不另造无限版本副本。历史版本和contributions只读来源，普通当前查询不要求拼接它们。
+每层 current/README 提供限定目录、稳定 ID/alias 查找方法与明确 legacy 边界，不逐项枚举所有单元。单元标明适用版本/状态、完整定义/条件、必要关系、来源和替代范围；目录名current不具有semantic authority。共享根入口使用稳定 authority identity guru-trellis-rdt，仅在入口自身身份、范围、状态、位置、查找合同或必要关系真实变化时由原 promotion owner 修改；普通晋升不强制全局递增或总README写入。未切换前candidate保持proposed；不能以新导航或新CURRENT自证正确。当前正文revision用包含其完整内容的Git snapshot，不另造无限版本副本。历史版本和contributions只读来源，普通当前查询不要求拼接它们。
 
 能力正文展开完整行为、异常/否定/继承条件，细粒度公共API仍由canonical package拥有。读者按问题/阶段选单元并展开必要R/D/T/Architecture关系，不机械递归所有链接。navigation中不重复business summary，来源history也不复制成current本文的第二份规则。
 
@@ -40,7 +42,7 @@
 
 partial/output-loss 只恢复同一可唯一 intent：completed读回、pending补写、conflict停原owner。candidate_checked 丢失时按实际 phase/写入事实回原 Check、implementation或maintenance，不从phase补造pass；同 DeliveryKey与B保持。当前语义每次新作，工程事实按R578/ADR-029及唯一候选适用合同核真实定义、依赖、环境、工具链、参数/期望后采用，缺失/未知/变化才补命中检查。无需长期 cache、账本或授权持久化。
 
-`D638-01 / CON638-IDENTITY`：完整单元与关系保持稳定ID，authority identity= guru-trellis-rdt；普通晋升允许同 identity，只校真实目标内容。根导航只在定位/身份/状态改变时写入，不追加每Issue业务摘要。Architecture使用独立稳定 identity guru-trellis-architecture。bootstrap仍要求其真正distinct successor，历史和真实接口版本不改义。
+`D638-01 / CON638-IDENTITY`：完整单元与关系保持稳定ID，authority identity= guru-trellis-rdt；普通晋升允许同 identity，只校真实目标内容。根导航只在入口自身合同真实改变时写入，独立主题不登记共享列表，不追加每Issue业务摘要。Architecture使用独立稳定 identity guru-trellis-architecture。bootstrap仍要求其真正distinct successor，历史和真实接口版本不改义。
 
 ## D331-05 / CON331-05：迁移、恢复与分发
 
@@ -121,3 +123,17 @@ canonical packages/workflow/spec/preset拥有长期内容，dogfood/installed经
 **D710-07 / CON710-ADOPTION** 承接 R710-07。原 guru-upgrade-tools/完整 preset 成套分发，保留用户定制及 Task/session；定向核 canonical/dogfood/installed、声明平台、reapply/drift/mode/sidecar，一个确有必要的代表 clean 只证明该安装边界。源码或 CLI 可用不等同 native 或业务采用。原 Test contribution 记录实际观察，后继引用固定可获取候选与 matching 安装，自行完成其当前质量链。
 
 本批原 RDT/Architecture 各写完整 isolated proposed，候选 Check 后才 final_integration/readback。implementation 按同 B 绑定全部实际 after，最终 Check 与完整 committed Review 覆盖真实内容。既有 current 单元定位和 authority identity 保持，不为本项制造导航改动或共享版本推进。
+
+## D711：目录发现、局部导航与原 owner 切换
+
+承接 R711-01..08；来源与逐项关系见 [#711 追踪](../../requirements-design-test-contributions/711-knowledge-navigation-isolation/traceability.md)。原 D331/D638 的完整正文与候选/最终边界保持。
+
+**D711-01 / CON711-DISCOVERY**：canonical 原 RDT `references/current-knowledge.md` 单写稳定发现和隔离导航。RDT 根/current 入口保体系信息及 `current/**` 范围；Architecture 根沿 FOUNDATION/CURRENT/TARGET/DOMAIN/INTEGRATION/GOV/GAP/PLAN/ADR/EVIDENCE 职责目录查找。原 Skills/contract 与 managed RDT spec 消费同一方法。读取端用 `rg --files` 和稳定 ID/概念限定搜索，再读完整单元并核来源/晋升与状态；原 Author、实施、Check、Review 的阶段责任保持。
+
+**D711-02 / CON711-WRITE**：独立单元只写原能力正文、自身目录局部导航及真实受影响关系。root/current README 不枚举单元，不向共享 manifest、system/ownership/ADR index 或生成索引转移登记。根自身合同变化才进入 reviewed targets。原完整单元保稳定 ID/aliases、semantic owner、适用来源/晋升依据、定义、关系与替代范围，精确接口仍由原 canonical package 单写。
+
+**D711-03 / CON711-OVERLAP**：原维护 owner 在 final integration 比较 applicable base、双方完整 proposal 和一次固定真实 target，核组合及受影响未改消费者。Git 自动合并不供语义 pass；保留双方仍有效条件。同一关系不复制或拆散，真实范围/机制/验证变化回原 owner。原 actual write/readback、after 重绑和最终完整质量链继续。
+
+**D711-04 / CON711-MIGRATION**：MIGRATION-711 拥有可执行采用步骤；knowledge-navigation-1 只标文档组织边界。原 owners 先在隔离 proposed 准备完整目标，逐项核旧 alias 并只补原单元缺口，保原路径和历史。未达条件仍读旧 authority；满足后原 final integration 切换，后续不双写旧共享索引。在途旧读取保其阶段版本，触及已迁移目标的最终写入整合当前单元。改名/替换/删除保 ID、存活引用及旧意义；失败沿原 repair/successor，不改不可变来源。
+
+**D711-05 / CON711-DISTRIBUTION**：原 tools owner 从完整 matching source 同步受管 dogfood/installed/声明平台，普通 apply 保其原前置与 sidecar，安装器不迁移业务文档。公共 README 只引用迁移 locator；runtime/profile/API/schema 与 workflow bytes 不变，无新索引服务/生成器/registry/语义脚本。实际 native、两序合并、安装和采用分层记录，不扩完整多平台 Release 矩阵。

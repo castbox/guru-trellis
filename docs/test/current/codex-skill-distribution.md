@@ -1,5 +1,7 @@
 # Codex Skill 分发与迁移验证
 
+导航别名：`R724/D724/T724`；`Codex Skill共享目录`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：RDT-TST-CODEX-DISCOVERY；关系：RDT-REQ-CODEX-DISCOVERY → RDT-DES-CODEX-DISCOVERY。
 以下定义验收策略，执行结果由原 Task/D1 validation 及正式公共结果/Git事实提供。
 

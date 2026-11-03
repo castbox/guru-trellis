@@ -76,6 +76,12 @@ promotion发生在final_integration，绑定贡献、原独立Architecture及完
 
 按本阶段实际问题选择完整知识单元与必要关系，不以历史增量回放替代当前定义。RDT 和 Architecture 各由原维护方拥有正文与晋升，导航只定位。Architecture 的 FOUNDATION/CURRENT/TARGET/GAP/PLAN/ADR/EVIDENCE 仍分工；本文件不把 accepted target、推断或验证缺口提升为实现事实。
 
+本项目采用 [ADR-KNOWLEDGE-NAVIGATION-ISOLATION](../adr/knowledge-navigation-isolation.md) 的独立导航写入边界。Architecture 根只声明体系、职责目录、发现方法和历史/未迁移范围；各完整单元自身保留稳定 identity/alias、原 owner、状态、适用来源、晋升依据及必要关系。日常独立主题不得向根或任一共享列表登记，也不向 system/ownership 或 ADR index 转移登记。查找时在阶段适用的职责目录内限定检索，完整读取命中正文并核来源和晋升状态；现有目录名、文件存在或搜索命中不产生 current。
+
+RDT 与 Architecture 的原维护方分别维护自身正文；新增、修改、改名、替换或删除时，同步真实受影响的稳定引用和必要关系。需要旧引用转换时只保留定位说明或准确 Git 来源，不保留第二活动正文。共同修改同一能力或有效关系属于真实重叠，原 owner 必须整合仍有效条件；路径不同或文本自动合并不能豁免该判断。这里不新增 project-check descriptor、runtime registry 或脚本语义判断。
+
+[迁移合同](../../../trellis/presets/guru-team/MIGRATION-711.md)区分安装匹配规则与项目文档切换。未达完整性、关系和适用验证条件时保原 authority，候选保持 proposed，并明确未迁移范围；达条件后新任务停止旧共享索引写入。旧 Task 仍可读其阶段版本，但 final integration 命中已迁移单元时由原 owner 重读真实目标并写当前完整定义，不继续旧索引双写。切换前失败保原入口；切换后通过原 repair 或受审 successor 修正，历史快照和原始证据不改。
+
 [技术基线选择](../00-foundation/stack-selection.md)定位本项目选定的公共技术栈源、准确版本、项目约束和差异。Architecture owner 在本项目范围维护投影，源维护方在公共源范围维护完整定义。源或引用缺失、范围冲突、迁移未完成时，明确受影响结论并进入原 repair/澄清，保留原 authority。源版本推进不自动替换已选版本或要求旧 Task 重写。当前组织候选的迁移与普通读取退出由 [MIGRATION-331](../../../trellis/presets/guru-team/MIGRATION-331.md)定位，最终状态由原 owner 晋升和真实 Test/EVIDENCE 决定。
 
 ## 早期 Draft 与最终 Publication 的区分（ADR-033）
@@ -96,4 +102,4 @@ Architecture 原 owner 保留首次独立读取顺序及当前 project-check 判
 
 ## 稳定知识身份与真实目标
 
-Architecture authority identity为guru-trellis-architecture，RDT为guru-trellis-rdt。完整单元保留既有identity，精确来源用完整Git revision与repo-relative locator；普通promotion允许同authority identity，不强制总README target、global successor或逐Issue摘要。导航只在定位/身份/状态改变时更新，真实public API/schema版本独立保留。bootstrap仍保留distinct successor合同。目标branch/commit、bytes与恢复intent只在原owner调用或有直接consumer的短期private状态；无全仓hash清单、第二current或授权记录。
+Architecture authority identity为guru-trellis-architecture，RDT为guru-trellis-rdt。完整单元保留既有identity，精确来源用完整Git revision与repo-relative locator；普通promotion允许同authority identity，不强制总README target、global successor或逐Issue摘要。独立主题的定位由单元自身及真实受影响引用维护；共享入口只在其自身身份、scope/status、位置、发现合同或必要跨体系关系实际变化时更新，不将每个单元定位变化变成共享登记。真实public API/schema版本独立保留，bootstrap仍保留distinct successor合同。目标branch/commit、bytes与恢复intent只在原owner调用或有直接consumer的短期private状态；无全仓hash清单、第二current或授权记录。

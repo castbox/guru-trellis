@@ -1,5 +1,7 @@
 # #630 测试策略与证据
 
+导航别名：`RDT-TST-NATIVE`；`R630/BEH630`；`三系统兼容`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 状态：current。本单元拥有测试策略；实际执行、首失败与未验证边界由文末定位的贡献Test单写。需求、设计和追踪只定义行为、责任与关系，不复制实际结果。
 
 | Identity | 入口与可观察结果 |

@@ -1,5 +1,7 @@
 # Runtime与Git来源的设计合同
 
+导航别名：`R718/D718/T718`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-DES-RUNTIME-LOCATION`；状态：current。承接[完整需求](../../requirements/current/runtime-location.md) R718-01—11；[Test](../../test/current/runtime-location.md)拥有验证策略与实际观察。Architecture继承 `guru-trellis-architecture` / constitution v1 / ADR-RUNTIME-LOCATION。
 
 ## D718-01 / CON718-ENV：环境身份与代码

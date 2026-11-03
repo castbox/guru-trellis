@@ -256,8 +256,11 @@ no future committed Review is a promotion prerequisite.
 The public `baseline`, `expected_current_identity` and `current_identity` bind
 the before authority. The owner result and output `baseline_identity` name the
 actual active authority after the reviewed write. Ordinary leaf-only promotion
-retains that identity and does not write the root entry. A real identity or
-navigation migration may write the baseline entry among its reviewed targets;
+retains that identity and does not write the root entry or another shared
+per-unit index. Follow current-knowledge.md for directory/identity discovery
+and isolated navigation. A real root identity, scope, status, location,
+discovery-contract or necessary-relationship migration may write the baseline
+entry among its reviewed targets;
 the owner reads its complete after content and returns the actual after
 identity. A different after identity requires an actual changed baseline target
 with before/after content, completed readback and current applicability. The
