@@ -43,7 +43,13 @@ broad prompt, command, Skill, hook, agent, or platform directory.
 
 ## Managed Claims
 
-The extension manifest and ownership contract derive 43 current managed claims:
+Codex's current Skill root equals the shared `.agents/skills` root. Deduplicate
+its current claim; `.codex/skills/guru-*/` is no longer a current claim. Only the
+original maintenance/provenance owner may recognize exact historical managed
+paths for the explicit #724 retirement. This does not authorize broad platform
+cleanup or management of upstream, user-level or third-party assets.
+
+The extension manifest and ownership contract derive the current de-duplicated managed claims:
 the installed runtime roots, shared Skill projection, and each descriptor's
 deduplicated Skill-root and finish-entry claim.
 
@@ -108,8 +114,8 @@ Maintainers run:
 trellis/presets/guru-team/scripts/bash/check-upstream-ownership.sh --repo . --json
 ```
 
-The validator is read-only. It verifies schema 4.0, all 22 descriptors, 43
-derived managed claims, 22 additive overlays, anchored namespace matching, current
+The validator is read-only. It verifies schema 4.0, all 22 descriptors, derived
+de-duplicated managed claims, 22 additive overlays, anchored namespace matching, current
 registry/package identities, and objective counts/digests derived from current
 assets. It must not judge design quality, route intent, finding severity,
 update safety, or Issue closure.

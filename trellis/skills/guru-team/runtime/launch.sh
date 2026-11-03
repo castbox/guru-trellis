@@ -27,11 +27,10 @@ case "$PACKAGE_ROOT" in
     REPO_ROOT="${PACKAGE_ROOT%%/.trellis/guru-team/skills/packages/*}"
     SKILLS_ROOT="$REPO_ROOT/.trellis/guru-team"
     ;;
-  */.agents/skills/*|*/.codex/skills/*|*/.cursor/skills/*|*/.claude/skills/*)
+  */.agents/skills/*|*/.cursor/skills/*|*/.claude/skills/*)
     SKILL_ID="${PACKAGE_ROOT##*/}"
     case "$PACKAGE_ROOT" in
       */.agents/skills/*) REPO_ROOT="${PACKAGE_ROOT%%/.agents/skills/*}" ;;
-      */.codex/skills/*) REPO_ROOT="${PACKAGE_ROOT%%/.codex/skills/*}" ;;
       */.cursor/skills/*) REPO_ROOT="${PACKAGE_ROOT%%/.cursor/skills/*}" ;;
       */.claude/skills/*) REPO_ROOT="${PACKAGE_ROOT%%/.claude/skills/*}" ;;
     esac

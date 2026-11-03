@@ -51,7 +51,7 @@ PLATFORM_DESCRIPTORS = (
     _descriptor("claude-code", "claude", "claude", ".claude", ".claude/skills", ".claude/commands/guru/finish-work.md", "markdown_command"),
     _descriptor("cursor", "cursor", "cursor", ".cursor", ".cursor/skills", ".cursor/commands/guru-finish-work.md", "markdown_command"),
     _descriptor("opencode", "opencode", "opencode", ".opencode", ".opencode/skills", ".opencode/commands/guru-finish-work.md", "markdown_command", actual_load="opencode_catalog"),
-    _descriptor("codex", "codex", "codex", ".codex", ".codex/skills", ".codex/prompts/guru-finish-work.md", "markdown_prompt"),
+    _descriptor("codex", "codex", "codex", ".codex", ".agents/skills", ".codex/prompts/guru-finish-work.md", "markdown_prompt"),
     _descriptor("kilo", "kilo", "kilo", ".kilocode", ".kilocode/skills", ".kilocode/workflows/guru-finish-work.md", "markdown_workflow"),
     _descriptor("kiro", "kiro", "kiro", ".kiro/skills", ".kiro/skills", ".kiro/skills/guru-finish-work/SKILL.md", "skill_command"),
     _descriptor("gemini", "gemini", "gemini", ".gemini", ".agents/skills", ".gemini/commands/guru/finish-work.toml", "toml_command"),

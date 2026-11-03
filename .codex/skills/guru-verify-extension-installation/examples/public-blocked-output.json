@@ -1,5 +1,0 @@
-{
-  "exit_id": "blocked",
-  "reason_code": "source_identity_mismatch",
-  "remediation": "Run the standalone verifier from a clean castbox/guru-trellis source checkout at the requested ref."
-}

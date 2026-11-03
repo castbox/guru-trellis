@@ -1,5 +1,0 @@
-{
-  "profile": "delivery_active_task_scope_change",
-  "mode": "workflow",
-  "task_ref": ".trellis/tasks/current"
-}

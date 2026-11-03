@@ -336,6 +336,10 @@ def canonical_reconciliation(root, cp, old):
         if not key.startswith('repo:'):
             return False
         relative = key[5:]
+        # Reviewed duplicate retirement can remove a preserved predecessor or
+        # its removal notice. Keep the original recovery preimages unchanged.
+        if module.legacy_codex_skill_path(Path(relative)) and current['sha256'] is None:
+            continue
         if relative.endswith('.new') and current['sha256'] is None:
             base = Path(relative[:-4])
             if base not in projections or previous['sha256'] != old.state(projections[base])['sha256']:
@@ -381,6 +385,8 @@ def resume(package, root, recovery, cp):
             decisions = {row['path']: row for row in plan['guru_decisions']}
             for row in cp['old_managed']:
                 path = old.relative_file(root, row['path'])
+                if row['path'].startswith('.codex/skills/guru-'):
+                    continue  # The preset retires these only after replacement is complete.
                 decision = decisions.get(row['path'])
                 if decision and decision['action'] == 'preserve':
                     continue
@@ -409,6 +415,8 @@ def resume(package, root, recovery, cp):
             preserved = {row['path'] for row in plan['guru_decisions'] if row['action'] == 'preserve'}
             result = module.install_assets(source / 'trellis/workflows/guru-team', root / '.trellis/guru-team', root,
                         set(plan['selected_platforms']), migration_preserved_paths=preserved,
+                        legacy_codex_hashes={row['path']: row['previous_sha256'] for row in cp['old_managed']
+                            if module.legacy_codex_skill_path(Path(row['path'])) and row['previous_sha256'] is not None},
                         python=sys.executable, checkout_local=True, tools_only=True,
                         tools_maintenance={'source': plan['upstream_source'], 'plan': plan['upstream_plan'], 'recovery_ref': cp['upstream_ref']})
             if (result['skill_packages']['status'] != 'ok' or result['overlays']['status'] != 'ok'

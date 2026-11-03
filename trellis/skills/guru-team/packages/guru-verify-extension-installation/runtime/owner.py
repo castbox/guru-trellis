@@ -1171,7 +1171,7 @@ def extension_verification_installed_asset_facts(
         )
     platform_roots = {
         "shared": ".agents/skills/guru-verify-extension-installation/",
-        "codex": ".codex/skills/guru-verify-extension-installation/",
+        "codex": ".agents/skills/guru-verify-extension-installation/",
         "claude": ".claude/skills/guru-verify-extension-installation/",
         "cursor": ".cursor/skills/guru-verify-extension-installation/",
     }

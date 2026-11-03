@@ -1,1 +1,0 @@
-{"current_authority":"Issue #435","delivery_slice":["R435-01"],"remaining_work":["R435-02"],"current_slice_defect":"The ready DTO omits remaining_work_state.","expected_exit":"implementation_required"}

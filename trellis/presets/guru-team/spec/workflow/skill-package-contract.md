@@ -1578,10 +1578,23 @@ validation, so their absence is normal and never authorizes reconstruction.
 ## Distribution And Managed Hashes
 
 The preset installs an audited canonical registry/schema/package copy under
-`.trellis/guru-team/skills/`, then distributes each active package to
-`.agents/skills/<id>/` and only the selected platform roots:
-`.codex/skills/<id>/`, `.cursor/skills/<id>/`, and
-`.claude/skills/<id>/`. Unselected roots are not created.
+`.trellis/guru-team/skills/`, then distributes public package files to shared
+`.agents/skills/<id>/` and the exact selected descriptor roots. Codex uses that
+same shared root; Cursor and Claude retain `.cursor/skills/<id>/` and
+`.claude/skills/<id>/`. Shared roots are de-duplicated. A Codex-only package,
+including its `agents/openai.yaml`, enters the shared root only when the target
+selection contains `codex`; its platform applicability and native prerequisites
+remain unchanged. Package-private runtime, tests and evidence stay outside
+discovery roots.
+
+The explicit [Codex root migration](../../MIGRATION-724.md) retires previous
+Guru-managed `.codex/skills/guru-*/` files through the original maintenance and
+provenance owner. Complete conflict-free target public projections precede
+removal of unchanged managed predecessors. Preserve local edits and unknown
+files on either side; unresolved target conflicts retain predecessors needed
+for migration and cannot report success. Reapply never recreates the retired
+projection. Removing `codex` from the target selection retires only its
+exclusive managed files and preserves shared consumers and user content.
 
 Every distributed file uses exact previous managed hashes, never overlay
 content heuristics:

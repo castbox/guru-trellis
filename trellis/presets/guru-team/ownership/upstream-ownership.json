@@ -52,7 +52,7 @@
       "cli_flag": "codex",
       "template_dir": "codex",
       "config_dir": ".codex",
-      "skill_root": ".codex/skills",
+      "skill_root": ".agents/skills",
       "entry_path": ".codex/prompts/guru-finish-work.md",
       "entry_kind": "markdown_prompt",
       "actual_load": "projection_contract"

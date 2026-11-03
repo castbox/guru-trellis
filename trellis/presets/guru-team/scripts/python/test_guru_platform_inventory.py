@@ -97,7 +97,7 @@ class PlatformInventoryTest(unittest.TestCase):
     def test_inventory_platforms_have_registry_bound_skill_projection_roots(self) -> None:
         roots = inventory.selected_skill_roots(inventory.PLATFORM_FLAGS)
         self.assertEqual(roots[0], Path(".agents/skills"))
-        self.assertIn(Path(".codex/skills"), roots)
+        self.assertIn(Path(".agents/skills"), roots)
         self.assertIn(Path(".opencode/skills"), roots)
         self.assertIn(Path(".kilocode/skills"), roots)
         self.assertIn(Path(".github/skills"), roots)

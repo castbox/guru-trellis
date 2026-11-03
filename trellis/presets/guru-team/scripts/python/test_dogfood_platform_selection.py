@@ -12,7 +12,7 @@ import verify_dogfood_platform_selection as dogfood
 
 REPO = Path(__file__).resolve().parents[5]
 PACKAGE_IDS = ("guru-check-task", "guru-orchestrate-issue-dag", "guru-orchestrate-issue-sequence")
-ROOTS = (".agents/skills", ".claude/skills", ".codex/skills", ".cursor/skills")
+ROOTS = (".agents/skills", ".claude/skills", ".cursor/skills")
 
 
 class DogfoodPlatformSelectionTests(unittest.TestCase):
@@ -28,7 +28,7 @@ class DogfoodPlatformSelectionTests(unittest.TestCase):
         (selected / "registry.json").write_text(json.dumps(registry), encoding="utf-8")
         for entry in registry["skills"]:
             package = canonical / entry["package"]
-            roots = ROOTS if entry["id"] == "guru-check-task" else (".codex/skills",)
+            roots = ROOTS if entry["id"] == "guru-check-task" else (".agents/skills",)
             for source in preset.skill_platform_public_files(package):
                 inner = source.relative_to(package)
                 for target in [selected / entry["package"] / inner, *[self.repo / root / entry["id"] / inner for root in roots]]:
@@ -47,16 +47,16 @@ class DogfoodPlatformSelectionTests(unittest.TestCase):
     def test_mixed_common_and_codex_only_packages_have_distinct_valid_roots(self) -> None:
         self.assertEqual(dogfood.verify(self.repo)["status"], "ok")
         for package_id in PACKAGE_IDS[1:]:
-            self.assertTrue((self.repo / ".codex/skills" / package_id / "agents/openai.yaml").is_file())
-            self.assertFalse((self.repo / ".agents/skills" / package_id).exists())
+            self.assertTrue((self.repo / ".agents/skills" / package_id / "agents/openai.yaml").is_file())
+            self.assertFalse((self.repo / ".codex/skills" / package_id).exists())
 
-    def test_codex_only_package_in_shared_or_claude_root_is_rejected(self) -> None:
+    def test_codex_only_package_in_legacy_or_claude_root_is_rejected(self) -> None:
         package_id = PACKAGE_IDS[1]
-        for root in (".agents/skills", ".claude/skills"):
+        for root in (".codex/skills", ".claude/skills"):
             with self.subTest(root=root):
                 misplaced = self.repo / root / package_id
-                shutil.copytree(self.repo / ".codex/skills" / package_id, misplaced)
-                with self.assertRaisesRegex(dogfood.DogfoodDriftError, "file set drift"):
+                shutil.copytree(self.repo / ".agents/skills" / package_id, misplaced)
+                with self.assertRaisesRegex(dogfood.DogfoodDriftError, "file set drift|retired Codex"):
                     dogfood.verify(self.repo)
                 shutil.rmtree(misplaced)
 
@@ -68,8 +68,8 @@ class DogfoodPlatformSelectionTests(unittest.TestCase):
             dogfood.verify(self.repo)
 
     def test_codex_only_metadata_is_required_in_its_own_projection(self) -> None:
-        (self.repo / ".codex/skills" / PACKAGE_IDS[1] / "agents/openai.yaml").unlink()
-        with self.assertRaisesRegex(dogfood.DogfoodDriftError, "file set drift"):
+        (self.repo / ".agents/skills" / PACKAGE_IDS[1] / "agents/openai.yaml").unlink()
+        with self.assertRaisesRegex(dogfood.DogfoodDriftError, "file set drift|retired Codex"):
             dogfood.verify(self.repo)
 
 
