@@ -1,6 +1,6 @@
 # Common Change Review Method
 
-This file composes the existing semantic review sources for independent change
+This file composes the engineering review sources for independent change
 review, formal Check and formal Branch Review. Each original owner retains its
 entry, exact object, independence, qualification, result and actions. Reading
 this composition invokes no other Skill and supplies no formal stage pass.
@@ -44,21 +44,12 @@ names, a prior pass or a second checklist.
   [Responsibility and change causality](../../guru-maintain-architecture-baseline/references/contract.md#responsibility-and-change-causality),
   [Project architecture checks](../../guru-maintain-architecture-baseline/references/contract.md#project-architecture-checks), and
   [Stage-applicable Architecture authority](../../guru-maintain-architecture-baseline/references/contract.md#stage-applicable-architecture-authority).
-- In the Check contract, read
-  [Current constitution consumption](../../guru-check-task/references/contract.md#current-constitution-consumption),
-  [Semantic Loop](../../guru-check-task/references/contract.md#semantic-loop),
-  [Dependency-Scoped Validation](../../guru-check-task/references/contract.md#dependency-scoped-validation), and
-  [Causal stage review](../../guru-check-task/references/contract.md#causal-stage-review).
-- In the Branch Review contract, read
-  [Engineering validation in the complete review](../../guru-review-branch/references/contract.md#engineering-validation-in-the-complete-review),
-  [Semantic Review](../../guru-review-branch/references/contract.md#semantic-review),
-  [Current constitution consumption](../../guru-review-branch/references/contract.md#current-constitution-consumption), and
-  [Causal committed review](../../guru-review-branch/references/contract.md#causal-committed-review).
 - For implementation-coverage judgment, read Completion's
   [Stage facts, gaps and current results](../../guru-review-task-completion/SKILL.md#stage-facts-gaps-and-current-results)
   as the semantic source for observation layers and unfinished work versus
   missing evidence. It does not select formal Completion or its routes.
-- Read `workflow-contract.md#candidate-applicability-and-coverage`,
+- Read `review-sufficiency.md` in full,
+  `workflow-contract.md#candidate-applicability-and-coverage`,
   `semantic-retrieval.md`, and
   `quality-guidelines.md#specialist-review-standards` and
   `quality-guidelines.md#test-and-validation-value` from this provider.
@@ -89,53 +80,31 @@ lifecycle actions also remain outside this independent review.
 
 ## Perform Architecture Before Reading Task Narratives
 
-Apply the original Architecture contract's isolation, read order, constraint
-and premise handling, current semantic project checks, responsibility and
-adopted-mechanism judgment to this review's complete selected candidate and
-affected consumers. This is an independent assessment, including the judgment
-that no Architecture impact exists, rather than a check that code agrees with
-an old baseline. The original sources govern reconsideration of technical
-rules, reuse without a diff, total cost, necessary old-consumer convergence and
-protection evidence. Do not restate their principle prose here.
+Apply the Architecture source's Independent assessment entry, adopted-mechanism
+judgment and project checks to the complete selected candidate and necessary
+consumers. This includes judging whether Architecture impact exists and whether
+the baseline's own technical rules remain applicable. A baseline-agreement
+statement cannot replace that assessment.
 
-For the first Architecture assessment, use a fresh generic independent carrier
-with empty history. On Codex, use `fork_turns=none`; do not use a Trellis role
-whose prelude injects Task narratives. Inspect the actual prelude. Do not
-preload PRD, acceptance criteria, implementation summaries, completion claims,
-old passes or scope defenses through history or dispatch. Supply exact object
-and source locators and necessary real constraints without a proposed verdict.
-A reviewer already entering through that compliant carrier need not spawn a
-second carrier to repeat its own assessment. If the required independence
-cannot be obtained, name that limitation under the calling owner's contract.
+For independent change review, map the original authority-first isolation and
+read order to the selected repository and candidate without inventing formal
+Task/Delivery identities. Use a fresh generic independent carrier with empty
+history (`fork_turns=none` on Codex); inspect its actual prelude. Complete that
+first Architecture judgment before Task narratives or other perspectives'
+reports reach the carrier. A reviewer already entering through that compliant
+carrier need not dispatch another to repeat the same assessment. Formal callers
+consume their own applicable independent assessment under the original entry.
 
-The reviewer first reads the applicable project constitution, Architecture
-Baseline and change contract, then the complete selected candidate. It follows
-changed decisions, actual consumers and comparable alternatives in the original
-order and forms its independent Architecture judgment before reading later
-Task narratives for business-completeness review. Apply the original source's
-rules for necessary task-local constraint facts and design assumptions; do not
-import the whole narrative to obtain one fact. Determine applicable current
-project checks before inspecting prior command results. Personally judge the
-current semantic checks; adopt engineering facts only under their original
-applicability rules.
+Use the target project's actual authorities, necessary constraint sources and
+current checks. Missing authority or execution evidence limits the specific fit
+conclusion it prevents; continue unrelated conclusions with adequate support.
+Do not manufacture a baseline or import a whole Task narrative for one needed
+constraint fact. Apply the original source's premise and evidence-layer rules.
 
-Use the project's actual applicable authorities and checks. If authority,
-constitution, a required source/version or actual check evidence is missing,
-identify the exact gap and the fit conclusion it prevents. Do not manufacture
-a baseline, infer generic stack choices from a project projection, or claim a
-completed Architecture fit assessment. Continue unrelated code conclusions
-that have sufficient authority; missing project documents do not make every
-code judgment impossible.
-
-For later candidates, apply the original independent-continuation and
-candidate-coverage rules. An eligible reviewer may continue while still
-independent of implementation. New stage, HEAD or shared CURRENT alone neither
-requires another fresh carrier nor establishes applicability. New Architecture
-facts need the corresponding current assessment; missing original coverage or
-an unbounded combined effect needs complete assessment. A narrative-exposed
-reviewer cannot retroactively supply the first independent read. Formal stages
-still obtain their own actual current Architecture result from the original
-owner.
+For later candidates, use Review Sufficiency and the Architecture source's
+independent-continuation rules. A narrative-exposed reviewer cannot
+retroactively supply the first independent read. Formal stages still obtain
+their own actual current Architecture result from the original owner.
 
 ## Judge Actual Business Implementation Coverage
 
@@ -147,14 +116,12 @@ status. Apply the selected specialist Skills and their same-source standards
 under `quality-guidelines.md#specialist-review-standards`; missing specialist
 evidence limits only its dependent conclusion.
 
-For an implementation-completeness request, establish all necessary supported
-scenarios and end-to-end paths in that requested obligation set. Trace each to
-actual design responsibilities, implemented entries and affected consumers,
-test plans, effective tests and remaining work. Judge missing behavior as well
-as behavior present in the diff. Code and tests agreeing with each other does
-not establish that the requirement is fully implemented. State specifically
-whether coverage is complete, incomplete or insufficiently evidenced and why.
-This judgment needs no new template, persisted matrix or result fields.
+For implementation-completeness review, apply Review Sufficiency's coverage
+formation to the requested obligation set. Trace its necessary supported
+scenarios and end-to-end paths through design responsibilities, implemented
+entries and consumers, test plans, effective tests and remaining work. Judge
+missing behavior as well as behavior present in the diff. State whether business
+implementation is complete, incomplete or insufficiently evidenced, and why.
 
 Apply the original Completion source's observation-layer distinctions within
 this requested scope: contract/source facts do not establish deployment or
@@ -176,13 +143,14 @@ completion conclusion that the selected scope cannot support.
 
 ## Apply The Remaining Original Review Methods
 
-Read the full selected range and necessary current bodies, including the
-relevant staged, unstaged, untracked and deletion projections or exact committed
-objects. Apply the original Check/Branch semantic sections above to their
-applicable dimensions, real entries, behavior, consumers, tests and evidence.
-They supply the method; this composition adds no parallel dimension checklist.
-Original Architecture and current-knowledge duties remain active during this
-analysis, including after a newly discovered affected dependency.
+Read the full selected range and necessary current bodies, including relevant
+staged, unstaged, untracked and deletion projections or exact committed objects.
+Judge the applicable requirements, design, implementation, tests, Docs SSOT,
+cross-layer behavior, Architecture before/after satisfaction, compatibility,
+deployment/operations and verification. Use the original Architecture and
+current-knowledge sources throughout, including for newly evidenced dependencies.
+For delete, replace, merge or compatibility impact, apply both code and Docs SSOT
+subtraction under `subtraction-first-compatibility.md`.
 
 For independent review, judge candidate validity, current correction necessity
 and mechanism suitability semantically against actual authority and supported
@@ -191,24 +159,30 @@ Do not invoke bound formal profiles with fabricated identities to obtain those
 judgments. Formal callers retain their existing qualification and finding
 routes. Neither mode authorizes repairs, scope changes or authority promotion.
 
+Attribute a failed validation with enough evidence to distinguish a current
+regression, inseparable prerequisite, unrelated history, environment or unresolved
+cause. Handle current regressions and inseparable prerequisites within the
+owning scope. Stop unrelated investigation once that attribution is established;
+unresolved does not mean historical. A required release gate may block its own
+stage without authorizing unrelated repair. Do not weaken assertions, fixtures,
+samples or timeouts to obtain green. Bind legal configuration and actual
+protection invariants to authority. Defaults, recommendations and missing
+diagnostic attribution alone do not establish business rejection conditions.
+
 Assess verification effects before executing commands. Independent read-only
-review does not authorize source fixes, generated assets, dependency installs,
-Git mutations or external writes. Follow original dependency-scoped validation
-and test-value rules; keep inaccessible necessary verification as a concrete
-evidence gap. Engineering execution, adoption, static judgment, integration and
-external or production evidence remain distinct.
+review authorizes no source fixes, generated assets, dependency installs, Git
+mutations or external writes. Use the actual dependency and test boundary to
+choose necessary permitted checks under Test And Validation Value. Apply the
+engineering-fact rules in Candidate Applicability And Coverage when adopting
+prior executions. Keep engineering execution, adoption, static judgment,
+integration and external or production evidence distinct.
 
 ## Complete The Current Judgment
 
-For a fix or later candidate, apply
-`workflow-contract.md#candidate-applicability-and-coverage` and the original
-Branch Review closure/current-judgment rules to the actual entire delta and
-affected consumers. Verify defect closure, what prior coverage still applies
-and what was supplemented. Closure or an old pass alone is not current complete
-review. Retain applicable engineering facts and compliant reviewers; do not
-require unconditional full reruns or a different reviewer solely for a stage
-or commit change. This semantic reuse creates no formal result for another
-owner and reads no other owner's private checkpoint.
+Apply Review Sufficiency for the current review's completion, honest evidence
+limits and later-candidate coverage. The formal caller retains its finding
+closure, predecessor and exact-range obligations. This method reads no Check or
+Branch Review private stage method and supplies no other owner's formal result.
 
 Report actionable findings first with locations, supported normal triggers,
 authority, concrete impact and focused revisions. State when none were found.
@@ -218,7 +192,7 @@ implementation coverage and remaining work within the requested scope; the
 other applicable dimensions; and executed/adopted verification with its sources
 and limits. Name absent project authority or unavailable checks specifically.
 Dimension labels, empty passes or a baseline-conformance assertion cannot
-replace those conclusions. A partial review remains a partial conclusion.
+replace those conclusions.
 
 Each caller personally makes its final AI judgment and uses its own objective
 validation and typed exit. Independent change review emits only `reviewed` or

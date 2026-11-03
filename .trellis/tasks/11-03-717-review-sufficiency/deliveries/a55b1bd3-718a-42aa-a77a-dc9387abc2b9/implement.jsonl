@@ -1,0 +1,9 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "首次正文与子 Agent 的完整语言规范"}
+{"file": ".trellis/spec/workflow/workflow-contract.md", "reason": "原阶段职责、共同候选适用性及副作用边界"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "测试价值、专业标准、分发及验证范围"}
+{"file": ".trellis/spec/workflow/subtraction-first-compatibility.md", "reason": "旧定义退出、最小复杂度及真实消费者"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "原规划正文和来源语义合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "本批实际规划模板与完整性条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "本批实际规划模板与完整性条件"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "本批实际规划模板与完整性条件"}
+{"file": "trellis/skills/guru-team/packages/guru-review-change/references/review-method.md", "reason": "固定当前共享方法及迁移退出的实际源码"}

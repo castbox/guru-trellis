@@ -9,6 +9,7 @@ Identity：`guru-trellis-architecture`；状态：`active`。精确内容由完�
 | CURRENT | evidence_bound | [system](./01-current/system.md) | [EVIDENCE](./evidence/current-evidence.md) |
 | ARCH-RUNTIME-LOCATION | current | [runtime-location](./01-current/runtime-location.md) | ADR-RUNTIME-LOCATION; RDT-REQ-RUNTIME-LOCATION |
 | TARGET | accepted_target | [target](./02-target/target.md) | [GAP](./05-gaps/current-to-target.md) / [PLAN](./07-plans/roadmap.md) |
+| ARCH-REVIEW-SUFFICIENCY | current | [共同审核 owner](./03-domains/review-sufficiency.md) | ADR-REVIEW-SUFFICIENCY; RDT/Test |
 | DOMAIN | current_boundaries | [ownership](./03-domains/ownership.md) | [INTEGRATION](./04-integrations/distribution.md) |
 | ARCH-GOV-001..012 | current | [rules](./06-governance/rules.md) | [change contract](./06-governance/change-contract.md) / ADR-005/028/030/031/033/034 / ADR-KNOWLEDGE-FINAL-INTEGRATION |
 | ADR | historical_decisions | [index](./adr/README.md) / [ADR-031](./adr/031-current-effective-knowledge.md) | current 正文保留替代范围与来源 |

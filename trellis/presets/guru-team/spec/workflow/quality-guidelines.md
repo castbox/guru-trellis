@@ -5,31 +5,21 @@
 The standalone `guru-review-change` owner and formal Check/Branch Review read
 the same generic method from
 `.trellis/guru-team/skills/packages/guru-review-change/references/review-method.md`.
-This section owns specialist applicability, not the complete review procedure.
-That method composes the existing Check, Branch Review, Architecture and
-current-knowledge semantic contracts from the same provider. Independent
-change review must perform the applicable Architecture assessment and
-requirements-implementation judgment, not infer them from nine dimension names
-or passing commands. Formal owners retain their stage-specific results and
-entry conditions; loading the composition does not repeat an already applicable
-independent assessment or supply a formal stage result.
-The independent owner's required subagent perspectives are defined in its
-local contract. Formal Check and Branch Review retain their original worker
-policy; this shared method does not impose the independent entry's dispatch.
+This section owns specialist applicability. Read
+[Review Sufficiency](review-sufficiency.md) for the common review rules.
+The generic method composes Architecture, current-knowledge and topic SSOTs
+from the same complete provider; it does not read Check or Branch Review's
+private stage methods. Formal owners retain their stage-specific results and
+entry conditions. The independent owner's subagent perspectives remain in its
+local contract; formal Check and Branch Review keep their own worker policies.
 
-Before reviewing, identify the requested object, purpose, candidate range and
-current authority. Read the project's applicable current Requirements, Design
-and Test authority, Architecture Baseline, design constitution, architecture
-constraints and affected consumers, where they exist and apply. Preserve the
-original owner's read order and do not generate extra documents merely to
-perform a review. Read the selected technology stack and adopted requirements,
-design, implementation and test standards. Select specialist
-methods from that evidence and the actual artifact being reviewed; a request
-such as “审核代码” or “code review” does not itself select a technology stack,
-whole-task completion, or a full document suite.
-Select methods within the requested review scope; this section does not expand
-that scope or select formal execution. The workflow routes independent requests
-to `guru-review-change`; each selected owner retains its local procedure.
+Within the selected scope and original read order, read the project's adopted
+technology stack and applicable requirements, design, implementation and test
+standards. Select specialist methods from that evidence and the actual artifact.
+A request such as “审核代码” does not itself select a stack, whole-task completion
+or a full document suite. Do not generate extra documents merely to review.
+The workflow routes independent requests to `guru-review-change`; each owner
+retains its local procedure.
 
 Independent implementation review may compare code and tests against an Issue,
 requirement or initiative. Review of that source's own content, scope or value

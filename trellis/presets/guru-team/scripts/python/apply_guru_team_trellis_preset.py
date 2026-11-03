@@ -153,6 +153,10 @@ MANAGED_SPEC_PATHS = (
         Path(".trellis/spec/workflow/clear-technical-writing.md"),
     ),
     (
+        Path("trellis/presets/guru-team/spec/workflow/review-sufficiency.md"),
+        Path(".trellis/spec/workflow/review-sufficiency.md"),
+    ),
+    (
         Path("trellis/presets/guru-team/spec/workflow/issue-orchestration.md"),
         Path(".trellis/spec/workflow/issue-orchestration.md"),
     ),

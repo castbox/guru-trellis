@@ -189,13 +189,10 @@ execute, does not finish, or lacks the necessary independence, report the
 actual limitation and return `blocked` with any supported partial observations.
 Do not silently downgrade to one Agent or claim complete coverage.
 
-Later candidates retain eligible reviewers and verifiable coverage under the
-original sources' continuation and engineering-fact applicability rules.
-Changed Architecture facts return to the eligible Architecture carrier for the
-corresponding assessment; missing or unbounded coverage needs the original
-complete assessment. A different worker, stage or HEAD alone does not require
-repeating unchanged assessment or validate an old pass. Necessary current
-conclusions from all perspectives still require actual coverage.
+For later candidates, apply the complete provider's Review Sufficiency and
+engineering-fact applicability rules. Changed Architecture facts return to an
+eligible Architecture carrier under its original continuation contract. Necessary
+current conclusions from all three perspectives still require actual coverage.
 
 This multiple-subagent requirement belongs only to `guru-review-change`.
 Formal Check and Branch Review consume the shared semantic method under their

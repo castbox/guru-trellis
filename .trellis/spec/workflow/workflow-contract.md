@@ -70,8 +70,9 @@ to obtain their stage result. The global workflow retains only this routing.
 
 ## Candidate Applicability And Coverage
 
-This section is the single shared rule for Architecture, Check, TaskCommit,
-Branch Review, Delivery Review, Publication, Merge and their continuation.
+This section owns formal candidate binding, engineering-fact applicability and
+action continuity for Architecture, Check, TaskCommit, Branch Review, Delivery
+Review, Publication, Merge and their continuation.
 Each original owner applies it within its own responsibility and produces its
 own current formal result. It adds no Skill, phase, public field or evidence store.
 
@@ -88,16 +89,14 @@ Keep three kinds of evidence distinct:
 
 ### Original coverage and current judgment
 
-The first candidate requires a complete independent review. Planning and
-implementation self-checks do not replace it. For a later candidate, the
-original review owner reads verifiable original coverage, the entire actual
-delta and affected dependencies, including unchanged consumers. It states
-what remains applicable, what no longer applies and what it supplemented.
-Original coverage plus that reviewed delta and affected dependencies must
-cover the complete current fixed-base-to-HEAD range. The owner then judges
+Apply [Review Sufficiency](review-sufficiency.md) for common coverage formation,
+continuation and completion. The first formal candidate requires a complete
+independent review; planning and implementation self-checks do not replace it.
+Original coverage plus the reviewed later delta and affected dependencies must
+cover the complete current fixed-base-to-HEAD range. The owner personally judges
 the current candidate and uses its original recorder/validator/public entry.
-This applies to normal integration, finding fixes and other content changes;
-the narrow promotion-reference-alignment profile retains its own input limits.
+This includes normal integration, finding fixes and other content changes; the
+narrow promotion-reference-alignment profile retains its own input limits.
 
 Use only actual retained public Task/Delivery results or public invocation
 objects, exact Git objects and ranges, current bodies, and verifiable original
@@ -112,10 +111,9 @@ An initial implementation_required has no passed full_review. Its commit and
 finding refs locate facts and defects; they do not prove passed coverage.
 Any original complete review work used for the next judgment must remain
 verifiable through actual public results/invocation objects, Git and current
-bodies. Retained reviewer understanding can reduce repeated reading but does
-not create authority. Supplement missing coverage; perform a complete review
-when the combined effect cannot be bounded. Neither a missing checkpoint nor
-a new reviewer/session alone invalidates otherwise verifiable coverage.
+bodies. Retained reviewer understanding does not create authority. Apply Review
+Sufficiency to any missing or no-longer-applicable coverage. A missing private
+checkpoint does not invalidate otherwise verifiable public coverage.
 
 Independence means that the reviewer has not authored or implemented the
 candidate under review. Keep the Architecture contract's first independent
