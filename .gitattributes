@@ -77,6 +77,7 @@
 /.trellis/spec/workflow/issue-orchestration.md text eol=lf
 /.trellis/spec/workflow/quality-guidelines.md text eol=lf
 /.trellis/spec/workflow/requirements-design-test-ssot.md text eol=lf
+/.trellis/spec/workflow/review-sufficiency.md text eol=lf
 /.trellis/spec/workflow/semantic-retrieval.md text eol=lf
 /.trellis/spec/workflow/skill-package-contract.md text eol=lf
 /.trellis/spec/workflow/subtraction-first-compatibility.md text eol=lf

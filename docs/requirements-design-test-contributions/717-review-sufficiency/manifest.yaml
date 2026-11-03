@@ -1,0 +1,27 @@
+task_id: 717-review-sufficiency
+source: https://github.com/castbox/guru-trellis/issues/717
+status: proposed
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 404c841e9ca917b4680831aa0becd2e26d72fa0c
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+delivery:
+  lifecycle_generation: 0
+  delivery_id: a55b1bd3-718a-42aa-a77a-dc9387abc2b9
+  planning_root: .trellis/tasks/11-03-717-review-sufficiency/deliveries/a55b1bd3-718a-42aa-a77a-dc9387abc2b9
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/review-sufficiency.md
+  - docs/design/current/review-sufficiency.md
+  - docs/test/current/review-sufficiency.md
+  - docs/requirements/current/README.md
+  - docs/design/current/README.md
+  - docs/test/current/README.md

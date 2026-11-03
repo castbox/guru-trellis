@@ -31,15 +31,17 @@ Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change
 完整 preset 分发 `guru-review-change` 的独立合同、共享审核方法和无状态只读命令。
 它可审核未安装 Trellis 的 Git 仓库，输入选择工作区或已提交范围及可选路径。
 `reviewed` 表示完成本次审核，可以包含 Findings；它不代表正式门禁通过。
-Check 与 Branch Review 直接读取同源方法，并继续各自的正式流程。
-方法直接组合原语义 SSOT，并要求实际形成架构基线吻合度、基线规则适用性和需求
-实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
+共同覆盖与结束规则由 [审核充分性规范](./spec/workflow/review-sufficiency.md) 唯一维护，
+安装到 provider 的 `.trellis/spec/workflow/review-sufficiency.md`，由各原审核 owner 加载。
+Check 与 Branch Review 另读同源工程方法组合，并继续各自的正式流程。
+组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。
+原 owner 仍须实际形成架构基线吻合度、基线规则适用性和需求实现覆盖结论。原 Architecture 独立读序、适用性与重审规则继续生效；无 Task
 独立审核不调用或伪造正式 Task/Delivery 架构结果。
 独立审核的不同角度由多个独立 subagent 实际执行，最终 owner 核对证据并汇总判断。
 原正式阶段的 worker 政策保持在各自 owner 内。
 
 已有安装需要更新匹配的 marketplace workflow 并完整 reapply preset，才能采用
-本次入口匹配、六个原 owner 与 managed quality spec 的变化。专项 Skills 在其
+本次共同规范、十二个审核消费者与工程方法迁移。专项 Skills 在其
 原来源单独维护和安装；缺少当前必须的专项证据时明确受影响结论，不静默降级。
 继续检查受管投影、drift 和 `.new`/`.bak`，保留用户修改。源码与分发检查不证明
 真实 Agent 已采用，也不代表完整多平台 upgrade/update 或 Release 矩阵通过。

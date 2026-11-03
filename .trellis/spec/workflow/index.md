@@ -40,6 +40,9 @@ Before editing workflow behavior:
    work or a proposed compatibility exception.
    This also governs complexity restraint, long-term decoupling, and the
    3000-line review trigger for touched non-generated code files.
+10. Before performing an existing review responsibility, read
+    [review-sufficiency.md](./review-sufficiency.md) in full. The installed
+    document owns common review coverage and completion rules.
 
 ## Local Architecture
 

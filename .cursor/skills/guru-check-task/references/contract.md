@@ -410,15 +410,10 @@ Architecture facts and work coordination remain separate; scope cannot dismiss
 a responsibility violation, and its discovery does not authorize a product-goal
 or authority change.
 
-For a red validation, collect only enough evidence to attribute it to a task
-regression, inseparable prerequisite, unrelated historical failure, environment,
-or unresolved cause. Handle the first two in scope; stop investigation and
-repair after unrelatedness is established. Unresolved does not mean historical.
-A real required release gate can block release without authorizing unrelated
-repairs. Do not pursue full green by weakening assertions, fixtures or samples,
-or adjusting timeouts. Review defaults, recommendations, legal explicit
-configuration and real protection invariants against their authority; missing
-diagnostic attribution alone must not add a business rejection.
+Apply the shared engineering method's failed-validation attribution and
+authority-based configuration judgment in
+`../../guru-review-change/references/review-method.md`. Keep this stage's
+qualification, finding/fix and blocked routes.
 
 1. Reread the current task, approved plan, live authority, diff,
    dirty paths, code, tests, docs, the current Phase 2 Architecture result, and
@@ -502,13 +497,11 @@ existing validation summary for execution/adoption, original source, checked
 object and applicability reason. Bind the actual current worktree through the
 original recorder even when business conclusions remain applicable.
 
-A complete current Check may combine verifiable original coverage with the
-reviewed entire delta and affected dependencies. After committed content
-changes, Branch Review's original owner applies that same shared rule and
-records its own current exact-range result; its narrow reference-alignment
-profile remains limited to its declared input. Git integration continuity
-remains bounded. This owner does not read another owner's private state or
-supply Branch Review's semantic conclusion. Existing Phase 2-to-TaskCommit
+Apply `review-sufficiency.md` from the same provider for later-candidate
+coverage. This Check binds the actual current worktree; Branch Review's owner
+records its own current exact-range result, including its narrow alignment
+profile limits. Git continuity stays bounded. This owner reads no other owner's
+private state and supplies no Branch Review conclusion. Existing Phase 2-to-TaskCommit
 consumption, capture ancestry, content identity and retirement remain unchanged.
 
 ## Causal stage review

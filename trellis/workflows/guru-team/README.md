@@ -21,10 +21,11 @@ Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即�
 
 独立审核的完整步骤归 [guru-review-change](../../skills/guru-team/packages/guru-review-change/SKILL.md)；
 workflow 只负责显式调用和消费终端出口。`reviewed`、`blocked` 分别停止在该 owner
-声明的用户响应消费者，不进入正式交付阶段。通用语义方法由该包唯一维护，
-Check 与 Branch Review 在原职责内读取 [同一正文](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
-该正文组合原 Check、Branch Review、Architecture 和 current-knowledge 的语义
-SSOT。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
+声明的用户响应消费者，不进入正式交付阶段。共同覆盖与结束规则由
+[审核充分性规范](../../presets/guru-team/spec/workflow/review-sufficiency.md) 唯一维护。
+各原审核 owner 在原职责内读取；Check 与 Branch Review 另读
+[工程方法组合](../../skills/guru-team/packages/guru-review-change/references/review-method.md)。
+该组合读取 Architecture、current-knowledge 和专题 SSOT，不读取 Check/Branch 的私有阶段方法。独立审核实际执行架构基线及其技术规则适用性判断、业务需求实现覆盖判断，
 报告依据和缺口。正式阶段的独立评估、重审适用性及公共结果仍遵守各自原合同。
 独立 owner 还必须按其本地合同使用不同 subagent 完成不同角度的审核，并核对
 原始证据作最终判断。正式 Check 和 Branch Review 不继承这项本地调度要求。
