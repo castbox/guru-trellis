@@ -18,10 +18,14 @@ docs/design/{README.md,current/**,versions/<version>/**}
 docs/test/{README.md,current/**,versions/<version>/**}
 ```
 
-Each README identifies the stable authority and preserves historical
-navigation. Exact content uses a full Git revision and locator. Ordinary
-promotion writes navigation only when its relationships actually change; it
-does not require a new global version or per-Issue summary. A repository may supply reviewed compatible locators. Trellis task
+Each stable README identifies authority, scope/status, real version references,
+historical/unmigrated boundaries and directory/identity discovery. Root and
+current README files do not enumerate every unit. Ordinary independent
+subjects maintain their complete capability unit and affected relationships;
+they do not register in a shared index/manifest/generated list, increment an
+unrelated global version or append merge history. Update an entry only when
+its own identity, scope, status, location, discovery contract or necessary
+relationship changes. Exact content uses a full Git revision and locator. A repository may supply reviewed compatible locators. Trellis task
 planning remains task-local input and never becomes repository product
 authority by itself.
 

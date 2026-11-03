@@ -1,0 +1,99 @@
+{
+  "schema_version": "2.0",
+  "id": "711-knowledge-navigation-isolation",
+  "name": "711-knowledge-navigation-isolation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 711,
+    "disposition": "exact_source"
+  },
+  "title": "消除并行任务对共享文档索引的竞争写入",
+  "description": "按 Issue #711 改进 RDT/Architecture 导航隔离、发现、迁移和真实验证。",
+  "dev_type": null,
+  "scope": "Issue #711 全部行为与验收；仅 Guru 通用规则、消费者、分发与去敏样本。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-03",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/prd.md",
+    "revision": "sha256:66c708c4c51d3727febcfb1a1ff134ac7ca7dcfc1d11445e9168977a567c960d"
+  },
+  "deliveries": [
+    {
+      "id": "92e40c5b-7dd9-48cc-8c44-a5691b31034b",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/prd.md",
+          "revision": "sha256:66c708c4c51d3727febcfb1a1ff134ac7ca7dcfc1d11445e9168977a567c960d"
+        },
+        "anchors": [
+          "AC711-01..08"
+        ]
+      },
+      "planning_root": "deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b/design.md",
+        "revision": "sha256:f30edeea65ed6556924fb01a4ab9ae2b517635a6fcb94e1eb3a328fad1d82e4b"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:dd6a9a80-316f-40f8-b31a-29f8f0cd628f",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/prd.md",
+              "revision": "sha256:66c708c4c51d3727febcfb1a1ff134ac7ca7dcfc1d11445e9168977a567c960d"
+            },
+            "anchors": [
+              "AC711-01..08"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b/design.md",
+            "revision": "sha256:f30edeea65ed6556924fb01a4ab9ae2b517635a6fcb94e1eb3a328fad1d82e4b"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b/prd.md",
+              "revision": "sha256:700ae25ed308fac6b578953bb5580002d16d3cbb2b134a14b243d946bfd23b35"
+            },
+            {
+              "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b/design.md",
+              "revision": "sha256:f30edeea65ed6556924fb01a4ab9ae2b517635a6fcb94e1eb3a328fad1d82e4b"
+            },
+            {
+              "locator": ".trellis/tasks/11-03-711-knowledge-navigation-isolation/deliveries/92e40c5b-7dd9-48cc-8c44-a5691b31034b/implement.md",
+              "revision": "sha256:765ae1311478443963eebf2116dbf3f2024ad789132cd444cf1e851f5ba57c39"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

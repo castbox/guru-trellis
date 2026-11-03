@@ -1,0 +1,14 @@
+{
+  "source_id": "navigation-example-business",
+  "existing": {
+    "audit-query": "审计查询只允许租户拥有者读取自己租户的记录；拒绝跨租户读取；输出不得包含secret。",
+    "notification-copy": "通知文案按profile locale选择模板；无匹配模板时回退en；输出不得包含token。",
+    "legacy-billing": "旧账单范围保留原完整来源，当前不迁移。"
+  },
+  "independent_a": "在审计能力下新增独立CSV导出：校验租户拥有者，只导出该租户数据；固定列event_id、action；不含secret；失败无副作用。维护完整需求、设计、测试和Architecture职责及关系。",
+  "independent_b": "在通知能力下新增独立locale预览：根据profile locale选择模板，无匹配回退en；输出不含token；只读，无状态写入。维护完整需求、设计、测试和Architecture职责及关系。",
+  "existing_revision": "修改既有审计正文：支持原查询，同时将CSV固定列增加UTC时间字段occurred_at；保留拥有者校验和无secret约束。",
+  "overlap_a": "审计导出每次最多100行，超限时拒绝导出。",
+  "overlap_b": "审计导出时间字段统一UTC，空结果仍输出列头。",
+  "lifecycle": "既有文档迁移先保留尚缺必要测试关系的候选，补齐后经原维护链切换。旧阶段任务最终集成到切换后的真实目标。将audit-csv改名audit-export并保留稳定ID；替换或删除旧展示单元并维护仍有效引用。旧账单保持未迁移，历史原文不改。"
+}

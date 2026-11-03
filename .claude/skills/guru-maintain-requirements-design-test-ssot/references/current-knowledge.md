@@ -16,7 +16,9 @@ requirement, dependency, solution or explicitly applicable rule changes.
 Promotion separately rereads its live shared target and expected-current.
 
 Organize current knowledge into complete units by capability or responsibility.
-Each unit has a stable identity, exact applicable Git revision or real contract version and status,
+Each unit retains its stable identity and searchable aliases, original semantic
+owner, applicable source and promotion basis, exact applicable Git revision or
+real contract version and status,
 complete definition, necessary relationships, exact sources and replacement
 boundaries. These are Markdown responsibilities, not a new record schema.
 Existing canonical interface or engineering specifications keep their complete
@@ -39,21 +41,53 @@ superseded definitions. An accepted target can constrain design without being
 reported as implemented. Code-recovered or inferred statements keep their
 provenance and uncertainty until the original owner reviews them.
 
+## Stable discovery and isolated navigation
+
+The stable root entry owns the knowledge system's identity, scope, status,
+real public version references, historical and unmigrated boundaries, and
+organization and discovery method. RDT normally uses
+`docs/{requirements,design,test}/current/<stable-capability>.md`. Architecture
+keeps its existing responsibility directories, including FOUNDATION, CURRENT,
+TARGET, DOMAIN, INTEGRATION, GOV, GAP, PLAN, ADR and EVIDENCE. A capability that
+needs several files may own a local README within its own directory.
+
+Roots and `current/README.md` locate directories and explain bounded discovery;
+they do not enumerate every knowledge unit. Ordinary additions and revisions
+of independent subjects write their own complete units and genuinely affected
+relationships. They do not require root/current README edits, unrelated global
+version increments or merge-history entries. Do not move that registration to
+a shared index, manifest, metadata file or generated index committed by each PR.
+Update a root only when that root's own identity, scope, status, location,
+discovery contract or necessary relationship actually changes. Preserve real
+public API versions and their compatibility meaning.
+
 Navigation contains identity, alias, status, locator/version and necessary
-relationship only. It locates the unique body; it does not create another
-business summary or decide which rule prevails. Preserve existing stable
-identities independently of headings, file position or presentation order.
-Ordinary reordering does not renumber unrelated knowledge. Ordinary Tasks do not
-increment a shared global version or append their business summaries to a root
-entry. A complete Git commit and repository-relative locator identify an exact
-snapshot. Real public API versions retain their compatibility meaning. Update
-an entry only when its identity, status, navigation or necessary relationship
-changes; unchanged units and historical references retain their meaning.
+relationship only. It locates the unique complete body without becoming a
+second business summary or decide rule precedence. Preserve existing stable
+identities independently of
+headings, file position or presentation order. Ordinary reordering does not
+renumber unrelated knowledge. Exact snapshots use a complete Git commit and
+repository-relative locator; unrelated units and historical references retain
+their meaning.
+
+New or changed independent units maintain navigation within their own file or
+capability directory. Modify an existing capability in its original complete
+unit; do not create an Issue-specific second current definition. If Tasks
+change the same effective relationship, its original owner integrates that
+real overlap. Do not duplicate a relationship or split required semantics to
+obtain disjoint paths.
 
 ## Reading for a question or stage
 
-1. Resolve the applicable authority. Locate the capability through navigation,
-   a stable reference or bounded search.
+1. Read the stage-applicable stable entry and its migrated/unmigrated scope.
+   Use `rg --files` within the declared RDT current or Architecture
+   responsibility directories, then search stable identities, aliases or
+   concepts within that bounded scope. Read each relevant complete match and
+   verify its original-owner promotion basis, applicable source and status.
+   File existence, a current directory, title, search hit, ordering, date or
+   larger version cannot establish current authority. Keep accepted targets,
+   unpromoted contributions/proposed content, history and superseded definitions
+   distinct. A root need not enumerate the unit for it to be discoverable.
 2. Read the complete relevant unit. Expand relationships necessary to answer
    or revise it: requirements/behavior, design responsibility/contract, test
    strategy/scenario/case and applicable Architecture constraints. The AI
@@ -91,7 +125,12 @@ merge. Keep surviving identities. Allocate new identities for new meanings.
 Retain predecessor/successor locators for deleted, replaced, split or merged
 objects. An old reference must resolve to its historical meaning and stated
 transition; it must not silently acquire a new meaning. Update affected
-bodies, necessary relationships and navigation together.
+bodies and surviving stable references/necessary relationships together within
+their original owners' paths. A rename preserves stable identity. Replacement
+or deletion retains predecessor/successor and the old reference's meaning.
+When needed, an old path only locates the transition or a fixed Git source;
+it does not retain another active complete definition. These changes do not
+restore global per-unit registration.
 
 Ordinary parallel Tasks write their own isolated contributions. Each delta
 identifies its applicable base, changed scope and complete proposed resulting
@@ -112,14 +151,18 @@ branch/commit and rereads the contribution, affected shared units and necessary
 relationships/navigation. Reconcile real intervening changes before writing.
 Unrelated units retain their current content. For the same unit, compare the
 applicable source, complete proposal and real target; preserve all still-valid
-conditions from both. The original independent owner applies the shared
+conditions from both. Git automatic merging is a text operation, not proof
+that the combined definition is semantically consistent. Review the complete
+combination and affected consumers; do not take one side without judging which
+conditions remain valid. The original independent owner applies the shared
 Candidate Applicability And Coverage contract to the complete actual delta and
 affected unchanged consumers before writing a changed combination. Changed
 requirements return to scope/Planning; changed behavior, interfaces or
 validation duties return to the earliest affected quality owner. Integrate the
 delta into the complete current unit, including still-effective predecessor
 conditions and other promoted changes. Update R/D/T relationships and
-navigation consistently. Retain contributions as provenance/history; do not
+navigation consistently within the affected units; change a stable root only
+under its own-change condition above. Retain contributions as provenance/history; do not
 leave ordinary readers to assemble the promoted definition from them. A
 changed expected-current uses the original sync/repair route and does not
 authorize overwriting another contribution. Recovery remains with that owner
@@ -221,13 +264,21 @@ cutover. Original Completion judges those facts; missing code is not an external
 evidence gap. Check exit at the original successor plan or real trigger rather
 than creating a monitoring system or permanent migration ledger.
 
-Before cutover, identify the old authority/version, exact predecessor clauses,
-target units, stable identities and relations, real old readers, switch
+Installing the matching new rules and completing a project's document cutover
+are separate actions. The existing maintenance owners own document migration;
+the installer does not select authority or migrate business documentation.
+Before cutover, identify the old authority/version, all old entries and real
+readers/writers, exact predecessor clauses, target units, stable identities
+and relations, switch
 conditions and recovery. Compare the candidate with all still-effective
 source constraints. Resolve overlapping or superseding statements
-semantically; chronology alone cannot settle them. Switch the shared entry
-only after original-owner completeness, traceability and applicable
-verification gates are satisfied.
+semantically; chronology alone cannot settle them. Prepare complete task-owned
+proposed bodies, entry changes and affected
+references first. Verify each former navigation alias remains searchable in
+its owning complete unit; add missing aliases there without copying its body.
+Switch the shared entry only through the original candidate Check,
+final-integration writes/readback and final quality chain, after owner
+completeness, traceability and applicable sample gates are satisfied.
 
 List actual migrated units and remaining unmigrated scope. For the latter,
 retain exact original complete-source navigation and state the remaining
@@ -240,8 +291,14 @@ immutable historical snapshot.
 In-flight Tasks may continue reading the versions applicable to their plans
 and candidates. Old-read support names those consumers, its scope and exit:
 Task finish, legitimate reactivation/version reselection, or an actual
-dependency change handled by the original owner. New changes maintain current
-units; do not keep writing old current definitions indefinitely. Historical
+dependency change handled by the original owner. For a final integration that
+touches an already migrated unit, the original
+owner rereads the real target and integrates into its current complete unit.
+Old-read compatibility does not permit writing the retired root/current index.
+After cutover new Tasks use the new writing contract with no old-index dual
+write. Before cutover retain explicit readable old authority, mark remaining
+scope unmigrated, and make no claim that shared-index contention has ended.
+Historical
 Git/version evidence remains readable after ordinary old readers exit. It is
 provenance, not a second active maintenance path.
 
