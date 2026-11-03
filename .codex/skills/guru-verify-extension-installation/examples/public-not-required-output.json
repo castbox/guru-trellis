@@ -1,7 +1,0 @@
-{
-  "exit_id": "not_required",
-  "mode": "standalone",
-  "repo_ref": "castbox/guru-trellis",
-  "resolved_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  "verification_ref": "extension-verification:0123456789abcdef"
-}

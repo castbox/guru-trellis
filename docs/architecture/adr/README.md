@@ -89,3 +89,5 @@
 - [ADR-RUNTIME-LOCATION：runtime、位置与明确Git基线解耦](./runtime-location-decoupling.md)；窄替代 ADR-027 的pointer启动前置及ADR-006对独立只读来源的组合解释，保留单目标维护、旧消费者和实际Sync。
 
 - [ADR-REVIEW-SUFFICIENCY：共同审核规则唯一 owner](./review-sufficiency.md)；共同规则与原阶段职责分开，删除阶段方法互读。
+
+- [ADR-CODEX-SHARED-SKILLS：Codex 公共发现目录收敛](./codex-shared-skills.md)；共享根、平台适用性与有界旧根退出。

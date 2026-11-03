@@ -67,9 +67,29 @@ performs any other target mutation, it must run the source ownership validator
 defined in [upstream-ownership.md](./upstream-ownership.md). The validator is
 read-only and source-repository scoped; it is not installed into business
 repositories or exposed as a workflow/Skill runtime command. It validates the
-current-only ownership schema 4.0, all 22 platform descriptors, 43 derived
+current-only ownership schema 4.0, all 22 platform descriptors, de-duplicated derived
 managed claims, 22 additive overlay files, and the live registry/package identities
 before installer staging. A non-current ownership contract fails closed.
+
+
+### Codex shared discovery migration
+
+Codex uses the existing shared `.agents/skills` root. Its package applicability
+still comes from the target exact platform selection: include Codex-only public
+packages and `agents/openai.yaml` only when `codex` is selected. Other selected
+platform roots retain their existing projection; shared paths are de-duplicated.
+No current install or reapply creates managed `.codex/skills/guru-*/` files.
+
+Existing installations use their original maintenance owner and previous
+managed provenance. Complete target public content and executable modes with no
+unresolved conflicts before retiring unchanged old managed files. Preserve
+edits and unknown-origin files in both roots. An unresolved target conflict
+retains predecessors still needed for migration; a retained duplicate or
+unresolved conflict cannot report migration success. Continue through the same
+owner's conflict/recovery path. Only empty directories derived from exact
+removed owned paths may be pruned. Removing `codex` retires only its exclusive
+managed projections while preserving other selected shared consumers and user
+content. See `trellis/presets/guru-team/MIGRATION-724.md`.
 
 ## Managed Assets
 
@@ -521,7 +541,7 @@ unknown document should be translated.
 
 The overlay tree is a Guru-only extension surface. It contains exactly the 22
 descriptor-bound `guru-finish-work` entries. The current schema 4.0 inventory
-derives 43 managed claims. Official
+derives the de-duplicated managed claims. Official
 `trellis-*` paths are outside both the overlay tree and the managed inventory.
 
 Before installing Guru-owned assets, the installer validates that exact
@@ -567,8 +587,8 @@ trellis/presets/guru-team/scripts/bash/apply.sh --repo <repo> \
 
 ### 3. Contracts
 
-- With no `--platform`, install shared `.agents/skills`
-  plus Claude, Codex, and Cursor projections.
+- With no `--platform`, select Claude, Codex, and Cursor. Codex shares
+  `.agents/skills`; Claude and Cursor retain their descriptor-selected roots.
 - `--platform <name>` is repeatable and installs shared overlays plus exactly
   the selected platform overlay groups.
 - There is no full-inventory convenience flag. Callers that need a larger set
@@ -658,7 +678,7 @@ or disposable copy and verify:
   markers; root `AGENTS.md` never enters `install.managed_assets`
 - managed companion assets update and produce `.bak`
 - unknown Guru-owned entry edits produce `.new`
-- ownership schema 4.0 has exactly 22 descriptors, 43 managed claims,
+- ownership schema 4.0 has exactly 22 descriptors, de-duplicated managed claims,
   and 22 additive overlays; a non-current ownership or installed manifest
   fails current-contract validation before mutation
 - scripts remain executable
@@ -880,7 +900,7 @@ Fresh install, upgrade, `trellis update`, and preset reapply validate canonical,
 installed, shared, and descriptor-selected platform package/corpus byte identity,
 wrapper executable modes, the package closure and workflow graph derived from
 the current registry/interfaces by the declared package and workflow checkers, and current
-ownership schema 4.0 with 22 descriptors, 43 managed claims, and 22 overlays.
+ownership schema 4.0 with 22 descriptors, de-duplicated managed claims, and 22 overlays.
 Unknown edits and sidecars retain the existing managed-hash remediation.
 
 ## Retired Task Finalization Package Activation (pinned-old only)

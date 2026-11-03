@@ -43,6 +43,7 @@
 /.agents/skills/guru-*/**/*.py text eol=lf
 /.agents/skills/guru-*/**/*.sh text eol=lf
 /.agents/skills/guru-*/**/*.txt text eol=lf
+/.agents/skills/guru-*/**/*.yaml text eol=lf
 /.claude/commands/guru/finish-work.md text eol=lf
 /.claude/skills/guru-*/**/*.json text eol=lf
 /.claude/skills/guru-*/**/*.md text eol=lf
@@ -50,12 +51,6 @@
 /.claude/skills/guru-*/**/*.sh text eol=lf
 /.claude/skills/guru-*/**/*.txt text eol=lf
 /.codex/prompts/guru-finish-work.md text eol=lf
-/.codex/skills/guru-*/**/*.json text eol=lf
-/.codex/skills/guru-*/**/*.md text eol=lf
-/.codex/skills/guru-*/**/*.py text eol=lf
-/.codex/skills/guru-*/**/*.sh text eol=lf
-/.codex/skills/guru-*/**/*.txt text eol=lf
-/.codex/skills/guru-*/**/*.yaml text eol=lf
 /.cursor/commands/guru-finish-work.md text eol=lf
 /.cursor/skills/guru-*/**/*.json text eol=lf
 /.cursor/skills/guru-*/**/*.md text eol=lf

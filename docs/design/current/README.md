@@ -2,6 +2,7 @@
 
 | Identity / alias | Status | Locator | Relations |
 | --- | --- | --- | --- |
+| RDT-DES-CODEX-DISCOVERY; R724/D724/T724; Codex Skill共享目录 | current | [codex-skill-distribution](./codex-skill-distribution.md) | RDT-REQ-CODEX-DISCOVERY; RDT-DES-CODEX-DISCOVERY; RDT-TST-CODEX-DISCOVERY |
 | RDT-DES-REVIEW-SUFFICIENCY; R717/D717/T717; 审核充分性 | current | [review-sufficiency](./review-sufficiency.md) | RDT-REQ-REVIEW-SUFFICIENCY; RDT-DES-REVIEW-SUFFICIENCY; RDT-TST-REVIEW-SUFFICIENCY |
 | RDT-DES-DECISIONS; D-DEC/CON-DEC; 需求歧义探索与分级确认 | current | [requirement-decisions](./requirement-decisions.md) | RDT-REQ-DECISIONS; RDT-TST-DECISIONS |
 | RDT-DES-LOCAL-FIX-INTAKE; D692/CON692; 局部修复 Intake 与诊断 | current | [local-fix-intake](./local-fix-intake.md) | RDT-REQ-LOCAL-FIX-INTAKE; RDT-DES-LOCAL-FIX-INTAKE; RDT-TST-LOCAL-FIX-INTAKE |

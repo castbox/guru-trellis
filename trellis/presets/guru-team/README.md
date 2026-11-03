@@ -1,5 +1,7 @@
 # Guru Team Preset
 
+Codex 的 Guru Skill 使用共享 `.agents/skills/`；新安装/reapply 不再创建受管 `.codex/skills/guru-*/`。专属编排包及 `agents/openai.yaml` 仍由目标 exact platform selection 决定，保留显式调用与原生能力前置。旧安装经原维护 owner 在目标完整后退出旧受管文件，保留用户修改并处理冲突；详见 [MIGRATION-724](MIGRATION-724.md)。
+
 只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
 再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
 并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](MIGRATION-718.md)。

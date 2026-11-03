@@ -88,7 +88,7 @@ class BytecodeHygieneTests(unittest.TestCase):
             before = snapshot(repo)
             self.assertEqual(dogfood.verify(repo)["status"], "ok")
             self.assertEqual(snapshot(repo), before)
-            product = repo / ".codex/skills/guru-check-task/SKILL.md"
+            product = repo / ".agents/skills/guru-check-task/SKILL.md"
             original = product.read_bytes()
             product.write_bytes(original + b"\nChanged product.\n")
             with self.assertRaisesRegex(dogfood.DogfoodDriftError, "byte drift"):

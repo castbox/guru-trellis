@@ -266,7 +266,7 @@ class MigrationContractTests(unittest.TestCase):
             self.assertEqual(before, path.read_bytes())
 
     def test_required_package_and_overlay_reconciliation_restores_customized_preimage(self):
-        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+        for target in (".agents/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
             with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 recovery, checkpoint, paths = self.fixture(root)
@@ -295,7 +295,7 @@ class MigrationContractTests(unittest.TestCase):
                 self.assertEqual(path.stat().st_mode & 0o777, 0o640)
 
     def test_unresolved_package_and_overlay_new_work_blocks_rollback(self):
-        for target in (".codex/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
+        for target in (".agents/skills/guru-check-task/SKILL.md", ".codex/prompts/trellis-start.md"):
             with self.subTest(target=target), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 recovery, checkpoint, paths = self.fixture(root)

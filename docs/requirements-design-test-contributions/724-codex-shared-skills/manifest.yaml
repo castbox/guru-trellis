@@ -1,0 +1,27 @@
+task_id: 724-codex-shared-skills
+source: https://github.com/castbox/guru-trellis/issues/724
+status: promoted
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 42ffd32d70be3859a4493e084464738473c45dd6
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+delivery:
+  lifecycle_generation: 0
+  delivery_id: a831ddba-681c-480a-9eb9-1e350f48a43d
+  planning_root: .trellis/tasks/11-03-724-codex-shared-skills/deliveries/a831ddba-681c-480a-9eb9-1e350f48a43d
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_root: proposed
+proposed_targets:
+  - docs/requirements/current/codex-skill-distribution.md
+  - docs/design/current/codex-skill-distribution.md
+  - docs/test/current/codex-skill-distribution.md
+  - docs/requirements/current/README.md
+  - docs/design/current/README.md
+  - docs/test/current/README.md

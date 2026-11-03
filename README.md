@@ -1,5 +1,7 @@
 # Guru Trellis
 
+Codex 的 Guru Skill 公共投影统一到 `.agents/skills/`，包括目标选择包含 `codex` 时的专属编排包和元数据。已有安装沿原维护 owner 迁移，在目标完整后退出未修改的旧受管副本；两端用户修改保留，冲突未解决时不报告成功。采用范围、恢复和验证边界见 [MIGRATION-724](trellis/presets/guru-team/MIGRATION-724.md)。
+
 [三系统定向 CI：运行、对照与诊断](docs/ci/README.md)
 
 “审核 / 审查 / 评审 / 复审 / review”先识别对象和目的。代码、修改、分支/PR、

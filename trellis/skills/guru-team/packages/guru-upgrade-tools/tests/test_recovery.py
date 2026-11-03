@@ -83,3 +83,19 @@ class ToolsRecoveryTests(unittest.TestCase):
                 else:
                     self.assertEqual(current_before,current.read_bytes())
                     self.assertEqual(0o640,current.stat().st_mode & 0o777)
+
+    def test_preset_resume_accepts_reviewed_legacy_duplicate_removal(self):
+        with tempfile.TemporaryDirectory() as d:
+            root,recovery,cp,old=self.fixture(d)
+            legacy=root/'.codex/skills/guru-check-task/SKILL.md'
+            legacy.parent.mkdir(parents=True);legacy.write_text('preserved local instructions')
+            cp['preimages'].update(old.snapshot(root,recovery,{str(legacy.relative_to(root))},{}))
+            cp['phase']='preset';cp['source']=str(PACKAGE.parents[4])
+            cp['plan']['selected_platforms']=['codex']
+            cp['baseline']=old.current_baseline(root,cp)
+            original=json.dumps(cp['preimages'],sort_keys=True)
+            legacy.write_text('new unrelated edit')
+            self.assertFalse(owner.canonical_reconciliation(root,cp,old))
+            legacy.unlink()
+            self.assertTrue(owner.canonical_reconciliation(root,cp,old))
+            self.assertEqual(json.dumps(cp['preimages'],sort_keys=True),original)

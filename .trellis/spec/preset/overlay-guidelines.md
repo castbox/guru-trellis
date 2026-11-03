@@ -66,14 +66,14 @@ Canonical package semantics live only under `trellis/skills/guru-team/`.
 Preset apply installs byte-identical active package copies to:
 
 - Shared: `.agents/skills/guru-*/**`;
-- Codex: `.codex/skills/guru-*/**`;
+- Codex: the same shared `.agents/skills/guru-*/**` root, de-duplicated;
 - Claude: `.claude/skills/guru-*/**`;
 - Cursor: `.cursor/skills/guru-*/**`.
 - every other selected upstream platform: the descriptor's `skill_root`.
 
 These package projections are managed-hash installation, not overlay files.
-Codex-only instruction-only orchestration packages are projected only to selected
-Codex discovery root. They do not enter the shared discovery root. Their
+Codex-only instruction-only orchestration packages enter that shared root only
+when the target selection contains `codex`. Their
 `agents/openai.yaml` is a managed public asset and requires explicit invocation.
 Selecting another platform alone does not expose these Codex entries.
 Selected platforms may differ only in discovery root or native adapter
@@ -91,8 +91,9 @@ not by frontmatter auto-match or patched upstream entries.
 ## Installer Selection
 
 Shared `guru-*` package discovery is installed for packages declaring shared
-support. Codex-only orchestration packages are excluded. Platform flags select
-only the corresponding platform package root and explicit Guru finish entry:
+support. The selected Codex platform also contributes its exclusive packages
+to that same root. Platform flags select the descriptor package roots and
+explicit Guru finish entries; no flag creates a retired Codex Skill root:
 
 - default: Shared + Claude, Codex, and Cursor;
 - `--platform <name>`: Shared + exactly the selected platforms;
@@ -138,7 +139,12 @@ the default workflow. The supported recovery order is:
 5. validate source/installed packages, ownership, platform identity, dogfood
    drift, executable modes, and recursive zero sidecars.
 
-After canonical overlay edits, synchronize this dogfood repository with:
+After canonical overlay edits, choose the original installation owner from
+the actual target state. Existing-checkout tools/Skills/projection maintenance
+that preserves Task/session uses the complete source-owned `guru-upgrade-tools`
+contract. Full apply/reapply requires its current-only inventory preconditions;
+it does not authorize unrelated historical Task conversion. For an eligible
+full apply, use:
 
 ```bash
 trellis/presets/guru-team/scripts/bash/apply.sh --repo . \

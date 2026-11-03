@@ -1,5 +1,7 @@
 # Guru Team Workflow
 
+Codex 的 Guru Skill 通过 `.agents/skills/` 公共投影发现，专属包仍仅在选择 `codex` 时分发。目录收敛不改变 workflow、Skill id 或出口；已有安装沿原维护 owner 保留用户修改并退出旧受管投影。采用和 native 验证边界见 [MIGRATION-724](../../presets/guru-team/MIGRATION-724.md)。
+
 只读 Intake 通过原 `guru-sync-base` 的 `operation=read` 采用明确 Git 来源，
 再由 Discovery 读取固定 tree 和独立草案。实际同步继续使用 `operation=sync`
 并保留原 clean/ff/identity 检查。公开版本、投影及旧安装边界见 [MIGRATION-718](../../presets/guru-team/MIGRATION-718.md)。
