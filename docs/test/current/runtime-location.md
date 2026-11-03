@@ -1,5 +1,7 @@
 # Runtime与Git来源验证
 
+导航别名：`R718/D718/T718`；`runtime与Git来源`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-TST-RUNTIME-LOCATION`；状态：current。本单元定义[Requirement](../../requirements/current/runtime-location.md)与[Design](../../design/current/runtime-location.md)的验证责任；实际观察按明确候选与层次记录，不把知识接受或命令绿色当整体完成。
 
 ## 测试策略与可观察结果

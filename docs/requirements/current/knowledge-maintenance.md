@@ -1,5 +1,7 @@
 # 当前适用知识的读取、修订与晋升
 
+导航别名：`REQ-007/BEH-007`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 本次 #649 最终整合的完整前驱：Git `4fea68613de4181d7cb55532b8758515472ba31b:docs/requirements/current/knowledge-maintenance.md`。贡献、#657 继承及原来源见 [#649 追踪](../../requirements-design-test-contributions/649-stage-result-convergence/traceability.md)。
 
 知识单元：`RDT-REQ-KNOWLEDGE`。状态：`current`。authority identity：`guru-trellis-rdt`；精确内容由包含本文的完整 Git revision 与 locator 定位。前驱 RDT `.109`、Architecture `.100`；固定迁移源 Git `bdb5185c673c91b2fb5cfc66ffbb33849904a69c`。候选正文须经原 owners 晋升才进入共享 authority，不因目录名 current 自动生效。
@@ -10,7 +12,7 @@
 
 `R331-01 / BEH331-01`：读者先按问题、Task、阶段和候选选择真正适用来源，再按能力/行为/接口/职责或稳定 ID 到完整单元。当前有效要求、已接受目标、未确认、历史和 superseded 内容分开；target 不冒充当前实现。读取必要关联（条件、否定、例外、顺序、依赖、设计、测试、Architecture），不无限展开所有链接。导航仅存 identity/alias/status/locator/关系，不是另一份业务摘要。搜索排名、日期和编号不决定 authority，命中标题或摘要不替代正文。解释旧决定或原因时按需读历史；普通当前查询不要求重放全部版本/贡献。
 
-当前单元是原 owner 在已声明能力范围内合并的完整定义，历史 contribution 保留来源责任；晋升后后续查询不能仍靠贡献链补出遗漏规则。精确 public API/schema 仍由 canonical package 单写，单元展开能力行为并指向必要完整接口，不复制接口成第二来源。单元 revision 由完整 Git snapshot 与 locator 定位。根 authority identity 稳定，普通 Task 不强制递增全局版本或写根 README；只有定位关系、身份或状态真实变化才改导航。真实 public API/schema 版本继续独立维护。
+当前单元是原 owner 在已声明能力范围内合并的完整定义，历史 contribution 保留来源责任；晋升后后续查询不能仍靠贡献链补出遗漏规则。精确 public API/schema 仍由 canonical package 单写，单元展开能力行为并指向必要完整接口，不复制接口成第二来源。单元 revision 由完整 Git snapshot 与 locator 定位。根 authority identity 稳定，普通 Task 不强制递增全局版本或写根 README；只有入口自身身份、范围、状态、位置、查找合同或必要关系真实变化才改入口导航；独立主题不作共享逐项登记。真实 public API/schema 版本继续独立维护。
 
 ## 一致修订、身份与隔离
 
@@ -137,3 +139,18 @@ canonical workflow/Skills/spec/preset 是长期源；dogfood 与 installed 是�
 **R710-07 / BEH710-DISTRIBUTION**：canonical 由原工具/preset owner 同步到 dogfood、实际安装和声明平台，保留用户内容、在途 Task/session，定向验证 reapply/drift、mode 与 sidecar。普通本项最多使用确有必要的一个代表 clean，不承担完整 Release/多平台升级矩阵。后继使用固定可获取提交、matching 安装来源、适用 profiles、实际命令和原 native 证据定位 fresh 核验；其当前完整生命周期 Check 仍由后继原 owner 亲自完成。本项不新建交接 DTO、长期台账或业务现场迁移。
 
 对应设计为本完整 Design 单元的 D710/CON710，测试为 Test 单元的 T710/SC710；来源和替代边界见 [#710 traceability](../../requirements-design-test-contributions/710-phase2-recorder-authoring/traceability.md)。只有本节新增目标与 record 完整输入退出；其它既有职责、历史含义和范围不扩大。
+
+## R711：独立知识单元与稳定发现
+
+来源为 [Issue #711](https://github.com/castbox/guru-trellis/issues/711) 与 [本批追踪](../../requirements-design-test-contributions/711-knowledge-navigation-isolation/traceability.md)。本节收敛导航读写；上文完整定义、阶段适用、真实 API 版本、原晋升与质量边界继续适用。
+
+- **R711-01 / BEH711-ENTRY**：根及 current 入口保体系稳定身份、适用范围/状态、真实版本引用、历史/未迁移边界与目录/稳定 ID 查找方法，不枚举全部单元。普通独立主题不更新共享登记、无关全局版本或合并历史，不将登记转移到下层 README、index/manifest/metadata 或每 PR 提交的生成索引。仅入口自身合同真实变化由原 owner 修改。
+- **R711-02 / BEH711-UNIT**：按稳定能力/职责保持完整单元。日常正文与局部导航使用各自路径；修改既有能力沿原正文整合，不按 Issue 建第二 current。同一有效关系的真实重叠归关系原 owner，不能复制关系或拆散必要语义规避。
+- **R711-03 / BEH711-DISCOVERY**：读者从适用稳定入口，经限定目录、稳定 ID/aliases/概念检索读取完整定义，核原 owner 晋升依据、来源/状态及必要 R/D/T/Architecture 关系。搜索命中、目录、排名、日期和更大版本不建立 authority；current、accepted target、未晋升 contribution、历史与被替代范围分开。改名保 ID，结构变化同步存活引用、前驱/后继与旧引用意义，不恢复共享登记。
+- **R711-04 / BEH711-PROMOTION**：原 RDT/Architecture owners、隔离完整 proposed、独立 Architecture/候选 Check、final integration 实际写入/读回、actual after 重绑、最终 Check/完整 Review 不变。贡献是候选或历史来源，不能冒充共享 current；普通当前读取不拼贡献链。
+- **R711-05 / BEH711-OVERLAP**：同能力/正文/关系的任务比较适用 base、双方完整 proposal、真实 target 和受影响消费者，原 owner 保留全部仍有效条件并审组合定义。Git 自动合并只证明文本结果，不证明语义；不得未判断有效范围即取一侧。
+- **R711-06 / BEH711-OWNERS**：共同方法同时覆盖 RDT 与实际命中的 Architecture 导航；只改相应读写合同/消费者，不扩大为业务代码冲突框架。AI 判断适用、替代与整合充分性，脚本只执行事实。
+- **R711-07 / BEH711-CUTOVER**：安装规则与项目切换分开。原 owner 固定旧完整来源、旧入口/实际读写者、稳定 aliases、必要关系、未迁移范围及恢复条件；原质量链满足后才切换。未达条件保可读原 authority 和 proposed，不宣称消除共享登记。已切换新任务不双写旧索引；在途 Task 保阶段版本，最终集成触及已迁移单元则重读真实目标写当前单元。历史和原始证据保持，切换前失败保旧入口，切换后走原 repair/受审 successor。
+- **R711-08 / BEH711-ADOPTION**：canonical 共同合同、原 Skills、managed spec、必要消费者及 matching dogfood/installed/声明平台投影成套采用，保用户内容、Task/session及原 sidecar/mode/drift规则。源码一致、实际 Agent 行为、项目文档切换和业务采用分别证明；公共 I/O/runtime 不变，不新增 registry、生成器或语义脚本。
+
+关系：同能力 [D711/CON711](../../design/current/knowledge-maintenance.md)、[T711/SC711](../../test/current/knowledge-maintenance.md)；适用 Architecture 决策由原 Architecture owner 维护。完整采用与退出步骤见 [MIGRATION-711](../../../trellis/presets/guru-team/MIGRATION-711.md)。

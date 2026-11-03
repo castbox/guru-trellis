@@ -1,5 +1,7 @@
 # JSON 输入载体测试策略
 
+导航别名：`R695/BEH695`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-TST-JSON-INPUT`；适用来源为 `8d746ce561c464ca28af4dc91adf085132e4098c`。本单元只拥有测试策略；实际结果和观察截止由 [#695 Test](../../requirements-design-test-contributions/695-json-input-carriers/test.md) 单写。要求与设计分别见 [R695](../../requirements/current/json-input-carriers.md)、[D695](../../design/current/json-input-carriers.md)。
 
 | Identity | 行为关系 | 入口与可观察结果 |

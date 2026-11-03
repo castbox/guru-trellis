@@ -1,5 +1,7 @@
 # #630 三系统兼容设计责任增量
 
+导航别名：`RDT-DES-NATIVE`；`R630/BEH630`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 状态：current；继承RDT .111、Architecture .102及本Task已审设计；实现/采用状态与知识接受分开。需求由[当前需求](../../requirements/current/native-compatibility.md)单写，测试关系由[追踪](../../requirements-design-test-contributions/630-native-compatibility/traceability.md)定位。
 
 | Identity | 原owner、输入→行为→输出及边界 |

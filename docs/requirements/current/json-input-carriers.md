@@ -1,5 +1,7 @@
 # JSON 输入载体
 
+导航别名：`R695/BEH695`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-REQ-JSON-INPUT`；来源为 [Issue #695](https://github.com/castbox/guru-trellis/issues/695) R1–R6/AC1–AC4。适用来源 revision 为 `8d746ce561c464ca28af4dc91adf085132e4098c`。本单元新增具体载体与读取行为，不替代 [R630-02](native-compatibility.md) 的原公开输入兼容条件。知识接受、实现通过和实际安装采用分别判断。
 
 | Identity | 完整要求与正常边界 |

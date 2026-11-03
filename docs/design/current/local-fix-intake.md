@@ -1,5 +1,7 @@
 # 局部修复 Intake 的 owner 与诊断设计
 
+导航别名：`局部修复 Intake 与诊断`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-DES-LOCAL-FIX-INTAKE`；D692/CON692；适用基线 `6a65ec8afe6d180850760b3b2edf3f94be6e3b20`。本完整单元在原 final_integration 后为 current；精确内容由 Git revision 与 locator 定位。需求：[R692/BEH692](../../requirements/current/local-fix-intake.md)；测试：[T692/SC692](../../test/current/local-fix-intake.md)。原 [生命周期](task-delivery-lifecycle.md)、[JSON 载体](json-input-carriers.md) 和 [知识方法](knowledge-maintenance.md) 的通用职责保持。
 
 ## D692-01 / CON692-OWNERS：保留调用图，在原 owner 内减少重复

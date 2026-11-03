@@ -1,5 +1,7 @@
 # 需求探索与确认职责设计
 
+导航别名：`D-DEC/CON-DEC`；`需求歧义探索与分级确认`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/design/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-DES-DECISIONS`；定义 D-DEC-01..04 / CON-DEC。适用来源与基线同 [R-DEC](../../requirements/current/requirement-decisions.md)。精确接口与方法归原 packages/shared spec，本单元描述能力职责及其关系。
 
 ## D-DEC-01 / CON-DEC-OWNERS：原职责内探索

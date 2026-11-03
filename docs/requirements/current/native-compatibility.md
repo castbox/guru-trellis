@@ -1,5 +1,7 @@
 # #630 三系统运行与安装一致性需求增量
 
+导航别名：`RDT-REQ-NATIVE`；`R630/BEH630`；`三系统兼容`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 状态：current；适用基线 RDT current-main-0.7.0-guru.111 / Architecture .102。来源为 [Issue #630](https://github.com/castbox/guru-trellis/issues/630) 的行为1–6、CI证据责任及十项验收。当前完整定义单元为 native-compatibility；不替代Task/Delivery、Completion、知识维护或其他未迁移定义。
 
 | Identity | 完整行为与边界 |

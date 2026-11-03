@@ -1,5 +1,7 @@
 # 审核充分性的测试策略
 
+导航别名：`R717/D717/T717`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/test/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-TST-REVIEW-SUFFICIENCY`；状态：`current`。关联 [R717](../../requirements/current/review-sufficiency.md) 与 [D717](../../design/current/review-sufficiency.md)。
 
 ## T717-01 / SC717-RULES：规则和真实 consumer

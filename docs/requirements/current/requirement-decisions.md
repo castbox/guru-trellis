@@ -1,5 +1,7 @@
 # 需求歧义探索与分级确认
 
+导航别名：`R-DEC/BEH-DEC`。原知识状态：`current`（继承上述旧入口的原 current 条目，不表示实现通过）。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-REQ-DECISIONS`；定义 R-DEC-01..04 / BEH-DEC。来源为本地 Task `requirement-decision-exploration` 的已接受整体需求；适用基线 a4feadd99683e006580ef16b078c44e3ad3648a7。候选晋升前是 accepted target，不是已实现证明。前驱与继续适用的责任见 [Task/Delivery](task-delivery-lifecycle.md)、[局部修复 Intake](local-fix-intake.md) 和 [知识维护](knowledge-maintenance.md)。
 
 ## R-DEC-01 / BEH-DEC-DISCOVERY：事实与需求选择

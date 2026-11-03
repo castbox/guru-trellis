@@ -1,5 +1,7 @@
 # 审核充分性能力
 
+导航别名：`R717/D717/T717`。原语义 owner：`guru-maintain-requirements-design-test-ssot`。这些检索别名继承自 Git `f75f0f5dd078a0c2c4c9a54ac861383774162806:docs/requirements/current/README.md` 的原 current 条目；该来源定位原晋升状态及所属完整正文，不将知识状态扩大为实现/安装通过。原定义、来源与关系保持。
+
 Identity：`RDT-REQ-REVIEW-SUFFICIENCY`；状态：`current`。来源：[Issue #717](https://github.com/castbox/guru-trellis/issues/717)。
 
 ## R717-01 / BEH717-OWNER：共同规则的唯一来源
