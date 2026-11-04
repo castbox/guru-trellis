@@ -3,8 +3,9 @@
 This is the shared semantic contract for `guru-orchestrate-issue-dag` and
 `guru-orchestrate-issue-sequence`. Their package-local contracts own scheduling,
 serial advancement, and typed exits. This method owns endpoint interpretation,
-current-dialogue authority, native child operation, progress decisions, merge
-proof, completion proof, heartbeat supervision, and supported recovery.
+current-dialogue authority, overall completion responsibility, active unblocking,
+native child operation, progress decisions, merge proof, completion proof,
+heartbeat supervision, and supported recovery.
 
 ## Provider And Scope
 
@@ -231,14 +232,16 @@ Resume this same Issue run as its AI coordinator. Load the selected managed
 Skill, its local contract and the shared issue-orchestration.md from the same
 provider. Recover this run's endpoint from original human messages in this chat.
 Observe every admitted unfinished Issue chat and read its newest real assistant
-output when changed or idle. Judge the actual phase, recommendation, blockers
-and fresh gates. Give each actionable idle child below the endpoint one useful
-continuation in this cycle. Use 确认继续, 按建议方案执行 or 合并PR only when
-their current conditions pass; otherwise request precise remediation, inspection
-or supported owner recovery. Recheck owned external waits and deduplicate
-unchanged events. Apply this Skill's scheduling and advancement rules. Stay
-quiet while work or a handled wait is unchanged. Stop the heartbeat only after
-a verified settled outcome.
+output when changed or idle. Compare actual results with the whole requested
+endpoint and remaining obligations. Apply the shared active-unblocking method
+to blockers, absent recommendations and insufficient completion claims; follow
+the chosen action to its actual result. Give each actionable idle child below
+the endpoint one useful continuation in this cycle. Use 确认继续, 按建议方案执行
+or 合并PR only when their current conditions pass. Recheck actual external wait
+conditions even without new child text; reassess ended, expired or unowned waits.
+Deduplicate notifications, not progress judgment. Apply this Skill's scheduling
+and advancement rules. Stay quiet after verifying unchanged working progress
+or a still-valid handled wait. Stop the heartbeat only after verified settlement.
 ```
 
 Keep bindings, pending operations, cursors, consumed events and the integration
@@ -255,8 +258,9 @@ Every wake performs one complete observation cycle:
    other targets were observed; obtain snapshots for any uncovered targets.
 3. Read newest actual assistant output when changed or terminal and the wait
    result did not provide it. Summaries, previews and status labels are hints.
-4. Apply the progress decision below to every actionable idle child within the
-   endpoint. Recheck external waits against live facts even without new text.
+4. Apply the progress decision below to every unfinished obligation and each
+   actionable idle child within the endpoint. Check actual external conditions
+   and wait validity even without new text; silence is not a progress decision.
 5. Verify candidate stage/completion results, apply package scheduling and fill
    eligible slots. State an observation error and retry that same binding;
    never advertise healthy monitoring for an unobserved child.
@@ -264,11 +268,61 @@ Every wake performs one complete observation cycle:
 A failed gate changes the requested remedy; it does not justify abandoning an
 idle incomplete child. `ACTIVE` configuration alone proves no observation.
 An unknown send result requires reading the child's actual conversation before
-retry; do not duplicate a possibly delivered instruction. Stay quiet only after
-successful observation of running work, an already-handled unchanged event, or
-an unchanged owned bounded wait.
+retry; do not duplicate a possibly delivered instruction. Notification deduplication
+does not skip observation or renewed judgment. Stay quiet only after successful
+observation verifies running work or a handled wait that remains valid.
 
 ## Progress Decision
+
+### Overall Responsibility And Active Unblocking
+
+Keep the whole human-requested endpoint and all remaining Issue obligations in
+view until completion or a genuinely unresolved block is proved. Sending an
+instruction, observing one turn, a child ending, or one Delivery merging does
+not discharge that responsibility. Keep lightweight conversation context about
+the actual gap, its owner and the next result to observe; create no coordinator
+ledger or additional gate artifact.
+
+When a child reports blocked, failure, no recommendation, or completion without
+sufficient proof, first identify the unmet requirement and affected work from
+current facts. A child statement is evidence to examine, not the coordinator's
+conclusion. Distinguish a failed step from a node obstacle, a valid external
+wait and a whole-run block. Check relevant inputs, paths, prerequisites, current
+supported entries, available capabilities and the original owner's actual
+result. The absence of a recommendation does not establish that no route exists.
+Follow a concrete supported investigation direction when the facts provide one.
+
+Choose useful action for that gap: remind the owner of a missed obligation,
+inspect facts, research the relevant capability, discuss alternatives with the
+owner, coordinate an available resource, challenge unsupported claims, or use
+the applicable independent review. Require the original owner to correct its
+implementation, finding, gate or closeout result when needed. These are tools
+for judgment, not a fixed sequence of questions or approvals on every cycle.
+Smooth progress needs only its normal observation and endpoint verification.
+Do not implement the Issue yourself or fill in another owner's formal pass.
+
+After a disposition, observe its actual execution and result, compare that
+result with the gap, and decide the next supported action. A sent suggestion,
+accepted recommendation or investigation request is not evidence that the
+obstacle is resolved. Continue while an in-scope direction has a factual basis.
+Do not repeat a failed configuration without a changed premise, experiment
+indefinitely, or reopen satisfied gates without a relevant change. Preserve
+real human stop conditions and all existing side-effect boundaries.
+
+### External Waits
+
+A valid wait names a responsible owner, the actual operation or missing
+condition, and a bounded recheck condition. Inspect the underlying status or
+evidence on subsequent observations; child text need not change. An operation
+ending, timeout, absent responsible owner, or invalidated recheck condition
+requires a new progress decision, including after failure. Do not carry a
+stale waiting label forward or treat silence as proof that a wait remains valid.
+When the condition changes, pursue the now-valid action and observe its result.
+For an unchanged valid wait, keep the existing owner and stay quiet after the
+check. Genuine missing external conditions use the terminal-block test below
+when no permitted work remains; they do not justify an ownerless endless wait.
+
+### Current Disposition
 
 The coordinator judges the latest real child message, last relevant instruction,
 workflow phase, Issue scope, actual current gates and human boundary. When
@@ -283,12 +337,13 @@ not request fixed wording before receiving a useful next instruction.
 | One unique current safe recommendation fits scope | Evaluate consequences and adopt it, for example `按建议方案执行`; unresolved real choices return to the human. |
 | Delegated merge passes the fresh merge gate | Send `合并PR` for the selected integration owner, subject to direct-human exceptions. |
 | Missing, stale or failed gate has an in-scope route | Request original-owner refresh, finding repair and affected re-review; never send generic approval. |
-| Next mutation is unclear | Request read-only inspection and one precise next action with prerequisites. |
+| Block, failure, absent recommendation or insufficient claim | Apply active unblocking above; inspect and challenge the actual gap, then follow the selected owner action to its result. |
+| Next mutation is unclear | Inspect or request scoped read-only investigation of the concrete uncertainty and its prerequisites. |
 | Supported workflow recovery exists | Select its original-owner route below and verify its result. |
 | CI or another required operation is genuinely running | Keep one bounded wait with exact operation, owner and recheck condition. |
-| Owned wait changes | Reevaluate the latest actual output with the new live facts, then send the valid next action without waiting for new child text. |
+| Owned wait changes, ends, expires or loses its owner | Reevaluate the actual condition and remaining gap, then take the supported action without waiting for new child text. |
 | Local completion is reported | Verify the requested endpoint; request any missing applicable closeout, release or evidence. |
-| Genuine unresolved prerequisite or permission has no supported route | Report the concrete block and apply the selected package's failure/settlement rules. |
+| Unblocking has established no supported in-scope continuation | Apply the terminal-block test and selected package's failure/settlement rules. |
 
 Before messaging, verify the formal destination, inactive relevant turn, current
 evidence and actual human messaging delegation. Do not broadcast a generic
@@ -382,11 +437,23 @@ for a lost mutation result, or an explicitly supported equivalent for a broken
 recorder/validator/executor. A manual equivalent must preserve the exact current
 action and prove equivalent pre/postconditions under repository rules.
 
+An unknown side-effect result first requires recovery of that exact operation;
+never repeat it merely to obtain a clearer response. Once facts establish that
+an earlier transaction failed and cannot be recovered, preserve that failure
+and the same Issue/Task/Delivery identity. That transaction's end alone does not
+prove the Issue cannot continue. Ask the original owner to assess whether a
+supported subsequent operation can meet the remaining requirement, for example
+after correcting an ordinary input, path or prerequisite error. Verify that
+operation's own preconditions and result. This is not permission to replay an
+uncertain mutation, erase the failed transaction, bypass its stop condition or
+create replacement identities.
+
 Do not waive fail-closed rules, edit artifacts to manufacture acceptance,
 suppress test failures, invent semantic pass, or substitute direct evidence
-where the original contract requires its unavailable producer. If no supported
-route proves the same claim, report the precise missing evidence/authority and
-apply package failure rules. Do not detour into repairing Guru Trellis or filing
+where the original contract requires its unavailable producer. A required
+producer with no supported equivalent remains a concrete gap; direct evidence
+cannot substitute for it. Use the terminal-block test below after assessing
+the remaining work. Do not detour into repairing Guru Trellis or filing
 a defect Issue unless that work is explicitly in scope.
 
 If the chat carrier cannot continue, use an app-supported same-directory
@@ -403,6 +470,15 @@ locks, crash protocols or fault-injection mechanisms.
 
 ## Settlement And Resume
 
+Before a terminal blocked exit, establish through the active-unblocking method
+that the requested endpoint is unmet and no permitted in-scope work can advance.
+Report the specific target gap, supported directions actually checked and why
+they cannot continue, the minimum missing condition and responsible party or
+real human choice, the resume condition, and affected nodes. Preserve completed
+results and validation limits. This requires a reasoned judgment from relevant
+facts, not exhaustive theoretical options or a child's unsupported assertion.
+Apply the package's failure policy to unaffected work before whole-run settlement.
+
 A terminal result requires no pending creation or unresolved operation, all
 admitted children inactive at verified safe boundaries, and verified heartbeat
 stop through the native tool. Do not blindly interrupt a merge. If stopping the
@@ -411,8 +487,8 @@ with that exact incomplete settlement and recover it.
 
 Use a stage-completed exit only under the selected package's declared stage
 conditions. State unfinished Issue/Task work without inventing a merge blocker.
-A genuine blocked exit requires the requested endpoint still unmet and no
-remaining permitted work that can advance. Completed exits require full proof.
+A genuine blocked exit requires the terminal-block judgment above. Completed
+exits require full proof.
 Do not archive chats, remove worktrees or perform other incidental cleanup.
 
 Resume the same run after its concrete blocker is resolved. Recover children,

@@ -105,6 +105,9 @@ E may start while C is still running. There is no whole-wave barrier.
 
 Temporary model capacity, ordinary gate rework, and an owned bounded external
 wait retain their existing owner; they are not permanent node failure.
+Use the shared active-unblocking and wait-validity judgments before accepting
+a node's block. A failed step or missing recommendation does not by itself
+establish a node block or a terminal DAG result.
 
 For a genuine block, identify the node, failed requirement, and transitive
 descendants. Descendants cannot start. Already completed siblings stay complete
@@ -137,9 +140,11 @@ for the safe slot release above and `dag_stage_completed` below.
 - `dag_stage_completed`: every selected node has reached the explicitly
   human-requested earlier stage; every child and operation is safely settled,
   and heartbeat stop is verified. State actual remaining Issue/Task work.
-- `dag_blocked`: the requested endpoint remains unmet and no legal work can
-  advance. Identify concrete blocks and affected descendants, preserve partial
-  results, safely settle children and verify heartbeat stop. Under
+- `dag_blocked`: the shared terminal-block test establishes that the requested
+  endpoint remains unmet and no legal work can advance. Use its gap, checked
+  directions, missing condition and resume explanation for affected nodes and
+  descendants; preserve partial results, safely settle children and verify
+  heartbeat stop. Under
   `continue_independent`, first finish all remaining permitted independent work.
 - `dag_completed`: every selected node passes fresh full completion proof,
   and all children, operations and heartbeat are safely settled.

@@ -1,0 +1,224 @@
+{
+  "schema_version": "2.0",
+  "id": "731-coordinator-completion",
+  "name": "731-coordinator-completion",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 731,
+    "disposition": "exact_source"
+  },
+  "title": "强化跨 Issue 协调者的整体完成与主动解阻",
+  "description": "完成 Issue #731 的共享协调合同、两调度入口、隔离多轮真实行为验证与受管投影。",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/731",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-04",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-04-731-coordinator-completion/prd.md",
+    "revision": "sha256:b8df92fe7acf36ab2328d799444cc5b2261125ebc188b39de6d62cb7805f87a9"
+  },
+  "deliveries": [
+    {
+      "id": "a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-04-731-coordinator-completion/prd.md",
+          "revision": "sha256:b8df92fe7acf36ab2328d799444cc5b2261125ebc188b39de6d62cb7805f87a9"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6",
+          "AC7",
+          "AC8",
+          "AC9"
+        ]
+      },
+      "planning_root": "deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/design.md",
+        "revision": "sha256:3233b150156cc51581df506428080ad670b381220b64c9bd78eb44dc40b3942b"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:b0282c45885e851abef7c143df081295e096e6e88418e41df421872d6747b122",
+        "paths": [
+          ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+          ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          ".trellis/spec/workflow/issue-orchestration.md",
+          "docs/design/current/issue-orchestration.md",
+          "docs/requirements-design-test-contributions/731-coordinator-completion/design.md",
+          "docs/requirements-design-test-contributions/731-coordinator-completion/manifest.yaml",
+          "docs/requirements-design-test-contributions/731-coordinator-completion/requirements.md",
+          "docs/requirements-design-test-contributions/731-coordinator-completion/test.md",
+          "docs/requirements-design-test-contributions/731-coordinator-completion/traceability.md",
+          "docs/requirements/current/issue-orchestration.md",
+          "docs/test/current/issue-orchestration.md",
+          "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+          "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md"
+        ],
+        "head_ref": "1d32c9c8044ed12fce54ab991545ab0cfde0993c",
+        "base_ref": "1d32c9c8044ed12fce54ab991545ab0cfde0993c"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:aefc5141-e8c4-4dbe-9b96-f6644ede1f79",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/prd.md",
+              "revision": "sha256:b8df92fe7acf36ab2328d799444cc5b2261125ebc188b39de6d62cb7805f87a9"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6",
+              "AC7",
+              "AC8",
+              "AC9"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/design.md",
+            "revision": "sha256:3233b150156cc51581df506428080ad670b381220b64c9bd78eb44dc40b3942b"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/prd.md",
+              "revision": "sha256:ee972cf9547d764f72b3b40959309001a4fb3b9f0bba1a91862ab843d6c58e78"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/design.md",
+              "revision": "sha256:3233b150156cc51581df506428080ad670b381220b64c9bd78eb44dc40b3942b"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/implement.md",
+              "revision": "sha256:3b04c3d582b3691dd4347c95c74c66448e80b569b3c9fb7e7f7986ef257ac1aa"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:2149f33fa776e9821a9ab2e3c3287d92a07e1581d12f6f900195557a0e756f27",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/prd.md",
+              "revision": "sha256:b8df92fe7acf36ab2328d799444cc5b2261125ebc188b39de6d62cb7805f87a9"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6",
+              "AC7",
+              "AC8",
+              "AC9"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/design.md",
+            "revision": "sha256:3233b150156cc51581df506428080ad670b381220b64c9bd78eb44dc40b3942b"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:b0282c45885e851abef7c143df081295e096e6e88418e41df421872d6747b122",
+            "paths": [
+              ".agents/skills/guru-orchestrate-issue-dag/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/SKILL.md",
+              ".agents/skills/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              ".trellis/spec/workflow/issue-orchestration.md",
+              "docs/design/current/issue-orchestration.md",
+              "docs/requirements-design-test-contributions/731-coordinator-completion/design.md",
+              "docs/requirements-design-test-contributions/731-coordinator-completion/manifest.yaml",
+              "docs/requirements-design-test-contributions/731-coordinator-completion/requirements.md",
+              "docs/requirements-design-test-contributions/731-coordinator-completion/test.md",
+              "docs/requirements-design-test-contributions/731-coordinator-completion/traceability.md",
+              "docs/requirements/current/issue-orchestration.md",
+              "docs/test/current/issue-orchestration.md",
+              "trellis/presets/guru-team/spec/workflow/issue-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/references/dag-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/forward-cases.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/native-orchestration.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-dag/tests/run_native_orchestration.py",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/references/chain-contract.md",
+              "trellis/skills/guru-team/packages/guru-orchestrate-issue-sequence/tests/forward-cases.md"
+            ],
+            "head_ref": "1d32c9c8044ed12fce54ab991545ab0cfde0993c",
+            "base_ref": "1d32c9c8044ed12fce54ab991545ab0cfde0993c"
+          },
+          "predecessor_result_id": "planning-accepted:aefc5141-e8c4-4dbe-9b96-f6644ede1f79",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/prd.md",
+              "revision": "sha256:ee972cf9547d764f72b3b40959309001a4fb3b9f0bba1a91862ab843d6c58e78"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/design.md",
+              "revision": "sha256:3233b150156cc51581df506428080ad670b381220b64c9bd78eb44dc40b3942b"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-731-coordinator-completion/deliveries/a4fafbc5-c2c1-4ee5-8bfc-95499ada45dc/implement.md",
+              "revision": "sha256:3b04c3d582b3691dd4347c95c74c66448e80b569b3c9fb7e7f7986ef257ac1aa"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

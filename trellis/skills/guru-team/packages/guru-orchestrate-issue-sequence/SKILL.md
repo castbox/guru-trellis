@@ -29,8 +29,9 @@ mix providers or use a historical personal copy. The target repository may be
 elsewhere and need not install these orchestration Skills.
 
 The shared method exclusively defines endpoint interpretation, current-dialogue
-authority, child operation, heartbeat, continuation, merge/completion proof and
-supported recovery. Apply it at startup, resume and child continuation alike.
+authority, overall completion responsibility, active unblocking, child operation,
+heartbeat, continuation, merge/completion proof and supported recovery. Apply
+it at startup, resume and child continuation alike.
 The local contract owns exact order, dependency compatibility, serial
 advancement, earlier-stage disposition and this Skill's public I/O.
 
@@ -45,10 +46,10 @@ advancement, earlier-stage disposition and this Skill's public I/O.
 3. Start or recover the one native current-chat heartbeat, default every two
    minutes. Create only the current Issue child, or recover its exact existing
    owner. Preserve pending creation; immediately observe each newly formal child.
-4. Apply the shared observation and progress method to that same child on every
-   cycle. A phase transition, supported recovery, merge or temporary capacity
-   error does not permit creating a later Issue. Give an actionable idle child
-   one useful disposition instead of waiting for fixed wording.
+4. Apply the shared progress and active-unblocking method to that same child
+   each cycle, following owner actions to actual results and rechecking real
+   wait conditions. A phase transition, failed transaction, supported recovery,
+   merge or temporary capacity error does not release the current position.
 5. Prove the current Issue fully complete through the shared method, including
    required closeout and accepted overrides. Only then advance to the next
    Issue. An earlier-stage result never satisfies this advancement gate.

@@ -1,0 +1,11 @@
+identity: issue-orchestration-731
+status: proposed
+owner: guru-maintain-requirements-design-test-ssot
+source: https://github.com/castbox/guru-trellis/issues/731
+authority_identity: guru-trellis-rdt
+applicable_base: 1d32c9c8044ed12fce54ab991545ab0cfde0993c
+architecture_identity: guru-trellis-architecture
+targets:
+  requirements.md: docs/requirements/current/issue-orchestration.md
+  design.md: docs/design/current/issue-orchestration.md
+  test.md: docs/test/current/issue-orchestration.md
