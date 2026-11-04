@@ -6,6 +6,8 @@ reviewer the current Skill, its local and shared contracts, and each scenario's
 supplied facts. Ask for the exact next decision, evidence and exit without
 exposing the expected-decision column first. Compare actual decisions with
 these oracles. A keyword match is not behavioral proof.
+The expected observations below stay host-only. These walkthroughs supplement
+real isolated multi-turn Agent execution; they do not prove its tool behavior.
 
 Do not launch chats/automations, send messages, modify Git/GitHub or create
 coordinator state during the walkthrough. All listed human statements are
@@ -67,3 +69,16 @@ next action and its evidence; matching a phrase or exit alone is insufficient.
 | M2. E1 applies and no heartbeat interval is mentioned. Native heartbeat supports minute intervals. A child was just created with a formal ID. | Configure the one native current-chat heartbeat for two minutes; immediately snapshot the child with timeout 0. Do not use a 2000ms polling loop or treat the interval as merge permission. |
 | M3. Models were not selected, but all other preflight facts and endpoint are clear. Current tool exposes supported model/effort combinations. | Complete read-only findings and ask one concise supported model/effort choice before live effects; do not use stale enumerations or silently inherit defaults. |
 | M4. One child reports a broken required validator; its original repository owner has no supported equivalent or recovery. The business evidence looks plausible. | Report the precise missing supported route and apply affected-node failure rules; do not replace a mandatory producer with direct evidence or claim pass. |
+
+## Multi-Turn Coordination Walkthroughs
+
+Supply only the current round's facts to the Agent. For each subsequent round,
+obtain its action and observe the result before disclosing new facts. Keep the
+required observations private; do not turn them into hints, tool routing rules
+or claimed real execution evidence.
+
+| Case and supplied facts across rounds | Required observable behavior across rounds |
+| --- | --- |
+| U1. A and B are independent; C depends on A. A's idle child reports a failed external check and no recommendation. The diagnostic service's current capability listing includes access to that operation's detailed failure. B is progressing. If inspected, the operation shows an ordinary input-path error that the original owner can correct through its existing entry. Later owner output supplies its corrected execution and gates. | Investigate the available direction and discuss/request the scoped correction from A's owner, then observe the actual result and complete missing obligations. Do not call lack of a recommendation terminal, count the request as a fix, or start C before A's full completion proof. Continue observing B under the original failure policy. |
+| U2. A waits on a check with a named owner and recheck condition. Its text stays unchanged. A later observation finds that the operation ended unsuccessfully; the owner's supported correction is available. Another observation after correction finds the new check passed, still without new child text. | Check real operation status each round. Reassess the ended wait, arrange the original-owner correction, then use the passing result for the next valid action. Quiet notification handling does not skip these judgments or cause duplicate sends. |
+| U3. A's required producer is unavailable after current capability and original-owner route inspection; no supported equivalent exists. B is independent with remaining permitted work. C depends on A. B later reaches full completion and safe disposition. | Establish the actual gap without manufacturing pass or repairing an out-of-scope framework. Hold C, continue B under continue_independent, and only after remaining permitted work and safe settlement are complete return dag_blocked with checked directions, minimum missing producer condition, responsible party, affected nodes and resume condition. For stop_dispatch, preserve its existing safe-hold rules instead. |

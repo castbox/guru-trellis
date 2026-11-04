@@ -6,6 +6,8 @@ chain contract, same-provider shared method, and each scenario's supplied facts.
 Obtain its actual next action, evidence and exit before showing the expected
 column. Evaluate decisions rather than word matching. Do not create or message
 chats, change automations, mutate Git/GitHub or write coordinator state.
+Expected observations stay host-only. These walkthroughs supplement real
+isolated multi-turn Agent execution; they do not prove its tool behavior.
 
 All unspecified access/tool facts pass. Explicit model/effort settings are
 supported. The listed human statements belong only to each synthetic run.
@@ -26,3 +28,16 @@ supported. The listed human statements belong only to each synthetic run.
 | S12. A's original required validator is broken, with no supported equivalent. Its business evidence appears plausible. | Report the exact missing supported route and safely settle as blocked if no permitted work remains. Do not waive the required producer or manufacture pass. |
 | S13. A's current child wait reports no new event. The previous turn received its correct continuation; no live gate changed. No custom interval was selected. | Keep one two-minute native heartbeat, observe A with its cursor and stay quiet. Do not send duplicate continuation or implement a two-second polling loop. |
 | S14. The model/effort selection is absent from an otherwise ready run. Current tool-supported options are available. | Ask one concise supported choice before live effects; do not use a stale fixed list or silently default. Read-only preflight can still report its findings. |
+
+## Multi-Turn Coordination Walkthroughs
+
+Supply only the current round's facts to the Agent, with no expected action or
+exit. Obtain its decision and the resulting observation before disclosing the
+next round. The host compares against the private required behavior; neither
+tool providers nor child replies may select the coordinator's next action.
+
+| Case and supplied facts across rounds | Required observable behavior across rounds |
+| --- | --- |
+| U1. A precedes B. A's original transaction ended in a known failure caused by an ordinary input error; its recovery entry confirms it cannot recover that transaction. The current owner still has its ordinary supported entry for a subsequent operation after input correction. Later owner output reports the new operation's actual result and remaining closeout. | Preserve the first failure and the same Issue/Task/Delivery, investigate the supported subsequent operation with its original owner, and verify its preconditions and result. Do not treat the old transaction's end as proof that A is impossible, erase it, or start B until A's complete proof passes. An unknown result instead requires exact-operation recovery before another mutation. |
+| U2. A's idle child reports complete after one Delivery merge; the current Task scope still includes an unfulfilled accepted obligation. After the coordinator's disposition, the owner reports work underway, then a result missing its required review, and finally the completed original-owner gates and closeout. | Challenge the initial completion claim against accepted scope, require scoped owner work and the missing review, and observe each actual result. Neither the first message, the instruction nor the merge releases A's position. Start B only after fresh full proof; use normal light observation while the correction is running. |
+| U3. A waits for an external condition with a recorded responsible service and recheck condition. No child text changes. Inspection later shows that the wait expired and the service cannot supply a required producer; current supported entries and equivalent-route inspection establish the same gap. | Reevaluate the expired wait without waiting for new child text. Investigate the relevant supported directions, then safely settle with the minimal missing condition, responsible party, checked-route reasons and same-chain resume condition. Verify inactive child and heartbeat stop before chain_blocked; never start B to work around A. |

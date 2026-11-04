@@ -70,9 +70,11 @@ completion of only a prefix as stage completion for the whole selected chain.
 
 ## Serial Advancement And Failure
 
-Use the shared method for child creation, async result recovery and progress
-dispositions. Creation occupies the current position before its tool call. An
-unresolved result never permits another creation. Bind the formal child and
+Use the shared method for child creation, async result recovery, active
+unblocking and wait validity. Follow dispositions through the current child's
+actual results; a failed step retains this position during supported recovery
+or a legal subsequent operation. Creation occupies the position before its
+tool call. An unresolved result never permits another creation. Bind the formal child and
 immediately snapshot it; later waits retain its own cursor.
 
 Fresh full Issue completion proof is the sole advancement gate. Check its
@@ -101,10 +103,12 @@ with the exact unfinished settlement rather than claiming a terminal outcome.
 - `chain_stage_completed`: the earlier-endpoint compatibility rule holds; all
   prior selected Issues are fully complete and the last selected Issue reaches
   the explicitly requested earlier stage. State its remaining Issue/Task work.
-- `chain_blocked`: the requested endpoint remains unmet, a concrete prerequisite
-  or missing choice has no supported current continuation, and the current
-  child has a verified safe disposition. Report the exact block and partial
-  completed results. A child's “waiting for confirmation” text alone is no block.
+- `chain_blocked`: the shared terminal-block test establishes that the requested
+  endpoint remains unmet and the current position has no permitted continuation;
+  the current child has a verified safe disposition. Use the shared gap, checked
+  directions, missing condition and resume explanation, with the completed
+  prefix and remaining Issues. A child's “waiting for confirmation” text alone
+  is no block, and later Issues cannot substitute for completing this position.
 
 Resume the same chain after the concrete blocker is resolved. Recover the
 current position, exact child and current proofs. Do not ask again for existing
