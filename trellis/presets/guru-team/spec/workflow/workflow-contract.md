@@ -788,6 +788,14 @@ for historical #174 replay compatibility. In particular
 Finalizer or define the current lifecycle's confirmation count. Use the
 current owners' plans and exits for production authorization.
 
+Session budget stop. The budget declared in `.trellis/config.yaml` `budget:`
+(tool calls, wall clock, compactions) is a legal stop point owned by the
+workflow's Session Budget section. Automatic consumption of mapped exits,
+stale/re-entry routes and goal or loop continuation never extends past a budget
+stop in the same session. Stopping there needs no confirmation and is not a
+question to the user; the owner records progress, commits a Draft when a
+candidate exists, and ends the turn.
+
 ## Docs SSOT And External Work Items
 
 Every planning cycle chooses one Docs SSOT strategy:

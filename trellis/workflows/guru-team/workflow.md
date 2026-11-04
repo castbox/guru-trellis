@@ -39,6 +39,28 @@ The workflow marketplace installs only .trellis/workflow.md. The Guru Team
 preset installs the compatible active packages and minimal shared kernel. Frontmatter
 discovery is optional convenience; it never replaces a mandatory marker.
 
+## Session Budget And Evidence Boundary
+
+Every Delivery session runs under an explicit budget read from
+`.trellis/config.yaml` `budget:` (defaults: 300 tool calls, 2 hours wall clock,
+2 context compactions, whichever comes first). Reaching any threshold is a
+legal stop point, not an error. At that point the current owner finishes the
+edit in progress, runs the minimal self-check, records remaining steps and
+their blockers in the Delivery `implement.md` section 2, enters
+`guru-create-task-commit:delivery_draft_commit` when a reviewable candidate
+exists, and ends the turn with a one-line continuation note for a fresh
+session. Mapped exits, goal or loop auto-continuation and re-entry routes never
+resume past a budget stop inside the same session; the budget stop has
+priority over the Interaction Budget's automatic consumption rule.
+
+Evidence stays out of the tracked task directory and out of the context
+window. Raw logs, device acceptance matrices, generated proposal copies and
+screenshots live under `.trellis/.runtime/guru-team/<task-id>/evidence/`
+(gitignored). The task or Delivery directory keeps only an index: one line per
+scenario with its id, result, evidence path and HEAD. No tracked task-directory
+file exceeds 30 KB. Owners read evidence with `rg` or line ranges, never the
+whole file; the platform hooks reject whole-file reads above the limit.
+
 ## Guru Team Gate
 
 An explicit single-checkout tools request enters standalone `guru-upgrade-tools`;
@@ -577,7 +599,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-delivery-planning-author-router | Consume Creation/Selection's unchanged created DTO through the explicit receiving-session continuation before entering Author or another stage owner. That continuation checks the receiving caller's own Task/Delivery facts and rereads this exact public key, phase, scope and planning_root. Only a current planning Delivery with an actual initial-requirements obligation and matching Author entry projects task_ref/delivery_key plus adjacent source_selection and mode to delivery_initial_review; lost source selection returns to original Clarify. All other objects, including planning with existing work/gates, enter the sole Bound formal Task / Delivery continuation at their actual outstanding obligation and original owner. Existing planning resumes applicable Author/Wording/Architecture/Approval or current approved to Activation, preserving identity, plans and applicable results; missing/stale outputs return to their producer. created does not imply a new object, planning phase or gate pass; this consumer writes no phase/cache and never resets it. |
 | guru-delivery-selection-router | Read the exact TaskKey inventory for a real selection; obtain an explicit DeliveryKey before invoking Creation selection. Never infer identity from a sole inventory row. |
 | guru-delivery-activation-planning-router | Return the selected Delivery to its current Planning owner, refresh affected evidence, then invoke Delivery Approval. |
-| guru-delivery-scope-revised-router | Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from delivery_scope_revised; add fixed profile=delivery_active_task_scope_change; explicitly invoke guru-author-task-plan. This is same-slice rework, never a Planning approval. |
+| guru-delivery-scope-revised-router | Select mode/task_ref/delivery_key/source_selection/revision_refs unchanged from delivery_scope_revised; add fixed profile=delivery_active_task_scope_change; explicitly invoke guru-author-task-plan. This is same-slice rework, never a Planning approval. It carries only wording and correction of anchors already in the slice's scope_ref. When the Delivery is implementing or later and the revision introduces requirement anchors absent from that scope_ref, do not enter this router: route the accepted-scope change to Clarify/Author task_scope_requirements and then to `guru-create-delivery` for the next slice. |
 | guru-delivery-started-router | Consume the actual public Planning result for same-Delivery implementation. |
 | guru-base-reconciliation-router | Consume the fixed integration result and resume its closed target through the original candidate/Check/Review applicability owners. |
 | guru-base-continuity-passed-router | Return the bounded result to the original Check/Branch Review applicability owners; only their real current candidate-bound results resume the closed target. Continuity is not a full Review gate. |
@@ -1204,6 +1226,18 @@ scope change repeats these two same-owner steps before affected rework or exit.
 After this checked scope result, mandatory invoke `guru-create-delivery` for an
 explicit first/next slice. Its `created` output enters the current unique Author
 delivery_initial_review; #292 retains the sole writing responsibility.
+
+Slice size limit: one Delivery `scope_ref` carries at most five requirement
+anchors (`REQ-*`) or one user-visible journey, whichever is smaller. Acceptance
+corresponding `AC-*` anchors travel with their requirements and do not count.
+Device parameter sweeps and acceptance matrices form their own Delivery whose
+anchors use the `QA-` prefix; they are never folded into a feature slice, and a
+failed matrix row becomes a `followup_issues` entry in the Issue scope ledger,
+not more work inside the slice. Creation rejects a larger `scope_ref` with
+`scope_too_large`; split before Author. A requirement that arrives while a
+Delivery is implementing or later is a new anchor: accept it into the root PRD
+through the two same-owner steps above, then invoke `guru-create-delivery` for
+the next slice. Never append it to the active slice.
 The Author resolves public `planning_root`; no task-root development plan is reused.
 Load the Author's installed `references/planning-body.md` and profile-selected
 `templates/` through its Skill contract. Original Clarify, Wording and Approval
@@ -1324,6 +1358,23 @@ plan. Workers may execute approved-plan work only. If implementation discovers
 an out-of-plan deprecated asset, compatibility need, or owner/authority change,
 it stops before editing or adding tests and returns the existing invocation-local
 candidate shape for qualification and owner routing.
+
+Parallel execution contract. The main session is the default executor
+(`codex.dispatch_mode: inline`); it never keeps a long-lived conversational
+sub-agent. Parallel work runs only as one-shot `trellis channel spawn` workers
+with an explicit `--timeout` no longer than the session budget, an explicit
+`--cwd`, and `--file`/`--jsonl` injection of exactly the planning bodies the
+worker needs. A worker writes one result file under the evidence directory and
+emits `done`; the dispatcher waits with `channel wait --kind done`, sends at
+most one follow-up per worker, and never runs a multi-round message dialogue.
+Independent reviewers are one-shot as well: one assessment, one typed result,
+exit. Writers: at most one writing worker per disjoint file set, the dispatch
+prompt lists the paths it owns, and two writers never share a path or a
+generated-file group. Acceptance workers do not write source: each runs in a
+throwaway detached worktree of the same HEAD, is bound in its dispatch prompt
+to one exclusive emulator serial, and returns index rows plus evidence paths.
+While acceptance workers exist the main session does not run adb, emulator or
+app builds itself.
 
 Before the first edit, and again immediately before every subsequent source,
 test, or task-artifact write, validate the live boundary:

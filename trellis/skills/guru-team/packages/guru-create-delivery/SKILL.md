@@ -34,6 +34,17 @@ restarts initial Author. Selection and result recovery preserve phase, plans and
 results, and cannot manufacture a gate pass. This package requires the complete
 compatible Guru preset installation.
 
+### Slice size limit
+
+Before allocating a UUID the Creation owner counts the requirement anchors in
+`scope_ref.anchors` (every anchor not prefixed `AC-` or `QA-`). More than the
+configured limit (default 5; `.trellis/config.yaml` `budget.max_req_anchors`)
+stops with `scope_too_large`: split the scope into smaller slices and create
+them one at a time. `QA-` anchors mark a device acceptance-matrix Delivery and
+may not be mixed with `REQ-` anchors in one slice. A requirement that arrives
+while a Delivery is implementing or later is accepted into the root PRD and
+then becomes the next slice; it never extends the active slice's `scope_ref`.
+
 ### Unsupported-profile correction in the original Creation interval
 
 The Creation owner checks the actual workflow declaration's supported profiles

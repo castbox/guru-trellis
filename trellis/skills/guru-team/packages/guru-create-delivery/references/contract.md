@@ -29,6 +29,10 @@
 
 Owner result 只含当轮 typed_exit 与具体理由，供本 wrapper 消费，不形成新状态 authority。公共阶段、文件存在或 checkpoint 不能代替语义 Gate。新 graph 不接旧 Task-status 开发入口；旧安装以固定旧完整发行继续，公共 D2 与 Guru 私有迁移齐备才切换。
 
+### 切片大小上限
+
+创建前统计 `scope_ref.anchors` 中的需求锚点（排除 `AC-`、`QA-` 前缀）。超过配置上限（默认 5，可由 `.trellis/config.yaml` 的 `budget.max_req_anchors` 覆盖）时以 `scope_too_large` 停止，不分配 UUID、不写 pending；由调用方拆成更小的切片后逐个创建。`QA-` 锚点标记设备验收矩阵切片，不与 `REQ-` 锚点混在同一切片。实施期间新到的需求先进入 root PRD，再作为下一个切片创建，不扩展当前切片的 `scope_ref`。
+
 ### Unsupported-profile correction in the original Creation interval
 
 The Creation owner checks the actual workflow declaration's supported profiles

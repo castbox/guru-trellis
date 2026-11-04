@@ -73,6 +73,22 @@ class CreationTests(unittest.TestCase):
         record_gate(projection, key, "readiness", "ready:selected", "ready", [self.fixture.scope], [])
         select_and_recover("publishing")
 
+    def test_oversized_slice_is_rejected_before_pending_write(self):
+        anchors = [f"REQ-130-{n:02d}" for n in range(1, 7)] + ["AC-130-EDIT"]
+        failed = self.invoke({**self.public, "scope_ref": {**self.public["scope_ref"], "anchors": anchors}})
+        self.assertEqual(failed, {"exit_id": "blocked", "reason_code": "scope_too_large"})
+        self.assertEqual(self.fixture.projection.read_record()["deliveries"], [])
+        self.assertFalse(self.module.checkpoint(self.fixture.root, self.fixture.task_ref, "d1").exists())
+
+    def test_five_requirement_anchors_with_acceptance_anchors_are_accepted(self):
+        anchors = [f"REQ-130-{n:02d}" for n in range(1, 6)] + ["AC-130-EDIT", "AC-130-HOME"]
+        created = self.invoke({**self.public, "scope_ref": {**self.public["scope_ref"], "anchors": anchors}})
+        self.assertEqual(created["exit_id"], "created")
+
+    def test_qa_anchors_cannot_mix_with_requirement_anchors(self):
+        failed = self.invoke({**self.public, "scope_ref": {**self.public["scope_ref"], "anchors": ["QA-130-RAM", "REQ-130-01"]}})
+        self.assertEqual(failed, {"exit_id": "blocked", "reason_code": "scope_too_large"})
+
     def test_unsupported_profile_is_rejected_before_pending_write(self):
         failed = self.invoke({**self.public, "delivery_profile": "local_commit"})
         self.assertEqual(failed, {"exit_id": "blocked", "reason_code": "unsupported_delivery_profile"})

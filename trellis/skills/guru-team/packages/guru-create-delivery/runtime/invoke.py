@@ -13,6 +13,45 @@ from runtime.task_lifecycle.errors import LifecycleContractError
 from creation_result import checkpoint
 
 
+DEFAULT_MAX_REQ_ANCHORS = 5
+ACCEPTANCE_PREFIXES = ("AC-", "QA-")
+
+
+def _max_req_anchors(root: Path) -> int:
+    """Read `budget.max_req_anchors` from .trellis/config.yaml without a YAML dependency."""
+    path = root / ".trellis" / "config.yaml"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return DEFAULT_MAX_REQ_ANCHORS
+    in_budget = False
+    for raw in lines:
+        line = raw.split("#", 1)[0].rstrip()
+        if not line.strip():
+            continue
+        if not line.startswith((" ", "\t")):
+            in_budget = line.strip() == "budget:"
+            continue
+        if in_budget and line.strip().startswith("max_req_anchors:"):
+            value = line.split(":", 1)[1].strip()
+            return int(value) if value.isdigit() else DEFAULT_MAX_REQ_ANCHORS
+    return DEFAULT_MAX_REQ_ANCHORS
+
+
+def check_slice_size(root: Path, scope_ref: dict) -> None:
+    """Fail closed before any UUID or pending write when one slice carries too much scope."""
+    anchors = [str(a) for a in (scope_ref.get("anchors") or [])] if isinstance(scope_ref, dict) else []
+    requirements = [a for a in anchors if not a.startswith(ACCEPTANCE_PREFIXES)]
+    qa = [a for a in anchors if a.startswith("QA-")]
+    if qa and requirements:
+        raise LifecycleContractError("scope_too_large", "scope_ref.anchors",
+                                     "Keep QA- acceptance-matrix anchors in their own Delivery; do not mix them with requirement anchors.")
+    limit = _max_req_anchors(root)
+    if len(requirements) > limit:
+        raise LifecycleContractError("scope_too_large", "scope_ref.anchors",
+                                     f"{len(requirements)} requirement anchors exceed the slice limit of {limit}; split into smaller Deliveries and create them one at a time.")
+
+
 def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
     root = root.resolve()
     profiles = {"delivery_creation": "public-delivery-creation-input.schema.json", "delivery_selection": "public-delivery-selection-input.schema.json"}
@@ -72,6 +111,7 @@ def invoke(package: Path, root: Path, public: dict, owner: dict) -> dict:
                 key = current["key"]
                 operation = None
             else:
+                check_slice_size(root, public["scope_ref"])
                 key = {**task_key, "delivery_id": str(uuid.uuid4())}
                 operation = {"api_version": "1.0", "operation": "create_delivery", "key": key,
                              "owner_role": "creation", "owner_id": projection.declaration()["owners"]["creation"],
