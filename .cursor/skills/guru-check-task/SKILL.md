@@ -234,3 +234,11 @@ minimal handoff, without replaying rework or installing an approval token.
 A new change receives fresh original Clarify and this owner judgment.
 
 For selected legacy control inspection/retirement, load `references/legacy-maintenance.md` and use its separate `scripts/legacy-maintenance.sh` entry. Normal current profiles are unchanged.
+
+For resolved reconciliation, pass the same original public input with
+`--skill-input` to both `record-phase2-check.sh` and `check-phase2-check.sh`.
+This dedicated profile binds semantic stage-0 entries and permits a staged
+gitlink update only when the initialized child is clean at its stage-0 OID.
+Follow the complete command sequence and capture contract in
+[references/contract.md](references/contract.md). Ordinary calls retain their
+existing capture. Reconcile remains the sole exact-commit owner.

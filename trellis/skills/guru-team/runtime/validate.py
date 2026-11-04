@@ -26,6 +26,7 @@ APPROVED_KERNEL_FILES = {
     "installed.py",
     "io.py",
     "git_object_batch.py",
+    "git_merge.py",
     "lifecycle_helpers.py",
     "maintenance_transport.py",
     "launch.sh",

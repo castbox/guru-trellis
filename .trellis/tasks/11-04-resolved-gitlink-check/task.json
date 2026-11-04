@@ -1,0 +1,234 @@
+{
+  "schema_version": "2.0",
+  "id": "resolved-gitlink-check",
+  "name": "resolved-gitlink-check",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "no_issue"
+  },
+  "title": "修复 resolved Check 拒绝合法 staged 子模块指针更新",
+  "description": "在专用resolved Check捕获已解决stage0 gitlink候选，保留普通Check与原exact Reconcile边界。",
+  "dev_type": null,
+  "scope": "canonical Check resolved身份、record/check/invoke/project及exact Reconcile组合、定向正常Git测试、原安装同步验证。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-04",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-04-resolved-gitlink-check/prd.md",
+    "revision": "sha256:b25691ffd44edc3e2c01a5217ad4dfc5c0ccbe07b8afd6923b0daa2202d7b186"
+  },
+  "deliveries": [
+    {
+      "id": "95896a2b-7c5f-4aa2-b201-46b62573f94f",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-04-resolved-gitlink-check/prd.md",
+          "revision": "sha256:b25691ffd44edc3e2c01a5217ad4dfc5c0ccbe07b8afd6923b0daa2202d7b186"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4"
+        ]
+      },
+      "planning_root": "deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f",
+      "profile": "pull_request",
+      "phase": "reviewing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/design.md",
+        "revision": "sha256:1ac1b219237bbd86a4decfa6ae333e90dd1ea80ae79ebc94dee4cdccad825e10"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:e14cbcdf856d2773d9dac94ac639fb8b2c8329868cba2ac0d000ed7ed7bdb577",
+        "paths": [
+          ".agents/skills/guru-check-task/SKILL.md",
+          ".agents/skills/guru-check-task/commands.json",
+          ".agents/skills/guru-check-task/references/contract.md",
+          ".claude/skills/guru-check-task/SKILL.md",
+          ".claude/skills/guru-check-task/commands.json",
+          ".claude/skills/guru-check-task/references/contract.md",
+          ".cursor/skills/guru-check-task/SKILL.md",
+          ".cursor/skills/guru-check-task/commands.json",
+          ".cursor/skills/guru-check-task/references/contract.md",
+          ".trellis/guru-team/runtime/git_merge.py",
+          ".trellis/guru-team/runtime/validate.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-check-task/commands.json",
+          ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+          ".trellis/guru-team/skills/packages/guru-check-task/runtime/check.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/runtime/common.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/runtime/delivery.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/runtime/record.py",
+          ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+          ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/resolved.py",
+          "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+          "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-check-task/commands.json",
+          "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+          "trellis/skills/guru-team/packages/guru-check-task/runtime/check.py",
+          "trellis/skills/guru-team/packages/guru-check-task/runtime/common.py",
+          "trellis/skills/guru-team/packages/guru-check-task/runtime/delivery.py",
+          "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py",
+          "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+          "trellis/skills/guru-team/packages/guru-check-task/tests/test_delivery_flow.py",
+          "trellis/skills/guru-team/packages/guru-check-task/tests/test_execution_consumption.py",
+          "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/resolved.py",
+          "trellis/skills/guru-team/runtime/git_merge.py",
+          "trellis/skills/guru-team/runtime/validate.py"
+        ],
+        "head_ref": "b78edbbdc32e77392bc3775366473971050ccb4b",
+        "base_ref": "b78edbbdc32e77392bc3775366473971050ccb4b"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:a0b317eb-19d1-459b-8d79-247c7eced40a",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/prd.md",
+              "revision": "sha256:b25691ffd44edc3e2c01a5217ad4dfc5c0ccbe07b8afd6923b0daa2202d7b186"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/design.md",
+            "revision": "sha256:1ac1b219237bbd86a4decfa6ae333e90dd1ea80ae79ebc94dee4cdccad825e10"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/prd.md",
+              "revision": "sha256:764708a33b61ebee10225a86de80fc47442154c0960833572587f7cd19235a78"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/design.md",
+              "revision": "sha256:1ac1b219237bbd86a4decfa6ae333e90dd1ea80ae79ebc94dee4cdccad825e10"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/implement.md",
+              "revision": "sha256:92bc8466b2798ad2b90136c30ff8188cc3d36a5c1a705c84b8055691984f7d8e"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:14e7acdb20232c7c788aa17403393eb9bb2ff7e2e0b2165416e520923a73d516",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/prd.md",
+              "revision": "sha256:b25691ffd44edc3e2c01a5217ad4dfc5c0ccbe07b8afd6923b0daa2202d7b186"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/design.md",
+            "revision": "sha256:1ac1b219237bbd86a4decfa6ae333e90dd1ea80ae79ebc94dee4cdccad825e10"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:e14cbcdf856d2773d9dac94ac639fb8b2c8329868cba2ac0d000ed7ed7bdb577",
+            "paths": [
+              ".agents/skills/guru-check-task/SKILL.md",
+              ".agents/skills/guru-check-task/commands.json",
+              ".agents/skills/guru-check-task/references/contract.md",
+              ".claude/skills/guru-check-task/SKILL.md",
+              ".claude/skills/guru-check-task/commands.json",
+              ".claude/skills/guru-check-task/references/contract.md",
+              ".cursor/skills/guru-check-task/SKILL.md",
+              ".cursor/skills/guru-check-task/commands.json",
+              ".cursor/skills/guru-check-task/references/contract.md",
+              ".trellis/guru-team/runtime/git_merge.py",
+              ".trellis/guru-team/runtime/validate.py",
+              ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-check-task/commands.json",
+              ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
+              ".trellis/guru-team/skills/packages/guru-check-task/runtime/check.py",
+              ".trellis/guru-team/skills/packages/guru-check-task/runtime/common.py",
+              ".trellis/guru-team/skills/packages/guru-check-task/runtime/delivery.py",
+              ".trellis/guru-team/skills/packages/guru-check-task/runtime/record.py",
+              ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
+              ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/resolved.py",
+              "trellis/presets/guru-team/scripts/python/skill_runtime_inventory.py",
+              "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-check-task/commands.json",
+              "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
+              "trellis/skills/guru-team/packages/guru-check-task/runtime/check.py",
+              "trellis/skills/guru-team/packages/guru-check-task/runtime/common.py",
+              "trellis/skills/guru-team/packages/guru-check-task/runtime/delivery.py",
+              "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py",
+              "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
+              "trellis/skills/guru-team/packages/guru-check-task/tests/test_delivery_flow.py",
+              "trellis/skills/guru-team/packages/guru-check-task/tests/test_execution_consumption.py",
+              "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/resolved.py",
+              "trellis/skills/guru-team/runtime/git_merge.py",
+              "trellis/skills/guru-team/runtime/validate.py"
+            ],
+            "head_ref": "b78edbbdc32e77392bc3775366473971050ccb4b",
+            "base_ref": "b78edbbdc32e77392bc3775366473971050ccb4b"
+          },
+          "predecessor_result_id": "planning-accepted:a0b317eb-19d1-459b-8d79-247c7eced40a",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/prd.md",
+              "revision": "sha256:764708a33b61ebee10225a86de80fc47442154c0960833572587f7cd19235a78"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/design.md",
+              "revision": "sha256:1ac1b219237bbd86a4decfa6ae333e90dd1ea80ae79ebc94dee4cdccad825e10"
+            },
+            {
+              "locator": ".trellis/tasks/11-04-resolved-gitlink-check/deliveries/95896a2b-7c5f-4aa2-b201-46b62573f94f/implement.md",
+              "revision": "sha256:92bc8466b2798ad2b90136c30ff8188cc3d36a5c1a705c84b8055691984f7d8e"
+            }
+          ]
+        },
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}

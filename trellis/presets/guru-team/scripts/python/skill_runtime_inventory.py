@@ -14,6 +14,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("installed.py"),
     Path("io.py"),
     Path("git_object_batch.py"),
+    Path("git_merge.py"),
     Path("lifecycle_helpers.py"),
     Path("maintenance_transport.py"),
     Path("launch.sh"),

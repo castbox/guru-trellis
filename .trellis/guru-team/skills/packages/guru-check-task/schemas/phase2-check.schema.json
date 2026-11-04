@@ -44,7 +44,7 @@
     "reviewed_content_sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Owner-private guru-phase2-worktree-content-2.0 identity over business bytes and modes, excluding lifecycle/session/result metadata; adjacent Check freshness only."
+      "description": "Owner-private guru-phase2-worktree-content-2.0 (ordinary) or guru-phase2-resolved-content-1.0 (explicit validated Delivery resolved input) identity over business bytes and modes, excluding lifecycle/session/result metadata; adjacent Check freshness only."
     },
     "validation": {"$ref": "#/$defs/validation"},
     "docs_ssot": {"$ref": "#/$defs/docsSsot"},

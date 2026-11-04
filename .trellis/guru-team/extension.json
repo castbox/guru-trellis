@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-04T04:54:10Z",
+  "installed_at": "2026-11-04T09:59:24Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "1d32c9c8044ed12fce54ab991545ab0cfde0993c",
-    "commit": "1d32c9c8044ed12fce54ab991545ab0cfde0993c",
+    "ref": "b78edbbdc32e77392bc3775366473971050ccb4b",
+    "commit": "b78edbbdc32e77392bc3775366473971050ccb4b",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1378,7 +1378,7 @@
       {
         "id": "guru-check-task",
         "interface_sha256": "11a42ae32b84426e120f19f37484b76fd05849456917ce0297ce08971db10cf5",
-        "tree_sha256": "b087ddb7fe66768e0b25df933b175b1795d9078e9c03b3bb04effdb3a60d3c0b"
+        "tree_sha256": "164e693c58e6bcd31c05e0b98c292845b60c8e240270406a6370db3622289bfa"
       },
       {
         "id": "guru-clarify-requirements",
@@ -1508,7 +1508,7 @@
       {
         "id": "guru-reconcile-task-base",
         "interface_sha256": "4cf232ccf3712aa3dadc311934aea41b44944e2344df1c9b86f3184eb9dd74dc",
-        "tree_sha256": "c3089e35d1628c67e1a3f0049da2fb054e0fabdc24f27183457e93b28b140ef1"
+        "tree_sha256": "d96b07bdfb561ac90939a68ac940b08af16bce5f8724bc2e639a7680bcd8fc15"
       },
       {
         "id": "guru-review-branch",
@@ -5077,14 +5077,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "99b0d81758927e5ecd5f1d9f5cff6e31432f2a031fa0762a85643e73e943b9de",
+        "sha256": "4956d7a5a6dca1c271223c076a2157c138a50bef6619ee5744b1fbdabbfbe9c3",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/commands.json",
-        "sha256": "ff4e8df7b29c1171e3b13556697eaaba0323c6572630be295b3f99c5ccaf11c8",
+        "sha256": "b55a721820e6d128194cd167bd63edbfd607f6ae09277b532c8e87082149d298",
         "executable": false,
         "action": "installed"
       },
@@ -5525,7 +5525,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "8b77e95fe077e46377b0b4a7eaa2bb8d2921ba0ba911c4ab7a0dc821e3d018b7",
+        "sha256": "89489995cd030406644a1705187848d7f04ee72622210a7b0af501e19577926f",
         "executable": false,
         "action": "installed"
       },
@@ -5539,21 +5539,21 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/runtime/check.py",
         "source": "trellis/skills/guru-team/packages/guru-check-task/runtime/check.py",
-        "sha256": "cdb76051f76f169fe0887dc58a6c71855fadda01cfed7266ec746b6dea1278f3",
+        "sha256": "aabeecfc8c22850a8f5296b5ca92c4681482b9a3d5a07ab4153b3d28c22da853",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/runtime/common.py",
         "source": "trellis/skills/guru-team/packages/guru-check-task/runtime/common.py",
-        "sha256": "0fe298e2e792e4f20b9a7521e67baaf0f0e248423e0d5f729d5615880ae9fdb6",
+        "sha256": "4f297105c1031e61a9635b6224f84248dd558943d951826c9c9543ce10079e8e",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/runtime/delivery.py",
         "source": "trellis/skills/guru-team/packages/guru-check-task/runtime/delivery.py",
-        "sha256": "d3b5181f35f7716b50f1bbad3066ad4f9808dda18afb3b93bbf342294df22c50",
+        "sha256": "613ebd78e0e82fcb50b68c93e308ea5bc2d05fb454e1255fa1766d58733234e5",
         "executable": false,
         "action": "installed"
       },
@@ -5581,7 +5581,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/runtime/record.py",
         "source": "trellis/skills/guru-team/packages/guru-check-task/runtime/record.py",
-        "sha256": "e72c9288a905e47becd75d968208d63c16d4dfc92f6ca047c9e368e0d0dd9ec9",
+        "sha256": "e2f263caf75b72f29a48d29664faeec831ea511ee23ac7e09cfbe119fb89d476",
         "executable": false,
         "action": "installed"
       },
@@ -5679,7 +5679,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/schemas/phase2-check.schema.json",
-        "sha256": "3462ba0580202fdeaba7f06614aee1a18085c11d017127a693bdb821b0540e5a",
+        "sha256": "028880e271a3c938aa85bfbace1291db84e91c35ff8070159a3ee66d193acff2",
         "executable": false,
         "action": "installed"
       },
@@ -15794,7 +15794,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reconcile-task-base/runtime/resolved.py",
         "source": "trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/resolved.py",
-        "sha256": "682263d7839a7ec5472b7e86bf30bf63f768b2d3807b069cbf4f8e0f69c163b1",
+        "sha256": "7090c56f63227d1d6c0ce9b2df31bd66785d418f999edceca9d2139911a3b928",
         "executable": false,
         "action": "installed"
       },
@@ -20909,6 +20909,13 @@
         "action": "installed"
       },
       {
+        "path": ".trellis/guru-team/runtime/git_merge.py",
+        "source": "trellis/skills/guru-team/runtime/git_merge.py",
+        "sha256": "fd90ebeae788739a3c366329182662ea822925fdc5c6aa733acaa9c819f2fb48",
+        "executable": false,
+        "action": "installed"
+      },
+      {
         "path": ".trellis/guru-team/runtime/lifecycle_helpers.py",
         "source": "trellis/skills/guru-team/runtime/lifecycle_helpers.py",
         "sha256": "7ef40448accead60be6ba392ddd4e6509e9ab14dc6dc86922f6ea1ee470b49b5",
@@ -21002,7 +21009,7 @@
       {
         "path": ".trellis/guru-team/runtime/validate.py",
         "source": "trellis/skills/guru-team/runtime/validate.py",
-        "sha256": "f8572a84794aef111884d67ceee6d0360550790568c3d531af9b5be0b392654c",
+        "sha256": "5e3aa4c5f2125c5255d5ea5f6ce8fc2db0fc14e9df01967a3f3334f84e12d519",
         "executable": false,
         "action": "installed"
       },
@@ -26084,14 +26091,14 @@
       {
         "path": ".agents/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "99b0d81758927e5ecd5f1d9f5cff6e31432f2a031fa0762a85643e73e943b9de",
+        "sha256": "4956d7a5a6dca1c271223c076a2157c138a50bef6619ee5744b1fbdabbfbe9c3",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".agents/skills/guru-check-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/commands.json",
-        "sha256": "ff4e8df7b29c1171e3b13556697eaaba0323c6572630be295b3f99c5ccaf11c8",
+        "sha256": "b55a721820e6d128194cd167bd63edbfd607f6ae09277b532c8e87082149d298",
         "executable": false,
         "action": "installed"
       },
@@ -26406,7 +26413,7 @@
       {
         "path": ".agents/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "8b77e95fe077e46377b0b4a7eaa2bb8d2921ba0ba911c4ab7a0dc821e3d018b7",
+        "sha256": "89489995cd030406644a1705187848d7f04ee72622210a7b0af501e19577926f",
         "executable": false,
         "action": "installed"
       },
@@ -26707,14 +26714,14 @@
       {
         "path": ".claude/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "99b0d81758927e5ecd5f1d9f5cff6e31432f2a031fa0762a85643e73e943b9de",
+        "sha256": "4956d7a5a6dca1c271223c076a2157c138a50bef6619ee5744b1fbdabbfbe9c3",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".claude/skills/guru-check-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/commands.json",
-        "sha256": "ff4e8df7b29c1171e3b13556697eaaba0323c6572630be295b3f99c5ccaf11c8",
+        "sha256": "b55a721820e6d128194cd167bd63edbfd607f6ae09277b532c8e87082149d298",
         "executable": false,
         "action": "installed"
       },
@@ -27029,7 +27036,7 @@
       {
         "path": ".claude/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "8b77e95fe077e46377b0b4a7eaa2bb8d2921ba0ba911c4ab7a0dc821e3d018b7",
+        "sha256": "89489995cd030406644a1705187848d7f04ee72622210a7b0af501e19577926f",
         "executable": false,
         "action": "installed"
       },
@@ -27330,14 +27337,14 @@
       {
         "path": ".cursor/skills/guru-check-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/SKILL.md",
-        "sha256": "99b0d81758927e5ecd5f1d9f5cff6e31432f2a031fa0762a85643e73e943b9de",
+        "sha256": "4956d7a5a6dca1c271223c076a2157c138a50bef6619ee5744b1fbdabbfbe9c3",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".cursor/skills/guru-check-task/commands.json",
         "source": "trellis/skills/guru-team/packages/guru-check-task/commands.json",
-        "sha256": "ff4e8df7b29c1171e3b13556697eaaba0323c6572630be295b3f99c5ccaf11c8",
+        "sha256": "b55a721820e6d128194cd167bd63edbfd607f6ae09277b532c8e87082149d298",
         "executable": false,
         "action": "installed"
       },
@@ -27652,7 +27659,7 @@
       {
         "path": ".cursor/skills/guru-check-task/references/contract.md",
         "source": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md",
-        "sha256": "8b77e95fe077e46377b0b4a7eaa2bb8d2921ba0ba911c4ab7a0dc821e3d018b7",
+        "sha256": "89489995cd030406644a1705187848d7f04ee72622210a7b0af501e19577926f",
         "executable": false,
         "action": "installed"
       },
