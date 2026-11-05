@@ -8,4 +8,4 @@ R739-02：自然resolved路径保留唯一MERGE_HEAD、stage0 tree及原Reconcil
 
 R739-03：真实同责任Check/Commit/Review/Reconcile/shared/verification snapshot与canonical/受管投影采用同语义。旧未执行private重新prepare，既成commit/receipt由原owner恢复。显式child root独立执行；破坏性清理边界保持。
 
-本单元只定义Guru侧职责；上游regular-only API缺口由castbox/Trellis owner承担。源码/投影和最小行为验收完成不声明业务恢复；不新增采用、复跑、全矩阵、独立验收artifact或审批义务。设计关系：D739-01..03（../../design/current/parent-git-content.md）；测试：T739-01..03（../../test/current/parent-git-content.md）。
+本单元只定义Guru侧职责；上游API由castbox/Trellis owner承担。17015调查时存在regular-only缺口；#62已通过PR63合并为3c37c75897f530c3ae8c5c4d85f6c1f3455b2e5f，公开接口新增父gitlink原子语义，业务工具采用与现场效果仍独立判断。源码/投影和最小行为验收完成不声明业务恢复；不新增采用、复跑、全矩阵、独立验收artifact或审批义务。设计关系：D739-01..03（../../design/current/parent-git-content.md）；测试：T739-01..03（../../test/current/parent-git-content.md）。

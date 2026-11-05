@@ -16,9 +16,11 @@ resolved Check仍固定HEAD、唯一MERGE_HEAD、stage0 index/tree。仅公开�
 
 ## 上游与采用边界
 
-正式Delivery candidate、commit验证和GitCandidateContent归castbox/Trellis公共API。当前Guru侧修复调查时这些接口仅支持regular blob，因此显式gitlink正式Delivery及新HEAD/history链仍有真实上游缺口。Guru不得通过过滤路径、伪造content_ref、manual profile或修改生成脚本绕过。源码局部机制与普通文件流程可独立修复并验证；上游配套、完整匹配工具采用和正式全链证据仍由原owner承接。
+正式Delivery candidate、commit验证和GitCandidateContent归castbox/Trellis公共API。17015调查时这些接口仅支持regular blob，显式gitlink正式Delivery及新HEAD/history链当时存在上游缺口；这是历史观察，不再是当前上游能力结论。castbox/Trellis #62已由[PR63](https://github.com/castbox/Trellis/pull/63)合并，固定merge为3c37c75897f530c3ae8c5c4d85f6c1f3455b2e5f（head0336f397e1c38194d6d853149e0c1e9db14200cf）。同签名API在candidate capture/verify、local commit验证及GitCandidateContent中采用父index/tree原子条目；gitlink行是[path,57344,OID]，普通文件摘要表示保持。此处仅说明上游公开合同，不复制其实现算法。
 
-解除上述局部限制的条件为：上游API具备父gitlink原子语义，原采用owner完成匹配版本更新，原采用及业务owner验证其正式候选与保留现场。原owner届时更新本单元的当前实现/采用描述及适用断言；历史Guru侧修复证据保其观察范围。仅源码或投影通过不能替代本Issue的最小行为验收；上游及业务恢复不属于本Task完成条件。
+当前工作树的r4完整匹配工具采用由原guru-upgrade-tools owner执行，尚未记录成功结果。采用保持原API与职责边界，不新增Guru内容authority。Guru不得通过过滤路径、伪造content_ref、manual profile或手改生成脚本绕过consumer。原owner依据实际采用结果更新本单元的当前状态；源交付、当前工具采用和业务效果分别判断。
+
+业务仓库工具采用、正式候选现场复跑及业务恢复仍未验证，由其原owner承担，不属于本Task完成条件。不新增验收流水线或完整安装矩阵。历史Guru侧修复证据保留原观察范围；本Issue仍须满足既有Guru侧最小行为验收，源码或投影一致不能单独替代它。
 
 ## 来源与证据限制
 

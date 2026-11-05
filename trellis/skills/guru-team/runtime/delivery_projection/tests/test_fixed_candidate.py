@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import test_installed_projection as fixtures
 from runtime.delivery_projection.gates import record_gate, rework
-from runtime.task_lifecycle.errors import LifecycleContractError
 
 
 class FixedCandidateTests(unittest.TestCase):
@@ -70,13 +69,15 @@ class FixedCandidateTests(unittest.TestCase):
         (self.root / "module").mkdir()
         self.git("config", "diff.ignoreSubmodules", "all")
         provider = self.projection.api.delivery_store
-        # Observe the actual provider call. Its current regular-only rejection
-        # must remain visible instead of being hidden by the parent path scan.
+        # The parent path scan must reach the real gitlink-capable provider
+        # even when local diff configuration hides submodules by default.
         with patch.object(provider, "candidate_content_ref", wraps=provider.candidate_content_ref) as call:
-            with self.assertRaises(LifecycleContractError) as raised:
-                self.projection.candidate(["app.txt"], head_ref=head, base_ref=base)
-        self.assertEqual("invalid_candidate", raised.exception.code)
+            candidate = self.projection.candidate(["app.txt"], head_ref=head, base_ref=base)
         self.assertEqual(["app.txt", "module"], call.call_args.args[1])
+        self.assertEqual(["app.txt", "module"], candidate["paths"])
+        provider.verify_candidate(self.root, candidate)
+        self.assertEqual(["160000", "commit", "2" * 40, "module"],
+                         self.git("ls-tree", "HEAD", "--", "module").split())
 
     def test_actual_head_evolution_retains_history_without_applicable_old_gates(self):
         self.seed()

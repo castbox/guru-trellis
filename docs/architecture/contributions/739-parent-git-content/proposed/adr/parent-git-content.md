@@ -16,10 +16,10 @@ Issue739及原resolved合并现场说明，父仓合法stage0指针与旧HEAD不
 
 旧未执行private候选因语义变化重新prepare；已经生成commit/receipt的操作由原owner核真实结果并恢复，不能重复提交。结果receipt语义未变不强行改版。受管投影由完整upgrade-tools owner更新，不热改目标或上游生成脚本。
 
-当前上游regular-only API是明确外部能力依赖。本仓Guru侧修复可独立完成源码、普通文件流程及局部原子机制；外部能力由上游API/工具采用/Check/Review/原业务owner完成正式gitlink candidate、新HEAD/history链和保留现场复跑。该依赖不转为第二authority，不因局部测试绿色消失。源码、采用、外部效果分别判断。
+17015调查中的regular-only API限制保留为历史依据。castbox/Trellis #62已由PR63合并，固定merge3c37c75897f530c3ae8c5c4d85f6c1f3455b2e5f（head0336f397e1c38194d6d853149e0c1e9db14200cf）以同签名API支持父index/tree原子gitlink行[path,57344,OID]，普通文件摘要保持。当前工作树r4完整匹配采用正在由原tools owner执行，尚不声明成功。采用沿既有owner和公开API，不产生第二authority或新的Guru机制；源码、工具采用和外部效果分别判断。业务采用与保留现场复跑仍未验证，由原业务owner承担，不属本Task完成条件。
 
 ## 验证与晋升
 
-本Task design V1—V4定义真实Git、正式wrappers、自然metadata、精确tree和父index drift观察；上游链未具备时保留实际阻断，不mock成功。完整领域定义见03-domains/parent-git-content.md，算法与payload归canonical runtime/data-contracts。拟写经原candidate Check和Architecture final_integration晋升/readback后，最终Check/Review覆盖真实after；当前proposed不代表已经实施。
+本Task design V1—V4定义真实Git、正式wrappers、自然metadata、精确tree和父index drift观察；上游曾缺能力的原观察保持；当前按实际匹配provider及consumer结果判断，不mock成功或把上游合并等同于本机采用、业务恢复。完整领域定义见03-domains/parent-git-content.md，算法与payload归canonical runtime/data-contracts。拟写经原candidate Check和Architecture final_integration晋升/readback后，最终Check/Review覆盖真实after；当前proposed不代表已经实施。
 
 本Issue完成边界按2026-11-05修订Issue739：只交付Guru侧修复及最小验收；上游改造、工具采用、业务复跑非本Task后继阶段或额外完成条件，不以局部测试声明其成功。
