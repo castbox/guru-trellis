@@ -40,5 +40,3 @@ def require_merge_state(repo: Path, new_base: str | None) -> None:
         raise CommandError("stale_identity", "merge_head", "Bind exactly one reviewed MERGE_HEAD.", 3)
     if _git(repo, "ls-files", "--unmerged"):
         raise CommandError("stale_identity", "repository.index", "Resolve every conflict before reconciliation.", 3)
-
-

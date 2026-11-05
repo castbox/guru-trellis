@@ -731,6 +731,15 @@
         "persistence": "ignored_runtime"
       },
       {
+        "id": "legacy_recovery_delivery_commit_candidate_2_0",
+        "kind": "runtime_checkpoint",
+        "schema": {
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json",
+          "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+        },
+        "persistence": "ignored_runtime"
+      },
+      {
         "id": "delivery_commit_candidate_3_0",
         "kind": "runtime_checkpoint",
         "schema": {
