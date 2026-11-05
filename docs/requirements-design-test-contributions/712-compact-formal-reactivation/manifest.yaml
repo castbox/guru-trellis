@@ -1,0 +1,22 @@
+task_id: 712-compact-formal-reactivation
+source: https://github.com/castbox/guru-trellis/issues/712
+status: promoted
+strategy: delta_first
+authority_identity: guru-trellis-rdt
+source_revision: 3a4b65ab08cdfe05d97f68e7f2e7512254d728f1
+architecture:
+  locator: docs/architecture/README.md
+  version: guru-trellis-architecture
+  status: active
+documents:
+  requirements: requirements.md
+  design: design.md
+  test: test.md
+  traceability: traceability.md
+proposed_targets:
+  requirements:
+    - docs/requirements/current/completion-closure.md
+  design:
+    - docs/design/current/completion-closure.md
+  test:
+    - docs/test/current/completion-closure.md

@@ -9,6 +9,8 @@ from unittest import mock
 
 from test_delivery_reactivate import Fixture, owner, shared, PACKAGE
 from runtime.delivery_projection import DeliveryProjection, authority_ref
+from runtime.delivery_projection.adapter import _installed_modules
+from runtime.io import CommandError
 from runtime.delivery_projection.tests.upstream_fixture import public_task
 from runtime.maintenance_transport import call
 from runtime.task_lifecycle import TaskLifecycleKey, inspect_repository, BranchBindingStore
@@ -18,7 +20,9 @@ from runtime.task_lifecycle.identity import resolve_task_id
 
 
 class FormalArchiveReactivateTests(Fixture):
-    def prepare_formal(self, adopt=True):
+    compact = False
+
+    def prepare_formal_archive(self):
         selected = os.environ.get('TRELLIS_MAINTENANCE_CANDIDATE')
         if not selected:
             self.fail('Matching reviewed TRELLIS_MAINTENANCE_CANDIDATE is required; no SKIP proof.')
@@ -30,15 +34,65 @@ class FormalArchiveReactivateTests(Fixture):
         original = PACKAGE.parents[4] / archive_ref
         shutil.copytree(original, self.root / archive_ref)
         raw = json.loads((self.root / archive_ref / 'task.json').read_text())
+        if getattr(self, "compact", False):
+            # Preserve the historical ten-field shape. No schema, structured
+            # source or generation is added to the archived record.
+            raw = {'id': raw['id'], 'name': raw['name'], 'title': '去敏基础阶段历史样本',
+                   'status': 'completed', 'branch': 'codex/old-delivery', 'base_branch': 'main',
+                   'creator': 'fixture', 'assignee': 'fixture',
+                   'scope': 'GitHub issue: https://github.com/example/repository/issues/503',
+                   'completedAt': '2026-10-09'}
+            (self.root / archive_ref / 'task.json').write_text(json.dumps(raw, ensure_ascii=False, indent=2) + '\n')
+        inspected = call(self.source, 'inspectTaskTarget', {'root': str(self.root), 'task_ref': archive_ref})
+        generation = inspected['key']['lifecycle_generation']
+        self.assertEqual(inspected['classification']['kind'], 'legacy' if getattr(self, 'compact', False) else 'schema1')
         summary = json.loads((self.root / archive_ref / 'finish-summary.json').read_text())
-        public = self.record_merge(archive_ref, summary['task']['artifact_dir'], raw['id'], raw['lifecycle_generation'])
+        if getattr(self, "compact", False):
+            archive = self.root / archive_ref
+            (archive / 'prd.md').write_text('# 去敏历史样本的已接受基础阶段\n\n'
+                '来源为 example/repository#503。整体 Issue 的后续工作未纳入该历史阶段。\n'
+                'BASE-01：保存基础配置。BASE-02：读取基础配置。BASE-03：校验配置。\n'
+                'BASE-04：返回基础错误。BASE-05：验证上述基础行为。\n'
+                '历史交付只包含 BASE-01～05；后续编辑能力仍需当前 scope owner 判断。\n')
+            (archive / 'historical-install-finish.md').write_text('# 去敏安装及 Finish 合同样本\n\n'
+                '这是隔离测试的历史合同，不声称真实业务验收。旧安装保留十字段 task.json。\n'
+                '旧 Finish 在完成基础阶段后将 active task 移至月度归档，保留 PRD，\n'
+                '并写 schema_version=2、generator=guru-team.finalize-task 的摘要。\n'
+                '交付文件与归档可在同一合并 PR 中。creator/assignee 仅为历史资料。\n'
+                '原正式阶段的范围是 BASE-01～05；当前范围和恢复资格仍由实际 Agent 审核。\n')
+            for name in ('design.md', 'implement.md'):
+                (archive / name).write_text('# 去敏基础阶段\n\n按 prd.md 的 BASE-01～05 交付基础配置；后续能力未纳入。\n')
+            summary['task']['title'] = raw['title']
+            summary['index'] = {'problem': '去敏基础配置阶段', 'outcome': 'BASE-01～05 已交付并归档。',
+                                'changed_behavior': ['交付基础阶段并归档'], 'affected_surfaces': [],
+                                'contract_changes': [], 'search_terms': {'issue_refs': ['#503']},
+                                'retrieval_text': '去敏历史样本，仅 BASE-01～05。'}
+            (archive / 'finish-summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n')
+            active = self.root / summary['task']['artifact_dir']
+            active.mkdir(parents=True)
+            (active / 'task.json').write_text(json.dumps({**raw, 'status': 'in_progress'}, ensure_ascii=False) + '\n')
+            (active / 'prd.md').write_bytes((archive / 'prd.md').read_bytes())
+            # Real Git predecessor and removal, all introduced by the same PR.
+            self.git(self.root, 'add', str(active.relative_to(self.root)))
+            self.git(self.root, 'commit', '-qm', 'accepted historical base scope')
+            shutil.rmtree(active)
+            (self.root / 'fixture-delivery.txt').write_text('Delivered BASE-01 through BASE-05 only.\n')
+        public = self.record_merge(archive_ref, summary['task']['artifact_dir'], raw['id'], generation)
         scope = authority_ref(self.root / archive_ref / 'prd.md', self.root)
+        inspected = call(self.source, 'inspectTaskTarget', {'root': str(self.root), 'task_ref': archive_ref})
+        return public, scope, raw, inspected
+
+    def prepare_formal(self, adopt=True):
+        public, scope, raw, inspected = FormalArchiveReactivateTests.prepare_formal_archive(self)
+        generation = inspected['key']['lifecycle_generation']
+        archive_ref = public['archive_anchor']['archive_ref']
         semantic = self.semantic(public, scope, adopt=adopt)
         inspected = call(self.source, 'inspectTaskTarget', {'root': str(self.root), 'key': public['archived_lifecycle'], 'task_ref': archive_ref})
-        projection = public_task(raw)
-        projection['lifecycle_generation'] = raw['lifecycle_generation'] + 1
+        projection = public_task({**{k: v for k, v in raw.items() if k not in ('creator', 'assignee')},
+                                  'source': shared.task_source(raw)})
+        projection['lifecycle_generation'] = generation + 1
         projection['accepted_scope'] = scope
-        facts = shared.read_shared_archive(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'])
+        facts = shared.read_shared_archive(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'], self.source)
         upstream = shared.formal_inspection(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'], facts, self.source)
         upstream['root'] = semantic['acquisition'].get('target_path', str(self.root))
         upstream.update(active_ref=semantic['acquisition']['task_ref'], projection=projection,
@@ -123,8 +177,11 @@ class FormalArchiveReactivateTests(Fixture):
         self.prs.append({'number': 2, 'merged_at': '2026-10-21T00:00:00Z', 'merge_commit_sha': merge,
                          'base': {'ref': 'main', 'repo': {'full_name': 'example/repository'}}})
         self.assertEqual(resolve_task_id(self.root, key['task_id']).task_ref, archive_ref)
+        native = _installed_modules(self.root, ('task_utils',)).task_utils
+        self.assertEqual(native.task_id_collisions(key['task_id'], self.root / '.trellis/tasks', self.root,
+                                                  exclude=self.root / archive_ref), [])
         # The original owner first inspects the actual successor and reviews its new anchor.
-        facts = shared.read_shared_archive(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'])
+        facts = shared.read_shared_archive(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'], self.source)
         successor = shared.find_successor(self.root, TaskLifecycleKey(**public['archived_lifecycle']), public['archive_anchor'], facts, self.source)
         self.assertEqual(successor, {'key': key, 'task_ref': archive_ref})
         new_public = {**public, 'archived_lifecycle': key, 'archive_anchor': {**public['archive_anchor'], 'archive_ref': archive_ref,
@@ -138,3 +195,40 @@ class FormalArchiveReactivateTests(Fixture):
             output = owner.execute(self.root, new_public, new_semantic)
             self.assertEqual(output['lifecycle_generation'], 2)
             self.assertFalse(any(row.args[1] == 'prepareFormalArchiveReactivation' for row in calls.call_args_list))
+
+
+class CompactFormalArchiveReactivateTests(FormalArchiveReactivateTests):
+    compact = True
+
+    def test_wrong_predecessor_key_stops_before_conversion(self):
+        public, scope, raw, inspected = FormalArchiveReactivateTests.prepare_formal_archive(self)
+        archive = self.root / public['archive_anchor']['archive_ref'] / 'task.json'
+        before = archive.read_bytes()
+        with self.assertRaises((LifecycleContractError, CommandError)):
+            shared.read_shared_archive(self.root, TaskLifecycleKey(raw['id'], 1), public['archive_anchor'], self.source)
+        self.assertEqual(archive.read_bytes(), before)
+        self.assertFalse((self.root / '.trellis/tasks/current').exists())
+
+    def test_mismatched_source_projection_stops_without_archive_change(self):
+        public, semantic, scope = self.prepare_formal()
+        archive = self.root / public['archive_anchor']['archive_ref'] / 'task.json'
+        before = archive.read_bytes()
+        # An ordinary caller selected another Issue while preparing projection.
+        semantic['formal_input']['projection']['source']['number'] += 1
+        with self.assertRaises(CommandError):
+            owner.execute(self.root, public, semantic)
+        self.assertEqual(archive.read_bytes(), before)
+        self.assertFalse((self.root / '.trellis/tasks/current').exists())
+
+    def test_lost_receipt_discovers_linked_public_successor_without_prepare(self):
+        public, semantic, scope = self.prepare_formal(adopt=False)
+        first = owner.execute(self.root, public, semantic)
+        target = Path(semantic['acquisition']['target_path'])
+        before = (target / '.trellis/tasks/current/task.json').read_bytes()
+        owner.transaction_path(inspect_repository(self.root), TaskLifecycleKey(**public['archived_lifecycle'])).unlink()
+        with mock.patch.object(owner, 'call', wraps=owner.call) as calls, mock.patch.object(owner, 'acquire_checkout', wraps=owner.acquire_checkout) as acquired:
+            recovered = owner.execute(self.root, public, {k: v for k, v in semantic.items() if k != 'acquisition'})
+        self.assertEqual(recovered, first)
+        self.assertEqual((target / '.trellis/tasks/current/task.json').read_bytes(), before)
+        acquired.assert_not_called()
+        self.assertFalse(any(row.args[1] == 'prepareFormalArchiveReactivation' for row in calls.call_args_list))

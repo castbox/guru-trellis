@@ -67,7 +67,7 @@ bookkeeping 不是业务 Delivery，无 Issue-closing keyword，无新旧 Delive
 
 共享 Finish 由准确 archive commit 中的 TaskId/generation/source/scope、该版本 Completion→Closure/summary 关系、精确 bookkeeping PR/target、active 移除和 archive 一致性证明。archive 已进入所选目标历史后，目标后续前进或后继 active 出现不否定该历史；不要求 HEAD 等于旧 merge，不要求把 merge SHA 写回自身 archive，不递归创建 Finish PR。原机 seal、退出和 Cleanup pending 仅保留原机责任。
 
-Reactivate 先读当前可获取后继。唯一合法后继继续其 generation；没有后继才由公共 writer 严格增代，保留 TaskId、source、规划和交付历史，不继承 gate 或创建空 Delivery。当前 Task2 使用公共 reopen 的真实 Completion 条件。受支持正式旧 schema1 固定兼容集包括 Guru `.3`、合法 id/顶层 generation/结构化 source/completed、summary2 和准确归档已合入目标；经 matching formal maintenance 一次收敛，不能补造旧 Completion/Closure/seal 或自动当人工归档。人工历史继续原 maintenance，未完成 closeout 回原 Finish；不扩任意旧格式。
+Reactivate 先读当前可获取后继。唯一合法后继继续其 generation；没有后继才由公共 writer 严格增代，保留 TaskId、source、规划和交付历史，不继承 gate 或创建空 Delivery。当前 Task2 使用公共 reopen 的真实 Completion 条件。受支持正式旧家族由匹配公共 capability 明确声明：原 schema1 固定兼容集保持；新增 compact known_legacy 按 R712 审核。schema1 原要求 Guru `.3`、合法 id/顶层 generation/结构化 source/completed、summary2 和准确归档已合入目标；经 matching formal maintenance 一次收敛，不能补造旧 Completion/Closure/seal 或自动当人工归档。人工历史继续原 maintenance，未完成 closeout 回原 Finish；不扩任意旧格式。
 
 新环境由原 Establish→Ensure→Bind 恢复自己的合法资源，不能清理 A 或另一 Task。再次工作按实际进入新 Delivery 或无 Delivery 的 evidence-refresh，再独立 Completion/Closure/Finish。至少一个独立 clone 原生样本分别证明两条再次完成链；fixture、source 或安装通过不替代它。
 
@@ -98,3 +98,12 @@ Reactivate 先读当前可获取后继。唯一合法后继继续其 generation�
 **R-MECH-06 / BEH-MECH-COMPLETION**：Completion 依据 R-MECH-05 的存量关系，分别判断目标生效、新入口交付、旧实现迁完和环境切换。新入口交付或基线晋升不证明存量纠正完成。共存会破坏同一约束的必要适配仍未完成时，不宣称纠正完成。迁移属于 Task accepted scope 时，即使拆到后继 Delivery，也保留整体未完成责任；必要实现遗漏走原 implementation/remaining/additional Delivery 路由，不伪装成 evidence_pending。
 
 范围外存量若有充分的独立共存依据、实际剩余采用者和可执行承接，不自动阻塞当前 Task；场景不同而仍合理的旧机制明确范围保留。真实外部证据缺口才进入原 evidence_refresh。旧能力和配置只在真实支持窗口退出且无消费者后按原合同删除。Closure/Finish 不取得迁移、共享知识或额外写入权限。设计：同名 D-MECH-COMPLETION；验证：同名 T-MECH-04。
+
+## R712：精简正式归档家族
+**R712-01 / BEH712-FORMAL**：在原共享正式终态资格审核内，支持公共 Trellis 明确声明的 compact known_legacy 家族。AI 读取原安装/Finish 合同、精确原档、scope、summary、真实 PR/Git 和当前请求；status、人员字段或 parser 分类均不单独证明正式完成。与业务交付同一 PR 的归档可按实际历史核验，不要求拆分 bookkeeping PR。人工历史、未完成 closeout 和不支持家族保持原路线。
+
+**R712-02 / BEH712-IDENTITY**：由公共 owner 从精确归档定位解释家族、前驱 key/source 并正式增代；Guru 不补默认 generation、不复制 parser。后继保持原 TaskId、历史 scope 与原档字节，缺 structured source 时由原 source owner 核定最小关系。历史只完成基础阶段时，不扩张为源 Issue 全部完成，不继承旧 gate 或关闭权限。
+
+**R712-03 / BEH712-CONTINUATION**：公共 applied 后，原环境 owners 使用真实 key/ref 完成 Identity、Ensure、Bind、native continuation 和下一 scope owner 的实际消费。pending 或 applied 后绑定中断继续原 operation；私有回执丢失先核真实后继，不重复 prepare、增代或创建资源。后继再次归档后，受影响 TS/Python/Guru 前驱消费者继续识别同一公共关系，普通 current reader 保持严格。
+
+**R712-04 / BEH712-DISTRIBUTION**：目标工具由原 tools owner 采用固定 source/build/API 的成对包，保留 Task/session/用户内容。canonical、managed 和声明平台投影同步。隔离候选验证不证明正式 source lock、真实业务恢复或完整多平台 Release；最多一个必要代表性 clean throwaway。设计 D712，验证 T712。

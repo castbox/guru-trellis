@@ -313,21 +313,25 @@ def _archived_lifecycle_candidates(repo_root: Path, matches: list[tuple[str, str
                 continue
             current = _read_identity(root, ref)
             source = _read_task_metadata(root, source_ref)
+            if formal:
+                from ..delivery_projection.adapter import _installed_modules
+                from .git_facts import commit_path_bytes, inspect_repository
+                # The installed public relation reader owns legacy family,
+                # generation and source projection. Keep the Git binding here.
+                native = _installed_modules(root, ("task_utils",)).task_utils
+                if (current.legacy
+                        or commit_path_bytes(inspect_repository(root), resumed.get("archive_commit", ""), source_ref + "/task.json")
+                        != (root / source_ref / "task.json").read_bytes()
+                        or native.task_id_collisions(task_id, root / ".trellis/tasks", root, exclude=root / ref)):
+                    continue
+                historical_sources.add(source_ref)
+                continue
             source_generation = lifecycle_generation(source)
             if (current.legacy or source.get("schema_version") == "2.0"
                     or source.get("id") != task_id
                     or resumed.get("key") != {"task_id": task_id, "lifecycle_generation": source_generation}
                     or source_generation > current.lifecycle_generation):
                 continue
-            if formal:
-                from .git_facts import commit_path_bytes, inspect_repository
-                if (set(resumed) != {"key", "archive_ref", "original_task_ref", "archive_commit"}
-                        or current.lifecycle_generation <= source_generation
-                        or source.get("status") != "completed"
-                        or source.get("source") != _read_task_metadata(root, ref).get("source")
-                        or commit_path_bytes(inspect_repository(root), resumed["archive_commit"], source_ref + "/task.json")
-                        != (root / source_ref / "task.json").read_bytes()):
-                    continue
             # The public writer retained these exact bytes; Finish only moved
             # their containing task tree. Reservation itself keeps both records.
             if (migration / "source-task.json").read_bytes() == (root / source_ref / "task.json").read_bytes():
