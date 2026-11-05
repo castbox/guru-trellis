@@ -48,6 +48,8 @@ Read the same provider's `causal-completion-semantics.md` before goal judgment:
 `.trellis/spec/workflow/` after installation, or
 `trellis/presets/guru-team/spec/workflow/` in the complete source. It owns common
 causal evidence and completion semantics; this package owns candidate admission.
+Read the same provider’s `quality-guidelines.md#test-and-validation-value` for
+validation selection, applicable evidence reuse and experiment stopping.
 
 Read current scope, authority, mechanism and evidence yourself. Apply the
 contract's goal-specific method to the complete eligible set, then author the

@@ -14,8 +14,10 @@ use its actual caller, target identity and consumer binding.
 Before goal-specific judgment, read the complete provider's
 `causal-completion-semantics.md`: `.trellis/spec/workflow/` after installation,
 or `trellis/presets/guru-team/spec/workflow/` in source. That common authority
-owns evidence dimensions and completion claims. This package applies them to
-candidate admission and retains its own return routes.
+owns evidence dimensions and completion claims. Read the same provider’s
+`quality-guidelines.md#test-and-validation-value` for behavior-derived validation,
+evidence reuse, experiment selection and stopping. This package applies those
+methods to candidate admission and retains its own return routes.
 
 ### Entry boundaries and missing prerequisites
 
@@ -73,13 +75,20 @@ a persisted questionnaire or public handoff.
   production permissions and side-effect boundaries; qualification grants no write.
 - **Root-cause fix:** locate the first deviation on the original object/stage,
   causal chain, hypothesis and competing explanations. Identify changed state,
-  algorithm, resource behavior or external interaction. Reverse-prove the
-  counterfactual: without changing cause does failure persist, move earlier,
-  change name, become delayed or transfer owner? What happens without the
-  mechanism? Keep the same input or strictly equivalent sample in the original
-  path and plan separate admission, failure stage, classification and final
-  outcome observations. Consider a smaller mechanism nearer the cause.
-  Supported evidence and plan yield `root_cause_mechanism_eligible`.
+  algorithm, resource behavior or external interaction. Assess counterfactual
+  basis: without changing cause does failure persist, move earlier, change
+  name, become delayed or transfer owner? What happens without the mechanism?
+  Basis may come from applicable existing observations, causal analysis or a
+  controlled experiment under the shared validation method; these questions
+  do not mandate an old-version failure, isolated rollback or repeated red/green.
+  Keep the same input or strictly equivalent sample in the original path and
+  plan separate admission, failure stage, classification and final outcome
+  observations. Consider a smaller mechanism nearer the cause. At admission,
+  review current causal basis, the candidate mechanism and its validation plan;
+  do not require passing results for a repair not yet implemented. The execution
+  owner later judges repair completion from promised behavior and applicable
+  post-change evidence. Supported current evidence and plan yield
+  `root_cause_mechanism_eligible`.
   Missing causal/counterfactual basis yields `diagnosis_incomplete`, precise
   evidence gaps and `diagnosis_required`; pause this repair while allowing
   legitimate investigation and independently qualified mitigation.
