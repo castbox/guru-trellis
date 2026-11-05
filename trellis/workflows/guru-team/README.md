@@ -16,6 +16,10 @@ workflow 调用或用户要求正式阶段结果时，才按原前置与完整�
 选择专项方法。选择方法唯一见
 [Specialist Review Standards](../../presets/guru-team/spec/workflow/quality-guidelines.md#specialist-review-standards)。
 
+行为测试、因果验证、证据采用和实验停止的共同方法见
+[Test And Validation Value](../../presets/guru-team/spec/workflow/quality-guidelines.md#test-and-validation-value)。
+Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+
 Issue 内容、需求本身和动议本身不属于 `guru-review-change`，即使它们是改动文件。
 它们保留现有 Issue、需求专项或项目动议/上游需求审核入口。需求用于判断实现覆盖时，
 可作为本 skill 的来源；判断需求本身是否完整合理时，使用其上游 owner。
