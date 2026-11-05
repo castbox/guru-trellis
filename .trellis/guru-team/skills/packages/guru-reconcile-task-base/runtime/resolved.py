@@ -7,11 +7,37 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-from common import git, index_tree_digest, resolve_commit
+from common import git, index_tree_digest, resolve_commit, parent_changes
 from runtime.io import CommandError
 
 
 from runtime.git_merge import git_path, other_sequencer, require_merge_state
+
+
+def task_metadata_snapshot(repo: Path, task_ref: str) -> tuple[str, bytes, bytes]:
+    """Preserve the current, publicly validated Task record without staging it."""
+    path = str(Path(task_ref) / "task.json")
+    target = repo / path
+    if target.is_symlink() or not target.is_file():
+        raise CommandError("stale_identity", "task_ref", "Use the current regular Task record.", 3)
+    entry = subprocess.run(["git", "ls-files", "--stage", "-z", "--", path], cwd=repo,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True).stdout
+    return path, target.read_bytes(), entry
+
+
+def require_resolved_worktree(repo: Path, metadata: tuple[str, bytes, bytes],
+                              *, terminal: bool = False) -> None:
+    """Only the exact current Task record may differ outside the reviewed tree."""
+    path = metadata[0]
+    if task_metadata_snapshot(repo, str(Path(path).parent)) != metadata:
+        raise CommandError("stale_identity", "task_metadata", "Preserve the current Task bytes and index entry.", 3)
+    for row in parent_changes(repo):
+        state, changed = row["status_text"], row["path"]
+        metadata_states = {" M"} if terminal else {" M", "MM", "AM"}
+        if changed == path and state in metadata_states:
+            continue
+        if terminal or state[1] != " " or state[0] in {"?", "U"}:
+            raise CommandError("stale_identity", "worktree", "Stage every resolved business change; preserve only current Task metadata.", 3)
 
 
 def commit_facts(repo: Path, commit: str) -> tuple[list[str], str, str]:
@@ -44,7 +70,7 @@ def _index_entries(repo: Path, index: Path | None = None) -> dict[bytes, bytes]:
 
 def validate_integration_paths(repo: Path, prior: str, tree: str, paths: list[str],
                                index: Path, *, live_index: bool) -> None:
-    changed = subprocess.run(["git", "diff", "--no-renames", "--name-only", "-z", prior, tree],
+    changed = subprocess.run(["git", "diff", "--no-renames", "--name-only", "-z", "--ignore-submodules=none", prior, tree],
                              cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True).stdout
     selected = {os.fsencode(path) for path in paths}
     if not set(filter(None, changed.split(b"\0"))) <= selected:
@@ -56,11 +82,11 @@ def validate_integration_paths(repo: Path, prior: str, tree: str, paths: list[st
     if any(candidate.get(path) != actual.get(path) for path in selected):
         raise CommandError("stale_identity", "repository.index",
                            "The reviewed integration paths differ from the live stage-0 index.", 3)
-    unstaged = subprocess.run(["git", "diff", "--quiet", "--", *paths], cwd=repo,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if unstaged.returncode or git(repo, "ls-files", "--others", "--exclude-standard", "--", *paths):
-        raise CommandError("stale_identity", "worktree",
-                           "Stage the reviewed integration paths before reconciliation.", 3)
+    for row in parent_changes(repo):
+        if any(row["path"] == path or row["path"].startswith(path + "/") for path in paths):
+            if row["status_text"][1] != " ":
+                raise CommandError("stale_identity", "worktree",
+                                   "Stage the reviewed integration paths before reconciliation.", 3)
 
 
 def verify_commit(repo: Path, commit: str, parents: list[str], tree: str, message: str,

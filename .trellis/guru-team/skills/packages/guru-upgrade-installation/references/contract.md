@@ -122,6 +122,12 @@ global npm installations or node_modules to bypass the old-version guard.
    config is allowed. Compare historical/business/spec/planning bytes and modes
    explicitly rather than treating an untouched path as migration proof.
 
+Parent business-preservation snapshots bind the complete parent index,
+including gitlink mode/OID changes. Gitlink checkout directories and retained
+child directories after staged parent deletion are outside regular-file
+preimages. Parent-owned ordinary replacements remain included. Child internal
+changes do not invalidate this local comparison token.
+
 ## Resume and rollback
 
 `resume_required` carries only `profile=resume` and `recovery_ref` to this

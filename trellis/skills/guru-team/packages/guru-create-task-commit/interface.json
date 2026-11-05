@@ -243,8 +243,8 @@
       "path": "schemas/public-output-delivery-draft-committed-1.0.schema.json"
     },
     {
-      "id": "delivery_commit_candidate_2_0",
-      "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+      "id": "delivery_commit_candidate_3_0",
+      "path": "schemas/delivery-commit-candidate-3.0.schema.json"
     },
     {
       "id": "delivery_commit_result_2_0",
@@ -731,11 +731,11 @@
         "persistence": "ignored_runtime"
       },
       {
-        "id": "delivery_commit_candidate_2_0",
+        "id": "delivery_commit_candidate_3_0",
         "kind": "runtime_checkpoint",
         "schema": {
-          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json",
-          "path": "schemas/delivery-commit-candidate-2.0.schema.json"
+          "schema_id": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-3.0.json",
+          "path": "schemas/delivery-commit-candidate-3.0.schema.json"
         },
         "persistence": "ignored_runtime"
       },

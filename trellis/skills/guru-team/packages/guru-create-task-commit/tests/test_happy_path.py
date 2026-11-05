@@ -237,6 +237,34 @@ class PublicInvocationTest(unittest.TestCase):
         )
         self.assertEqual(commits_before + 1, int(self.git("rev-list", "--count", "HEAD")))
 
+    def test_old_delivery_candidate_receipt_recovers_the_existing_commit(self) -> None:
+        # The boundary is recovery of a previously published operation. Seed the
+        # historical Delivery record around a real commit, not a new execution.
+        candidate = self.candidate()
+        self.invoke_public()
+        commit = self.git("rev-parse", "HEAD")
+        count = self.git("rev-list", "--count", "HEAD")
+        receipt_path = commit_result_path(self.repo, "09-02-happy-path", "001")
+        receipt = json.loads(receipt_path.read_text())
+        key = {"task_id": "09-02-happy-path", "lifecycle_generation": 0,
+               "delivery_id": "c5ac1720-a36d-4f6a-9e16-6ce9a6446e93"}
+        candidate.update({"$schema": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json",
+                          "schema_version": "delivery-2.0", "delivery_key": key,
+                          "commit_kind": "final", "check_result_id": "check:historical"})
+        candidate["task"].pop("status")
+        receipt.update({"$schema": "https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-result-2.0.json",
+                        "schema_version": "delivery-2.0", "delivery_key": key,
+                        "commit_kind": "final", "check_result_id": "check:historical"})
+        self.candidate_path.write_text(json.dumps(candidate))
+        receipt_path.write_text(json.dumps(receipt))
+        recovered = invoke.run(PACKAGE, {}, ["--root", str(self.repo),
+                               "--candidate-artifact", str(self.candidate_path)])
+        self.assertEqual(commit, recovered["branch_review_commit"])
+        self.assertEqual(key, recovered["delivery_key"])
+        self.assertEqual(count, self.git("rev-list", "--count", "HEAD"))
+        self.assertFalse(self.candidate_path.exists())
+        self.assertEqual(receipt, json.loads(receipt_path.read_text()))
+
     def test_recovery_rejects_changed_head_without_reexecuting(self) -> None:
         self.invoke_public()
         (self.repo / "after.txt").write_text("after\n")

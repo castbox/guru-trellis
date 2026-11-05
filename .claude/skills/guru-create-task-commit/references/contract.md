@@ -95,8 +95,8 @@ prepare and the current-dialogue commit boundary. Complete Check, heavy tests
 and final Branch Review remain pending duties.
 
 Use the same prepare and exact invoke transaction, real hooks and same-commit
-receipt recovery. The private candidate/result use the closed delivery-2.0 union:
-draft contains no Check or phase2 anchor; final retains both real bindings.
+receipt recovery. The private candidate uses delivery-3.0; the result receipt retains delivery-2.0.
+Draft contains no Check or phase2 anchor; final retains both real bindings.
 `draft_committed` carries task_ref/key/B/commit_sha only to the workflow draft
 router and original Publication. It cannot enter formal Branch Review.
 
@@ -133,8 +133,13 @@ authorization, cross-Skill digest, freshness journal, or terminal result. It is 
 task artifact, never enters `path_classifications` or `exact_stage_paths`, and
 is never staged or committed.
 
-The current Delivery candidate uses the closed `delivery-2.0` union. Older Task candidates are not converted and
-no removed facts are synthesized. The owner deletes or rejects it and performs
+The current Delivery candidate uses the closed `delivery-3.0` union. Older Task candidates are not converted and
+no removed facts are synthesized. An unexecuted delivery-2.0 candidate is
+rejected and requires complete reprepare. When a commit receipt already exists,
+the original invoke verifies the real commit and recovers that same operation
+before another prepare. Recovery may validate the original candidate schema;
+normal execution has no old/new dual reader. Result receipt semantics/version
+remain unchanged. For an unexecuted candidate the owner performs
 a complete reprepare from the selected profile evidence, live task/HEAD/snapshot,
 scope classifications, and message review.
 
@@ -148,8 +153,14 @@ Classify every dirty path exactly once:
 Only `task-reviewed` paths and a rename source inherited from its reviewed
 destination may enter `exact_stage_paths`. Copy provenance does not grant stage
 authority. Every ordinary file binds exact bytes and mode; every gitlink binds
-the reviewed submodule HEAD and clean state. The executor rechecks these facts
-before any index/ref mutation.
+the reviewed parent index mode/OID. A staged gitlink deletion records mode
+160000 with index_blob=null and deleted=true even when the child directory remains.
+The parent HEAD type is read only while capturing this absence. Gitlink rows have
+worktree_sha256=null and no child HEAD/initialized/dirty fields. Replacements
+whose new index mode is a blob use the ordinary worktree content contract. The
+executor rereads the parent entry, writes the captured OID with update-index,
+and removes staged deletions and rename sources from the isolated index. It
+never enters the child or obtains a pointer through child HEAD/git add.
 
 Author `type`, `scope`, `summary`, `background`, `changes`, `boundaries`, and
 `validations` from the current diff, task docs, and durable docs. When the
@@ -222,7 +233,7 @@ Pinned-old private executor diagnostics do not establish a current Delivery gate
 `check-task-commit-plan.sh` and `create-task-commit.sh` remain stable
 package-private testing, diagnostic, and bounded recovery entries.
 
-`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-2.0` candidates
+`scripts/prepare-task-commit.sh` canonicalizes and validates current `delivery-3.0` candidates
 before any required confirmation. `scripts/check-task-commit-plan.sh` repeats
 objective validation immediately before execution. `scripts/create-task-commit.sh` repeats
 that validation, rejects active merge/cherry-pick/revert/rebase/sequencer/`git

@@ -4,6 +4,7 @@ from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
+from runtime.parent_git import ParentGitError, head_entries, index_entries as parent_index_entries, parent_status_records
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -27,7 +28,9 @@ def git(repo,*args,env=None,check=True,input=None):
  if check and p.returncode:raise CommandError("stale_identity","repository",p.stderr.strip() or "Repair Git state.",3)
  return p
 def sha_file(path):return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
-def validate(package_root,value):validate_json(value,package_root/("schemas/delivery-commit-candidate-2.0.schema.json" if "delivery_key" in value else "schemas/task-commit-candidate.schema.json"),"candidate")
+def validate(package_root,value):
+ if "delivery_key" in value and value.get("schema_version")!="delivery-3.0":raise CommandError("stale_identity","candidate.schema_version","Reprepare an unexecuted candidate with the current parent-index contract; recover any existing commit receipt through the original invoke first.",3)
+ validate_json(value,package_root/("schemas/delivery-commit-candidate-3.0.schema.json" if "delivery_key" in value else "schemas/task-commit-candidate.schema.json"),"candidate")
 def repo_rel(repo,path):return path.resolve().relative_to(repo.resolve()).as_posix()
 def task_dir(repo,value):
  p=(repo/str(value or "")).resolve()
@@ -39,9 +42,9 @@ def json_file(path,field):
  if not isinstance(value,dict):raise CommandError("invalid_json",field,"Provide one valid JSON object.")
  return value
 def index_identity(repo,path):
- p=git(repo,"ls-files","--stage","--",path,check=False)
- if p.returncode or not p.stdout.strip():return None,None
- fields=p.stdout.split(None,3);return (fields[1],fields[0]) if len(fields)>=3 else (None,None)
+ try:entry=parent_index_entries(repo).get(path)
+ except ParentGitError as exc:raise CommandError("stale_identity",path,str(exc),3) from exc
+ return (entry["oid"],entry["mode"]) if entry else (None,None)
 def worktree_identity(repo,path):
  q=repo/path
  try:meta=q.lstat()
@@ -49,40 +52,28 @@ def worktree_identity(repo,path):
  if stat.S_ISDIR(meta.st_mode):return None,None
  if stat.S_ISLNK(meta.st_mode):content=os.readlink(q).encode();mode="120000"
  elif stat.S_ISREG(meta.st_mode):content=q.read_bytes();mode="100755" if meta.st_mode&0o111 else "100644"
- else:raise CommandError("unsafe_path",path,"Use a regular file, symlink, deletion, or initialized gitlink.")
+ else:raise CommandError("unsafe_path",path,"Use a regular file, symlink, deletion, or parent-index gitlink.")
  return hashlib.sha256(content).hexdigest(),mode
 def status_records(repo):
- p=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- if p.returncode:raise CommandError("stale_identity","repository",p.stderr.decode(errors="replace").strip() or "Repair Git state.",3)
- fields=p.stdout.split(b"\0");rows=[];i=0
- while i<len(fields):
-  field=fields[i];i+=1
-  if not field:continue
-  if len(field)<4:raise CommandError("stale_identity","repository","Git returned an invalid status record.",3)
-  status_text=field[:2].decode("ascii");path=field[3:].decode("utf-8");renamed=copied=None
-  kinds={x for x in status_text if x in "RC"}
-  if len(kinds)>1 or status_text in {"DD","AU","UD","UA","DU","AA","UU"}:raise CommandError("stale_identity","repository","Resolve ambiguous or unmerged Git state.",3)
-  if kinds:
-   if i>=len(fields) or not fields[i]:raise CommandError("stale_identity","repository","Git returned incomplete rename/copy state.",3)
-   source=fields[i].decode("utf-8");i+=1
-   if kinds=={"R"}:renamed=source
-   else:copied=source
-  rows.append((status_text,path,renamed,copied))
- return rows
+ try:return [(row["status_text"],row["path"],row["renamed_from"],row["copied_from"]) for row in parent_status_records(repo)]
+ except ParentGitError as exc:raise CommandError("stale_identity","repository",str(exc),3) from exc
+
 def capture_snapshot(repo,excluded=()):
+ try:index=parent_index_entries(repo);head=head_entries(repo)
+ except ParentGitError as exc:raise CommandError("stale_identity","repository",str(exc),3) from exc
  entries=[]
  for status_text,path,renamed,copied in status_records(repo):
   if path in excluded or path.startswith(".trellis/.runtime/"):continue
-  index_blob,index_mode=index_identity(repo,path);worktree_sha,worktree_mode=worktree_identity(repo,path);deleted="D" in status_text
-  row={"path":path,"index_status":"" if status_text[0]==" " else status_text[0],"worktree_status":"" if status_text[1]==" " else status_text[1],"untracked":status_text=="??","deleted":deleted,"renamed_from":renamed,"copied_from":copied,"index_blob":index_blob,"worktree_sha256":worktree_sha,"mode":worktree_mode or index_mode}
-  if row["mode"]=="160000":
-   q=repo/path
-   if deleted and not q.exists():row.update(gitlink_head=None,gitlink_initialized=False,gitlink_dirty=None)
-   else:
-    head=git(q,"rev-parse","HEAD").stdout.strip() if q.is_dir() else "";dirty=bool(git(q,"status","--porcelain",check=False).stdout) if q.is_dir() else True
-    if not re.fullmatch(r"[0-9a-f]{40,64}",head) or dirty:raise CommandError("stale_identity",path,"Use an initialized clean gitlink.",3)
-    row.update(gitlink_head=head,gitlink_initialized=True,gitlink_dirty=False)
-  entries.append(row)
+  index_entry=index.get(path);head_entry=head.get(path)
+  index_blob=index_entry["oid"] if index_entry else None
+  index_mode=index_entry["mode"] if index_entry else None
+  parent_gitlink=index_mode=="160000" or (not index_entry and head_entry and head_entry["mode"]=="160000")
+  if parent_gitlink:
+   worktree_sha=None;mode="160000";deleted=index_entry is None
+  else:
+   worktree_sha,worktree_mode=worktree_identity(repo,path)
+   mode=worktree_mode or index_mode;deleted="D" in status_text
+  entries.append({"path":path,"index_status":"" if status_text[0]==" " else status_text[0],"worktree_status":"" if status_text[1]==" " else status_text[1],"untracked":status_text=="??","deleted":bool(deleted),"renamed_from":renamed,"copied_from":copied,"index_blob":index_blob,"worktree_sha256":worktree_sha,"mode":mode})
  entries.sort(key=lambda x:(x["path"],x.get("renamed_from") or "",x.get("copied_from") or ""));return {"entries":entries}
 def normalize(value,field):
  if not isinstance(value,str) or not value.strip():raise CommandError("schema_mismatch",field,"Provide concrete text.")
@@ -128,7 +119,10 @@ def build_candidate(package_root,repo,public,authoring):
   projection=DeliveryProjection(repo,public["task_ref"])
   selected=current_draft(projection,public) if early else current_check(projection,public)
   if not early:public={**public,"phase2_commit_anchor":selected["candidate"]["head_ref"]}
- cp,sequence=candidate_path(repo,td);snapshot=capture_snapshot(repo,{repo_rel(repo,cp)});raw=authoring.get("path_classifications")
+ cp,sequence=candidate_path(repo,td)
+ receipt=commit_result_path(repo,td.name,sequence)
+ if cp.is_file() and receipt.is_file():raise CommandError("stale_identity","candidate","Recover the existing candidate and commit receipt through invoke before preparing another operation.",3)
+ snapshot=capture_snapshot(repo,{repo_rel(repo,cp)});raw=authoring.get("path_classifications")
  if not isinstance(raw,list):raise CommandError("schema_mismatch","path_classifications","Classify every dirty path.")
  classifications=[]
  for item in raw:
@@ -145,9 +139,9 @@ def build_candidate(package_root,repo,public,authoring):
  base=str(task.get("base_branch") or "main");base_ref=public["base_ref"] if early else selected["candidate"]["base_ref"]
  candidate={"$schema":"https://github.com/castbox/guru-trellis/schemas/guru-task-commit-candidate-5.0.json","schema_version":"5.0","skill_id":"guru-create-task-commit","sequence":sequence,"task":{"id":checkout.artifact.task_id,"path":public["task_ref"],"status":"in_progress","branch":checkout.branch_name},"git":{"base_branch":base,"base_ref":base_ref,"pre_commit_head":git(repo,"rev-parse","HEAD").stdout.strip(),**({"phase2_commit_anchor":public["phase2_commit_anchor"]} if not early else {})},"dirty_snapshot":snapshot,"path_classifications":sorted(classifications,key=lambda x:x["path"]),"exact_stage_paths":sorted(exact),"message":canonical_message(authoring.get("message") if isinstance(authoring.get("message"),dict) else {}),"ai_review":{"status":review["status"],"summary":normalize(review.get("summary"),"ai_review.summary"),"evidence":[normalize(x,"ai_review.evidence") for x in review["evidence"]]}}
  if delivery_profile:
-  candidate.update(delivery_key=public["delivery_key"],commit_kind="draft" if early else "final",schema_version="delivery-2.0")
+  candidate.update(delivery_key=public["delivery_key"],commit_kind="draft" if early else "final",schema_version="delivery-3.0")
   if not early:candidate["check_result_id"]=public["check_result_id"]
-  candidate["$schema"]="https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-2.0.json"
+  candidate["$schema"]="https://github.com/castbox/guru-trellis/schemas/guru-delivery-commit-candidate-3.0.json"
   candidate["task"].pop("status")
  validate_candidate(package_root,repo,candidate);cp.write_text(json.dumps(candidate,ensure_ascii=False,indent=2)+"\n",encoding="utf-8",newline="\n");receipt=commit_result_path(repo,td.name,sequence);receipt.unlink(missing_ok=True)
  try:receipt.parent.rmdir()
@@ -165,15 +159,17 @@ def validate_candidate(package_root,repo,c):
  entries={x["path"]:x for x in c["dirty_snapshot"]["entries"]}
  by={x["path"]:x for x in c["path_classifications"]};exact=set(c["exact_stage_paths"]);reviewed={p for p,x in by.items() if x["category"]=="task-reviewed"};rename_sources={entries[p]["renamed_from"] for p in reviewed if p in entries and entries[p].get("renamed_from")}
  if not exact or not reviewed.issubset(exact) or not exact.issubset(reviewed|rename_sources) or not rename_sources.issubset(exact) or any(x["category"] in {"unreviewed-blocking","ambiguous-blocking"} for x in c["path_classifications"]):raise CommandError("schema_mismatch","exact_stage_paths","Stage reviewed paths plus their exact rename sources and resolve blocking classifications.")
+ live={row["path"]:row for row in capture_snapshot(repo)["entries"]}
  for path in exact:
   row=entries.get(path)
-  if row is None:raise CommandError("stale_identity","dirty_snapshot","Reprepare current dirty paths.",3)
-  q=repo/path
-  if row["deleted"]:
-   if q.exists():raise CommandError("stale_identity",path,"Reprepare changed path.",3)
-  elif row.get("mode")=="160000":
-   if not q.is_dir() or git(q,"rev-parse","HEAD").stdout.strip()!=row.get("gitlink_head") or git(q,"status","--porcelain").stdout:raise CommandError("stale_identity",path,"Reprepare the initialized clean gitlink at its exact HEAD.",3)
-  elif sha_file(q)!=row["worktree_sha256"]:raise CommandError("stale_identity",path,"Reprepare changed path.",3)
+  if row is None:
+   if path in rename_sources:continue
+   raise CommandError("stale_identity","dirty_snapshot","Reprepare current dirty paths.",3)
+  if row.get("mode")=="160000":
+   if live.get(path)!=row:raise CommandError("stale_identity",path,"Reprepare the changed parent gitlink entry.",3)
+  elif row["deleted"]:
+   if (repo/path).exists():raise CommandError("stale_identity",path,"Reprepare the changed deleted path.",3)
+  elif worktree_identity(repo,path)!=(row["worktree_sha256"],row["mode"]):raise CommandError("stale_identity",path,"Reprepare the changed reviewed bytes or mode.",3)
  if c["ai_review"]["status"]!="passed":return "revision-required" if c["ai_review"]["status"]=="revision-required" else "blocked"
  if c["message"]["bytes"]!=c["message"]["subject"]+"\n\n"+c["message"]["body"]+"\n":raise CommandError("schema_mismatch","message.bytes","Use canonical subject/body bytes.")
  return "committed"

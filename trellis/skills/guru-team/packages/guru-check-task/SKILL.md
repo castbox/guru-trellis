@@ -237,8 +237,12 @@ For selected legacy control inspection/retirement, load `references/legacy-maint
 
 For resolved reconciliation, pass the same original public input with
 `--skill-input` to both `record-phase2-check.sh` and `check-phase2-check.sh`.
-This dedicated profile binds semantic stage-0 entries and permits a staged
-gitlink update only when the initialized child is clean at its stage-0 OID.
-Follow the complete command sequence and capture contract in
-[references/contract.md](references/contract.md). Ordinary calls retain their
-existing capture. Reconcile remains the sole exact-commit owner.
+This dedicated profile binds semantic stage-0 entries and the active merge.
+Ordinary and resolved capture both use only parent index/tree path/mode/OID
+for gitlinks; neither inspects child state. Explicit parent additions,
+updates, removals and type replacements remain reviewed content. Only the
+publicly validated current Task task.json has the natural unstaged metadata
+exception, with its bytes/index preserved. Follow the complete command sequence
+and capture contract in [references/contract.md](references/contract.md).
+Old child-sensitive private captures must be recorded and checked again.
+Reconcile remains the sole exact-commit owner.

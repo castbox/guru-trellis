@@ -1,64 +1,66 @@
-# D1 resolved gitlink Check 设计
+# D1 父仓 gitlink 原子内容设计
 
 ## 1. 设计目标、需求承接与内容基线
 
-承接本批PRD DR1—DR4、DS1—DS3与DAC1—DAC4。开发基线与固定内容B均为main `b78edbbdc32e77392bc3775366473971050ccb4b`，来源为本Task正式Sync/CreateTask审定基线；Planning H0等于B，PR目标为main。实际实施H由后续原candidate owner绑定，不把H0当最终提交。
+承接本批 PRD DR1—DR4、DS1—DS4 和 DAC1—DAC4。父仓只管理自己的 path/mode/OID；child 内部状态不参与父仓捕获、准入或提交。开发/内容基线 B=b78edbbdc32e77392bc3775366473971050ccb4b，来自原 Delivery 固定 candidate；接续观察 H0=4bf6f551a19b313ee3ac1ccc277388e0c888dc2f，PR 目标 main。B..H 包含原两个待完善提交，没有已交付前序切片。
 
-独立Architecture已实际返回 `baseline_current`、`candidate_assessment`、`no_architecture_impact`。适用baseline为`guru-trellis-architecture`，constitution为`guru-trellis-design-constitution-v1`，change contract为`guru-trellis-architecture-change-contract-v1`。修复在既有Check/Reconcile职责内，不新增Architecture contribution或ADR；最终方案仍进入Wording→独立final_plan→Approval。
+适用 authority 为 docs/architecture/00-foundation/baseline.md、design-constitution.md 及 06-governance/change-contract.md。原独立 Architecture 已正式返回 candidate_assessment / baseline_current，impact=architecture_impact、path=target_native。本轮fresh candidate_assessment已按修订Issue确认同机制target_native，完成范围仅Guru侧；当前方案消费该判断；它不替代 Wording 后的 final_plan、Approval 或实施质量结果。
 
 ## 2. 当前系统、边界与目标差额
 
-无前序Delivery。当前`common.py`的普通`gitlink_entries`要求stage-0与HEADtree一致；record/check捕获完整业务file_set，delivery invoke再核该身份，project把实际resolved结论投影给Reconcile。正常合并中HEAD未动而stage-0指针已更新，因此第一处capture就拒绝合法候选。
+Check common.py 普通路径要求 index=HEAD，resolved 路径仍读取 child HEAD/clean/root；全局 unstaged diff 还拒绝 begin_check 正常更新的当前 task.json。shared reviewed_content.py 对 child 和 gitlink deletion/replacement 另有准入。TaskCommit capture_snapshot 读取 child，execute.py 的 git add 又会从 child HEAD 取指针。Review/Reconcile/snapshot 的工作区枚举会将 child 内部变化当成父仓变化。原第二提交的 Reconcile canonical 与 dogfood 不一致。
 
-本批只为原专用resolved profile增加显式capture上下文，让stage-0成为这一路径的gitlink目标。普通算法、普通token、private schema6.0、公共输出DTO、Task/Delivery身份和原Reconcile精确提交职责保持。拒绝以typed_exit或发现MERGE_HEAD自动开启此语义。
+本轮替代上述同责任规则。既有 committed-tree identity 与 Reconcile index_tree_digest 已能表示原子条目，保留其算法。明确选定 child root 是独立仓库操作；清理、数据保留、hook 隔离和提交发布职责保持原 owner。
 
 ## 3. 来源设计处置（唯一）
 
-当前no_issue请求给出行为与兼容约束，没有规范性来源设计。整体PRD第1节所列历史仅用于保留真实child身份、普通绑定和exact Reconcile职责；本节不创建空处置矩阵。以下方案是本Author选择并接受独立candidate评估后的实施方案。
+Issue739 和整体 PRD 是行为要求。原分支与历史 #186/#309/#397 是实现及历史证据，其 child root/HEAD/clean 前置已由本轮需求明确替代，不作为新方案的规范性设计。现行 data-contracts.md 中 Check/Commit 的 child 准入属于受影响旧合同，本轮同步更新。无外部规范性来源设计，故不创建空处置矩阵。
 
 ## 4. 模块、职责与设计取舍
 
-- Check `record.py`、`check.py`读取可选`--skill-input`，加载已有公共输入。先核mode、Task、Delivery、当前Planning result与candidate，再判profile。只有`delivery_resolved_reconciliation`选择resolvedcapture；不提供参数的普通调用行为保持。
-- `common.py`集中capture选择与Git内容事实。resolvedcapture绑定live HEAD、唯一MERGE_HEAD、完整stage-0条目的mode/OID语义、stage-0tree和完整业务file_set。条目从`git ls-files --stage -z`读取，不哈希raw index字节，避免正常Git index缓存刷新导致假变化。
-- resolved gitlink按index OID绑定。复用child校验职责但区分父仓合法staged更新与child自身dirty：要求child是精确root、内部clean、HEAD匹配stage-0目标。无初始化child继续遵循现有已支持语义，不新增初始化或写入权限。
-- `delivery.py`、`project.py`使用同一resolvedcapture规则核当前owner结果；普通candidate/finalCheck继续普通capture。若存在现成纯事实helper，可在原职责层提取复用，不复制一份与Reconcile竞争的规则。
-- 原Reconcile继续验证resolved tree、integration_paths、HEAD/MERGE_HEAD和精确parents/message，独占提交。Check不commit、不修改公共candidate，不伪造新HEAD结果。
+共享 Git 事实层在现有 runtime 内提供最小父仓状态投影：worktree 状态忽略 child；cached diff 显式使用 --ignore-submodules=none 保留父 index 变化，再合并为现有 status consumer 所需结果。不能仅把 status 全部改成 --ignore-submodules=all，因为它也隐藏 staged gitlink。路径仍按 NUL 分隔和 literal pathspec 读取；unmerged 由父 index 检出。共享函数以root和精确父仓path集合为输入，返回每个path的head_entry与index_entry（分别为mode/OID或absence）、父index状态及非gitlink的worktree状态/bytes/mode；rename_from保持独立来源路径。head_entry只用于识别旧gitlink类型与删除，不用于约束新OID。index_entry=160000时不读worktree；head为gitlink而index缺失表示父staged删除，即使child目录仍在；index为普通blob的replacement按新普通文件worktree事实处理。删除不得由path.exists或单个合并mode推断。已为 gitlink 的条目不 lstat/scandir 或进入 child，也不递归其目录。
 
-直接修改原capture比先commit、排除gitlink或放宽所有HEAD校验更贴近首个偏离。无需新开关、持久字段、第二ledger或兼容状态机。可选参数有当前record/check两个真实consumer；不是未来预留。
+Check 的普通/resolved 捕获都以父 stage-0 gitlink mode/OID为内容；不再要求 index=HEAD。删除取父 index absence，即使 child 目录仍在；replacement 按新父条目类型捕获。其它普通文件保持 worktree bytes/mode 语义。resolved 仍固定 HEAD、唯一 MERGE_HEAD、全部 stage-0 entries/tree 和原 public candidate。
+
+TaskCommit 捕获父 index entry 与必要的父 HEAD 类型，区分 staged deletion 和 replacement。隔离 index 先 read-tree pre_commit_head；普通路径沿原 git add/hook 流程；gitlink 更新/新增用捕获的父 OID update-index --cacheinfo，staged 删除移除隔离条目。rename 的 source 按原精确 stage 集承接。执行前重读父 entry，改变即 stale；不读取 child HEAD 来重新决定指针。原 hook 后精确 tree/commit 检验继续。
+
+Review/Reconcile 和实际 verification/snapshot consumer 复用同一父仓事实边界。先查调用链再删除重复 child 检测；不凭文件名扩大改动。Review-change cached/committed diff 保留父指针，unstaged snapshot 忽略 child 内部状态。已有 upgrade snapshot 过滤仅在实际存在差额时修改。
+
+不排除 gitlink、不新增状态 authority 或双读兼容层。最小共享事实函数用于现有多个真实 consumer，避免各包再次拼凑不同语义；AI 仍负责 scope 和充分性。
 
 ## 5. 接口与数据
 
-`record-phase2-check`与`check-phase2-check`的commands和合同新增可选`--skill-input`，输入为原公共Check输入JSON。该参数不改变11字段semantic authoring结构；采用file或现有单次stdin规则，不能与另一stdin locator争用。给出的Task/mode/Delivery/Planning/candidate不匹配时返回原schema/stale诊断，不能只凭profile字符串放宽。
+公共 Skill id、typed exits、Task/Delivery identity 与 resolved projection DTO 不增加字段。Check 原 --skill-input 继续验证真实 profile/key/Planning/candidate 后选择 resolved 上下文，不能只凭 MERGE_HEAD放宽。
 
-resolvedcapture生成独立的局部内容token，仍占原`reviewed_content_sha256`，只服务同owner相邻一致性，不作授权或跨阶段authority。完整stage0与file_set变化须改变token。普通token逐字保持现有算法，private6.0与publicDTO不加字段。
+Commit private candidate 采用新的 delivery-3.0 语义及匹配 schema，去掉 gitlink_head/gitlink_initialized/gitlink_dirty。现有 index_blob 表示父 index OID，mode=160000 表示原子 gitlink，staged deletion 为父 entry absence；父 HEAD 类型由当前捕获事实明确表示，仅用于区分gitlink staged删除与replacement，不新增公共DTO。旧 private delivery-2.0 的未执行候选明确要求重新 prepare，不转换或双读。若原操作已经生成commit或recovery receipt，先由原Commit owner核真实commit并恢复同一结果，不能重新prepare重复提交；语义未变的result receipt不随candidate升级。同步 schema、builder、validator、executor、真实 snapshot consumer 与包合同；不改公共输出DTO。Check 捕获语义变更也需更新局部算法标识，使旧 checkpoint重新执行原record/check。
 
-原invoke从其真实public_input取得profile，project从相同public输入和实际checked结果生成原resolved-candidate1.0。target原Reconcile继续消费该原格式，不从source加载替代target公共API。
+上游 castbox/Trellis _candidate_content_ref、verify_candidate、_verify_commit、GitCandidateContent 当前仅接受普通 blob；本仓 adapter 直接消费它们。显式 gitlink 正式 candidate、Check/Review predecessor及Merge/history需要上游支持；本Issue不承担上游改造或正式采用。禁止过滤路径、伪造content_ref、切manual profile或热改生成的 .trellis/scripts。
 
 ## 6. 状态、顺序、正常与失败流程
 
-1. 调用方正常merge并解决冲突；HEAD仍为原提交，唯一MERGE_HEAD为选定目标，index全为stage0。存在未解决项、其他sequencer、未暂存或untracked业务内容时保留原拒绝语义。
-2. 原Check owner完成完整语义审查，record携原skill输入捕获resolved内容；checker以同输入重读全部当前事实并核token。
-3. invoke与project按同resolved语义验证；正常Git刷新index缓存不改变语义身份。HEAD、MERGE_HEAD、stage0条目、业务内容或child状态改变则拒绝过期结果并回原owner重审。
-4. project输出进入原Reconcile，后者独占exact commit。此时resolved token不被解释为提交后Check pass。
-5. 实施owner绑定实际新HEAD candidate，原普通Check/fullReview重新审查。
+1. 原实现 owner捕获父仓状态及内容。child 未初始化、dirty、检出不同提交或本地没有目标对象时，同一父 index产生同一结果。
+2. 当前公开 Task/Delivery已校验后，resolved Check仅豁免精确 task_ref/task.json 的自然 unstaged metadata。其它Task文件及业务未暂存仍拒绝；当前metadata原bytes/index保留。
+3. record→check→invoke→projection 使用同一捕获。HEAD/MERGE_HEAD/父index或被审业务内容变化返回原 stale，不把正常index cache刷新当内容变化。
+4. 原Reconcile校验integration_paths和精确tree/parents/message并独占提交；同样保留当前Task metadata。后继新HEAD必须进入真实candidate/Check/Review，resolved结果不能充当最终pass。
+5. 正式上游候选能力不足时停在相应consumer并明确依赖；本仓独立源码和局部行为验证继续。后继上游改造、工具采用和业务复跑由其原owner承担，不作为本Task完成阶段。
 
 ## 7. 恢复、兼容、迁移与集成
 
-没有新持久模型或数据迁移。旧普通record/check调用不携`--skill-input`时语义保持；新增参数只为当前专用入口提供上下文。旧owner checkpoint不转换成resolved pass，候选变化重新走原record/check。
+本轮直接替代错误的 child准入与重复实现，不保留旧新并行分支。旧未执行private候选/checkpoint重新prepare/record；已执行commit/receipt按第5节由原owner恢复，历史事实不重写。无产品数据迁移。完整source runtime与target publicAPI各自来自匹配安装，单独 source --root target不证明下游兼容。
 
-工具调用路线使用clean且完整matching reviewed canonical source的原wrapper `--root target`，runtime来自完整source，公共Task/Delivery API仍从target安装读取。target原Reconcile包及resolved-candidate1.0格式保持，必须通过实际组合验证。先前dry-run到达原gitlink拒绝只证明入口加载，不能证明修复或下游可消费。若source和target API/consumer出现不兼容，停止该组合并回原安装owner；禁止手工copy、混合安装或扩大业务PR纳入无关工具资产。
-
-canonical变更通过原工具升级/受管同步owner更新本工具仓dogfood，保留Task/session和并行修改。普通apply被旧Task阻断时不得手动覆盖managed副本。
+本仓受管副本经 guru-upgrade-tools完整源合同更新，保留Task/session、用户AGENTS及无关改动。sidecar由原owner逐个处理，不能手拷贝managed副本。上游能力完成后由其原采用owner成套更新；本轮不修改上游。完整矩阵由专门Release owner承担。
 
 ## 8. 验证设计
 
-- V1（DR1、DAC1）：真实正常Git merge fixture保留旧HEAD、新stage0 gitlink和cleanchild，使用正式wrapper实参执行record→check→invoke→project→原Reconcile；核tree、parents、message。单函数mock不替代此链。
-- V2（DR2、DAC2）：同样本走普通入口仍拒绝；正常child dirty、child HEAD不匹配、unmerged和capture后候选变化各覆盖独立诊断。非恶意输入或并发压力。
-- V3（DR1—DR3、DAC3）：无gitlink和原普通gitlink算法回归，正常index缓存刷新不制造失效；新增wrapper参数实际到达runtime。已验证且依赖未变的原测试事实可复用，新增/受影响分支补验证。
-- V4（DR4、DAC4）：完整canonical source与target安装API/旧Reconcile schema、实际消费组合验证；canonical/dogfood和受管投影一致。工具source交付后由原业务owner在原真实候选复跑，不用fixture声称原业务恢复。
+- V1（DAC1/DR3）：真实父子仓resolved fixture保留begin_check自然metadata，正式wrappers执行record/check/invoke/project/Reconcile，独立核tree、parents、message及Taskbytes/index。去掉现有测试额外stage task.json；新HEAD正式candidate/Review的上游能力边界如实报告，受影响后继consumer只补定向回归。
+- V2（DAC2/DR1/DR2）：同一父index依次处于未初始化、dirty、其它child HEAD和缺对象，shared/Check/Commit snapshot结果一致；只观察父内容，不依赖child探测。新增、更新、删除（保留child目录）、mode replacement/rename及父index后续变化分别核原子捕获/精确隔离tree/stale。
+- V3（DAC3）：普通文件捕获与hook/精确提交回归；业务unstaged、其他Taskmetadata、unmerged仍拒绝。Review/Reconcile及实际verification快照覆盖受影响入口。shared身份所需跨包正式wrappers接受按quality-guidelines既有合同执行；上游相关失败不能mock后声称全链通过。
+- V4（DAC4）：受管更新后检查canonical/dogfood/平台字节、mode、sidecar及drift，定向采用组合验证。本轮不要求完整工具采用或业务现场复跑；只有实际触及安装行为才补必要定向安装验证。
+
+测试使用真实Git状态和生产边界，fixture只建立被测边界前置，不替被测producer修输出。已知archive artifact_origin既有失败先归因；不扩大为无关修复。完成必要定向检查后停止重复广扫，不跑完整多平台矩阵。
 
 ## 9. Canonical 引用、本轮差额与实际未决项
 
-Check canonical package的`SKILL.md`、`references/contract.md`与`commands.json`维护新增参数、明确resolvedcapture边界及原consumer；必要当前RDT差额由原RDT维护owner处理，历史文档保持原观察。Architecture authority入口、constitution和change-contract按第1节读取，本轮无架构边界变化，不写shared导航或空贡献。
+canonical为 trellis/skills/guru-team/runtime/reviewed_content.py、原Check/TaskCommit/Review/Reconcile及实际verification/upgrade snapshot包；合同包括其schemas、references和trellis/presets/guru-team/spec/workflow/data-contracts.md。Docs Plan由implement第6节单写。Architecture贡献为docs/architecture/contributions/739-parent-git-content.md及739-parent-git-content/proposed下完整领域单元和ADR，目标为03-domains/parent-git-content.md及adr/parent-git-content.md，不改共享导航，说明父仓/child职责、上游API边界与采用退出，原Architecture owner经candidate Check后final_integration晋升/readback。RDT原owner维护完整当前行为/设计/验证差额，不能靠历史追加摘要代替现行定义。
 
-不存在待用户决定的方案问题。实际实现、兼容组合和真实候选复跑尚未执行；若测试暴露新的scope/机制变化，返回最早受影响owner，不用当前Planning覆盖新事实。
+当前没有需求选择缺口。实际实现和验证尚未执行。上游API实现和采用是外部能力边界，不属于本Issue交付。Guru侧源码/合同/受管投影和最小验收完成即可满足本Task；不得声称上游或业务已恢复，也不绕过真实缺口。

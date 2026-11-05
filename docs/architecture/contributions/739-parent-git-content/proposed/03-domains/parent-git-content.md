@@ -1,0 +1,27 @@
+# 父仓 Git 内容边界
+
+Identity：guru-parent-git-content。Owner：Guru Git事实runtime及各Skill原语义owner。Status：proposed，只有原Architecture final_integration实际晋升并读回后才是current；本文件不证明实现或业务恢复。
+
+## 职责
+
+父仓流程以父仓index/tree的path、mode、OID为Git内容事实。mode=160000是一个原子条目，父仓不读取child root、HEAD、clean、初始化、内部文件或对象，不init/update/fetch。child内部变化不改变父仓内容身份，也不单独阻断父仓。用户明确选择child作为独立root时，对该仓执行自己的流程；父仓不由此取得对子仓的操作权限。显式破坏性清理的数据保留和确认边界保持。
+
+父index显式gitlink新增、更新、删除和类型变化进入候选、审查、精确提交及stale检测。cached/committed差异必须保留父指针；忽略child的worktree状态不能隐藏cached父变化。删除由父index absence决定，不能因child目录存在而恢复条目；提交从被审父OID写隔离index，不能用child HEAD替代。普通文件的worktree内容及原hook/exact-commit职责保持。
+
+## 现有owner与合同
+
+共享事实和身份由trellis/skills/guru-team/runtime拥有；Check、TaskCommit、Review、Reconcile及真实verification/snapshot consumer各自消费同一父仓边界。算法、payload及private候选格式由这些canonical包和trellis/presets/guru-team/spec/workflow/data-contracts.md单写，本单元不复制算法。旧child准入及重复实现随直接consumer同步退出，不建立并行authority。
+
+resolved Check仍固定HEAD、唯一MERGE_HEAD、stage0 index/tree。仅公开验证的当前Task task.json自然metadata例外由原Check/Reconcile承接，保留bytes/index；其它Task及业务unstaged、unmerged和过期父内容继续阻断。原Reconcile独占精确tree/parents/message提交，随后新HEAD进入独立正式candidate/Check/Review。
+
+## 上游与采用边界
+
+正式Delivery candidate、commit验证和GitCandidateContent归castbox/Trellis公共API。当前Guru侧修复调查时这些接口仅支持regular blob，因此显式gitlink正式Delivery及新HEAD/history链仍有真实上游缺口。Guru不得通过过滤路径、伪造content_ref、manual profile或修改生成脚本绕过。源码局部机制与普通文件流程可独立修复并验证；上游配套、完整匹配工具采用和正式全链证据仍由原owner承接。
+
+解除上述局部限制的条件为：上游API具备父gitlink原子语义，原采用owner完成匹配版本更新，原采用及业务owner验证其正式候选与保留现场。原owner届时更新本单元的当前实现/采用描述及适用断言；历史Guru侧修复证据保其观察范围。仅源码或投影通过不能替代本Issue的最小行为验收；上游及业务恢复不属于本Task完成条件。
+
+## 来源与证据限制
+
+要求来自Issue739行为要求/边界、resolved-gitlink-check整体PRD R1—R4及本批设计。选择依据见adr/parent-git-content.md。当前仅为完整拟写，不宣称implementation_validated或root_cause_fixed。最终晋升前由独立Architecture及原Check审完整实现和全部拟写，原Architecture owner写入/readback，再重绑after完成最终质量链；RDT原owner维护自己的完整行为/设计/测试定义。
+
+本Issue完成边界按2026-11-05修订Issue739：只交付Guru侧修复及最小验收；上游改造、工具采用、业务复跑非本Task后继阶段或额外完成条件，不以局部测试声明其成功。

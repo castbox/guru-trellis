@@ -110,6 +110,36 @@ class RuntimeTest(unittest.TestCase):
             self.assertNotEqual(0, missing.returncode)
         return pointers
 
+    def test_reconciliation_ignores_child_state_before_stash_and_clean_checks(self):
+        self.add_uninitialized_gitlink()
+        self.git('-c', 'protocol.file.allow=always', 'submodule', 'update', '--init')
+        child = self.repo / 'vendor/child'
+        (child / 'child.txt').write_text('child-only dirty content\n')
+        before = (child / 'child.txt').read_bytes()
+        common.require_clean_worktree(self.repo)
+        _, _, receipt = self.execute_reconciliation('delivery_post_check')
+        self.assertEqual(receipt['status'], 'committed')
+        self.assertEqual((child / 'child.txt').read_bytes(), before)
+        self.assertEqual(self.git('show', '-s', '--format=%P', receipt['reconciled_task_head']).split(),
+                         [self.head, self.new])
+        self.assertEqual('', self.git('stash', 'list'))
+
+    def test_resolved_paths_ignore_child_state_and_retain_parent_index_binding(self):
+        pointers = self.add_uninitialized_gitlink()
+        self.git('-c', 'protocol.file.allow=always', 'submodule', 'update', '--init')
+        (self.repo / 'vendor/child/child.txt').write_text('child-only dirty content\n')
+        self.git('update-index', '--cacheinfo', '160000', pointers[1], 'vendor/child')
+        tree = self.git('write-tree')
+        metadata = execute.task_metadata_snapshot(self.repo, self.task_ref)
+        execute.require_resolved_worktree(self.repo, metadata)
+        with execute.tree_index(self.repo, tree) as index:
+            execute.validate_integration_paths(self.repo, self.head, tree, ['vendor/child'], index,
+                                               live_index=True)
+            self.git('update-index', '--cacheinfo', '160000', pointers[0], 'vendor/child')
+            with self.assertRaises(CommandError):
+                execute.validate_integration_paths(self.repo, self.head, tree, ['vendor/child'], index,
+                                                   live_index=True)
+
     def candidate_state(self):
         return (
             self.git('rev-parse', 'HEAD'),
@@ -486,7 +516,7 @@ class RuntimeTest(unittest.TestCase):
         self.execute_reconciliation('delivery_post_plan')
         self.assertEqual(previous,self.git('rev-parse','refs/stash'))
         self.assertIn('?? .trellis/',self.git('status','--short'))
-    def test_dirty_submodule_stop_restores_shelved_task_changes(self):
+    def test_candidate_mismatch_with_dirty_child_restores_shelved_task_changes(self):
         self.add_uninitialized_gitlink()
         subprocess.run(['git','-c','protocol.file.allow=always','submodule','update','--init','vendor/child'],cwd=self.repo,check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         (self.repo/'task.txt').write_text('pending task work\n')
@@ -496,7 +526,7 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             execute.reconcile(PACKAGE,['--root',str(self.repo),'--request',str(self.write('dirty-submodule.json',request))])
         self.assertEqual('stale_identity',raised.exception.code)
-        self.assertEqual('worktree',raised.exception.field_path)
+        self.assertEqual('candidate_tree_sha256',raised.exception.field_path)
         self.assertEqual(self.head,self.git('rev-parse','HEAD'))
         self.assertEqual(before,self.git('status','--short'))
         self.assertEqual('pending task work\n',(self.repo/'task.txt').read_text())

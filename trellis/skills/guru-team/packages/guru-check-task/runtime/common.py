@@ -4,7 +4,8 @@ from pathlib import Path
 from runtime.io import CommandError
 from runtime.schema import validate_json
 from runtime.reviewed_content import reviewed_content_metadata_path
-PHASE2_WORKTREE_CONTENT_ALGORITHM="guru-phase2-worktree-content-2.0"
+from runtime.parent_git import ParentGitError, index_entries, head_entries, parent_status_records
+PHASE2_WORKTREE_CONTENT_ALGORITHM="guru-phase2-worktree-content-3.0"
 def parse(p,argv):
  p.add_argument("--json",action="store_true")
  try:return p.parse_args(argv)
@@ -37,55 +38,19 @@ def task(repo,value):
 def rel(repo,p):return p.resolve().relative_to(repo.resolve()).as_posix()
 def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()).hexdigest()
 def gitlink_entries(repo,paths,*,resolved=False):
- selected=set(paths);index={};tree={}
- staged=subprocess.run(["git","ls-files","--stage","-z"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- if staged.returncode:raise CommandError("stale_identity","reviewed_paths",staged.stderr.decode("utf-8","replace").strip() or "Resolve the Git index.",3)
- try:
-  for row in (x for x in staged.stdout.split(b"\0") if x):
-   meta,raw_path=row.split(b"\t",1);path=raw_path.decode("utf-8","strict")
-   if path in selected:index.setdefault(path,[]).append(tuple(meta.decode("ascii").split()))
- except (UnicodeDecodeError,ValueError):raise CommandError("stale_identity","reviewed_paths","Resolve ambiguous Git index entries.",3)
- committed=subprocess.run(["git","ls-tree","-r","-z","HEAD"],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- if committed.returncode==0:
-  try:
-   for row in (x for x in committed.stdout.split(b"\0") if x):
-    meta,raw_path=row.split(b"\t",1);path=raw_path.decode("utf-8","strict")
-    if path in selected:tree[path]=tuple(meta.decode("ascii").split())
-  except (UnicodeDecodeError,ValueError):raise CommandError("stale_identity","reviewed_paths","Resolve ambiguous committed entries.",3)
- elif any(any(parts and parts[0]=="160000" for parts in rows) for rows in index.values()):raise CommandError("stale_identity","reviewed_paths","Gitlink commit bindings are unavailable.",3)
+ try:index=index_entries(repo);tree=head_entries(repo)
+ except ParentGitError as exc:raise CommandError("stale_identity","reviewed_paths",str(exc),3) from exc
  entries={}
- for path in selected:
-  index_rows=index.get(path,[]);tree_row=tree.get(path)
-  has_gitlink=any(parts and parts[0]=="160000" for parts in index_rows) or bool(tree_row and tree_row[0]=="160000")
-  if not has_gitlink:continue
-  if len(index_rows)!=1 or len(index_rows[0])!=3:raise CommandError("stale_identity","reviewed_paths",f"Ambiguous Gitlink index identity: {path}",3)
-  mode,oid,stage=index_rows[0]
-  if mode!="160000" or stage!="0" or re.fullmatch(r"[0-9a-f]{40,64}",oid) is None or (not resolved and tree_row!=(mode,"commit",oid)):raise CommandError("stale_identity","reviewed_paths",f"Gitlink index and commit bindings differ: {path}",3)
-  entries[path]={"path":path,"kind":"gitlink","mode":mode,"oid":oid}
+ for path in paths:
+  entry=index.get(path)
+  if entry is not None and entry["mode"]=="160000":entries[path]={**entry,"kind":"gitlink"}
+  elif entry is None and tree.get(path,{}).get("mode")=="160000":entries[path]={"path":path,"kind":"missing"}
  return entries
-def validate_gitlink_worktree(repo,path,*,resolved=False):
- target=repo/path
- status=subprocess.run(["git","--literal-pathspecs","status","--porcelain=v1","-z","--ignore-submodules=none","--",path],cwd=repo,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- if status.returncode or (status.stdout and not resolved):raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree state drifted: {path}",3)
- try:metadata=target.lstat()
- except FileNotFoundError:return
- if not stat.S_ISDIR(metadata.st_mode):raise CommandError("stale_identity","reviewed_paths",f"Gitlink path was replaced: {path}",3)
- try:
-  with os.scandir(target) as children:
-   if next(children,None) is None:return
- except OSError as exc:raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree root is unavailable: {path}",3) from exc
- top=subprocess.run(["git","-C",str(target),"rev-parse","--show-toplevel"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- head=subprocess.run(["git","-C",str(target),"rev-parse","--verify","HEAD^{commit}"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- dirty=subprocess.run(["git","-C",str(target),"status","--porcelain=v1","--untracked-files=all"],cwd=repo,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
- if top.returncode or Path(top.stdout.strip()).resolve()!=target.resolve() or head.returncode or dirty.returncode or dirty.stdout:raise CommandError("stale_identity","reviewed_paths",f"Gitlink worktree identity is unavailable or dirty: {path}",3)
- return head.stdout.strip()
 def file_set(repo,paths,*,resolved=False):
  rows=[];gitlinks=gitlink_entries(repo,paths,resolved=resolved)
  for path in sorted(paths,key=lambda value:value.encode()):
   entry=gitlinks.get(path)
   if entry is not None:
-   head=validate_gitlink_worktree(repo,path,resolved=resolved)
-   if head is not None and head!=entry["oid"]:raise CommandError("stale_identity","reviewed_paths",f"Gitlink HEAD differs from its index binding: {path}",3)
    rows.append(entry);continue
   target=repo/path
   try:metadata=target.lstat()
@@ -101,18 +66,18 @@ def git(repo,*args):
  return p.stdout.strip()
 def content_identity(repo,paths=None,*,resolved=False):
  if paths is None:
-  tracked=git(repo,"ls-files","-z").split("\0")
-  untracked=git(repo,"ls-files","--others","--exclude-standard","-z").split("\0")
-  paths=sorted({x for x in [*tracked,*untracked] if x and not reviewed_content_metadata_path(x)})
+  try:
+   paths=set(index_entries(repo))
+   for row in parent_status_records(repo):
+    paths.add(row["path"])
+    if row.get("renamed_from"):paths.add(row["renamed_from"])
+  except ParentGitError as exc:raise CommandError("stale_identity","reviewed_paths",str(exc),3) from exc
+  paths={path for path in paths if not reviewed_content_metadata_path(path)}
  return file_set(repo,sorted(paths),resolved=resolved)
 def dirty_paths(repo):
- raw=subprocess.run(["git","status","--porcelain=v1","-z","--untracked-files=all"],cwd=repo,stdout=subprocess.PIPE,check=True).stdout.decode("utf-8").split("\0");out=[];i=0
- while i<len(raw) and raw[i]:
-  row=raw[i];status=row[:2];path=row[3:]
-  if path and not path.startswith(".trellis/.runtime/"):out.append(path)
-  if status[0] in "RC":i+=1
-  i+=1
- return sorted(set(out))
+ try:records=parent_status_records(repo)
+ except ParentGitError as exc:raise CommandError("stale_identity","repository",str(exc),3) from exc
+ return sorted({row["path"] for row in records if not row["path"].startswith(".trellis/.runtime/")})
 def validate_candidate_classifications(payload):
  rows=payload.get("candidate_classifications")
  if not isinstance(rows,list):raise CommandError("schema_mismatch","candidate_classifications","Record the complete current candidate set as an array, including an empty array when no candidates were observed.")
@@ -164,9 +129,14 @@ def resolved_content_identity(repo, public, delivery):
         raise CommandError("stale_identity", "merge_head", "Use exactly one active resolved merge.", 3)
     merge_head = git(repo, "rev-parse", "--verify", merge_heads[0] + "^{commit}")
     require_merge_state(repo, merge_head)
-    unstaged = subprocess.run(["git", "diff", "--quiet", "--ignore-submodules=none"], cwd=repo)
-    untracked = git(repo, "ls-files", "--others", "--exclude-standard", "-z").split("\0")
-    if unstaged.returncode or any(path and not reviewed_content_metadata_path(path) for path in untracked):
+    try:
+        records = parent_status_records(repo)
+    except ParentGitError as exc:
+        raise CommandError("stale_identity", "repository.index", str(exc), 3) from exc
+    current_metadata = public["task_ref"] + "/task.json"
+    if any(row["path"] != current_metadata and
+           (row["status_text"] == "??" or row["status_text"][1] != " ")
+           for row in records):
         raise CommandError("stale_identity", "worktree", "Stage every reviewed business change before resolved Check.", 3)
     raw = git(repo, "ls-files", "--stage", "-z")
     entries = []
@@ -176,7 +146,7 @@ def resolved_content_identity(repo, public, delivery):
         if stage != "0":
             raise CommandError("stale_identity", "repository.index", "Resolve every index entry before Check.", 3)
         entries.append({"path": path, "mode": mode, "oid": oid})
-    return digest({"algorithm": "guru-phase2-resolved-content-1.0",
+    return digest({"algorithm": "guru-phase2-resolved-content-2.0",
                    "head": git(repo, "rev-parse", "HEAD"), "merge_head": merge_head,
                    "stage0_tree": git(repo, "write-tree"), "stage0_entries": entries,
                    "content": content_identity(repo, resolved=True),

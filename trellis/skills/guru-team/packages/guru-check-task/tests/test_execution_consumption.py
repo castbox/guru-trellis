@@ -60,7 +60,6 @@ class ExecutionConsumptionTests(unittest.TestCase):
                    ["check", "full_review", "readiness"])
             fixture.projection.begin_check(fixture.key, fixture.projection.candidate(
                 ["app.txt"], head_ref=fixture.head, base_ref=old_base))
-            fixture.git("add", fixture.task_ref + "/task.json")
         return fixture
 
     def public(self, fixture, profile):
@@ -233,12 +232,17 @@ class ExecutionConsumptionTests(unittest.TestCase):
 
     def test_resolved_gitlink_real_wrapper_chain_and_exact_reconcile(self):
         fixture = self.fixture("delivery_resolved_reconciliation", gitlink=True)
+        metadata = fixture.repo / fixture.task_ref / "task.json"
+        metadata_bytes = metadata.read_bytes()
+        metadata_index = fixture.git("ls-files", "--stage", "--", fixture.task_ref + "/task.json")
+        self.assertIn(fixture.task_ref + "/task.json", fixture.git("diff", "--name-only").splitlines())
         public, locator, artifact = self.resolved_record(fixture)
         checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
                                   "--skill-input", locator)
         self.assertEqual(artifact, checked["artifact_path"])
         # A normal index cache refresh does not change the semantic capture.
-        fixture.git("update-index", "--refresh")
+        subprocess.run(["git", "update-index", "--refresh"], cwd=fixture.repo,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
         fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
                         "--skill-input", locator)
         output = fixture.wrapper("guru-check-task", "invoke.sh", "--input", locator, "--owner-result", artifact)
@@ -265,9 +269,11 @@ class ExecutionConsumptionTests(unittest.TestCase):
         self.assertEqual([fixture.head, new], fixture.git("show", "-s", "--format=%P", "HEAD").split())
         self.assertEqual(tree, fixture.git("show", "-s", "--format=%T", "HEAD").strip())
         self.assertEqual(facts["commit_message"], fixture.git("show", "-s", "--format=%B", "HEAD").strip())
+        self.assertEqual(metadata_bytes, metadata.read_bytes())
+        self.assertEqual(metadata_index, fixture.git("ls-files", "--stage", "--", fixture.task_ref + "/task.json"))
 
-    def test_resolved_gitlink_ordinary_and_changed_candidate_are_rejected(self):
-        for change in ("ordinary", "child_dirty", "child_head", "index", "merge_head", "unstaged", "unmerged"):
+    def test_resolved_gitlink_ignores_child_but_rejects_changed_parent_candidate(self):
+        for change in ("ordinary", "child_dirty", "child_head", "index", "merge_head", "unstaged", "other_task", "unmerged"):
             with self.subTest(change=change):
                 fixture = self.fixture("delivery_resolved_reconciliation", gitlink=True)
                 _, locator, artifact = self.resolved_record(fixture)
@@ -288,13 +294,21 @@ class ExecutionConsumptionTests(unittest.TestCase):
                     merge_path.write_text(fixture.head + "\n")
                 elif change == "unstaged":
                     (fixture.repo / "app.txt").write_text("new unstaged content\n")
+                elif change == "other_task":
+                    other = fixture.repo / ".trellis/tasks/other/task.json"
+                    other.parent.mkdir(parents=True)
+                    other.write_text("{}\n")
                 else:
                     oid = fixture.git("rev-parse", "HEAD:app.txt").strip()
                     subprocess.run(["git", "update-index", "--index-info"], cwd=fixture.repo,
                         input=f"0 {'0' * 40}\tapp.txt\n100644 {oid} 1\tapp.txt\n100644 {oid} 2\tapp.txt\n", text=True, check=True)
-                rejected = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
-                                           *args, success=False)
-                self.assertEqual("stale_identity", rejected["code"])
+                if change in {"child_dirty", "child_head"}:
+                    checked = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref, *args)
+                    self.assertEqual("ok", checked["status"])
+                else:
+                    rejected = fixture.wrapper("guru-check-task", "check-phase2-check.sh", "--task", fixture.task_ref,
+                                               *args, success=False)
+                    self.assertEqual("stale_identity", rejected["code"])
 
     def test_current_planning_predecessor_is_required(self):
         public = self.public(self, "delivery_initial_check")

@@ -1,55 +1,47 @@
-# 修复 resolved Check gitlink 身份整体需求
+# 父仓 gitlink 原子内容与自然 resolved 流程需求
 
 ## 1. 来源与术语
 
-本 Task 为 no_issue 独立工具修复请求，不创建或关闭 GitHub Issue。原请求要求修复合法 resolved merge 的 staged 子模块指针检查，并通过受支持的完整工具入口恢复调用方；下文完整承载该请求。
+TaskId=resolved-gitlink-check，generation=0，保留原no_issue身份及已有Delivery。当前选定要求来自https://github.com/castbox/guru-trellis/issues/739 的行为要求、最小验收、上游依赖与交付边界（2026-11-05修订），不重建Direct Source。用户要求以main为基线，在已有工作树/分支完成该Issue。
 
-| 来源 | 定位 | 角色与用途 |
-| --- | --- | --- |
-| 当前独立请求 | 本文第2—7节 | 要求；定义修复和验收边界 |
-| 当前 Check | `trellis/skills/guru-team/packages/guru-check-task/runtime/common.py` 的 `gitlink_entries`、`content` | 当前实现证据；普通 HEAD 与 index 绑定 |
-| 当前 resolved consumer | `trellis/skills/guru-team/packages/guru-check-task/runtime/delivery.py` | 现行合同；专用 resolved profile 与原整合职责 |
-| 原整合执行 | `trellis/skills/guru-team/packages/guru-reconcile-task-base/runtime/execute.py` | 现行实现；精确 tree、parents、message 的提交职责 |
-| 历史 gitlink 修复 | `.trellis/tasks/archive/2026-08/08-08-186-uninitialized-gitlink-identity/prd.md`；`.trellis/tasks/archive/2026-09/09-12-397-fix-base-candidate-gitlink/prd.md` | 历史约束；保留 child root、clean、OID 与普通绑定 |
-| 历史 Delivery 整合 | `.trellis/tasks/archive/2026-09/09-18-435-active-task-delivery-loop/design.md` 的 D435-08 | 历史约束；resolved Check 后由原 Reconcile 提交，再检查真实新 HEAD |
-
-resolved merge 指 HEAD 尚未移动、单一 MERGE_HEAD 存在且 index 冲突已解决的合并候选。stage-0 gitlink 指 index 中 mode=160000、stage=0 的子模块目标提交。Check、Review 和 Reconcile 保持原 owner 含义。
+gitlink是父仓mode=160000的path/mode/OID条目；child内部状态不属于父仓内容。resolved指HEAD未移动、唯一MERGE_HEAD存在且index冲突已解决的候选。历史#186/#309/#397及原两个提交仅为问题证据，不提供当前完成结论。
 
 ## 2. 背景与问题
 
-正常基线整合时，父仓库 HEAD 仍为整合前提交，stage-0 index 已包含新基线子模块指针。即使冲突已解决、子模块精确检出目标且 clean，正式 `delivery_resolved_reconciliation` Check 仍报 `Gitlink index and commit bindings differ`。当前共用捕获把尚未提交的合法 stage-0 与旧 HEAD tree 比较，阻断原精确整合提交。
+Check的gitlink_entries将合法stage0指针与旧HEAD差异拒为stale；原补丁后resolved_content_identity仍拒绝begin_check正常写入的当前task.json。fixture额外stage元数据掩盖该缺陷。shared identity和Commit仍检查child HEAD/root/clean，隔离index的git add可重新从child取pointer；部分Reconcile canonical尚未完整同步受管副本。
 
 ## 3. 目标与非目标
 
-完整解决上述 Check 捕获及其 record、check、invoke、projection、Reconcile 组合缺口。普通 Check 的 HEAD 绑定和子模块校验继续成立。交付包含 canonical 修复、正常 Git 回归、完整工具来源一致性和原调用方候选复跑。
+交付Guru侧统一父仓原子内容、自然resolved修复及必要合同/受管投影。父仓不进入child，显式父index变化保持可审查、精确提交和stale检测。只收敛真实同责任consumer，不扩展无关Git工具或未用代码。
 
-不增加业务导航功能，不发布 release/tag，不扩展恶意输入、压力并发或完整多平台 Release 矩阵。工具源码通过合法 pull_request 交付；源码合并不替代受支持入口验证及真实调用方复跑责任。
+不含castbox/Trellis上游API改造、业务仓库升级采用/现场复跑/发布、完整安装升级Release矩阵、恶意输入、并发压力、额外锁或crash加固、业务代码或child修复。不承诺消除未来所有Git缺陷。显式破坏性清理边界保持。
 
 ## 4. 真实调用方、场景与流程
 
-- S1：基线整合调用方持有已解决合并，HEAD、单一 MERGE_HEAD 和 stage-0 index 已确定，child clean 且 HEAD 精确匹配 stage-0 OID。调用专用 resolved Check 后，原 record→check→invoke→projection 接受同一候选，原 Reconcile 执行精确提交，再对真实新 HEAD 执行 Check/Review。
-- S2：普通 Check 调用方暂存 gitlink 更新但 HEAD tree 未更新。普通入口继续拒绝 index/HEAD 绑定差异。
-- S3：正常操作后 child dirty、child HEAD 不匹配、冲突未解决或被审候选改变。原明确诊断阻断过期通过；调用方修正实际内容后重走原入口。
-- S4：原调用方使用完整匹配且被审的 canonical source，通过原 wrappers 的 --root 入口对实际在途候选复跑；须验证 target 已安装公共 API 与原 Reconcile consumer 的兼容。若该入口兼容不能成立，返回原安装 owner 处理。禁止直接修改业务 runtime 或排除被审路径。
+S1：原Check/Reconcile owner处理正常resolved merge；保留自然begin_check metadata，经record/check/invoke/projection/Reconcile核精确提交，不额外stage task.json。
+S2：父仓准备显式gitlink新增/更新/删除/类型变化；捕获父index并精确提交。删除时child目录仍在也按父index absence处理；父条目后续改变仍stale。
+S3：同父index下child未初始化、dirty、不同HEAD或无目标对象，父仓身份及结果不变，不递归、不获取child。
+S4：用户明确选择child为独立root时执行它自己的流程；父仓不自动取得child操作权限。
 
 ## 5. 行为要求
 
-- R1（S1）：专用 `delivery_resolved_reconciliation` 以被审 stage-0 gitlink 为目标，完整固定 HEAD、单一 MERGE_HEAD、stage-0 tree/index 与实际内容身份。
-- R2（S2、S3）：普通 Check 保留原提交绑定。所有入口保留子模块 root、目标 OID、clean 状态和实际候选变化校验。未解决冲突、未暂存内容和候选变化不得获得过期通过。
-- R3（S1）：record、checker、公共 invoke、projection 与 Reconcile 对同一真实候选一致。只有实际 resolved 检查结果进入原精确提交；不得先提交绕检查。提交后新 HEAD 仍需 fresh Check/full Review。
-- R4（S4）：只在 canonical source 修复，通过已证实受支持的完整 matching reviewed source 执行入口或原安装路径恢复。禁止业务安装 runtime 热改、混合拷贝与路径排除。若公共输入演进，同批维护兼容和同步 consumer 合同。
+R1（S1/S2）：gitlink以父index/tree path/mode/OID原子处理，显式新增/更新/删除/类型变化进入捕获、差异、审查与精确提交。提交使用被审父OID，不重采child HEAD，不排除路径。父条目变化继续stale。
+R2（S2/S3/S4）：Check/Commit/Review/Reconcile、共享身份和真实验证/工具快照consumer不读取child root/HEAD/clean/初始化/内部文件或对象，不init/update/fetch。保留普通文件、父unmerged和业务unstaged的原正确行为，删除同责任重复child准入。
+R3（S1）：resolved保持唯一MERGE_HEAD、stage0 tree和原Reconcile精确parents/message。仅公开校验的当前task_ref/task.json具有自然metadata例外，保留bytes/index；不豁免其它Task或业务修改，不用额外stage掩盖producer缺陷。
+R4：canonical、dogfood、声明平台、schema和合同一致，沿原受管owner更新。旧未执行private候选重新准备；已有commit/receipt由原owner恢复，防止重复提交。不热改业务安装或上游生成脚本。
 
 ## 6. 约束与依赖
 
-复用现有 Check profile、Task/Delivery 身份、公共投影与原 Reconcile owner。具体最小机制由 Author/Architecture 细化，需求阶段不预判实现已通过。不存在产品数据模型迁移或新增外部服务。完整工具执行需要 source clean commit 与匹配 Fork；canonical wrappers 的 --root 路线须证明 source runtime、target公共API及target原Reconcile consumer兼容。实际候选复跑由原调用方 owner 承接，不把源码测试解释为该复跑成功。
+上游Delivery candidate/commit验证/GitCandidateContent当前regular-only，显式gitlink正式Delivery/新HEAD链需要上游配套；由castbox/Trellis owner承担。本Task不绕过、不伪造另一authority，报告实际阻断及其能力边界；不把上游改造或业务恢复增加为本Issue验收。局部机制通过不代表完整链路已恢复。
+
+复用原Task/Delivery、原Git事实owner和受管升级入口。无产品数据迁移。必要RDT/Architecture差额由原owner完整拟写并在candidate Check后晋升，不能只追加历史摘要替代当前定义。
 
 ## 7. 可观察验收与验证方式
 
-- AC1（R1、R3）：以正常 Git 分支和 merge 构造 staged gitlink 更新的已解决候选，child clean 且 HEAD 精确匹配 stage-0 OID；正式 record→check→invoke→projection→精确 Reconcile 完成，提交 tree/parents/message 符合原合同。
-- AC2（R2）：普通 staged gitlink 仍拒绝；正常 child dirty、HEAD 不匹配、未解决冲突与捕获后候选变化仍给出明确诊断。
-- AC3（R1—R3）：定向回归覆盖无 gitlink、普通 gitlink、resolved gitlink 及真实命令组合，避免仅 mock 子函数证明整链。
-- AC4（R4）：canonical/dogfood一致性通过；完整matching reviewed source 的原 --root 入口与target已安装API、原Reconcile consumer组合通过，原调用方真实候选重跑并记录实际结果。若必须安装，另由原安装owner验证完整匹配安装。源码测试不能替代受支持入口或调用方验收。
+AC1（R1/R3）：一个真实Git resolved fixture通过生产wrappers执行record→check→invoke→projection→Reconcile，保留begin_check自然metadata，独立核tree/parents/message及Taskbytes/index。后继consumer仅补受影响定向回归，不重复完整流程。
+AC2（R1/R2）：代表性真实Git用例证明child状态不影响父身份，父指针被捕获/精确提交；新增/删除/类型变化和父index后续变化有能暴露遗漏的回归。按逻辑分支取用例，不做child状态×Skill×平台矩阵。
+AC3（R1—R4）：通过直接受影响runtime/package回归和canonical/dogfood/声明平台一致性检查；复用仍适用测试，不新增重复验收、独立证明artifact或审批。AC4沿用为本验收的受管投影/工具来源一致性定位，不再承担业务采用或现场复跑。
 
 ## 8. 实际未决项
 
-整体需求没有待用户决定的问题。具体 capture 机制和兼容细节由 Delivery Author 与独立 Architecture 审查后落实；实施、受支持入口和真实候选复跑尚待执行。
+没有待用户决定的需求问题。上游缺口如第6节，是外部能力边界，不冻结本仓独立修复，也不声称已解决。Issue/Task完成仅表示Guru侧交付和上述最小验收完成，不表示业务已恢复。实现和验证尚未执行。

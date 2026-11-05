@@ -69,7 +69,7 @@ validated by the public API and original semantic owners.
 
 Current private schema is 6.0; schema 5.0 remains history with its old meaning.
 Current record/check/invoke reject 5.0 rather than converting an old passed
-result. The ordinary local guru-phase2-worktree-content-2.0 token covers business bytes
+result. The ordinary local guru-phase2-worktree-content-3.0 token covers business bytes
 and modes and excludes the existing reviewed-content metadata paths, so Task
 result writes do not cause a digest cycle. It remains adjacent freshness only.
 Retire the owner-private candidate checkpoint once its consumer completes.
@@ -202,7 +202,7 @@ owner. Do not author these fields, import private runtime code, copy a result
 example's digest, or fill this private digest from a candidate token.
 
 The candidate's `guru-reviewed-content-1.0` token still serves its original
-public consumer. The recorder's `guru-phase2-worktree-content-2.0` token still
+public consumer. The recorder's `guru-phase2-worktree-content-3.0` token still
 serves local Phase 2 freshness. Keep the actual public Task/Delivery/Planning
 identity and any legitimate upstream token in their declared public inputs;
 carry producer values unchanged. This input separation does not remove or
@@ -272,21 +272,26 @@ arguments. Only invocation emits a formal exit.
 For `delivery_resolved_reconciliation`, both record and check require
 `--skill-input` with the original public input. They validate its Task, mode,
 Delivery, accepted Planning result and actual public candidate before capture.
-Only this dedicated profile uses `guru-phase2-resolved-content-1.0`: it binds
+Only this dedicated profile uses `guru-phase2-resolved-content-2.0`: it binds
 live HEAD, the single MERGE_HEAD, stage-0 tree, every stage-0 mode/OID entry,
 and the complete business file set. Index stat and cache-tree refreshes do not
-change this semantic identity. The resolved gitlink target is its stage-0 OID;
-an initialized child must still be the exact clean child root at that OID.
-Uninitialized children retain their supported absent/empty-directory behavior.
-Unmerged entries, another sequencer, unstaged business changes and untracked
-business files are rejected. No `typed_exit` or detected MERGE_HEAD selects this
-capture implicitly. The no-argument ordinary capture and its token remain
-unchanged. Each locator may use a regular JSON file or `-`; record accepts
+change this semantic identity. Gitlinks in ordinary and resolved capture bind only the parent's stage-0
+path/mode/OID. Capture never enters a child or reads its HEAD, root, clean,
+initialization, files or objects. Explicit parent additions, updates, removals
+and type replacements remain content; a staged removal is absence even when
+its child directory remains. Unmerged entries, another sequencer, unstaged
+business changes and untracked business files are rejected. Only the exact
+publicly validated current task_ref/task.json may have its natural metadata
+update unstaged; its bytes/index remain untouched. Other Task paths receive
+no such exception. No `typed_exit` or detected MERGE_HEAD selects this
+capture implicitly. The ordinary local algorithm is now 3.0 and resolved is 2.0, so a private
+checkpoint captured with the old child-sensitive semantics must be recorded
+and checked again; it is not converted. Each locator may use a regular JSON file or `-`; record accepts
 stdin for only one locator at a time.
 
 Invocation and resolved projection validate the same capture. A change to
-HEAD, MERGE_HEAD, index entries, candidate, business content or initialized
-child state requires fresh review. Check creates no reconciliation commit and
+HEAD, MERGE_HEAD, index entries, candidate or business content requires fresh review. Child worktree state
+never changes this parent content identity. Check creates no reconciliation commit and
 changes no public candidate. The original Reconcile consumer alone commits the
 exact reviewed tree, parent order and message; the new HEAD then receives its
 ordinary formal Check and full Review.

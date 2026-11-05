@@ -92,6 +92,12 @@ owner, `index_tree_digest`. In Git index order, each `160000` gitlink contribute
 `path_bytes + NUL + b"160000" + NUL + index_oid_ascii + NUL`.
 The recorded pointer participates directly: no `cat-file` call, initialized
 submodule, local child commit object, credentials, or remote download is needed.
+
+Parent cleanliness, pending-work preservation and resolved integration-path
+checks use the same parent-only status projection. Child initialization, HEAD
+or internal changes do not trigger a stash or block reconciliation. Staged
+parent gitlink additions, updates, deletions and type changes remain visible;
+resolved-path validation compares exact parent index entries.
 All blob-backed entries retain
 `path_bytes + NUL + sha256(blob_bytes).hexdigest().encode() + NUL`, including
 ordinary files, executable files, and symlink target blobs. The final identity
@@ -205,7 +211,7 @@ It never consumes the ordinary Task Commit path.
 
 `execute-resolved-base-reconciliation` accepts only the exact branch-bound task
 worktree with `HEAD == phase2_commit_anchor`, one `MERGE_HEAD == new_base_head`,
-zero unresolved entries, zero unstaged business or untracked paths, and no other Git
+zero unresolved entries, zero unstaged parent business or untracked paths, and no other Git
 sequencer. Only the exact current `task_ref/task.json`, already validated through
 the public Task/Delivery identity, may retain an unstaged regular-file metadata
 update from the original workflow. Other Task records and arbitrary metadata

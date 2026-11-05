@@ -40,7 +40,7 @@ def facts(package_root, repo, public):
         )
     delta = subprocess.run(
         ["git", "diff", "--no-ext-diff", "--no-textconv", "--binary",
-         "--full-index", "--no-renames", reviewed, final, "--"],
+         "--full-index", "--no-renames", "--submodule=short", "--ignore-submodules=none", reviewed, final, "--"],
         cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     if delta.returncode:

@@ -1002,7 +1002,7 @@ mode/task, `phase2_capture_commit`, `reviewed_content_sha256`, reviewed paths,
 executed validation evidence, the final Docs SSOT result, semantic
 adequacy/findings, final candidate classifications with direct-consumer
 witness, and one typed exit/route/reason/consumer. The private
-`guru-phase2-worktree-content-2.0` identity covers live tracked and untracked
+`guru-phase2-worktree-content-3.0` identity covers live tracked and untracked
 business worktree paths, including regular-file executable mode. It uses the
 existing metadata exclusions owned by [Reviewed Content Identity](#reviewed-content-identity),
 so recording lifecycle metadata does not change the checked business content.
@@ -1010,18 +1010,20 @@ Only the original Check recorder/checker and public wrapper consume this local
 equality token. It remains distinct from the durable `guru-reviewed-content-1.0`
 identity used in the candidate handoff.
 Its supported atomic entries include regular files, executable files,
-symlinks, missing paths, and Gitlinks. An unchanged uninitialized Gitlink binds
-the unique stage-0 superproject index mode `160000` and OID after the current
-commit records the same pointer. An initialized Gitlink additionally requires
-an exact submodule root, clean status, and submodule `HEAD` equal to that OID.
-Dirty, HEAD-drifted, index/commit-pointer-drifted, deleted, replaced,
-root-mismatched, unmerged, or ambiguous Gitlinks fail closed. This is an
-additive Gitlink compatibility rule in historical `1.0`: that earlier runtime
-produced no valid digest for a Gitlink and retained its non-Gitlink digests.
-Current `2.0` changes regular-file mode binding and metadata selection; it does
-not claim the old payload or digest is unchanged. Old checkpoint shapes remain
-historical and are not converted. This does not relax Task Commit's separate rule that
-a Gitlink selected for staging must be initialized and clean.
+symlinks, missing paths, and Gitlinks. Gitlinks bind only the superproject's
+unique stage-0 mode `160000` and OID. Added or updated pointers need not match
+old `HEAD`; staged deletion uses index absence even when a child directory
+remains. Type replacements use the resulting parent entry. No child root,
+HEAD, cleanliness, initialization, files or object availability is inspected.
+Unmerged or ambiguous parent entries still fail closed. Ordinary non-gitlink
+worktree bytes and executable mode retain their existing meaning.
+Current `3.0` replaces the former child-state admission. Old unexecuted local
+checkpoints are rerun through their original recorder/checker, not converted.
+The resolved profile additionally uses `guru-phase2-resolved-content-2.0` to bind
+HEAD, the unique MERGE_HEAD, stage-0 entries/tree and the validated public
+Delivery context. Only that validated current Task's task.json may carry its
+natural unstaged lifecycle metadata; other Task or business changes receive no
+such exception. Check and Reconcile preserve that file's original bytes/index.
 It detects reviewed-content drift and returns control to the AI owner for delta
 classification; it is not authorization, semantic approval, public handoff, or
 whole-chain authority. Live implementation output, Planning owner state, issue
@@ -1081,8 +1083,8 @@ into Phase 2.
 Each `guru-create-task-commit` invocation owns one temporary candidate under
 ignored `.trellis/.runtime/guru-team/task-commit-plans/<task-key>/<sequence>.json`,
 where `sequence` is a fresh three-digit
-increasing id. Current schema `guru-task-commit-candidate-5.0` binds only task
-locator/branch/status, base/pre-commit/Phase 2 commit anchor, the complete
+increasing id. Current Delivery candidate schema `delivery-3.0` binds only Task
+identity/branch and DeliveryKey, base/pre-commit/Check identity, the complete
 staged/unstaged/untracked/delete/rename/copy snapshot, unique path
 classifications, exact stage paths, canonical UTF-8 message fields/bytes, and
 the completed AI review. Live `task.json`, the Phase 2 DTO,
@@ -1091,22 +1093,25 @@ are reread by the builder/validator; they are not copied into a cross-Skill
 digest chain. The candidate contains no user authorization, confirmation
 wording, terminal result journal, reviewer identity, or timestamp.
 
-Snapshot entries whose index mode is `160000` additionally require
-`gitlink_head`, `gitlink_initialized=true`, and `gitlink_dirty=false`.
-`gitlink_head` is the unique commit checked out by the submodule rooted at the
-exact worktree path. Uninitialized, dirty, unborn, or root-mismatched submodules
-cannot produce a safe candidate. These fields are conditional. Current snapshot
-producers always emit `copied_from`, using a repo path only for copy destinations
-and `null` otherwise.
-Candidate validation and executor revalidation compare the current
-gitlink identity, so a reviewed B revision changed to C before exact staging is
-stale before any index mutation. For non-deleted mode `160000` paths,
-`gitlink_head` is also the exact index-content authority: the executor writes
-that OID through `git update-index --cacheinfo` rather than reading the mutable
-submodule worktree through `git add`, then verifies the staged mode/OID and the
-current worktree identity. Consequently a B-to-C change detected before
-publication cannot place C in the index or commit. A deliberate gitlink delete keeps the conditional deletion
-identity and ordinary literal delete behavior.
+Snapshot entries for non-deleted Gitlinks use `mode=160000`, `index_blob`
+as the reviewed parent stage-0 OID, and `worktree_sha256=null`. They contain no
+child HEAD, initialized or dirty fields. A parent-HEAD Gitlink with absent index
+entry records `mode=160000`, `index_blob=null`, `deleted=true` and no worktree
+hash, including when its child directory remains. A replacement with an ordinary
+parent entry follows ordinary worktree content rules. Current producers emit
+`copied_from` for copy destinations and null otherwise.
+
+Candidate and executor revalidation compare the parent index entry, never child
+state. Exact staging writes the captured mode/OID with update-index --cacheinfo;
+a staged Gitlink deletion removes the isolated index entry. Ordinary paths keep
+the original staging and hook transaction. The parent pointer changing after
+capture is stale; a child checkout changing alone is irrelevant.
+
+Old unexecuted delivery-2.0 private candidates require fresh prepare and have no
+new-execution fallback. If the original operation already produced a commit or
+result receipt, its original owner first verifies and recovers that same result;
+it must not prepare a duplicate commit. An unchanged result receipt retains its
+own existing version. Historical task candidate 5.0 is not current execution.
 
 For every non-gitlink snapshot entry, `worktree_sha256`, `mode`, and `deleted`
 form the path's ordinary content authority. `renamed_from` and `copied_from`
@@ -1290,8 +1295,13 @@ contains exactly `path`, `mode`, and `oid`; Git object kind, `base_commit`,
 review range, stage-private fields, and any other metadata are not identity
 input. Entries are ordered by the raw bytes of `path.encode("utf-8")` before
 the payload is hashed. Paths must decode as strict UTF-8. Supported atomic Git
-entries retain the existing regular/executable blob, symlink, and gitlink
-semantics; ambiguous or unavailable entries fail closed.
+entries include regular/executable blobs, symlinks and atomic Gitlinks. For
+worktree capture, Gitlinks use parent index path/mode/OID or staged absence;
+child internal state is ignored, including uninitialized, dirty, different HEAD
+and unavailable objects. Explicit parent updates, deletion and type replacement
+remain content. Cached/committed differences preserve parent pointers while
+worktree state projection ignores child changes. Ambiguous parent entries fail
+closed. Committed-tree capture keeps its existing tree-only algorithm.
 
 The closed metadata exclusion set is:
 

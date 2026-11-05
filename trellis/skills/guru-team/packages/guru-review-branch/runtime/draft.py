@@ -24,7 +24,7 @@ def invoke(package: Path, repo: Path, public: dict, review: dict) -> dict:
         if (projection.commit(base) != base or projection.commit(head) != head
                 or projection.content_base(public["delivery_key"], development_base=base) != base
                 or git(repo, "rev-parse", "HEAD") != head
-                or not git(repo, "diff", "--name-only", base, head)):
+                or not git(repo, "diff", "--name-only", "--ignore-submodules=none", base, head)):
             raise CommandError("stale_identity", "candidate", "Review the complete fixed base/actual HEAD range; target advancement does not change it.", 3)
     except LifecycleContractError as exc:
         raise CommandError("stale_identity", exc.field_path, exc.remediation, 3) from exc

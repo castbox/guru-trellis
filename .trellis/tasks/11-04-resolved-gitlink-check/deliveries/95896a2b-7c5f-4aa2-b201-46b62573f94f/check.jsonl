@@ -1,1 +1,5 @@
 {"file": "trellis/skills/guru-team/packages/guru-check-task/references/contract.md", "reason": "完整Check owner及resolved精确提交前检查职责"}
+{"file": "trellis/skills/guru-team/runtime/reviewed_content.py", "reason": "父仓原子内容与共享身份的当前producer和consumer"}
+{"file": "trellis/presets/guru-team/spec/workflow/data-contracts.md", "reason": "同步替代Check/Commit旧child准入与private候选合同"}
+{"file": "docs/architecture/contributions/739-parent-git-content.md", "reason": "真实隔离拟写与上游采用边界，晋升后重绑after"}
+{"file": ".agents/skills/guru-author-task-plan/references/planning-body.md", "reason": "本批规划正文与分阶段完整性合同"}

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
-from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, resolve_commit, task_identity, validate_json, validate_public, validate_result
+from common import PRE_REVIEW_PROFILES, POST_REVIEW_PROFILES, committed_tree_digest, git, checkpoint_path, index_tree_digest, is_ancestor, merge_base, operation_pair, parse, read_json, repo_root, require_clean_worktree, parent_changes, resolve_commit, task_identity, validate_json, validate_public, validate_result
 from runtime.io import CommandError
 from resolved import commit_tree, require_merge_state, tree_index, validate_integration_paths, verify_commit, task_metadata_snapshot, require_resolved_worktree
 
@@ -93,7 +93,7 @@ def reconcile(package_root: Path, argv: list[str]) -> dict:
                 reconciled=commit_tree(repo,[prior,new_base],tree,request["commit_message"],request["candidate_tree_sha256"],index=index)
         result={"schema_version":"1.0","status":"committed","profile":request["profile"],"task_ref":request["task_ref"],"delivery_key":request["delivery_key"],"branch":request["branch"],"prior_task_head":prior,"old_base_head":old_base,"new_base_head":new_base,"resume_target":request["resume_target"],"reconciled_task_head":reconciled,"candidate_tree_sha256":request["candidate_tree_sha256"]}
         validate_json(result,package_root/"schemas/delivery-reconciliation-result.schema.json","result"); return result
-    dirty=bool(git(repo,"status","--porcelain=v1","--untracked-files=normal"))
+    dirty=bool(parent_changes(repo))
     if dirty and request["profile"] not in PRE_REVIEW_PROFILES:
         require_clean_worktree(repo)
     stash_oid=None

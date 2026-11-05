@@ -20,6 +20,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("launch.sh"),
     Path("manage-python.sh"),
     Path("probe.py"),
+    Path("parent_git.py"),
     Path("python-runtime.json"),
     Path("reviewed_content.py"),
     Path("qualification_facts.py"),

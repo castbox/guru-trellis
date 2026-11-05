@@ -32,6 +32,7 @@ APPROVED_KERNEL_FILES = {
     "launch.sh",
     "manage-python.sh",
     "probe.py",
+    "parent_git.py",
     "python-runtime.json",
     "reviewed_content.py",
     "qualification_facts.py",

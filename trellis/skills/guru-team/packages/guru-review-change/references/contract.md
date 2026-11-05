@@ -102,7 +102,12 @@ exists. A newly initialized repository without a first commit is supported:
 review its actual staged, unstaged and untracked content, with the snapshot
 preserving the true absence of commit anchors. Do not create a commit or invent
 an OID to make review possible. Staged and unstaged versions can differ;
-inspect both when they affect the requested review. A committed range requires
+inspect both when they affect the requested review. Gitlinks are parent
+path/mode/OID content: cached and committed snapshots retain their pointer
+changes, while unstaged snapshots ignore child initialization, HEAD and internal
+changes. A staged parent deletion remains a deletion when its child checkout
+directory remains present. The snapshot never reads child files or objects.
+A committed range requires
 the selected commits and reviews the direct `base` to `head` tree difference,
 without selecting a merge base automatically. If the user intends a merge-base
 branch comparison,

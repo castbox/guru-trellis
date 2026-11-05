@@ -3,9 +3,11 @@ import json
 import subprocess
 import unittest
 import uuid
+from unittest.mock import patch
 
 import test_installed_projection as fixtures
 from runtime.delivery_projection.gates import record_gate, rework
+from runtime.task_lifecycle.errors import LifecycleContractError
 
 
 class FixedCandidateTests(unittest.TestCase):
@@ -56,6 +58,25 @@ class FixedCandidateTests(unittest.TestCase):
             self.assertEqual(self.git("rev-parse", "HEAD"), head)
         finally:
             self.git("worktree", "remove", "--force", str(peer))
+
+    def test_parent_gitlink_change_reaches_provider_despite_ignore_config(self):
+        self.seed()
+        self.git("update-index", "--add", "--cacheinfo", f"160000,{'1'*40},module")
+        self.git("commit", "-qm", "parent old pointer")
+        base = self.git("rev-parse", "HEAD")
+        self.git("update-index", "--cacheinfo", f"160000,{'2'*40},module")
+        self.git("commit", "-qm", "parent new pointer")
+        head = self.git("rev-parse", "HEAD")
+        (self.root / "module").mkdir()
+        self.git("config", "diff.ignoreSubmodules", "all")
+        provider = self.projection.api.delivery_store
+        # Observe the actual provider call. Its current regular-only rejection
+        # must remain visible instead of being hidden by the parent path scan.
+        with patch.object(provider, "candidate_content_ref", wraps=provider.candidate_content_ref) as call:
+            with self.assertRaises(LifecycleContractError) as raised:
+                self.projection.candidate(["app.txt"], head_ref=head, base_ref=base)
+        self.assertEqual("invalid_candidate", raised.exception.code)
+        self.assertEqual(["app.txt", "module"], call.call_args.args[1])
 
     def test_actual_head_evolution_retains_history_without_applicable_old_gates(self):
         self.seed()
