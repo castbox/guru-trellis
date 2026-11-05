@@ -205,14 +205,20 @@ It never consumes the ordinary Task Commit path.
 
 `execute-resolved-base-reconciliation` accepts only the exact branch-bound task
 worktree with `HEAD == phase2_commit_anchor`, one `MERGE_HEAD == new_base_head`,
-zero unresolved entries, zero unstaged or untracked paths, and no other Git
-sequencer. The stage-0 tree and index digest must equal the reviewed input
+zero unresolved entries, zero unstaged business or untracked paths, and no other Git
+sequencer. Only the exact current `task_ref/task.json`, already validated through
+the public Task/Delivery identity, may retain an unstaged regular-file metadata
+update from the original workflow. Other Task records and arbitrary metadata
+paths receive no exception. Preserve that file's exact worktree bytes and index
+entry before and after execution; never stage, reset, or include the update in
+the reviewed tree. The stage-0 tree and index digest must equal the reviewed input
 before one local merge commit is created. It performs no push or remote
 mutation.
 
 If stdout is lost after that commit, the same request may recover only when
-current `HEAD` has the exact reviewed parents, tree, and message in a clean
-terminal Git state. Recovery returns the existing commit and never creates a
+current `HEAD` has the exact reviewed parents, tree, and message in a terminal
+Git state with only the same current-Task metadata exception. Recovery preserves
+its current bytes and index entry, returns the existing commit and never creates a
 second commit. Resolved Check records no public Check gate, and this executor
 does not advance the public Delivery phase. The Delivery remains in checking.
 Before Full Review, the original Check owner invokes public rework to

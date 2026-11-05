@@ -14,6 +14,34 @@ from runtime.io import CommandError
 from runtime.git_merge import git_path, other_sequencer, require_merge_state
 
 
+def task_metadata_snapshot(repo: Path, task_ref: str) -> tuple[str, bytes, bytes]:
+    """Preserve the current, publicly validated Task record without staging it."""
+    path = str(Path(task_ref) / "task.json")
+    target = repo / path
+    if target.is_symlink() or not target.is_file():
+        raise CommandError("stale_identity", "task_ref", "Use the current regular Task record.", 3)
+    entry = subprocess.run(["git", "ls-files", "--stage", "-z", "--", path], cwd=repo,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True).stdout
+    return path, target.read_bytes(), entry
+
+
+def require_resolved_worktree(repo: Path, metadata: tuple[str, bytes, bytes],
+                              *, terminal: bool = False) -> None:
+    """Only the exact current Task record may differ outside the reviewed tree."""
+    path = metadata[0]
+    if task_metadata_snapshot(repo, str(Path(path).parent)) != metadata:
+        raise CommandError("stale_identity", "task_metadata", "Preserve the current Task bytes and index entry.", 3)
+    args = ["git", "status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all", "--ignore-submodules=none"]
+    status = subprocess.run(args, cwd=repo, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True).stdout
+    for row in filter(None, status.split(b"\0")):
+        state, changed = row[:2], row[3:]
+        metadata_states = {b" M"} if terminal else {b" M", b"MM", b"AM"}
+        if changed == os.fsencode(path) and state in metadata_states:
+            continue
+        if terminal or state[1:] != b" " or state[:1] in {b"?", b"U"}:
+            raise CommandError("stale_identity", "worktree", "Stage every resolved business change; preserve only current Task metadata.", 3)
+
+
 def commit_facts(repo: Path, commit: str) -> tuple[list[str], str, str]:
     return (git(repo, "show", "-s", "--format=%P", commit).split(),
             git(repo, "show", "-s", "--format=%T", commit),

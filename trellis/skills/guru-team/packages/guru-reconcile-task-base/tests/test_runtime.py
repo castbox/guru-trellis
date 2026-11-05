@@ -632,6 +632,86 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(output,self.project_resolved(request,second,'check-after-reconciliation'))
         self.assertEqual(commit,self.git('rev-parse','HEAD'))
 
+    def metadata_dirty_resolved_candidate(self):
+        request = self.resolved_merge(public_check=True)
+        metadata = self.task_dir / 'task.json'
+        self.git('add', '-f', str(metadata.relative_to(self.repo)))
+        request['stage0_tree'] = self.git('write-tree')
+        request['index_tree_sha256'] = index_tree_digest(self.repo)
+        self.fresh_resolved_check(request)
+        return request, metadata
+
+    def test_resolved_candidate_accepts_only_unstaged_current_public_metadata(self):
+        metadata = self.task_dir / 'task.json'
+        metadata_path = str(metadata.relative_to(self.repo))
+        self.git('add', '-f', metadata_path)
+        self.git('commit', '-qm', 'track current Task record')
+        metadata_commit = self.git('rev-parse', 'HEAD')
+        self.git('switch', 'main')
+        self.git('cherry-pick', metadata_commit)
+        self.git('switch', 'feature')
+        request = self.resolved_merge(public_check=True)
+        status = subprocess.run(['git', 'status', '--porcelain'], cwd=self.repo, text=True,
+                                stdout=subprocess.PIPE, check=True).stdout
+        self.assertIn(' M ' + metadata_path, status.splitlines())
+        before = metadata.read_bytes()
+        entry = self.git('ls-files', '--stage', '--', metadata_path)
+        result = execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(self.write('unstaged-metadata-resolved.json', request))])
+        self.assertEqual('committed', result['status'])
+        self.assertEqual(before, metadata.read_bytes())
+        self.assertEqual(entry, self.git('ls-files', '--stage', '--', metadata_path))
+
+    def test_resolved_candidate_preserves_public_check_metadata_and_recovers(self):
+        request, metadata = self.metadata_dirty_resolved_candidate()
+        metadata_path = str(metadata.relative_to(self.repo))
+        before = metadata.read_bytes()
+        entry = self.git('ls-files', '--stage', '--', metadata_path)
+        self.assertIn('AM ' + metadata_path, self.git('status', '--short'))
+        path = self.write('metadata-resolved.json', request)
+        first = execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
+        commit = first['reconciled_task_head']
+        self.assertEqual(request['stage0_tree'], self.git('show', '-s', '--format=%T', commit))
+        self.assertEqual(request['parent_order'], self.git('show', '-s', '--format=%P', commit).split())
+        self.assertEqual(request['commit_message'], self.git('show', '-s', '--format=%B', commit))
+        self.assertEqual(before, metadata.read_bytes())
+        self.assertEqual(entry, self.git('ls-files', '--stage', '--', metadata_path))
+        second = execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
+        self.assertEqual('recovered', second['status'])
+        self.assertEqual(commit, second['reconciled_task_head'])
+        self.assertEqual(before, metadata.read_bytes())
+        self.assertEqual(entry, self.git('ls-files', '--stage', '--', metadata_path))
+        (self.repo / 'task.txt').write_text('unreviewed business change\n')
+        with self.assertRaises(CommandError):
+            execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
+        self.assertEqual(commit, self.git('rev-parse', 'HEAD'))
+
+    def test_resolved_metadata_exception_rejects_other_task_and_business_changes(self):
+        request, metadata = self.metadata_dirty_resolved_candidate()
+        other = self.repo / '.trellis/tasks/other/task.json'
+        other.parent.mkdir(parents=True)
+        other.write_text('{}\n')
+        self.git('add', '-f', str(other.relative_to(self.repo)))
+        request['stage0_tree'] = self.git('write-tree')
+        request['index_tree_sha256'] = index_tree_digest(self.repo)
+        other.write_text('{"changed":true}\n')
+        path = self.write('other-metadata-resolved.json', request)
+        with self.assertRaises(CommandError):
+            execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
+        self.assertEqual(request['phase2_commit_anchor'], self.git('rev-parse', 'HEAD'))
+        other.write_text('{}\n')
+        (self.repo / 'task.txt').write_text('unreviewed\n')
+        with self.assertRaises(CommandError):
+            execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(path)])
+        self.assertEqual(request['phase2_commit_anchor'], self.git('rev-parse', 'HEAD'))
+
+    def test_resolved_candidate_accepts_reviewed_staged_rename(self):
+        request = self.resolved_merge()
+        self.git('mv', 'task.txt', 'renamed-task.txt')
+        request['stage0_tree'] = self.git('write-tree')
+        request['index_tree_sha256'] = index_tree_digest(self.repo)
+        result = execute.resolved_reconcile(PACKAGE, ['--root', str(self.repo), '--input', str(self.write('renamed-resolved.json', request))])
+        self.assertEqual('committed', result['status'])
+
     def resolved_projection_after_normal_edit(self,changed):
         request=self.resolved_merge(public_check=True)
         result=execute.resolved_reconcile(PACKAGE,['--root',str(self.repo),'--input',str(self.write('live-input.json',request))])
