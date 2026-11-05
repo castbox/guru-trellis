@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-05T13:20:21Z",
+  "generator": "guru-team.finalize-task",
+  "task": {
+    "slug": "11-05-712-compact-formal-reactivation",
+    "title": "#712 消费公共能力恢复精简 legacy 正式归档",
+    "status": "completed",
+    "artifact_dir": ".trellis/tasks/11-05-712-compact-formal-reactivation",
+    "archive_dir": ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation"
+  },
+  "git": {
+    "base_branch": "main",
+    "branch": "codex/712-compact-formal-reactivation",
+    "commits": [],
+    "changed_paths": []
+  },
+  "github": {
+    "pr_url": ""
+  },
+  "artifacts": {
+    "prd": "prd.md"
+  },
+  "index": {
+    "problem": "#712 消费公共能力恢复精简 legacy 正式归档",
+    "outcome": "任务已完成并归档。",
+    "changed_behavior": [
+      "持久化 Completion、Closure 与 Finish 终态"
+    ],
+    "affected_surfaces": [
+      {
+        "kind": "task-artifact",
+        "name": "task archive",
+        "paths": [
+          ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation",
+          ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/finish-summary.json",
+          ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/prd.md",
+          ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/task.json"
+        ],
+        "change": "归档当前 task 并写入完成摘要。"
+      }
+    ],
+    "contract_changes": [],
+    "search_terms": {
+      "issue_refs": [
+        "#712"
+      ],
+      "pr_refs": [],
+      "branches": [
+        "codex/712-compact-formal-reactivation"
+      ],
+      "paths": [
+        ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation",
+        ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/finish-summary.json",
+        ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/prd.md",
+        ".trellis/tasks/archive/2026-11/11-05-712-compact-formal-reactivation/task.json"
+      ],
+      "commands": [],
+      "config_keys": [],
+      "schema_fields": [],
+      "symbols": [],
+      "phrases": [
+        "完成任务归档",
+        "写入完成摘要",
+        "保留 task identity"
+      ]
+    },
+    "retrieval_text": "#712 消费公共能力恢复精简 legacy 正式归档；#712；完成任务归档；写入完成摘要；保留 task identity"
+  }
+}
