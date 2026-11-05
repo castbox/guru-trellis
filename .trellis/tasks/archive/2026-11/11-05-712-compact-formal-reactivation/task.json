@@ -1,0 +1,515 @@
+{
+  "schema_version": "2.0",
+  "artifact_origin": ".trellis/tasks/11-05-712-compact-formal-reactivation",
+  "id": "712-compact-formal-reactivation",
+  "name": "712-compact-formal-reactivation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 712,
+    "disposition": "exact_source"
+  },
+  "title": "#712 消费公共能力恢复精简 legacy 正式归档",
+  "description": "完成 #712 的 Guru 下游接线、原生续接和定向联合验证。",
+  "dev_type": null,
+  "scope": "GitHub issue: https://github.com/castbox/guru-trellis/issues/712",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-05",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+    "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+  },
+  "deliveries": [
+    {
+      "id": "1fa43406-db18-4eb6-a418-b004fd3c10f5",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+          "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+        },
+        "anchors": [
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5",
+          "AC6"
+        ]
+      },
+      "planning_root": "deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5",
+      "profile": "pull_request",
+      "phase": "delivered",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+        "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+      },
+      "candidate": {
+        "kind": "git",
+        "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+        "paths": [
+          ".agents/skills/guru-reactivate-task/SKILL.md",
+          ".claude/skills/guru-reactivate-task/SKILL.md",
+          ".cursor/skills/guru-reactivate-task/SKILL.md",
+          ".trellis/.template-hashes.json",
+          ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+          ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+          ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+          ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+          ".trellis/scripts/common/task_utils.py",
+          "docs/design/current/completion-closure.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+          "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+          "docs/requirements/current/completion-closure.md",
+          "docs/test/current/completion-closure.md",
+          "trellis/presets/guru-team/README.md",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+          "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+          "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+        ],
+        "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+        "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+      },
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:8c48ce1f-f770-49a4-b983-41f67e21eef1",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+              "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+            "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/prd.md",
+              "revision": "sha256:0c0fcaf0193dc014f5a358b15ce7116d121e5f7690e9451ac45988da50b3a658"
+            },
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+              "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+            },
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/implement.md",
+              "revision": "sha256:81928e72de5b4f84672e569ce8b0a6ae41d2bedbf5a1ab4a340a751db8958f7a"
+            }
+          ]
+        },
+        "check": {
+          "result_id": "check:d3aacd49cc918d851508a1f50faea1bd2bccdf3b1261bc75c44e0cb6747fbb70",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+              "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+            "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+            "paths": [
+              ".agents/skills/guru-reactivate-task/SKILL.md",
+              ".claude/skills/guru-reactivate-task/SKILL.md",
+              ".cursor/skills/guru-reactivate-task/SKILL.md",
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+              ".trellis/scripts/common/task_utils.py",
+              "docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+              "docs/requirements/current/completion-closure.md",
+              "docs/test/current/completion-closure.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+            ],
+            "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+            "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+          },
+          "predecessor_result_id": "planning-accepted:8c48ce1f-f770-49a4-b983-41f67e21eef1",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/prd.md",
+              "revision": "sha256:0c0fcaf0193dc014f5a358b15ce7116d121e5f7690e9451ac45988da50b3a658"
+            },
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+              "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+            },
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/implement.md",
+              "revision": "sha256:81928e72de5b4f84672e569ce8b0a6ae41d2bedbf5a1ab4a340a751db8958f7a"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:c0e6f8e74e07bab555b6b3af28a62c895dbcf729fed1ffde91120cc650546f57",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+              "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+            "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+            "paths": [
+              ".agents/skills/guru-reactivate-task/SKILL.md",
+              ".claude/skills/guru-reactivate-task/SKILL.md",
+              ".cursor/skills/guru-reactivate-task/SKILL.md",
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+              ".trellis/scripts/common/task_utils.py",
+              "docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+              "docs/requirements/current/completion-closure.md",
+              "docs/test/current/completion-closure.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+            ],
+            "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+            "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+          },
+          "predecessor_result_id": "check:d3aacd49cc918d851508a1f50faea1bd2bccdf3b1261bc75c44e0cb6747fbb70",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/implement.md",
+              "revision": "sha256:81928e72de5b4f84672e569ce8b0a6ae41d2bedbf5a1ab4a340a751db8958f7a"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:61045895ae017b65c0096364f0d1e4ddf901c2494d4c91943760316c47e9add3",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+              "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+            },
+            "anchors": [
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/design.md",
+            "revision": "sha256:5e44ec19f665928d01a44577551d42d90851f8de871daab088e404d9c783b11d"
+          },
+          "candidate": {
+            "kind": "git",
+            "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+            "paths": [
+              ".agents/skills/guru-reactivate-task/SKILL.md",
+              ".claude/skills/guru-reactivate-task/SKILL.md",
+              ".cursor/skills/guru-reactivate-task/SKILL.md",
+              ".trellis/.template-hashes.json",
+              ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+              ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+              ".trellis/scripts/common/task_utils.py",
+              "docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+              "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+              "docs/requirements/current/completion-closure.md",
+              "docs/test/current/completion-closure.md",
+              "trellis/presets/guru-team/README.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+              "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+              "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+            ],
+            "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+            "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1"
+          },
+          "predecessor_result_id": "full-review:c0e6f8e74e07bab555b6b3af28a62c895dbcf729fed1ffde91120cc650546f57",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/deliveries/1fa43406-db18-4eb6-a418-b004fd3c10f5/implement.md",
+              "revision": "sha256:81928e72de5b4f84672e569ce8b0a6ae41d2bedbf5a1ab4a340a751db8958f7a"
+            }
+          ]
+        }
+      },
+      "publication_result": {
+        "result_id": "publication:5409d1a932daad4e8afb98b8745bffca08b7845b22161c204fd83430338f479f",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/742",
+            "revision": "sha256:af53320bafa15463a045bf4f0503fcb8e8357bcfb413752038cf986a9c24845f"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
+          "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+          "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reactivate-task/SKILL.md",
+            ".claude/skills/guru-reactivate-task/SKILL.md",
+            ".cursor/skills/guru-reactivate-task/SKILL.md",
+            ".trellis/.template-hashes.json",
+            ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+            ".trellis/scripts/common/task_utils.py",
+            "docs/design/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+            "docs/requirements/current/completion-closure.md",
+            "docs/test/current/completion-closure.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 742,
+        "reviewed_head": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/742",
+          "revision": "sha256:af53320bafa15463a045bf4f0503fcb8e8357bcfb413752038cf986a9c24845f"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:1ba61cbd61501c482401585cef1fa08f7a72ce9f",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/742",
+            "revision": "1ba61cbd61501c482401585cef1fa08f7a72ce9f"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
+          "content_ref": "sha256:607e69ca3ca81bb0e1a780c860626854befc1f35f419b16b6bdf0f1be47ad1ea",
+          "head_ref": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+          "kind": "git",
+          "paths": [
+            ".agents/skills/guru-reactivate-task/SKILL.md",
+            ".claude/skills/guru-reactivate-task/SKILL.md",
+            ".cursor/skills/guru-reactivate-task/SKILL.md",
+            ".trellis/.template-hashes.json",
+            ".trellis/guru-team/runtime/task_lifecycle/identity.py",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
+            ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
+            ".trellis/scripts/common/task_utils.py",
+            "docs/design/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/design.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/manifest.yaml",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/design/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/requirements/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/proposed/docs/test/current/completion-closure.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/requirements.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+            "docs/requirements-design-test-contributions/712-compact-formal-reactivation/traceability.md",
+            "docs/requirements/current/completion-closure.md",
+            "docs/test/current/completion-closure.md",
+            "trellis/presets/guru-team/README.md",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/tests/setup_native_fixture.py",
+            "trellis/skills/guru-team/packages/guru-reactivate-task/tests/test_formal_archive_reactivate.py",
+            "trellis/skills/guru-team/runtime/task_lifecycle/identity.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 742,
+        "reviewed_head": "b410e2373b73a121eacf6199a37bffa3f8d0507c",
+        "merge_commit": "1ba61cbd61501c482401585cef1fa08f7a72ce9f",
+        "target_ref": "main"
+      },
+      "stop_result": null
+    }
+  ],
+  "completion_results": [
+    {
+      "result_id": "completion:712-d1-full-1ba61cbd6150",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/742",
+          "revision": "1ba61cbd61501c482401585cef1fa08f7a72ce9f"
+        },
+        {
+          "locator": "docs/requirements-design-test-contributions/712-compact-formal-reactivation/test.md",
+          "revision": "b410e2373b73a121eacf6199a37bffa3f8d0507c"
+        },
+        {
+          "locator": "docs/requirements/current/completion-closure.md",
+          "revision": "b410e2373b73a121eacf6199a37bffa3f8d0507c"
+        },
+        {
+          "locator": "docs/design/current/completion-closure.md",
+          "revision": "b410e2373b73a121eacf6199a37bffa3f8d0507c"
+        },
+        {
+          "locator": "docs/test/current/completion-closure.md",
+          "revision": "b410e2373b73a121eacf6199a37bffa3f8d0507c"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/42032605563",
+          "revision": "b410e2373b73a121eacf6199a37bffa3f8d0507c"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/prd.md",
+        "revision": "sha256:c4c02ad2219b0a8aeafb7a3c36324b3493aac6e9b3ce4d2e17570636614959cc"
+      },
+      "delivery_result_ids": [
+        "delivery:1ba61cbd61501c482401585cef1fa08f7a72ce9f"
+      ],
+      "outcome": "completed"
+    }
+  ],
+  "closure_results": [
+    {
+      "result_id": "closure:e9638eaf2d3861c629f34ffd",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/issues/712",
+          "revision": "CLOSED"
+        },
+        {
+          "locator": ".trellis/tasks/11-05-712-compact-formal-reactivation/closeout/closure/Y2xvc3VyZTplOTYzOGVhZjJkMzg2MWM2MjlmMzRmZmQ.json",
+          "revision": "sha256:6b817e4e9646780cfb48d966ec7472638acc7a975047a65d21c361b413101a10"
+        }
+      ],
+      "lifecycle_generation": 0,
+      "completion_result_id": "completion:712-d1-full-1ba61cbd6150",
+      "disposition": "source_closed",
+      "source_result": {
+        "locator": "https://github.com/castbox/guru-trellis/issues/712",
+        "revision": "CLOSED"
+      }
+    }
+  ]
+}
