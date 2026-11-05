@@ -1,6 +1,6 @@
 # 父仓 Git 内容边界
 
-Identity：guru-parent-git-content。Owner：Guru Git事实runtime及各Skill原语义owner。Status：proposed，只有原Architecture final_integration实际晋升并读回后才是current；本文件不证明实现或业务恢复。
+Identity：guru-parent-git-content。Owner：Guru Git事实runtime及各Skill原语义owner。Status：historical_proposed_snapshot。唯一current为docs/architecture/03-domains/parent-git-content.md；本快照保留晋升前观察，不承担当前执行authority。
 
 ## 职责
 

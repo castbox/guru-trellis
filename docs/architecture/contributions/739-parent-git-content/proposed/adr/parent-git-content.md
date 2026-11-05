@@ -1,6 +1,6 @@
 # 父仓 Gitlink 使用父仓原子内容
 
-Identity：ADR-PARENT-GIT-CONTENT。Status：proposed。Owner：Architecture。作用域：父仓Guru流程的Gitlink事实及跨consumer职责；不改变上游Delivery authority或子仓独立root。
+Identity：ADR-PARENT-GIT-CONTENT。Status：historical_proposed_snapshot。唯一accepted决定为docs/architecture/adr/parent-git-content.md；本快照保留晋升前观察。Owner：Architecture。作用域：父仓Guru流程的Gitlink事实及跨consumer职责；不改变上游Delivery authority或子仓独立root。
 
 ## 问题与依据
 

@@ -25,6 +25,10 @@ workflow 调用或用户要求正式阶段结果时，才按原前置与完整�
 按项目技术栈、已采用标准和当前产物选择实际需要的 Skill 及同源标准包，
 专项结果由原 Guru owner 在自己的职责内审查，不能替代正式阶段结论。
 
+行为测试、因果验证、证据采用和实验停止的共同方法见
+[Test And Validation Value](./spec/workflow/quality-guidelines.md#test-and-validation-value)。
+Author、实施派工、Check 和 Branch Review 在原职责内采用该方法。
+
 Issue 内容、需求本身和动议本身的审核不进入 `guru-review-change`；它们保留
 现有 Issue、需求专项或项目动议/上游需求入口，Git 文件是否有改动不改变该边界。
 “审核需求是否已被代码和测试实现”属于实现审核。仅有 review 动词时承接明确的

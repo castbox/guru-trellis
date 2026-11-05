@@ -34,6 +34,8 @@
 
 按验证 ID 写对应要求/场景/AC、测试层、入口和输入、预期观察、证据限制。实际 Agent 行为、确定性检查、安装和外部链路分别说明。设计能让实施者执行、审核者核对；不把模板存在或预定命令当作成功证据。
 
+按共享正文合同所指向的 Test And Validation Value，从行为条件、动作和结果派生独立断言。说明可采用的已有覆盖、实际缺口及足够观察层级；区分长期回归与临时诊断，并按共同方法选择执行顺序和适用停止条件，不另建验证标准。
+
 ## 9. Canonical 引用、本轮差额与实际未决项
 
 定位命中的 repo requirement/behavior、design、test、Architecture authority 及本轮差额；写真实 task-owned contribution/必要 ADR 候选的责任和原晋升路径。必要问题给原 owner/影响/停点，没有则说明；不预创建空 contribution 或直接改共享导航。

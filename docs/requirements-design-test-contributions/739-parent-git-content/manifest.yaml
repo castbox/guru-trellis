@@ -1,6 +1,6 @@
 task_id: resolved-gitlink-check
 source: https://github.com/castbox/guru-trellis/issues/739
-status: proposed
+status: promoted
 strategy: delta_first
 authority_identity: guru-trellis-rdt
 source_revision: b78edbbdc32e77392bc3775366473971050ccb4b

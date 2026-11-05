@@ -214,6 +214,75 @@ detail public. Apply this policy within the current accepted scope and the
 validation ownership below; it does not require historical test cleanup across
 business repositories or a new full-chain gate for every change.
 
+### Behavior, evidence and experiment selection
+
+Derive assertions from the conditions, actions and observable results required
+by current requirements, design contracts or confirmed defects. Include API,
+Biz, tool, runtime and resource behavior when the contract requires it. Current
+implementation structure, output or fixture behavior cannot independently
+define the correct answer. Choose a test layer sufficient to observe the
+required behavior; device validation proves the parts that depend on the device.
+
+Select test-first or implementation-first work from behavior clarity, risk,
+environment and validation cost. Neither order is universal. A red/green
+sequence is not itself a delivery condition; simple, inexpensive behavior tests
+may still use test-first development. Adopt existing tests and verifiable
+engineering facts when they remain applicable under the shared applicability
+rules. Fill actual coverage gaps; a stage or executor change alone does not
+require repeating an applicable experiment.
+
+Distinguish durable behavior/regression tests from temporary diagnostic
+experiments. Durable tests continue to detect contract violations. A diagnostic
+experiment answers a specific current question and stops when its result
+supports the next judgment; not every hypothesis becomes a permanent case.
+Duplicate coverage needs independent defect-detection value. Reuse of test
+infrastructure depends on its current direct consumers and maintenance cost.
+
+Causal and counterfactual basis may come from existing valid observations,
+code/state-transition analysis or controlled experiments. Original failure,
+change analysis and post-change observations support the causal judgment at
+their applicable stages. Do not universally require an old implementation to
+fail, an isolated rollback, or repeated red/green cycles. This does not remove
+necessary causal evidence or prohibit an old-version comparison.
+
+For an additional diagnostic/counterfactual experiment beyond the selected
+validation set, name the unresolved question that existing evidence cannot
+answer, the result to observe, and how it affects repair selection or acceptance.
+For example, the cause may remain unknown, a competing explanation may remain,
+or a new regression test may not reach the original defect. State this in the
+existing conversation or validation body; add no per-test rationale file,
+approval field or proof table. Required behavior acceptance and affected
+regressions still follow the current contract and do not first require a
+competing explanation or a new justification for each planned check. Stop the
+particular verification when the evidence is sufficient. Coordinators, reviewers
+and workers must narrow a customary “red → fix → green → rollback → red” demand
+when it has no concrete evidence gap, while retaining necessary validation.
+
+Existing failure logs do not automatically prove a new regression test effective.
+If defect reach remains in doubt, first inspect its actual entry, branch and
+result observation under the declared-boundary method below. If that resolves
+the doubt, stop that inquiry. Otherwise select a bounded comparison of the same
+test against the old implementation, or another bounded check that establishes
+detection of the same defect. State the remaining question; without reach
+basis, do not claim test effectiveness.
+
+### Failure attribution and infrastructure limits
+
+A failure used as a defect comparison must reach the declared behavior and fail
+because it violates an independent behavioral expectation. Compilation,
+dependency, fixture, assembly or unreached-path failures cannot stand for that
+product defect. “Expected exception was not raised” does not establish that the
+product raised that exception. A passing test of required error, rejection or
+cancellation behavior remains valid behavior evidence; an expected error result
+does not make the test red. Do not change the business assertion to manufacture
+a pass.
+
+When test infrastructure repeatedly fails, reassess the reproduction method.
+Choose infrastructure repair, a direct observation that answers the same
+question, or an explicit evidence gap. Do not indefinitely turn infrastructure
+repair into a business prerequisite. A retained gap does not pass the acceptance
+that depends on it, and cost alone does not waive contract-required validation.
+
 ### Declared test boundary and formal path
 
 First identify the behavior and boundary the test claims to exercise. Compare

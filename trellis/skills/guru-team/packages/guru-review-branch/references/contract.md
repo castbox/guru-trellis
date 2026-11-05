@@ -335,6 +335,12 @@ Task scope does not negate an evidenced Architecture violation, and finding
 one does not authorize changing goals or authority. Green tests, prior approval
 and reviewer advice are not necessity evidence.
 
+Use that same Test And Validation Value method when judging requests for
+additional diagnostic/counterfactual experiments, continued infrastructure
+repair or repetition after a stage/executor change. Preserve its required
+acceptance and regression exceptions and its evidence-based stopping boundary;
+reviewer advice alone does not add a fixed red/green/rollback obligation.
+
 Apply the shared engineering method's failed-validation attribution and
 authority-based configuration judgment in
 `../../guru-review-change/references/review-method.md`. Keep this stage's
