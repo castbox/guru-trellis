@@ -69,6 +69,15 @@ class DeliveryFlow(unittest.TestCase):
         (self.repo / ".gitignore").write_text(".trellis/.runtime/\n")
         (self.repo / "requirements.md").write_text("R1: keep clean candidate and review it.\n")
         (self.repo / "app.txt").write_text("old\n")
+        if getattr(self, "with_gitlink", False):
+            child = self.repo / "module"
+            child.mkdir()
+            for args in (("init", "-q"), ("config", "user.name", "Fixture"),
+                         ("config", "user.email", "fixture@example.invalid")):
+                subprocess.run(["git", *args], cwd=child, check=True, capture_output=True)
+            (child / "child.txt").write_text("old child\n")
+            subprocess.run(["git", "add", "."], cwd=child, check=True)
+            subprocess.run(["git", "commit", "-qm", "old child"], cwd=child, check=True)
         # Public Task metadata, with no development status fields.
         record = {"schema_version": "2.0", "id": "flow-task", "name": "flow", "lifecycle_generation": 0,
                   "source": {"kind": "no_issue"}, "title": "flow", "description": "", "dev_type": None,
@@ -286,6 +295,7 @@ class DeliveryFlow(unittest.TestCase):
         owner=json.loads((PACKAGE/'examples/phase2-check.json').read_text())
         owner.update(task_ref=self.task_ref,phase2_capture_commit=self.head,reviewed_content_sha256=module.content_identity(self.repo),reviewed_paths=['app.txt'],typed_exit='resolved_reconciliation_passed',consumer={'kind':'skill','id':'guru-reconcile-task-base'})
         public={'profile':'delivery_resolved_reconciliation','mode':'workflow','task_ref':self.task_ref,'delivery_key':self.key,'source_exit':'resolved_tree_ready','planning_accepted_result_id':'planning:flow'}
+        owner["reviewed_content_sha256"] = module.skill_content_identity(PACKAGE, self.repo, self.task_ref, "workflow", public)
         checked=self.wrapper('guru-check-task','invoke.sh','--input',self.write('resolved.json',public),'--owner-result',self.write('resolved-owner.json',owner))
         self.assertEqual('resolved_reconciliation_passed',checked['exit_id']);self.assertIsNone(self.projection.resolve(self.key)['results']['check'])
         authoring={'profile':'delivery_resolved_candidate','mode':'workflow','branch':'feat/flow','selected_base_ref':new_base,'old_base_head':old_base,'new_base_head':new_base,'merge_head':new_base,'stage0_tree':self.git('write-tree').strip(),'index_tree_sha256':self.load_owner('guru-reconcile-task-base','common.py')[1].index_tree_digest(self.repo),'parent_order':[self.head,new_base],'commit_message':'整合已审查基线','resume_target':'branch_review'}

@@ -144,9 +144,29 @@ def _commit_failure(
 
 
 def _materialize_exact_index(repo: Path, candidate: dict, env: dict[str, str]) -> str:
+    rows = {row["path"]: row for row in candidate["dirty_snapshot"]["entries"]}
+    exact = set(candidate["exact_stage_paths"])
+    rename_sources = {row["renamed_from"] for path, row in rows.items()
+                      if path in exact and row.get("renamed_from")}
+    # Bind the parent index before writing the isolated transaction index.
+    live = {row["path"]: row for row in capture_snapshot(repo)["entries"]}
+    for path in exact:
+        row = rows.get(path)
+        if row is not None and row.get("mode") == "160000" and live.get(path) != row:
+            raise CommandError("stale_identity", path, "Reprepare the changed parent gitlink entry.", 3)
     pre = candidate["git"]["pre_commit_head"]
     git(repo, "read-tree", pre, env=env)
-    git(repo, "add", "-A", "--", *candidate["exact_stage_paths"], env=env)
+    ordinary = []
+    for path in sorted(exact):
+        row = rows.get(path)
+        if path in rename_sources or (row and row.get("mode") == "160000" and row["deleted"]):
+            git(repo, "update-index", "--force-remove", "--", path, env=env)
+        elif row and row.get("mode") == "160000":
+            git(repo, "update-index", "--add", "--cacheinfo", "160000", row["index_blob"], path, env=env)
+        else:
+            ordinary.append(path)
+    if ordinary:
+        git(repo, "--literal-pathspecs", "add", "-A", "--", *ordinary, env=env)
     return git(repo, "write-tree", env=env).stdout.strip()
 
 
@@ -252,7 +272,7 @@ def recover_published_happy_path_commit(
 ) -> None:
     validate_json(
         candidate,
-        package_root / ("schemas/delivery-commit-candidate-2.0.schema.json" if "delivery_key" in candidate else "schemas/task-commit-candidate.schema.json"),
+        package_root / (("schemas/delivery-commit-candidate-3.0.schema.json" if candidate.get("schema_version") == "delivery-3.0" else "schemas/delivery-commit-candidate-2.0.schema.json") if "delivery_key" in candidate else "schemas/task-commit-candidate.schema.json"),
         "candidate",
     )
     expected = {
@@ -451,7 +471,7 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
 
             transaction_tree = git(transaction, "write-tree", env=env).stdout.strip()
             transaction_status = subprocess.run(
-                ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+                ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=all"],
                 cwd=transaction,
                 env={**os.environ, **env},
                 stdout=subprocess.PIPE,

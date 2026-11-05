@@ -296,6 +296,12 @@ reading child objects or initializing submodules. Blob-backed rows and existing
 recorder/checker identity comparisons remain unchanged; this consumer does not
 define a separate algorithm or rewrite the producer's candidate token.
 
+Live parent-worktree checks ignore child initialization, HEAD and internal
+changes. They still include staged parent gitlink additions, pointer updates,
+deletions and type replacements from the parent index. Committed-range and
+cached differences retain parent gitlinks even when local Git configuration
+ignores submodule worktree changes. No child repository is read or updated.
+
 ## Semantic Review
 
 Before full-range Docs, code, test, fixture, consumer, or history retrieval,

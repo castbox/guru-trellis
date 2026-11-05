@@ -292,7 +292,7 @@ class DeliveryProjection:
             base_ref = self.commit(base_ref) if base_ref is not None else None
             if head_ref is not None and base_ref is not None:
                 from ..reviewed_content import reviewed_content_metadata_path
-                result = subprocess.run(["git", "diff", "--name-only", "-z", base_ref, head_ref], cwd=self.root, capture_output=True, check=True)
+                result = subprocess.run(["git", "diff", "--name-only", "-z", "--ignore-submodules=none", base_ref, head_ref], cwd=self.root, capture_output=True, check=True)
                 committed = [path for path in result.stdout.decode("utf-8").split("\0") if path and not reviewed_content_metadata_path(path)]
                 paths = sorted(set(paths) | set(committed))
         return {"kind": kind, "content_ref": self._call(self.api.delivery_store.candidate_content_ref, self.root, paths, kind),

@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from common import content_identity, dirty_paths, git, validate_candidate_classifications
+from common import content_identity, skill_content_identity, dirty_paths, git, validate_candidate_classifications
 from runtime.delivery_projection.adapter import DeliveryProjection, authority_ref
 from runtime.delivery_projection.gates import record_gate, rework
 from runtime.io import CommandError
@@ -91,7 +91,7 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         record_gate(projection, public["delivery_key"], "check", result_id, "passed", evidence, [])
         output["check_result_id"] = result_id
     elif exit_id == "resolved_reconciliation_passed":
-        if owner["reviewed_content_sha256"] != content_identity(repo):
+        if owner["reviewed_content_sha256"] != skill_content_identity(package, repo, public["task_ref"], public["mode"], public):
             raise CommandError("stale_identity", "reviewed_content_sha256", "Review the current resolved tree before the exact reconciliation commit.", 3)
         # This result authorizes no mutation and creates no public candidate
         # gate: the resolved tree has not been committed yet. Reconcile owns

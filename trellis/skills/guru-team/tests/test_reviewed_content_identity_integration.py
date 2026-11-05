@@ -134,7 +134,7 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             "profile": "branch_review",
             "mode": "workflow",
             "task_ref": TASK_REF,
-            "base_ref": "origin/main",
+            "base_ref": self.base,
             "branch_review_commit": self.git("rev-parse", "HEAD"),
             "review_intent": "fresh_final_review",
         }
@@ -281,13 +281,12 @@ class ReviewedContentIdentityIntegrationTest(unittest.TestCase):
             "commit-tree", base_tree, "-p", self.base, "-m", "advance base"
         )
         self.git("update-ref", "refs/remotes/origin/main", advanced_base)
-        base_stale = self.run_branch_wrapper(
-            "check-review-gate.sh", "--task", TASK_REF, ok=False
+        # The reviewed base is a fixed OID; an unrelated remote-ref advance
+        # cannot replace that content range or stale its unchanged checkpoint.
+        fixed_base = self.run_branch_wrapper(
+            "check-review-gate.sh", "--task", TASK_REF
         )
-        self.assertEqual(
-            ("stale_identity", "base_ref"),
-            (base_stale["code"], base_stale["field_path"]),
-        )
+        self.assertEqual("owner_checkpoint_validated", fixed_base["status"])
 
         self.git("update-ref", "refs/remotes/origin/main", self.base)
         tree = self.git("rev-parse", "HEAD^{tree}")

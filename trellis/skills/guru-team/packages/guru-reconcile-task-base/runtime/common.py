@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from runtime.io import CommandError
+from runtime.parent_git import ParentGitError, parent_status_records
 from runtime.task_lifecycle import LifecycleContractError, resolve_active_task_checkout
 from runtime.delivery_projection import DeliveryProjection
 
@@ -262,15 +263,15 @@ def committed_tree_digest(
     return value
 
 
+def parent_changes(repo: Path) -> list[dict]:
+    try:
+        return parent_status_records(repo)
+    except ParentGitError as exc:
+        raise CommandError("stale_identity", "worktree", str(exc), 3) from exc
+
+
 def require_clean_worktree(repo: Path) -> None:
-    status = subprocess.run(
-        ["git", "status", "--porcelain=v1", "--untracked-files=normal"],
-        cwd=repo,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    if status.returncode or status.stdout:
+    if parent_changes(repo):
         raise CommandError("stale_identity", "worktree", "Use a clean branch-bound task worktree.", 3)
 
 

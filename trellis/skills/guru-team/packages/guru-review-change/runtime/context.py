@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path, PurePosixPath
 
 from runtime.io import CommandError
+from runtime.parent_git import ParentGitError, parent_status_records
 from runtime.schema import validate_json
 
 
@@ -64,15 +65,22 @@ def capture(package_root: Path, public_input: dict) -> dict:
     bind("repository_root", os.fsencode(root))
     bind("base", json.dumps(base).encode())
     bind("head", json.dumps(head).encode())
-    options = ["--no-ext-diff", "--no-textconv", "--no-color", "--binary", "--full-index", "--no-renames", "--ignore-submodules=none"]
+    options = ["--no-ext-diff", "--no-textconv", "--no-color", "--binary", "--full-index", "--no-renames", "--submodule=short", "--ignore-submodules=none"]
     if public_input["profile"] == "committed_range":
         bind("committed", _git(root, "diff", *options, base, head, "--", *selectors))
     else:
         baseline = [head] if head is not None else []
         bind("staged", _git(root, "diff", *options, "--cached", *baseline, "--", *selectors))
-        bind("unstaged", _git(root, "diff", *options, "--", *selectors))
-        untracked = _git(root, "ls-files", "--others", "--exclude-standard", "-z", "--", *selectors)
-        for raw in sorted(path for path in untracked.split(b"\x00") if path):
+        unstaged_options = [option for option in options if option != "--ignore-submodules=none"]
+        bind("unstaged", _git(root, "diff", *unstaged_options, "--ignore-submodules=all", "--", *selectors))
+        try:
+            untracked = [row["path"] for row in parent_status_records(root)
+                         if row["status_text"] == "??"]
+        except ParentGitError as exc:
+            raise CommandError("git_unavailable", "repository", "Use readable resolved parent Git state.") from exc
+        selected = [path for path in untracked if not paths or "." in paths
+                    or any(path == chosen or path.startswith(chosen + "/") for chosen in paths)]
+        for raw in sorted(os.fsencode(path) for path in selected):
             path = root / os.fsdecode(raw)
             try:
                 mode = path.lstat().st_mode

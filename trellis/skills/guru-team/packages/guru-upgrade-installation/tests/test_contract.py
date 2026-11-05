@@ -75,6 +75,18 @@ class MigrationContractTests(unittest.TestCase):
             (root / "business.txt").chmod(0o755)
             self.assertNotEqual(business_state(root, paths), before)
 
+    def test_business_state_preserves_staged_gitlink_delete_with_retained_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, _, _, paths, _ = self.submodule_fixture(directory, "initialized")
+            before = business_state(root, paths)
+            subprocess.run(["git", "rm", "--cached", "compliance"], cwd=root,
+                           check=True, capture_output=True)
+            deleted = business_state(root, paths)
+            self.assertNotEqual(deleted, before)
+            (root / "compliance/policy.txt").write_text("child-only dirty content\n")
+            (root / "compliance/local.txt").write_text("child-only untracked content\n")
+            self.assertEqual(business_state(root, paths), deleted)
+
     def test_formal_bin_and_built_entry_use_same_original_preimage_collector(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
