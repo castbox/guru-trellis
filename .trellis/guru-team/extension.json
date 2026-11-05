@@ -1196,11 +1196,11 @@
     },
     "release_notes": "README.md#guru-team-extension-version"
   },
-  "installed_at": "2026-11-05T08:55:19Z",
+  "installed_at": "2026-11-05T12:16:12Z",
   "source": {
     "repo": "https://github.com/castbox/guru-trellis.git",
-    "ref": "291ae210c972c1557698f0eb0ad794a072a9763d",
-    "commit": "291ae210c972c1557698f0eb0ad794a072a9763d",
+    "ref": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
+    "commit": "3a4b65ab08cdfe05d97f68e7f2e7512254d728f1",
     "tree_state": "dirty",
     "is_mutable_ref": false
   },
@@ -1498,7 +1498,7 @@
       {
         "id": "guru-reactivate-task",
         "interface_sha256": "385114c829ae6ccb810c50de96991c0e0504d687c20f3ee2766cdb16836b4fb3",
-        "tree_sha256": "d314a2cfc61e935b56657765a5e9851c480337b5409a5d1472aa1c37541470bd"
+        "tree_sha256": "e433f3276444b99b8b46cf01e6d984cdf0041d872aa7b9f0577c3b8859cb47be"
       },
       {
         "id": "guru-rebind-task-branch",
@@ -14835,7 +14835,7 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "1b3e5bad7645446ed9b9953c971fc7f77171d28c5365e2e4d9aae27973d0a214",
+        "sha256": "3d69f95cfd0d03fee69a396d19050c64f3d74c888c7076b9aa55328792b05621",
         "executable": false,
         "action": "installed"
       },
@@ -14982,14 +14982,14 @@
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/invoke.py",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/invoke.py",
-        "sha256": "c2681f3a29a5bb9ca99f97be11f4bd3da50775d3cf216a20eb321f36af1cfc87",
+        "sha256": "ca89a508ac8598015f1181999b25d7a5d433753033354c7ac3af8cea96d6ded6",
         "executable": false,
         "action": "installed"
       },
       {
         "path": ".trellis/guru-team/skills/packages/guru-reactivate-task/runtime/shared_finish.py",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/runtime/shared_finish.py",
-        "sha256": "b3b45c5efd8f3a50e3686e3ec22ba589b6682ce1efd162d0dea093c017bec12c",
+        "sha256": "975efba4392c4462dc121de69c18926ff5290ee6996f0202688f50ec403dbd46",
         "executable": false,
         "action": "installed"
       },
@@ -21142,7 +21142,7 @@
       {
         "path": ".trellis/guru-team/runtime/task_lifecycle/identity.py",
         "source": "trellis/skills/guru-team/runtime/task_lifecycle/identity.py",
-        "sha256": "0c4bc6a03cde6a79a5355bbb5f98321e6564f02feaca41ede43a5a7d6a783527",
+        "sha256": "3b028f45d3612858a480628e41c4812d214e2e5efa4bfadf17d90af474eb0078",
         "executable": false,
         "action": "installed"
       },
@@ -48701,7 +48701,7 @@
       {
         "path": ".agents/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "1b3e5bad7645446ed9b9953c971fc7f77171d28c5365e2e4d9aae27973d0a214",
+        "sha256": "3d69f95cfd0d03fee69a396d19050c64f3d74c888c7076b9aa55328792b05621",
         "executable": false,
         "action": "installed"
       },
@@ -48932,7 +48932,7 @@
       {
         "path": ".claude/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "1b3e5bad7645446ed9b9953c971fc7f77171d28c5365e2e4d9aae27973d0a214",
+        "sha256": "3d69f95cfd0d03fee69a396d19050c64f3d74c888c7076b9aa55328792b05621",
         "executable": false,
         "action": "installed"
       },
@@ -49163,7 +49163,7 @@
       {
         "path": ".cursor/skills/guru-reactivate-task/SKILL.md",
         "source": "trellis/skills/guru-team/packages/guru-reactivate-task/SKILL.md",
-        "sha256": "1b3e5bad7645446ed9b9953c971fc7f77171d28c5365e2e4d9aae27973d0a214",
+        "sha256": "3d69f95cfd0d03fee69a396d19050c64f3d74c888c7076b9aa55328792b05621",
         "executable": false,
         "action": "installed"
       },

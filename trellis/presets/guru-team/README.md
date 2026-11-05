@@ -233,6 +233,12 @@ tree `08f5fc32d766ab2ccf04226846449b87ef95c5fb`，成功 main CI `40882919377`�
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
 本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
+精简 known_legacy 正式归档另需上游 #64/PR #65 的固定成对候选
+`619133c62d1487c5fbecbf9e00cea9e3f5ea52a6`（release
+`issue-64-candidate-619133c62d14`）。它同为 `.6`，必须核验实际 CLI/Core
+指纹，不能按版本号替换当前正式 lock。Guru 消费公共家族/key及目标 native 前驱关系；
+AI 仍审核原安装/Finish、历史范围及 PR/Git。原档不改写，人员字段只保留为历史资料。
+隔离 `local_candidate` 验证不证明正式 `source_locked` 采用、真实业务恢复或 Release 通过。
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
 本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。

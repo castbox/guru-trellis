@@ -37,9 +37,15 @@ and selected target ref. The original archive result must remove that active
 record, and its exact bookkeeping merge must be reachable from the target.
 Later target commits or a later active successor do not invalidate this history.
 Task2 requires its actual generation's public Completion/Closure relationship.
-The selected formal schema1 family uses its original history and summary without
-inventing old Completion/Closure. Personnel-era/manual archives and unfinished
-closeout stay with their original maintenance/Finish owners.
+The public CLI/Core pair declares the supported formal predecessor families.
+Read `inspectTaskTarget` from the exact archive locator and compare its returned
+key with `archived_lifecycle`; never add generation or source fields to old bytes.
+The explicitly supported schema1 and known_legacy families use original history
+and summary without inventing old Completion/Closure. A known_legacy archive may
+retain creator/assignee and a canonical old Issue scope; those personnel fields
+remain historical data. AI still reads the historical installation/Finish
+contract and accepted scope before judging formal eligibility. Manual archives,
+unsupported families and unfinished closeout stay with their original owners.
 
 Read accessible successors first. Verify identity, source and retained public
 history/provenance, then continue the actual key/ref. Do not create a second
@@ -92,7 +98,8 @@ continues only through its original clean-base profile. See
 `trellis/presets/guru-team/MIGRATION-669.md` for matching installation boundaries.
 
 With no successor, review the exact acquisition, active destination and authority.
-Task2 uses the original public reopen operation. Formal schema1 forwards the
+Task2 uses the original public reopen operation. Each explicitly supported formal
+predecessor family forwards the
 complete AI-reviewed `formal_input` unchanged through the original maintenance
 transport. Before actual conversion, the original tools owner must verify the target
 native installation matches the selected source. Missing target adoption stops

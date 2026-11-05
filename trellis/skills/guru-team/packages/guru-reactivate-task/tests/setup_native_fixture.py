@@ -12,20 +12,26 @@ import argparse
 import json
 from pathlib import Path
 from test_existing_implementation import ExistingFixture
+from test_formal_archive_reactivate import CompactFormalArchiveReactivateTests
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", required=True)
     parser.add_argument("--repository", help="Already fully installed empty temporary repository on main.")
+    parser.add_argument("--compact-formal", action="store_true", help="Prepare raw compact formal archive facts, without a semantic result.")
     args = parser.parse_args()
     directory = Path(args.directory).resolve()
-    fixture = ExistingFixture()
+    fixture = CompactFormalArchiveReactivateTests() if args.compact_formal else ExistingFixture()
     fixture.setUp(directory, installed_repository=args.repository)
     try:
-        public, setup = fixture.prepare_existing()
+        if args.compact_formal:
+            public, scope, raw, inspected = fixture.prepare_formal_archive()
+            setup = {"authority": scope, "inspection": inspected, "source_ref": fixture.source}
+        else:
+            public, setup = fixture.prepare_existing()
         (directory / "public-input.json").write_text(json.dumps(public, indent=2) + "\n")
-        (directory / "provider-facts.json").write_text(json.dumps({"bookkeeping": fixture.prs, "implementation": fixture.implementation_pr}, indent=2) + "\n")
+        (directory / "provider-facts.json").write_text(json.dumps({"bookkeeping": fixture.prs, "implementation": getattr(fixture, "implementation_pr", None)}, indent=2) + "\n")
         # This fixture provider implements only read calls. An unexpected write
         # command is recorded and fails, with no GitHub connection.
         provider = directory / "provider"; provider.mkdir()
@@ -43,7 +49,7 @@ def main():
             "sys.exit('unsupported controlled provider call')\n")
         gh.chmod(0o755)
         # Objective seeds are not the AI's route or current semantic judgment.
-        seeds = {"authority": setup["authority"], "acquisition": setup["acquisition"]}
+        seeds = setup if args.compact_formal else {"authority": setup["authority"], "acquisition": setup["acquisition"]}
         (directory / "objective-seeds.json").write_text(json.dumps(seeds, indent=2) + "\n")
         print(json.dumps({"repository": str(fixture.root), "public_input": str(directory / "public-input.json"),
                           "objective_seeds": str(directory / "objective-seeds.json"),

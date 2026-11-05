@@ -59,7 +59,7 @@ Reactivate只接可唯一验证的共享Finish终态；先复用实际后继，�
 
 闭合 `closure_shared_result_recovery` 接受精确 TaskRef/ResultRef/载体 AuthorityRef。公共结果存在时核同一结果读回；投影丢失时由原 AI 重新审查准确 Completion/source/actions 和 live 状态，才按原 result_id 补投影。该 profile 零 provider close，不从共享载体恢复授权。required CLOSED 仍 OPEN、required OPEN 已 CLOSED、source 或关联改变均回原 Closure；剩余真实 close 由原正常 profile 重新审查。旧无载体 archive 不制造输入，未发布或确实缺失的必要载体只阻塞它的真实 consumer。
 
-Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精确 bookkeeping PR/target 判定共享 Finish，确定性 helper 只读取/校验事实。先检查当前可获取后继；正式 schema1 用 matching `inspectFormalArchiveReactivation`，无后继才同一正式公共 operation；Task2 使用原 public reopen。verified root 的同前驱 sibling 等代/较早快照不另建 incarnation，更新或冲突候选保留原诊断，不在 Guru 建第二 parser。applied 只用真实 key/ref 交原环境 owners；prepared/pending 不能声明 active。
+Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精确 bookkeeping PR/target 判定共享 Finish，确定性 helper 只读取/校验事实。先检查当前可获取后继；公共显式支持的正式旧家族用 matching `inspectFormalArchiveReactivation`，无后继才同一正式公共 operation；Task2 使用原 public reopen。verified root 的同前驱 sibling 等代/较早快照不另建 incarnation，更新或冲突候选保留原诊断，不在 Guru 建第二 parser。applied 只用真实 key/ref 交原环境 owners；prepared/pending 不能声明 active。
 
 共享 archive 已入 target 历史后，A 的本机 seal、binding 退出与 Cleanup 与 B 的共享准入分离。同一资源的真实责任冲突仍有效，B 不取得 A 的清理权。未进入 target 的唯一未完 closeout 才回原 Finish transaction，无法唯一恢复则报告具体必要输入。版本号、目录、status 或一个 MERGED PR 不代替完整资格。
 
@@ -90,3 +90,10 @@ Reactivate 原语义 owner 从准确 Git archive、该版本终态关系和精�
 **D-MECH-04 / CON-MECH-COMPLETION** 承接 R-MECH-06。原 Completion Skill 在既有 whole-task 与 stage facts 职责中引用 current-knowledge 的存量关系，比较 accepted scope、所有实际 Delivery、必要适配、共存/退出依据与当前证据。新决策、新入口、旧代码和环境分别判断；scope 内后继切片不抹去责任。必要代码缺失回原实施或真实后继 Delivery；真实来源冲突回原 Clarify；有有效依据的外部证据待取得才 evidence_refresh。
 
 可独立共存且真实承接的范围外存量、场景不同而合理的旧采用，不自动扩大当前 scope。Completion 不代替 Architecture/RDT 写入，Closure/Finish 不迁移实现。所有 disposition 使用既有唯一 consumer，不新增完成状态、公共字段或全仓迁移前置。
+
+## D712：公共正式家族解释与下游承接
+**D712-01 / CON712-ARCHIVE** 承接 R712-01/02。原 Reactivate shared archive reader 在准确 Git 版本与本地原档一致后，消费 matching public inspectTaskTarget 的 family/key，以及显式 formal_archive_reactivation capability；正式转换继续由原公共 operation 拥有。Guru 保留历史合同、summary、PR/Git 和 source 语义审核，不实现 legacy 字段解析或 generation 算法。原 schema1、Task2、人工历史及未完成事务分路保持。
+
+**D712-02 / CON712-SUCCESSOR** 承接 R712-03。原 Reactivate acquire/find-successor 与共享 Identity 的 formal provenance 分支消费公共前驱关系。Python 前驱消歧复用匹配 installed native 的公共唯一性能力，保留必要 Git 内容一致性核验；不放宽普通 current Task reader。pending/applied-bind 中断重用同 operation，receipt 丢失从真实后继接续；再次归档不把只读旧前驱算作第二身份。
+
+**D712-03 / CON712-VALIDATION** 承接 R712-04。原 tools owner 独立采用成对 CLI/Core 固定候选，检查真实目标 resolver、native 与受管投影。一个完整隔离安装内，实际 AI 核历史资格并调用 installed Reactivate、Identity/Ensure/Bind、continuation、原 scope owner。控制恢复与再次归档定向回归分别证明，不要求重复完整生命周期或空 Delivery。固定候选使用既有 .6 版本时仍绑定准确 source/成对摘要，不能只按版本判等。该责任仍在 ARCH-DOM-060/ARCH-INT-063 内，不新增 migration owner、DTO 或资格台账。
