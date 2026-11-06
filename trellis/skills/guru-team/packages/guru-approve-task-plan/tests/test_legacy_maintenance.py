@@ -105,4 +105,33 @@ class LegacyGateTests(unittest.TestCase):
             port({'profile':'legacy_control_restore','root':str(root),'recovery_ref':frozen['recovery_ref']})
             self.assertEqual(owner.raw(path),original)
 
+
+    def test_intermediate_inspection_json_carriers_and_invalid_json(self):
+        import os, subprocess
+        from contextlib import chdir
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve()
+            task_ref,key,control,path = self.fixture(root)
+            task_before=(root/task_ref/'task.json').read_bytes();control_before=path.read_bytes()
+            public={'profile':'legacy_control_inspection','root':str(root),'key':key,'task_ref':task_ref,'control_refs':[control]}
+            encoded=json.dumps(public);input_path=root/'inspection.json';input_path.write_text(encoded)
+            (root/'inspection-link.json').symlink_to(input_path.name)
+            results=[]
+            with chdir(root):
+                for carrier,stdin in [(encoded,None),(str(input_path),None),(os.path.relpath(input_path,PACKAGE.parents[4]),None),(str(root/'inspection-link.json'),None),('-',encoded)]:
+                    with self.subTest(carrier=carrier if carrier!=encoded else 'inline'):
+                        result=subprocess.run(['bash',str(PACKAGE/'scripts/legacy-maintenance.sh'),'--root',str(root),'--input',carrier],input=stdin,text=True,capture_output=True)
+                        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+                        value=json.loads(result.stdout)['result'];results.append(value)
+                        self.assertIs(value['formal_exit'],False)
+                        self.assertEqual([row['path'] for row in value['controls']],[control])
+                for carrier,stdin in [('{',None),('-', '{')]:
+                    result=subprocess.run(['bash',str(PACKAGE/'scripts/legacy-maintenance.sh'),'--root',str(root),'--input',carrier],input=stdin,text=True,capture_output=True)
+                    self.assertEqual(result.returncode,2,result.stdout+result.stderr)
+                    error=json.loads(result.stdout)
+                    self.assertEqual((error['code'],error['field_path']),('invalid_json','input'))
+            self.assertTrue(all(value==results[0] for value in results))
+            self.assertEqual((root/task_ref/'task.json').read_bytes(),task_before)
+            self.assertEqual(path.read_bytes(),control_before)
+
 if __name__=='__main__':unittest.main()

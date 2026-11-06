@@ -57,15 +57,22 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         return self.command(fixture, "check-planning-approval.sh", "--task", fixture.task_ref,
                             "--delivery-key", json.dumps(key), "--json", expected=expected)
 
-    def public_invoke(self, fixture, key, owner, expected=0):
+    def public_invoke(self, fixture, key, owner, expected=0, *, inline_locator=False):
         public = self.read("examples/public-delivery-initial-review-input-2.0.json")
         public.update(task_ref=fixture.task_ref, delivery_key=key)
         import hashlib
         directory=fixture.projection.planning_directory(key)
         public["architecture_assessment"]["freshness_identity"]="sha256:"+hashlib.sha256((directory/"design.md").read_bytes()).hexdigest()
+        if inline_locator:
+            # The observed ordinary mistake also copied an upstream assessment
+            # field that the public route projection omits.
+            public["architecture_assessment"]["impact_reason"] = (
+                "最终设计保持contains唯一拥有纯闭区间谓词、select按原顺序组合该谓词的既有边界；"
+                "标准库行为测试不引入状态、依赖或新抽象。没有Architecture决策、owner、兼容退出或迁移变化。")
         path = fixture.root / "public-input.json"
         path.write_text(json.dumps(public))
-        return self.command(fixture, "invoke.sh", "--input", str(path), "--owner-result", owner["artifact_path"], expected=expected)
+        value = json.dumps(public) if inline_locator else str(path)
+        return self.command(fixture, "invoke.sh", "--input", value, "--owner-result", owner["artifact_path"], expected=expected)
 
 
     def test_architecture_stage_consumes_adjacent_completed_owner_result(self) -> None:
@@ -82,6 +89,22 @@ class ApproveTaskPlanPackageContractTests(unittest.TestCase):
         recorded = self.record(fixture, key, path)
         checked = self.check(fixture, key)["result"]
         self.assertEqual(checked["consumer"], {"kind": "workflow", "id": "phase-1-delivery-activation"})
+        invalid = self.public_invoke(fixture, key, recorded, expected=2, inline_locator=True)
+        self.assertEqual(invalid["code"], "unsafe_path")
+        self.assertEqual(invalid["field_path"], "input")
+        self.assertIn("regular JSON file", invalid["remediation"])
+        self.assertTrue(Path(recorded["artifact_path"]).is_file())
+        self.assertEqual(fixture.projection.resolve(key), before)
+        # Also exercise the original locator reader in the suite's interpreter.
+        # Supported Python versions handle file-inspection errors differently.
+        from support import owner_module
+        from runtime.io import CommandError
+        loader = owner_module(self.package, "common.py")
+        with self.assertRaises(CommandError) as error:
+            loader.load(fixture.root, self.package,
+                        (fixture.root / "public-input.json").read_text(), "input")
+        self.assertEqual(error.exception.code, "unsafe_path")
+        self.assertEqual(error.exception.field_path, "input")
         output = self.public_invoke(fixture, key, recorded)
         self.assertEqual(output, {"exit_id": "approved", "task_ref": fixture.task_ref,
                                  "delivery_key": key, "planning_result_id": "planning:" + recorded["reviewed_content_sha256"]})

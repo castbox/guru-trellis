@@ -137,8 +137,34 @@ class BranchBindingTests(unittest.TestCase):
                 self.assertEqual(len([row for row in result["candidates"] if row["valid"]]), 1)
                 self.assertIsNone(BranchBindingStore(self.repo).read(self.key))
                 self.assertIsNone(ResourceLedgerStore(self.repo).read_current(self.key))
+                self.assertNotIn("binding_ref", result)
         with self.assertRaisesRegex(Exception, "read-only recovery action"):
             MODULE.run(PACKAGE, {"id": "recover-established-task-branch-binding-result"}, ["--root", str(self.root), "--input", json.dumps(self.input)])
+
+    def test_discovery_exposes_existing_binding_for_closure_without_write(self) -> None:
+        formal = self.invoke(self.input)
+        self.assertEqual(set(formal), {"exit_id", "task_id", "lifecycle_generation"})
+        store, ledger = BranchBindingStore(self.repo), ResourceLedgerStore(self.repo)
+        before = (store.snapshot(self.key), ledger.snapshot(self.key))
+        command = subprocess.run([str(PACKAGE / "scripts/discover-candidates.sh"),
+                                  "--root", str(self.root), "--input", json.dumps(self.input)],
+                                 text=True, capture_output=True)
+        self.assertEqual(0, command.returncode, command.stdout + command.stderr)
+        receipt = json.loads(command.stdout)
+        self.assertFalse(receipt["formal_exit"])
+        result = receipt["result"]
+        self.assertEqual("already_established", result["status"])
+        binding = store.read(self.key)
+        self.assertEqual(result["binding_ref"], {"task_id": "demo", "lifecycle_generation": 0,
+                                               "binding_revision": binding.binding_revision})
+        closure = PACKAGE.parent / "guru-complete-task-closure"
+        public = json.loads((closure / "examples/public-input.json").read_text())
+        public["binding_ref"] = result["binding_ref"]
+        validate_json(public, closure / "schemas/public-input.schema.json", "closure_input")
+        self.assertEqual((store.snapshot(self.key), ledger.snapshot(self.key)), before)
+        plan = MODULE.run(PACKAGE, {"id": "record-task-branch-binding-plan"},
+                          ["--root", str(self.root), "--input", json.dumps(self.input)])
+        self.assertNotIn("binding_ref", plan)
 
 
 if __name__ == "__main__":

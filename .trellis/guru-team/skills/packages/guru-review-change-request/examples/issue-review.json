@@ -203,8 +203,8 @@
     }
   ],
   "consumer": {
-    "kind": "skill",
+    "kind": "workflow",
     "id": "guru-task-intake-router"
   },
-  "facts_sha256": "3c730dae782fa73c099478a9bd28b8cd8cb54dc1716a7505368bd7f958e86441"
+  "facts_sha256": "0d5acf4744bd177d5440b7001c08549039394707b0fa76e332933a82e1632bde"
 }

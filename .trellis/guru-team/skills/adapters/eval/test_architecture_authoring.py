@@ -179,6 +179,72 @@ class ArchitectureAuthoringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'authority before'):
             authoring.validate_reviewer_reads([*events[:2], events[3], events[2], *events[4:]], repo, reads, phase2=True)
 
+    def test_persistent_reviewer_is_a_new_exec_with_empty_stdin_and_original_failure(self):
+        command = ['codex', 'exec', '--output-last-message', '/overall.txt', 'overall narrative']
+        error = subprocess.CompletedProcess(command, 9, 'partial output', 'original failure')
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            public_input = root / 'public-input.json'
+            public_input.write_text('{}')
+            with patch.object(authoring, 'public_contract_reads', return_value=[]):
+                original_context = authoring.reviewer_context(root, root, 'original helper', [],
+                    public_input, upstream=False)
+                persistent_context = authoring.reviewer_context(root, root, 'original helper', [],
+                    public_input, upstream=False, persisted_observation=True)
+            self.assertEqual(persistent_context,
+                original_context.replace('fresh ephemeral', 'fresh independent'))
+            with self.assertRaisesRegex(ValueError, 'fresh ephemeral'):
+                authoring.execute_reviewer(command, root / 'result', 'independent context',
+                    cwd=root, environment={})
+            with patch.object(authoring.subprocess, 'run', return_value=error) as run:
+                actual = authoring.execute_reviewer(command, root / 'result', 'independent context',
+                    cwd=root, environment={}, allow_persisted=True)
+                self.assertIs(actual, error)
+                self.assertEqual(run.call_args.args[0], [*command[:-3], '--output-last-message',
+                    str(root / 'result'), 'independent context'])
+                self.assertEqual(run.call_args.kwargs['input'], '')
+                self.assertEqual((root / 'native-context.txt').read_text(), 'independent context')
+                for history in ('resume', 'fork'):
+                    with self.subTest(history=history), self.assertRaisesRegex(ValueError, 'fresh ephemeral'):
+                        authoring.execute_reviewer(['codex', 'exec', history, '--output-last-message',
+                            '/unused', ''], root / 'result', '', cwd=root, environment={}, allow_persisted=True)
+                self.assertEqual(run.call_count, 1)
+
+    def test_exact_method_contracts_can_overlap_without_hiding_candidate_evidence(self):
+        repo = Path('/repository')
+        public = json.loads((PACKAGE / 'examples/public-input-delivery-task-impact-sync-1.0.json').read_text())
+        package = repo / '.trellis/guru-team/skills/packages' / PACKAGE.name
+        contracts = [package / path.relative_to(PACKAGE)
+            for path in authoring.public_contract_reads(PACKAGE, public)]
+        overlaps = [package / path for path in ('SKILL.md', 'interface.json',
+            'references/contract.md', 'schemas/public-input-delivery-task-impact-sync-3.0.schema.json')]
+        self.assertTrue(set(overlaps).issubset(contracts))
+        authorities = ['constitution.md', 'baseline.md', 'change-contract.md']
+        # The changed object may itself be a method contract. Its full diff
+        # and actual consumer still supply separate evidence after authority.
+        evidence = ['changed-contract.patch', 'unchanged_caller.py']
+        reads = [*authorities, *(p.relative_to(repo).as_posix() for p in overlaps), *evidence]
+        paths = [*contracts, *(repo / p for p in authorities), *(repo / p for p in evidence)]
+        events = [{'kind': 'read', 'path': str(path)} for path in paths] + [{'kind': 'invoke'}]
+        validate = lambda rows: authoring.validate_reviewer_reads(rows, repo, reads,
+            phase2=True, contract_reads=contracts)
+        validate(events)
+        with self.assertRaisesRegex(ValueError, 'required contract'):
+            validate([e for e in events if e.get('path') != str(contracts[-1])])
+        with self.assertRaisesRegex(ValueError, 'candidate or consumer'):
+            validate([e for e in events if e.get('path') != str(repo / evidence[0])])
+        with self.assertRaisesRegex(ValueError, 'one exact Skill'):
+            validate([events[1], events[0], *events[2:]])
+        with self.assertRaisesRegex(ValueError, 'one exact Skill'):
+            validate([events[0], *events])
+        for relative in evidence:
+            with self.subTest(early=relative), self.assertRaisesRegex(ValueError, 'authority before'):
+                early = {'kind': 'read', 'path': str(repo / relative)}
+                validate([events[0], early, *events[1:]])
+        start = len(contracts)
+        with self.assertRaisesRegex(ValueError, 'authority order'):
+            validate([*events[:start], events[start + 1], events[start], *events[start + 2:]])
+
     def test_phase2_continues_only_from_actual_current_upstream_result(self):
         process = subprocess.CompletedProcess([], 0, '', '')
         for exit_id in ('baseline_current', 'blocked', 'architecture_conflict', 'baseline_incomplete'):

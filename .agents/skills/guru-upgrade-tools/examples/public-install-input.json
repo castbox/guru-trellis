@@ -1,0 +1,6 @@
+{
+  "profile": "install",
+  "source_ref": "HEAD",
+  "dependency_mode": "source_locked",
+  "checkout": "/project/target"
+}

@@ -1,0 +1,18 @@
+{
+  "profile": "legacy_history_verification",
+  "root": "/selected-checkout",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "task_ref": ".trellis/tasks/legacy-task",
+  "fact_refs": [
+    {
+      "repo_ref": "example/repo",
+      "pr_number": 1,
+      "reviewed_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "target_branch": "main",
+      "head_branch": "task"
+    }
+  ]
+}

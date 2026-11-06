@@ -309,6 +309,15 @@ The current checkout is resolved from TaskBranchBinding and live registered
 Git worktree facts; ignored runtime mapping and checkout paths are neither
 task identity nor checkout-path authority.
 
+当前 Git `pull_request` Delivery 的完整 Candidate 由原公开
+`construct-delivery-candidate.sh` 入口构造。原 Author/implementation owner
+选择 B、实际 HEAD 和 dirty paths；执行器复用原固定范围与内容算法，返回既有
+Candidate，不写阶段或 gate。完整参数、输出、begin-check/rework、scope 与 stop
+恢复见 [原步骤合同](../../skills/guru-team/packages/guru-author-task-plan/references/authoring.md#fixed-delivery-range)。
+原上游 candidate 的 content_ref 输出及 git_free consumer 保持原边界，不增加
+无 Git Delivery。新入口、nested runtime、workflow 和原 Skill 正文须随完整
+matching preset/tools 更新采用；源码存在不证明目标安装或实际 Agent 验收通过。
+
 Old `prepare-task.sh`, `start-task.sh`, task-workspace, Publication,
 Finalizer, PR-Merge and `finish-work.sh` companion entrypoints are not
 installed as current public commands. They are not compatibility aliases.

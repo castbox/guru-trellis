@@ -20,7 +20,18 @@ def main():
     parser.add_argument('--model',required=True)
     parser.add_argument('--resume-protocol')
     parser.add_argument('--mode', choices=('source', 'installed'), default='source')
+    parser.add_argument('--public-entry-case', choices=('N1', 'N2', 'N3'))
+    parser.add_argument('--installed-template')
+    parser.add_argument('--prepare-only', action='store_true')
+    parser.add_argument('--native-command', default='codex')
     args=parser.parse_args()
+    if args.public_entry_case:
+        if not args.installed_template:
+            parser.error('--public-entry-case requires an actual --installed-template')
+        from adapters.eval.public_entry_chain import execute
+        return execute(args)
+    if args.installed_template or args.prepare_only:
+        parser.error('--installed-template/--prepare-only require --public-entry-case')
     root=Path(args.root).resolve();run=Path(args.run_root).resolve()
     if run.exists(): raise ValueError('Use a fresh external run root.')
     work=run/'execution/workdir';work.mkdir(parents=True)

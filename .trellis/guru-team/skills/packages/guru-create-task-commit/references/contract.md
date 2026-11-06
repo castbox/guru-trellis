@@ -33,6 +33,26 @@ Early Draft remains independently bounded under its own profiles.
 
 
 Final commit profiles bind `delivery_key` and `check_result_id`; early profiles independently bind `delivery_key` and fixed `base_ref`.
+
+### Clean re-entry carriers
+
+For `delivery_committed_reentry` and `delivery_draft_committed_reentry`, author
+the selected profile's public input and the actual review defined by
+`schemas/delivery-commit-review-1.0.schema.json`. Write each object to a regular
+UTF-8 JSON file in this owner's ignored runtime directory, then invoke:
+
+```bash
+scripts/invoke.sh --root . --input <public-input.json> --owner-result <semantic-review.json>
+```
+
+Replace the two file locators with those actual files. `--input` and
+`--owner-result` carry locators, not inline JSON text. The original loader also
+accepts `-` for one argument to read that object's JSON from stdin; keep the
+other argument as a regular JSON file. The profile schema defines the object
+fields; it does not change this command's carrier. Retire the call-local files
+after consuming the actual result. Review, Check applicability and clean
+candidate validation below remain required for this invocation.
+
 `delivery_committed_reentry` reviews the actual registered checkout, exact HEAD,
 non-metadata clean candidate and nonempty full fixed base-to-HEAD diff. Latest
 target ancestry is not a qualification condition.
@@ -183,6 +203,13 @@ ambiguous.
 ## Validation And Execution
 
 ### Public Happy Path
+
+The package root for the two commands below is
+`.trellis/guru-team/skills/packages/guru-create-task-commit/`. Thus the installed
+preparation entry is
+`.trellis/guru-team/skills/packages/guru-create-task-commit/scripts/prepare-task-commit.sh`.
+Platform discovery copies include `scripts/invoke.sh` but do not include this
+preparation script.
 
 The unique recommended normal path is one
 `scripts/prepare-task-commit.sh` call followed, after the unchanged action is

@@ -25,6 +25,10 @@ import invoke as review_invoke
 
 
 class ChangeRequestReviewPackageTest(unittest.TestCase):
+    def test_current_recorded_example_reaches_its_original_result_consumer(self):
+        example = json.loads((PACKAGE_ROOT / "examples/issue-review.json").read_text(encoding="utf-8"))
+        review_common.check_result(PACKAGE_ROOT, example, example["target"], example["prerequisites"])
+
     def test_current_ai_owns_unexecuted_review_without_external_handoff(self) -> None:
         package = Path(__file__).resolve().parents[1]
         for path in ("SKILL.md", "references/contract.md"):

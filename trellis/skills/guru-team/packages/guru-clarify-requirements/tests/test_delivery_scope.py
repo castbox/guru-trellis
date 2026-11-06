@@ -29,8 +29,8 @@ class DeliveryScopeTests(unittest.TestCase):
             value.update(requirements_locator=self.fixture.task_ref+'/prd.md',source_selection=self.selection,revision_refs=['docs/source.md#Requirements'])
         return value
 
-    def invoke(self, public, action='revised', expected=0, authority=None):
-        owner={'public_input':public,'typed_exit':'scope_ready','reason':'Actual current requirements judgment.',
+    def invoke(self, public, action='revised', expected=0, authority=None, owner_result=None):
+        owner=owner_result if owner_result is not None else {'public_input':public,'typed_exit':'scope_ready','reason':'Actual current requirements judgment.',
                'ai_review_gate':{'status':'passed','summary':'Fixture scope comparison; native review separately owned.'},
                'source_selection':self.selection,'revision_refs':['docs/source.md#Requirements'],'scope_action':action}
         if authority is not None:owner['authority']=authority
@@ -59,6 +59,36 @@ class DeliveryScopeTests(unittest.TestCase):
         self.assertEqual(self.invoke(public,authority=authority),output)
         self.assertEqual(plan.read_bytes(),before)
         self.assertEqual(self.fixture.projection.resolve(self.key)['phase'],'planning')
+
+    def test_missing_acceptance_authority_is_a_field_error_before_store_write(self):
+        before = self.fixture.projection.read_record()
+        output = self.invoke(self.public('task_scope_requirements_acceptance'), expected=2)
+        self.assertEqual(output['code'], 'schema_mismatch')
+        self.assertEqual(output['field_path'], 'owner_result.authority')
+        self.assertEqual(self.fixture.projection.read_record(), before)
+
+    def test_complete_acceptance_example_reaches_the_actual_store(self):
+        interface = json.loads((PACKAGE / 'interface.json').read_text())
+        example = next(row for row in interface['artifacts'] if row['id'] == 'task_scope_requirements_acceptance_invocation')
+        envelope = json.loads((PACKAGE / example['path']).read_text())
+        public = envelope['public_input']
+        public['task_ref'] = self.fixture.task_ref
+        public['requirements_locator'] = self.fixture.task_ref + '/prd.md'
+        owner = envelope['owner_result']
+        owner['public_input'] = public
+        owner['authority']['locator'] = public['requirements_locator']
+        (self.fixture.task / 'prd.md').write_bytes(b'Reviewed whole Task requirements.\n')
+        output = self.invoke(public, owner_result=owner)
+        self.assertEqual(output['exit_id'], 'scope_ready')
+        self.assertEqual(self.fixture.projection.read_record()['accepted_scope'], owner['authority'])
+
+    def test_blocked_acceptance_omits_authority_without_writing_scope(self):
+        public = self.public('task_scope_requirements_acceptance')
+        before = self.fixture.projection.read_record()
+        owner = {'public_input': public, 'typed_exit': 'blocked', 'reason': 'The required source choice is unresolved.',
+                 'ai_review_gate': {'status': 'blocked', 'summary': 'No current acceptance judgment is available.'}}
+        self.assertEqual(self.invoke(public, owner_result=owner), {'exit_id': 'blocked'})
+        self.assertEqual(self.fixture.projection.read_record(), before)
 
     def test_whole_task_scope_acceptance_requires_no_current_delivery(self):
         self.fixture.stop(self.key)

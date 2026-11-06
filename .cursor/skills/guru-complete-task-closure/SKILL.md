@@ -33,6 +33,27 @@ record its own final pass/HEAD, or create an empty Delivery/extra commit for tha
 purpose. A genuine content gap returns to the original writer and affected
 quality gates; the Closure transaction cannot supply those gates.
 
+## Public invocation and JSON carriers
+
+For both `completion_approved` and `closure_shared_result_recovery`, pass
+`--input` and `--semantic-result` as paths to separate regular UTF-8 files.
+Each file contains one JSON object and must not itself be a symlink.
+This command does not read inline JSON or stdin, including the `-` shorthand.
+Absolute paths are accepted. Relative paths resolve first from `--root`
+(the current directory when omitted), then from this package.
+
+After completing this profile's semantic review and any required close
+confirmation, invoke the installed public wrapper with the two current files:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-complete-task-closure/scripts/invoke.sh \
+  --root . --input /path/to/closure-input.json \
+  --semantic-result /path/to/closure-semantic.json --json
+```
+
+Add `--confirmed-close` only under the close-action confirmation boundary below.
+The file paths above are placeholders for caller-authored input and judgment;
+package examples describe their shapes and do not supply current results.
 
 Consume only the current Completion `completed` ResultRef. Freshly review source
 relation, accepted scope, target, branch binding, content and evidence slots,
@@ -43,6 +64,13 @@ Judge the whole current Task scope separately from the source Issue's remaining
 responsibilities. A completed Task whose source retains explicit responsibility
 uses `retain_open`, preserving TaskId, generation and source. Do not rewrite it
 as `reference_only` or `no_issue` to obtain Finish.
+
+Read the current branch binding through
+`guru-establish-task-branch-binding`'s read-only
+`discover-task-branch-binding-candidates` command. For `already_established`,
+copy the receipt's `result.binding_ref` unchanged into this Skill's
+`binding_ref`. Other statuses return to the original binding owner. Its formal
+TaskKey output and recovery command do not provide a first revision fact.
 
 | Action | Required provider state and execution |
 | --- | --- |

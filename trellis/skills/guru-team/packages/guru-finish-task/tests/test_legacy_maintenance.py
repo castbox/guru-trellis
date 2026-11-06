@@ -67,4 +67,35 @@ class LegacyOwnerTests(unittest.TestCase):
     path=root/ref;path.parent.mkdir(parents=True);path.write_text(json.dumps(payload))
    result=module.execute(PACKAGE,{'profile':'legacy_control_inspection','root':str(root),'key':key,'task_ref':task_ref,'control_refs':[transaction,gate]})
    self.assertEqual([r['path'] for r in result['controls']],[transaction,gate])
+
+ def test_intermediate_inspection_json_carriers_and_invalid_json(self):
+     import os, subprocess
+     from contextlib import chdir
+     with tempfile.TemporaryDirectory() as temporary:
+         root=Path(temporary).resolve()
+         key={'task_id':'selected','lifecycle_generation':0};task_ref='.trellis/tasks/selected'
+         task=root/task_ref;task.mkdir(parents=True);(task/'task.json').write_text(json.dumps({'id':'selected','status':'in_progress'}))
+         control=module.CONTROL_ROOT+'original.json';path=root/control;path.parent.mkdir(parents=True);path.write_text(json.dumps({'input':{'task_ref':task_ref}}))
+         task_before=(root/task_ref/'task.json').read_bytes();control_before=path.read_bytes()
+         public={'profile':'legacy_control_inspection','root':str(root),'key':key,'task_ref':task_ref,'control_refs':[control]}
+         encoded=json.dumps(public);input_path=root/'inspection.json';input_path.write_text(encoded)
+         (root/'inspection-link.json').symlink_to(input_path.name)
+         results=[]
+         with chdir(root):
+             for carrier,stdin in [(encoded,None),(str(input_path),None),(os.path.relpath(input_path,PACKAGE.parents[4]),None),(str(root/'inspection-link.json'),None),('-',encoded)]:
+                 with self.subTest(carrier=carrier if carrier!=encoded else 'inline'):
+                     result=subprocess.run(['bash',str(PACKAGE/'scripts/legacy-maintenance.sh'),'--root',str(root),'--input',carrier],input=stdin,text=True,capture_output=True)
+                     self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+                     value=json.loads(result.stdout)['result'];results.append(value)
+                     self.assertIs(value['formal_exit'],False)
+                     self.assertEqual([row['path'] for row in value['controls']],[control])
+             for carrier,stdin in [('{',None),('-', '{')]:
+                 result=subprocess.run(['bash',str(PACKAGE/'scripts/legacy-maintenance.sh'),'--root',str(root),'--input',carrier],input=stdin,text=True,capture_output=True)
+                 self.assertEqual(result.returncode,2,result.stdout+result.stderr)
+                 error=json.loads(result.stdout)
+                 self.assertEqual((error['code'],error['field_path']),('invalid_json','input'))
+         self.assertTrue(all(value==results[0] for value in results))
+         self.assertEqual((root/task_ref/'task.json').read_bytes(),task_before)
+         self.assertEqual(path.read_bytes(),control_before)
+
 if __name__=='__main__':unittest.main()

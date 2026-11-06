@@ -39,7 +39,7 @@
           ]
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",

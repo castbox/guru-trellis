@@ -21,10 +21,14 @@ from runtime.task_lifecycle.resource_ledger import ResourceLedgerStore
 from runtime.task_lifecycle.source import task_source, task_source_with_review
 
 
-def load(root: Path, package_root: Path, value: str, field: str) -> dict:
+def find_json_file(root: Path, package_root: Path, value: str) -> Path | None:
     path = Path(value)
     choices = [path] if path.is_absolute() else [root / path, package_root / path]
-    source = next((candidate for candidate in choices if candidate.is_file() and not candidate.is_symlink()), None)
+    return next((candidate for candidate in choices if candidate.is_file() and not candidate.is_symlink()), None)
+
+
+def load(root: Path, package_root: Path, value: str, field: str) -> dict:
+    source = find_json_file(root, package_root, value)
     if source is None:
         raise CommandError("invalid_json", field, "Provide one regular JSON file.")
     try:
@@ -431,13 +435,31 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     # current calls keep their original runtime dependencies and preconditions.
     import argparse as _argparse, io as _io, sys as _sys
     from runtime.io import decode_json as _decode_json, read_json as _read_json, read_stdin as _read_stdin
-    _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--input')
-    _selected,_rest=_selector.parse_known_args(argv)
+    _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--input');_selector.add_argument('--root')
+    try:
+        _selected,_rest=_selector.parse_known_args(argv)
+    except SystemExit as exc:
+        raise CommandError("invalid_arguments", "arguments", "Use the finish command contract.") from exc
     if _selected.input:
         if _selected.input=='-':
             _content=_read_stdin('input');_sys.stdin=_io.StringIO(_content)
             _public=_decode_json(_content,'input')
-        else:_public=_read_json(_selected.input,'input')
+        else:
+            _root = Path(_selected.root or '.').resolve()
+            try:
+                _source = find_json_file(_root, package_root, _selected.input)
+            except OSError:
+                # Legacy inline JSON may not be a usable filesystem path.
+                _source = None
+            if _source is None:
+                _public = _read_json(_selected.input, 'input')
+            else:
+                # A selected current file owns its read/parse errors. Never
+                # replace it with a different cwd file after loading fails.
+                _public = load(_root, package_root, _selected.input, 'input')
+                if _public.get('profile') in {'legacy_control_retirement','legacy_history_verification'}:
+                    # Legacy keeps its original cwd/file/inline reader.
+                    _public = _read_json(_selected.input, 'input')
         if _public.get('profile') in {'legacy_control_retirement','legacy_history_verification'}:
             import importlib.util as _util
             _spec=_util.spec_from_file_location('legacy_'+package_root.name.replace('-','_'),package_root/'runtime/legacy_maintenance.py')

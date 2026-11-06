@@ -27,7 +27,7 @@
           "flag": "--skill-input",
           "required": true,
           "kind": "string",
-          "description": "Current public Branch Review, base-continuity or archived-review input.",
+          "description": "Current public input for delivery_branch_review, delivery_base_continuity, delivery_archived_review or delivery_promotion_reference_alignment. Use a regular UTF-8 JSON file or '-' for stdin; inline JSON is not supported. See references/contract.md#recorder-authoring-and-carriers.",
           "repeatable": false,
           "conflicts": []
         },
@@ -35,7 +35,7 @@
           "flag": "--semantic-review-file",
           "required": true,
           "kind": "string",
-          "description": "AI semantic review JSON.",
+          "description": "AI-authored semantic JSON, separate from public input and the generated gate. Use a regular UTF-8 JSON file or '-' for stdin, with at most one recorder argument reading stdin. See references/contract.md#recorder-authoring-and-carriers and examples/authoring-delivery-passed-1.0.json.",
           "repeatable": false,
           "conflicts": []
         },
@@ -56,7 +56,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "none",
+      "stdin": "optional_json",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
@@ -68,7 +68,15 @@
         "internal_error"
       ],
       "side_effect": "runtime_write",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-delivery-branch-review-input-1.0.schema.json",
+        "schemas/public-delivery-base-continuity-input-1.0.schema.json",
+        "schemas/public-delivery-archived-review-input-1.0.schema.json",
+        "schemas/public-delivery-promotion-reference-alignment-input-1.0.schema.json",
+        "schemas/delivery-review-gate-1.0.schema.json",
+        "schemas/delivery-alignment-gate-1.0.schema.json",
+        "schemas/delivery-archived-review-gate-1.0.schema.json"
+      ],
       "validator_id": "review_gate_recorder",
       "runtime_role": "record"
     },
@@ -262,7 +270,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Separate original-owner legacy input.",
+          "description": "Separate original-owner legacy input. Inline JSON is additive; existing regular UTF-8 JSON file and dash-for-stdin inputs remain supported. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }

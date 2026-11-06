@@ -28,6 +28,11 @@ Load [references/contract.md](references/contract.md). Execute its semantic
 closed loop in the declared order, complete the AI Review Gate before any
 recorder/validator, then return exactly one declared typed exit.
 
+The executing AI checks Sync's public transition against the contract's
+read-only Git facts before semantic retrieval. Record/check later reobserve
+those facts and derive `base_observation`. Use those existing actions in order.
+For an unbound local draft, the contract gives a source-capture example.
+
 Run commands from the reviewed repository root. The full execution package is
 `.trellis/guru-team/skills/packages/guru-discover-change-context`; `scripts/`,
 `schemas/`, and `examples/` references below resolve under that package, not

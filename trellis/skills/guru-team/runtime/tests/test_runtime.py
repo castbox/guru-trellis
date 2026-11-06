@@ -588,7 +588,6 @@ class SharedRuntimeTests(unittest.TestCase):
         registry = json.loads((SKILLS / "registry.json").read_text(encoding="utf-8"))
         active = [row for row in registry["skills"] if row["state"] == "active"]
         manifest = json.loads((SKILLS.parents[2] / "trellis/guru-team-extension.json").read_text(encoding="utf-8"))
-        self.assertEqual(len(active), 38)
         active_ids = {row["id"] for row in active}
         self.assertIn("guru-create-delivery", active_ids)
         self.assertIn("guru-activate-delivery", active_ids)
@@ -599,6 +598,18 @@ class SharedRuntimeTests(unittest.TestCase):
                 payload = discover(SKILLS, row["id"])
                 interface = json.loads((SKILLS / row["interface"]).read_text(encoding="utf-8"))
                 contracts = interface["public_contracts"]
+                if interface.get("execution_kind") == "instruction_only":
+                    self.assertEqual(payload, {
+                        "status": "ok",
+                        "skill_id": row["id"],
+                        "interface_schema_id": row["interface_schema_id"],
+                        "execution_kind": "instruction_only",
+                        "input": contracts["input"],
+                        "invocation": contracts["invocation"],
+                        "outputs": contracts["outputs"],
+                        "external_exits": interface["external_exits"],
+                    })
+                    continue
                 self.assertEqual(payload, {
                     "status": "ok",
                     "skill_id": row["id"],

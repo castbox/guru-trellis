@@ -7,6 +7,51 @@ Scope and implementation modules execute owner inputs without semantic route
 judgment or persistence. Original publication/merge transactions retain their
 private recovery responsibility; receipts never establish semantic pass.
 
+## Reading Required Contracts In Full
+
+The current AI owner must actually read each required Skill, method, template
+and spec body before the judgment or writing that depends on it. Complete raw
+stdout, a successful command, a locator, search hits or a line count does not
+establish that the AI received the full text. This method applies to workflow,
+standalone, resumed and child-agent execution under the original owner's read
+obligations.
+
+For a long document, read consecutive bounded line ranges from its first line
+through the actual end of the file. A line-count query can help plan those
+ranges; it is not a substitute for reading them. For example, if a document ends
+within the third range, read these ranges in separate calls:
+
+```bash
+sed -n '1,80p' path/to/required-contract.md
+sed -n '81,160p' path/to/required-contract.md
+sed -n '161,240p' path/to/required-contract.md
+```
+
+These sizes are examples, not a completeness threshold. If the file continues,
+read the next adjacent ranges until its end, including any final line without
+a newline. Choose smaller ranges when the text is dense or the tool's display
+budget is limited. Avoid concatenating several required full bodies into one
+large response.
+
+When a shell call is returned through another tool or orchestration layer,
+allow enough output budget at both levels for the complete range and the
+surrounding metadata or serialized envelope. A generous inner shell budget does
+not prevent the outer response from being truncated. Inspect the text actually
+returned to the AI at every display layer.
+
+If any range is truncated, reduce its size and reread the affected range.
+Continue until every missing part and the final range are fully visible before
+making the dependent owner judgment or writing. Keep a simple check of covered
+file ranges in the current conversation context. Do not add a tracked or ignored
+read ledger, schema field, automatic grade or script gate. Preserve original
+outputs and failures; later reads supplement the missing text without rewriting
+the original observation. The AI still owns the judgment that the required
+content has been read and understood.
+
+Line ranges support prose reads. Consume producer JSON, intermediate receipts
+and typed exits from their complete original stdout under their own contracts;
+do not reconstruct them from displayed fragments.
+
 ## GitHub CLI Adapter
 
 Each owning Skill package contains its deterministic GitHub adapter. Package
@@ -54,6 +99,39 @@ confirmation. Cleanup does not roll back Completion, Closure, or Finish.
 TaskId; old-generation results cannot authorize a new generation. These five
 owners use their own package `invoke-<skill-id>` public commands, not the
 retired Finalizer/Merge/Restore commands or a caller-authored DTO.
+
+### Public Delivery rework input
+
+This section is the shared Guru call guide for the existing Delivery API 1.0
+`rework` operation. The public `TaskOperation` union exported by
+`@mindfoldhq/trellis-core/task/v2` remains its field authority. Read
+`.trellis/delivery-contract.md` for lifecycle and AuthorityRef semantics.
+The original semantic owner judges the return target, reason and affected
+results before assembling the operation; this guide does not select them.
+
+| Field | Value and public source |
+| --- | --- |
+| `api_version`, `operation` | Fixed `"1.0"`, `"rework"`. |
+| `key` | The exact public DeliveryKey `{task_id,lifecycle_generation,delivery_id}`. |
+| `owner_role`, `owner_id` | The current semantic owner's role and matching ID from the active `.trellis/workflow.md` `[trellis-runtime-contract]` declaration. Phase names such as `reviewing` are not owner-role values. |
+| `expected_phase` | The actual phase from this Delivery's public current query. |
+| `target_role` | The original owner's reviewed earliest affected role: `planning`, `implementation`, `check`, `full_review` or `readiness`. |
+| `reason` | The original owner's reviewed AuthorityRef `{locator,revision}` for the actual reason. |
+| `affected_results` | The exact array of affected gate roles, drawn from `planning`, `check`, `full_review` and `readiness`, after the original owner's dependency judgment. Do not choose it from phase alone. |
+| `scope_ref` | Optional SliceScopeRef; the original owner decides whether to include it under the existing rework contract. It may carry the unchanged reviewed scope when returning to `planning`, with its authority bound to current `accepted_scope`. |
+
+Use the same exact TaskRef and DeliveryKey throughout the original owner route.
+Invoke the existing public command with the complete operation:
+
+```bash
+python3 .trellis/scripts/delivery.py rework --task <TaskRef> --input <operation.json>
+```
+
+`--input` accepts complete inline JSON or a regular UTF-8 JSON file; `-` is not
+a stdin carrier for this command. Capture the actual exit, stdout and stderr
+before consuming its result. The operation records lifecycle facts, not a
+Check or Review pass. The existing workflow and owning Skill retain candidate
+rebinding, applicable gates and same-owner recovery duties.
 
 ### Retired Issue #180 Finalizer And Merge Commands (historical only)
 
@@ -359,6 +437,10 @@ validation, and retry. There is no alternate-command fallback. Runtime dependenc
 validation is an objective precondition only and never becomes an AI Review Gate pass.
 
 ### Intermediate Command Stdout 1.0
+
+Before using required text for an owner judgment, apply
+[Reading Required Contracts In Full](#reading-required-contracts-in-full).
+This shared method also applies when a standalone Skill loads this section.
 
 Current `commands.json` uses `guru-team-skill-commands-1.1`. Each command
 declares `intermediate_receipt` or `single_typed_exit`. Source and installed

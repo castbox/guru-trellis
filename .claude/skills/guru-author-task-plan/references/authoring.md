@@ -86,16 +86,18 @@ the receiving Author executes its Skill's original-owner entry recovery for
 missing binding/selection and rereads the same key, phase, scope and root.
 Actual stale/conflicting/terminal/error conditions stop at their original
 owners; they are never reclassified as missing facts or no-context mode.
-After a successful delivery_initial_review requirements_ready, invoke Creation's
-retire_creation_result port with task_ref/key. Only that producer validates and
-retires its matching pending operation; Author never reads its private input.
+The successful `delivery_initial_review` public invoke internally asks Creation
+to validate and retire its matching pending operation before returning
+`requirements_ready`. The caller consumes that stdout directly through the
+original Architecture `candidate_assessment` consumer. It performs no separate
+retirement call and does not import or read private ports or pending inputs.
 
 | Profile | Actual producer and positive behavior |
 | --- | --- |
 | delivery_initial_review | Explicit Creation result plus original source_selection; converge slice requirements and actual candidate. |
 | delivery_active_task_scope_change | Original Clarify published scope_ready plus selection/revision_refs and affected key; revise only affected slice requirements/candidate after root requirements publication. |
 | delivery_wording_reentry | Actual Wording content_changed/change_refs; equivalent wording returns plan_ready; changed mechanism returns requirements_ready. |
-| delivery_approval_revision | Actual Approval revision_actions; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
+| delivery_approval_revision | Actual Approval revision_actions, or Check planning_stale/reapprove_plan revision_actions for a planning repair without scope decisions; execution-plan-only fixes may return plan_ready; requirements/design fixes re-enter candidate assessment. |
 | delivery_delivery_plan_revision | Delivery Review delivery_policy_gap/revision_refs; revise the same key's actual slice policy. Completion next_independent_delivery goes to Creation first, then delivery_initial_review on its new UUID. |
 | delivery_requirements_revision | Original Clarify source_selection/revision_refs; converge the current slice without a caller-preselected decision. |
 | delivery_solution_planning | Actual current Architecture candidate_assessment; write design/implement/context using its thin assessment. |
@@ -145,6 +147,8 @@ not PRD narrative, approval or acceptance claims. Do not persist a parallel
 candidate/proposal/cache. Invoke original normal-scenario and solution owners
 with author_candidate_set, then applicable root-cause qualification. Feature
 work retains not_incident_applicable; other exits follow their unique owners.
+Before constructing `author_paths` and `author_identity`, load the shared
+[file-set identity format and recipe](../../guru-qualify-normal-scenario/references/contract.md#file-set-identity).
 The actual requirements_ready output reaches independent Architecture
 candidate_assessment before the first substantive design/implement write.
 
@@ -235,11 +239,124 @@ Phase 2/Completion owner unless actual planning authority changed.
 ## Fixed Delivery range
 
 Select the development baseline, Delivery content range and PR target separately.
-Use the existing `DeliveryProjection.content_base(key, development_base=...,
-observed_target=...)` fact projection: recover the same Delivery candidate
-first; otherwise use the unique greatest actual prior delivered head ancestral
-to current HEAD, then the explicitly selected development baseline or unique
-merge base of one observed target commit. Missing/incomparable facts return
-to this owner; range selection never fetches or integrates. Record B and its
+Author and the original implementation coordinator own range selection. Read
+this section before constructing or refreshing an implementation Candidate.
+Use the installed public entry; do not import Guru runtime modules or copy a
+content-identity algorithm:
+
+```bash
+bash .trellis/guru-team/scripts/bash/construct-delivery-candidate.sh \
+  --root . --task <actual-TaskRef> --delivery-key <actual-DeliveryKey-JSON> \
+  --development-base <selected-B> --head <actual-HEAD> \
+  --paths <owner-selected-content-paths...>
+```
+
+Replace every placeholder with the actual public identity or reviewed fact.
+`--delivery-key` accepts inline JSON, a regular UTF-8 JSON file, or `-` for
+stdin. `--paths` accepts one or more repository-relative file paths. Directories
+are not expanded recursively; enumerate the individual files in a changed
+directory. Include deleted file paths under the existing deletion contract;
+the selected files need not all exist in the current worktree. Include
+the actual dirty increment; the original constructor adds the complete B..HEAD
+committed paths under its existing metadata exclusions. Do not select
+Task/session/private-result files as content. `--head` must resolve to this
+checkout's actual HEAD and is emitted as a complete commit OID.
+
+This entry serves the current Git `pull_request` Delivery with its original
+Identity/Ensure-validated Git checkout, C4 binding and current selection.
+With context, missing or different selection returns to original Bind/Selection;
+without context, the exact explicit key still requires the original checkout
+and public relationship checks. Terminal and unsupported profiles stop.
+The existing upstream `delivery.py candidate --kind git_free` and its legal
+consumers retain their separate boundary; this bridge adds no Git-free Delivery.
+
+The constructor recovers the same Delivery's existing fixed B first. Otherwise
+it uses the unique greatest actual prior delivered head ancestral to current
+HEAD, then the explicitly selected development baseline or the unique merge
+base of one observed target commit. To use the latter input, replace
+`--development-base` with `--observed-target <one-locally-available-OID>`;
+the options are mutually exclusive. Both may be omitted when a same-Delivery
+or prior-delivery base is already available. Missing/incomparable facts return
+to this owner. No fetch, integration or state write occurs. Record B and its
 source in the existing Delivery design. Planning H0 is an observation, not the
 final implementation head. Do not repeat D1 in D2 or add a Task baseline field.
+
+### Public implementation operations
+
+The constructor's stdout is the existing complete Candidate object:
+`{kind,content_ref,paths,head_ref,base_ref}`. Capture its original exit,
+stdout and stderr before consuming it. A nonzero exit supplies no Candidate;
+follow the reported field and original recovery owner. The output is a fact,
+not a semantic gate or formal Skill exit. Keep it call-local, or use one
+temporary regular UTF-8 JSON file until its direct consumer completes.
+
+After the original implementation owner reviews the complete current scope
+and validation readiness, assemble the existing public `begin_check` operation:
+
+```json
+{
+  "api_version": "1.0",
+  "operation": "begin_check",
+  "key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "bb8fed1b-a4a1-4c30-bcd6-e0b5f19e9829"
+  },
+  "owner_role": "implementation",
+  "owner_id": "guru-delivery-implementation-projection",
+  "expected_phase": "implementing",
+  "candidate": {
+    "kind": "git",
+    "content_ref": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "paths": ["src/example.py"],
+    "head_ref": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "base_ref": "cccccccccccccccccccccccccccccccccccccccc"
+  }
+}
+```
+
+This illustrative object shows the complete public shape; its identities and
+content values are examples. Use the actual DeliveryKey, the implementation
+owner from the current workflow's public runtime declaration, and the
+constructor's unchanged Candidate object. Do not fill its digest or Git facts
+by hand.
+Run `python3 .trellis/scripts/delivery.py begin-check --task <TaskRef>
+--input <operation.json>`. This command accepts complete inline JSON or a
+regular UTF-8 JSON file; it does **not** accept `-` as stdin. Its operation
+receipt is not Check success. Only a successful original Check invocation
+emits a formal Check exit.
+
+For legal rework, read the shared Public Delivery rework input section at the
+repository-relative locator
+`.trellis/spec/workflow/companion-scripts.md#public-delivery-rework-input`.
+Use its common field and carrier instructions and public parameter sources.
+The current original stage owner retains the actual scope and dependency
+judgments; the specific implementation scope-revision duties below still apply.
+
+After original Clarify publishes a whole-scope revision during implementing,
+the implementation coordinator checks the reviewed slice anchors against the
+actual `accepted_scope`. For its existing scope-revision path, use
+`owner_role=implementation`, `expected_phase=implementing`,
+`target_role=planning`, `affected_results=[planning,check,full_review,readiness]`
+and the reviewed current `scope_ref`; `reason` is that current authority.
+After success, project only `mode/task_ref/delivery_key/source_selection/
+revision_refs` into Author `delivery_active_task_scope_change`. On output loss,
+first reread the explicit Delivery: matching planning scope and all four
+cleared results recover the same handoff without another rework or approval.
+Otherwise retain the actual mismatch and original owner.
+
+For whole-slice withdrawal during implementing, the same original coordinator
+reviews the scope decision, reason and evidence. Submit the existing
+`operation=stop` envelope with implementation owner, actual implementing phase
+and its reviewed `result={result_id,owner_id,reason,scope_decision,evidence}`;
+the three reference fields use the original public AuthorityRef/array shapes.
+Use `python3 .trellis/scripts/delivery.py stop --task <TaskRef>
+--input <operation.json>`. The public store retains the exact stop result and
+releases its matching selections. Output loss retries this unchanged original
+operation/result, including an interrupted release, without a second stop or
+new result identity. A separate explicit release uses `delivery.py release`
+only after reading this session's exact retained terminal selection; it is
+not a mandatory second action. The returned operation key projects only
+TaskId/generation plus existing TaskRef to original Completion. Stopped is
+neither delivered nor completed. Planning and later-stage scope/withdrawal
+profiles retain their own original Skill owners.

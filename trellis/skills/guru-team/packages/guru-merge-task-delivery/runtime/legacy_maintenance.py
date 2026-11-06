@@ -5,7 +5,7 @@ import importlib.util
 import json
 import subprocess
 from pathlib import Path
-from runtime.io import CommandError
+from runtime.io import CommandError, read_json
 
 OWNER = "guru-merge-task-delivery"
 
@@ -146,10 +146,9 @@ def execute(package_root, public):
     return {'exit_id':'verified_legacy_history','key':public['key'],'facts':verified}
 
 def run(package_root, command, argv):
-    import sys
     parser=argparse.ArgumentParser(); parser.add_argument('--root',required=True); parser.add_argument('--input',required=True)
     args=parser.parse_args(argv)
-    public=json.load(sys.stdin) if args.input=='-' else json.loads(Path(args.input).read_text())
+    public=read_json(args.input,'input')
     if Path(args.root).resolve()!=Path(public['root']).resolve(): raise CommandError('target_mismatch','root','Use the selected target checkout.')
     from runtime.schema import validate_json
     validate_json(public,package_root/'schemas/legacy-maintenance-input-1.0.schema.json','input')

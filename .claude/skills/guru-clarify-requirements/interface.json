@@ -175,6 +175,10 @@
     {
       "id": "public_task_scope_requirements_acceptance_input",
       "path": "examples/public-task-scope-requirements-acceptance-input.json"
+    },
+    {
+      "id": "task_scope_requirements_acceptance_invocation",
+      "path": "examples/task-scope-requirements-acceptance-invocation.json"
     }
   ],
   "schemas": [

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from contextlib import ExitStack
 import argparse
 import hashlib
 import json
@@ -14,6 +15,7 @@ import sys
 import tempfile
 import threading
 import time
+import tomllib
 
 # The CLI is also executed directly by the platform shell adapters.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -26,6 +28,7 @@ from adapters.eval.eval_constants import (
     OWNER_INVOCATION,
     OWNER_RESULT,
     QUALIFICATION_MODEL,
+    QUALIFICATION_PERMISSION_PROFILE,
     QUALIFICATION_PUBLIC_AUTHORING_FACTS,
     QUALIFICATION_SKILL,
     SEMANTIC_AUTHORING_ADAPTER,
@@ -47,6 +50,7 @@ from adapters.eval.eval_support import (
     qualification_trace_helper_source,
     recorded_native_environment,
     repository_file_inventory,
+    repository_projection_allowed,
     response,
     run_codex_permission_probe,
     stage_public_projection,
@@ -106,6 +110,16 @@ def semantic_authoring_supported(request: dict[str, Any], adapter: str) -> bool:
     )
 
 
+def persisted_r5_observation(request: dict[str, Any], adapter: str) -> bool:
+    """Persist fresh sessions only for the two selected implementation evals."""
+    return semantic_authoring_supported(request, adapter) and (
+        request.get("skill_id"), request.get("case_id")
+    ) in {
+        ("guru-author-task-plan", "native-implementation-plan-premise"),
+        ("guru-check-task", "native-implementation-code-drift"),
+    }
+
+
 def isolated_authoring_request(request: dict[str, Any], adapter: str) -> bool:
     return adapter == "codex" and (
         request.get("skill_id") == QUALIFICATION_SKILL
@@ -131,6 +145,7 @@ def prepare_isolated_codex_permissions(
     model_root: Path,
     *,
     qualification_codex: bool,
+    config_lifetime: ExitStack | None = None,
 ) -> tuple[Path, list[Path]]:
     codex_home = isolated_codex_home(dict(os.environ), request_path.parents[2])
     source_worktree_value = os.environ.get("GURU_TEAM_QUALIFICATION_SOURCE_WORKTREE")
@@ -172,8 +187,55 @@ def prepare_isolated_codex_permissions(
         denied_paths.append(control_root)
 
     canonical_denied_paths = canonical_permission_paths(denied_paths)
-    write_codex_permission_profile(codex_home, model_root, canonical_denied_paths)
+    if implementation_authoring.initial_request_entry(request):
+        if config_lifetime is None:
+            raise ValueError('R1 permission preparation requires its config restoration lifetime')
+        prepare_r1_permissions(codex_home, model_root, canonical_denied_paths, config_lifetime)
+    else:
+        write_codex_permission_profile(codex_home, model_root, canonical_denied_paths)
     return codex_home, canonical_denied_paths
+
+
+def prepare_r1_permissions(codex_home: Path, model_root: Path, denied_paths: list[Path],
+                           lifetime: ExitStack) -> None:
+    """Temporarily add the original probe's profile to this R1 carrier only."""
+    config = codex_home / 'config.toml'
+    original = config.read_bytes()
+    original_mode = stat.S_IMODE(config.stat().st_mode)
+    parsed = tomllib.loads(original.decode('utf-8'))
+    profiles = parsed.get('permissions', {})
+    current = profiles.get(parsed.get('default_permissions'), {}).get('filesystem', {})
+    if current.get(':root') != 'deny':
+        raise ValueError('R1 carrier must already use a root-denied permission profile')
+    if QUALIFICATION_PERMISSION_PROFILE in profiles:
+        raise ValueError('R1 carrier already contains the reserved eval permission profile')
+    # Reuse the profile id consumed by the existing real sandbox probe. Keep
+    # the carrier's default profile and all existing table bytes unchanged.
+    runtime_paths = [Path(sys.executable).absolute(), Path(sys.executable).resolve()]
+    codex = shutil.which('codex')
+    if codex:
+        runtime_paths.extend([Path(codex).absolute(), Path(codex).resolve()])
+    system_paths = {'/bin', '/usr/bin', '/usr/lib', '/System/Library',
+                    '/Library/Developer/CommandLineTools', str(Path.home() / '.gitconfig')}
+    reads = {key: value for key, value in current.items()
+             if value == 'read' and (key == ':minimal' or key in system_paths
+                 or (key.startswith('/') and any(path.is_relative_to(Path(key))
+                                                 for path in runtime_paths)))}
+    profile = QUALIFICATION_PERMISSION_PROFILE
+    lines = ['', f'[permissions.{profile}.filesystem]', '":root" = "deny"']
+    lines.extend(f'{json.dumps(key)} = "read"' for key in sorted(reads))
+    lines.extend(f'{json.dumps(str(path))} = "deny"' for path in denied_paths)
+    lines.extend([f'{json.dumps(str(model_root.resolve()))} = "write"',
+                  f'[permissions.{profile}.filesystem.":workspace_roots"]', '"." = "write"',
+                  f'[permissions.{profile}.network]', 'enabled = false', ''])
+
+    def restore() -> None:
+        config.write_bytes(original)
+        config.chmod(original_mode)
+
+    lifetime.callback(restore)
+    config.write_bytes(original + ('\n'.join(lines)).encode('utf-8'))
+    config.chmod(original_mode)
 
 
 def start_public_runtime_boundary(
@@ -301,6 +363,7 @@ def start_qualification_runtime_boundary(
     architecture_followup=None,
     implementation_commands=None,
     observation_commands=None,
+    wrapper_observation_path: Path | None = None,
 ) -> threading.Thread:
     installed_wrapper = package_root / "scripts/invoke.sh"
     if installed_wrapper.is_symlink() or not os.access(installed_wrapper, os.X_OK):
@@ -309,6 +372,8 @@ def start_qualification_runtime_boundary(
         if fifo.exists():
             fifo.unlink()
         os.mkfifo(fifo, mode=0o600)
+
+    observation_errors: list[str] = []
 
     def serve() -> None:
         descriptor = os.open(request_fifo, os.O_RDONLY | os.O_NONBLOCK)
@@ -328,6 +393,7 @@ def start_qualification_runtime_boundary(
                 request_bytes = b"".join(chunks)
                 chunks = []
                 payload = None
+                wrapper_execution = None
                 try:
                     payload = json.loads(request_bytes)
                     if observation_commands is not None and payload.get('skill_id') == 'task-free-authoring':
@@ -345,7 +411,6 @@ def start_qualification_runtime_boundary(
                         except (OSError, ValueError, KeyError, TypeError) as exc:
                             response = {"returncode": 2, "stdout": "", "stderr": str(exc)}
                             implementation_commands.record_response(payload, response)
-                            implementation_commands.terminal = True
                         with response_fifo.open("w", encoding="utf-8") as handle:
                             json.dump(response, handle, separators=(",", ":"))
                         # Keep the transport available to report an ordinary
@@ -408,11 +473,15 @@ def start_qualification_runtime_boundary(
                         )
                         if qualifier:
                             wrapper = package_root.parent / ("guru-qualify-" + qualifier) / "scripts/invoke.sh"
+                        wrapper_argv = [str(wrapper), "--invocation", "-"]
+                        wrapper_execution = {"argv": wrapper_argv, "executed": False}
                         process = subprocess.run(
-                            [str(wrapper), "--invocation", "-"],
+                            wrapper_argv,
                             cwd=owner_repository, input=payload["stdin"], text=True,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, env=environment,
                         )
+                        wrapper_execution.update(executed=True, returncode=process.returncode,
+                            stdout=process.stdout, stderr=process.stderr)
                         if upstream and process.returncode == 0:
                             architecture_result = json.loads(process.stdout)
                     if architecture_followup is not None:
@@ -430,6 +499,16 @@ def start_qualification_runtime_boundary(
                     }
                     if intake_commands is not None:
                         intake_commands.record_response(payload, response)
+                if wrapper_observation_path is not None:
+                    # Host-only evidence; the original response is returned unchanged.
+                    observed = {"request_bytes_hex": request_bytes.hex(),
+                        "stdin": payload.get("stdin") if isinstance(payload, dict) else None,
+                        "wrapper": wrapper_execution, "response": response}
+                    try:
+                        with wrapper_observation_path.open("a", encoding="utf-8") as handle:
+                            handle.write(json.dumps(observed, ensure_ascii=False) + "\n")
+                    except OSError as exc:
+                        observation_errors.append(str(exc))
                 with response_fifo.open("w", encoding="utf-8") as handle:
                     json.dump(response, handle, separators=(",", ":"))
                 if intake_commands is not None:
@@ -454,11 +533,13 @@ def start_qualification_runtime_boundary(
         daemon=True,
     )
     thread.implementation_commands = implementation_commands
+    thread.observation_errors = observation_errors
     thread.start()
     return thread
 
 
-def implementation_reviewer(protocol: dict, commands, argv: list[str], environment: dict):
+def implementation_reviewer(protocol: dict, commands, argv: list[str], environment: dict,
+                            *, persisted_observation: bool = False):
     """Launch the original fresh reviewer on caller-selected facts, with its own trace."""
     from adapters.eval.eval_constants import stdout_digest
     repository = Path(protocol['repository_projection_root']).resolve()
@@ -482,6 +563,25 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
             raise ValueError('independent-review reads must begin with Constitution, Baseline and project change contract in that order')
         if any(Path(path).name in {'prd.md', 'implement.md', 'task.json'} for path in value['reads']):
             raise ValueError('independent-review first-round reads must exclude Task PRD, implement and task.json narratives; supply actual design, diff, authority and consumer locators')
+        # Creation and Author can add files after the initial projection. Refresh
+        # only this reader's declared public inputs before creating its worker.
+        for locator in dict.fromkeys(value['reads']):
+            relative = Path(locator)
+            if relative.is_absolute():
+                relative = relative.relative_to(repository)
+            if '..' in relative.parts:
+                raise ValueError('independent-review reads must stay within the projected repository')
+            if not repository_projection_allowed(relative):
+                continue
+            source, target = owner_repository / relative, repository / relative
+            if source.is_file() and not source.is_symlink():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if target.exists() and os.path.samefile(source, target):
+                    continue
+                target.unlink(missing_ok=True)
+                shutil.copy2(source, target)
+            elif target.is_file():
+                target.unlink()
         index = len(executions) + 1
         directory = model_root / f'architecture-worker-{index:02d}'
         directory.mkdir()
@@ -499,11 +599,13 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
         helper.chmod(0o755)
         request_fifo, response_fifo = directory / '.invoke-request', directory / '.invoke-response'
         stop = threading.Event()
+        observation_path = (Path(protocol['private_root']) /
+            f'architecture-worker-{index:02d}-invocations.jsonl') if persisted_observation else None
         runtime_control = {key: commands.environment[key] for key in (
             'TRELLIS_CONTEXT_ID', 'GURU_UPSTREAM_DELIVERY_SCRIPTS') if key in commands.environment}
         thread = start_qualification_runtime_boundary(request_fifo, response_fifo, stop,
             owner_repository, owner_repository / '.trellis/guru-team/skills/packages' / ARCHITECTURE_SKILL,
-            runtime_control, {})
+            runtime_control, {}, wrapper_observation_path=observation_path)
         skill_hash = hashlib.sha256((package / 'SKILL.md').read_bytes()).hexdigest()
         wrapper_hash = hashlib.sha256((package / 'scripts/invoke.sh').read_bytes()).hexdigest()
         helper_command = (f'{helper} --trace {trace} --request-sha256 {protocol["request_sha256"]} '
@@ -511,11 +613,11 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
             f'--request-fifo {request_fifo} --response-fifo {response_fifo} '
             f'--skill-sha256 {skill_hash} --wrapper-sha256 {wrapper_hash}')
         context = architecture_authoring.reviewer_context(repository, package, helper_command,
-            reads, input_locator, upstream=False)
+            reads, input_locator, upstream=False, persisted_observation=persisted_observation)
         overall_context = (model_root / 'native-context.txt').read_text()
         try:
             process = architecture_authoring.execute_reviewer(argv, directory / 'last-message.txt',
-                context, cwd=model_root, environment=environment)
+                context, cwd=model_root, environment=environment, allow_persisted=persisted_observation)
             output = unwrap_native_output('codex', process.stdout, directory / 'last-message.txt')
             events = json.loads(trace.read_text())['events']
             invokes = [event for event in events if event['kind'] == 'invoke']
@@ -526,7 +628,8 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
                     or invokes[0]['stdout_sha256'] != stdout_digest(output)):
                 raise ValueError('fresh Architecture worker did not return its actual original wrapper stdout')
             architecture_authoring.validate_reviewer_reads(events, repository, reads,
-                phase2=value['public_input'].get('stage') != 'planning')
+                phase2=value['public_input'].get('stage') != 'planning',
+                contract_reads=architecture_authoring.public_contract_reads(package, public))
             result = {'returncode': 0, 'stdout': output, 'stderr': ''}
         except (OSError, KeyError, ValueError, json.JSONDecodeError) as exc:
             result = {'returncode': 2, 'stdout': '', 'stderr': f'fresh Architecture worker incomplete: {exc}'}
@@ -534,11 +637,14 @@ def implementation_reviewer(protocol: dict, commands, argv: list[str], environme
             stop.set()
             thread.join(timeout=1)
             (model_root / 'native-context.txt').write_text(overall_context)
-        executions.append({'context': context, 'fresh_ephemeral': True,
+        executions.append({'context': context, 'fresh_ephemeral': '--ephemeral' in argv,
             'trace_path': str(trace), 'public_response': result,
             'returncode': process.returncode if 'process' in locals() else 2,
             'stdout': process.stdout if 'process' in locals() else '',
             'stderr': process.stderr if 'process' in locals() else ''})
+        if observation_path is not None:
+            executions[-1].update(wrapper_observation_path=str(observation_path),
+                observation_errors=thread.observation_errors)
         Path(protocol['private_root'], 'implementation-architecture-executions.json').write_text(
             json.dumps(executions, ensure_ascii=False, indent=2))
         return result
@@ -594,6 +700,8 @@ def build_context(
             request, execution_root, runtime_target
         )
     owner_repository = execution_runtime_target.parents[4]
+    if implementation_authoring.initial_request_entry(request):
+        runtime_environment.update(implementation_authoring.entry_environment(owner_repository))
     qualification_codex = request["skill_id"] == QUALIFICATION_SKILL and adapter == "codex"
     semantic_authoring = semantic_authoring_request(request)
     extra_authoring = additional_authoring_module(request["skill_id"], request.get("case_id")) if semantic_authoring else None
@@ -625,7 +733,7 @@ def build_context(
             runtime_environment,
         )
     if isolated_authoring:
-        if request.get("schema_version") == "3.0":
+        if request.get("schema_version") == "3.0" or implementation_authoring.initial_request_entry(request):
             model_root = (execution_root / "model-sandbox").resolve()
             if model_root.exists():
                 raise ValueError("semantic authoring model sandbox already exists")
@@ -854,7 +962,9 @@ def build_context(
         )
         owner_schema_path = "schemas/semantic-result.schema.json"
         if extra_authoring is not None:
-            owner_schema_path = extra_authoring.owner_schema(runtime_package_root) if hasattr(extra_authoring, "owner_schema") else extra_authoring.OWNER_SCHEMA
+            # These callers navigate their original Skill/Interface themselves.
+            # Do not compensate for missing production authoring navigation.
+            owner_schema_path = None
         elif request["skill_id"] == phase2_authoring.SKILL:
             owner_schema_path = "schemas/phase2-check.schema.json"
         elif request["skill_id"] == ARCHITECTURE_SKILL:
@@ -874,7 +984,7 @@ def build_context(
                 "closed when any listed read is absent:\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / 'references/contract.md'}\n"
                 f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {public_interface_path}\n"
-                f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / owner_schema_path}\n"
+                + (f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / owner_schema_path}\n" if owner_schema_path else "")
                 + (
                     f"{helper_path} {qualification_helper_arguments} read --kind skill_contract --path {projection_root / ('schemas/public-input-delivery-1.0.schema.json' if request['skill_id'] == phase2_authoring.SKILL else 'schemas/public-input.schema.json')}\n"
                     if qualification_codex or request["skill_id"] == phase2_authoring.SKILL else
@@ -983,7 +1093,7 @@ def build_context(
                 **({'facts_relative': extra_authoring.facts_locator(request)} if implementation_flow else {}))
             context += f"\nRead the fact sheet with: {helper_path} {qualification_helper_arguments} read --kind owner_file --path {facts_path}\n"
             context += "\nRe-read every staged case file before authoring:\n" + case_read_commands
-            if facts.get('continuous_chain'):
+            if facts.get('continuous_chain') or implementation_authoring.initial_request_entry(request):
                 # The specialized context replaces the generic case prompt.
                 # Retain operation instructions for the overall owner only.
                 context += "\nCase operation instructions:\n" + request['prompt']
@@ -1270,11 +1380,19 @@ def native_argv(
         output_path = model_root / "output/native-last-message.txt"
         if semantic_authoring:
             output_path.parent.mkdir(parents=True, exist_ok=True)
+            entry_options = []
+            if implementation_authoring.initial_request_entry(request):
+                entry_options = ['-c', 'default_permissions=' + json.dumps(QUALIFICATION_PERMISSION_PROFILE)]
+                for key, value in {'PWD': model_root, 'TMPDIR': model_root / 'output',
+                                   'TMPPREFIX': model_root / 'output/zsh'}.items():
+                    entry_options.extend(['-c', 'shell_environment_policy.set.' + key + '='
+                                          + json.dumps(str(value))])
             return [
                 command,
                 "exec",
-                "--ephemeral",
+                *([] if persisted_r5_observation(request, adapter) else ["--ephemeral"]),
                 "--strict-config",
+                *entry_options,
                 "--skip-git-repo-check",
                 "--cd",
                 str(model_root),
@@ -1343,6 +1461,11 @@ def unwrap_native_output(adapter: str, stdout: str, output_path: Path | None) ->
     return json.dumps(payload, separators=(",", ":"))
 
 def main() -> int:
+    with ExitStack() as config_lifetime:
+        return _main(config_lifetime)
+
+
+def _main(config_lifetime: ExitStack) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--adapter", required=True, choices=ADAPTERS)
     parser.add_argument("--native-command", required=True)
@@ -1430,6 +1553,7 @@ def main() -> int:
                 owner_repository,
                 model_root,
                 qualification_codex=qualification_codex,
+                config_lifetime=config_lifetime,
             )
         except (KeyError, OSError, TypeError, ValueError) as exc:
             if boundary_stop is not None:
@@ -1519,7 +1643,8 @@ def main() -> int:
     }
     if protocol.get('implementation_commands'):
         boundary_thread.implementation_commands.independent_reviewer = implementation_reviewer(
-            protocol, boundary_thread.implementation_commands, argv, native_environment)
+            protocol, boundary_thread.implementation_commands, argv, native_environment,
+            persisted_observation=persisted_r5_observation(request, args.adapter))
     started = time.monotonic_ns()
     architecture_execution = None
     if semantic_authoring_codex and protocol.get("architecture_context") and request["skill_id"] != ARCHITECTURE_SKILL:

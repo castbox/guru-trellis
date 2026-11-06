@@ -1,0 +1,7 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "核对整体与切片责任、来源设计处置、Policy及Docs承接"}
+{"file": "trellis/presets/guru-team/MIGRATION-710.md", "reason": "验证Check输入与恢复兼容，不用旧pass替代当前结果"}
+{"file": "docs/architecture/06-governance/change-contract.md", "reason": "独立Architecture及候选Check后最终整合时机"}
+{"file": ".trellis/tasks/11-01-713-public-execution-contracts/deliveries/a163bca1-b051-4f04-b5aa-2727a4e7abb2/architecture-contribution.md", "reason": "真实task-owned拟写与九concerns，不提前晋升共享current"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}

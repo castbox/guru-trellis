@@ -1,0 +1,15 @@
+{
+  "profile": "delivery_reactivation_validation",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 1
+  },
+  "reactivation_anchor": {
+    "task_id": "example",
+    "archived_generation": 0,
+    "archive_ref": ".trellis/tasks/archive/2026-10/example",
+    "archive_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  }
+}

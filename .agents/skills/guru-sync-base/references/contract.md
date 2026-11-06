@@ -150,3 +150,41 @@ configured scalar/candidate/remote-default fallback ownership. The
 private `guru-base-sync-result-1.0` stdout artifact is not projected to consumers.
 The existing `handoff_repo_locator` and `transition.repo_locator` fields point
 to the authority checkout so Discovery reads only the validator-passed base.
+
+## Contract Locations And Public Call
+
+Interface path values retain their existing roots:
+
+| Interface path prefix | Installed root | Complete source root |
+| --- | --- | --- |
+| `schemas/` or `examples/` | `.trellis/guru-team/skills/packages/guru-sync-base/` | `trellis/skills/guru-team/packages/guru-sync-base/` |
+| `consumers/` | `.trellis/guru-team/skills/` | `trellis/skills/guru-team/` |
+
+A platform projection exposes this package's public schemas and examples under
+its own Skill directory. Shared `consumers/` schemas remain under the shared
+installed root; do not append them to `.agents/skills/guru-sync-base/` or to
+`.trellis/guru-team/skills/packages/guru-sync-base/`.
+
+For `public_contracts.invocation.call_local.envelope`, read the actual installed
+schema from the repository root:
+
+```sh
+cat .trellis/guru-team/skills/consumers/workflow/stage0/invocations/deterministic-sync.schema.json
+```
+
+Its closed envelope has `schema_version: "1.0"` and `public_input`. For a current
+caller-classified repository change, the original public call is:
+
+```sh
+bash .trellis/guru-team/skills/packages/guru-sync-base/scripts/invoke.sh --invocation - <<'JSON'
+{"schema_version":"1.0","public_input":{"source_exit":"start","mode":"workflow","repo_root":".","route":"repo_change"}}
+JSON
+```
+
+Use the actual invocation mode, repository locator and caller-classified route.
+Add `base_branch` only for an explicit selected base; omission preserves the
+original resolver. The same `--invocation` also accepts inline JSON or a regular
+UTF-8 file. Read the package-local error example at
+`.trellis/guru-team/skills/packages/guru-sync-base/examples/public-invocation-error.json`
+and output schemas under that package's `schemas/` directory. Consume only the
+formal stdout DTO; this call does not require an `owner_result` field.

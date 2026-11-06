@@ -23,6 +23,14 @@ remediation. Do not install a private alternative, select a source fallback,
 convert a legacy checkpoint into pass, or switch an old installation before
 upstream migration/default-cutover qualification.
 
+Before this owner assembles a legal rework operation, read the shared Public
+Delivery rework input section at the repository-relative locator
+`.trellis/spec/workflow/companion-scripts.md#public-delivery-rework-input`.
+Resolve this caller's role and ID from the active workflow's public owner
+declaration, and read the exact Delivery's actual public phase. Retain this
+owner's reason, target and dependency judgment. The existing committed-candidate
+route and this profile's obligations still govern continuation.
+
 ### Independent Review and continuity
 
 Use `delivery_branch_review` with current Check result, committed candidate and
@@ -469,6 +477,103 @@ to accepted product scope uses `scope_confirmation_required`. Evidence gaps
 are stated at their actual layer and handled under the existing profile's
 contracts, without turning mitigation or a test pass into a repair claim.
 Bounded continuity remains bounded; archived review remains read-only.
+
+## Recorder authoring and carriers
+
+This section owns the input recipe for `scripts/review-branch.sh`. Complete
+the selected profile's independent semantic review and AI Gate first. The
+recorder records that judgment; it does not select findings, sufficiency or
+the exit. Workflow and standalone use the same authoring and carrier rules.
+
+### Select the existing profile contracts
+
+| Current public input profile | Public input schema under `schemas/` | Generated gate schema under `schemas/` | AI authoring |
+| --- | --- | --- | --- |
+| `delivery_branch_review` | `public-delivery-branch-review-input-1.0.schema.json` | `delivery-review-gate-1.0.schema.json` | Four members below; `delivery_review` contains the actual slice judgment. |
+| `delivery_base_continuity` | `public-delivery-base-continuity-input-1.0.schema.json` | `delivery-review-gate-1.0.schema.json` | The three common members below; the recorder supplies `delivery_review=null`. |
+| `delivery_archived_review` | `public-delivery-archived-review-input-1.0.schema.json` | `delivery-archived-review-gate-1.0.schema.json` | The three common members below; no `delivery_review` member is needed. |
+| `delivery_promotion_reference_alignment` | `public-delivery-promotion-reference-alignment-input-1.0.schema.json` | `delivery-alignment-gate-1.0.schema.json` | Four members below, after the bounded alignment judgment. |
+
+These are the current recorder profiles. Scope withdrawal/revision and early
+Draft analysis use their separate public invocation and owner-result contracts;
+they do not enter this recorder. Legacy maintenance keeps its named entry.
+Old Task review profiles are diagnostic history, not schema-2 Task inputs.
+
+### Keep the three field owners separate
+
+The AI supplies the following semantic authoring members to
+`--semantic-review-file`. Their nested shapes and exit conditions come from
+the selected existing gate schema's `properties` and `$defs`; the gate as a
+whole is recorder output, not the authoring input.
+
+| Authoring member | Existing definition and responsibility |
+| --- | --- |
+| `candidate_classifications` | `properties.candidate_classifications` and its referenced definitions. Record the actual terminal classifications and witnesses. An empty array is valid only after the complete review finds no real candidate. |
+| `semantic_review` | `properties.semantic_review`. Supply `qualified_findings`, `scope_proposals`, `observations`, `followup_candidates`, `rejected_candidates`, and `ai_review_gate={status,summary}`. The status equals the AI-selected `--typed-exit`; retain the selected profile's actual exit conditions. |
+| `verification_evidence` | `properties.verification_evidence`. Supply the actual `reviewer`, `review_source=independent-agent`, and nonempty `evidence`. These are this owner's evidence, not a copied prior pass. |
+| `delivery_review` | For full review and alignment, use the object branch of `properties.delivery_review`: actual `task_scope`, `delivery_slice`, `remaining_work`, `independent_delivery_conditions`, `validation_boundaries`, `current_slice_status`, `remaining_work_status`, and `summary`. |
+
+[The minimal normal passed example](../examples/authoring-delivery-passed-1.0.json)
+contains only these four authoring members for `delivery_branch_review`. It
+illustrates a complete R1 slice with no remaining work and no actual candidate.
+Replace its illustrative judgments with the actual review; the example does
+not establish review completion or authorize a passed exit. It is not the
+public Skill input or a generated gate.
+
+`--skill-input` receives a separate object matching the selected public input
+schema. Preserve the actual upstream TaskCommit/Check identity, including
+`task_ref`, opaque `delivery_key`, and the current Check result where required.
+The AI chooses the applicable profile, mode and review intent under that
+profile's entry contract, and binds its actual public range facts. Alignment
+and archived review retain their distinct producer and snapshot requirements.
+Do not infer missing identities from branch names or construct another
+owner's result.
+
+The recorder copies the public bindings and computes the remaining gate facts:
+schema/Skill identity, timestamp, task locator, normalized profile and intent,
+current review commit, reviewed-content algorithm and identity, resolved base,
+integration pair, facts digest, and applicable alignment/archive facts. Public
+Delivery/Check bindings and archived snapshot identity come from the actual
+public input. None belongs in the semantic authoring example. Do not calculate
+private gate identities or use the full `examples/review-gate.json` as an
+authoring template. The existing public-input authoring seed examples supply
+only their target Skill input fields; they do not supply this recorder's
+semantic result.
+
+### Use the existing carriers and command sequence
+
+Both recorder arguments `--skill-input` and `--semantic-review-file` accept a
+regular UTF-8 JSON file or `-` for one JSON object on stdin. Absolute file paths
+are accepted; relative files resolve from the repository root, then the package
+root. Inline JSON and nonregular file carriers are not supported by these
+arguments. Use at most one `-` in a recorder invocation and provide the other
+object as a regular file. These rules describe the existing loader; they add
+no carrier or parser.
+
+After the actual AI Gate, the ordinary file-based sequence is:
+
+```bash
+"$GURU_BRANCH_REVIEW_PACKAGE/scripts/review-branch.sh" \
+  --root . --task "$TASK_REF" --skill-input review-input.json \
+  --semantic-review-file semantic-review.json --typed-exit "$REVIEW_EXIT"
+"$GURU_BRANCH_REVIEW_PACKAGE/scripts/check-review-gate.sh" \
+  --root . --task "$TASK_REF" --expected-exit "$REVIEW_EXIT" \
+  --delivery-key "$DELIVERY_KEY_JSON"
+"$GURU_BRANCH_REVIEW_PACKAGE/scripts/invoke.sh" --input review-input.json
+```
+
+Here the package path is the installed public package, `TASK_REF` and
+`DELIVERY_KEY_JSON` are the actual selected public identity, and `REVIEW_EXIT`
+is this owner's completed judgment. The two files contain the actual objects
+described above. Capture each command's exit/stdout/stderr and stop consumption
+on failure. The recorder and checker return intermediate receipts, not public
+passes; only the successful final invocation returns the declared typed DTO.
+
+For these recorder profiles, public invocation `--input` likewise accepts a
+regular JSON file or `-`; `--invocation` accepts a regular file or `-` containing
+exactly `{"public_input": ...}`. Pass the same actual public input, not the
+semantic file, generated gate or checker receipt. Profile-specific invocation
+and recovery duties remain in their existing sections below and above.
 
 ## Gate And Exits
 

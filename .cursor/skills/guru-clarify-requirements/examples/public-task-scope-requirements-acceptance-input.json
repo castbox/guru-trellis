@@ -1,0 +1,16 @@
+{
+  "profile": "task_scope_requirements_acceptance",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/demo",
+  "requirements_locator": ".trellis/tasks/demo/prd.md",
+  "source_selection": [
+    {
+      "locator": "docs/source.md",
+      "section": "Requirements",
+      "authority_kind": "requirement"
+    }
+  ],
+  "revision_refs": [
+    "docs/source.md#Requirements"
+  ]
+}

@@ -98,7 +98,30 @@ terminal mutation instead of accepting an unbound caller action list.
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
 
-For explicit selected legacy maintenance, load the legacy section in `references/legacy-maintenance.md` and use `scripts/legacy-maintenance.sh`; ordinary current invocation remains unchanged.
+## Invocation files and selected legacy maintenance
+
+For `closure_completed` and `finish_reentry`, both `--input` and
+`--semantic-result` are required. Each accepts one regular JSON file, excluding
+symlinks, inline JSON and stdin. Relative paths resolve against `--root` first,
+then this package; without `--root`, the repository cwd is used. Absolute paths
+identify the file directly. Invoke with the actual current input and reviewed
+semantic result:
+
+```bash
+bash scripts/invoke.sh --root <repository-root> \
+  --input <current-input-file> --semantic-result <reviewed-semantic-file>
+```
+
+The packaged examples describe input shape. They do not establish a current
+Closure result or authorize Finish.
+
+For explicit selected legacy maintenance, load
+`references/legacy-maintenance.md`. Use the original `scripts/invoke.sh` for
+terminal retirement and `scripts/legacy-maintenance.sh` for intermediate
+inspection. The shared invoke retains the original legacy schema and exact
+root checks. Its legacy input accepts inline JSON, a regular UTF-8 JSON file
+(including a symlink to a regular file), or `-` for stdin. The current
+`--semantic-result` is not required for that selected legacy profile.
 
 ## Fixed bookkeeping candidate
 

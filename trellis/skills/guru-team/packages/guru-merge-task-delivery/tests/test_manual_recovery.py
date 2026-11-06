@@ -113,6 +113,23 @@ class ManualRecoveryTests(unittest.TestCase):
         checks = [command[2] for command in commands if command[:2] == ["cat-file", "-e"]]
         self.assertCountEqual([self.merge + "^{commit}", self.actual + "^{commit}"], checks)
 
+    def test_original_file_and_stdin_carriers_recover_the_same_terminal_fact(self):
+        import subprocess
+        public_file = self.flow.write("carrier-manual.json", self.public)
+        review = self.review()
+        review_file = self.flow.write("carrier-manual-review.json", review)
+        first = self.flow.wrapper(PACKAGE.name, "invoke.sh", "--input", public_file,
+                                  "--review-input", review_file)
+        self.assertEqual(first["exit_id"], "delivered")
+        for arguments, content in [(["--input", "-", "--review-input", review_file], self.public),
+                                   (["--input", public_file, "--review-input", "-"], review)]:
+            result = subprocess.run(["bash", str(PACKAGE / "scripts/invoke.sh"), "--root", str(self.repo),
+                                     *arguments], input=json.dumps(content), text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(json.loads(result.stdout), first)
+        self.assertFalse(any(json.loads(line)[:2] == ["pr", "merge"]
+                             for line in self.calls.read_text().splitlines()))
+
     def test_incomplete_provider_commit_keeps_original_error_classification(self):
         path = self.bin / "responses.json"
         values = json.loads(path.read_text())

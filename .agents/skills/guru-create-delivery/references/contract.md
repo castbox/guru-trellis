@@ -16,7 +16,11 @@
 
 创建成功但 selection/输出未完成时，从本 owner checkpoint 使用原 UUID 继续；不可从 inventory 唯一项猜身份。有 context 的 create/select 与输出校验完成后删除 checkpoint；此后 recover_creation 只从当前公共 session 明确 selection 恢复，同 Task generation、scope_ref、profile 必须相符。
 
-无 context 时 `created` 返回相同最小 key/root，原 pending operation 保留供同 continuation 的输出丢失恢复。成功 initial Author 消费其 requirements_ready 后调用本 owner 的 `runtime/creation_result.py:retire_creation_result`，只传 task_ref/key；本端口复核官方当前关系、phase/scope/profile/原operation后退休匹配输入。Author 不读 private 格式，不保留消费或授权记录。缺原pending及适用明确selection时 recover_creation 停止；consumer完成后的接续使用实际public key，不能重新分配 UUID 或推导旧切片判断。
+无 context 时 `created` 返回相同最小 key/root，原 pending operation 保留供同 continuation 的输出丢失恢复。
+
+成功的 `delivery_initial_review` 原 Author public invoke 在返回 `requirements_ready` 前，已由内部调用让本 Creation owner 复核并退休匹配 pending operation。内部只传 task_ref/key；本 owner 仍复核官方当前关系、phase/scope/profile/原 operation。Caller 只消费该正式 stdout，进入原唯一 Architecture `candidate_assessment` consumer，不再手工调用或导入 private port，也不读取 pending 输入。Author 不读 private 格式，不保留消费或授权记录。
+
+缺原 pending 及适用明确 selection 时 `recover_creation` 停止；consumer 完成后的接续使用实际 public key，不能重新分配 UUID 或推导旧切片判断。
 
 整个切片撤回先进入 Clarify；由实际当前阶段 owner 使用公共合法 stop 接口，保留 commit/PR/history 并自动 release selection。关闭 PR 与清理资源有其独立 owner/必要确认。Creation 不把停止当交付，不替 Task Completion 判断全部完成。
 

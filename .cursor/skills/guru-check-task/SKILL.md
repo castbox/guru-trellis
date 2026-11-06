@@ -83,6 +83,10 @@ Ordinary planning omissions return through `planning_stale` to the earliest
 affected original planning owner; implementation-only omissions keep their
 existing repair route. Technical elaboration is not itself a scope change.
 This owner does not rewrite planning or broaden accepted scope to repair it.
+For `planning_stale` with `route=reapprove_plan` and no scope decisions, write
+the concrete planning repair action in the existing `reason` field. The public
+result carries it as `revision_actions` to the original Author; do not invent
+proposal refs for a repair that changes no scope.
 
 Read the unique Direct Source from the current task's `source.repo_ref` and
 `source.number`, or honor its valid `no_issue` source. Judge Related Work,

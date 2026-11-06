@@ -4,6 +4,51 @@ retains its own current judgment, formal result and action boundary.
 
 ## Public Delivery integration 1.0
 
+### Current JSON input carriers
+
+Current Delivery merge commands read `--input` and `--review-input` from an
+existing regular, non-symlink UTF-8 JSON file or `-` for stdin. Inline JSON is
+unsupported. Absolute file paths identify that file. Relative paths resolve
+under `--root` first, then under this package. Use stdin for only one JSON
+parameter in a call. The current profiles are `delivery_ready_for_merge`,
+`delivery_merged_recovery`, `delivery_scope_withdrawal` and
+`delivery_scope_revision`; each retains its own input and review schema.
+
+For a new expected-head merge, load the current profile/schema/example through
+the Interface. Author the real Publication/Delivery input and save it to a
+call-local file, such as `.trellis/.runtime/merge-call/input.json`. Then preview:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-merge-task-delivery/scripts/preview-task-delivery-merge.sh --root . --input .trellis/.runtime/merge-call/input.json
+```
+
+Consume the intermediate receipt's `result.facts`. Complete this owner's
+six-dimensional semantic review and its applicable dialogue-local action
+confirmation. Save the semantic review, without authorization fields, to a
+regular file and invoke the original owner:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-merge-task-delivery/scripts/invoke.sh --root . --input .trellis/.runtime/merge-call/input.json --review-input .trellis/.runtime/merge-call/review.json
+```
+
+The same current call can supply input through stdin with
+`--input - --review-input <regular-review-file> < <regular-input-file>`.
+An existing regular input file can likewise accompany `--review-input -`.
+The original parser, schema, semantic gate, expected-head transaction and
+same-result recovery apply to both carriers. The private `--gate` locator
+retains its original package-owned file contract.
+
+An unsupported inline value or an ordinary file probe/read failure returns
+the existing `unsafe_path` error at `input` or `review_input`. Write the JSON
+to a readable regular non-symlink file, or supply stdin, then rerun the original
+command. JSON syntax/object errors retain their original entry-specific
+diagnostics. Schema and live fact errors retain their existing diagnostics.
+
+Formal `legacy_control_retirement` and `legacy_history_verification` dispatch
+to their original legacy owner. They retain inline JSON, a regular UTF-8 file
+or stdin. The separate `legacy-maintenance` port retains that same carrier
+domain. History queries and private migration keep their separate contracts.
+
 ### Manual MERGED recovery
 
 `delivery_merged_recovery` is a terminal-only semantic profile of this original

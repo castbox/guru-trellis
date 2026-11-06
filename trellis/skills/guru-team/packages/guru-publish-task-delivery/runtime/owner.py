@@ -742,8 +742,8 @@ def check_gate(root: Path, context: dict[str, Any], gate_path: Path) -> dict[str
     return gate
 
 
-def preview(root: Path, input_path: str) -> dict[str, Any]:
-    public_input = validate_public_input(read_json(input_path))
+def preview(root: Path, input_path: str | dict[str, Any]) -> dict[str, Any]:
+    public_input = validate_public_input(input_path if isinstance(input_path, dict) else read_json(input_path))
     return plan_from_input(root, public_input)
 
 
@@ -762,9 +762,9 @@ def project_review_stale(root: Path, output: dict[str, Any]) -> dict[str, Any]:
     return output
 
 
-def invoke(root: Path, input_path: str, review_path: str, confirmed: str | None) -> dict[str, Any]:
-    public_input = validate_public_input(read_json(input_path))
-    review_input = read_json(review_path)
+def invoke(root: Path, input_path: str | dict[str, Any], review_path: str | dict[str, Any], confirmed: str | None) -> dict[str, Any]:
+    public_input = validate_public_input(input_path if isinstance(input_path, dict) else read_json(input_path))
+    review_input = review_path if isinstance(review_path, dict) else read_json(review_path)
     try:
         context = plan_from_input(root, public_input)
     except WorkflowError as exc:

@@ -37,7 +37,7 @@
     },
     {
       "id": "profile_binding",
-      "evidence": "Planning 3.0, current nonplanning 5.0 or Delivery 3.0 input; bootstrap and repair retain their fixed contracts.",
+      "evidence": "Current Delivery Planning uses delivery_task_impact_sync / delivery-1.0 with purpose-bound Planning 3.0 semantics, the exact public DeliveryKey and planning_root; see references/contract.md#delivery-architecture-projection. Nonplanning task impact and promotion use 5.0 or delivery-3.0; bootstrap and repair retain their fixed contracts.",
       "binding": "the exact caller, mode, profile, stage, task, and continuation",
       "freshness": "fresh for every stage judgment"
     },

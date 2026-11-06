@@ -21,6 +21,11 @@ Skill. Load [references/contract.md](references/contract.md), then invoke
 envelope. The runtime alone executes the deterministic resolve, execute and
 check components before returning exactly one declared typed exit.
 
+Use the [contract locations](references/contract.md#contract-locations-and-public-call)
+before authoring that envelope. Interface paths beginning with `consumers/`
+resolve from `.trellis/guru-team/skills`, while public `schemas/` and `examples/`
+resolve from this package. The envelope is not a package-local schema.
+
 Base resolution first selects the branch without consulting the current branch
 or registered-worktree availability. It then binds that fixed selection to the
 unique clean checkout registered for `refs/heads/<selected-base>` in the same

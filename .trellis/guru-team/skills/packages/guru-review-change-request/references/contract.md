@@ -80,6 +80,30 @@ Exactly one target kind is reviewed:
 - `standalone_request`: explicit caller locator, request id, source-request
   digest, title/body SHA-256 values, and `side_effect_free=true`.
 
+For `current_issue`, `owner_context.change_request` is the reviewed Issue source.
+Use `kind="issue"`, the normalized `repo`, the live integer `number`, the actual
+`title` and `body`, and `updated_at` from the captured GitHub `updatedAt` value.
+Keep the reviewed state as `open`. This source differs from both the Wording
+`source_kind` object and Readiness's normalized `existing_issue` target.
+For example, the following is an `owner_context` shape with teaching values:
+
+```json
+{"change_request":{"kind":"issue","repo":"example/repo","number":27,"state":"open","title":"Current title","body":"Current reviewed body","updated_at":"2026-01-01T00:00:00Z"}}
+```
+
+The corresponding minimal `owner_result.target` is:
+
+```json
+{"kind":"existing_issue","repo":"example/repo","issue_number":27,"url":"https://github.com/example/repo/issues/27","updated_at":"2026-01-01T00:00:00Z"}
+```
+
+Copy the actual source number into target `issue_number`; use the actual
+canonical Issue URL and the same captured update time. `source.issue_number`
+does not replace `source.number`, and raw `source.updatedAt` does not replace
+`source.updated_at`. Duplicate aliases are not required. Preserve the original
+public producer transition and target locator. The recorder still derives the
+target hashes from the reviewed source; these examples supply no current Gate.
+
 The recorder derives `identity_sha256` from the variant's authority fields and
 `content_sha256` from the title/body hashes in `owner_context.change_request`.
 It compares that target with the public prerequisite transition and rejects any title/body,
@@ -295,6 +319,10 @@ contains all ten `dimensions`, `findings` (use `[]` when none), the complete
 This is a shape example, not a supplied readiness judgment. The AI must choose
 the actual status and route. Missing status, reviewer, summary, dimensions,
 findings, scope conclusion or route is rejected, never defaulted to pass.
+For the actual `ready` route, the declared consumer is
+`{"kind":"workflow","id":"guru-task-intake-router"}`. It is a workflow
+router, so do not substitute `kind="skill"` or a downstream creation Skill.
+Other routes retain their own declared consumers.
 For dimension/finding `affected_hashes`, use the existing public transition
 evidence or source evidence actually reviewed, with matching `evidence_refs`
 (for example `transition.context_result_sha256`). Do not precompute private

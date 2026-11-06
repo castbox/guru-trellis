@@ -124,6 +124,8 @@ requires a complete fresh invocation.
 
 Author owns `author_candidate_set` (caller `guru-author-task-plan`), binding
 current source/candidate locators and existing author_paths with author_identity.
+Before constructing that target, load the shared public
+[file-set format and recipe](../../guru-qualify-normal-scenario/references/contract.md#file-set-identity).
 It does not require future design/implement files. Original planning_scenario_set
 remains Approval-only and requires three current docs. Return classified and
 mechanism results to Author; scope/diagnosis/blocked retain original owners.

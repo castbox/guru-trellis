@@ -123,6 +123,10 @@
     {
       "id": "legacy_controls_retired_output",
       "path": "examples/legacy_controls_retired-output-1.0.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
     }
   ],
   "schemas": [
@@ -205,6 +209,10 @@
     {
       "id": "legacy_finish_transaction_2",
       "path": "schemas/finish-transaction.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
     }
   ],
   "validators": [
@@ -369,12 +377,12 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-finish-task-output-aggregate-2.0",
-        "path": "schemas/public-output.schema.json"
+        "schema_id": "guru-finish-task-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
       },
       "error_example": {
-        "id": "input",
-        "path": "examples/public-input.json"
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
       },
       "example_argv": [
         "--input",

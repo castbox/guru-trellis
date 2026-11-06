@@ -1,0 +1,57 @@
+{
+  "public_input": {
+    "profile": "task_scope_requirements_acceptance",
+    "mode": "workflow",
+    "task_ref": ".trellis/tasks/demo",
+    "requirements_locator": ".trellis/tasks/demo/prd.md",
+    "source_selection": [
+      {
+        "locator": "docs/source.md",
+        "section": "Requirements",
+        "authority_kind": "requirement"
+      }
+    ],
+    "revision_refs": [
+      "docs/source.md#Requirements"
+    ]
+  },
+  "owner_result": {
+    "public_input": {
+      "profile": "task_scope_requirements_acceptance",
+      "mode": "workflow",
+      "task_ref": ".trellis/tasks/demo",
+      "requirements_locator": ".trellis/tasks/demo/prd.md",
+      "source_selection": [
+        {
+          "locator": "docs/source.md",
+          "section": "Requirements",
+          "authority_kind": "requirement"
+        }
+      ],
+      "revision_refs": [
+        "docs/source.md#Requirements"
+      ]
+    },
+    "typed_exit": "scope_ready",
+    "reason": "The actual whole-Task PRD carries the current source commitments and observable acceptance.",
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "The current root PRD was reviewed against the original sources and the Task PRD template."
+    },
+    "source_selection": [
+      {
+        "locator": "docs/source.md",
+        "section": "Requirements",
+        "authority_kind": "requirement"
+      }
+    ],
+    "revision_refs": [
+      "docs/source.md#Requirements"
+    ],
+    "scope_action": "revised",
+    "authority": {
+      "locator": ".trellis/tasks/demo/prd.md",
+      "revision": "sha256:a7d2d5d49b182d681b8eefceb0f5b3496393c34c3d45e172657b528abc771f4d"
+    }
+  }
+}

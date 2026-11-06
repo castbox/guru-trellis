@@ -91,7 +91,7 @@
       "trigger": "Unexpected package-local runtime failure.",
       "exit_status": 2,
       "locator": "field_path",
-      "remediation": "Inspect the package runtime and retry."
+      "remediation": "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-merge-task-delivery maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."
     },
     {
       "code": "invalid_json",

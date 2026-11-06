@@ -31,6 +31,12 @@ Use the existing `standalone_review` profile for an independent requirements
 review, preserving its declared caller and actual context prerequisites.
 If current Discovery evidence is missing, load the existing workflow entry
 and obtain it before the semantic loop; do not invent prerequisite outputs.
+For the first `standalone_review` (`source_exit=start`, `mode=standalone`),
+obtain the actual standalone Sync `base_current` transition. Review the missing
+context and record/check `needs_context`, then invoke with that unchanged base
+transition. Only this initial missing-context exit accepts the base transition;
+it returns `context_request` to Discovery with the original standalone consumer.
+Use Discovery's actual returned context for the requirements review.
 An actual active-task scope change retains its existing owner/profile.
 
 Review requirements, scope and acceptance against live Issue authority. A
@@ -157,21 +163,39 @@ bash .trellis/guru-team/skills/packages/guru-clarify-requirements/scripts/invoke
 Use `--mode standalone` for standalone recording. Feed the reviewed semantic
 owner JSON to record, its stdout result to check, and the complete invocation
 envelope to invoke. Keep these values in memory; do not create repository files.
-The contract's `Minimal Recorder Authoring` table lists required semantic fields
-and the exact omittable fields. The full checked-result example is at
+Before adapting an example, load the profile-selected semantic schema through
+the contract's `Minimal Recorder Authoring` section. It locates the non-active
+3.0 schema and distinguishes the public profile from the private
+`invocation_context.kind`. That section lists required semantic fields and the
+exact omittable fields. The full checked-result example is at
 `.trellis/guru-team/skills/packages/guru-clarify-requirements/examples/requirements-clarification.json`;
 remove only the listed derived fields when using it as an authoring shape, and
 replace every example judgment and fact with the current reviewed result.
 Agent discovery projections do not contain the package scripts or examples.
 
-After the semantic gate and owner recorder/checker complete, invoke the command
-above with the closed call-local public input,
+For the three current schema2 scope profiles, instead use
+`schemas/semantic-scope-continuation-2.0.schema.json` and the contract's
+`Scope Acceptance Authoring` section. These profiles pass their call-local
+`public_input` and `owner_result` directly to invoke; the 3.0/4.0 recorder and
+checker shapes above do not apply. The complete acceptance envelope is
+`examples/task-scope-requirements-acceptance-invocation.json`. For
+`task_scope_requirements_acceptance` with `scope_ready`, author
+`owner_result.authority` after reviewing the actual root PRD. Its `locator`
+is the actual Author `requirements_locator`; its `revision` is `sha256:` plus
+the SHA256 of that file's raw bytes. The contract gives the public reference
+definition, a file-reading command, and this profile's omission/re-entry rules.
+
+For the other profiles, after the semantic gate and owner recorder/checker
+complete, invoke the command above with the closed call-local public input,
 `context_current` transition, and checked owner result on stdin to serialize
 the minimal handoff. The runtime validates the envelope's mode, target, and
 transition bindings, reruns the existing checker, and derives the route and
 output from the checked `typed_exit` and declared transition. Callers cannot
 select the route or provide a separate `typed_output` field. Private
 clarification evidence is not a public input or output template.
+
+For `standard_intake`, use the [public invocation-envelope guidance](references/contract.md#interface-14-public-handoff)
+to assemble the existing outer envelope.
 
 
 At this candidate boundary, consume actual normal-scenario and solution-mechanism

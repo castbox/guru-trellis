@@ -33,6 +33,31 @@ mutation, the runtime proves canonical source assets exist, origin normalizes to
 source checkout is clean. Failure returns a stable invocation error with zero
 executor calls and zero owner writes.
 
+## JSON Carriers
+
+The execute `--input`, record `--input` / `--execution-input` / `--review-input`,
+and invoke `--input` arguments accept regular UTF-8 JSON object files relative
+to the source repository or this package. Check `--public-input` uses the same
+file carrier. The runtime selects an existing package-relative file first,
+then a repository-relative file. Use distinct names if both roots contain a
+file at the same relative path. Absolute paths, inline JSON and stdin `-` do
+not select these file-only inputs.
+
+Check `--input` and invoke `--owner-result` accept the same relative file
+carrier or `-` for one JSON object on stdin. This stdin option transports only
+the owner result. It does not change the standalone input or recorder carriers.
+Current checking still requires the exact `--public-input` and the original
+source-session owner state or its stdin bytes.
+
+Known carrier failures return `invalid_arguments`, the affected input field,
+and static remediation to this section. Known source-preflight failures return
+`source_verification_failed`, the affected source field, and the original
+source correction and retry route. Both use the existing three-field
+`code` / `field_path` / `remediation` diagnostic. They are command errors,
+not `verified` or `blocked` semantic exits. Unknown runtime failures retain
+`internal_error`; preserve the original command, exit status, stdout and stderr
+for package maintenance. Adapters do not expose exception messages or payloads.
+
 ## Execution And Persistence
 
 After preflight, the executor uses an isolated source checkout and clean

@@ -588,7 +588,7 @@ The graph declares every workflow and stop consumer from the active package inte
 | guru-resume-implementation | Resume Phase 2 through the original owner's lawful nonterminal Delivery continuation. For a Completion TaskRef/TaskKey return, read that Task's public current continuation and project its actual selected DeliveryKey and planning_root before dispatch. Missing, terminal or mismatched selection returns to Completion for a fresh route; this router neither creates nor reopens a Delivery. |
 | guru-task-base-planning-router | Return exact planning impact and DeliveryKey to Author delivery_active_task_scope_change after necessary original Clarify; preserve task/base identity and re-enter affected dependencies. |
 | guru-task-base-scope-router | Enter the Scope Change Gate for the exact authority choice. |
-| guru-task-check-planning-router | A planning gap invokes Author delivery_approval_revision with exact key and concrete current actions; actual requirement authority change first invokes original Clarify. Implementation-only repair retains Phase 2. |
+| guru-task-check-planning-router | For Check planning_stale/reapprove_plan with proposal_refs=[] and revision_actions, copy task_ref/delivery_key/revision_actions unchanged, add profile=delivery_approval_revision and current mode, then invoke Author. Existing nonempty proposal_refs retain their original planning route and concrete current actions; actual requirement authority change first invokes original Clarify. Implementation-only repair retains Phase 2. |
 | guru-delivery-resolved-reconciliation-router | Invoke Check owner’s explicit resolved projection with this TaskRef/DeliveryKey/phase2 commit anchor and fresh authoring of the actual Git integration facts. Feed its `delivery_resolved_candidate` input to Reconcile. Resolved Check and the integration executor leave the public Delivery in checking without a committed Check gate. The original Check owner legally reworks to implementation; implementation retains B and binds the actual reconciled HEAD through begin_check. Fresh applicable Check then seeds the original independent Branch Review. |
 | guru-branch-review-implementation-router | Resume Phase 2, then repeat the downstream graph. |
 | guru-branch-review-scope-router | Enter the Scope Change Gate, then repeat affected phases. |
@@ -769,6 +769,10 @@ Delivery's implementation/check context manifests. A child must not assume
 inherited context. It may consume complete, untruncated native injection;
 otherwise it reads the full file itself before substantive output. On resume
 or context loss, read it again if its complete current text is unavailable.
+
+Use `.trellis/spec/workflow/companion-scripts.md#reading-required-contracts-in-full`
+for required long-form reads. Complete any truncated reads before the dependent
+owner judgment.
 
 ```text
 Phase 0: Intake  -> base sync, context, clarification, review, Issue or task creation
@@ -1272,9 +1276,10 @@ For `planning`, invoke `guru-activate-delivery:delivery_scope_withdrawal`;
 for checking/reviewing/publication stages, invoke the actual current stage
 Skill's `delivery_scope_withdrawal` profile. In `implementing`, the current
 implementation step reviews the scope decision, reason and evidence, then
-calls `DeliveryProjection.stop_implementation(key, result)` with its explicit
-result identity. This fixed-role projection records public stop/release and
-recovers the same fact after output loss. Its returned TaskKey and existing
+uses its original public implementation operations in
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md#public-implementation-operations`
+to record stop/release and recover the same fact after output loss. The
+operation's TaskKey projection and existing
 TaskRef seed `guru-review-task-completion:delivery_completion`; author only
 mode/profile. Neither a stopped slice nor the projection decides Completion.
 
@@ -1331,6 +1336,10 @@ continuation. Do not relax initial creation recovery to admit a rebound Task,
 reconstruct created, or treat identity/public phase as semantic approval.
 
 Read the planning artifacts, curated specs, and live diff from that worktree.
+The original implementation coordinator must load the installed
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md#fixed-delivery-range` contract
+for complete public Candidate construction and original stage operations.
+Use its production entry and actual outputs before handing the candidate to Check.
 Use the configured Trellis implement/check agents when available; their
 terminal results are ephemeral evidence. Execute the approved Docs SSOT Plan
 through `guru-maintain-requirements-design-test-ssot` and
@@ -1662,17 +1671,13 @@ to Merge; whole-scope adequacy belongs only to Completion.
 
 ### Fixed Delivery content-range construction
 
-The original Author/implementation owner selects fixed content base B from
-actual Delivery facts and the explicit planning baseline. Call
-DeliveryProjection.content_base(DeliveryKey, development_base=<selected B>,
-observed_target=<one observed OID only if B is not yet selected>). D2 consumes
-actual prior delivery_result heads; same-Delivery recovery keeps its own B.
-Construct candidate(paths, base_ref=B, head_ref=<actual HEAD OID>) and invoke
-begin_check. Include complete B..HEAD committed paths and the actual task dirty
-increment. Planning's observed H0 does not freeze later implementation HEAD.
-Never pass origin/<base> as a mutable stage range or replace B with an
-integration target. These calls compute facts; the original owner still judges
-scope, applicable authority and evidence sufficiency.
+The original Author/implementation owner selects the fixed Delivery content
+range under its step-local contract at
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md#fixed-delivery-range`.
+That owner uses the installed public Candidate constructor and original
+Delivery stage operations. The workflow preserves their ordering and Check
+handoff; it does not provide a private Python construction recipe. Development
+baseline, actual content and integration target retain their separate meaning.
 
 ### Fixed content and actual integration
 
@@ -1835,7 +1840,9 @@ or publishing owner merely by phase; retain the actual interrupted semantic step
 Each profile takes mode/task_ref/key/scope_ref/source_selection/revision_refs and
 its exact completed semantic gate. No stale downstream gate is an entry proof.
 For implementing, the existing guru-phase2-implementation-coordinator reviews
-the same scope disposition and calls DeliveryProjection.revise_implementation_scope
+the same scope disposition and follows its
+public implementation operations in
+`.trellis/guru-team/skills/packages/guru-author-task-plan/references/authoring.md#public-implementation-operations`
 with the explicit key and actual reviewed scope_ref, then projects the same
 five handoff fields to Author delivery_active_task_scope_change. This remains
 within the original implementation step, without another Skill or stage owner.

@@ -60,6 +60,7 @@ class PackageLocalRuntimeTest(unittest.TestCase):
    self.assertIn("source \"$LAUNCHER\" "+validator["runtime_command"],wrapper.read_text())
   self.assertIn("export PYTHONDONTWRITEBYTECODE=1",(RUNTIME/"launch.sh").read_text())
 
+ @patch.dict(os.environ,{"GIT_CONFIG_NOSYSTEM":"1","GIT_CONFIG_GLOBAL":os.devnull})
  def test_real_installed_record_check_invoke_without_input_files_or_residue(self):
   with tempfile.TemporaryDirectory() as name:
    case=Path(name);repo=case/"repo";repo.mkdir()
@@ -105,6 +106,17 @@ class PackageLocalRuntimeTest(unittest.TestCase):
     return checked["diagnostic"]
    initial=snapshot()
    envelope={"schema_version":"1.0","public_input":public,"transition":transition,"owner_context":{},"owner_result":json.loads((PACKAGE/"examples/change-context-owner-result-3.0.json").read_text())}
+   for remote_url in ("https://github.com/example/guru-extension.git","git@github.com:example/guru-extension.git","ssh://git@github.com/example/guru-extension.git","ssh://git@github.com/example/guru-extension"):
+    with self.subTest(remote_url=remote_url):
+     subprocess.run(["git","remote","set-url","origin",remote_url],cwd=repo,check=True)
+     for arguments in (("config","--get","remote.origin.url"),("remote","get-url","origin")):
+      self.assertEqual(subprocess.check_output(["git",*arguments],cwd=repo,text=True).strip(),remote_url)
+     current=copy.deepcopy(envelope)
+     current["owner_result"]=call(recorder,current)
+     self.assertEqual(current["owner_result"]["base_observation"]["repo"],"example/guru-extension")
+     self.assertEqual(call(checker,current)["typed_exit"],"context_ready")
+     self.assertEqual(call(public_wrapper,current)["exit_id"],"context_ready")
+   subprocess.run(["git","remote","set-url","origin","https://github.com/example/guru-extension.git"],cwd=repo,check=True)
    for mode in ("workflow","standalone"):
     envelope["public_input"]["mode"]=mode;envelope["transition"]["mode"]=mode
     envelope["owner_result"]["ai_review_gate"]["reason"]="中文证据：当前调查与范围一致。"

@@ -27,6 +27,14 @@ Use `scripts/invoke.sh --root <repository> --input -`. The `recover` action
 only rereads the exact binding, ownership and candidate facts after lost output.
 Return exactly one declared exit; do not retry a mutation from a lost result.
 
+To read an existing binding reference, use the original read-only
+`discover-task-branch-binding-candidates` command with `action=establish`.
+Only an `already_established` receipt provides `result.binding_ref`, containing
+`task_id`, `lifecycle_generation`, and `binding_revision`. Closure copies that
+reference unchanged into its `binding_ref` input. Other discovery statuses
+return to this owner for establishment or selection. The formal
+`binding_established` output remains a TaskKey and does not supply a revision.
+
 Use `delivery_active_task`. Validate the public Task schema-2 identity and
 its C4/C5 resource association without reading any Task development status.
 The branch-binding input no longer carries `expected_status`; Delivery phase

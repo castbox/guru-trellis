@@ -190,11 +190,13 @@ The closed top-level authoring fields and their direct uses are:
 | `semantic_review` | All nine adequacy dimensions, scope decisions and findings; schema/linkage validation and invocation consume the actual judgment. |
 | `typed_exit` | The AI-selected declared result; invocation validates and emits the matching public exit. |
 | `route` | The existing planning discriminator, or `null`; the planning router consumes it through the public projection. |
-| `reason` | The current AI conclusion supporting the selected route; retained in this owner's semantic result. |
+| `reason` | The current AI conclusion supporting the selected route. For planning reapproval without scope decisions, include the concrete repair action; invocation copies it to public `revision_actions` for Author. |
 | `consumer` | The selected exit's existing unique consumer; result validation checks exit/consumer consistency. |
 
-Nested fields and exit conditions are defined once in
-[schemas/phase2-check.schema.json](../schemas/phase2-check.schema.json).
+Nested fields and exit conditions are defined once in the shared installation
+at `.trellis/guru-team/skills/packages/guru-check-task/schemas/phase2-check.schema.json`.
+Resolve this locator from the repository root when reading a platform Skill.
+The schema describes the complete result; author only the 11 fields above.
 The recorder adds exactly five result identity fields: `schema_version=6.0`,
 `skill_id=guru-check-task`, `task_ref` from `--task`, `phase2_capture_commit`
 from live HEAD, and `reviewed_content_sha256` from the original Phase 2 content
@@ -591,6 +593,14 @@ This Skill does not read Activation or another owner's private checkpoint.
 owner's backward transition; `blocked` does not change phase. Full withdrawal
 uses the independent profile above. No public phase can synthesize pass, and
 no legacy Task-status entry runs in the current wrapper.
+
+For `planning_stale`, existing nonempty `proposal_refs` outputs keep their
+contract. When `route=reapprove_plan` and scope decisions are empty, invocation
+returns `proposal_refs=[]` and `revision_actions=[reason]`. The matching workflow
+consumer copies those actions into Author `delivery_approval_revision`; no scope
+proposal is created. This additive variant requires matching producer and
+consumer versions as described in `trellis/presets/guru-team/MIGRATION-713.md`.
+Invocation validates the complete public output before any rework or gate write.
 
 ## Current-stage scope revision
 

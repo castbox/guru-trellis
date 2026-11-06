@@ -70,17 +70,6 @@ SKILL_INTEGRATION_TEST_PATHS = (
     Path("tests/test_finish_family_integration.py"),
     Path("tests/test_delivery_family_integration.py"),
 )
-PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
-    "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
-}
-PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
-    "guru-maintain-requirements-design-test-ssot": frozenset({
-        Path("examples/public-input-bootstrap.json"),
-        Path("examples/public-input-impact.json"),
-        Path("examples/public-input-promotion.json"),
-        Path("examples/public-input-repair.json"),
-    }),
-}
 CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "production-contract-manifest-5.0.schema.json",
     "production-contract-manifest-4.0.schema.json",
@@ -118,7 +107,10 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "intermediate-command-receipt-1.0.schema.json",
     "skill-error-catalog.schema.json",
 })
-from skill_runtime_inventory import SKILL_RUNTIME_KERNEL_PATHS
+from skill_runtime_inventory import (
+    SKILL_RUNTIME_KERNEL_PATHS, PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS,
+    PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS, PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS,
+)
 
 
 def _guru_temporary_directory(entry_id: str):
@@ -217,6 +209,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/check-task-checkout-boundary.sh"),
+    Path("scripts/bash/construct-delivery-candidate.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/discover-skill-evals.sh"),
@@ -1246,6 +1239,16 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
     required_public_paths = PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS.get(
         str(interface.get("id")), frozenset()
     )
+    teaching_paths = PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS.get(str(interface.get("id")), frozenset())
+    declared_artifacts = {
+        Path(item["path"]) for item in interface.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if not teaching_paths.issubset(declared_artifacts) or any(
+        not (package_root / path).is_file() or (package_root / path).is_symlink()
+        for path in teaching_paths
+    ):
+        raise SystemExit(f"Missing declared public teaching example for {package_root.name}.")
     declared_schema_paths = {
         Path(str(item["path"]))
         for item in interface.get("schemas", [])
@@ -1293,6 +1296,17 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             if isinstance(ref, dict) and isinstance(ref.get("example"), dict)
         }
     }
+    invocation_examples = set(interface.get("public_contracts", {}).get("invocation", {}).get("example_argv", []))
+    error_example = interface.get("public_contracts", {}).get("invocation", {}).get("error_example", {}).get("path")
+    if isinstance(error_example, str):
+        invocation_examples.add(error_example)
+    public_example_paths = {path.as_posix() for path in declared_public_examples}
+    public_example_paths.update(
+        item["path"] for item in interface.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+        and item["path"] in invocation_examples
+    )
+    private_artifact_paths.difference_update(public_example_paths)
     public_authoring_paths: set[Path] = set()
     for item in interface.get("public_contracts", {}).get("consumer_inputs", []):
         if not isinstance(item, dict) or not isinstance(item.get("contract"), dict):
@@ -1321,7 +1335,7 @@ def skill_platform_public_files(package_root: Path) -> list[Path]:
             continue
         if relative.parts[0] == "scripts" and relative_text != public_wrapper:
             continue
-        if relative in required_schema_paths or relative in required_public_paths:
+        if relative in required_schema_paths or relative in required_public_paths or relative in teaching_paths:
             result.append(path)
             continue
         if relative in public_authoring_paths:

@@ -22,6 +22,11 @@
     },
     "creation": {
       "type": "object",
+      "allOf": [
+        {
+          "$ref": "../../../contracts/task-lifecycle/task-creation-input.schema.json"
+        }
+      ],
       "additionalProperties": false,
       "required": [
         "task_id",

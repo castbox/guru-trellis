@@ -3,9 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from adapters.eval import native_adapter
 from adapters.eval.eval_support import qualification_trace_helper_source
@@ -27,6 +30,107 @@ def request(root, skill, case_id):
 
 
 class NativeConstraintTransportTests(unittest.TestCase):
+    def test_persistence_changes_only_selected_codex_semantic_argv(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            selected = [('guru-author-task-plan', 'native-implementation-plan-premise'),
+                ('guru-check-task', 'native-implementation-code-drift')]
+            for skill, case in selected:
+                req = {'skill_id': skill, 'case_id': case, 'workdir': temp,
+                    'native_execution_mode': 'semantic_authoring', 'native_execution_adapter': 'codex',
+                    'model_id': 'original-model'}
+                argv, output = native_adapter.native_argv('codex', 'codex', req, 'original context',
+                    root / 'context', root / 'request', root / 'projection')
+                other = dict(req, case_id='another-existing-case')
+                original, original_output = native_adapter.native_argv('codex', 'codex', other,
+                    'original context', root / 'context', root / 'request', root / 'projection')
+                self.assertEqual(original, [*argv[:2], '--ephemeral', *argv[2:]])
+                self.assertEqual(output, original_output)
+                for delta in ({'skill_id': 'guru-clarify-requirements'},
+                              {'native_execution_mode': 'post_owner'},
+                              {'native_execution_adapter': 'claude'}):
+                    with self.subTest(case=case, delta=delta):
+                        self.assertFalse(native_adapter.persisted_r5_observation({**req, **delta}, 'codex'))
+                self.assertFalse(native_adapter.persisted_r5_observation(req, 'claude'))
+
+    def test_host_wrapper_observation_preserves_duplicate_requests_and_both_streams(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            package = root / 'guru-author-task-plan'
+            wrapper = package / 'scripts/invoke.sh'
+            wrapper.parent.mkdir(parents=True)
+            wrapper.write_text('#!/bin/sh\n')
+            wrapper.chmod(0o755)
+            request_fifo, response_fifo = root / 'request', root / 'response'
+            private = root / 'private-control'
+            private.mkdir()
+            sink = private / 'worker-invocations.jsonl'
+            payload = {'arguments': ['--qualifier', 'normal-scenario'], 'stdin': ' {"a":1}\n'}
+            raw = json.dumps(payload, indent=2).encode()
+            outcomes = [subprocess.CompletedProcess([], code, '原stdout\r\n', 'original stderr\n')
+                for code in (0, 0, 7)]
+            stop = threading.Event()
+            with patch.object(native_adapter.subprocess, 'run', side_effect=outcomes) as run:
+                thread = native_adapter.start_qualification_runtime_boundary(request_fifo, response_fifo,
+                    stop, root, package, {}, {}, wrapper_observation_path=sink)
+                try:
+                    for expected in outcomes:
+                        with request_fifo.open('wb') as handle:
+                            handle.write(raw)
+                        with response_fifo.open() as handle:
+                            actual = json.load(handle)
+                        self.assertEqual(actual, {'returncode': expected.returncode,
+                            'stdout': expected.stdout, 'stderr': expected.stderr})
+                    thread.join(timeout=2)
+                    self.assertFalse(thread.is_alive())
+                finally:
+                    stop.set()
+                    thread.join(timeout=2)
+            self.assertEqual(run.call_count, 3)
+            rows = [json.loads(line) for line in sink.read_text().splitlines()]
+            self.assertEqual(len(rows), 3)
+            for row, expected, call in zip(rows, outcomes, run.call_args_list):
+                self.assertEqual(bytes.fromhex(row['request_bytes_hex']), raw)
+                self.assertEqual(row['stdin'], payload['stdin'])
+                self.assertEqual(call.kwargs['input'], payload['stdin'])
+                self.assertEqual(row['wrapper'], {'argv': call.args[0], 'executed': True,
+                    'returncode': expected.returncode, 'stdout': expected.stdout, 'stderr': expected.stderr})
+                self.assertEqual(row['response']['returncode'], expected.returncode)
+            self.assertEqual(thread.observation_errors, [])
+
+    def test_wrapper_observation_distinguishes_no_launch_from_nonzero_exit(self):
+        for raw, launch in ((b'{', False),
+                (json.dumps({'arguments': ['--invocation', '-'], 'stdin': '{}'}).encode(), True)):
+            with self.subTest(launch=launch), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                package = root / 'guru-maintain-architecture-baseline'
+                wrapper = package / 'scripts/invoke.sh'
+                wrapper.parent.mkdir(parents=True)
+                wrapper.write_text('#!/bin/sh\n')
+                wrapper.chmod(0o755)
+                sink = root / 'host-private.jsonl'
+                stop = threading.Event()
+                with patch.object(native_adapter.subprocess, 'run', side_effect=OSError('wrapper unavailable')) as run:
+                    thread = native_adapter.start_qualification_runtime_boundary(root / 'request', root / 'response',
+                        stop, root, package, {}, {}, wrapper_observation_path=sink)
+                    try:
+                        with (root / 'request').open('wb') as handle:
+                            handle.write(raw)
+                        with (root / 'response').open() as handle:
+                            response = json.load(handle)
+                    finally:
+                        stop.set()
+                        thread.join(timeout=2)
+                row = json.loads(sink.read_text())
+                self.assertEqual(row['response'], response)
+                self.assertEqual(response['returncode'], 2)
+                self.assertEqual(run.call_count, int(launch))
+                if launch:
+                    self.assertFalse(row['wrapper']['executed'])
+                    self.assertNotIn('returncode', row['wrapper'])
+                else:
+                    self.assertIsNone(row['wrapper'])
+
     def test_task_free_model_projection_has_actual_contracts_and_qualifier_targets(self):
         with tempfile.TemporaryDirectory() as temp:
             req=request(Path(temp),'guru-execute-task-free-change','native-owner-qualification-pair')

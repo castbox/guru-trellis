@@ -285,6 +285,14 @@
     {
       "id": "delivery_semantic",
       "path": "schemas/semantic-delivery-result-1.0.schema.json"
+    },
+    {
+      "id": "delivery_output",
+      "path": "schemas/public-output-delivery-1.0.schema.json"
+    },
+    {
+      "id": "public_invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
     }
   ],
   "validators": [
@@ -450,8 +458,8 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-review-task-completion-output-aggregate-2.0",
-        "path": "schemas/public-output.schema.json"
+        "schema_id": "guru-review-task-completion-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
       },
       "error_example": {
         "id": "invocation_error",

@@ -1,0 +1,5 @@
+{
+  "code": "stale_identity",
+  "field_path": "task_ref",
+  "remediation": "Refresh the current task."
+}

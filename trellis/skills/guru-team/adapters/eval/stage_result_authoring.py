@@ -36,14 +36,11 @@ def facts_locator(request: dict) -> str:
     return FACTS
 
 
-def owner_schema(package: Path) -> str:
-    return ('schemas/semantic-result.schema.json' if package.name == 'guru-review-task-delivery'
-            else 'schemas/semantic-delivery-result-1.0.schema.json')
-
-
 def public_reads(package):
     contract = ("references/contract.md",) if (package / "references/contract.md").is_file() else ()
-    return (*PUBLIC_READS, *contract, owner_schema(package))
+    # The original public entry owns profile/authoring navigation. A native
+    # caller must follow those references rather than receive our schema guess.
+    return (*PUBLIC_READS, *contract)
 
 
 class ImplementationCommands(implementation.ImplementationCommands):

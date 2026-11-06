@@ -94,6 +94,8 @@ class ExtensionVerificationContractTests(unittest.TestCase):
             shutil.copytree(PACKAGE, package)
             shutil.copytree(PACKAGE.parents[1] / "schemas", package.parents[1] / "schemas")
             (package / "runtime/owner.py").write_text(
+                "def extension_verification_public_call(operation, args):\n"
+                "    return operation(args)\n"
                 "def cmd_execute_extension_verification(args):\n"
                 "    return {'status': 'executed', 'capabilities': args.capability}\n",
                 encoding="utf-8",

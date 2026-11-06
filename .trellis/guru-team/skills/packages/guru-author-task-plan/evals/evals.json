@@ -37,9 +37,9 @@
     },
     {
       "id": "native-implementation-plan-premise",
-      "prompt": "Continue the previously accepted implementation using the current source files and newly available original evidence. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "prompt": "Start with the original standalone R1 request and clean business repository before any Task exists. Complete formal Intake and Planning through the installed public workflow and original owners. Evaluate the supplied half-open candidate plan/assertions against the inclusive source and unchanged caller when the actual Delivery exists. Return the actual terminal original wrapper stdout. This independent sample ends at real Planning Approval or an applicable earlier stop; later implementation evidence requires the actual same-sample Activation continuation.",
       "expected_exit": "approved",
-      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "expected_output": "Actual original owner output from the declared standalone R1 request entry. A prior package pass or an early legitimate stop does not establish unobserved Planning Approval, after-acceptance implementation or Check behavior.",
       "input_profile_id": "delivery_initial_review",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -63,7 +63,7 @@
         "semantic": [
           {
             "id": "actual-stop-and-continuation",
-            "criterion": "The native implementation owner reads the accepted plan and newly available source evidence before its next affected write, identifies source clause, actual candidate and consumer impact, and selects the earliest existing owner. It distinguishes a valid authority with an erroneous accepted mechanism, conflicting authority without an effective disposition, and a valid plan with an implementation/assertion deviation. Every continuation consumes actual producer stdout; no DTO, approval or route is supplied by host. Dependent work resumes only after applicable authority, revised planning/reviews and actual candidate agree. Unresolved authority remains stopped, and unrelated work is evaluated by real dependencies. Any claimed stop, revision or resume must be observed in command and write order, not inferred from an expected exit. This segment ends at actual Planning Approval and preserves the affected implementation until the separate original presentation/acceptance and Activation boundary; plan_ready alone does not complete this segment.",
+            "criterion": "The native owner reads the actual source, unaccepted candidate design/assertions and unchanged caller before affected writes. It identifies the inclusive clause and the half-open mechanism conflict, preserves the source promise and distinguishes mechanism correction from a scope change. It uses the earliest applicable original owners, real producer outputs and original required reviews. This segment reaches real Planning Approval only when its actual prerequisites are satisfied; unresolved conflicts remain stopped. A legitimate earlier stop does not establish the old after-accepted implementation scenario. Affected implementation resumes only in the existing same-fixture continuation after actual plan presentation/acceptance and original Activation stdout. No host-provided gate, route, schema recipe or current judgment counts as evidence.",
             "evidence_selector": "transcript"
           }
         ]

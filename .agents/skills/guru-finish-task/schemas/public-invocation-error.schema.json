@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "guru-finish-task-invocation-error-1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code",
+    "field_path",
+    "remediation"
+  ],
+  "properties": {
+    "code": {
+      "enum": [
+        "invalid_arguments",
+        "conflicting_arguments",
+        "invalid_json",
+        "schema_mismatch",
+        "stale_identity",
+        "closure_result_reader_missing",
+        "internal_error",
+        "source_mismatch"
+      ]
+    },
+    "field_path": {
+      "type": "string"
+    },
+    "remediation": {
+      "type": "string"
+    }
+  }
+}

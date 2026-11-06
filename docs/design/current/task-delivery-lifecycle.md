@@ -134,3 +134,20 @@ local branch/worktree/runtime 责任限对应 common-dir；remote ref 是共享�
 **D694-02 / CON694-ROUTE** 承接 R694-02。workflow 只路由一次性 final_plan 到原 Architecture Skill，Skill 独占 authority-first、对象校验、独立判断和无写入边界。其实际 output 沿 Interface 当前 aggregate、Delivery planning branch、direct current projection 到 current router，再按 purpose 投影相邻 Approval 当前输入。Approval 自身 guard 保持。其他出口回原 consumer，普通恢复仍由原 Identity/Ensure/Bind/Selection 写必要 runtime。matching workflow/package/preset 成套采用，无数据迁移；理由及取舍由 [ADR-EXPLICIT-REVIEW-OBJECT](../../architecture/adr/explicit-review-object.md) 拥有。
 
 本差额窄修订 D679-01，保留其他原职责和错误合同。候选完整拟写先 Check，再原 owner final_integration/readback；最终候选重绑、Check 和 committed Review 覆盖实际内容。
+
+
+## D713：原owner公开执行承接
+
+**D713-01 / CON713-CONTRACT** 承接R713-01：每个原Skill拥有适用profile的执行正文；Interface、commands/help、schema和正常示例指向同一输入域和authoring/结果边界。creation复用shared task-creation source/target定义，保留原执行器和public局部约束。命令dispatcher仅展示声明合同与载体，不按语义猜profile；当前入口不能误选历史示例。
+
+**D713-02 / CON713-CANDIDATE** 承接R713-02：原delivery_projection只读CLI经安装的construct-delivery-candidate.sh返回既有完整Git Candidate。输入来自真实Task/Delivery与AI选择的B/HEAD/paths，复用原content_base/candidate；同Delivery candidate的B优先，再用实际前序delivered或显式development baseline/唯一merge-base。新桥接仅Git checkout/C4/当前pull_request，原上游git_free入口保持原consumer边界。原Delivery begin-check/rework继续消费完整operation，保持owner/phase/freshness；构造器不写阶段或作语义判断。
+
+**D713-03 / CON713-DIAGNOSTIC** 承接R713-03：原schema/error owner输出具体字段与合同，不回显敏感原值；普通修正或stale指原profile/producer，内部故障保持非零和已确认范围。调用者完整捕获原exit及双输出后才解析中间result、真实artifact/checker receipt和正式typed exit，不能使用外层成功或截断显示构造缺失字段。原恢复或re-entry保留身份/B与适用结果，不创建第二consumer/状态。
+
+原 C4 discovery 公开 Closure 必需的真实 binding 引用，resolver 保持唯一事实 authority。原 Check 的无 scope 规划返工向既有 Author 传递 AI 已形成的具体修订动作；原非空 scope 引用分支保持。Check 在执行其阶段 operation 前验证完整公开输出，普通装配错误不先改变阶段。legacy finalize 在重执行命令前校验其既有 REVIEW 必需字段，保留原观察比较和额外 caller 字段。精确字段、载体、Planning freshness 配方和 profile 仍由各原 package 单写；匹配采用及原结果恢复见 [MIGRATION-713](../../../trellis/presets/guru-team/MIGRATION-713.md)。
+
+**D713-04 / CON713-EVAL** 承接 R713-04/05：测试辅助与生产能力逐职责对照。当前 profile 导航归原生产合同，完整 Candidate 归原公开构造，私有 recorder 身份不由 eval 补给模型。既有 isolated owner tests 保留合法历史 fixture/透明运输及其证明边界；它们不证明 N1 首次正确或完整模型生命周期。当前 owner 核对已有 source、组件、原命令、consumer、安装、synthetic 与局部 native 结果的实际适用性；缺失或变化只补命中检查。真实 Agent 的当前语义前提仍由实际原 owner 完成，host 仅承担合法环境、provider/transport 与观测。取消 #713 追加 N1/N3 原生链、非等价 native 代表、旧 fixture 接续及 R5 模型方法补证；保留首次失败、部分成功、污染、未知退出码和方法证据不足，不将取消项改记为 passed。
+
+**D713-05 / CON713-ADOPTION** 承接 R713-05：原 tools owner 维护已有 Task/session 的本仓 dogfood，原 installer 维护 matching 安装、reapply、冲突与 mode。固定 B 的 43/127/180 声明清单、当前候选差额和 F1–F13 证据对应留在原规划/验证位置，不生成公共 DTO 或独立长期 manifest。采用完整且仍匹配的既有安装/投影、reapply/drift/sidecar/mode 实绩，仅刷新实际变更依赖；不为取消项再次安装、恢复损坏 clean 或准备环境。旧成功 consumer 保留既有合同；成功语义变化先显式迁移，无 consumer 的 deprecated 资产经原 owner 核实后退出。RDT/Architecture 完整隔离拟写先经候选 Check，再各原 owner final_integration/readback；实际 after 重绑后执行最终 Check、TaskCommit、完整 committed Review、Delivery Review/readiness、发布/交付及 Completion/Closure/Finish。合并前保留 fresh merge gate；本项取消验收不新增必需后续切片或 native 支线。
+
+这些职责沿既有D531/ADR-028及#710 recorder决定，不修改官方Trellis、全局包或node_modules实现。精确argv/profile/schema仍由canonical原package/step单写；此单元不复制私有算法或测试expected输出。

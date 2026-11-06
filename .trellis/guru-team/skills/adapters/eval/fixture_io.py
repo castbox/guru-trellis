@@ -252,6 +252,16 @@ def bind_review_input_argument(
         raise ValueError("semantic case must declare one review-input invocation argument")
     return review_relative
 
+def _stage_delivery_contract(fixture: Path, source_scripts: Path) -> None:
+    """Carry the public contract from the selected installed Delivery API."""
+    if not (fixture / ".trellis/scripts/common/delivery_store.py").is_file():
+        return
+    source = source_scripts.parent / "delivery-contract.md"
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("Reviewed installed Delivery API public contract is unavailable.")
+    shutil.copy2(source, fixture / ".trellis/delivery-contract.md")
+
+
 def stage_clean_installed_owner_repo(
     execution_root: Path, runtime_target: Path, request_package: Path,
 ) -> tuple[Path, Path]:
@@ -282,7 +292,9 @@ def stage_clean_installed_owner_repo(
             raise ValueError("Current Guru fixture requires the explicitly selected reviewed installed Delivery API; set GURU_UPSTREAM_DELIVERY_SCRIPTS. No source fallback is supported.")
         shutil.copytree(reviewed_scripts, fixture / ".trellis/scripts", dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        source_scripts = reviewed_scripts
         (fixture / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+    _stage_delivery_contract(fixture, source_scripts)
     (fixture / ".gitignore").write_text(
         ".trellis/.runtime/\n__pycache__/\n*.py[cod]\n",
         encoding="utf-8",

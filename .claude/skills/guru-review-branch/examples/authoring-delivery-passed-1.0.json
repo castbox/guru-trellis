@@ -1,4 +1,35 @@
 {
-  "profile": "delivery_delivery_review",
-  "mode": "workflow"
+  "candidate_classifications": [],
+  "semantic_review": {
+    "qualified_findings": [],
+    "scope_proposals": [],
+    "observations": [],
+    "followup_candidates": [],
+    "rejected_candidates": [],
+    "ai_review_gate": {
+      "status": "passed",
+      "summary": "The complete committed R1 slice and affected consumers satisfy current requirements; the review found no actual candidate."
+    }
+  },
+  "verification_evidence": {
+    "reviewer": "independent-reviewer",
+    "review_source": "independent-agent",
+    "evidence": [
+      "Reviewed the complete fixed base-to-HEAD diff, current authority, affected consumers and applicable validation evidence for R1."
+    ]
+  },
+  "delivery_review": {
+    "task_scope": ["R1"],
+    "delivery_slice": ["R1"],
+    "remaining_work": [],
+    "independent_delivery_conditions": [
+      "R1 is independently usable and verifiable."
+    ],
+    "validation_boundaries": [
+      "Targeted validation covers R1; this review makes no deployment claim."
+    ],
+    "current_slice_status": "passed",
+    "remaining_work_status": "disclosed",
+    "summary": "The committed range satisfies the complete R1 slice without hidden remaining work."
+  }
 }

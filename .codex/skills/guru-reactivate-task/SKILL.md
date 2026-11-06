@@ -60,8 +60,10 @@ Review current base HEAD separately from implementation HEAD. Select
 or linked. This profile creates no branch or worktree. Caller ownership and
 unresolved resource checks remain with the original C3/C4/C5 owners.
 
-Use `scripts/observe.sh --root <implementation-checkout> --input <input.json>`
-for read-only facts. Its intermediate receipt has `formal_exit=false`; project
+Use `.trellis/guru-team/skills/packages/guru-reactivate-task/scripts/observe.sh --root <implementation-checkout> --input <input.json>`
+for read-only facts from the complete installation. The platform Skill directory
+is a readable projection; obtain this operational wrapper from the full installed
+package above. Its intermediate receipt has `formal_exit=false`; project
 only `result` for this same owner's review. The logical snapshot includes
 repository/checkout, branch/HEAD, index path/OID/mode/stage, tracked/untracked
 bytes, file type and executable mode. Index stat/cache refreshes do not change

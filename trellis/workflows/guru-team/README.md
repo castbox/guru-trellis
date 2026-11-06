@@ -31,6 +31,14 @@ Guru Team 拥有流程、完整范围和正式结论；`guru-ai-guides` 的专�
 不向其他技术栈强加 Go-Guru 规则或完整文档套件。专项 pass 不替代原 owner 的
 当前判断，测试计划审核也不证明测试实现有效或实际执行成功。
 
+原 Author/implementation owner 从
+[固定范围与公开操作合同](../../skills/guru-team/packages/guru-author-task-plan/references/authoring.md#fixed-delivery-range)
+取得完整 Candidate 构造、begin-check/rework 和 scope/stop 恢复说明。当前 Git
+`pull_request` 调用使用受管 `construct-delivery-candidate.sh`，复用原范围和摘要
+算法；workflow 只编排原步骤与出口，不要求业务 Agent 导入私有 Python。
+原上游 git_free consumer 保持独立边界。完整 matching 安装及实际 Agent 行为
+分别验证，不从文档或静态投影推定通过。
+
 已有安装须采用匹配的 workflow、原 Guru packages 和 managed quality spec，再
 完整 reapply preset 并检查 discovery、drift 及 `.new`/`.bak`；专项来源另行更新。
 源码或投影一致不能证明实际 Agent 采用；完整平台升级与 Release 矩阵保留原职责。

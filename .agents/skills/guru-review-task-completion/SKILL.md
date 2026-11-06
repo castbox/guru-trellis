@@ -33,6 +33,26 @@ consumes the concrete source exit/reason, and Reactivate validation consumes
 its actual preceding archive anchor. Reread current accepted scope and every
 actual Delivery result across generations. The semantic result binds those
 exact scope/fact identities, minimum current evidence and remaining work.
+
+Use `schemas/public-input-delivery-1.0.schema.json` to select the current input
+profile. Its three profile schemas and normal examples are indexed by
+`interface.json.public_contracts.input.profiles`; command help prints the same
+paths. Author the matching current judgment under
+`schemas/semantic-delivery-result-1.0.schema.json`, using
+`examples/semantic-delivery-result-1.0.json` for its shape. This command has no
+recorder: the semantic object is the current AI owner's own judgment, and the
+formal invocation returns the single typed exit. `schemas/semantic-result.schema.json`
+and unprefixed Completion examples are pinned-old contract/test assets; the
+current invocation rejects those profiles rather than migrating them.
+
+Pass `--input` and `--semantic-result` as existing regular UTF-8 JSON files.
+This Completion entry does not accept inline JSON or stdin `-`. Keep the two
+objects separate; neither a dispatcher receipt nor its metadata is a semantic
+result. After the command exits, retain its original exit status, stdout and
+stderr. A nonzero exit stops consumption. On a valid formal exit, route the
+actual DTO to its declared consumer; do not infer completion from process
+success or a public phase.
+
 Do not infer completion from all known Deliveries being terminal: unallocated
 scope, changed acceptance or missing causal evidence remains this owner's
 whole-task judgment. A fresh public `complete_task` writes only the actual

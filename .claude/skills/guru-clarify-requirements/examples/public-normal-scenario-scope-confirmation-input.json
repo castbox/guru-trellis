@@ -1,0 +1,9 @@
+{
+  "profile": "normal_scenario_scope_confirmation",
+  "source_exit": "scope_confirmation_required",
+  "mode": "workflow",
+  "target_locator": "github:castbox/guru-trellis#237",
+  "resume_target": "guru-check-task",
+  "continuation_id": "normal-scenario-scope-237",
+  "candidate_refs": ["candidate:phase2:scope-expansion"]
+}

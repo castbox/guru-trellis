@@ -8,6 +8,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from runtime.task_lifecycle.branch_resolution import OwnershipCurrent
 
 from adapters.eval.fixture_io import public_input_path, run_git
 from adapters.eval.eval_support import qualification_planning_identity
@@ -46,19 +50,24 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
           seed_bodies: dict[str, str] | None = None,
           range_authority_body: str | None = None,
           fixture_files: dict[str, str] | None = None,
-          candidate_files: dict[str, str] | None = None) -> None:
+          candidate_files: dict[str, str] | None = None,
+          acquisition=None, fact_only: bool | None = None) -> OwnershipCurrent | None:
     fixture = fixture.resolve()
     package = package.resolve()
-    stateful = request.get("case_id") in STATEFUL_CASES
-    acquisition = None
+    stateful = request.get("case_id") in STATEFUL_CASES if fact_only is None else fact_only
+    resources = None
     if stateful:
         from adapters.eval.planning_authoring import acquire_authoring_checkout
         from adapters.eval.implementation_authoring import (
             _code_drift_seed_bodies, _implementation_range_authority,
         )
-        acquisition = acquire_authoring_checkout(fixture, branch_name="eval/phase2-authoring")
-        seed_bodies = _code_drift_seed_bodies()
-        range_authority_body = _implementation_range_authority(STATEFUL_CASE)
+        if acquisition is None:
+            acquisition = acquire_authoring_checkout(fixture, branch_name="eval/phase2-authoring")
+        if fact_only is None:
+            if seed_bodies is None:
+                seed_bodies = _code_drift_seed_bodies()
+            if range_authority_body is None:
+                range_authority_body = _implementation_range_authority(STATEFUL_CASE)
     public = json.loads(public_input_path(request).read_text(encoding="utf-8"))
     if stateful:
         public.pop("planning_accepted_result_id", None)
@@ -179,6 +188,14 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
             "        for value in (1, 5): self.assertFalse(contains(value, 2, 4))\n"
         )
     files.update(fixture_files or {})
+    if fact_only is True:
+        for name in ('prd.md', 'design.md', 'implement.md'):
+            locator = f'{task_ref}/{name}'
+            files[locator] = files[locator].replace('# Approved PRD', '# Whole Task requirements').replace(
+                '# Accepted Candidate Design', '# Candidate Design').replace(
+                '# Accepted Implementation', '# Candidate Implementation').replace(
+                '# Approved Implementation', '# Candidate Implementation').replace(
+                'Implement the accepted half-open comparison', 'Candidate proposes the half-open comparison')
     # Create actual installed public Task/Delivery state before recording any gate.
     from adapters.eval.architecture_authoring import stage_delivery_identity
     from runtime.delivery_projection.adapter import DeliveryProjection
@@ -207,7 +224,7 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
     directory = stage_delivery_identity(fixture, public, scope_content=scope_content, scope_anchor="R1")
     if stateful:
         from adapters.eval.planning_authoring import register_authoring_resources
-        register_authoring_resources(fixture, public["delivery_key"], acquisition)
+        resources = register_authoring_resources(fixture, public["delivery_key"], acquisition)
     task_ref = public.pop('task_locator')
     task = fixture / task_ref
     planning_ref = directory.relative_to(fixture).as_posix()
@@ -351,7 +368,8 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         projection.begin_check(public['delivery_key'], projection.candidate(candidate_paths,
             head_ref=run_git(fixture, 'rev-parse', 'HEAD'), base_ref=projection.content_base(public['delivery_key'],
                 development_base=seed_base, observed_target=run_git(fixture, 'rev-parse', 'origin/main'))))
-    write_json(evidence / 'check-public-input.json', public)
+    if fact_only is not True:
+        write_json(evidence / 'check-public-input.json', public)
     if stateful:
         # Case evidence carries the original identity producer's actual values,
         # rather than the input template's pre-creation placeholder identity.
@@ -383,7 +401,8 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         "change_contract_locator": architecture_input["project_contract"]["change_contract_locator"]}
     architecture_input["candidate"] = {"head": run_git(fixture, "rev-parse", "HEAD"),
         "content_identity": "sha256:" + reviewed_content_identity(fixture)["sha256"]}
-    write_json(fixture / ARCHITECTURE_INPUT, architecture_input)
+    if fact_only is not True:
+        write_json(fixture / ARCHITECTURE_INPUT, architecture_input)
     write_json(fixture / FACTS, {
         "schema_version": "1.0", "required_reads": required,
         "architecture_reads": [
@@ -431,13 +450,21 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path, *,
         facts["architecture_reads"] = [path for path in facts["architecture_reads"] if path != ARCHITECTURE_INPUT]
         facts.pop("architecture_input_sha256")
         facts["boundary"] += " architecture-input.json is an optional future phase2 blueprint, not current Planning input or freshness."
+        if fact_only is True:
+            facts['public_input_locator'] = FACTS
+            facts['required_reads'] = [path for path in facts['required_reads']
+                if path != 'docs/phase2-evidence/check-public-input.json']
+            facts['boundary'] = ('Current Planning and unaccepted candidate files only. No Planning, '
+                'Activation, Architecture, RDT or Check result or future invocation is supplied.')
         write_json(fixture / FACTS, facts)
+    return resources
 
 
 def owner_mutated_paths(repository: Path) -> list[str]:
     """Resolve the original Check owner's exact Task and private checkpoint paths."""
     from runtime.delivery_projection.adapter import DeliveryProjection
-    public = json.loads((repository / 'docs/phase2-evidence/check-public-input.json').read_text())
+    locator = repository / 'docs/phase2-evidence/check-public-input.json'
+    public = json.loads((locator if locator.exists() else repository / FACTS).read_text())
     DeliveryProjection(repository, public['task_ref']).resolve(public['delivery_key'])
     return [public['task_ref'] + '/task.json',
         f".trellis/.runtime/guru-team/owner-checkpoints/{Path(public['task_ref']).name}/phase2-check.json"]

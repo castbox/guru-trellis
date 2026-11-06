@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current ready_for_merge input.",
+          "description": "Current Delivery merge input: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. See references/contract.md#current-json-input-carriers.",
           "repeatable": false,
           "conflicts": []
         }
@@ -66,7 +66,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current ready_for_merge input.",
+          "description": "Current Delivery merge input: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. See references/contract.md#current-json-input-carriers.",
           "repeatable": false,
           "conflicts": []
         },
@@ -74,7 +74,7 @@
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "Completed semantic review.",
+          "description": "Current semantic review: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. Use stdin for only one JSON parameter per call.",
           "repeatable": false,
           "conflicts": []
         }
@@ -122,7 +122,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current ready_for_merge input.",
+          "description": "Current Delivery merge input: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. See references/contract.md#current-json-input-carriers.",
           "repeatable": false,
           "conflicts": []
         },
@@ -224,7 +224,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current ready_for_merge input.",
+          "description": "Current Delivery merge input: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. See references/contract.md#current-json-input-carriers.",
           "repeatable": false,
           "conflicts": []
         },
@@ -278,7 +278,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Selected current Delivery merge or terminal-only recovery profile.",
+          "description": "Current Delivery merge input: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. See references/contract.md#current-json-input-carriers. Formal legacy_control_retirement and legacy_history_verification retain their original inline JSON, regular-file or stdin carrier domain.",
           "repeatable": false,
           "conflicts": []
         },
@@ -286,7 +286,7 @@
           "flag": "--review-input",
           "required": false,
           "kind": "json",
-          "description": "Completed semantic review for the confirmed action or exact recovery.",
+          "description": "Current semantic review: one existing regular non-symlink UTF-8 JSON file or dash for stdin; inline JSON is unsupported. Relative files resolve from --root first, then this package. Use stdin for only one JSON parameter per call.",
           "repeatable": false,
           "conflicts": []
         }

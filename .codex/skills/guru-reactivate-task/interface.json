@@ -91,6 +91,10 @@
     {
       "id": "existing_semantic",
       "path": "examples/semantic-existing-implementation.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "examples/public-invocation-error.json"
     }
   ],
   "schemas": [
@@ -149,6 +153,10 @@
     {
       "id": "existing_transaction",
       "path": "schemas/existing-implementation-transaction-3.0.schema.json"
+    },
+    {
+      "id": "invocation_error",
+      "path": "schemas/public-invocation-error.schema.json"
     }
   ],
   "validators": [
@@ -287,12 +295,12 @@
       },
       "stdout_contract": "single_typed_exit",
       "error_schema": {
-        "schema_id": "guru-reactivate-task-output-3.0",
-        "path": "schemas/public-output.schema.json"
+        "schema_id": "guru-reactivate-task-invocation-error-1.0",
+        "path": "schemas/public-invocation-error.schema.json"
       },
       "error_example": {
-        "id": "blocked_output",
-        "path": "examples/public-blocked-output.json"
+        "id": "invocation_error",
+        "path": "examples/public-invocation-error.json"
       },
       "example_argv": [
         "--input",

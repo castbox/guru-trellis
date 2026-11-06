@@ -10,7 +10,7 @@ from .io import CommandError, fail, read_json_file, write_json
 from .schema import validate_json
 
 
-def _help(package_id: str, command: dict) -> str:
+def _help(package_id: str, command: dict, interface: dict | None = None) -> str:
     usage = [command["id"]]
     lines = [f"usage: {' '.join(usage)} [arguments]", "", f"owner: {package_id}", f"runtime-role: {command['runtime_role']}", f"stdin: {command['stdin']}", f"stdout: {command['stdout']}", f"side-effect: {command['side_effect']}", "", "arguments:", "  --help                show this help and exit", "  --json                emit one JSON object"]
     for item in command["arguments"]:
@@ -19,6 +19,17 @@ def _help(package_id: str, command: dict) -> str:
         repeatable = ", repeatable" if item["repeatable"] else ""
         conflicts = f", conflicts: {','.join(item['conflicts'])}" if item["conflicts"] else ""
         lines.append(f"  {item['flag']:<22} {marker}{repeatable}{conflicts}{values}: {item['description']}")
+    lines.extend(["", "command contracts:", *[f"  {path}" for path in command["schema_bindings"]]])
+    if interface is not None:
+        public = interface.get("public_contracts", {})
+        invocation = public.get("invocation", {})
+        lines.extend(["", "package public invocation:", f"  {invocation.get('wrapper', 'See SKILL.md')}"])
+        for profile in public.get("input", {}).get("profiles", []):
+            lines.append(f"  {profile['id']}: {profile['schema']['path']} ; example: {profile['example']['path']}")
+        example = invocation.get("example_argv", [])
+        if example:
+            lines.append("  example arguments: " + " ".join(example))
+        lines.append("  Read SKILL.md for profile entry conditions and the command's authoring/result responsibilities.")
     lines.extend(["", "errors:", *[f"  {code}" for code in command["errors"]]])
     return "\n".join(lines) + "\n"
 
@@ -95,7 +106,8 @@ def main(package_root: Path, argv: list[str]) -> int:
         if "--help" in rest:
             if len(rest) != 1:
                 raise CommandError("conflicting_arguments", "arguments", "Use --help by itself.")
-            sys.stdout.write(_help(package_root.name, command))
+            interface = read_json_file(package_root / "interface.json", "interface.json")
+            sys.stdout.write(_help(package_root.name, command, interface))
             return 0
         rest = _consume_global_json_flag(rest)
         _validate_argument_cardinality(command, rest)
@@ -111,7 +123,12 @@ def main(package_root: Path, argv: list[str]) -> int:
     except CommandError as exc:
         return fail(exc)
     except Exception:
-        return fail(CommandError("internal_error", "runtime", "Inspect the package runtime and retry."))
+        return fail(CommandError(
+            "internal_error", "runtime",
+            "The selected package command failed internally; its cause is not established. "
+            "Preserve the command, exit status, stdout and stderr and return them to the package maintenance owner. "
+            "Do not change inputs or runtime code to claim this invocation succeeded.",
+        ))
 
 
 if __name__ == "__main__":

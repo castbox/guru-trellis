@@ -26,7 +26,7 @@
           "flag": "--invocation",
           "required": false,
           "kind": "json",
-          "description": "Call-local invocation envelope or dash for stdin.",
+          "description": "Inline JSON envelope with public_input and owner_result objects, or - for stdin; not a file locator. See references/contract.md#public-invocation.",
           "repeatable": false,
           "conflicts": [
             "--input",
@@ -37,7 +37,7 @@
           "flag": "--input",
           "required": false,
           "kind": "string",
-          "description": "Public input JSON locator.",
+          "description": "Regular UTF-8 public input JSON file locator or - for stdin; see schemas/public-input.schema.json and examples/public-input.json.",
           "repeatable": false,
           "conflicts": [
             "--invocation"
@@ -47,7 +47,7 @@
           "flag": "--owner-result",
           "required": false,
           "kind": "string",
-          "description": "Completed owner result JSON locator.",
+          "description": "Regular UTF-8 completed semantic owner result JSON file locator or - for stdin; see schemas/workflow-mode-selection.schema.json and examples/workflow-mode-selection.json.",
           "repeatable": false,
           "conflicts": [
             "--invocation"
@@ -66,7 +66,14 @@
         "internal_error"
       ],
       "side_effect": "none",
-      "schema_bindings": [],
+      "schema_bindings": [
+        "schemas/public-input.schema.json",
+        "schemas/workflow-mode-selection.schema.json",
+        "schemas/public-standard-intake-output.schema.json",
+        "schemas/public-task-free-output.schema.json",
+        "schemas/public-blocked-output.schema.json",
+        "schemas/public-invocation-error.schema.json"
+      ],
       "validator_id": "public_invocation",
       "runtime_role": "invoke"
     }

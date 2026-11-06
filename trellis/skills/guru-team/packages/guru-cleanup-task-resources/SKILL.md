@@ -23,6 +23,28 @@ current cleanup confirmation unchanged. Failed cleanup preserves completed
 Task and delivered facts; original business trees and provider resources are
 not implied cleanup targets.
 
+## Public invocation and JSON carriers
+
+For `normal`, `select_explicit_cleanup_targets`, and `machine_handoff`, pass
+`--input` and `--semantic-result` as paths to separate regular UTF-8 files.
+Each file contains one JSON object and must not itself be a symlink.
+This command does not read inline JSON or stdin, including the `-` shorthand.
+Absolute paths are accepted. Relative paths resolve first from `--root`
+(the current directory when omitted), then from this package.
+
+After completing this profile's semantic review and any required deletion
+confirmation, invoke the installed public wrapper from a retained checkout
+outside the selected deletion set:
+
+```bash
+bash .trellis/guru-team/skills/packages/guru-cleanup-task-resources/scripts/invoke.sh \
+  --root . --input /path/to/cleanup-input.json \
+  --semantic-result /path/to/cleanup-semantic.json --json
+```
+
+Add `--confirmed-cleanup` only under the deletion-confirmation boundary below.
+The file paths above are placeholders for caller-authored input and judgment;
+package examples describe their shapes and do not supply current results.
 
 Normal Cleanup consumes only ResourceSealRefDTO and resolves Guru-owned
 incarnations from the common-dir ledger. It preserves caller-owned and unknown

@@ -92,6 +92,9 @@ declared exit. The runtime validates those AI-authored bindings and never
 overwrites them. Workflow and standalone modes use the same entry,
 review, freshness, and projection rules.
 
+Compute `input_sha256` using the exact public
+[input digest format and standard-library recipe](references/contract.md#public-input-digest).
+
 `candidate_ready` hands only contribution and applicable authority locators/version
 to `guru-requirements-design-test-ssot-current-router`, which routes the complete
 proposed definitions into candidate Check. It is not a current-authority update.

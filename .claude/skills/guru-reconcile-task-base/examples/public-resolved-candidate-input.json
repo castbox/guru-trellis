@@ -1,0 +1,25 @@
+{
+  "profile": "delivery_resolved_candidate",
+  "mode": "workflow",
+  "source_exit": "resolved_reconciliation_passed",
+  "task_ref": ".trellis/tasks/current",
+  "phase2_commit_anchor": "1111111111111111111111111111111111111111",
+  "branch": "codex/current",
+  "selected_base_ref": "2222222222222222222222222222222222222222",
+  "old_base_head": "0000000000000000000000000000000000000000",
+  "new_base_head": "2222222222222222222222222222222222222222",
+  "merge_head": "2222222222222222222222222222222222222222",
+  "stage0_tree": "3333333333333333333333333333333333333333",
+  "index_tree_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "parent_order": [
+    "1111111111111111111111111111111111111111",
+    "2222222222222222222222222222222222222222"
+  ],
+  "commit_message": "chore(base): record resolved reconciliation",
+  "resume_target": "branch_review",
+  "delivery_key": {
+    "task_id": "example-task",
+    "lifecycle_generation": 0,
+    "delivery_id": "8ec361f1-a63e-4d75-819f-1e9b6a410871"
+  }
+}

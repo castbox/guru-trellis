@@ -25,6 +25,139 @@ FINISH = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(FINISH)
 
 
+class InputBoundaryReached(Exception):
+    """Stop before Finish identity lookup or legacy execution."""
+
+
+@pytest.mark.parametrize("carrier", ["package_relative", "root_relative", "absolute", "root_relative_cwd_legacy"])
+def test_current_file_carriers_reach_identity_boundary(tmp_path, monkeypatch, carrier):
+    public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+    semantic = json.loads((PACKAGE / "examples/semantic-result.json").read_text())
+    monkeypatch.chdir(PACKAGE.parents[4])  # The public launcher uses the repository cwd.
+    if carrier == "package_relative":
+        input_arg, semantic_arg = "examples/public-input.json", "examples/semantic-result.json"
+    else:
+        (tmp_path / "input.json").write_text(json.dumps(public))
+        (tmp_path / "semantic.json").write_text(json.dumps(semantic))
+        input_arg, semantic_arg = "input.json", "semantic.json"
+        if carrier == "absolute":
+            input_arg, semantic_arg = str(tmp_path / input_arg), str(tmp_path / semantic_arg)
+        if carrier == "root_relative_cwd_legacy":
+            cwd = tmp_path / "launcher-cwd"
+            cwd.mkdir()
+            legacy = {
+                "profile": "legacy_control_retirement", "root": str(cwd),
+                "key": {"task_id": "old-task", "lifecycle_generation": 0},
+                "task_ref": ".trellis/tasks/old-task", "control_refs": [],
+                "preserved_source_ref": ".trellis/tasks/archive/old-task/task.json",
+                "recovery_ref": str(cwd / "checkpoint.json"),
+            }
+            (cwd / input_arg).write_text(json.dumps(legacy))
+            monkeypatch.chdir(cwd)
+    validations = []
+
+    def observe_validation(value, schema, field):
+        validate_json(value, schema, field)
+        validations.append((field, value))
+
+    def stop_at_identity(root, result):
+        assert root == tmp_path
+        assert result == public["closure_result"]
+        raise InputBoundaryReached
+
+    monkeypatch.setattr(FINISH, "validate_json", observe_validation)
+    monkeypatch.setattr(FINISH, "resolve_finish_identity", stop_at_identity)
+    with pytest.raises(InputBoundaryReached):
+        FINISH.run(PACKAGE, {}, ["--root", str(tmp_path), "--input", input_arg,
+                                "--semantic-result", semantic_arg])
+    assert validations == [("input", public), ("semantic_result", semantic)]
+
+
+@pytest.mark.parametrize("example", ["public-input.json", "public-reentry-input.json"])
+def test_current_profiles_require_semantic_file(tmp_path, monkeypatch, example):
+    def unexpected_identity(*_args):
+        pytest.fail("Identity lookup must follow required argument parsing.")
+
+    monkeypatch.setattr(FINISH, "resolve_finish_identity", unexpected_identity)
+    with pytest.raises(CommandError) as caught:
+        FINISH.run(PACKAGE, {}, ["--root", str(tmp_path), "--input", str(PACKAGE / "examples" / example)])
+    assert (caught.value.code, caught.value.field_path) == ("invalid_arguments", "arguments")
+
+
+def test_missing_root_value_returns_argument_error():
+    with pytest.raises(CommandError) as caught:
+        FINISH.run(PACKAGE, {}, ["--input", str(PACKAGE / "examples/public-input.json"),
+                                "--semantic-result", str(PACKAGE / "examples/semantic-result.json"),
+                                "--root"])
+    assert (caught.value.code, caught.value.field_path) == ("invalid_arguments", "arguments")
+
+
+def test_selected_current_file_error_keeps_current_owner(tmp_path, monkeypatch):
+    import runtime.schema as schema_runtime
+
+    (tmp_path / "input.json").write_text('{"profile":"closure_completed"')
+    cwd = tmp_path / "launcher-cwd"
+    cwd.mkdir()
+    legacy = {
+        "profile": "legacy_control_retirement", "root": str(tmp_path),
+        "key": {"task_id": "old-task", "lifecycle_generation": 0},
+        "task_ref": ".trellis/tasks/old-task", "control_refs": [],
+        "preserved_source_ref": ".trellis/tasks/archive/old-task/task.json",
+        "recovery_ref": str(tmp_path / "checkpoint.json"),
+    }
+    (cwd / "input.json").write_text(json.dumps(legacy))
+    monkeypatch.chdir(cwd)
+
+    def stop_wrong_legacy_owner(value, schema, field):
+        validate_json(value, schema, field)
+        raise InputBoundaryReached("A current JSON syntax error reached the legacy owner.")
+
+    monkeypatch.setattr(schema_runtime, "validate_json", stop_wrong_legacy_owner)
+    with pytest.raises(CommandError) as caught:
+        FINISH.run(PACKAGE, {}, ["--root", str(tmp_path), "--input", "input.json",
+                                "--semantic-result", str(PACKAGE / "examples/semantic-result.json")])
+    assert (caught.value.code, caught.value.field_path) == ("invalid_json", "input")
+
+
+@pytest.mark.parametrize("carrier", ["inline", "absolute", "cwd_relative", "symlink", "stdin"])
+def test_legacy_invoke_carriers_reach_original_owner(tmp_path, monkeypatch, carrier):
+    import io
+    import runtime.schema as schema_runtime
+
+    public = {
+        "profile": "legacy_control_retirement", "root": str(tmp_path),
+        "key": {"task_id": "selected", "lifecycle_generation": 0},
+        "task_ref": ".trellis/tasks/selected", "control_refs": [],
+        "preserved_source_ref": ".trellis/tasks/archive/selected/task.json",
+        "recovery_ref": str(tmp_path / "checkpoint.json"),
+    }
+    encoded = json.dumps(public)
+    path = tmp_path / "legacy.json"
+    path.write_text(encoded)
+    link = tmp_path / "legacy-link.json"
+    link.symlink_to(path.name)
+    monkeypatch.chdir(PACKAGE.parents[4])
+    input_arg = {
+        "inline": encoded, "absolute": str(path),
+        "cwd_relative": os.path.relpath(path, Path.cwd()), "symlink": str(link), "stdin": "-",
+    }[carrier]
+    monkeypatch.setattr(sys, "stdin", io.StringIO(encoded))
+    observed = []
+
+    def stop_after_legacy_schema(value, schema, field):
+        validate_json(value, schema, field)
+        assert schema == PACKAGE / "schemas/legacy-maintenance-input-1.0.schema.json"
+        observed.append(value)
+        raise InputBoundaryReached
+
+    # The original owner still reads the carrier and validates its own schema.
+    # Stop before it reads a checkpoint or retires any controls.
+    monkeypatch.setattr(schema_runtime, "validate_json", stop_after_legacy_schema)
+    with pytest.raises(InputBoundaryReached):
+        FINISH.run(PACKAGE, {}, ["--root", str(tmp_path), "--input", input_arg])
+    assert observed == [public]
+
+
 def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, text=True, capture_output=True, check=True).stdout.strip()
 

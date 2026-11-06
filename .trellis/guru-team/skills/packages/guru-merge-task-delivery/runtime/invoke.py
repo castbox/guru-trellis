@@ -7,14 +7,22 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     # Inspect only the profile before loading the separate legacy owner. Normal
     # current calls keep their original runtime dependencies and preconditions.
     import argparse as _argparse, io as _io, sys as _sys
-    from runtime.io import decode_json as _decode_json, read_json as _read_json, read_stdin as _read_stdin
-    _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--input')
+    from runtime.io import CommandError as _CommandError, decode_json as _decode_json, read_json as _read_json, read_stdin as _read_stdin
+    _selector=_argparse.ArgumentParser(add_help=False);_selector.add_argument('--root');_selector.add_argument('--input')
     _selected,_rest=_selector.parse_known_args(argv)
     if _selected.input:
         if _selected.input=='-':
             _content=_read_stdin('input');_sys.stdin=_io.StringIO(_content)
             _public=_decode_json(_content,'input')
-        else:_public=_read_json(_selected.input,'input')
+        else:
+            try:
+                _public=load_json(repo_root(_selected.root),package_root,_selected.input,'input')
+            except _CommandError as _current_error:
+                try:_legacy_public=_read_json(_selected.input,'input')
+                except _CommandError:raise _current_error
+                if _legacy_public.get('profile') not in {'legacy_control_retirement','legacy_history_verification'}:
+                    raise _current_error
+                _public=_legacy_public
         if _public.get('profile') in {'legacy_control_retirement','legacy_history_verification'}:
             import importlib.util as _util
             _spec=_util.spec_from_file_location('legacy_'+package_root.name.replace('-','_'),package_root/'runtime/legacy_maintenance.py')
@@ -39,4 +47,6 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
     if public.get("profile") == "delivery_scope_withdrawal":
         from runtime.delivery_projection.withdrawal import stop
         return stop(root,package_root,public,load_json(root,package_root,args.review_input,"review_input"),owner_role="delivery",expected_phase="publishing")
+    if args.input == "-":
+        _sys.stdin = _io.StringIO(_content)
     return cmd_invoke(package_root,args)

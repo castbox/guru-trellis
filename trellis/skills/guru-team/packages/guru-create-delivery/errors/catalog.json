@@ -35,7 +35,7 @@
       "trigger": "Unexpected runtime failure.",
       "exit_status": 70,
       "locator": "field_path",
-      "remediation": "Inspect package runtime."
+      "remediation": "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-create-delivery maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."
     }
   ]
 }

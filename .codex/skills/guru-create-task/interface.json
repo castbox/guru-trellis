@@ -87,6 +87,10 @@
     {
       "id": "invocation_error",
       "path": "examples/public-invocation-error.json"
+    },
+    {
+      "id": "create_issue_input",
+      "path": "examples/public-create-issue-input.json"
     }
   ],
   "schemas": [

@@ -37,4 +37,5 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             "arguments",
             "Use the exact command help contract.",
         ) from exc
-    return _owner(package_root).cmd_check_extension_verification(args)
+    owner = _owner(package_root)
+    return owner.extension_verification_public_call(owner.cmd_check_extension_verification, args)

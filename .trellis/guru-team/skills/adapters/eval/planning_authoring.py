@@ -30,7 +30,8 @@ def acquire_authoring_checkout(fixture: Path, *, branch_name: str = 'eval/author
     from runtime.task_lifecycle.checkout_acquisition import CheckoutAcquisitionPlan, acquire_checkout
     fixture = fixture.resolve()
     run_git(fixture, 'add', '.')
-    run_git(fixture, 'commit', '-qm', 'stage installed tools for Author checkout acquisition')
+    if run_git(fixture, 'diff', '--cached', '--name-only'):
+        run_git(fixture, 'commit', '-qm', 'stage installed tools for Author checkout acquisition')
     head = run_git(fixture, 'rev-parse', 'HEAD')
     primary = fixture.parent / (fixture.name + '-primary')
     fixture.rename(primary)

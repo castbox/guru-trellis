@@ -47,7 +47,15 @@ class CreateTaskTests(unittest.TestCase):
         self.git("config", "user.email", "test@example.invalid")
         scripts = scripts_source()
         shutil.copytree(scripts, self.root / ".trellis/scripts")
-        (self.root / ".trellis/.version").write_text("0.7.0-castbox.3\n")
+        installed_version = scripts.parent / ".version"
+        source_package = scripts.parents[3] / "package.json"
+        if installed_version.is_file():
+            version = installed_version.read_text().strip()
+        elif source_package.is_file():
+            version = json.loads(source_package.read_text())["version"]
+        else:
+            raise RuntimeError("Provide the selected upstream scripts with their installed .version or CLI package version.")
+        (self.root / ".trellis/.version").write_text(version + "\n")
         (self.root / ".trellis/workflow.md").write_text("[trellis-runtime-contract]\n"+json.dumps(DECLARATION)+"\n[/trellis-runtime-contract]\n")
         (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
         self.git("add", ".")
@@ -103,6 +111,26 @@ class CreateTaskTests(unittest.TestCase):
         example = json.loads((PACKAGE / "examples/public-invocation-error.json").read_text(encoding="utf-8"))
         validate_json(example, PACKAGE / "schemas/public-invocation-error.schema.json", "invocation_error")
         self.assertEqual(example["code"], "stale_identity")
+
+    def test_public_source_examples_reuse_the_executor_input_contract(self) -> None:
+        for name in ("public-create-input.json", "public-create-issue-input.json"):
+            with self.subTest(example=name):
+                data = json.loads((PACKAGE / "examples" / name).read_text())
+                validate_json(data, PACKAGE / "schemas/public-input.schema.json", "input")
+                validate_json(data["creation"], PACKAGE.parents[1] / "contracts/task-lifecycle/task-creation-input.schema.json", "creation")
+
+    def test_relation_mistake_is_diagnosed_before_task_or_checkout_mutation(self) -> None:
+        request = json.loads(json.dumps(self.payload))
+        request["creation"].update(source_profile="existing_issue", reviewed_source={
+            "kind": "issue", "repo_ref": "castbox/guru-trellis", "number": 713,
+            "relation": "exact_source",
+        })
+        before = self.git("status", "--porcelain")
+        with self.assertRaises(MODULE.CommandError) as raised:
+            self.invoke(request)
+        self.assertEqual(raised.exception.field_path, "input.creation.reviewed_source.relation")
+        self.assertFalse((self.root / self.ref).exists())
+        self.assertEqual(self.git("status", "--porcelain"), before)
 
     def test_primary_creation_and_record_plan_reject_before_mutation(self) -> None:
         self.root = self.primary
@@ -509,7 +537,7 @@ class CreateTaskTests(unittest.TestCase):
         installer = SOURCE / "trellis/presets/guru-team/scripts/python/apply_guru_team_trellis_preset.py"
         (self.root / ".trellis/workflow.md").write_bytes((SOURCE / "trellis/workflows/guru-team/workflow.md").read_bytes())
         (self.root / ".gitignore").write_text(".trellis/.runtime/\n")
-        applied = subprocess.run([sys.executable, str(installer), "--repo", str(self.root), "--json"],
+        applied = subprocess.run([sys.executable, str(installer), "--repo", str(self.root), "--python", sys.executable, "--json"],
                                  text=True, capture_output=True)
         self.assertEqual(applied.returncode, 0, applied.stdout + applied.stderr)
         self.git("add", ".")

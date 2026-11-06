@@ -10,6 +10,13 @@
       "remediation": "Use the declared command contract."
     },
     {
+      "code": "conflicting_arguments",
+      "trigger": "A scalar flag is repeated or command options conflict.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Provide each scalar flag at most once and use --help by itself."
+    },
+    {
       "code": "invalid_json",
       "trigger": "A JSON argument or input cannot be read, uses an unsupported carrier, is empty, has invalid syntax, or has a non-object top level.",
       "exit_status": 2,
@@ -42,7 +49,7 @@
       "trigger": "Unexpected runtime failure.",
       "exit_status": 70,
       "locator": "field_path",
-      "remediation": "Inspect the package runtime."
+      "remediation": "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-finish-task maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."
     },
     {
       "code": "source_mismatch",

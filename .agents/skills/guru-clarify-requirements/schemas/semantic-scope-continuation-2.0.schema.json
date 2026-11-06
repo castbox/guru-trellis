@@ -109,6 +109,30 @@
           "scope_action"
         ]
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "public_input": {
+            "required": [
+              "profile"
+            ],
+            "properties": {
+              "profile": {
+                "const": "task_scope_requirements_acceptance"
+              }
+            }
+          },
+          "typed_exit": {
+            "const": "scope_ready"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "authority"
+        ]
+      }
     }
   ]
 }
