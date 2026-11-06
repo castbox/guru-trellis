@@ -252,23 +252,25 @@ accept Delivery Planning or begin implementation.
 分发、执行终点和个人安装迁移见
 [Issue 编排迁移说明](../../presets/guru-team/MIGRATION-ISSUE-ORCHESTRATION.md)。
 
-已发布稳定版本为 `v0.7.0-guru.6`，peeled commit 为
-`6b3e26b177f747fdde48b43685d8af8827e22614`。默认稳定安装使用同一 immutable `.6`
-tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.6`
+已发布稳定版本为 `v0.7.0-guru.7`，peeled commit 为
+`7718d129bcb2055d77c7f43d0e4edca9aee313ea`。默认稳定安装使用同一 immutable `.7`
+tag 的 workflow marketplace `gh:castbox/guru-trellis/trellis#v0.7.0-guru.7`
 和 preset checkout，并读取该 checkout 自身的 Fork lock 构建。该 tag 锁定
 Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core
 `0.7.0-castbox.5`，与下述当前源码分开核对。
 
-本次目标为尚未发布的 `v0.7.0-guru.7`。当前准备源码的 extension 与 maintenance
-target 为 `0.7.0-guru.7`；它与已发布的 immutable `.6` tag 分开读取。
-正式 Fork lock 固定到 `17015f987166f4106034f115d23212446f16d536`，
-tree `08f5fc32d766ab2ccf04226846449b87ef95c5fb`，成功 main CI `40882919377`。
+本次目标为尚未发布的 `v0.7.0-guru.8`。当前准备源码的 extension 与 maintenance
+target 为 `0.7.0-guru.8`；它与已发布的 immutable `.7` tag 分开读取。
+正式 Fork lock 固定到 `ca0e8b931d19ccb87802d6866abd2113a6f707c0`，
+tree `7d765bd35caf840820359259703e4035fe7d0ad2`，成功 main CI `42016570304`。
 该来源包含 #40 维护能力、#43 旧原生 schema-1 会话元数据兼容修复、#47
 Task/Delivery Git 对象读取优化、#50 公开 `GitCandidateContent` 不可变摘要能力及
 #52 公开 `task_resume`，以及 #53 新进程 Python 选择与命令加参数执行修复。
 本来源包含上游 #55 的正式 schema1 归档一次增代、固定操作恢复与无私有 receipt 的后继查询。
 上游 #56 修复已验证后继与 registered sibling 共享快照的误冲突：同一正式前驱的同代或较早快照可被只读核验，仍返回所选 root 的实际 key/ref。
-本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
+本来源另包含上游 #58 的 AGENTS 自定义正文维护能力，以及 #59/#60 的已保留旧 Delivery profile 合法停止修复。
+本来源另包含上游 #62/PR #63 的 parent gitlink 原子身份修复，以及 #64/PR #65 的精简 known_legacy 正式归档后继能力。
+匹配构建、目标安装和各专项验收须分别核验，source lock 更新不证明这些步骤通过。
 CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 这些来源身份不替代实际目标安装、Guru 集成或各专项验收。
 已有 Fork `.4` tarball `castbox-v0.7.0-castbox.4` 属于历史配对来源，
@@ -276,18 +278,22 @@ CLI/Core 为 `0.7.0-castbox.6`，package manager 为 `pnpm@10.32.1`。
 保留模板原 mode；不以相同版本号选择另一构建或放宽 `source_locked`。
 
 源码试用的 workflow marketplace 与 preset 必须使用同一个真实、远端可寻址的完整
-Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.7` tag。
-准备源码与投影检查不证明 `.7` 安装、业务采用或 Release 通过。
+Guru candidate SHA，再从该 SHA 的 lock 构建。不得使用尚未发布的 `.8` tag。
+准备源码与投影检查不证明 `.8` 安装、业务采用或 Release 通过。
 本次最终 candidate 门禁在准备交付与 Finish 合并后，从 fresh `origin/main`
 重新冻结 exact commit/tree，执行定向安装及 predecessor 升级验证。tag、tag-pinned
 smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完成。
 历史验收只保留原来源身份，不替代本次候选门禁；完整多平台矩阵与真实业务、生产
 验证保持独立。
 
-本次发布集合由 `v0.7.0-guru.6` 到最终 candidate 的实际完整 diff 确定。
-当前差额包括 #678 的本地安装与发布收尾合同、#679 的明确 Task/Delivery 接收会话
-续接、首失败诊断与文档展示修正，以及 #666 的已有行为核验。#666 没有新增源码修复；
-它核验的 #419/#657 既有因果不作为本次新增实现。单项证据不替代本次发布验证。
+本次发布集合由 `v0.7.0-guru.7` 到最终 candidate 的实际完整 diff 确定。
+当前差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
+显式对象与机制采用审核，#692/#695 的 Intake 和 JSON 输入诊断，以及 #693 的合同承接
+与验证证据方法。#706/#717 收敛独立多视角审核与审核充分性；#709/#731 完善 Issue 编排
+和协调者解阻；#710/#713 收敛 Phase 2 authoring 与公共执行合同。#711 隔离知识导航写入，
+#718 解耦共享环境与运行位置，#724 将 Codex 公共 Skill 迁入共享根，#735 完善行为测试
+与因果验证，#739 修复父仓 gitlink 原子候选与 resolved 合并承接。上述源码和合同变化的
+具体交付范围由完整 diff 与原专项证据确定；它们不替代本次候选安装或发布验证。
 
 以下前序能力保留原验证来源和层次：
 
@@ -316,8 +322,8 @@ smoke、GitHub Release 与 Release Issue closure 由后续发布阶段分别完�
 与 `docs/architecture/README.md` 读取完整适用单元及 Git revision，与软件版本分开。
 
 For current-source validation, use the source-locked Trellis Fork checkout
-(`castbox/Trellis@17015f987166f4106034f115d23212446f16d536`, successful main CI
-`40882919377`) and that same reviewed Guru source. Stable `.6` installation
+(`castbox/Trellis@ca0e8b931d19ccb87802d6866abd2113a6f707c0`, successful main CI
+`42016570304`) and that same reviewed Guru source. Stable `.7` installation
 uses its original source pair described above. For a local installation, compare the canonical `workflow.md` with
 the target `.trellis/workflow.md` and preserve target edits before applying
 it. For a target meeting the ordinary current-only installation prerequisites,
@@ -473,7 +479,8 @@ workflow/Skill 混入旧安装 graph。
 人工旧归档恢复使用原维护 owner 的 `archive_resume` profile。正式 Finish 归档
 仍由 Reactivate 承接；未完成收尾返回原事务。恢复保留原归档并消费公共返回的
 活动身份，目标 native 和下一实际 Guru owner 必须实际验证。
-正式 source lock 不变，本地 matching candidate 只用于隔离开发；详见
+#577 当时未修改正式 source lock，本地 matching candidate 只用于隔离开发。
+当前正式来源以本页来源记录为准；历史兼容边界详见
 [兼容与依赖边界](../../presets/guru-team/MIGRATION-577.md)。
 
 ## 已有实现分支恢复（#669）
