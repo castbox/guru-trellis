@@ -3,7 +3,7 @@
   "artifact_origin": ".trellis/tasks/11-06-746-release-v070-guru8-preparation",
   "id": "746-release-v070-guru8-preparation",
   "name": "746-release-v070-guru8-preparation",
-  "lifecycle_generation": 0,
+  "lifecycle_generation": 1,
   "source": {
     "kind": "issue",
     "repo_ref": "castbox/guru-trellis",
@@ -26,7 +26,7 @@
   "meta": {},
   "accepted_scope": {
     "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
-    "revision": "sha256:18270b7751bac5fab3619048748539d5c62cd59a94c4748d003f49703136246d"
+    "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
   },
   "deliveries": [
     {
@@ -511,6 +511,73 @@
         "merge_commit": "ad205e9707f7ef1eb3077419e6489baea3894e94",
         "target_ref": "main"
       },
+      "stop_result": null
+    },
+    {
+      "id": "91275ecd-9ff5-44f5-8b4a-080ebaeb421c",
+      "lifecycle_generation": 1,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+          "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+        },
+        "anchors": [
+          "R8",
+          "AC6"
+        ]
+      },
+      "planning_root": "deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+        "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:2523a861-54dd-4975-9806-4062eb6ef955",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+              "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+            },
+            "anchors": [
+              "R8",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+            "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/prd.md",
+              "revision": "sha256:fcb90958015328839b435872311101c8bbbbc003fd86fef9de00f25dd1e80052"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+              "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/implement.md",
+              "revision": "sha256:c88dffe4b702c463a1a513a07e4fc614fbe6e333ddd7dd0ec0ff2acaef4d308f"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
       "stop_result": null
     }
   ],

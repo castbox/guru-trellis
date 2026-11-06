@@ -12,7 +12,9 @@ extension revision 是公共扩展版本；Fork CLI/Core 是固定 Trellis 依�
 
 ## 2. 背景与问题
 
-main 的 canonical extension 仍为 0.7.0-guru.7，公开文档仍把 .6 称为稳定版、.7 称为未发布。真实前驱已是 v0.7.0-guru.7。准备目标为 0.7.0-guru.8，保持 Fork CLI/Core 0.7.0-castbox.6。原 lock 17015f987166f4106034f115d23212446f16d536 落后于 main 已采用工具，正式安装会撤销 gitlink 与 compact 正式归档后继能力。正式 source lock 必须修正为 ca0e8b931d19ccb87802d6866abd2113a6f707c0，使用成功 CI 42016570304 对应的完整来源。
+generation 0 的起点中，main 的 canonical extension 为 0.7.0-guru.7，公开文档把 .6 称为稳定版、.7 称为未发布。真实前驱是 v0.7.0-guru.7。准备目标为 0.7.0-guru.8，保持 Fork CLI/Core 0.7.0-castbox.6。原 lock 17015f987166f4106034f115d23212446f16d536 落后于 main 已采用工具，正式安装会撤销 gitlink 与 compact 正式归档后继能力。正式 source lock 须为 ca0e8b931d19ccb87802d6866abd2113a6f707c0，采用成功 CI 42016570304 对应来源。
+
+generation 0 已交付上述版本、文档与真实安装，PR #748 和归档 PR #749 均已合并。generation 1 从 main@62b75465957ad0543803bdbe98e6dc222008040e 继续：实际前驱升级在安装及 reapply 后，被验证器对合法 Agent Skill 强制要求 wrapper 的假设误拒。本轮增加 R8/AC6 修复该验收链；既有能力和历史交付保留，不重开旧 Delivery。
 
 Codex 公共 Skill 已迁移至 .agents/skills；私有发布合同仍要求旧 .codex/skills 核对。必须对齐当前受管清单，不能恢复退休副本或把缺失当作通过。
 
@@ -30,8 +32,11 @@ Codex 公共 Skill 已迁移至 .agents/skills；私有发布合同仍要求旧 
 | S2 入口核对 | 当前平台与 installer | 对齐公共与私有 Skill 实际投影 | 退休公共目录不再作为要求，有效入口保留 |
 | S3 实际安装 | 原 tools owner，完整干净已提交来源 | source_locked 更新 Task checkout dogfood | extension、CLI、来源、全部 managed bytes 和 lock 可验证 |
 | S4 交付收尾 | 原 Check/Review/Publish/Finish owners | 晋升前后分别 Check、提交、完整独立 Review，Refs-only PR 与归档 | Task 正常终态，#746 保持开放 |
+| S5 前驱升级验证 | 发布 Agent，从真实 .7/.5 安装升级 | 原 existing verifier 按接口检查 Agent 与脚本两类入口 | 合法安装通过，真实缺失或漂移仍失败 |
 
 ## 5. 行为要求
+
+- R8：generation 1 补齐真实 `.7 → .8` existing 升级验证器对合法 `instruction_only` / `invocation.kind=agent` Skill 的识别。按原 interface 核对声明的 Markdown entrypoint、字节和模式；脚本型 Skill 保留可执行 wrapper、字节/模式和私有脚本不泄漏检查。不得跳过包或改前驱制造通过。为合法双类型及普通缺失/漂移提供必要回归，随后从新 exact candidate 重跑原 existing 入口。
 
 - R1：extension 为 0.7.0-guru.8，tag 为 v0.7.0-guru.8。保持 Fork 0.7.0-castbox.6，将固定 lock 修正为 ca0e8b931d19ccb87802d6866abd2113a6f707c0，保留 main 已采用的父仓 gitlink 与 compact 正式归档后继支持；同步当前版本约束与必要断言，不改历史归档。
 - R2：公开文档区分已发布前驱 .7、准备候选 .8 和真实依赖。marketplace 与 preset 使用相同 immutable source，不提前宣称发布或验证成功。
@@ -58,6 +63,8 @@ Markdown 拥有流程与 AI 判断，脚本仅执行事实。main 是开发基�
 | AC5 | R6–R7/S4 | public Delivery/PR/merge 与原 Completion/Closure/Finish/Cleanup；终态归档可在 main 验证，#746 不提前关闭。 |
 
 以上是待执行验收，不以文件存在、脚本返回或单次 PR 合并代替完整语义判断。
+
+AC6（R8）：针对真实升级中安装的合法 Agent/runtime 包验证投影行为；合法入口通过，声明入口缺失或字节/模式漂移仍失败。原 `.7/.5 → .8/.6` existing 命令在新候选上通过，并核退休受管资产已退出。此修复属于准备范围，最终 candidate gate 仍由发布阶段独立重跑。
 
 ## 8. 实际未决项
 

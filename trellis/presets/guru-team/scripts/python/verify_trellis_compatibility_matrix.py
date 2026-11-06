@@ -1795,38 +1795,46 @@ def _assert_platform_projection(target: Path, platform: str) -> None:
                 public_contracts.get("invocation"),
                 f"{skill_id}.public_contracts.invocation",
             )
-            wrapper_value = invocation.get("wrapper")
-            if not isinstance(wrapper_value, str):
-                raise MatrixError(f"{skill_id} public wrapper is missing")
-            wrapper_relative = Path(wrapper_value)
+            is_agent = invocation.get("kind") == "agent"
+            entry_kind = "entrypoint" if is_agent else "wrapper"
+            entry_value = invocation.get(entry_kind)
+            if not isinstance(entry_value, str):
+                raise MatrixError(f"{skill_id} public {entry_kind} is missing")
+            entry_relative = Path(entry_value)
             if (
-                wrapper_relative.is_absolute()
-                or not wrapper_relative.parts
-                or ".." in wrapper_relative.parts
+                entry_relative.is_absolute()
+                or not entry_relative.parts
+                or ".." in entry_relative.parts
             ):
-                raise MatrixError(f"{skill_id} public wrapper is unsafe")
+                raise MatrixError(f"{skill_id} public {entry_kind} is unsafe")
             scripts = root / skill_id / "scripts"
-            public_wrapper = root / skill_id / wrapper_relative
-            package_wrapper = package / wrapper_relative
-            if not public_wrapper.is_file() or not os.access(public_wrapper, os.X_OK):
+            public_entry = root / skill_id / entry_relative
+            package_entry = package / entry_relative
+            if not public_entry.is_file() or (
+                not is_agent and not os.access(public_entry, os.X_OK)
+            ):
+                requirement = (
+                    "declared entrypoint" if is_agent
+                    else "executable declared wrapper"
+                )
                 raise MatrixError(
-                    f"public projection has no executable declared wrapper: "
-                    f"{public_wrapper.relative_to(target).as_posix()}"
+                    f"public projection has no {requirement}: "
+                    f"{public_entry.relative_to(target).as_posix()}"
                 )
             if (
-                not package_wrapper.is_file()
-                or public_wrapper.read_bytes() != package_wrapper.read_bytes()
-                or bool(public_wrapper.stat().st_mode & stat.S_IXUSR)
-                != bool(package_wrapper.stat().st_mode & stat.S_IXUSR)
+                not package_entry.is_file()
+                or public_entry.read_bytes() != package_entry.read_bytes()
+                or stat.S_IMODE(public_entry.stat().st_mode)
+                != stat.S_IMODE(package_entry.stat().st_mode)
             ):
                 raise MatrixError(
-                    f"public projection declared-wrapper drift: "
-                    f"{public_wrapper.relative_to(target).as_posix()}"
+                    f"public projection declared-{entry_kind} drift: "
+                    f"{public_entry.relative_to(target).as_posix()}"
                 )
             leaked = [
                 path.relative_to(target).as_posix()
-                for path in scripts.iterdir()
-                if path.is_file() and path != public_wrapper
+                for path in scripts.rglob("*")
+                if path.is_file() and path != public_entry
             ]
             if leaked:
                 raise MatrixError(
