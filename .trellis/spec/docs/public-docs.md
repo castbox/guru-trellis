@@ -35,33 +35,33 @@ is intended. If docs mention interactive template selection, describe it as an
 opt-in user choice, not as the team default or automated validation path.
 
 Stable install and upgrade docs must keep the version axes explicit. The
-published stable release and this release's predecessor are `v0.7.0-guru.6`
-(peeled `6b3e26b177f747fdde48b43685d8af8827e22614`), extension `0.7.0-guru.6`.
-Stable workflow marketplace and preset sources use that same immutable `.6`
+published stable release and this release's predecessor are `v0.7.0-guru.7`
+(peeled `7718d129bcb2055d77c7f43d0e4edca9aee313ea`), extension `0.7.0-guru.7`.
+Stable workflow marketplace and preset sources use that same immutable `.7`
 tag. That tag's own lock selects Fork
 `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI/core `0.7.0-castbox.5`.
 Build that checkout's locked Fork; the current source lock or a matching CLI
 version number alone cannot establish the predecessor's matching build.
 
-The next repository target is `v0.7.0-guru.7`, not yet published. Its canonical
-extension and maintenance target are `0.7.0-guru.7`. The current Fork source
-lock stays at `castbox/Trellis@79a97ed60fe19e8f287eaddfa74722b5250ced35`, tree
-`7f83f41031181b1f12b83268e51cbde2b775ec5f`, successful main CI `39905440951`,
-with CLI/core `0.7.0-castbox.5` and `pnpm@10.32.1`. This source includes #40
+The next repository target is `v0.7.0-guru.8`, not yet published. Its canonical
+extension and maintenance target are `0.7.0-guru.8`. The current Fork source
+lock stays at `castbox/Trellis@17015f987166f4106034f115d23212446f16d536`, tree
+`08f5fc32d766ab2ccf04226846449b87ef95c5fb`, successful main CI `40882919377`,
+with CLI/core `0.7.0-castbox.6` and `pnpm@10.32.1`. This source includes #40
 maintenance, #43 native schema-1 session compatibility, #47 Task/Delivery Git
 object reading, #50 public `GitCandidateContent`, #52 public `task_resume`,
 #53 new-process Python and argv execution, #55 formal schema1 archive
 reactivation, #56 verified sibling snapshots, and #58 custom AGENTS content
-maintenance. Source identities and CI do not prove a matching local build,
+maintenance, and #59/#60 legal stopping of retained old Delivery profiles. Source identities and CI do not prove a matching local build,
 target installation, native acceptance or Release. Historical Fork `.4`
 tarballs do not substitute for the current lock's matching build. Use the clean
 locked source workspace with its normal CLI/Core dependency layout and
 original template modes.
 
-Before `.7` publication, marketplace and preset must use the same actual,
+Before `.8` publication, marketplace and preset must use the same actual,
 remote-addressable full Guru candidate SHA. Do not insert an invented SHA or
-use the unavailable `.7` tag as a provider. Only after publication and remote
-tag identity verification may both use immutable `v0.7.0-guru.7`. The final
+use the unavailable `.8` tag as a provider. Only after publication and remote
+tag identity verification may both use immutable `v0.7.0-guru.8`. The final
 exact-candidate gate starts from fresh main after preparation and Finish
 bookkeeping merge. It performs focused installation and predecessor upgrade
 validation before the separate tag, tag-pinned smoke, GitHub Release and Issue
@@ -72,12 +72,19 @@ installation, native continuation, real-business adoption, production, the full
 cumulative matrix or Release.
 
 Release capability descriptions follow the actual full diff from the
-predecessor tag to the final candidate. The current difference includes
-#678 local-installation and release-closeout contracts, #679 receiving-session
-continuation, first-failure diagnostics and document-display fixes, and #666
-verification of existing behavior. #666 adds no source fix; the #419/#657
-causal history it verifies is not new implementation in this release. These
-individual results do not establish release success. Preserve historical
+predecessor tag to the final candidate. The current difference includes #687's
+fixed Fork `.6` adoption; #690/#694/#697 Architecture routes, explicit review
+objects and mechanism-adoption review; #692/#695 Intake and JSON-input
+diagnostics; and #693 contract-consumption and verification-evidence methods.
+#706/#717 cover independent review and review sufficiency; #709/#731 cover
+Issue orchestration and coordinator unblocking; #710/#713 converge Phase 2
+authoring and public execution contracts. #711 isolates knowledge-navigation
+writes, #718 decouples shared environments from execution location, #724 moves
+public Codex Skills to the shared root, #735 refines behavior and causal
+validation, and #739 fixes parent gitlink candidate and resolved-merge handling.
+Their exact delivery scope comes from the full diff and original topic
+evidence. These changes do not establish candidate installation or release
+success. Preserve historical
 #630's three-system script/install/maintenance evidence and failed Windows
 Agent observation separately; that Agent matrix is outside its accepted
 script scope. Preserve #649's historical failures, false/no-grade and valid

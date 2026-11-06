@@ -143,36 +143,40 @@ source lock 的 commit 变更，再重新构建；不运行 stock `trellis upgra
 
 | 组件 | 固定版本 |
 | --- | --- |
-| 已发布稳定 Guru tag | `v0.7.0-guru.6`（peeled `6b3e26b177f747fdde48b43685d8af8827e22614`） |
-| 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.7` |
-| 当前源码 Guru extension revision | `0.7.0-guru.7`（未发布的准备源码） |
+| 已发布稳定 Guru tag | `v0.7.0-guru.7`（peeled `7718d129bcb2055d77c7f43d0e4edca9aee313ea`） |
+| 本次 repository 目标 tag（尚未发布） | `v0.7.0-guru.8` |
+| 当前源码 Guru extension revision | `0.7.0-guru.8`（未发布的准备源码） |
 | 当前源码固定 Fork CLI/Core | `0.7.0-castbox.6` @ `17015f987166f4106034f115d23212446f16d536` |
 | 当前源码 Fork CI identity | `40882919377` |
 | Fork package manager | `pnpm@10.32.1` |
 | 当前知识 authority（非软件版本） | `guru-trellis-rdt` / `guru-trellis-architecture`；分别从 `docs/{requirements,design,test}/README.md`、`docs/architecture/README.md` 读取 |
 
 repo tag、extension revision、Fork CLI/source commit 是相互独立的版本轴。
-当前源码 extension 与 maintenance target 为 `.7`；稳定安装仍使用
-`gh:castbox/guru-trellis/trellis#v0.7.0-guru.6`。`GURU_SOURCE` 必须使用同一
-immutable `.6` tag 的 checkout，并读取该 checkout 自身的 lock 构建 Fork。
-已发布 `.6` 自身锁定 Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core `0.7.0-castbox.5`；不能用当前源码锁解释前驱，也不能只凭版本号相同选择构建。
+当前源码 extension 与 maintenance target 为 `.8`；稳定安装仍使用
+`gh:castbox/guru-trellis/trellis#v0.7.0-guru.7`。`GURU_SOURCE` 必须使用同一
+immutable `.7` tag 的 checkout，并读取该 checkout 自身的 lock 构建 Fork。
+已发布 `.7` 自身锁定 Fork `79a97ed60fe19e8f287eaddfa74722b5250ced35` / CLI-Core `0.7.0-castbox.5`；不能用当前源码锁解释前驱，也不能只凭版本号相同选择构建。
 
 试用未发布源码时，workflow marketplace 与 preset 必须来自同一个真实、远端可寻址的
 完整 Guru SHA（`gh:castbox/guru-trellis/trellis#<完整 candidate SHA>`）。先核验该 SHA，
-再从其 lock 构建；不得把尚未发布的 `.7` tag 当作可用 provider。
+再从其 lock 构建；不得把尚未发布的 `.8` tag 当作可用 provider。
 准备版本不作为业务仓默认安装版本。Fork main CI、旧 tag 或本地样本不能替代
 Guru exact-candidate、installed/lifecycle 或发布门禁。
 
 本次准备同步 canonical extension、maintenance target 与公开文档，保留现有知识 identity，
-再通过原 installer 生成平台投影。准备内容不证明 `.7` 正式安装或发布通过。
+再通过原 installer 生成平台投影。准备内容不证明 `.8` 正式安装或发布通过。
 最终发布阶段在准备交付与 Finish 合并后，从 fresh `origin/main` 重新冻结 exact
 commit/tree，执行定向安装与 predecessor 升级验证，再分别完成 tag、tag-pinned smoke、
 GitHub Release 与 Release Issue closure。历史验收保持原来源身份，不替代本次候选门禁。
 
-本次发布集合由 `v0.7.0-guru.6` 到最终 candidate 的实际完整 diff 确定。
-当前差额包括 #678 的本地安装与发布收尾合同、#679 的明确 Task/Delivery 接收会话
-续接、首失败诊断与文档展示修正，以及 #666 的已有行为核验。#666 没有新增源码修复；
-它核验的 #419/#657 既有因果不作为本次新增实现。单项证据不替代本次发布验证。
+本次发布集合由 `v0.7.0-guru.7` 到最终 candidate 的实际完整 diff 确定。
+当前差额包括 #687 的固定 Fork `.6` 采用，#690/#694/#697 的 Architecture 出口、
+显式对象与机制采用审核，#692/#695 的 Intake 和 JSON 输入诊断，以及 #693 的合同承接
+与验证证据方法。#706/#717 收敛独立多视角审核与审核充分性；#709/#731 完善 Issue 编排
+和协调者解阻；#710/#713 收敛 Phase 2 authoring 与公共执行合同。#711 隔离知识导航写入，
+#718 解耦共享环境与运行位置，#724 将 Codex 公共 Skill 迁入共享根，#735 完善行为测试
+与因果验证，#739 修复父仓 gitlink 原子候选与 resolved 合并承接。上述源码和合同变化的
+具体交付范围由完整 diff 与原专项证据确定；它们不替代本次候选安装或发布验证。
 
 以下前序能力保留原验证来源和层次：
 

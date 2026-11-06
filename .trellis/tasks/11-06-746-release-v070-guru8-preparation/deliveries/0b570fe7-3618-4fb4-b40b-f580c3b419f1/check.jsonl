@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/workflow/clear-technical-writing.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": ".trellis/spec/workflow/quality-guidelines.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": ".trellis/spec/preset/installer.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": ".trellis/spec/docs/public-docs.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": ".agents/skills/release-guru-trellis-version/references/contract.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": "docs/design/current/codex-skill-distribution.md", "reason": "本次版本准备、真实安装与当前平台合同的直接约束"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "按当前 Delivery 正文合同审核需求、设计、实施与验收承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "按当前 Delivery 正文合同审核需求、设计、实施与验收承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "按当前 Delivery 正文合同审核需求、设计、实施与验收承接"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "按当前 Delivery 正文合同审核需求、设计、实施与验收承接"}

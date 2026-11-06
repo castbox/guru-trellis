@@ -1,0 +1,121 @@
+{
+  "schema_version": "2.0",
+  "id": "746-release-v070-guru8-preparation",
+  "name": "746-release-v070-guru8-preparation",
+  "lifecycle_generation": 0,
+  "source": {
+    "kind": "issue",
+    "repo_ref": "castbox/guru-trellis",
+    "number": 746,
+    "disposition": "reference_only"
+  },
+  "title": "准备 v0.7.0-guru.8 正式发布",
+  "description": "基于 main 完成 #746 的发布准备交付，以 reference_only 关联发布 Issue。",
+  "dev_type": null,
+  "scope": "仅覆盖 v0.7.0-guru.8 的版本、公开文档、受管投影、Docs/Architecture/RDT 收敛和真实 dogfood tools 更新；包括当前 Codex Skill 迁移的发布合同对齐。tag、Release、发布后本地收尾和 Issue 关闭由 #746 后续阶段承担。",
+  "package": null,
+  "priority": "P2",
+  "createdAt": "2026-11-06",
+  "base_branch": "main",
+  "worktree_path": null,
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {},
+  "accepted_scope": {
+    "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+    "revision": "sha256:0223d5737f1d96db0744f578d764bf399d310880d80644dc4f88fed879656686"
+  },
+  "deliveries": [
+    {
+      "id": "0b570fe7-3618-4fb4-b40b-f580c3b419f1",
+      "lifecycle_generation": 0,
+      "scope_ref": {
+        "authority": {
+          "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+          "revision": "sha256:0223d5737f1d96db0744f578d764bf399d310880d80644dc4f88fed879656686"
+        },
+        "anchors": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "R7",
+          "AC1",
+          "AC2",
+          "AC3",
+          "AC4",
+          "AC5"
+        ]
+      },
+      "planning_root": "deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1",
+      "profile": "pull_request",
+      "phase": "implementing",
+      "plan_ref": {
+        "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1/design.md",
+        "revision": "sha256:e174d1385f56b55d03a60e4c4e116750303a71ea76d92b7b2942ef4d3a1b207d"
+      },
+      "candidate": null,
+      "results": {
+        "planning": {
+          "result_id": "planning-accepted:ef1606e6-e69c-4cd5-ac26-85efcf8aaf56",
+          "owner_role": "planning",
+          "owner_id": "guru-activate-delivery",
+          "outcome": "accepted",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+              "revision": "sha256:0223d5737f1d96db0744f578d764bf399d310880d80644dc4f88fed879656686"
+            },
+            "anchors": [
+              "R1",
+              "R2",
+              "R3",
+              "R4",
+              "R5",
+              "R6",
+              "R7",
+              "AC1",
+              "AC2",
+              "AC3",
+              "AC4",
+              "AC5"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1/design.md",
+            "revision": "sha256:e174d1385f56b55d03a60e4c4e116750303a71ea76d92b7b2942ef4d3a1b207d"
+          },
+          "candidate": null,
+          "predecessor_result_id": null,
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1/prd.md",
+              "revision": "sha256:2df023fbfac15d5ea83081b7634437c44aa62a7f85b8828c726b2ec48903e8ba"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1/design.md",
+              "revision": "sha256:e174d1385f56b55d03a60e4c4e116750303a71ea76d92b7b2942ef4d3a1b207d"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/0b570fe7-3618-4fb4-b40b-f580c3b419f1/implement.md",
+              "revision": "sha256:97de4cd077e0c3a1d78c6ddb37e77ef619d93ffad84bf04b66e33a618c721174"
+            }
+          ]
+        },
+        "check": null,
+        "full_review": null,
+        "readiness": null
+      },
+      "publication_result": null,
+      "delivery_result": null,
+      "stop_result": null
+    }
+  ],
+  "completion_results": [],
+  "closure_results": []
+}
