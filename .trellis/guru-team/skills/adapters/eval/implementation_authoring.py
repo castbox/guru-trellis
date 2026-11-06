@@ -1,7 +1,8 @@
-"""Existing implementation-owner continuation facts and private native transport.
+"""Fact-only Planning entry and actual implementation continuation transport.
 
-The fixture supplies a previously accepted plan as a starting fact. Only a
-native owner can judge new evidence, choose a continuation, or restore work.
+Initial native cases have no accepted plan or stage result. A later continuation
+requires actual predecessor stdout and original Activation for the same fixture.
+Historical module preconditions belong to the module tests, not this native seed.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import json
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -30,6 +32,13 @@ OWNERS = ('guru-author-task-plan', 'guru-maintain-architecture-baseline',
           'guru-review-contract-wording', 'guru-qualify-root-cause',
           'guru-qualify-normal-scenario', 'guru-qualify-solution-mechanism',
           'guru-maintain-requirements-design-test-ssot')
+ENTRY_OWNERS = ('guru-select-workflow-mode', 'guru-sync-base',
+                'guru-discover-change-context', 'guru-review-change-request',
+                'guru-create-task', 'guru-establish-task-identity',
+                'guru-ensure-task-checkout', 'guru-bind-task-session',
+                'guru-establish-task-branch-binding')
+ENTRY_KIND = 'pre_task_r1'
+ENTRY_CONTEXT = 'guru713-r1-entry-v1'
 RDT = 'guru-maintain-requirements-design-test-ssot'
 RESUME_CASE = 'native-implementation-plan-resume'
 RESUME_PROTOCOL_ENV = 'GURU_TEAM_IMPLEMENTATION_RESUME_PROTOCOL'
@@ -44,8 +53,6 @@ CASES = (
 EXECUTION_SURFACE = (
     'A fresh independent reviewer receives only its supplied public input and file reads, not the parent inspect/run stdout. Its first-invocation reads must satisfy the original blind-first contract; Task PRD and implement narratives are excluded from that initial read set.',
     'The inspect command returns the actual complete current diff and identities. The run command can read actual Git before bytes and execute validation. Allowed write targets include diff.patch and validation.json for carrying those raw facts to the separate reviewer; historical observation files remain historical.',
-    'The original record-phase2-check --input argument accepts a JSON file locator, or - with the JSON in stdin; it does not accept inline JSON as that argument. For an invocation using --input FILE, the named file supplies the public input, not JSON sent separately through stdin. Read the current command contract and prepare the actual input for the selected call.',
-    'If the complete diff includes Task PRD, implement or acceptance narratives, prepare readable original authority, candidate/source and consumer material yourself under the original blind-first contract. Keep those narratives out of the initial input, including narrative patch hunks. Preserve the complete candidate for the original owner\'s review; input isolation does not narrow its scope.',
 )
 
 
@@ -53,6 +60,77 @@ def facts_locator(request: dict) -> str:
     if request.get('case_id') == RESUME_CASE:
         return RESUME_FACTS
     return PLANNING_CONTINUATION_FACTS if planning_continuation_requested(request) else FACTS
+
+
+def initial_request_entry(request: dict) -> bool:
+    """Recognize the declared test setup, without selecting a workflow route."""
+    if (request.get('case_id') != 'native-implementation-plan-premise'
+            or request.get('native_execution_mode') != 'semantic_authoring'
+            or planning_continuation_requested(request)):
+        return False
+    files = request.get('files', [])
+    if len(files) != 1 or not request.get('workdir'):
+        return False
+    source = Path(request['workdir']) / files[0]
+    return json.loads(source.read_text()).get('entry_kind') == ENTRY_KIND
+
+
+def entry_environment(repository: Path) -> dict:
+    return {'PATH': str(repository.parent / 'owner-bin') + os.pathsep + os.environ['PATH'],
+            'TRELLIS_CONTEXT_ID': ENTRY_CONTEXT, 'PYTHONDONTWRITEBYTECODE': '1',
+            'GIT_OPTIONAL_LOCKS': '0'}
+
+
+def stage_request_entry(request: dict, fixture: Path, source_repo: Path) -> None:
+    """Prepare source bytes and clean Git topology, without business identities."""
+    from adapters.eval.fixture_io import write_fake_gh
+    method_relative = Path('.agents/skills/trellis-brainstorm/SKILL.md')
+    method_source = source_repo / method_relative
+    if not method_source.is_file():
+        raise ValueError('R1 fixture requires the original trellis-brainstorm method '
+                         'from the matching installed source at ' + str(method_relative))
+    method_target = fixture / method_relative
+    method_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(method_source, method_target)
+    source = json.loads((Path(request['workdir']) / request['files'][0]).read_text())
+    request_body = source['request']['body']
+    files = {**source['repository_files'], 'docs/requests/r1.md': request_body,
+             'docs/range.md': _implementation_range_authority(request['case_id'])}
+    for relative, body in files.items():
+        if Path(relative).is_absolute() or '..' in Path(relative).parts:
+            raise ValueError('R1 fixture source path must be repository-relative')
+        target = fixture / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding='utf-8')
+    public = {'entry_kind': ENTRY_KIND, 'request_locator': 'docs/requests/r1.md',
+              'title': source['request']['title'],
+              'boundary': 'Raw standalone R1 request; no Task or semantic predecessor exists.'}
+    write_json(fixture / PUBLIC_INPUT, public)
+    reads = sorted({*files, PUBLIC_INPUT, '.trellis/workflow.md',
+                    '.trellis/spec/workflow/clear-technical-writing.md'})
+    write_json(fixture / FACTS, {
+        'schema_version': '1.0', 'case_id': request['case_id'], 'entry_kind': ENTRY_KIND,
+        'required_reads': reads, 'public_input_locator': PUBLIC_INPUT,
+        'candidate_seed': source['candidate_files'],
+        'planned_task_id': 'r1-planning-entry', 'context_id': ENTRY_CONTEXT,
+        'writable_paths': [FACTS, PUBLIC_INPUT, 'interval.py', 'test_interval.py',
+                           'docs/operator-notes.md', 'docs/phase2-evidence/diff.patch',
+                           'docs/phase2-evidence/validation.json'],
+        'owner_mutated_paths': [], 'python_executable': sys.executable,
+        'affected_target_start': {'interval.py': source['repository_files']['interval.py']},
+        'seed_boundary': 'Source request and candidate bytes only; every owner result is pending.',
+    })
+    run_git(fixture, 'add', '.')
+    run_git(fixture, 'commit', '-qm', 'stage original R1 request and business baseline')
+    head = run_git(fixture, 'rev-parse', 'HEAD')
+    run_git(fixture, 'remote', 'add', 'origin', 'https://github.com/example/guru-extension.git')
+    run_git(fixture, 'update-ref', 'refs/remotes/origin/main', head)
+    primary = fixture.with_name(fixture.name + '-primary')
+    fixture.rename(primary)
+    run_git(primary, 'worktree', 'add', '-b', 'codex/eval-r1-planning-entry', str(fixture), head)
+    remote = fixture.parent / 'source-remote.git'
+    run_git(fixture.parent, 'clone', '--bare', '--no-local', str(primary), str(remote))
+    write_fake_gh(fixture.parent, 'sync-base', local_remote=remote)
 
 
 def planning_continuation_requested(request: dict) -> bool:
@@ -139,7 +217,8 @@ def resume_execution(request: dict) -> tuple[Path, Path, dict]:
     last = receipts[-1]
     approved = json.loads(last['response']['stdout'])
     if (last['request']['skill_id'] != 'guru-approve-task-plan'
-            or last['request']['command'] != 'invoke' or last['response']['returncode']
+            or last['request']['command'] not in {'invoke', 'invoke-guru-approve-task-plan'}
+            or last['response']['returncode']
             or approved.get('exit_id') != 'approved'
             or approved.get('task_ref') != facts['task_ref']
             or approved.get('delivery_key') != facts['delivery_key']):
@@ -184,33 +263,61 @@ def resume_execution(request: dict) -> tuple[Path, Path, dict]:
     }
 
 
-def observe_candidate(repository: Path, facts: dict) -> dict:
-    """Read actual complete content facts after owner writes; choose no route."""
-    from adapters.eval.owner_runtime import load_package_runtime_module
-    from runtime.delivery_projection.adapter import DeliveryProjection
-    from runtime.reviewed_content import reviewed_content_identity, reviewed_content_metadata_path
-    common = load_package_runtime_module(
-        repository / '.trellis/guru-team/scripts/bash/run-skill-command.sh', 'guru-check-task', 'common')
-    projection = DeliveryProjection(repository, facts['task_ref'])
-    delivery = projection.resolve(facts['delivery_key'])
-    base = delivery['candidate']['base_ref']
+class PublicObservationError(ValueError):
+    """Carry an original producer failure without changing its response."""
+
+    def __init__(self, process: subprocess.CompletedProcess):
+        self.response = {'returncode': process.returncode, 'stdout': process.stdout,
+                         'stderr': process.stderr}
+        super().__init__('original public observation failed')
+
+
+def observe_candidate(repository: Path, facts: dict, paths: list[str] | None = None,
+                      *, environment: dict | None = None,
+                      development_base: str | None = None,
+                      observed_target: str | None = None) -> dict:
+    """Relay original public facts for the caller's explicitly selected paths."""
+    def public(argv):
+        result = subprocess.run(argv, cwd=repository, text=True, capture_output=True,
+                                check=False, env={**(environment if environment is not None else os.environ),
+                                                  'PYTHONDONTWRITEBYTECODE': '1'})
+        if result.returncode:
+            raise PublicObservationError(result)
+        return json.loads(result.stdout)
+
+    current = public([sys.executable, '-B', '.trellis/scripts/delivery.py', 'current', '--json'])
+    if current.get('kind') != 'current' or current.get('key') != facts['delivery_key']:
+        raise ValueError('original public current does not select this observation Delivery')
+    delivery = current['delivery']
+    previous = delivery['candidate']
+    selected = paths if paths is not None else previous['paths'] if previous else []
+    if not selected or not all(isinstance(path, str) and path for path in selected):
+        raise ValueError('inspect requires the caller-selected nonempty paths or an existing public candidate')
     head = run_git(repository, 'rev-parse', 'HEAD')
-    committed = run_git(repository, 'diff', '--name-only', base, head).splitlines()
-    dirty = common.dirty_paths(repository)
-    paths = sorted({path for path in [*committed, *dirty] if not reviewed_content_metadata_path(path)})
-    candidate = projection.candidate(paths, head_ref=head, base_ref=base)
+    candidate_argv = ['bash', '.trellis/guru-team/scripts/bash/construct-delivery-candidate.sh',
+        '--root', '.', '--task', facts['task_ref'], '--delivery-key', json.dumps(facts['delivery_key']),
+        '--head', head, '--paths', *selected]
+    for flag, value in (('--development-base', development_base), ('--observed-target', observed_target)):
+        if value is not None:
+            candidate_argv.extend([flag, value])
+    candidate = public(candidate_argv)
+    content = public(['bash', '.trellis/guru-team/scripts/bash/run-skill-command.sh',
+        '--package-root', '.trellis/guru-team/skills/packages/guru-review-branch',
+        '--validator', 'reviewed_content_identity', '--', '--root', '.', '--include-worktree'])['result']
+    base = candidate['base_ref']
     from adapters.eval.eval_support import qualification_planning_identity
     qualification_target = {**facts['original_candidate'], 'checkout_head': head,
         'planning_identity': qualification_planning_identity(repository, [
             facts['planning_root'] + '/' + name for name in ('prd.md', 'design.md', 'implement.md')])}
-    return {'current_head': head, 'fixed_base': base, 'dirty_paths': dirty,
-            'reviewed_paths': paths, 'candidate': candidate,
-            'reviewed_content_sha256': common.content_identity(repository),
+    return {'current_head': head, 'fixed_base': base,
+            'status_porcelain': run_git(repository, 'status', '--porcelain=v1'),
+            'reviewed_paths': candidate['paths'], 'candidate': candidate,
+            'reviewed_content': content,
             'architecture_candidate': {'head': head,
-                'content_identity': 'sha256:' + reviewed_content_identity(repository)['sha256']},
+                'content_identity': 'sha256:' + content['sha256']},
             'diff': run_git(repository, 'diff', base), 'current_delivery': delivery,
             'qualification_target': qualification_target,
-            'current_selection': projection.current(facts['delivery_key'])}
+            'current_selection': current}
 
 
 def _implementation_range_authority(case_id: str) -> str:
@@ -275,9 +382,9 @@ These are expected target observations, not recorded command results, native rev
 
 ## Starting source observations
 
-The pre-implementation snapshot supplied for original plan acceptance contains an interval.contains
-stub raising NotImplementedError and the existing range_filter.select comprehension. Later candidate
-implementation and assertions must be read from their actual files; this snapshot is historical evidence.
+The source baseline contains an interval.contains stub raising NotImplementedError and the existing
+range_filter.select comprehension. Candidate implementation and assertions are separate actual files.
+This source observation establishes no Planning acceptance or implementation result.
 ''' + observation
 
 
@@ -367,7 +474,7 @@ test_interval.py provides the existing assertions; direct select probes cover th
 
 ## 1. Goals, requirements and content baseline
 
-Implement R1/D1-S1/S2 and whole Task AC1..AC3. Fixed development baseline B is `{base_ref}`, selected by original DeliveryProjection.content_base from the observed business baseline HEAD. That baseline commit precedes Task/Delivery creation and this planning seed. B already contains the predicate stub, existing filter, four tests and canonical range/Architecture documents. Planning H0 was that observed HEAD; PR target main is separate. Later target observations do not redefine B.
+Implement R1/D1-S1/S2 and whole Task AC1..AC3. Fixed development baseline B is `{base_ref}`, selected from the observed business baseline HEAD through the original candidate contract. That baseline commit precedes Task/Delivery creation and this planning seed. B already contains the predicate stub, existing filter, four tests and canonical range/Architecture documents. Planning H0 was that observed HEAD; PR target main is separate. Later target observations do not redefine B.
 Architecture authority is docs/architecture/README.md (range-v1), docs/architecture/00-foundation/design-constitution.md (range-constitution-v1), and docs/architecture/06-governance/change-contract.md (range-contract-v1/range-concerns-v1). Architecture review checks actual responsibilities, state, dependencies and legal ranges under those contracts.
 
 ## 2. Current system, boundary and difference
@@ -461,36 +568,46 @@ Before final Phase 2, reread actual implementation/caller/assertions and the nam
 
 
 def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> None:
+    if (request.get('case_id') == 'native-implementation-plan-premise'
+            and request.get('native_execution_mode') == 'semantic_authoring'):
+        if not initial_request_entry(request):
+            raise ValueError('initial R1 native case requires its declared pre_task_r1 source request')
+        stage_request_entry(request, fixture.resolve(), source_repo)
+        return
+    stage_planning_snapshot(request, fixture, package, source_repo)
+
+
+def stage_planning_snapshot(request: dict, fixture: Path, package: Path, source_repo: Path) -> None:
+    """Retain the existing snapshot for module tests and the other native cases."""
     fixture = fixture.resolve()
     from adapters.eval.planning_authoring import acquire_authoring_checkout, register_authoring_resources
     acquisition = acquire_authoring_checkout(fixture, branch_name='eval/implementation')
     case_id = request['case_id']
     plan_conflict = case_id == 'native-implementation-plan-premise'
     authority_conflict = case_id == 'native-implementation-authority-conflict'
-    # Reuse the actual installed creation/activation seed used by the existing
-    # Phase 2 fixture. Its pre-existing approvals are fixture facts, not evidence
-    # that this native invocation reviewed the accepted plan.
+    # Reuse environment/business staging with an explicit fact-only boundary.
+    # Original owners must produce every subsequent semantic stage result.
     with tempfile.TemporaryDirectory(prefix='implementation-seed-') as temporary:
         workdir = Path(temporary)
         write_json(workdir / 'public.json', {'profile': 'delivery_initial_check', 'mode': 'workflow', 'task_ref': '.trellis/tasks/current'})
         (workdir / 'interval.py').write_text('def contains(value, lower, upper):\n    return lower <= value < upper\n')
-        phase2_authoring.stage({**request, 'workdir': temporary,
+        resources = phase2_authoring.stage({**request, 'workdir': temporary,
             'case_id': 'native-owner-common-expectation' if plan_conflict else 'native-owner-finding',
             'files': ['public.json', 'interval.py']}, fixture,
             fixture / '.trellis/guru-team/skills/packages/guru-check-task', source_repo,
+            acquisition=acquisition, fact_only=True,
             seed_bodies=_code_drift_seed_bodies() if case_id == 'native-implementation-code-drift' else None,
             range_authority_body=_implementation_range_authority(case_id))
     original_facts = json.loads((fixture / phase2_authoring.FACTS).read_text())
-    check_input = json.loads((fixture / 'docs/phase2-evidence/check-public-input.json').read_text())
+    prior_input = fixture / 'docs/phase2-evidence/check-public-input.json'
+    check_input = json.loads(prior_input.read_text()) if prior_input.exists() else original_facts
     from runtime.delivery_projection.adapter import DeliveryProjection
-    from runtime.delivery_projection.gates import rework
     projection = DeliveryProjection(fixture, check_input['task_ref'])
     key = check_input['delivery_key']
-    resources = register_authoring_resources(fixture, key, acquisition)
+    if resources is None:
+        resources = register_authoring_resources(fixture, key, acquisition)
     task_ref = check_input['task_ref']
     planning = projection.planning_directory(key).relative_to(fixture).as_posix()
-    reason = projection.resolve(key)['scope_ref']['authority']
-    rework(projection, key, 'check', 'implementation', reason, ['check', 'full_review', 'readiness'])
     projection.select(key)
     new_evidence = 'docs/implementation-observation.md'
     if plan_conflict:
@@ -521,39 +638,15 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     # facts; no candidate edit or new semantic result is written here.
     run_git(fixture, 'add', new_evidence, 'docs/operator-notes.md')
     run_git(fixture, 'commit', '-qm', 'stage newly available implementation evidence')
-    public = {'profile': 'delivery_initial_review', 'mode': 'workflow',
-              'task_ref': task_ref, 'delivery_key': key,
-              'source_selection': [{'locator': 'docs/range.md', 'section': 'Integer Range',
-                                    'authority_kind': 'requirement'}]}
-    if authority_conflict:
-        public = {'profile': 'delivery_active_task_scope_change', 'mode': 'workflow',
-            'task_ref': task_ref, 'delivery_key': key, 'source_exit': 'implementation_discovery',
-            'target_locator': new_evidence, 'resume_target': 'guru-resume-implementation',
-            'continuation_id': 'implementation-authority-current'}
-    elif case_id == 'native-implementation-code-drift':
-        public = check_input
+    public = {'task_ref': task_ref, 'delivery_key': key, 'planning_root': planning,
+              'current': projection.current(key), 'source_evidence': new_evidence,
+              'boundary': 'Entry facts, not an original Skill invocation input.'}
     write_json(fixture / PUBLIC_INPUT, public)
     reads = ['.trellis/workflow.md', task_ref + '/prd.md', *[planning + '/' + name for name in ('prd.md', 'design.md', 'implement.md')],
              'docs/range.md', new_evidence, 'interval.py', 'range_filter.py', 'test_interval.py',
              'docs/operator-notes.md', 'docs/phase2-evidence/validation.json',
              'docs/architecture/README.md', 'docs/architecture/00-foundation/design-constitution.md',
-             'docs/architecture/06-governance/change-contract.md', phase2_authoring.ARCHITECTURE_INPUT]
-    if authority_conflict:
-        reads.extend([
-            '.trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/public-delivery-active-task-scope-change-input.schema.json',
-            '.trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/semantic-scope-continuation-2.0.schema.json',
-        ])
-    owner_reads = []
-    for skill in OWNERS:
-        owner = fixture / '.trellis/guru-team/skills/packages' / skill
-        owner_reads.extend(str(path.relative_to(fixture)) for path in (
-            owner / 'SKILL.md', owner / 'interface.json', owner / 'commands.json') if path.is_file())
-    rdt = fixture / '.trellis/guru-team/skills/packages' / RDT
-    rdt_interface = json.loads((rdt / 'interface.json').read_text())
-    rdt_reads = ('references/contract.md','references/current-knowledge.md',
-        'schemas/public-input-impact-2.0.schema.json','schemas/semantic-result.schema.json',
-        *[output['schema']['path'] for output in rdt_interface['public_contracts']['outputs']])
-    owner_reads.extend((rdt / relative).relative_to(fixture).as_posix() for relative in rdt_reads)
+             'docs/architecture/06-governance/change-contract.md']
     from adapters.eval.owner_runtime import load_package_runtime_module
     approval = load_package_runtime_module(
         fixture / '.trellis/guru-team/scripts/bash/run-skill-command.sh',
@@ -561,9 +654,12 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
     approval_checkpoint = approval.checkpoint(
         fixture, fixture / task_ref, 'planning-approval.json', key).relative_to(fixture).as_posix()
     write_json(fixture / FACTS, {'schema_version': '1.0',
-        'required_reads': reads + owner_reads, 'public_input_locator': PUBLIC_INPUT,
+        # Initial reads bind the supplied business facts. Each selected owner
+        # loads its public contracts at its original workflow step.
+        'required_reads': reads, 'public_input_locator': PUBLIC_INPUT,
         'task_ref': task_ref, 'delivery_key': key, 'planning_root': planning,
-        'seed_boundary': 'Existing approved plan is a starting fixture fact; it is not a native review result.',
+        'case_id': case_id,
+        'seed_boundary': 'Actual current Planning and unaccepted candidates. No current semantic stage result is supplied.',
         'writable_paths': [task_ref + '/prd.md', *[planning + '/' + name for name in (
             'prd.md', 'design.md', 'implement.md', 'implement.jsonl', 'check.jsonl')],
             'interval.py', 'test_interval.py', 'docs/operator-notes.md',
@@ -580,41 +676,62 @@ def stage(request: dict, fixture: Path, package: Path, source_repo: Path) -> Non
             'binding_revision':resources.binding_revision,'registered_checkout':str(acquisition.checkout.path),
             'topology':acquisition.checkout.topology},
         'affected_target_start': {'interval.py': (fixture / 'interval.py').read_text()},
-        **({'planning_candidate_syntax':
-            'For original Planning candidate_assessment without a design_locator, freshness_identity must be "sha256:" plus the SHA256 hex digest of json.dumps(candidate, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8"). Compute this from your own actual candidate object; the existing run command can perform the calculation. The worktree and planning-file identities returned by inspect describe different objects and are not this call-local candidate digest.'
-        } if case_id == 'native-implementation-plan-premise' else {}),
-        **({'execution_surface': [
-            *EXECUTION_SURFACE,
-            *(['Original recorder/checker stdout is an intermediate receipt. A Check recorder receipt includes artifact_path and dry_run; those receipt fields are not Phase 2 semantic-result properties. Use the emitted artifact_path with the original public wrapper owner-result argument, according to its current Interface, instead of embedding the complete receipt as owner_result.',
-               'For the supported JSON file form of original record-phase2-check --input, author your own recorder form bytes and use the existing implementation-authoring run command to write them to .trellis/.runtime/guru-team/evals/phase2-owner-input.json, then pass that relative locator. After the recorder consumes it, remove that transient input with the same run capability. This uses the existing private eval input path and execution capability; it does not expand the permitted final inventory.']
-              if case_id == 'native-implementation-code-drift' else []),
-        ]} if case_id in ('native-implementation-code-drift', 'native-implementation-authority-conflict') else {}),
     })
 
 
 def context(repository: Path, package: Path, helper_command: str, reads: list[str], input_locator: Path, *, facts_relative: str = FACTS) -> str:
+    facts = json.loads((repository / facts_relative).read_text())
+    planning_segment = (facts.get('case_id') == 'native-implementation-plan-premise'
+                        and facts_relative != RESUME_FACTS)
+    request_entry = facts.get('entry_kind') == ENTRY_KIND and 'delivery_key' not in facts
     return '\n'.join([
-        ('Continue the same fixture from the actual preceding owner output and current public state. Read the installed workflow mapping and original owner contracts to select and execute the applicable continuation yourself. The preceding output is not a next-owner input; author that input from the actual producer result and current facts.'
-         if facts_relative == PLANNING_CONTINUATION_FACTS else
-         'Continue the current implementation under the installed workflow and original owner contracts. The starting accepted plan and newly available source evidence are supplied as files.'),
-        f'Repository: {repository}', f'Fact sheet: {repository / facts_relative}',
+        ('Start from the supplied original standalone R1 request and clean repository. No Task, accepted scope, Delivery or semantic predecessor exists. The installed workflow owns the actual Intake and Planning sequence.'
+         if request_entry else
+         'Continue from the actual preceding owner output and matching public state. Author each next input from its original contract and actual predecessor output.'
+         if facts_relative in (PLANNING_CONTINUATION_FACTS, RESUME_FACTS) else
+         'Start from the actual current Planning and supplied unaccepted candidate files. No Planning acceptance, Activation or Check result is supplied.'),
+        *([
+            'Remain the workflow caller for this entire requested Planning segment. A selected Skill returns one typed exit to you; that return completes only the inner Skill invocation.',
+            'Consume each actual public output through its unique consumer in the current installed workflow, within this segment. Read that consumer\'s original contract and assemble its input from the actual predecessor output. A successful inner invocation alone is not an applicable earlier stop.',
+            'Before marking an invocation final, judge whether the actual Planning Approval or an applicable original stop has been reached. Otherwise continue the original workflow. The transport does not make this judgment or choose the next owner.',
+        ] if request_entry else []),
+        f'Repository evidence projection (file reads only): {repository}',
+        'This projection has no Git metadata. Forwarded commands execute in the separate original owner checkout. Resolve command paths relative to that checkout: use . when an original --root argument is required. Keep Task and planning locators repository-relative; do not use an absolute evidence-projection path as the execution root.',
+        f'Fact sheet: {repository / facts_relative}',
         *[f'{helper_command} read --kind owner_file --path {repository / path}' for path in reads],
         f'{helper_command} read --kind owner_file --path {input_locator}',
-        'Read the supplied current workflow, source, planning, implementation, tests and caller files. Load the original owner contract and exact input/output schemas for each command you select.',
-        'Complete the fact-sheet read and every helper read listed in its required_reads before the first helper command, including help, contract and inspect.',
-        'Run every helper read and command sequentially. Wait for the current helper process and its complete response before starting any other helper, including while an independent Architecture review is running. Do not leave a helper running while you inspect more files or start another command.',
-        'Use the private helper command transport repeatedly: helper command --skill-id <original skill-id> --command <original command-id or invoke> --stdin -- <original argv>. Its stdin is the original command stdin. For installed Delivery APIs use skill-id delivery-api. The helper inserts the selected command once; arguments after -- contain only that command\'s arguments, not the command name again. Read actual API capabilities with helper command --skill-id delivery-api --command contract -- --json. Read top-level syntax with helper command --skill-id delivery-api --command=--help, and selected syntax with helper command --skill-id delivery-api --command <subcommand> -- --help before choosing its exact arguments. These calls execute the original delivery.py in the owner checkout. To transport your own bounded file bytes, use skill-id implementation-authoring, command write, and stdin {file_updates:{relative_path:complete_text}}. No host-generated intermediate DTO or route is supplied.',
-        'Only the final original semantic wrapper call uses eval-only stdin {final:true,invocation:<your original stdin envelope>}; the helper removes those transport fields before the original wrapper. Use command invoke with the exact original argv of the selected wrapper. For a wrapper supporting --invocation -, invocation supplies its actual stdin object. Author uses --input <JSON> --owner-result <JSON> instead; author those original JSON arguments yourself and leave invocation as an empty object for its unused stdin. Earlier wrapper outputs remain their own original producer results.',
-        'For original Check filename invocation, use --input <public-input locator> --owner-result <semantic-result locator>. In its --invocation envelope, owner_result must be the original checked semantic JSON object, not a path string or recorder receipt.',
-        'For any required independent Architecture assessment, use command --skill-id guru-maintain-architecture-baseline --command independent-review --stdin with {public_input:<your actual original input>,reads:[<ordered repository-relative authority, candidate and consumer locators>]}. This private transport launches the existing fresh generic Architecture worker with the original reviewer prelude and returns its actual original wrapper stdout. Supply locators and original input only; never supply its owner_result, finding or exit. Direct Architecture self-assessment from this implementation context is unavailable.',
+        'The entry file contains current identity and business evidence, not a ready-made Skill input. Read the public current state and installed workflow, then select the applicable original owner yourself.',
+        'Read the fact sheet and its required source, candidate, caller and assertion files before the first helper command. Load each selected original Skill, Interface and its necessary references, schemas and examples to assemble its invocation. All production calling knowledge must come from those public contracts.',
+        'Use the private transport as command --skill-id <original skill-id> --command <original command-id or invoke> --stdin -- <original arguments>. Stdin is passed unchanged. The delivery-api transport executes the original installed delivery.py with the selected subcommand and arguments. Commands run in the owner checkout. The helper supplies no intermediate DTO, semantic result or route.',
+        '--stdin reads actual process input; defining a payload variable does not send it. Use a pipe or a quoted heredoc in a non-interactive shell. This example supplies only transport syntax; choose the command, arguments and JSON from the original public contract:',
+        '```bash\n'
+        f"{helper_command} command --skill-id <skill> --command <command> --stdin -- <original arguments> <<'GURU_COMMAND_JSON'\n"
+        '<current-command-input-json>\n'
+        'GURU_COMMAND_JSON\n```',
+        'Use implementation-authoring write with {file_updates:{relative_path:complete_text}} to transport bounded file bytes. Use implementation-authoring run with {argv:[executable,arguments...]} to execute a process and return its actual stdout, stderr and exit. These operations make no semantic judgment.',
+        'Use implementation-authoring inspect with {paths:[caller-selected content paths]} to obtain the original public candidate and content-identity producer results. Optional development_base and observed_target fields pass unchanged to the original --development-base and --observed-target flags. Empty stdin only reuses an existing public candidate path list. Choose production arguments from the original public contracts.',
+        *([
+            'This is an independent evaluation sample, not a continuation of an older current/g0 fixture or the source repository Task. Keep the supplied planned Task name within this test repository; choose the actual current-date TaskRef through the original Creation contract.',
+            'After an actual Task or Delivery created stdout, implementation-authoring observe-entry accepts {producer_skill:<that original owner>,producer_stdout:<complete actual stdout string>}. It checks that command receipt and rereads public current, exposing only observed identities and exact file targets. It supplies no source selection or stage result.',
+            'After actual scope acceptance and explicit Delivery Creation, implementation-authoring stage-candidate accepts empty JSON. It writes the supplied half-open candidate bytes into the actual current planning directory and executes raw validation. It leaves root requirements, accepted scope and gates to their original owners. This operation is test setup, not an Author result.',
+            'The initial required reads remain the supplied source reads. Read newly produced Task/planning documents through implementation-authoring run using the original checkout and consume its full stdout. Public predecessor outputs remain call-local; never reconstruct source_selection from these observation facts.',
+        ] if request_entry else []),
+        'Run helper commands sequentially and consume their complete actual responses. For the final original wrapper only, wrap its stdin in eval-only {final:true,invocation:<actual original stdin>}; the helper removes these transport fields. Preserve the original argv and envelope form read from that owner.',
+        'If a command tool returns a running session, retain its session ID and collect completion, exit, stdout and stderr before starting another helper. Capture complete helper output before displaying it; a truncated display cannot supply a missing DTO. Starting the same helper again does not wait for its first process.',
+        'Capturing a read response in a file does not put its body in your model-visible context. For each full-body read required by the original public contract, display the complete captured body in consecutive bounded chunks before using it to assemble or invoke that owner. Byte counts, hashes, searches and summaries do not replace the body. If a tool display is truncated, display the missing ranges before continuing. Keep the original read order.',
+        'For an independent Architecture assessment, the private independent-review transport accepts {public_input:<your original input>,reads:[ordered relative locators]}. It launches the original fresh worker and returns its actual original wrapper stdout. Supply no reviewer owner_result, finding or exit; follow the original independence/read contract.',
+        'Begin reads with Constitution, Baseline and project change contract. Repeated entries from the reviewer method\'s exact automatically required public-contract set retain their method coverage role and may already have been read. Actual candidate and consumer evidence must follow those authorities. If a contract itself changes, its method preload alone does not review that change: supply the actual design, full diff or source evidence after authority.',
         *EXECUTION_SURFACE,
-        'When that original Architecture result itself ends the current segment under its contract, the same final:true transport envelope can end independent-review and return the actual Architecture stdout. No additional caller-authored semantic result is needed merely to expose its original exit.',
-        'To observe the actual current full candidate after writes, use command --skill-id implementation-authoring --command inspect with empty stdin. It returns actual head/base, complete changed paths, original content identities, full diff and public Delivery state. To run an actual validation, use command --skill-id implementation-authoring --command run --stdin with {argv:[<explicit executable and arguments>]}; it runs in the fixture and returns the real process output. These commands make no semantic judgment or route selection.',
-        'Recorder/checker stdout is an intermediate receipt, not a public owner exit. Preserve and project actual results under the original owner contract; keep them in memory and do not reconstruct semantic results from a prior pass. All paths and original command arguments refer to the installed fixture root, not the evidence projection. Use relative paths for original --input/--owner-result file locators returned by that owner.',
-        ('This invocation consumes actual prior Activation output and current public Delivery facts for the same fixture. Continue under the installed workflow and the original owners\' current responsibilities. Determine from the current source, plan, applicable reviews and candidate whether affected implementation can resume. If current facts require re-entry, follow the original workflow and owner contracts.'
-         if facts_relative == RESUME_FACTS else
-         'If this invocation reaches Planning Approval approved, make that original invoke the final call and return its actual stdout. The ordinary workflow plan presentation/acceptance and Activation happen outside this native segment. Do not activate the Delivery, claim acceptance, or restore affected implementation in this segment. A later independently declared test invocation can consume actual Activation/public-current facts. Other original stop/re-entry outcomes remain available under their actual contracts.'),
-        'Return only the final original semantic owner wrapper stdout. Preserve every failed original command. An original Delivery CLI argument-parse error leaves this transport open so you can read its help and correct your own arguments. A declared intermediate recorder/checker error also returns control to you for diagnosis and original-owner re-entry; it supplies no formal exit and the transport never retries it. The host does not change arguments or select a continuation. Other Delivery execution failures and every nonzero original public owner wrapper end this invocation; never synthesize a successful result.',
+        'Every stage must consume real predecessor outputs. No metadata, historical fixture narrative, earlier command success or transport receipt establishes semantic approval. Early legitimate stops remain real stops and do not prove the later implementation or Check scenario.',
+        ('This first segment ends at actual Planning Approval or an earlier applicable original stop. Original plan presentation/acceptance and Activation occur outside this segment. Only a later same-fixture continuation with actual Activation stdout may claim after-acceptance implementation evidence.'
+         if planning_segment else
+         'Continue the applicable original workflow from the actual current stage. Produce the necessary original prerequisites before implementation or Check; if a real prerequisite or authority remains missing, preserve that stop. Claim after-acceptance behavior only when its actual predecessor and Activation outputs exist.'),
+        'Return only the final original semantic owner wrapper stdout. Preserve all original failures. Ordinary command errors leave the transport available for your own diagnosis, correction or stop through the original public help/contracts. The host never retries, corrects arguments or chooses a continuation. Only an explicitly final successful original semantic wrapper ends this invocation.',
+        *([
+            'After judging that this segment has reached its actual endpoint, capture the final original invoke stdout separately and keep its complete value in call-local memory. Intermediate public exits and recorder/checker receipts still belong to their original consumers.',
+            'Printing stdout in a tool does not deliver your final message. Parse that final original stdout with json.loads, then render the complete object with json.dumps(..., ensure_ascii=False, indent=2) for your final reply.',
+            'Verify that your final reply is the same complete JSON object, preserving its fields and their order with only JSON whitespace changes. Do not manually assemble braces, reconstruct fields, trim invalid trailing characters, or recover output from trace receipts. Invalid JSON remains an original error to handle truthfully.',
+        ] if request_entry else []),
     ])
 
 
@@ -628,9 +745,130 @@ class ImplementationCommands:
         self.environment = environment
         self.receipts_path = receipts_path
         self.facts_relative = facts_relative
+        if json.loads((repository / facts_relative).read_text()).get('entry_kind') == ENTRY_KIND:
+            self.owners = (*OWNERS, *ENTRY_OWNERS)
         self.receipts = []
         self.terminal = False
         self.independent_reviewer = None
+
+    def public_query(self, script: str, *arguments: str) -> dict:
+        process = subprocess.run([sys.executable, '-B', '.trellis/scripts/' + script,
+                                  *arguments, '--json'], cwd=self.repository,
+                                 env=self.environment, text=True, capture_output=True, check=False)
+        if process.returncode:
+            raise PublicObservationError(process)
+        return json.loads(process.stdout)
+
+    def observe_entry(self, value: dict) -> dict:
+        """Observe a completed public creation; never create or select an object."""
+        skill = value['producer_skill']
+        if skill not in {'guru-create-task', 'guru-create-delivery'}:
+            raise ValueError('observe-entry requires an original Task or Delivery creator')
+        previous = next((row for row in reversed(self.receipts)
+                         if row['request']['skill_id'] == skill
+                         and row['request']['command'] in {'invoke', 'invoke-' + skill}
+                         and row['response']['returncode'] == 0), None)
+        if previous is None:
+            raise ValueError('observe-entry requires the complete actual creator stdout')
+        output = json.loads(value['producer_stdout'])
+        if output != json.loads(previous['response']['stdout']):
+            raise ValueError('observe-entry requires the complete actual creator stdout')
+        if output.get('exit_id') != 'created':
+            raise ValueError('observe-entry requires an actual created exit')
+        facts = json.loads((self.repository / self.facts_relative).read_text())
+        if facts.get('entry_kind') != ENTRY_KIND:
+            raise ValueError('observe-entry belongs to the R1 request fixture')
+        task = self.public_query('task.py', 'current')['current_task']
+        if task is None or task['dir'] != output['task_ref']:
+            raise ValueError('public current does not match the actual created Task')
+        if skill == 'guru-create-task' and (task['id'], task['lifecycle_generation']) != (
+                output['task_id'], output['lifecycle_generation']):
+            raise ValueError('public current has a different created Task generation')
+        task_ref = task['dir']
+        if facts.get('task_ref', task_ref) != task_ref:
+            raise ValueError('R1 observation cannot switch an already observed Task')
+        facts['task_ref'] = task_ref
+        facts['current_head'] = run_git(self.repository, 'rev-parse', 'HEAD')
+        facts['owner_mutated_paths'] = sorted(set([
+            *facts['owner_mutated_paths'], task_ref + '/task.json']))
+        facts['writable_paths'] = sorted(set([*facts['writable_paths'], task_ref + '/prd.md']))
+        if skill == 'guru-create-delivery':
+            current = self.public_query('delivery.py', 'current')
+            if current.get('kind') != 'current' or current.get('key') != output['delivery_key']:
+                raise ValueError('public current does not match the actual created Delivery')
+            delivery = current['delivery']
+            if delivery['planning_root'] != output['planning_root']:
+                raise ValueError('public planning_root differs from actual creator stdout')
+            if facts.get('delivery_key', current['key']) != current['key']:
+                raise ValueError('R1 observation cannot switch an already observed Delivery')
+            planning = (Path(task_ref) / delivery['planning_root']).as_posix()
+            facts.update(delivery_key=current['key'], planning_root=planning,
+                         current_delivery=delivery, current_selection=current,
+                         original_candidate={'repo_locator': '.', 'task_ref': task_ref,
+                                             'diff_locator': 'docs/phase2-evidence/diff.patch'})
+            facts['writable_paths'] = sorted(set([*facts['writable_paths'], *[
+                planning + '/' + name for name in (
+                    'prd.md', 'design.md', 'implement.md', 'implement.jsonl', 'check.jsonl')]]))
+            from adapters.eval.owner_runtime import load_package_runtime_module
+            approval = load_package_runtime_module(
+                self.repository / '.trellis/guru-team/scripts/bash/run-skill-command.sh',
+                'guru-approve-task-plan', 'common')
+            checkpoint = approval.checkpoint(self.repository, self.repository / task_ref,
+                                             'planning-approval.json', current['key'])
+            facts['owner_mutated_paths'].append(checkpoint.relative_to(self.repository).as_posix())
+        write_json(self.repository / self.facts_relative, facts)
+        write_json(self.repository / PUBLIC_INPUT, {
+            'entry_kind': ENTRY_KIND, 'task_ref': task_ref,
+            **({'current': facts['current_selection']} if 'current_selection' in facts else {}),
+            'boundary': 'Observed public identity only; no semantic predecessor is stored.'})
+        return {'task_ref': task_ref, **({'delivery_key': facts['delivery_key'],
+                                        'planning_root': facts['planning_root']}
+                                       if 'delivery_key' in facts else {})}
+
+    def stage_entry_candidate(self) -> dict:
+        """Copy the raw candidate only after the original owners establish its target."""
+        facts = json.loads((self.repository / self.facts_relative).read_text())
+        if facts.get('entry_kind') != ENTRY_KIND or 'delivery_key' not in facts:
+            raise ValueError('stage-candidate requires the observed R1 Delivery')
+        current = self.public_query('delivery.py', 'current')
+        if current.get('kind') != 'current' or current['key'] != facts['delivery_key']:
+            raise ValueError('stage-candidate requires the same public current Delivery')
+        delivery = current['delivery']
+        if delivery['phase'] != 'planning' or any(delivery['results'].values()):
+            raise ValueError('stage-candidate cannot overwrite an accepted or progressed plan')
+        task = self.public_query('task.py', 'current')['current_task']
+        if (task is None or task['dir'] != facts['task_ref']
+                or task['accepted_scope'] is None
+                or task['accepted_scope'] != delivery['scope_ref']['authority']):
+            raise ValueError('stage-candidate requires the same publicly accepted Task scope')
+        if any(row['request']['skill_id'] == 'implementation-authoring'
+               and row['request']['command'] == 'stage-candidate'
+               and row['response']['returncode'] == 0 for row in self.receipts):
+            raise ValueError('the R1 candidate seed was already written')
+        planning = Path(facts['task_ref']) / delivery['planning_root']
+        seed = facts['candidate_seed']
+        targets = {'interval.py': seed['interval.py'], **{
+            (planning / name).as_posix(): seed[name] for name in (
+                'prd.md', 'design.md', 'implement.md', 'implement.jsonl', 'check.jsonl')}}
+        if not set(targets).issubset(facts['writable_paths']):
+            raise ValueError('candidate targets differ from the observed public planning directory')
+        for relative, body in targets.items():
+            target = self.repository / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(body, encoding='utf-8')
+        argv = [sys.executable, '-B', '-m', 'unittest', '-v', 'test_interval']
+        process = subprocess.run(argv, cwd=self.repository, env=self.environment,
+                                 capture_output=True, text=True, check=False)
+        validation = {'argv': argv, 'returncode': process.returncode,
+                      'stdout': process.stdout, 'stderr': process.stderr}
+        write_json(self.repository / 'docs/phase2-evidence/validation.json', validation)
+        diff = self.repository / 'docs/phase2-evidence/diff.patch'
+        diff.write_text(run_git(self.repository, 'diff', 'HEAD') + '\n')
+        facts['affected_target_start'] = {'interval.py': seed['interval.py']}
+        facts.pop('candidate_seed')
+        write_json(self.repository / self.facts_relative, facts)
+        return {'written_paths': [*targets, 'docs/phase2-evidence/validation.json',
+                                  'docs/phase2-evidence/diff.patch'], 'validation': validation}
 
     def record_response(self, payload: dict, result: dict) -> None:
         facts = json.loads((self.repository / self.facts_relative).read_text())
@@ -647,21 +885,44 @@ class ImplementationCommands:
             raise ValueError('implementation command follows the terminal original wrapper')
         final = False
         if stdin and not (skill == 'implementation-authoring' and command == 'run'):
-            value = json.loads(stdin)
+            try:
+                value = json.loads(stdin)
+            except json.JSONDecodeError:
+                # Ordinary owner input remains opaque here. Its original
+                # wrapper owns malformed-input diagnostics.
+                value = None
             if isinstance(value, dict) and 'final' in value and 'invocation' in value:
                 final = value['final'] is True
                 stdin = json.dumps(value['invocation'], ensure_ascii=False)
+        if final and skill in ('delivery-api', 'implementation-authoring'):
+            raise ValueError('only an original semantic public wrapper can terminate implementation evidence')
+        if skill == 'implementation-authoring' and command in {'observe-entry', 'stage-candidate'}:
+            try:
+                output = (self.observe_entry(json.loads(stdin)) if command == 'observe-entry'
+                          else self.stage_entry_candidate())
+                result = {'returncode': 0, 'stdout': json.dumps(output) + '\n', 'stderr': ''}
+            except PublicObservationError as error:
+                result = error.response
+            self.record_response(payload, result)
+            return result
         if skill == 'guru-maintain-architecture-baseline':
             if command != 'independent-review' or self.independent_reviewer is None:
                 raise ValueError('Architecture assessment requires its actual fresh independent worker')
             result = self.independent_reviewer(json.loads(stdin))
             self.record_response(payload, result)
-            if result['returncode'] or final:
+            if final and result['returncode'] == 0:
                 self.terminal = True
             return result
         if skill == 'implementation-authoring' and command == 'inspect':
             facts = json.loads((self.repository / self.facts_relative).read_text())
-            result = {'returncode': 0, 'stdout': json.dumps(observe_candidate(self.repository, facts)) + '\n', 'stderr': ''}
+            options = json.loads(stdin) if stdin else {}
+            try:
+                result = {'returncode': 0, 'stdout': json.dumps(observe_candidate(
+                    self.repository, facts, options.get('paths'), environment=self.environment,
+                    development_base=options.get('development_base'),
+                    observed_target=options.get('observed_target'))) + '\n', 'stderr': ''}
+            except PublicObservationError as error:
+                result = error.response
             self.record_response(payload, result)
             return result
         if skill == 'implementation-authoring' and command == 'run':
@@ -694,7 +955,6 @@ class ImplementationCommands:
             result = {'returncode': 0, 'stdout': json.dumps({'written_paths': list(updates)}) + '\n', 'stderr': ''}
             self.record_response(payload, result)
             return result
-        intermediate_command = False
         if skill == 'delivery-api':
             argv = [sys.executable, '-B', str(self.repository / '.trellis/scripts/delivery.py'), command, *arguments]
         else:
@@ -711,7 +971,9 @@ class ImplementationCommands:
             declared = next((row for row in commands if row['id'] == command_id), None)
             if declared is None:
                 raise ValueError('implementation command is not declared by its original owner')
-            intermediate_command = declared['stdout'] == 'intermediate_receipt'
+            if final and command_id not in (
+                    interface['public_contracts']['invocation']['command_id'], 'invoke-' + skill):
+                raise ValueError('only an original semantic public wrapper can terminate implementation evidence')
             if command == 'invoke':
                 relative = interface['public_contracts']['invocation']['wrapper']
             else:
@@ -734,32 +996,21 @@ class ImplementationCommands:
                 if supplied.resolve() == temporary.resolve():
                     temporary.unlink(missing_ok=True)
         self.record_response(payload, result)
-        delivery_parse_error = (skill == 'delivery-api' and process.returncode == 2
-            and not process.stdout and process.stderr.startswith('usage: delivery.py ')
-            and any(prefix in process.stderr for prefix in (
-                '\ndelivery.py: error:', f'\ndelivery.py {command}: error:')))
-        if process.returncode and not delivery_parse_error and not intermediate_command:
-            self.terminal = True
         if final and process.returncode == 0:
-            if skill == 'delivery-api' or (command != 'invoke'
-                    and command_id not in (interface['public_contracts']['invocation']['command_id'], 'invoke-' + skill)):
-                raise ValueError('only an original semantic public wrapper can terminate implementation evidence')
-            self.terminal = True
+            try:
+                output = json.loads(process.stdout)
+            except (ValueError, TypeError):
+                output = None
+            if isinstance(output, dict) and output.get('exit_id') in {
+                    row['exit_id'] for row in interface['public_contracts']['outputs']}:
+                self.terminal = True
         return result
-
-
-def owner_schema(package: Path) -> str:
-    return {
-        'guru-author-task-plan': 'schemas/semantic-result-2.0.schema.json',
-        'guru-check-task': 'schemas/phase2-check.schema.json',
-        'guru-clarify-requirements': 'schemas/semantic-scope-continuation-2.0.schema.json',
-    }[json.loads((package / 'interface.json').read_text())['id']]
 
 
 def public_reads(package: Path) -> tuple[str, ...]:
     identity = json.loads((package / 'interface.json').read_text())['id']
     reference = 'references/authoring.md' if identity == 'guru-author-task-plan' else 'references/contract.md'
-    return (*PUBLIC_READS, reference, owner_schema(package))
+    return (*PUBLIC_READS, reference)
 
 
 def validate_trace(payload: dict, protocol: dict, public_stdout: str) -> list[str]:
@@ -806,8 +1057,13 @@ def validate_trace(payload: dict, protocol: dict, public_stdout: str) -> list[st
         writable_states = {str(repository / relative): receipt['target_states_after'].get(relative)
                            for relative in facts['writable_paths']}
     last = receipts[-1]
-    final = json.loads(last['request']['stdin'])
-    if (last['request']['command'] not in {'invoke', 'independent-review', 'invoke-' + last['request']['skill_id']} or final.get('final') is not True
+    try:
+        final = json.loads(last['request']['stdin'])
+    except json.JSONDecodeError as error:
+        raise ValueError('implementation terminal stdout is not the final original wrapper result: '
+                         'missing explicit final marker') from error
+    if (not isinstance(final, dict)
+            or last['request']['command'] not in {'invoke', 'independent-review', 'invoke-' + last['request']['skill_id']} or final.get('final') is not True
             or 'invocation' not in final or last['response']['returncode'] != 0
             or stdout_digest(last['response']['stdout']) != stdout_digest(public_stdout)):
         raise ValueError('implementation terminal stdout is not the final original wrapper result')

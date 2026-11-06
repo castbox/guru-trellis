@@ -421,8 +421,19 @@ only the transient private owner JSON consumed by record, not public input.
 | `revision_refs` (4.0 only) | AI-selected changed source references; nonempty for scope_ready |
 | `ai_review_gate` | Complete explicit AI judgment; missing gate/status/decision never means passed |
 
-All nested semantic fields remain required by the profile-selected private
-schema declared above; historical 3.0 remains immutable.
+Before authoring a non-active 3.0 result, read the installed
+`.trellis/guru-team/skills/packages/guru-clarify-requirements/schemas/requirements-clarification.schema.json`.
+Its `invocationContext` definition owns `invocation_context.kind`; the public
+input's `profile` is a different discriminator. For initial intake of an
+existing Issue, use `initial_issue`; for a proposed draft, use `proposed_draft`.
+When adapting the draft result example for an Issue, select that Issue kind
+and replace the associated target facts and judgments. The retired public
+profile `initial_change_request` is not a private kind.
+For the pinned-old active 4.0 contract above, read the installed sibling
+`requirements-clarification-active-task-4.0.schema.json`; current Delivery
+scope profiles retain their separately declared contracts below.
+All nested semantic fields remain required by their selected schema;
+historical 3.0 remains immutable.
 The exact fields that normal authoring may omit are:
 
 | Omittable field | Deterministic derivation |
@@ -490,6 +501,18 @@ replace it with `#N`. Copy the complete snapshot, including its opaque digest,
 rather than manually rebuilding it from an example. This also preserves the
 target identity for the next Wording consumer.
 
+For `standard_intake`, load the envelope referenced by
+`interface.json` at `public_contracts.invocation.call_local.envelope`.
+The [shared invocation-envelope schema](../../../consumers/workflow/stage0/invocations/semantic-owner.schema.json)
+is installed at
+`.trellis/guru-team/skills/consumers/workflow/stage0/invocations/semantic-owner.schema.json`.
+The [standard intake input example](../examples/public-standard-intake-input.json)
+describes only the profile's `public_input`. Place the current public input
+in the outer envelope's `public_input` field.
+For this profile, set `owner_context` to `{}`. Preserve the actual transition
+and the checked owner result unchanged. Use the shared schema for the complete
+envelope shape. This `owner_context` guidance applies only to `standard_intake`.
+
 The six current public profiles are `standard_intake`, `reviewed_plan_intake`,
 `active_task_scope_change`, `standalone_review`,
 `normal_scenario_scope_confirmation`, and `solution_mechanism_scope_confirmation`. After the owner loop,
@@ -502,6 +525,19 @@ declared continuation; clarification evidence remains private and is never
 imported by the next Skill. The envelope has no top-level `typed_output` input:
 callers cannot provide or select the route. Locator arguments remain only for
 explicitly documented compatibility consumers and are not the normal route.
+
+The first `standalone_review` has a bounded missing-context entry. With
+`source_exit=start`, `mode=standalone`, and an owner-reviewed
+`context_evidence.status=missing`, invoke may consume the actual standalone
+Sync `base_current` transition to emit `needs_context`. Record and check the
+current semantic result first, then pass that result and the unchanged Sync
+transition to invoke. This entry does not require an earlier Discovery result.
+The output preserves that base transition and the original target,
+continuation and `resume_target` in `return_identity`. Project the actual output
+to Discovery `context_request`, author its current retrieval clues, and consume
+its actual `context_ready` before resuming `standalone_review`. A base transition
+does not supply current context for `clear` or other review outcomes; existing
+`context_current` re-entry retains its contract.
 
 Only successful public invoke stdout is the final DTO. A record/check receipt
 `result.typed_exit` is owner-private evidence, not a public exit. If invoke returns
@@ -597,6 +633,61 @@ calls installed accept_scope using the declared task_scope owner. It returns
 scope_ready2.0 with TaskKey to Creation or affected-stage routing. Missing source
 selection refreshes Clarify; it is not recovered from PRD/metadata. Scope-only
 writing is not Task Planning and cannot reach Architecture/Approval/Activation.
+
+### Scope Acceptance Authoring
+
+The three current schema2 scope profiles use
+`schemas/semantic-scope-continuation-2.0.schema.json` for `owner_result`.
+Pass the reviewed result directly to `scripts/invoke.sh --invocation - --json`
+inside an envelope containing `public_input` and `owner_result`. The 3.0/4.0
+record/check sequence in Minimal Recorder Authoring does not apply to these
+profiles. Keep the exact current `public_input` in `owner_result.public_input`.
+
+For `task_scope_requirements_acceptance` with `typed_exit=scope_ready`, the
+current Clarify AI must author `owner_result.authority` after reviewing the
+actual Author root PRD. Author's public output supplies `task_ref` and
+`requirements_locator`; it does not supply this reference. Preserve the
+adjacent original `source_selection` and `revision_refs` in both inputs.
+Author the current `scope_action`, `reason`, and passed `ai_review_gate` from
+the actual review. A digest alone does not establish that review.
+
+`authority` uses the upstream public `AuthorityRef` `{locator, revision}` from
+`.trellis/delivery-contract.md`. For this profile, `locator` must be the actual
+Author `requirements_locator`, exactly `<task_ref>/prd.md` relative to the
+repository root. `revision` must be `sha256:` followed by the lowercase
+SHA256 of that file's raw bytes. Read the whole file, including its existing
+line endings and final newline; do not hash parsed text, JSON, an old accepted
+scope, or another owner's private result. The installed executor independently
+reads this file and checks equality with `owner_result.authority` before the
+public operation. The upstream reference remains opaque to this package's
+schema; the installed public parser/store owns its structural definition.
+
+From the verified repository root, this ordinary file-reading command returns
+the current digest and path (replace the example path with the actual locator):
+
+```bash
+shasum -a 256 .trellis/tasks/demo/prd.md
+```
+
+Set `revision` to `sha256:` followed by the command's first output value.
+The complete envelope example is
+`examples/task-scope-requirements-acceptance-invocation.json`. Its digest binds
+the UTF-8 bytes of `Reviewed whole Task requirements.` followed by one LF.
+Replace its locator, digest, selected sources, revision references and review
+judgments with the current facts. Feed the complete adapted JSON through stdin
+to the invoke command above; the example file is an authoring shape, not a
+current result or a ready-to-replay acceptance.
+
+For `blocked`, retain the real blocked Gate and reason; `authority` may be
+omitted. The two pre-Author profiles `delivery_active_task_scope_change` and
+`delivery_task_scope_revision` omit `authority` and retain their existing
+`scope_ready` inputs. This condition documents the existing executor success
+domain: acceptance without the reviewed authority never succeeded. Such an
+ordinary omission now fails schema validation at `owner_result.authority`;
+after confirming the same PRD is still current, complete that field and invoke
+again. A changed PRD still requires fresh review and its new factual binding;
+do not update a digest to prolong an old judgment. Existing successful calls,
+same-authority retries and stale-content rejection retain their semantics.
 
 Legacy active_task_scope_change and missing-key gate results are pinned-old
 validation only; current migrated installations fresh re-enter the proper

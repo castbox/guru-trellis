@@ -28,6 +28,23 @@ on retries. Review any required target tools upgrade as a separate operation;
 this Skill never silently installs tools or merges a baseline. Reconcile retains
 business-diff judgment after parsing becomes possible.
 
+For the public legacy-fact dispositions, inspect the original Task's `commit`,
+`pr_url`, and `completedAt` values. A retained fact is a field that is present
+and whose value is neither `null` nor the empty string. Supply exactly one
+disposition for each such fact. Omit dispositions for missing, `null`, or empty
+fields; when all three lack a fact, the disposition array is empty. Preserve
+the original raw Task bytes. An actual nonempty historical value whose external
+verification is unavailable remains a fact: retain it as `source_snapshot`
+with the concrete evidence gap. Do not infer a current result or timestamp.
+These are the matching public executor's existing attribution rules.
+
+`legacy_fact_attribution_required` is an objective input error from that
+executor, not a typed Skill exit. Compare the disposition fields with those
+three actual source values, correct missing, duplicate, or extra dispositions,
+review the corrected decisions, and repeat this owner's original prepare.
+The failed prepare supplies no plan to apply. Do not alter the source snapshot
+or bypass the original fact validator to make preparation succeed.
+
 For `archive_resume`, select the exact monthly archive, its `original_task_ref`
 and destination `active_ref`. Public inspection receives original_task_ref; the
 old dispatcher, a current binding and manual relocation are not prerequisites.
@@ -115,11 +132,41 @@ owner output, not JSON syntax or process exit alone. History closeout runs old
 normal context/current and proves the old Task is no longer selected while other
 Task/session facts persist.
 
-`--action finalize --review-input REVIEW` reruns the actual native and next-owner
-commands and compares the reviewed observations. REVIEW contains native_argv,
-next_owner_argv (convert and archive_resume), exact observations and the minimal AI-selected
-output. The validator never decides a semantic route from status. Native success
-alone is insufficient: AI must assess the actual output and next owner behavior.
+### Finalize review input
+
+After reviewing the actual native and next-owner behavior, supply REVIEW as a
+JSON file or `-` for stdin to `--action finalize --review-input REVIEW`. It has
+these required fields:
+
+| Field | Value and profile |
+| --- | --- |
+| `native_argv` | The actual target-native command's nonempty string array. |
+| `next_owner_argv` | Required for `convert` and `archive_resume`: the actual next-owner command's nonempty string array. It is not required or executed for `history_closeout`. |
+| `observations` | Copy the complete observation object from this owner's original `preview.sh --action observe` receipt at `result.result`. It contains `native`, plus `next_owner` for `convert` and `archive_resume`. |
+| `output` | The minimal AI-selected `task_resumed` or `history_archived` output under the existing output schema. |
+
+Each object inside `observations` contains the original `argv`, `returncode`,
+`stdout` and `stderr`. Keep their complete values. The two existing intermediate
+receipt envelopes are not observations. Do not flatten the object into top-level
+`native_observation` or `next_owner_observation` fields, edit captured output, or
+use private recovery state to infer this input.
+
+See [the task-resumed example](../examples/finalize-review-task-resumed.json) for
+`convert` and `archive_resume`, and
+[the history-archived example](../examples/finalize-review-history-archived.json)
+for `history_closeout`. These are illustrative shapes: replace their commands,
+observations and output identity with this operation's actual reviewed values.
+They are not current evidence or a passed gate.
+
+Finalization checks the required input fields before executing either command.
+Missing fields return their `review_input` location and this contract's repair
+route. Extra caller fields keep their existing handling; this is not a new closed
+input schema. Correct only the caller input and retain the same `recovery_ref`.
+Then the original executor reruns the actual commands and compares their full
+observations. It retains the existing output, route and identity checks before
+recording the terminal result. The validator never decides a semantic route from
+status. Native success alone is insufficient: AI must assess the actual output
+and next owner behavior.
 
 ## Typed exits and consumers
 

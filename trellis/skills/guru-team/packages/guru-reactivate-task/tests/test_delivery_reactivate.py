@@ -104,6 +104,8 @@ class Fixture(unittest.TestCase):
                    'disposition': 'no_mutation', 'source_result': None}
         projection.apply({'api_version': '1.0', 'operation': 'close_task', 'key': key,
                           'owner_role': 'closure', 'owner_id': closure['owner_id'], 'result': closure})
+        self.git(self.root, 'add', '--', active_ref)
+        self.git(self.root, 'commit', '-qm', 'Preserve historical active Task and public results before archive')
         spec = importlib.util.spec_from_file_location('shared_finish_fixture_owner', PACKAGE.parent / 'guru-finish-task/runtime/invoke.py')
         finish = importlib.util.module_from_spec(spec); spec.loader.exec_module(finish)
         archive_ref = '.trellis/tasks/archive/2026-10/current'

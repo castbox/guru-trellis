@@ -25,3 +25,5 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 
 The Author candidate profile and its original-owner returns are defined in
 `references/contract.md#author-candidate-set`.
+Before computing an Author or planning file-set token, load the exact public
+[format and standard-library recipe](references/contract.md#file-set-identity).

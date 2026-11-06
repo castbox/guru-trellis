@@ -34,3 +34,5 @@ Return exactly one declared typed exit through public invoke; consume its route 
 identity, freshness, enum aggregation, and consumer binding; it must not decide
 whether a mechanism is good or bad and must not write qualification state.
 Author candidate inputs/returns: `references/contract.md#author-candidate-set`.
+Before computing its file-set token, load the shared public
+[format and recipe](../guru-qualify-normal-scenario/references/contract.md#file-set-identity).

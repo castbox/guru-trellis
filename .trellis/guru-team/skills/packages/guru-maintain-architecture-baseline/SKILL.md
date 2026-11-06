@@ -182,8 +182,13 @@ Only the declared public invocation emits a formal exit; follow its consumer and
 
 ## Purpose-specific Planning 3.0 migration
 
-Planning task impact requires schema_version=3.0 and planning_purpose. Read
-references/contract.md's Planning 3.0 section. Candidate assessment consumes
+Planning task impact retains purpose-bound Planning 3.0 semantics and requires
+planning_purpose. Current Delivery Planning selects delivery_task_impact_sync
+with schema_version=delivery-1.0, the exact public DeliveryKey and planning_root.
+Read [Delivery Architecture projection](#delivery-architecture-projection) and
+references/contract.md's Planning 3.0 section before assembling either purpose.
+Historical schema_version=3.0 Task Planning examples are validation assets,
+not inputs for current Delivery Planning. Candidate assessment consumes
 current call-local design_facts/constraint_refs or the current design_locator;
 it never requires an unwritten contribution, projects promotion_state, or
 claims reviewed_candidate. Its current router returns only to Author

@@ -91,14 +91,30 @@ def typed_output(package_root, public, transition, owner):
             "transition": current,
         }
     elif exit_id == "needs_context":
-        if not isinstance(transition, dict) or transition.get("stage") != "context_current":
+        initial_standalone = (
+            public.get("profile") == "standalone_review"
+            and public.get("mode") == "standalone"
+            and public.get("source_exit") == "start"
+            and owner["context_evidence"]["status"] == "missing"
+            and isinstance(transition, dict)
+            and transition.get("stage") == "base_current"
+        )
+        if not initial_standalone and (
+            not isinstance(transition, dict) or transition.get("stage") != "context_current"
+        ):
             raise CommandError("stale_identity", "transition", "Provide the current context transition.", 3)
+        if initial_standalone:
+            validate_json(
+                transition,
+                package_root.parents[1] / "consumers/workflow/stage0/transitions/base-current-2.0.schema.json",
+                "transition",
+            )
         base = transition.get("base")
         if not isinstance(base, dict):
             raise CommandError("stale_identity", "transition.base", "Provide the current base transition.", 3)
         token=base.get("identity_sha256") if base.get("kind")=="git_object" else base.get("post_sync_resolution_sha256")
         if not isinstance(token,str):raise CommandError("stale_identity","transition.base","Provide the checked base source.",3)
-        base_transition = {
+        base_transition = dict(transition) if initial_standalone else {
             "schema_version": transition.get("schema_version"),
             "transition_id": f"base_current:{token[:24]}",
             "stage": "base_current", "mode": transition.get("mode"),

@@ -1,0 +1,23 @@
+[
+  {
+    "candidate_ref": "candidate:phase2:upper-endpoint",
+    "decision": "rejected_not_reproduced",
+    "witness": {
+      "requirement_refs": [
+        "prd:R-inclusive"
+      ],
+      "supported_entry_refs": [
+        "entry:contains"
+      ],
+      "existing_caller_refs": [
+        "caller:range-filter"
+      ],
+      "honest_action_sequence": [
+        "Call contains(3, 1, 3) through the inclusive predicate."
+      ],
+      "defect_observation": "The suspected upper-endpoint exclusion was not reproduced: the inclusive predicate returned true and the endpoint test passed.",
+      "excluded_assumptions": []
+    },
+    "consumer_use": "task_commit_preflight"
+  }
+]

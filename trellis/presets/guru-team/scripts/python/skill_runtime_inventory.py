@@ -1,5 +1,25 @@
-"""Exact preset-managed runtime kernel inventory."""
+"""Exact preset-managed runtime and public projection inventories."""
 from pathlib import Path
+
+PLATFORM_PACKAGE_REQUIRED_SCHEMA_PATHS = {
+    "guru-review-branch": frozenset({Path("schemas/review-gate-7.0.schema.json")}),
+}
+PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
+    "guru-maintain-requirements-design-test-ssot": frozenset({
+        Path("examples/public-input-bootstrap.json"),
+        Path("examples/public-input-impact.json"),
+        Path("examples/public-input-promotion.json"),
+        Path("examples/public-input-repair.json"),
+    }),
+}
+# These static examples teach this owner's input; actual gate state stays private.
+PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS = {
+    "guru-create-task": frozenset({Path("examples/public-create-issue-input.json")}),
+    "guru-check-task": frozenset({
+        Path("examples/phase2-authoring.json"),
+        Path("examples/phase2-rejected-candidates.json"),
+    }),
+}
 
 SKILL_RUNTIME_KERNEL_PATHS = (
     Path("__init__.py"),
@@ -32,6 +52,7 @@ SKILL_RUNTIME_KERNEL_PATHS = (
     Path("validate.py"),
     Path("delivery_projection/__init__.py"),
     Path("delivery_projection/adapter.py"),
+    Path("delivery_projection/candidate_cli.py"),
     Path("delivery_projection/gates.py"),
     Path("delivery_projection/scope_revision.py"),
     Path("delivery_projection/withdrawal.py"),

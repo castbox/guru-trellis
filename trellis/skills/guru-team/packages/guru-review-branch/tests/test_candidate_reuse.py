@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import unittest
 from pathlib import Path
 
@@ -37,6 +38,58 @@ class CandidateReuseTests(unittest.TestCase):
     def checkpoint(self):
         return (self.repo / ".trellis/.runtime/guru-team/owner-checkpoints/flow-task"
                 / self.flow.key["delivery_id"] / "review-gate.json")
+
+    def test_current_authoring_example_reaches_public_review(self):
+        """Consume fixture authoring through real wrappers, without a native claim."""
+        checked = self.flow.check()
+        commit_input = {
+            "profile": "delivery_committed_reentry", "mode": "workflow",
+            "task_ref": self.flow.task_ref, "delivery_key": checked["delivery_key"],
+            "check_result_id": checked["check_result_id"],
+        }
+        committed = self.flow.wrapper(
+            "guru-create-task-commit", "invoke.sh", "--input",
+            self.flow.write("example-commit.json", commit_input), "--owner-result",
+            self.flow.write("example-commit-owner.json", {
+                "status": "passed", "summary": "Fixture: retain the committed candidate.",
+                "evidence": ["The actual current Check binds the existing commit."],
+            }))
+        self.assertEqual("committed", committed["exit_id"])
+        public = {
+            "profile": "delivery_branch_review", "mode": "workflow",
+            "task_ref": committed["task_ref"], "delivery_key": committed["delivery_key"],
+            "check_result_id": committed["check_result_id"],
+            "base_ref": self.projection.resolve(committed["delivery_key"])["candidate"]["base_ref"],
+            "branch_review_commit": committed["branch_review_commit"],
+            "review_intent": "initial_review",
+        }
+        authoring = json.loads(
+            (PACKAGE / "examples/authoring-delivery-passed-1.0.json").read_text())
+        public_file = self.flow.write("example-review.json", public)
+        recorded = self.flow.wrapper(
+            "guru-review-branch", "review-branch.sh", "--task", committed["task_ref"],
+            "--skill-input", public_file, "--semantic-review-file",
+            self.flow.write("example-review-owner.json", authoring), "--typed-exit", "passed")
+        self.assertFalse(recorded["formal_exit"])
+        self.assertEqual("recorded", recorded["status"])
+        self.assertEqual(committed["task_ref"], recorded["task_ref"])
+        validated = self.flow.wrapper(
+            "guru-review-branch", "check-review-gate.sh", "--task", committed["task_ref"],
+            "--delivery-key", json.dumps(committed["delivery_key"]), "--expected-exit", "passed")
+        self.assertFalse(validated["formal_exit"])
+        self.assertEqual("owner_checkpoint_validated", validated["status"])
+        self.assertEqual(committed["branch_review_commit"], validated["review_commit"])
+        reviewed = self.flow.wrapper("guru-review-branch", "invoke.sh", "--input", public_file)
+        self.assertEqual("passed", reviewed["exit_id"])
+        self.assertEqual(committed["task_ref"], reviewed["task_ref"])
+        self.assertEqual(committed["delivery_key"], reviewed["delivery_key"])
+        self.assertEqual(committed["branch_review_commit"], reviewed["branch_review_commit"])
+        stored = self.projection.resolve(committed["delivery_key"])["results"]["full_review"]
+        self.assertEqual(reviewed["full_review_result_id"], stored["result_id"])
+        self.assertEqual(checked["check_result_id"], stored["predecessor_result_id"])
+        self.assertEqual(committed["branch_review_commit"], stored["candidate"]["head_ref"])
+        self.assertEqual(public["base_ref"], stored["candidate"]["base_ref"])
+        self.assertFalse(self.checkpoint().exists())
 
     def test_successor_review_uses_current_check_after_original_checkpoint_retired(self):
         (self.repo / "policy.md").write_text("Keep both task and target obligations.\n")

@@ -266,3 +266,28 @@ source/dogfood 原 tools-only owner 在保留全部 Task/session 下投影工具
 canonical 仍经原 preset/工具 owner 投影 dogfood、installed 和声明平台；当前 Task/session、用户定制、mode、hash 与 sidecar 由原机制保护。不因普通 apply 的历史数据前置而迁移无关 Task。目标实际采用、定向 reapply/drift 与一个必要代表 clean 安装分别验证，不扩完整 Upgrade/Release 矩阵。local_candidate 的正式 source-lock 未验证必须在原结果保留，不能从版本相同推定通过。
 
 #710 的原 native 适配器沿同一 fixture 消费实际前序公开输出，原 mandatory 语义 owner 亲自完成前置；候选与最终 Check 各保留首次输入、实际命令和结果承接。预期出口只在模型输入外比较，装配失败与修订后新案例分开，不以静态投影或消费者单测代替首次行为。实际结果唯一见 [#710 Test](../../requirements-design-test-contributions/710-phase2-recorder-authoring/test.md)；#713仍亲自执行其完整链中的当前 Check，不消费本项旧出口作为新候选门禁。
+
+
+## 公开执行资料与原生产能力
+
+Guru业务Agent通过正式安装的workflow、Skill及其引用正文、Interface、命令help、profile schema/authoring示例和实际命令结果执行。Skill独占step-local调用合同，workflow只拥有全局顺序、mandatory invocation和typed exit consumer。当前profile、历史支持入口和实际输入载体必须明确，完整结果不能冒充正常authoring输入。
+
+原implementation owner选择内容范围、固定development baseline和paths。原delivery_projection执行器在Git checkout、C4与当前pull_request Delivery前置下，公开构造既有Git Candidate所需的确定性事实，复用同Delivery固定B优先、实际前序交付与既有内容算法；原Delivery operation继续执行begin-check/rework。公开构造不新增scope/pass/route判断、持久状态或第二算法，不要求业务Agent导入Guru私有实现。上游既有git_free Candidate内容引用入口与其consumer保持原边界，不因桥接增加无Git Delivery支持。
+
+AI作者语义内容；原producer的公共身份原样承接；recorder计算其私有字段。Phase2语义authoring、完整6.0结果consumer与两类内容token按MIGRATION-710保持边界。完整exit/stdout/stderr先捕获，再按原合同消费receipt.result、checker receipt和唯一typed exit；运输或checker成功不能替代正式阶段结果。普通输入/stale回具体原合同与恢复入口，内部故障保留已确认范围交原维护owner。
+
+eval只在其声明边界建立合法历史前提或隔离环境、外部替身、路径映射、运输和观测。当前native语义前提由Agent实际产生；正常必需导航和事实能力来自生产owner，不能由adapter补充隐藏调用知识或私有身份。native验证范围由当前accepted scope规定；实际执行的案例在模型外比较预期出口，取消项不产生通过结论。源码诊断和修订后新run不改写原失败。
+
+canonical package/runtime/workflow/preset和声明平台沿完整matching安装与原tools owner成套采用。用户内容、Task/session、sidecar、mode、reapply和drift保持原合同；源修改不证明目标已采用。旧完整安装保持原合同或由原owner成套切换，不新增长期双parser。实际安装、Agent行为、受控外部provider、真实发布/部署及Release矩阵分别报告，不互相推定。
+
+C4 的原 discovery 在 `already_established` 时，将原 resolver 的 TaskId、generation、binding_revision 作为最小 `result.binding_ref` 交给 Closure；未建立时不提供引用。typed `binding_established`、建立/ownership/recovery与原存储保持。该读投影不形成第二 binding authority。
+
+Check `planning_stale` 保留非空 `proposal_refs` 旧分支。无 scope 变化且 `planning_route=reapprove_plan` 时，空 refs 与具体 `revision_actions` 一起交给原 Author `delivery_approval_revision`；动作来自 Check AI 的既有 reason，workflow只做薄投影。技术返工不制造 scope proposal，11字段 authoring及完整6.0结果用途不变。原 Check 在 rework/record_gate 前验证完整输出，普通装配错误不先改变阶段。
+
+legacy finalize 的精确 REVIEW envelope由原 package公开；原 observe receipt 的 `result.result` 供 observations。原 owner在任何 target-native/next-owner重执行前诊断缺必需字段，保留既有profile区别、成功额外字段、两层receipt和原观察/route/identity比较。Planning freshness与qualification file-set token的公开配方分别说明各自原算法，不提供当前语义答案或互换身份。
+
+这些 producer/consumer 按 [MIGRATION-713](../../../trellis/presets/guru-team/MIGRATION-713.md)与完整匹配安装一起采用。旧完整安装保持原合同或由原owner切换；原recovery identity与已完成transition保留。新no-scope Check分支不能只更新producer后交旧consumer。实际采用与native证据分别验证，本单元不推定其通过。
+
+公共 JSON 参数在原 public entry 边界解析，已解析对象薄传原 schema、plan 和执行流程。Publication 不复用私有 Task/transaction 文件读取来解释 CLI JSON，也不为选择 profile 重复消费 stdin。原 private file reader、语义 Gate、确认边界、事务、输出及恢复保持。六个 legacy intermediate 的声明载体由既有公共 reader 承接；Publish/Merge/Finish 恢复固定 B 的 inline/file/stdin 承诺，Approval/Check/Branch Review 明确本次 additive 表示收敛，保留原文件优先、相对路径、symlink 文件和 stdin 成功域。其它 owner-private plan/recovery 读取不随之扩大。
+
+Discovery 执行 AI 先核 Sync transition 与公开 Git 事实，原 record/check observer 随后重读并派生其私有观察，不增加独立 observer API。无 Issue 的本地文本 draft 可以按公开正向例自行捕获来源；其它合法 capture 与实际 producer identity 保持，不建立唯一新摘要算法。这些当前说明和载体适配沿 MIGRATION-713 成套采用，不把模型额外提示、临时文件或测试专属答案变成生产入口。

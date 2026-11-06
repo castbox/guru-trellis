@@ -1,0 +1,9 @@
+{
+  "profile": "delivery_completion",
+  "mode": "workflow",
+  "task_ref": ".trellis/tasks/example",
+  "task_key": {
+    "task_id": "example",
+    "lifecycle_generation": 0
+  }
+}

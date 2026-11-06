@@ -157,10 +157,63 @@ scripts/invoke.sh --invocation -
 The invocation process validates and serializes the semantic result in memory, performs current structural and freshness checks, and emits one typed result on stdout. The separate record and check commands exist for deterministic tests and explicit same-pipeline composition; they also require stdin and emit stdout only.
 
 For `planning_scenario_set`, `implementation_discovery`, and
-`phase2_candidate_set`, `planning_identity` is the canonical SHA-256 digest of
-the sorted `prd.md`, `design.md`, and `implement.md` path/content-SHA rows used
-by the planning owner. The checker recomputes that identity from current regular,
-non-symlink repository files before emitting a typed result.
+`phase2_candidate_set`, compute `planning_identity` with the
+[File-set identity](#file-set-identity) format below over the actual planning
+owner's selected `prd.md`, `design.md`, and `implement.md` paths. The checker
+recomputes it from current regular, non-symlink repository files before emitting
+a typed result.
+
+## File-set identity
+
+This is the shared public format for qualification `author_identity` and
+`planning_identity`. The original caller chooses the current evidence paths;
+the identity neither selects scope nor establishes semantic qualification.
+For `author_candidate_set`, use exactly `target.author_paths` and place the
+result in `target.author_identity`. Include only existing source/candidate
+files; future design or implementation files are not prerequisites.
+
+1. Sort the supplied repository-relative path strings with Python `sorted`.
+   Preserve each original string in the rows; do not resolve it to an absolute
+   path, add `path:`, normalize it, or deduplicate the input while computing.
+2. For each sorted path, read the file's original bytes. Construct one object
+   with exactly `path` (the original path string) and `content_sha256` (the
+   lowercase hexadecimal SHA-256 of those bytes). Do not decode or normalize
+   file content, line endings, a UTF-8 BOM, or Unicode text.
+3. Serialize the complete rows array with
+   `json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(',', ':'))`,
+   then encode that JSON text as UTF-8. Hash those bytes with SHA-256.
+   No newline is added to the hashed JSON.
+4. Use the resulting 64 lowercase hexadecimal characters directly, without a
+   `sha256:` prefix. It is not a hash of file concatenation or of a path-to-hash
+   object. Its meaning and schema remain the existing file-set identity.
+
+The following recipe uses only Python's standard library and writes only
+stdout. Run it from the repository root after replacing the example list with
+the exact current `target.author_paths`. The first argument is the repository
+root; the second is the JSON path list. The final printed newline is not part
+of the digest.
+
+```sh
+python3 - . '["docs/来源设计.md",".trellis/tasks/current/prd.md"]' <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+repo = Path(sys.argv[1])
+paths = json.loads(sys.argv[2])
+rows = [
+    {"path": path, "content_sha256": hashlib.sha256((repo / path).read_bytes()).hexdigest()}
+    for path in sorted(paths)
+]
+encoded = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
+print(hashlib.sha256(encoded).hexdigest())
+PY
+```
+
+If a selected file changes, reread the source/candidate evidence, recompute this
+identity, and perform the original qualification again. Do not keep an earlier
+identity or patch a recorded result to make it current.
 
 Never create or request an output path, result locator, checkpoint path, temporary result file, tracked file, ignored `.trellis/.runtime/**` qualification state, cross-process locator, report, candidate or rejection state store, approval, signoff, assignment, handoff, or transcript. `artifacts` and `private_artifacts` are empty. This Skill and its runtime never write a Phase 2, Branch Review, or Publication gate. After consuming the process-local stdout, the corresponding stage Owner performs its own direct review and directly authors only the minimal classification and witness required by that stage's existing owner-private gate. The stage Owner does not copy, cite, or reread a Skill result or artifact.
 
@@ -174,6 +227,7 @@ The classified and mechanism routers route only by validator-confirmed profile a
 
 Author owns `author_candidate_set` (caller `guru-author-task-plan`), binding
 current source/candidate locators and existing author_paths with author_identity.
+Load [File-set identity](#file-set-identity) before constructing that target.
 It does not require future design/implement files. Original planning_scenario_set
 remains Approval-only and requires three current docs. Return classified and
 mechanism results to Author; scope/diagnosis/blocked retain original owners.

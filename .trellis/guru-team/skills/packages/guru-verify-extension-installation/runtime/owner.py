@@ -59,6 +59,8 @@ except ModuleNotFoundError:
     )
 
 from runtime.temporary_lifecycle import temporary_directory
+from runtime.io import CommandError
+from runtime.schema import validate_json
 
 def _load_contract_validation() -> Any:
     path = Path(__file__).resolve().with_name("contract_validation.py")
@@ -143,10 +145,49 @@ DEFAULTS: dict[str, Any] = {
 GURU_TEAM_EXTENSION_MANIFEST = Path(".trellis/guru-team/extension.json")
 
 class WorkflowError(RuntimeError):
-    def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None) -> None:
+    def __init__(self, message: str, exit_code: int = 1, payload: dict[str, Any] | None = None, *, diagnostic: str | None = None, field_path: str = "input", schema_context: tuple[Any, Path, str] | None = None) -> None:
         super().__init__(message)
         self.exit_code = exit_code
         self.payload = payload or {}
+        self.diagnostic = diagnostic
+        self.field_path = field_path
+        self.schema_context = schema_context
+
+
+# Only these owner-classified carrier and source preconditions cross the public
+# boundary. Exception messages, payloads and subprocess output remain private.
+_PUBLIC_DIAGNOSTICS = {
+    "json_path": ("invalid_arguments", "Use a repo- or package-relative regular UTF-8 JSON object file. Absolute paths, inline JSON and stdin are not accepted for this argument. See references/contract.md#json-carriers; retry the same command with that file."),
+    "json_file": ("invalid_arguments", "Provide an existing regular JSON file relative to the source repository or this package. See references/contract.md#json-carriers; retry the same command."),
+    "json_object": ("invalid_arguments", "Provide valid UTF-8 JSON with an object root. See references/contract.md#json-carriers; correct the file and retry the same command."),
+    "stdin_json": ("invalid_arguments", "Provide one valid JSON object on stdin for the owner-result argument. See references/contract.md#json-carriers; retry the same check or invoke command."),
+    "source_repository_required": ("source_verification_failed", "source_repository_required: use a castbox/guru-trellis source checkout with canonical assets. See references/contract.md#ownership-and-entry; retry the original verification command after correcting the source."),
+    "source_repository_mismatch": ("source_verification_failed", "source_repository_mismatch: repo_ref must identify castbox/guru-trellis. See references/contract.md#ownership-and-entry; correct the source input and retry the original command."),
+    "source_origin_mismatch": ("source_verification_failed", "source_origin_mismatch: the source origin must identify castbox/guru-trellis. See references/contract.md#ownership-and-entry; correct the source checkout and retry the original command."),
+    "source_ref_head_mismatch": ("source_verification_failed", "source_ref_head_mismatch: ref must resolve to the source checkout's current HEAD. See references/contract.md#ownership-and-entry; select the intended current source ref and retry the original command."),
+    "source_checkout_not_clean": ("source_verification_failed", "source_checkout_not_clean: standalone verification requires a clean source checkout. See references/contract.md#ownership-and-entry; complete source maintenance through its original owner before retrying verification."),
+}
+
+
+def extension_verification_public_call(operation: Any, args: argparse.Namespace) -> dict[str, Any]:
+    try:
+        return operation(args)
+    except WorkflowError as exc:
+        if exc.schema_context is not None:
+            # Original owner validation already rejected this input. Reuse the
+            # shared formatter only for its safe field/constraint diagnostic.
+            try:
+                validate_json(*exc.schema_context)
+            except CommandError as error:
+                if error.code == "schema_mismatch":
+                    raise CommandError("invalid_arguments", error.field_path, error.remediation) from exc
+                raise exc
+            raise
+        diagnostic = _PUBLIC_DIAGNOSTICS.get(exc.diagnostic)
+        if diagnostic is None:
+            raise
+        code, remediation = diagnostic
+        raise CommandError(code, exc.field_path, remediation) from exc
 
 def run(
     cmd: list[str],
@@ -1335,21 +1376,24 @@ def extension_verification_json_input(
     value: str | None,
     *,
     allow_stdin: bool = False,
+    field_path: str = "input",
 ) -> tuple[dict[str, Any], str]:
     raw = str(value or "").strip()
     if allow_stdin and raw == "-":
         try:
             payload = json.load(sys.stdin)
         except (OSError, json.JSONDecodeError) as exc:
-            raise WorkflowError("Extension verification stdin JSON is invalid.", exit_code=2) from exc
+            raise WorkflowError("Extension verification stdin JSON is invalid.", exit_code=2, diagnostic="stdin_json", field_path=field_path) from exc
         if not isinstance(payload, dict):
-            raise WorkflowError("Extension verification stdin must be an object.", exit_code=2)
+            raise WorkflowError("Extension verification stdin must be an object.", exit_code=2, diagnostic="stdin_json", field_path=field_path)
         return payload, "<stdin>"
     relative = skill_safe_relative(raw)
     if relative is None:
         raise WorkflowError(
             "Extension verification input must be a safe repo- or package-relative JSON path.",
             exit_code=2,
+            diagnostic="json_path",
+            field_path=field_path,
         )
     package = extension_verification_package_root(root)
     package_candidate = package / relative
@@ -1366,6 +1410,8 @@ def extension_verification_json_input(
         raise WorkflowError(
             "Extension verification input is missing or unsafe.",
             exit_code=2,
+            diagnostic="json_file",
+            field_path=field_path,
             payload={"errors": errors},
         )
     payload = skill_read_json(path, "extension verification JSON input", errors)
@@ -1373,6 +1419,8 @@ def extension_verification_json_input(
         raise WorkflowError(
             "Extension verification input is invalid.",
             exit_code=2,
+            diagnostic="json_object",
+            field_path=field_path,
             payload={"errors": errors},
         )
     return payload, repo_relative(root, path) if path.is_relative_to(root) else relative.as_posix()
@@ -1380,8 +1428,10 @@ def extension_verification_json_input(
 def extension_verification_public_input(
     root: Path,
     value: str | None,
+    *,
+    field_path: str = "input",
 ) -> dict[str, Any]:
-    payload, _ = extension_verification_json_input(root, value)
+    payload, _ = extension_verification_json_input(root, value, field_path=field_path)
     profile = payload.get("profile")
     schema_name = (
         "public-source-repository-verification-input.schema.json"
@@ -1412,6 +1462,7 @@ def extension_verification_public_input(
         raise WorkflowError(
             "Extension verification public input failed validation.",
             exit_code=2,
+            schema_context=(payload, package / "schemas" / schema_name, field_path),
             payload={"errors": errors},
         )
     return payload
@@ -1431,11 +1482,15 @@ def extension_verification_source_preflight(
         raise WorkflowError(
             "source_repository_required: canonical Guru Team source assets are unavailable.",
             exit_code=2,
+            diagnostic="source_repository_required",
+            field_path="root",
         )
     if public_input.get("repo_ref") != "castbox/guru-trellis":
         raise WorkflowError(
             "source_repository_mismatch: verifier accepts only castbox/guru-trellis.",
             exit_code=2,
+            diagnostic="source_repository_mismatch",
+            field_path="input.repo_ref",
         )
     origin = run(["git", "remote", "get-url", "origin"], cwd=root, check=False)
     if (
@@ -1446,6 +1501,8 @@ def extension_verification_source_preflight(
         raise WorkflowError(
             "source_origin_mismatch: origin must identify castbox/guru-trellis.",
             exit_code=2,
+            diagnostic="source_origin_mismatch",
+            field_path="root.origin",
         )
     requested = str(public_input.get("ref") or "")
     resolved = run(
@@ -1463,12 +1520,16 @@ def extension_verification_source_preflight(
         raise WorkflowError(
             "source_ref_head_mismatch: requested ref must resolve to current HEAD.",
             exit_code=2,
+            diagnostic="source_ref_head_mismatch",
+            field_path="input.ref",
         )
     status = run(["git", "status", "--porcelain"], cwd=root, check=False)
     if status.returncode != 0 or status.stdout.strip():
         raise WorkflowError(
             "source_checkout_not_clean: commit source changes before standalone verification.",
             exit_code=2,
+            diagnostic="source_checkout_not_clean",
+            field_path="root",
         )
     return resolved_commit
 
@@ -2496,7 +2557,7 @@ def extension_verification_review_input(
     root: Path,
     value: str | None,
 ) -> dict[str, Any]:
-    reviewed, _ = extension_verification_json_input(root, value)
+    reviewed, _ = extension_verification_json_input(root, value, field_path="review_input")
     schema = extension_verification_recorder_input_schema(
         root,
         "semantic-review-input-2.0.schema.json",
@@ -2511,6 +2572,7 @@ def extension_verification_review_input(
         raise WorkflowError(
             "Extension verification semantic review input failed schema validation.",
             exit_code=2,
+            schema_context=(reviewed, extension_verification_package_root(root) / "schemas/semantic-review-input-2.0.schema.json", "review_input"),
             payload={"errors": context_sort(errors)},
         )
     return reviewed
@@ -2519,7 +2581,7 @@ def extension_verification_execution_input(
     root: Path,
     value: str | None,
 ) -> dict[str, Any]:
-    execution, _ = extension_verification_json_input(root, value)
+    execution, _ = extension_verification_json_input(root, value, field_path="execution_input")
     schema = extension_verification_recorder_input_schema(
         root,
         "execution-facts.schema.json",
@@ -2534,6 +2596,7 @@ def extension_verification_execution_input(
         raise WorkflowError(
             "Extension verification execution facts failed schema validation.",
             exit_code=2,
+            schema_context=(execution, extension_verification_package_root(root) / "schemas/execution-facts.schema.json", "execution_input"),
             payload={"errors": context_sort(errors)},
         )
     return execution
@@ -2686,8 +2749,10 @@ def cmd_record_extension_verification(args: argparse.Namespace) -> dict[str, Any
 def extension_verification_owner_input(
     root: Path,
     value: str | None,
+    *,
+    field_path: str = "input",
 ) -> tuple[dict[str, Any], str]:
-    return extension_verification_json_input(root, value, allow_stdin=True)
+    return extension_verification_json_input(root, value, allow_stdin=True, field_path=field_path)
 
 def check_extension_verification_result(
     root: Path,
@@ -2758,7 +2823,7 @@ def cmd_check_extension_verification(args: argparse.Namespace) -> dict[str, Any]
     root = repo_root(Path(args.root or os.getcwd()))
     payload, locator = extension_verification_owner_input(root, args.input)
     public_input = (
-        extension_verification_public_input(root, args.public_input)
+        extension_verification_public_input(root, args.public_input, field_path="public_input")
         if args.public_input
         else None
     )
@@ -2795,7 +2860,7 @@ def extension_verification_output_schema(
 def cmd_invoke_extension_verification(args: argparse.Namespace) -> dict[str, Any]:
     root = repo_root(Path(args.root or os.getcwd()))
     public_input = extension_verification_public_input(root, args.input)
-    owner, locator = extension_verification_owner_input(root, args.owner_result)
+    owner, locator = extension_verification_owner_input(root, args.owner_result, field_path="owner_result")
     checked = check_extension_verification_result(
         root,
         owner,

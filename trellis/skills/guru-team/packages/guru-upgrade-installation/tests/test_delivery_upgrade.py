@@ -58,7 +58,7 @@ class DeliveryUpgradeTests(unittest.TestCase):
         if getattr(self, "project_relative", None):
             self.root /= self.project_relative
             self.root.mkdir()
-        self.execute(["node", predecessor, "init", "--codex", "--yes"])
+        self.execute(["node", predecessor, "init", "--codex", "--yes", "--workflow", "native"])
         self.execute([sys.executable, ".trellis/scripts/task.py", "start", ".trellis/tasks/00-bootstrap-guidelines"])
         self.ref = ".trellis/tasks/00-bootstrap-guidelines"
         self.assertEqual(json.loads((self.root / self.ref / "task.json").read_text())["status"], "in_progress")

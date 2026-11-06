@@ -3,7 +3,7 @@
   "commands": [
     {
       "id": "discover-task-branch-binding-candidates", "owner": "guru-establish-task-branch-binding", "entrypoint": "runtime/invoke.py",
-      "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Current task identity and status.", "repeatable": false, "conflicts": []}],
+      "arguments": [{"flag": "--root", "required": false, "kind": "string", "description": "Repository root.", "repeatable": false, "conflicts": []}, {"flag": "--input", "required": true, "kind": "json", "description": "Current Task identity with action=establish. Read-only discovery returns result.binding_ref only for already_established; copy that reference to Closure.", "repeatable": false, "conflicts": []}],
       "stdin": "optional_json", "stdout": "intermediate_receipt", "errors": ["invalid_arguments", "invalid_json", "schema_mismatch", "stale_identity", "internal_error"],
       "side_effect": "git_read", "schema_bindings": ["schemas/public-input.schema.json"], "validator_id": "candidate_discovery", "runtime_role": "invoke"
     },

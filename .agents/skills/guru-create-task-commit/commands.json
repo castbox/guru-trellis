@@ -178,8 +178,8 @@
         {
           "flag": "--input",
           "required": false,
-          "kind": "json",
-          "description": "Current Delivery commit input.",
+          "kind": "string",
+          "description": "Clean re-entry public input JSON file locator, or '-' for stdin; inline JSON is unsupported.",
           "repeatable": false,
           "conflicts": [
             "--invocation",
@@ -189,8 +189,8 @@
         {
           "flag": "--owner-result",
           "required": false,
-          "kind": "json",
-          "description": "Completed semantic commit review.",
+          "kind": "string",
+          "description": "Completed clean re-entry semantic review JSON file locator, or '-' for stdin; use stdin for only one object.",
           "repeatable": false,
           "conflicts": []
         }

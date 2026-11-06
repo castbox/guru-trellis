@@ -38,6 +38,13 @@
       "remediation": "Select the complete matching pair through the original source/tools owner before target writes."
     },
     {
+      "code": "legacy_fact_attribution_required",
+      "trigger": "Disposition fields differ from the original Task's present commit, pr_url, or completedAt values that are neither null nor an empty string.",
+      "exit_status": 2,
+      "locator": "field_path",
+      "remediation": "Read references/contract.md: attribute each actual retained fact exactly once, omit missing/null/empty fields, review the corrected decisions, and rerun this owner's original prepare. Preserve the raw source."
+    },
+    {
       "code": "resumed_identity_missing",
       "trigger": "An applied public archive-resume result does not contain its required active Task identity.",
       "exit_status": 2,

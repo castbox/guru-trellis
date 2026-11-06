@@ -34,7 +34,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file for source_repository_verification; no absolute path, inline JSON or stdin.",
           "repeatable": false,
           "conflicts": []
         },
@@ -61,7 +61,7 @@
           "conflicts": []
         }
       ],
-      "stdin": "optional_json",
+      "stdin": "none",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
@@ -93,7 +93,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file for source_repository_verification; no absolute path, inline JSON or stdin.",
           "repeatable": false,
           "conflicts": []
         },
@@ -101,7 +101,7 @@
           "flag": "--execution-input",
           "required": true,
           "kind": "json",
-          "description": "Execution facts.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file containing execution facts; no stdin.",
           "repeatable": false,
           "conflicts": []
         },
@@ -109,12 +109,12 @@
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "Semantic review.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file containing semantic review; no stdin.",
           "repeatable": false,
           "conflicts": []
         }
       ],
-      "stdin": "optional_json",
+      "stdin": "none",
       "stdout": "intermediate_receipt",
       "errors": [
         "invalid_arguments",
@@ -146,7 +146,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Owner result.",
+          "description": "Repo- or package-relative regular JSON object file, or - to read the owner result from stdin.",
           "repeatable": false,
           "conflicts": []
         },
@@ -154,7 +154,7 @@
           "flag": "--public-input",
           "required": false,
           "kind": "json",
-          "description": "Public input.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file for the exact standalone input; no stdin.",
           "repeatable": false,
           "conflicts": []
         }
@@ -191,7 +191,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Standalone input.",
+          "description": "Repo- or package-relative regular UTF-8 JSON object file for source_repository_verification; no absolute path, inline JSON or stdin.",
           "repeatable": false,
           "conflicts": []
         },
@@ -199,7 +199,7 @@
           "flag": "--owner-result",
           "required": true,
           "kind": "json",
-          "description": "Owner result.",
+          "description": "Repo- or package-relative regular JSON object file, or - to read the owner result from stdin.",
           "repeatable": false,
           "conflicts": []
         }

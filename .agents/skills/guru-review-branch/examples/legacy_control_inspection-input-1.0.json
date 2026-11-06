@@ -1,0 +1,10 @@
+{
+  "profile": "legacy_control_inspection",
+  "root": "/selected-checkout",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "task_ref": ".trellis/tasks/legacy-task",
+  "control_refs": []
+}

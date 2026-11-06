@@ -840,9 +840,9 @@
     },
     {
       "id": "native-implementation-code-drift",
-      "prompt": "Continue the previously accepted implementation using the current source files and newly available original evidence. Inspect the actual candidate and caller, select existing owner continuations yourself, and return the actual final original wrapper output.",
+      "prompt": "Start from actual current Planning, the unaccepted inclusive candidate plan, the supplied half-open source and unchanged caller/assertions. Read the original workflow and execute the necessary original owners before implementation and final Check. Return the actual terminal original wrapper stdout; no prerequisite stage result is supplied.",
       "expected_exit": "passed",
-      "expected_output": "The current native owner consumes the actual existing owner continuations and returns its actual final original wrapper result.",
+      "expected_output": "Actual original owner output from the declared Planning start. A prior package pass or an early legitimate stop does not establish unobserved after-acceptance implementation or Check behavior.",
       "input_profile_id": "delivery_initial_check",
       "native_execution_mode": "semantic_authoring",
       "native_execution_adapter": "codex",
@@ -866,7 +866,7 @@
         "semantic": [
           {
             "id": "actual-stop-and-continuation",
-            "criterion": "The native implementation owner reads the accepted plan and newly available source evidence before its next affected write, identifies source clause, actual candidate and consumer impact, and selects the earliest existing owner. It distinguishes a valid authority with an erroneous accepted mechanism, conflicting authority without an effective disposition, and a valid plan with an implementation/assertion deviation. Every continuation consumes actual producer stdout; no DTO, approval or route is supplied by host. Dependent work resumes only after applicable authority, revised planning/reviews and actual candidate agree. Unresolved authority remains stopped, and unrelated work is evaluated by real dependencies. Any claimed stop, revision or resume must be observed in command and write order, not inferred from an expected exit.",
+            "criterion": "The native owner reads the inclusive source, candidate planning, half-open implementation and valid existing assertions before affected writes. It preserves inclusive upper/singleton/negative behavior and the unchanged caller, order and duplicates. It obtains real applicable Planning/reviews/Activation outputs before claiming after-acceptance implementation, repairs the implementation deviation without weakening source or assertions, and runs actual validation plus the original independent Architecture and complete Check against the repaired candidate and fixed B. Every continuation consumes actual producer stdout. An early lawful non-through exit is retained but cannot count as coverage of implementation or final Check; missing actual predecessor outputs leave that later scenario unverified. No host gate or production calling recipe is supplied.",
             "evidence_selector": "transcript"
           }
         ]

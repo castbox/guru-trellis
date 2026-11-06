@@ -44,3 +44,44 @@ never selects standard Intake. It never queries branch protection. The selector
 decides only mode and never acquires resources or creates a Task identity. The dialogue-local origin of the selection distinguishes
 automatic re-selection from explicit-task-free scope narrowing without adding
 public fields or persisted authorization state.
+
+## Public Invocation
+
+Complete the AI-owned selection before invoking the wrapper. Author public input
+under [public-input.schema.json](../schemas/public-input.schema.json), using the
+current [initial_request example](../examples/public-input.json). Author the
+transient owner result under
+[workflow-mode-selection.schema.json](../schemas/workflow-mode-selection.schema.json),
+using the [selection example](../examples/workflow-mode-selection.json). Set the
+actual selected `typed_exit` and matching `selection`; a `blocked` result has no
+`selection`. Both objects carry the same current `mode` and `continuation_id`.
+The example illustrates shape; it does not decide the current route.
+
+The existing wrapper supports two alternative transports:
+
+- `--invocation` accepts an inline JSON object or `-` for stdin. Its two fields
+  are `public_input` and `owner_result`, each containing the complete object.
+  It does not accept a file locator. For example, after the corresponding
+  semantic selection:
+
+  ```sh
+  bash scripts/invoke.sh --invocation '{"public_input":{"profile":"initial_request","mode":"workflow","continuation_id":"no-task-turn-1"},"owner_result":{"schema_version":"1.0","typed_exit":"task_free","mode":"workflow","selection":"task_free","continuation_id":"no-task-turn-1"}}'
+  ```
+
+  To read that same envelope from a call-local UTF-8 file through stdin, use
+  `bash scripts/invoke.sh --invocation - < call.json`.
+- `--input` and `--owner-result` each accept a regular UTF-8 JSON file locator
+  or `-` for stdin. Relative locators resolve first from the current working
+  directory, then from this package. For the declared examples:
+  `bash scripts/invoke.sh --input examples/public-input.json --owner-result examples/workflow-mode-selection.json`.
+  At most one parameter can consume stdin. These two flags do not accept inline
+  JSON objects; use `--invocation` for inline transport.
+
+Resolve `scripts/invoke.sh` from this package or its installed platform projection.
+Do not combine `--invocation` with either separate flag. Consume the complete
+stdout as one formal result under the selected original output schema:
+[standard_intake](../schemas/public-standard-intake-output.schema.json),
+[task_free](../schemas/public-task-free-output.schema.json), or
+[blocked](../schemas/public-blocked-output.schema.json). Each output contains
+only `exit_id`. Preserve a failed command's exit status, stdout and stderr and
+follow its specific remediation; a failed invocation is not a selected route.

@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current publication input.",
+          "description": "Current publication input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -57,7 +57,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current publication input.",
+          "description": "Current publication input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -65,7 +65,7 @@
           "flag": "--review-input",
           "required": true,
           "kind": "json",
-          "description": "AI-authored semantic review.",
+          "description": "AI-authored semantic review. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         }
@@ -103,7 +103,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current publication input.",
+          "description": "Current publication input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -149,7 +149,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current publication input.",
+          "description": "Current publication input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -196,7 +196,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Current publication input.",
+          "description": "Current publication input. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },
@@ -204,7 +204,7 @@
           "flag": "--review-input",
           "required": false,
           "kind": "json",
-          "description": "AI-authored semantic review.",
+          "description": "AI-authored semantic review. Accepts inline JSON, one regular UTF-8 JSON file, or dash for stdin; use stdin for only one parameter per call. Nonregular carriers including process substitution are unsupported.",
           "repeatable": false,
           "conflicts": []
         },

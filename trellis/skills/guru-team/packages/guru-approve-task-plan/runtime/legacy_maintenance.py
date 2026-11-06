@@ -6,7 +6,7 @@ import json
 import re
 import stat
 from pathlib import Path
-from runtime.io import CommandError
+from runtime.io import CommandError, read_json
 from runtime.schema import validate_json
 
 OWNER = 'guru-approve-task-plan'
@@ -168,12 +168,11 @@ def invoke_retirement(package_root, public, root):
 
 
 def run(package_root, command, argv):
-    import sys
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True)
     parser.add_argument("--input", required=True)
     args = parser.parse_args(argv)
-    public = json.load(sys.stdin) if args.input == "-" else json.loads(Path(args.input).read_text())
+    public = read_json(args.input, "input")
     validate_json(public, package_root / "schemas/legacy-maintenance-input-1.0.schema.json", "input")
     if Path(args.root).resolve() != Path(public["root"]).resolve():
         fail("target_mismatch", "root", "Use the exact selected target checkout.")

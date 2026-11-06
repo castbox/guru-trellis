@@ -34,6 +34,7 @@
     },
     "input_sha256": {
       "type": "string",
+      "description": "SHA-256 of the complete public_input object using references/contract.md#public-input-digest; use its exact JSON serialization recipe.",
       "pattern": "^[0-9a-f]{64}$"
     },
     "architecture_baseline": {

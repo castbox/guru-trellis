@@ -56,7 +56,7 @@
       "trigger": "An unexpected package runtime failure occurred.",
       "exit_status": 70,
       "locator": "path",
-      "remediation": "Inspect the package-local runtime and retry."
+      "remediation": "Preserve the original command, exit status, stdout and stderr; the cause of this internal failure is not established. Report it to guru-discover-change-context maintenance, then use this owner's original recovery after repair without repeating completed Git/GitHub mutations."
     },
     {
       "code": "git_failed",

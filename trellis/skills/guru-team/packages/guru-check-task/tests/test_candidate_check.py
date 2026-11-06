@@ -20,6 +20,7 @@ support_spec.loader.exec_module(support)
 installed_fixture, owner_module = support.installed_fixture, support.owner_module
 from runtime.delivery_projection.gates import record_gate, rework
 from runtime.task_lifecycle import BranchBindingStore, TaskLifecycleKey, inspect_repository
+from runtime.schema import validate_json
 
 
 class CandidateCheckTests(unittest.TestCase):
@@ -84,6 +85,67 @@ class CandidateCheckTests(unittest.TestCase):
         self.assertFalse(json.loads(checker.stdout)['formal_exit'])
         self.assertEqual(path, Path(json.loads(checker.stdout)['result']['artifact_path']))
         return path
+
+    def planning_owner(self, route='reapprove_plan'):
+        owner = self.owner('planning_stale')
+        owner.update(route=route, reason='Refresh the missing independent planning assessment and reapprove this same Delivery.',
+                     consumer={'kind': 'workflow', 'id': 'guru-task-check-planning-router'})
+        owner['semantic_review']['status'] = 'planning_stale'
+        owner['semantic_review']['adequacy_dimensions'][1]['status'] = 'blocked'
+        return owner
+
+    def test_no_scope_planning_repair_projects_original_actions_to_author(self):
+        self.begin()
+        authoring = self.planning_owner()
+        self.assertEqual(11, len(authoring))
+        artifact = self.recorded_owner(authoring)
+        output = self.invoke(self.public, artifact)
+        self.assertEqual(output, {'exit_id': 'planning_stale', 'task_ref': self.fixture.task_ref,
+                                 'delivery_key': self.key, 'planning_route': 'reapprove_plan',
+                                 'proposal_refs': [], 'revision_actions': [authoring['reason']]})
+        validate_json(output, PACKAGE / 'consumers/workflow/delivery-1.0/check-task-planning-stale.schema.json', 'consumer')
+        projected = {name: output[name] for name in ('task_ref', 'delivery_key', 'revision_actions')}
+        projected.update(profile='delivery_approval_revision', mode=self.public['mode'])
+        validate_json(projected, PACKAGE.parent / 'guru-author-task-plan/schemas/public-delivery-approval-revision-input.schema.json', 'author_input')
+        current = self.fixture.projection.resolve(self.key)
+        self.assertEqual('planning', current['phase'])
+        self.assertIsNone(current['results']['planning'])
+        self.assertIsNone(current['results']['check'])
+
+    def test_invalid_planning_output_keeps_actual_delivery_unchanged(self):
+        self.begin()
+        # The AI can omit the required scope proposal while selecting Clarify.
+        # A valid recorder result must not cause rework before stdout rejects it.
+        artifact = self.recorded_owner(self.planning_owner('clarify_requirements'))
+        task_file = self.root / self.fixture.task_ref / 'task.json'
+        before = task_file.read_bytes()
+        output = self.invoke(self.public, artifact, expected=2)
+        self.assertEqual('schema_mismatch', output['code'])
+        self.assertEqual(before, task_file.read_bytes())
+        current = self.fixture.projection.resolve(self.key)
+        self.assertEqual('checking', current['phase'])
+        self.assertEqual(self.plan['result_id'], current['results']['planning']['result_id'])
+        self.assertIsNone(current['results']['check'])
+
+    def test_existing_nonempty_planning_proposals_keep_original_payload(self):
+        self.begin()
+        owner = self.planning_owner()
+        owner['candidate_classifications'] = [{
+            'candidate_ref': 'candidate:phase2:scope', 'decision': 'qualified_approved_expansion',
+            'witness': {'requirement_refs': [], 'supported_entry_refs': ['entry:phase2'],
+                        'existing_caller_refs': ['caller:guru-check-task'],
+                        'honest_action_sequence': ['Review a requested scope change.'],
+                        'defect_observation': 'The request changes scope.', 'excluded_assumptions': []},
+            'consumer_use': 'task_commit_preflight'}]
+        owner['semantic_review']['scope_decisions'] = [{
+            'id': 'scope-proposal:R13', 'candidate_ref': 'candidate:phase2:scope',
+            'disposition': 'scope_change_required', 'summary': 'Current scope changed.', 'finding_id': None}]
+        output = self.invoke(self.public, owner)
+        self.assertEqual(output, {'exit_id': 'planning_stale', 'task_ref': self.fixture.task_ref,
+                                 'delivery_key': self.key, 'planning_route': 'reapprove_plan',
+                                 'proposal_refs': ['scope-proposal:R13']})
+        validate_json(output, PACKAGE / 'consumers/workflow/delivery-1.0/check-task-planning-stale.schema.json', 'consumer')
+        self.assertEqual('planning', self.fixture.projection.resolve(self.key)['phase'])
 
     def invoke(self, public, owner, expected=0):
         directory = self.root / '.trellis/.runtime/check-input'

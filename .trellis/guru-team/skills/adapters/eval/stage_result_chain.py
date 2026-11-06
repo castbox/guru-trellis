@@ -38,37 +38,53 @@ def option(name,default=None):
 def git(*argv):
  return subprocess.check_output(['git','--git-dir',state['bare'],*argv],text=True).strip()
 def save(): state_file.write_text(json.dumps(state))
+def number(value): return int(value.rstrip('/').rsplit('/',1)[-1])
+def body():
+ return Path(option('--body-file')).read_text() if '--body-file' in args else option('--body','')
 def pr_row(row):
  result=dict(row)
  result['headRefOid']=git('rev-parse','refs/heads/'+row['headRefName'])
  return result
 def emit(value): print(json.dumps(value))
 if args[:2]==['auth','status']: raise SystemExit(0)
-if args[:2]==['repo','view']: emit({'nameWithOwner':'example/stage-chain'})
+if args[:2]==['repo','view']: emit({'nameWithOwner':'example/stage-chain','defaultBranchRef':{'name':'main'}})
+elif args[:2]==['issue','view']:
+ row=next(row for row in state.get('issues',[]) if row['number']==number(args[2]))
+ if option('--jq')=='.state': print(row['state'])
+ else: emit(row)
+elif args[:2]==['issue','list']:
+ wanted=option('--state','open').upper()
+ emit([row for row in state.get('issues',[]) if wanted=='ALL' or row['state']==wanted])
+elif args[:2]==['issue','close']:
+ row=next(row for row in state['issues'] if row['number']==number(args[2]))
+ row['state']='CLOSED';row['updatedAt']=datetime.now(timezone.utc).isoformat();save()
 elif args[:2]==['pr','list']:
- emit([pr_row(r) for r in state['prs'] if r['state']=='OPEN' and r['headRefName']==option('--head')])
+ wanted=option('--state','open').upper()
+ emit([pr_row(r) for r in state['prs'] if (wanted=='ALL' or r['state']==wanted)
+  and (option('--head') is None or r['headRefName']==option('--head'))])
 elif args[:2]==['pr','create']:
  number=len(state['prs'])+1
  row={'number':number,'url':f'https://github.com/example/stage-chain/pull/{number}',
  'state':'OPEN','isDraft':'--draft' in args,'headRefName':option('--head'),
- 'baseRefName':option('--base'),'title':option('--title'),'body':option('--body'),
+ 'baseRefName':option('--base'),'title':option('--title'),'body':body(),
  'headRepositoryOwner':{'login':'example'},'mergeable':'MERGEABLE',
  'mergeStateStatus':'CLEAN','reviewDecision':'','statusCheckRollup':[],
  'mergedAt':None,'mergeCommit':None}
  state['prs'].append(row);save();print(row['url'])
 elif args[:2] in (['pr','view'],['pr','edit'],['pr','ready'],['pr','merge']):
- row=next(r for r in state['prs'] if r['number']==int(args[2]))
+ row=next(r for r in state['prs'] if r['number']==number(args[2]))
  action=args[1]
  if action=='edit':
   for flag,key in (('--title','title'),('--body','body')):
    if flag in args: row[key]=option(flag)
+  if '--body-file' in args: row['body']=body()
   save()
  elif action=='ready': row['isDraft']='--undo' in args;save()
  elif action=='merge':
   head=git('rev-parse','refs/heads/'+row['headRefName'])
   assert head==option('--match-head-commit')
   base=git('rev-parse','refs/heads/'+row['baseRefName'])
-  message=option('--subject')+'\n\n'+Path(option('--body-file')).read_text()
+  message=option('--subject')+'\n\n'+body()
   tree=git('rev-parse',head+'^{tree}')
   merged=subprocess.check_output(['git','--git-dir',state['bare'],'commit-tree',tree,
     '-p',base,'-p',head],input=message,text=True).strip()
@@ -79,8 +95,12 @@ elif args[:2] in (['pr','view'],['pr','edit'],['pr','ready'],['pr','merge']):
 elif args and args[0]=='api':
  path=args[1]
  prefix='repos/example/stage-chain'
- if path==prefix: emit({'full_name':'example/stage-chain','default_branch':'main',
+ if path=='user': emit({'login':'example'})
+ elif path==prefix: emit({'full_name':'example/stage-chain','default_branch':'main',
   'allow_merge_commit':True,'allow_squash_merge':False,'allow_rebase_merge':False})
+ elif path.startswith(prefix+'/issues/'):
+  issue_number=number(path)
+  emit(next(row for row in state.get('issues',[]) if row['number']==issue_number))
  elif '/git/ref/heads/' in path: emit({'object':{'sha':git('rev-parse','refs/heads/'+path.split('/git/ref/heads/')[1])}})
  elif '/git/commits/' in path:
   sha=path.rsplit('/',1)[1]

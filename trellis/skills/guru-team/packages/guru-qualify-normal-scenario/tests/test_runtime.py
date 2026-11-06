@@ -4,6 +4,7 @@ import copy
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -97,6 +98,37 @@ class NormalScenarioQualificationRuntimeTest(unittest.TestCase):
         with self.assertRaises(CommandError) as raised:
             self.invoke(candidate)
         self.assertEqual("stale_identity", raised.exception.code)
+
+    def test_public_file_set_recipe_qualifies_utf8_raw_bytes_and_real_revision(self):
+        contract = (PACKAGE / "references/contract.md").read_text(encoding="utf-8")
+        section = contract.split("## File-set identity\n", 1)[1]
+        recipe = re.search(r"```sh\n(.*?)\n```", section, re.S).group(1)
+        source = self.repo / "docs/来源设计.md"
+        source.parent.mkdir()
+        source.write_bytes("# 来源设计\r\n保留原始字节。\r\n".encode("utf-8"))
+        prd = self.repo / ".trellis/tasks/current/prd.md"
+        prd.write_bytes(b"\xef\xbb\xbf" + "# 当前需求\n".encode("utf-8"))
+        paths = ["docs/来源设计.md", ".trellis/tasks/current/prd.md"]
+
+        def public_identity():
+            result = subprocess.run(["bash", "-c", recipe], cwd=self.repo, text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            value = result.stdout.strip()
+            self.assertRegex(value, r"^[0-9a-f]{64}$")
+            return value
+
+        semantic = self.semantic(profile="author_candidate_set")
+        target = semantic["public_input"]["target"]
+        target.update(author_paths=paths, author_identity=public_identity())
+        self.assertEqual(self.invoke(semantic)["exit_id"], "classified")
+        source.write_bytes(source.read_bytes() + "后续正常设计修订。\n".encode("utf-8"))
+        with self.assertRaises(CommandError) as raised:
+            self.invoke(semantic)
+        self.assertEqual((raised.exception.code, raised.exception.field_path), ("stale_identity", "public_input.target.author_identity"))
+        revised = public_identity()
+        self.assertNotEqual(revised, target["author_identity"])
+        target["author_identity"] = revised
+        self.assertEqual(self.invoke(semantic)["exit_id"], "classified")
 
     def test_all_eleven_profiles_in_workflow_and_standalone_are_invocation_local(self) -> None:
         for profile in qualification_common.PROFILE_SCHEMAS:

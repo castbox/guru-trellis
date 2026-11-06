@@ -110,7 +110,9 @@ CURRENT_SKILL_SHARED_SCHEMAS = frozenset({
     "intermediate-command-receipt-1.0.schema.json",
     "skill-error-catalog.schema.json",
 })
-from skill_runtime_inventory import SKILL_RUNTIME_KERNEL_PATHS
+from skill_runtime_inventory import (
+    SKILL_RUNTIME_KERNEL_PATHS,
+)
 
 
 def _guru_temporary_directory(entry_id: str):
@@ -213,6 +215,7 @@ MANAGED_ASSET_PATHS = [
     Path("scripts/bash/check-env.sh"),
     Path("scripts/bash/version.sh"),
     Path("scripts/bash/check-task-checkout-boundary.sh"),
+    Path("scripts/bash/construct-delivery-candidate.sh"),
     Path("scripts/bash/check-skill-packages.sh"),
     Path("scripts/bash/discover-skill-contract.sh"),
     Path("scripts/bash/discover-skill-evals.sh"),

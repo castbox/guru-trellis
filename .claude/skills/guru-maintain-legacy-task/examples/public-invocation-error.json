@@ -1,0 +1,5 @@
+{
+  "code": "schema_mismatch",
+  "field_path": "input.profile",
+  "remediation": "Use a supported input profile."
+}

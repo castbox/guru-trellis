@@ -1704,9 +1704,30 @@ That restriction belongs to corpus authoring. The runner's optional
 adapter request, without changing the corpus. It never overrides corpus-pinned
 models or applies to other adapters; omitted selection keeps prior behavior.
 The optional closed `native_authoring_flow=standard_intake` is also restricted
-to `semantic_authoring`. Omission retains the existing single-Skill authoring
-contract; the field selects an eval-only execution flow, never a production
-Skill profile, semantic route, or compatibility wrapper.
+to `semantic_authoring`. Omission retains ordinary single-Skill authoring.
+The existing named `native-implementation-*` semantic cases instead use their
+dedicated original-owner command transport and the actual terminal producer's
+Interface. This existing exception does not select `standard_intake` or add a
+production Skill profile, semantic route, or compatibility wrapper.
+
+For the initial R1 Planning segment, the native AI remains the workflow caller
+across inner Skill invocations. Each Skill's single typed exit finishes that
+owner invocation; the AI consumes its actual output through the current
+workflow's unique consumer within the requested segment. An inner success alone
+does not establish an applicable earlier stop. Before marking a call final,
+the AI judges whether actual Planning Approval or an original applicable stop
+has been reached. Scripts transport the selected call without deciding this
+boundary or choosing the next owner. The specialized context retains the
+original case prompt so its operation boundary reaches the native caller.
+
+At that endpoint, the caller captures the final original invoke stdout in
+call-local memory, parses it with `json.loads`, and renders the complete object
+with `json.dumps(..., ensure_ascii=False, indent=2)`. The final message preserves
+the same object and field order, allowing only JSON whitespace changes. It does
+not reconstruct fields or braces, trim invalid trailing characters, or rebuild
+output from trace receipts. Invalid JSON and missing or mismatched final trace
+evidence retain their original failures. This delivery method does not select
+an endpoint or establish a semantic pass.
 Unknown fields, including `expectations`, `null`, unsafe paths, symlinks, and
 unknown profile/exit/assertion references fail closed. Adapters accept only this
 current corpus shape and never translate or rewrite another input contract.

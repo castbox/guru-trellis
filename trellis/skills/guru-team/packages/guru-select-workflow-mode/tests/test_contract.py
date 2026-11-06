@@ -205,6 +205,38 @@ class WorkflowModeContractTest(unittest.TestCase):
             payload = json.loads((PACKAGE / "examples" / name).read_text())
             self.assertEqual(payload, {"exit_id": exit_id})
 
+    def test_public_selection_carriers_preserve_the_original_typed_exit(self) -> None:
+        public = json.loads((PACKAGE / "examples/public-input.json").read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            input_path = Path(directory) / "input.json"
+            owner_path = Path(directory) / "owner.json"
+            input_path.write_text(json.dumps(public), encoding="utf-8")
+            for exit_id in ("standard_intake", "task_free", "blocked"):
+                owner = self._selection(exit_id)
+                owner["continuation_id"] = public["continuation_id"]
+                if exit_id == "blocked":
+                    owner.pop("selection")
+                owner_path.write_text(json.dumps(owner), encoding="utf-8")
+                envelope = json.dumps({"public_input": public, "owner_result": owner})
+                carriers = (
+                    ("inline_envelope", ["--invocation", envelope], None),
+                    ("stdin_envelope", ["--invocation", "-"], envelope),
+                    ("separate_files", ["--input", str(input_path), "--owner-result", str(owner_path)], None),
+                    ("stdin_input", ["--input", "-", "--owner-result", str(owner_path)], json.dumps(public)),
+                    ("stdin_owner", ["--input", str(input_path), "--owner-result", "-"], json.dumps(owner)),
+                )
+                for carrier, arguments, stdin in carriers:
+                    with self.subTest(exit_id=exit_id, carrier=carrier):
+                        result = subprocess.run(["bash", str(PACKAGE / "scripts/invoke.sh"), *arguments], input=stdin, text=True, capture_output=True)
+                        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                        self.assertEqual(json.loads(result.stdout), {"exit_id": exit_id})
+
+    def test_invocation_help_locates_public_input_owner_result_and_output_contracts(self) -> None:
+        result = subprocess.run(["bash", str(PACKAGE / "scripts/invoke.sh"), "--help"], text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        for locator in ("public_input", "owner_result", "schemas/public-input.schema.json", "schemas/workflow-mode-selection.schema.json", "schemas/public-standard-intake-output.schema.json", "examples/public-input.json", "examples/workflow-mode-selection.json"):
+            self.assertIn(locator, result.stdout)
+
     def test_no_legacy_task_free_contract_remains(self) -> None:
         text = (PACKAGE / "SKILL.md").read_text()
         self.assertNotIn("skip-flow", text)

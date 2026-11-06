@@ -57,7 +57,7 @@ def _git(repo,*args):
  proc=subprocess.run(["git","-C",str(repo),*args],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,check=False)
  return proc.returncode,proc.stdout.strip()
 def _github_repo(remote_url):
- match=re.fullmatch(r"(?:https://github\.com/|git@github\.com:)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?",remote_url)
+ match=re.fullmatch(r"(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?)(?:\.git)?",remote_url)
  return match.group(1) if match else None
 def _worktree_branches(repo):
  code,text=_git(repo,"worktree","list","--porcelain")

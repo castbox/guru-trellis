@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from runtime.schema import validate_json
+from runtime.io import CommandError
 
 
 PACKAGE = Path(__file__).resolve().parents[1]
@@ -44,6 +45,88 @@ def invoke(tmp_path, public, semantic):
          "--input", str(input_path), "--semantic-result", str(semantic_path)],
         text=True, capture_output=True, env=env,
     )
+
+
+@pytest.mark.parametrize('exit_id', [
+    'remaining_work', 'evidence_pending', 'additional_delivery_required',
+    'requirements_revision_required', 'implementation_revision_required',
+    'completed', 'blocked',
+])
+def test_current_output_binding_accepts_current_exit_dtos(exit_id):
+    interface = json.loads((PACKAGE / 'interface.json').read_text())
+    command = json.loads((PACKAGE / 'commands.json').read_text())['commands'][0]
+    output = next(row for row in interface['public_contracts']['outputs']
+                  if row['exit_id'] == exit_id)
+    payload = json.loads((PACKAGE / output['example']['path']).read_text())
+    binding = PACKAGE / command['schema_bindings'][-1]
+    validate_json(payload, PACKAGE / output['schema']['path'], 'exit')
+    validate_json(payload, binding, 'command_stdout')
+    schema = json.loads(binding.read_text())
+    assert any(row['path'] == command['schema_bindings'][-1]
+               for row in interface['schemas'])
+    assert {row['$ref'] for row in schema['oneOf']} == {
+        Path(row['schema']['path']).name
+        for row in interface['public_contracts']['outputs']
+    }
+    validate_json(interface, ROOT / 'schemas/skill-interface-1.7.schema.json', 'interface')
+
+
+def test_pinned_old_contracts_keep_their_validation_domain():
+    old_output = PACKAGE / 'schemas/public-output.schema.json'
+    for example in [
+        'public-output.json', 'public-remaining-work-output.json',
+        'public-evidence-pending-output.json', 'public-additional-delivery-required-output.json',
+        'public-requirements-revision-required-output.json',
+        'public-implementation-revision-required-output.json', 'public-blocked-output.json',
+    ]:
+        validate_json(json.loads((PACKAGE / 'examples' / example).read_text()),
+                      old_output, 'pinned_output')
+    for example in ['public-input.json', 'public-evidence-refresh-input.json',
+                    'public-reactivation-validation-input.json',
+                    'public-reactivation-evidence-refresh-input.json']:
+        validate_json(json.loads((PACKAGE / 'examples' / example).read_text()),
+                      PACKAGE / 'schemas/public-input.schema.json', 'pinned_input')
+    for example in ['semantic-result.json', 'reactivation-semantic-result.json']:
+        validate_json(json.loads((PACKAGE / 'examples' / example).read_text()),
+                      PACKAGE / 'schemas/semantic-result.schema.json', 'pinned_semantic')
+    interface = json.loads((PACKAGE / 'interface.json').read_text())
+    for output in interface['public_contracts']['outputs']:
+        payload = json.loads((PACKAGE / output['example']['path']).read_text())
+        if 'task_key' in payload:
+            with pytest.raises(CommandError) as failure:
+                validate_json(payload, old_output, 'pinned_output')
+            assert failure.value.code == 'schema_mismatch'
+
+
+def test_public_wrapper_duplicate_input_matches_help_and_catalog():
+    public = PACKAGE / 'examples/public-delivery-completion-input-1.0.json'
+    semantic = PACKAGE / 'examples/semantic-delivery-result-1.0.json'
+    wrapper = ['bash', str(PACKAGE / 'scripts/invoke.sh')]
+    result = subprocess.run(
+        [*wrapper, '--root', str(ROOT.parents[2]), '--input', str(public),
+         '--input', str(public), '--semantic-result', str(semantic)],
+        text=True, capture_output=True,
+    )
+    assert result.returncode == 2, (result.stdout, result.stderr)
+    assert result.stderr == ''
+    error = json.loads(result.stdout)
+    validate_json(error, PACKAGE / 'schemas/public-invocation-error.schema.json', 'error')
+    assert error['code'] == 'conflicting_arguments'
+    assert error['field_path'] == 'arguments.--input'
+    command = json.loads((PACKAGE / 'commands.json').read_text())['commands'][0]
+    catalog = json.loads((PACKAGE / 'errors/catalog.json').read_text())
+    assert error['code'] in command['errors']
+    declared = next(row for row in catalog['errors'] if row['code'] == error['code'])
+    assert declared['exit_status'] == result.returncode
+    help_result = subprocess.run([*wrapper, '--help'], text=True, capture_output=True)
+    assert help_result.returncode == 0, help_result.stderr
+    assert help_result.stderr == ''
+    assert error['code'] in help_result.stdout
+    assert command['schema_bindings'][-1] in help_result.stdout
+    interface = json.loads((PACKAGE / 'interface.json').read_text())
+    for profile in interface['public_contracts']['input']['profiles']:
+        assert profile['schema']['path'] in help_result.stdout
+        assert profile['example']['path'] in help_result.stdout
 
 
 def test_contract_assets_and_projection(current):

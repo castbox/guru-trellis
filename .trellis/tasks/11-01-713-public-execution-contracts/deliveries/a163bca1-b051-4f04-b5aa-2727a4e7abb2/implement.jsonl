@@ -1,0 +1,6 @@
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/references/planning-body.md", "reason": "维持已审规划正文职责与来源处置，不把实现返工变成第二writer"}
+{"file": "trellis/presets/guru-team/MIGRATION-710.md", "reason": "原11字段authoring与完整结果consumer、两类token不得混用"}
+{"file": ".trellis/delivery-contract.md", "reason": "原Candidate及begin-check/rework的公开操作合同"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-prd.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-design.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}
+{"file": ".trellis/guru-team/skills/packages/guru-author-task-plan/templates/delivery-implement.md", "reason": "检查实际正文职责、来源处置及Policy/Docs；完整大规格沿原Skill主动读取，不依赖截断注入"}

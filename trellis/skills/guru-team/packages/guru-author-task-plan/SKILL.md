@@ -23,6 +23,8 @@ any planning write. Actually load the applicable templates through the
 do not treat their links or seed files as completed writing. Workflow and
 standalone modes use the same current
 TaskId/generation, source, checkout, upstream output and dependency checks.
+Before `author_candidate_set` qualification, load the shared public
+[file-set identity format and recipe](../guru-qualify-normal-scenario/references/contract.md#file-set-identity).
 
 For each Delivery profile, first check this receiving session's own public
 current facts against the explicit key. Missing Task binding invokes original

@@ -64,6 +64,8 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
     if (exit_id == "resolved_reconciliation_passed" and not resolved) or (resolved and exit_id == "passed"):
         raise CommandError("schema_mismatch", "typed_exit", "Use the resolved-tree pass only for its dedicated Check profile.")
     output = {"exit_id": exit_id}
+    pending_rework = None
+    pending_gate = None
     if exit_id != "blocked":
         output.update(task_ref=public["task_ref"], delivery_key=public["delivery_key"])
     if exit_id == "candidate_checked":
@@ -76,9 +78,7 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         output["candidate"] = {"head": candidate["head_ref"], "content_identity": "sha256:" + current["sha256"]}
         # Candidate judgment is complete. The existing Check owner returns to
         # implementation; retained real gates are history, never a new pass.
-        rework(projection, public["delivery_key"], "check", "implementation",
-               authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo),
-               ["readiness"])
+        pending_rework = ("implementation", "implement.md", ["readiness"])
     elif exit_id == "passed":
         evidence = [authority_ref(projection.planning_directory(public["delivery_key"]) / name, repo)
                     for name in ("prd.md", "design.md", "implement.md")]
@@ -88,7 +88,7 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         prior = delivery["results"]["check"]
         if (prior is None or prior["result_id"] != result_id) and owner["reviewed_content_sha256"] != content_identity(repo):
             raise CommandError("stale_identity", "reviewed_content_sha256", "Rerun the current semantic Check after content changes.", 3)
-        record_gate(projection, public["delivery_key"], "check", result_id, "passed", evidence, [])
+        pending_gate = (result_id, evidence)
         output["check_result_id"] = result_id
     elif exit_id == "resolved_reconciliation_passed":
         if owner["reviewed_content_sha256"] != skill_content_identity(package, repo, public["task_ref"], public["mode"], public):
@@ -99,13 +99,19 @@ def invoke(package: Path, repo: Path, public: dict, owner: dict) -> dict:
         output["phase2_commit_anchor"] = owner["phase2_capture_commit"]
     elif exit_id == "implementation_required":
         output["finding_refs"] = [row["id"] for row in owner["semantic_review"]["findings"] if row["status"] == "open"]
-        rework(projection, public["delivery_key"], "check", "implementation",
-               authority_ref(projection.planning_directory(public["delivery_key"]) / "implement.md", repo),
-               ["readiness"])
+        pending_rework = ("implementation", "implement.md", ["readiness"])
     elif exit_id == "planning_stale":
         output.update(planning_route=owner["route"], proposal_refs=[row["id"] for row in owner["semantic_review"]["scope_decisions"]])
-        rework(projection, public["delivery_key"], "check", "planning",
-               authority_ref(projection.planning_directory(public["delivery_key"]) / "prd.md", repo),
-               ["planning", "check", "full_review", "readiness"])
+        if owner["route"] == "reapprove_plan" and not output["proposal_refs"]:
+            output["revision_actions"] = [owner["reason"]]
+        pending_rework = ("planning", "prd.md", ["planning", "check", "full_review", "readiness"])
     validate_json(output, package / "schemas" / ("public-output-delivery-" + exit_id.replace("_", "-") + "-1.0.schema.json"), "stdout")
+    if pending_rework is not None:
+        target, plan_name, invalidated = pending_rework
+        rework(projection, public["delivery_key"], "check", target,
+               authority_ref(projection.planning_directory(public["delivery_key"]) / plan_name, repo),
+               invalidated)
+    if pending_gate is not None:
+        result_id, evidence = pending_gate
+        record_gate(projection, public["delivery_key"], "check", result_id, "passed", evidence, [])
     return output

@@ -1,6 +1,30 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "guru-architecture-baseline-semantic-result-delivery-3.0",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "delivery-3.0"
+          },
+          "typed_exit": {
+            "const": "baseline_current"
+          }
+        },
+        "required": [
+          "schema_version",
+          "typed_exit"
+        ]
+      },
+      "then": {
+        "required": [
+          "baseline_identity",
+          "constitution_identity"
+        ]
+      }
+    }
+  ],
   "oneOf": [
     {
       "type": "object",

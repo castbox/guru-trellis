@@ -25,6 +25,13 @@ PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS = {
         Path("examples/public-input-repair.json"),
     }),
 }
+PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS = {
+    "guru-create-task": frozenset({Path("examples/public-create-issue-input.json")}),
+    "guru-check-task": frozenset({
+        Path("examples/phase2-authoring.json"),
+        Path("examples/phase2-rejected-candidates.json"),
+    }),
+}
 SIDECAR_SUFFIXES = (".new", ".bak")
 MARKER_PATTERNS = {
     "invoke": re.compile(r"^\s*<!--\s*guru-skill-invoke:\s*(\{.*\})\s*-->\s*$"),
@@ -179,6 +186,15 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
     required_public_paths = PLATFORM_PACKAGE_REQUIRED_PUBLIC_PATHS.get(
         str(interface.get("id")), frozenset()
     )
+    teaching_paths = PLATFORM_PACKAGE_PUBLIC_TEACHING_PATHS.get(str(interface.get("id")), frozenset())
+    declared_artifacts = {
+        Path(item["path"]) for item in interface.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if not teaching_paths.issubset(declared_artifacts) or any(
+        not (package / path).is_file() or (package / path).is_symlink() for path in teaching_paths
+    ):
+        return []
     declared_schema_paths = {
         Path(str(item["path"]))
         for item in interface.get("schemas", [])
@@ -218,6 +234,17 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
         str(item.get("path")) for item in interface.get("artifacts", [])
         if isinstance(item, dict) and isinstance(item.get("path"), str) and str(item.get("path")) not in output_examples
     }
+    invocation_examples = set(interface.get("public_contracts", {}).get("invocation", {}).get("example_argv", []))
+    error_example = interface.get("public_contracts", {}).get("invocation", {}).get("error_example", {}).get("path")
+    if isinstance(error_example, str):
+        invocation_examples.add(error_example)
+    public_example_paths = {path.as_posix() for path in declared_public_examples}
+    public_example_paths.update(
+        item["path"] for item in interface.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+        and item["path"] in invocation_examples
+    )
+    private_artifacts.difference_update(public_example_paths)
     public_authoring_paths = {
         str(variant["authoring_example"]["path"])
         for item in interface.get("public_contracts", {}).get("consumer_inputs", [])
@@ -236,7 +263,7 @@ def public_files(package: Path, interface: dict[str, Any], files: list[Path]) ->
             continue
         if inner.parts[0] == "scripts" and text != wrapper:
             continue
-        if inner in required_schema_paths or inner in required_public_paths:
+        if inner in required_schema_paths or inner in required_public_paths or inner in teaching_paths:
             result.append(path)
             continue
         if text in public_authoring_paths:

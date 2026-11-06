@@ -100,8 +100,8 @@ def resume(package_root,path,state):
     state['phase']='verification_required'; store(path,state)
     return {'exit_id':'resume_required','profile':'resume','recovery_ref':str(path)}
 
-def observe_native(root, argv):
-    if not isinstance(argv,list) or not argv or not all(isinstance(x,str) and x for x in argv): fail('invalid_native_entry','argv','Supply the actual target-native entry argv.')
+def validate_native_entry(root, argv, field='argv'):
+    if not isinstance(argv,list) or not argv or not all(isinstance(x,str) and x for x in argv): fail('invalid_native_entry',field,'Supply the actual target-native entry argv.')
     # A source/external installed script cannot stand in for the target entry.
     local=[]
     for arg in argv:
@@ -112,9 +112,32 @@ def observe_native(root, argv):
         else: relative=candidate
         ref=relative.as_posix()
         if ref.startswith('.trellis/') or ref.startswith('.agents/'): local.append(ref)
-    if not local or any(not path_at(root,x).is_file() for x in local): fail('target_native_required','argv','Invoke an existing target checkout native entry, not an external replacement.')
+    if not local or any(not path_at(root,x).is_file() for x in local): fail('target_native_required',field,'Invoke an existing target checkout native entry, not an external replacement.')
+
+def observe_native(root, argv):
+    validate_native_entry(root,argv)
     result=subprocess.run(argv,cwd=root,text=True,capture_output=True)
     return {'argv':argv,'returncode':result.returncode,'stdout':result.stdout,'stderr':result.stderr}
+
+def validate_finalize_review(package_root, root, review, needs_next_owner):
+    def require(condition, field, detail):
+        if not condition:
+            fail('schema_mismatch',field,detail+' Read references/contract.md#finalize-review-input and its two finalize-review examples; correct this input and reuse the original recovery_ref.')
+    require(isinstance(review,dict),'review_input','Finalize REVIEW must be one JSON object.')
+    names=['native_argv','observations','output']+(['next_owner_argv'] if needs_next_owner else [])
+    for name in names:
+        require(name in review,'review_input.'+name,'Required field is missing.')
+    observed=review['observations']
+    require(isinstance(observed,dict),'review_input.observations','observations must be the object projected from the original observe receipt result.result.')
+    for name in ['native']+(['next_owner'] if needs_next_owner else []):
+        field='review_input.observations.'+name
+        require(name in observed,field,'Required observation is missing.')
+        require(isinstance(observed[name],dict),field,'Each observation must be the original observation object.')
+        for member in ('argv','returncode','stdout','stderr'):
+            require(member in observed[name],field+'.'+member,'Required observation field is missing.')
+    validate_native_entry(root,review['native_argv'],'review_input.native_argv')
+    if needs_next_owner: validate_native_entry(root,review['next_owner_argv'],'review_input.next_owner_argv')
+    validate_json(review['output'],package_root/'schemas/public-output.schema.json','review_input.output')
 
 def run(package_root, command, argv):
     parser=argparse.ArgumentParser(); parser.add_argument('--root',required=True); parser.add_argument('--input',required=True); parser.add_argument('--plan'); parser.add_argument('--action',choices=['inspect','prepare','apply','resume','rollback','observe','finalize'],default='inspect'); parser.add_argument('--review-input')
@@ -157,13 +180,16 @@ def run(package_root, command, argv):
         return {'formal_exit':False,'result':result}
     if args.action=='finalize':
         if state['phase']!='verification_required': fail('verification_required','phase','Complete public maintenance and exact original owner retirements.')
+        if not args.review_input: fail('invalid_arguments','arguments.--review-input','Finalize requires --review-input with the reviewed JSON file or stdin. Read references/contract.md#finalize-review-input.')
         review=read(args.review_input)
+        needs_next_owner=state['public_input']['profile'] in {'convert','archive_resume'}
+        validate_finalize_review(package_root,root,review,needs_next_owner)
         # AI selects the route from actual observations; no status-to-success rule.
         observations={'native':observe_native(root,review['native_argv'])}
-        if state['public_input']['profile'] in {'convert','archive_resume'}: observations['next_owner']=observe_native(root,review['next_owner_argv'])
+        if needs_next_owner: observations['next_owner']=observe_native(root,review['next_owner_argv'])
         if any(v['returncode'] for v in observations.values()): fail('native_verification_failed','native','Repair the target native/next-owner entry before semantic finalization.')
         if review['observations']!=observations: fail('stale_native_observation','review_input','Review the current actual native and next-owner outputs.')
-        output=review['output']; validate_json(output,package_root/'schemas/public-output.schema.json','output')
+        output=review['output']
         expected='task_resumed' if state['public_input']['profile'] in {'convert','archive_resume'} else 'history_archived'
         if output['exit_id']!=expected: fail('route_mismatch','output','Use the profile-specific semantic result.')
         if expected=='task_resumed':

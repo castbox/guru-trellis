@@ -89,8 +89,16 @@ def run(package_root: Path, command: dict, argv: list[str]) -> dict:
             repository, BranchBindingStore(repository), ResourceLedgerStore(repository),
             key=key, task_ref=artifact.task_ref, expected_status="active",
         )
-        return {"status": resolution.kind, "reason_code": resolution.reason_code,
-                "candidates": [_candidate(row) for row in resolution.candidates]}
+        output = {"status": resolution.kind, "reason_code": resolution.reason_code,
+                  "candidates": [_candidate(row) for row in resolution.candidates]}
+        if command_id == "discover-task-branch-binding-candidates" and resolution.kind == "already_established":
+            binding = resolution.binding
+            output["binding_ref"] = {
+                "task_id": binding.task_id,
+                "lifecycle_generation": binding.lifecycle_generation,
+                "binding_revision": binding.binding_revision,
+            }
+        return output
     if command_id in {"recover-established-task-branch-binding-result", "check-task-branch-binding-result"}:
         if data["action"] != "recover":
             raise CommandError("invalid_arguments", "action", "Use the read-only recovery action for this command.")

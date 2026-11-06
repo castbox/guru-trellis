@@ -1,0 +1,12 @@
+{
+  "profile": "legacy_control_retirement",
+  "root": "/selected-checkout",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "task_ref": ".trellis/tasks/legacy-task",
+  "control_refs": [],
+  "preserved_source_ref": "/selected-checkout/archive",
+  "recovery_ref": "/selected-checkout/ignored/checkpoint.json"
+}

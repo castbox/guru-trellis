@@ -148,13 +148,15 @@
       ],
       "side_effect": "none",
       "schema_bindings": [
-        "schemas/public-clear-output-3.0.schema.json",
+        "schemas/public-input-delivery-index-2.0.schema.json",
+        "schemas/semantic-scope-continuation-2.0.schema.json",
+        "schemas/public-clear-output-delivery-index.schema.json",
         "schemas/public-needs-context-output.schema.json",
         "schemas/public-refresh-context-output.schema.json",
         "schemas/public-retarget-context-output.schema.json",
         "schemas/public-new-task-output.schema.json",
         "schemas/public-blocked-output.schema.json",
-        "schemas/public-scope-ready-output-1.0.schema.json"
+        "schemas/public-scope-ready-output-2.0.schema.json"
       ],
       "runtime_role": "invoke"
     }

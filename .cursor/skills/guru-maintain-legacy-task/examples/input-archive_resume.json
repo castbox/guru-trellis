@@ -1,0 +1,21 @@
+{
+  "profile": "archive_resume",
+  "source_ref": {
+    "cli_package_root": "/complete-candidate/cli",
+    "dependency_mode": "local_candidate",
+    "expected_candidate": {
+      "cli_version": "0.7.0-castbox.4",
+      "core_version": "0.7.0-castbox.4",
+      "cli_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "core_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "target_checkout": "/selected-checkout",
+  "key": {
+    "task_id": "legacy-task",
+    "lifecycle_generation": 0
+  },
+  "task_ref": ".trellis/tasks/archive/2026-10/legacy-task",
+  "original_task_ref": ".trellis/tasks/legacy-task",
+  "active_ref": ".trellis/tasks/legacy-task"
+}

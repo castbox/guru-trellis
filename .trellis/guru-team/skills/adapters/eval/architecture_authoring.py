@@ -280,15 +280,17 @@ def stage_delivery_identity(fixture: Path, public: dict, *, scope_content=None, 
     return projection.planning_directory(key)
 
 
-def reviewer_context(repository: Path, package: Path, helper_command: str, reads: list[str], input_locator: Path, *, upstream: bool) -> str:
+def reviewer_context(repository: Path, package: Path, helper_command: str, reads: list[str], input_locator: Path, *, upstream: bool, persisted_observation: bool = False) -> str:
     """Build operational locators only. Outcomes remain entirely reviewer-owned."""
     read = lambda path, kind="owner_file": f"{helper_command} read --kind {kind} --path {path}"
     return "\n".join([
         "You are a fresh independent Architecture reviewer for this repository candidate.",
-        "This fresh ephemeral worker has no candidate-author history. Inspect the actual native prelude before proceeding. If it preloads task PRD, acceptance, implementation summaries or pass narratives, stop with the existing blocked/re-entry contract; do not retroactively claim independence.",
+        f"This fresh {'independent' if persisted_observation else 'ephemeral'} worker has no candidate-author history. Inspect the actual native prelude before proceeding. If it preloads task PRD, acceptance, implementation summaries or pass narratives, stop with the existing blocked/re-entry contract; do not retroactively claim independence.",
         "Load the Architecture Skill and contract below for the reviewer method and current authoring/wrapper contracts. Execute every listed contract read command, including all Interface input-profile schemas and their referenced schemas, before authoring or invoking. This complete public-contract read is an execution prerequisite; the current public input still selects only its own profile. Review source; do not edit product code, promote authority, or read task PRD/implement/acceptance/contribution narratives in the first round.",
         "Finish this independent Architecture assessment through its original formal invocation before reading Task PRD, implement, task.json or acceptance narratives. Completing the initial source reads or forming an internal judgment does not end this invocation boundary. Necessary candidate design explanations remain subject to the original contract.",
         "The trace protocol requires one SKILL.md read as its first event. Execute that listed read once and retain its complete text for this session; do not repeat that helper read during a later review round. Complete the other required reads before the corresponding wrapper invocation.",
+        "Capturing a read response in a file does not put its body in your model-visible context. For each full-body read required by the original public contract, display the complete captured body in consecutive bounded chunks before using it to assemble or invoke that owner. Byte counts, hashes, searches and summaries do not replace the body. If a tool display is truncated, display the missing ranges before continuing. Keep the original read order.",
+        "Display chunks from the same capture without repeating the first SKILL.md helper read. If a command tool returns a running session, retain its session ID and collect completion, exit, stdout and stderr before starting another helper. Starting the same helper again does not wait for its first process.",
         f"Repository locator: {repository}",
         f"Public input locator: {input_locator}",
         *[read(path, "owner_file" if upstream else "skill_contract") for path in public_contract_reads(package, json.loads(input_locator.read_text()))],
@@ -306,10 +308,11 @@ def reviewer_context(repository: Path, package: Path, helper_command: str, reads
     ])
 
 
-def execute_reviewer(argv: list[str], output_path: Path, context: str, *, cwd: Path, environment: dict) -> subprocess.CompletedProcess:
+def execute_reviewer(argv: list[str], output_path: Path, context: str, *, cwd: Path, environment: dict, allow_persisted: bool = False) -> subprocess.CompletedProcess:
     """A separate fresh native exec, never resume/fork or inherited task context."""
     command = list(argv)
-    if "--ephemeral" not in command or "resume" in command or "fork" in command:
+    fresh_persisted_exec = allow_persisted and len(command) > 1 and command[1] == "exec"
+    if ("--ephemeral" not in command and not fresh_persisted_exec) or "resume" in command or "fork" in command:
         raise ValueError("Architecture requires a fresh ephemeral native worker")
     command[command.index("--output-last-message") + 1] = str(output_path)
     command[-1] = context
@@ -330,16 +333,27 @@ def validate_phase2_predecessor(process: subprocess.CompletedProcess, output: st
         raise ValueError("Phase2 Check requires actual upstream Architecture baseline_current; retain the upstream result for its existing consumer")
 
 
-def validate_reviewer_reads(events: list[dict], repository: Path, reads: list[str], *, phase2: bool) -> None:
+def validate_reviewer_reads(events: list[dict], repository: Path, reads: list[str], *,
+                            phase2: bool, contract_reads: list[Path] | None = None) -> None:
     """Check observed ordering/coverage only, never judge architecture suitability."""
     first_invoke = next((index for index, event in enumerate(events) if event.get("kind") == "invoke"), len(events))
     observed = [event["path"] for event in events[:first_invoke] if event.get("kind") == "read"]
     required = [str(repository / path) for path in reads]
-    if not all(path in observed for path in required):
-        raise ValueError("independent reviewer omitted candidate or consumer reads before Architecture invocation")
+    # Only the exact method assets used by reviewer_context have a prelude role.
+    # Actual candidate evidence, including changes to those contracts, remains
+    # a separate design/full-diff/source read obligation after the authorities.
+    contracts = {str(path) for path in contract_reads or ()}
+    if not all(path in observed for path in {*required, *contracts}):
+        raise ValueError("independent reviewer omitted required contract, candidate or consumer reads before Architecture invocation")
+    if contracts:
+        skills = [path for path in contracts if Path(path).name == "SKILL.md"]
+        if (len(skills) != 1 or not events or events[0].get("path") != skills[0]
+                or observed.count(skills[0]) != 1):
+            raise ValueError("independent reviewer must begin with one exact Skill read")
     if len(required) < 3 or not observed.index(required[0]) < observed.index(required[1]) < observed.index(required[2]):
         raise ValueError("independent reviewer must read Constitution, Baseline and project change contract in authority order")
-    if any(observed.index(path) < observed.index(required[2]) for path in required[3:]):
+    if any(observed.index(path) < observed.index(required[2])
+           for path in required[3:] if path not in contracts):
         raise ValueError("independent reviewer must read authority before candidate and consumers")
     if phase2 and any(Path(path).name in {"prd.md", "implement.md", "task.json"} for path in observed):
         raise ValueError("independent reviewer read task narrative before Architecture invocation")

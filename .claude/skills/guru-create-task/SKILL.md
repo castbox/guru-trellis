@@ -26,6 +26,23 @@ reviewed disposition through official creation and result recovery.
 `reference_only` does not grant source-Issue closure; `follow_up | parent` remain
 unsupported creation inputs.
 
+The current input is `schemas/public-delivery-task-creation-input.schema.json`.
+Before authoring `creation`, read both installed contracts from the repository root:
+`.trellis/guru-team/skills/packages/guru-create-task/schemas/public-delivery-task-creation-input.schema.json`
+and `.trellis/guru-team/skills/contracts/task-lifecycle/task-creation-input.schema.json`.
+When entering through a platform discovery copy, resolve the profile schema's
+cross-package references from its directory in the shared installation.
+Its `allOf` constraints apply together with the
+profile's local properties. For `source_profile=existing_issue`, copy the reviewed Issue identity as
+`reviewed_source={kind:"issue",repo_ref,number,disposition}`. The disposition is
+`exact_source` or `reference_only`; `relation` is not an input field. Read
+`examples/public-create-issue-input.json` for that normal shape. For
+`source_profile=standalone_request`, use `reviewed_source={kind:"no_issue"}` and
+`examples/public-create-input.json`. In both cases `delivery_target` has the
+reviewed `repo_ref` and `branch_ref`. Replace sample facts with the actual
+upstream ready/acquisition output and current Task date; examples supply no
+semantic review or creation authority.
+
 Review the exact TaskId, date-prefixed TaskRef, title, ordinary scope, selected
 base and delivery target. Choose one checkout acquisition route:
 `adopt_invocation_checkout` for the unique clean registered linked invocation

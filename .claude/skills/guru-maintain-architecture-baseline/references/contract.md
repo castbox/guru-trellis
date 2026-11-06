@@ -538,6 +538,12 @@ true execution-capability gap.
 ## Planning 3.0
 
 This purpose-specific section retains the Planning 3.0 assessment contract.
+For current Delivery Planning, select profile=delivery_task_impact_sync and
+schema_version=delivery-1.0 with the exact delivery_key and planning_root. Read
+[Delivery Architecture projection](#delivery-architecture-projection) before
+assembling either purpose. Planning 3.0 names the retained purpose semantics;
+it does not select the current Delivery input version. Historical Task Planning
+3.0 examples are validation assets, not current Delivery inputs.
 Both purposes use the same Architecture semantic owner and independent read
 order. Public inputs select purpose and locate the real design object; they
 never preselect impact or a decision. The project_contract binds
@@ -583,7 +589,42 @@ content; the validator checks a safe repository-relative regular file and its
 bound identity. Do not copy it into Task planning solely to satisfy a path rule.
 The final current router goes only to adjacent Approval.
 
-Freshness binds the exact candidate object or design file as sha256:<content>.
+Freshness binds the exact candidate object or design file as `sha256:<content>`.
+When `design_locator` is present at the public input root or under `candidate`,
+hash the original bytes of that selected Delivery's `design.md`. Otherwise,
+hash the complete `public_input.candidate` object using UTF-8 bytes of
+`json.dumps(candidate, ensure_ascii=False, sort_keys=True, separators=(',', ':'))`.
+Preserve array order and all candidate fields. Add no newline to the hashed
+JSON. Prefix the lowercase hexadecimal SHA-256 with `sha256:`. A Task PRD hash,
+the public-input envelope hash, and a reviewed-worktree token are different
+identities and cannot supply this Planning field.
+
+This standard-library recipe reads the caller's current public input file and
+writes only the Planning freshness token to stdout. Run it from the repository
+root; replace the example filename with that actual input. The printed newline
+is not part of the digest.
+
+```sh
+python3 - planning-input.json <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+public = json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))
+locator = public.get('design_locator') or public.get('candidate', {}).get('design_locator')
+if locator:
+    content = Path(locator).read_bytes()
+else:
+    content = json.dumps(public['candidate'], ensure_ascii=False, sort_keys=True,
+                         separators=(',', ':')).encode('utf-8')
+print('sha256:' + hashlib.sha256(content).hexdigest())
+PY
+```
+
+After changing the candidate or design, reread and review it, then compute its
+current token. This recipe does not select facts, repair a stale result, or
+provide a semantic judgment.
 It is local stale detection, never semantic authority. All other six exits
 preserve this invocation's planning_purpose and task identity. Sync/bootstrap/
 repair return to the original purpose's fresh task impact after maintenance;
@@ -670,6 +711,12 @@ The old 4.0 / delivery-2.0 schemas remain fixed historical validation assets.
 The current runtime rejects those inputs. Use the matching complete installation
 under MIGRATION-638 or retain the pinned complete old installation; do not
 convert an old pass into a current result.
+
+For `baseline_current`, the owner result explicitly includes `baseline_identity`
+and `constitution_identity`, including no-impact work. Read both from the
+applicable authority: no-impact work retains the input baseline identity, and
+the constitution identity equals `constitution.identity`. Promotion's actual
+after-baseline identity follows the write boundary below.
 
 The public promotion input keeps Task/Delivery, mode/continuation, baseline,
 constitution, project contract, freshness and contribution sync target. Its

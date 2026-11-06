@@ -456,6 +456,30 @@ class PromotionTest(unittest.TestCase):
             self.assertEqual(result.returncode, 2)
             self.assertEqual(json.loads(result.stdout)["code"], "schema_mismatch")
 
+    def test_current_promotion_requires_explicit_authority_identities(self):
+        self.write_targets()
+        for delivery in (True, False):
+            public = copy.deepcopy(self.public)
+            if not delivery:
+                public.update(profile="promotion", schema_version="5.0")
+                public.pop("delivery_key")
+                public.pop("planning_root")
+            owner = self.owner(public)
+            for field in ("baseline_identity", "constitution_identity"):
+                with self.subTest(delivery=delivery, missing=field):
+                    incomplete = copy.deepcopy(owner)
+                    incomplete.pop(field)
+                    result = self.invoke(incomplete, public)
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    diagnostic = json.loads(result.stdout)
+                    self.assertEqual(diagnostic["code"], "schema_mismatch")
+                    self.assertEqual(diagnostic["field_path"], "owner_result." + field)
+            result = self.invoke(owner, public)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            output = json.loads(result.stdout)
+            self.assertEqual(output["baseline_identity"], owner["baseline_identity"])
+            self.assertEqual(output["constitution_identity"], owner["constitution_identity"])
+
     def test_current_contribution_accepts_precheck_review_without_future_committed_range(self):
         from runtime.schema import validate_json
         from runtime.io import CommandError
@@ -482,6 +506,25 @@ class PromotionTest(unittest.TestCase):
         owner.update(input_sha256=self.digest(public), impact_kind="no_architecture_impact",
                      promotion_state="no_change", impact_reason="No architecture boundary changes",
                      baseline_identity=public["baseline"]["identity"])
+        for delivery in (True, False):
+            current_public, current_owner = copy.deepcopy(public), copy.deepcopy(owner)
+            if not delivery:
+                for value in (current_public, current_owner):
+                    value.update(profile="task_impact_sync", schema_version="5.0", stage="acceptance_finish")
+                    value.pop("delivery_key")
+                    value.pop("planning_root")
+                current_owner["input_sha256"] = self.digest(current_public)
+            for field in ("baseline_identity", "constitution_identity"):
+                with self.subTest(delivery=delivery, missing=field):
+                    incomplete = copy.deepcopy(current_owner)
+                    incomplete.pop(field)
+                    result = self.invoke(incomplete, current_public)
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    diagnostic = json.loads(result.stdout)
+                    self.assertEqual(diagnostic["code"], "schema_mismatch")
+                    self.assertEqual(diagnostic["field_path"], "owner_result." + field)
+            result = self.invoke(current_owner, current_public)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         result = self.invoke(owner, public)
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertEqual(json.loads(result.stdout)["promotion_state"], "no_change")

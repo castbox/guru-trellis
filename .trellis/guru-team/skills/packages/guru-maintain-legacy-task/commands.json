@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile from one regular UTF-8 JSON file or dash for stdin; inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         },
@@ -27,7 +27,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed migration actions; on resume, unchanged decisions with a reviewed successor workflow provider ref.",
+          "description": "Owner-private reviewed migration actions from a JSON file or dash for stdin; on resume, unchanged decisions with a reviewed successor workflow provider ref. Inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         },
@@ -43,7 +43,7 @@
           "flag": "--review-input",
           "required": false,
           "kind": "json",
-          "description": "Owner-private current action or semantic finalization.",
+          "description": "For finalize, a JSON file or dash for stdin REVIEW with native_argv, observations from observe receipt result.result, and output; convert/archive_resume also require next_owner_argv. See references/contract.md#finalize-review-input and examples/finalize-review-task-resumed.json or examples/finalize-review-history-archived.json. Inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         }
@@ -56,7 +56,8 @@
         "schema_mismatch",
         "internal_error",
         "maintenance_prerequisite_missing",
-        "resumed_identity_missing"
+        "resumed_identity_missing",
+        "legacy_fact_attribution_required"
       ],
       "side_effect": "repo_write",
       "schema_bindings": [
@@ -82,7 +83,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Public input profile.",
+          "description": "Public input profile from one regular UTF-8 JSON file or dash for stdin; inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         },
@@ -90,7 +91,7 @@
           "flag": "--plan",
           "required": false,
           "kind": "json",
-          "description": "Owner-private reviewed migration actions; on resume, unchanged decisions with a reviewed successor workflow provider ref.",
+          "description": "Owner-private reviewed migration actions from a JSON file or dash for stdin; on resume, unchanged decisions with a reviewed successor workflow provider ref. Inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         },
@@ -106,7 +107,7 @@
           "flag": "--review-input",
           "required": false,
           "kind": "json",
-          "description": "Owner-private current action or semantic finalization.",
+          "description": "JSON file or dash for stdin, consumed by invoke --action finalize; see references/contract.md#finalize-review-input for REVIEW fields and original observe receipt result.result projection. Inline JSON is not supported by this owner.",
           "repeatable": false,
           "conflicts": []
         }
@@ -119,7 +120,8 @@
         "schema_mismatch",
         "internal_error",
         "maintenance_prerequisite_missing",
-        "resumed_identity_missing"
+        "resumed_identity_missing",
+        "legacy_fact_attribution_required"
       ],
       "side_effect": "repo_read",
       "schema_bindings": [

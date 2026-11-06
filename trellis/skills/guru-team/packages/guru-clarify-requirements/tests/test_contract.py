@@ -15,6 +15,40 @@ from runtime.io import project_intermediate_receipt
 
 
 class RequirementsClarificationPackageContractTests(unittest.TestCase):
+    def test_scope_acceptance_schema_requires_the_reviewed_authority(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads((self.package / "schemas/semantic-scope-continuation-2.0.schema.json").read_text())
+        validator = Draft202012Validator(schema)
+        public = json.loads((self.package / "examples/public-task-scope-requirements-acceptance-input.json").read_text())
+        owner = {
+            "public_input": public, "typed_exit": "scope_ready", "reason": "Reviewed current whole requirements.",
+            "ai_review_gate": {"status": "passed", "summary": "Current scope is complete."},
+            "source_selection": public["source_selection"], "revision_refs": public["revision_refs"],
+            "scope_action": "revised",
+        }
+        errors = list(validator.iter_errors(owner))
+        self.assertTrue(any(error.validator == "required" and "authority" in error.message for error in errors))
+
+    def test_scope_schema_keeps_blocked_and_source_judgments_without_authority(self) -> None:
+        from jsonschema import Draft202012Validator
+
+        schema = json.loads((self.package / "schemas/semantic-scope-continuation-2.0.schema.json").read_text())
+        validator = Draft202012Validator(schema)
+        for profile in ("task_scope_requirements_acceptance", "delivery_active_task_scope_change", "delivery_task_scope_revision"):
+            public = json.loads((self.package / f"examples/public-{profile.replace('_', '-')}-input.json").read_text())
+            owner = {
+                "public_input": public, "typed_exit": "blocked", "reason": "A current scope choice remains unresolved.",
+                "ai_review_gate": {"status": "blocked", "summary": "The required authority choice is unavailable."},
+            }
+            with self.subTest(profile=profile, typed_exit="blocked"):
+                validator.validate(owner)
+            if profile != "task_scope_requirements_acceptance":
+                owner.update(typed_exit="scope_ready", source_selection=[], revision_refs=["docs/source.md"], scope_action="revised")
+                owner["ai_review_gate"] = {"status": "passed", "summary": "The source judgment is ready for Author."}
+                with self.subTest(profile=profile, typed_exit="scope_ready"):
+                    validator.validate(owner)
+
     def test_current_clear_and_context_outputs_reach_declared_consumers(self) -> None:
         from runtime.schema import validate_json
         contracts = self.interface["public_contracts"]
@@ -764,6 +798,83 @@ class RequirementsClarificationPackageContractTests(unittest.TestCase):
         self.assertNotEqual(rejected.returncode, 0)
         self.assertEqual(json.loads(rejected.stdout)["code"], "schema_mismatch")
         self.assertNotIn("Traceback", rejected.stdout + rejected.stderr)
+
+    def standalone_context_request(self):
+        owner = copy.deepcopy(self.example)
+        owner["invocation_context"].update(kind="standalone_review", resume_target="guru-standalone-caller")
+        owner["typed_exit"] = "needs_context"
+        owner["consumer"] = {"kind": "skill", "id": "guru-discover-change-context"}
+        owner["context_evidence"] = {
+            "status": "missing", "evidence_refs": ["current-session:missing"],
+            "missing_reason": "The first standalone review has no Discovery context.",
+        }
+        owner["target_disposition"] = None
+        owner = self.record_owner(owner)
+        checked = self.command("check-requirements-clarification.sh", owner, "--input", "-")
+        self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+        transition = json.loads((self.package / "examples/public-needs-context-output.json").read_text())["transition"]
+        transition.update(mode="standalone", transition_id="base_current:original-sync-result")
+        return {
+            "schema_version": "1.0",
+            "public_input": {
+                "profile": "standalone_review", "source_exit": "start", "mode": "standalone",
+                "target_locator": "draft:standalone-review", "continuation_id": "standalone-current",
+                "resume_target": "guru-standalone-caller",
+            },
+            "transition": transition, "owner_context": {}, "owner_result": owner,
+        }
+
+    def test_initial_standalone_needs_context_returns_base_to_discovery(self) -> None:
+        from runtime.schema import validate_json
+
+        invocation = self.standalone_context_request()
+        for stage in ("base_current", "context_current"):
+            with self.subTest(stage=stage):
+                current = copy.deepcopy(invocation)
+                current["transition"]["stage"] = stage
+                result = self.command("invoke.sh", current, "--invocation", "-")
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                output = json.loads(result.stdout)
+                self.assertEqual(output["exit_id"], "needs_context")
+                self.assertEqual(output["handoff_mode"], "standalone")
+                self.assertEqual(output["return_identity"], {
+                    key: invocation["public_input"][key]
+                    for key in ("profile", "target_locator", "continuation_id", "resume_target")
+                })
+                if stage == "base_current":
+                    self.assertEqual(output["transition"], invocation["transition"])
+                else:
+                    self.assertEqual(output["transition"]["stage"], "base_current")
+                    self.assertEqual(output["transition"]["base"], invocation["transition"]["base"])
+                contracts = self.interface["public_contracts"]
+                projection = next(row for row in contracts["projections"] if row["id"] == "project_needs_context")
+                consumer = next(row for row in contracts["consumer_inputs"] if row["id"] == projection["consumer_input_id"])
+                seed = {row["target"]: output[row["source"]] for row in projection["mappings"]}
+                contract = consumer["contract"]
+                authoring = json.loads((self.package / contract["authoring_example"]["path"]).read_text())
+                discovery = self.package.parent / "guru-discover-change-context"
+                validate_json({**seed, **authoring}, discovery / "schemas/public-context-request-input.schema.json", "consumer")
+                validate_json(output["transition"], self.package.parents[1] / consumer["transition"]["path"], "transition")
+
+    def test_initial_standalone_base_cannot_supply_current_review_context(self) -> None:
+        invocation = self.standalone_context_request()
+        for label, change in (
+            ("noninitial_source", lambda value: value["public_input"].update(source_exit="context_ready")),
+            ("different_mode", lambda value: value["transition"].update(mode="workflow")),
+            ("different_stage", lambda value: value["transition"].update(stage="clarity_current")),
+        ):
+            with self.subTest(label=label):
+                current = copy.deepcopy(invocation)
+                change(current)
+                rejected = self.command("invoke.sh", current, "--invocation", "-")
+                self.assertEqual(rejected.returncode, 3, rejected.stdout + rejected.stderr)
+                self.assertEqual(json.loads(rejected.stdout)["code"], "stale_identity")
+        owner = copy.deepcopy(self.example)
+        owner["invocation_context"].update(kind="standalone_review", resume_target="guru-standalone-caller")
+        invocation["owner_result"] = self.record_owner(owner)
+        rejected = self.command("invoke.sh", invocation, "--invocation", "-")
+        self.assertEqual(rejected.returncode, 3, rejected.stdout + rejected.stderr)
+        self.assertEqual(json.loads(rejected.stdout)["field_path"], "transition")
 
     def test_needs_context_rejects_missing_or_malformed_base_as_json_command_error(self) -> None:
         owner = json.loads((self.package / "examples/requirements-clarification.json").read_text())

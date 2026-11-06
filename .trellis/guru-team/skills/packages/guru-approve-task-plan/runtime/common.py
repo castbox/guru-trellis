@@ -14,7 +14,9 @@ def root(package_root,value=None):
 def load(repo,package_root,value,field):
  if value=="-": raw=sys.stdin.read()
  else:
-  q=Path(str(value or "")); choices=[q] if q.is_absolute() else [repo/q,package_root/q]; q=next((x for x in choices if x.is_file() and not x.is_symlink()),None)
+  q=Path(str(value or "")); choices=[q] if q.is_absolute() else [repo/q,package_root/q]
+  try:q=next((x for x in choices if x.is_file() and not x.is_symlink()),None)
+  except OSError as exc:raise CommandError("unsafe_path",field,"Provide a safe regular JSON file; use '-' only where this command documents stdin.") from exc
   if q is None: raise CommandError("unsafe_path",field,"Use a safe regular JSON file.")
   raw=q.read_text()
  try:v=json.loads(raw)

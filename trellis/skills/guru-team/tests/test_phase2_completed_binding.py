@@ -50,15 +50,16 @@ class Phase2CompletedBindingTests(unittest.TestCase):
         (model / "visible-interval.py").write_text(business_staged)
         facts = ".trellis/tasks/phase2-evidence/public-authoring-facts.json"
         bound_input = "docs/phase2-evidence/check-public-input.json"
+        if case.startswith("native-stage-"):
+            bound_input = ".trellis/tasks/stage-result-evidence/input.json"
         write(owner / facts, {"public_input_locator": bound_input})
         write(owner / bound_input, {**public, "task_ref": ".trellis/tasks/" + bound_task})
 
         # Use the original input locator reader. Only the pre-existing trace
         # subsystem is substituted, outside this test's fixture-binding boundary.
         adapters = skills / "adapters/eval"
-        adapters.mkdir(parents=True)
-        for name in ("fixture_io.py", "eval_constants.py"):
-            shutil.copy2(SKILLS / "adapters/eval" / name, adapters / name)
+        shutil.copytree(SKILLS / "adapters/eval", adapters,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         (adapters / "native_adapter.py").write_text(
             "def unwrap_native_output(adapter, stdout, output_path): return stdout\n"
             "def validate_native_trace(*args): return []\n")
@@ -116,6 +117,15 @@ class Phase2CompletedBindingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             with self.assertRaisesRegex(CommandError, "saved native output/trace/receipts"):
                 self.consume(self.fixture(Path(temporary), "native-owner-candidate-final", bound_task="other"))
+
+    def test_stage_result_binding_uses_selected_skills_without_parent_adapter_import(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            self.consume(self.fixture(Path(temporary), "native-stage-p01"))
+
+    def test_stage_result_binding_rejects_a_different_current_task(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(CommandError, "saved native output/trace/receipts"):
+                self.consume(self.fixture(Path(temporary), "native-stage-p01", bound_task="other"))
 
     def test_other_changed_fixture_does_not_receive_the_public_input_exception(self):
         with tempfile.TemporaryDirectory() as temporary:

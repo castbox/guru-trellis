@@ -34,9 +34,14 @@ platform discovery without that routing; it still requires the complete,
 current Guru Team preset and extension runtime. This Skill directory is not
 a self-contained or portable package.
 
-For a clean committed candidate, use `scripts/invoke.sh --input <delivery_committed_reentry> --owner-result <actual-review>`. After semantic review it returns the existing candidate without stage, commit, hook or ref mutation.
+For a clean committed candidate, use `scripts/invoke.sh --input <public-input.json> --owner-result <semantic-review.json>` with two regular JSON files. Read the contract's clean re-entry carriers before assembling those files. Each argument is a file locator; inline JSON text is unsupported. The original loader also accepts `-` to read one object from stdin; supply the other object as a regular JSON file. After semantic review this entry returns the existing candidate without stage, commit, hook or ref mutation.
 
 For a necessary dirty increment the Happy Path is exactly two package calls:
+
+Resolve the package-relative commands below from
+`.trellis/guru-team/skills/packages/guru-create-task-commit/`. Platform discovery
+copies include `scripts/invoke.sh` but do not include the preparation script.
+Use the complete installed package for preparation.
 
 1. Use `scripts/prepare-task-commit.sh` once to record the AI-owned path
    classifications, seven structured message fields, and completed semantic

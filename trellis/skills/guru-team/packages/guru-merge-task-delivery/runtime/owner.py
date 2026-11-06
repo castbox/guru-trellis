@@ -81,12 +81,21 @@ def load_json(root: Path, package_root: Path, value: str, field: str) -> dict[st
     if value == "-":
         raw = sys.stdin.read()
     else:
-        path = Path(value)
-        candidates = [path] if path.is_absolute() else [root / path, package_root / path]
-        resolved = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+        remediation = (
+            "Use an existing readable regular non-symlink UTF-8 JSON file. "
+            "Use '-' only where the command/profile supports stdin; inline JSON is not a current Merge carrier. "
+            "Read references/contract.md#current-json-input-carriers and rerun this command."
+        )
+        try:
+            path = Path(value)
+            candidates = [path] if path.is_absolute() else [root / path, package_root / path]
+            resolved = next((item for item in candidates if item.is_file() and not item.is_symlink()), None)
+            if resolved is not None:
+                raw = resolved.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise CommandError("unsafe_path", field, remediation) from exc
         if resolved is None:
-            raise CommandError("unsafe_path", field, "Use one existing regular JSON file.")
-        raw = resolved.read_text(encoding="utf-8")
+            raise CommandError("unsafe_path", field, remediation)
     try:
         result = json.loads(raw)
     except (OSError, json.JSONDecodeError) as exc:

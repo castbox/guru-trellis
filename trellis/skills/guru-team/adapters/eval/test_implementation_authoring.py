@@ -4,6 +4,7 @@ import json
 import hashlib
 import ast
 import os
+import shlex
 import shutil
 from pathlib import Path
 import subprocess
@@ -12,10 +13,14 @@ import tempfile
 import textwrap
 import threading
 import unittest
+import tomllib
+from contextlib import ExitStack
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from adapters.eval import architecture_authoring, delivery_production, implementation_authoring, native_adapter
+from adapters.eval import architecture_authoring, delivery_production, implementation_authoring, native_adapter, phase2_authoring
 from adapters.eval.eval_support import qualification_trace_helper_source, stage_repository_projection, repository_file_inventory
 from adapters.eval.fixture_io import stage_clean_installed_owner_repo, run_git
 from runtime.delivery_projection.adapter import DeliveryProjection
@@ -27,6 +32,48 @@ PACKAGE = SKILLS / 'packages/guru-author-task-plan'
 
 
 class ImplementationAuthoringTests(unittest.TestCase):
+    def snapshot_transport_context(self, request):
+        # This test's boundary is command/read transport over an existing
+        # Planning snapshot. It is not the new no-Task native entry.
+        with patch.object(implementation_authoring, 'initial_request_entry', return_value=False), \
+                patch.object(implementation_authoring, 'stage', implementation_authoring.stage_planning_snapshot):
+            return native_adapter.build_context(request, 'codex')
+
+    def stage_historical_fixture(self, request, fixture, package, source):
+        """Module transport precondition through real original producers.
+
+        This setup is not supplied to a native Agent and establishes no native
+        semantic proof. Business bytes and original result assertions stay real.
+        """
+        original = phase2_authoring.stage
+        def historical_setup(*args, **kwargs):
+            kwargs['fact_only'] = False
+            return original(*args, **kwargs)
+        with patch.object(phase2_authoring, 'stage', side_effect=historical_setup):
+            implementation_authoring.stage(request, fixture, package, source)
+        facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+        projection = DeliveryProjection(fixture, facts['task_ref'])
+        key = facts['delivery_key']
+        before = projection.resolve(key)
+        self.assertEqual(before['phase'], 'checking')
+        self.assertIsNotNone(before['results']['planning'])
+        from runtime.delivery_projection.gates import rework
+        rework(projection, key, 'check', 'implementation', before['scope_ref']['authority'],
+               ['check', 'full_review', 'readiness'])
+        after = projection.resolve(key)
+        self.assertEqual(after['results']['planning'], before['results']['planning'])
+        self.assertEqual(after['candidate'], before['candidate'])
+        self.assertEqual(after['scope_ref'], before['scope_ref'])
+        facts.update(current_delivery=after, current_selection=projection.current(key),
+            seed_boundary='Historical module transport precondition from original producers; no native judgment is claimed.')
+        (fixture / implementation_authoring.FACTS).write_text(json.dumps(facts, indent=2) + '\n')
+        public = {'profile':'delivery_initial_review', 'mode':'workflow',
+            'task_ref':facts['task_ref'], 'delivery_key':key,
+            'source_selection':[{'locator':'docs/range.md', 'section':'Integer Range', 'authority_kind':'requirement'}]}
+        if request['case_id'] == 'native-implementation-code-drift':
+            public = json.loads((fixture / 'docs/phase2-evidence/check-public-input.json').read_text())
+        (fixture / implementation_authoring.PUBLIC_INPUT).write_text(json.dumps(public) + '\n')
+
     def assert_rdt_command_reaches_original_wrapper(self, fixture, facts):
         # A complete public request reaches the original owner's structural
         # validation. No native semantic result or no-change answer is supplied.
@@ -47,7 +94,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
         self.assertEqual(error['code'],'schema_mismatch')
         self.assertTrue(error['field_path'].startswith('owner_result'),error)
         self.assertEqual(repository_file_inventory(fixture),before)
-        self.assertTrue(relay.terminal)
+        self.assertFalse(relay.terminal)
         stop = threading.Event()
         request_fifo = fixture.parent / 'terminal-request'
         response_fifo = fixture.parent / 'terminal-response'
@@ -59,82 +106,115 @@ class ImplementationAuthoringTests(unittest.TestCase):
             'payload=sys.stdin.read(); '
             'Path(sys.argv[1]).write_text(payload); '
             'print(Path(sys.argv[2]).read_text())')
-        marker = fixture / 'should-not-execute.txt'
-        duplicate = {'skill_id':'implementation-authoring','command':'run','arguments':[],
-            'stdin':json.dumps({'argv':[sys.executable,'-c',
-                'from pathlib import Path; Path("should-not-execute.txt").write_text("unexpected")']})}
+        malformed = {'skill_id':implementation_authoring.RDT,'command':'unknown-command',
+                     'arguments':[],'stdin':''}
+        diagnosis = {'skill_id':'implementation-authoring','command':'run','arguments':[],
+            'stdin':json.dumps({'argv':['git','rev-parse','HEAD']})}
         try:
-            for _ in range(2):
+            for request in (malformed, diagnosis):
                 response = subprocess.run([sys.executable, '-c', client,
-                    str(request_fifo), str(response_fifo)], input=json.dumps(duplicate),
+                    str(request_fifo), str(response_fifo)], input=json.dumps(request),
                     capture_output=True, text=True, check=True, timeout=5)
-                rejected = json.loads(response.stdout)
-                self.assertEqual(rejected['returncode'], 2)
-                self.assertIn('terminal original wrapper', rejected['stderr'])
-                self.assertFalse(marker.exists())
+                actual = json.loads(response.stdout)
+                if request is malformed:
+                    self.assertEqual(actual['returncode'], 2)
+                    self.assertIn('not declared', actual['stderr'])
+                else:
+                    self.assertEqual(actual['returncode'], 0)
+                    process = json.loads(actual['stdout'])
+                    self.assertEqual(process['returncode'], 0)
+                    self.assertEqual(process['stdout'].strip(), run_git(fixture, 'rev-parse', 'HEAD'))
+                self.assertFalse(relay.terminal)
         finally:
             stop.set()
             thread.join(timeout=2)
-        required = facts['required_reads']
         prefix = '.trellis/guru-team/skills/packages/' + implementation_authoring.RDT + '/'
         for relative in ('SKILL.md','interface.json','commands.json','references/contract.md',
-                'references/current-knowledge.md','schemas/public-input-impact-2.0.schema.json',
-                'schemas/semantic-result.schema.json'):
-            self.assertIn(prefix + relative, required)
+                'references/current-knowledge.md'):
             self.assertTrue((fixture / (prefix + relative)).is_file())
 
-    def test_plan_and_authority_sources_exist_before_original_acceptance(self):
+    def test_native_planning_seed_preserves_business_and_has_no_stage_results(self):
         for case_id, test_names in (
-                ('native-implementation-plan-premise',{'test_lower_and_interior','test_upper_and_singleton','test_outside'}),
-                ('native-implementation-authority-conflict',{'test_endpoints_and_interior','test_outside','test_singleton','test_negative'})):
+                ('native-implementation-plan-premise', {'test_lower_and_interior','test_upper_and_singleton','test_outside'}),
+                ('native-implementation-authority-conflict', {'test_endpoints_and_interior','test_outside','test_singleton','test_negative'}),
+                ('native-implementation-code-drift', {'test_endpoints_and_interior','test_outside','test_singleton','test_negative'})):
             with self.subTest(case_id=case_id), tempfile.TemporaryDirectory() as temporary:
                 fixture, source = stage_clean_installed_owner_repo(Path(temporary) / 'execution',
                     REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
                 fixture = fixture.resolve()
-                seed = {}
                 original_identity = architecture_authoring.stage_delivery_identity
-                original_activate = delivery_production.activate
+                captured = {}
                 def capture_identity(repository, public, **options):
-                    seed['before_scope'] = (repository / 'docs/range.md').read_bytes()
+                    captured['authority_before_scope'] = (repository / 'docs/range.md').read_bytes()
                     return original_identity(repository, public, **options)
-                def capture_activation(runtime, repository, task, key, **options):
-                    seed['before_planning'] = (repository / 'docs/range.md').read_bytes()
-                    seed['tests'] = (repository / 'test_interval.py').read_bytes()
-                    seed['architecture'] = {relative:(repository / relative).read_bytes() for relative in (
-                        'docs/architecture/README.md','docs/architecture/00-foundation/design-constitution.md')}
-                    result = original_activate(runtime, repository, task, key, **options)
-                    seed['after_acceptance'] = (repository / 'docs/range.md').read_bytes()
-                    return result
-                with patch.object(architecture_authoring,'stage_delivery_identity',side_effect=capture_identity), \
-                        patch.object(delivery_production,'activate',side_effect=capture_activation):
-                    implementation_authoring.stage({'case_id':case_id},fixture,
-                        fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name,source)
-                authority = (fixture / 'docs/range.md').read_bytes()
-                self.assertEqual(authority,seed['before_scope'])
-                self.assertEqual(authority,seed['before_planning'])
-                self.assertEqual(authority,seed['after_acceptance'])
-                self.assertIn(b'Identity: range-rdt-v1',authority)
-                for relative, content in seed['architecture'].items():
-                    self.assertEqual((fixture / relative).read_bytes(),content)
-                self.assertIn(b'interval.py owns a pure predicate',seed['architecture']['docs/architecture/README.md'])
-                self.assertIn(b'mathematical interval evaluation',
-                    seed['architecture']['docs/architecture/00-foundation/design-constitution.md'])
-                tree = ast.parse(seed['tests'])
-                actual_tests = {node.name for node in ast.walk(tree)
-                    if isinstance(node,ast.FunctionDef) and node.name.startswith('test_')}
-                self.assertEqual(actual_tests,test_names)
+                with patch.object(architecture_authoring, 'stage_delivery_identity', side_effect=capture_identity), \
+                        patch.object(delivery_production, 'activate', wraps=delivery_production.activate) as activation:
+                    implementation_authoring.stage({'case_id':case_id}, fixture,
+                        fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name, source)
+                activation.assert_not_called()
                 facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+                projection = DeliveryProjection(fixture, facts['task_ref'])
+                current = projection.resolve(facts['delivery_key'])
+                self.assertEqual(current['phase'], 'planning')
+                self.assertIsNone(current['candidate'])
+                self.assertIsNone(current['plan_ref'])
+                self.assertTrue(all(value is None for value in current['results'].values()))
+                self.assertEqual((fixture / 'docs/range.md').read_bytes(), captured['authority_before_scope'])
+                self.assertNotIn('profile', json.loads((fixture / implementation_authoring.PUBLIC_INPUT).read_text()))
+                self.assertNotIn('planning_candidate_syntax', facts)
+                self.assertNotIn('execution_surface', facts)
+                self.assertFalse((fixture / phase2_authoring.ARCHITECTURE_INPUT).exists())
+                self.assertFalse((fixture / 'docs/phase2-evidence/check-public-input.json').exists())
+                tree = ast.parse((fixture / 'test_interval.py').read_bytes())
+                actual = {node.name for node in ast.walk(tree)
+                    if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
+                self.assertEqual(actual, test_names)
                 design = (fixture / facts['planning_root'] / 'design.md').read_text()
                 validation = json.loads((fixture / 'docs/phase2-evidence/validation.json').read_text())
                 if case_id == 'native-implementation-plan-premise':
-                    self.assertIn('lower <= value < upper',design)
-                    self.assertIn(b'self.assertFalse(contains(4, 2, 4))',seed['tests'])
-                    self.assertIn(b'self.assertFalse(contains(2, 2, 2))',seed['tests'])
-                    self.assertEqual(validation['returncode'],0,validation['stderr'])
+                    self.assertIn('lower <= value < upper', design)
+                    self.assertEqual(validation['returncode'], 0, validation['stderr'])
+                    self.assertIn('self.assertFalse(contains(4, 2, 4))', (fixture / 'test_interval.py').read_text())
                 else:
-                    self.assertIn('integer comparisons',design)
-                    self.assertNotEqual(validation['returncode'],0)
-                self.assert_rdt_command_reaches_original_wrapper(fixture,facts)
+                    self.assertIn('integer comparisons' if case_id.endswith('authority-conflict') else 'lower <= value <= upper', design)
+                    self.assertNotEqual(validation['returncode'], 0)
+                self.assertIn('includes both endpoints', (fixture / 'docs/range.md').read_text())
+                self.assertIn('interval.py owns a pure predicate', (fixture / 'docs/architecture/README.md').read_text())
+                self.assert_rdt_command_reaches_original_wrapper(fixture, facts)
+
+    def test_inspect_original_error_then_caller_selected_baseline(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture, source = stage_clean_installed_owner_repo(Path(temporary) / 'execution',
+                REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
+            fixture = fixture.resolve()
+            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'}, fixture,
+                fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name, source)
+            facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+            projection = DeliveryProjection(fixture, facts['task_ref'])
+            before = projection.resolve(facts['delivery_key'])
+            self.assertIsNone(before['candidate'])
+            relay = implementation_authoring.ImplementationCommands(fixture, dict(os.environ),
+                fixture.parent / 'inspect-receipts.json')
+            paths = ['interval.py', 'test_interval.py']
+            payload = {'skill_id':'implementation-authoring','command':'inspect','arguments':[],
+                       'stdin':json.dumps({'paths':paths})}
+            failed = relay.forward(payload)
+            original = subprocess.run(['bash', '.trellis/guru-team/scripts/bash/construct-delivery-candidate.sh',
+                '--root', '.', '--task', facts['task_ref'], '--delivery-key', json.dumps(facts['delivery_key']),
+                '--head', run_git(fixture, 'rev-parse', 'HEAD'), '--paths', *paths],
+                cwd=fixture, capture_output=True, text=True, check=False)
+            self.assertEqual(failed, {'returncode':original.returncode,
+                'stdout':original.stdout,'stderr':original.stderr})
+            self.assertNotEqual(failed['returncode'], 0)
+            self.assertEqual(json.loads(failed['stdout'])['code'], 'candidate_commit_missing')
+            self.assertFalse(relay.terminal)
+            baseline = run_git(fixture, 'rev-parse', 'HEAD')
+            for field in ('development_base', 'observed_target'):
+                corrected = relay.forward({**payload,'stdin':json.dumps({'paths':paths,field:baseline})})
+                self.assertEqual(corrected['returncode'], 0, corrected)
+                self.assertEqual(json.loads(corrected['stdout'])['candidate']['base_ref'], baseline)
+                self.assertFalse(relay.terminal)
+                self.assertEqual(projection.resolve(facts['delivery_key']), before)
 
     def test_original_approval_commands_change_only_current_delivery_checkpoint(self):
         # This executes deterministic owner transport, not native inference.
@@ -142,7 +222,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture, source = stage_clean_installed_owner_repo(Path(temporary) / 'execution',
                 REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
             fixture = fixture.resolve()
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'}, fixture,
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'}, fixture,
                 fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name, source)
             self.assertIn('mathematical interval evaluation',
                 (fixture / 'docs/architecture/00-foundation/design-constitution.md').read_text())
@@ -239,7 +319,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 return result
             with patch.object(architecture_authoring,'stage_delivery_identity',side_effect=capture_identity), \
                     patch.object(delivery_production, 'activate', side_effect=capture_activation) as activated:
-                implementation_authoring.stage({'case_id':'native-implementation-code-drift'}, fixture,
+                self.stage_historical_fixture({'case_id':'native-implementation-code-drift'}, fixture,
                     fixture / '.trellis/guru-team/skills/packages/guru-check-task', source)
             activated.assert_called_once()
             facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
@@ -313,11 +393,14 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture, source = stage_clean_installed_owner_repo(execution,
                 REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
             package = fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'}, fixture, package, source)
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'}, fixture, package, source)
             facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
             observed = implementation_authoring.observe_candidate(fixture, facts)
+            reviewed_paths = sorted({*observed['reviewed_paths'],
+                *run_git(fixture, 'diff', '--name-only').splitlines(),
+                *run_git(fixture, 'ls-files', '--others', '--exclude-standard').splitlines()})
             authored = json.loads((SKILLS / 'packages/guru-check-task/examples/phase2-authoring.json').read_text())
-            authored.update(reviewed_paths=observed['reviewed_paths'], typed_exit='blocked',
+            authored.update(reviewed_paths=reviewed_paths, typed_exit='blocked',
                 consumer={'kind':'stop','id':'task-check-blocked'}, reason='Original recorder transport fixture only.')
             authored['semantic_review'].update(status='blocked', summary='No native semantic result is asserted.')
             authored['delivery_policy'].update(task_scope=['R1'], delivery_slice=['R1'], remaining_work=[],
@@ -427,14 +510,63 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 after.pop(path,None)
             self.assertEqual(before,after)
 
+    def test_documented_transport_sends_stdin_and_runs_in_owner_checkout(self):
+        # Execute the shell example from the actual model context. This proves
+        # transport syntax and checkout mapping, not native owner judgment.
+        from adapters.eval.test_native_constraint_transport import request as native_request
+        with tempfile.TemporaryDirectory() as temporary:
+            request = native_request(Path(temporary), PACKAGE.name, 'native-implementation-plan-premise')
+            values = self.snapshot_transport_context(request)
+            try:
+                protocol = json.loads(values[4].read_text())
+                repository = Path(protocol['repository_projection_root'])
+                owner = Path(protocol['owner_repository'])
+                facts = json.loads((repository / implementation_authoring.FACTS).read_text())
+                context = (Path(protocol['model_root']) / 'native-context.txt').read_text()
+                examples = [block.split('```', 1)[0] for block in context.split('```bash\n')[1:]]
+                example = next((block for block in examples if '<current-command-input-json>' in block), None)
+                self.assertIsNotNone(example, 'R5 context must supply its executable stdin example')
+                target = facts['planning_root'] + '/prd.md'
+                content = (owner / target).read_text() + '\nTransport preserves $HOME and `literal` bytes.\n'
+
+                def documented_command(skill, command, payload, arguments=()):
+                    script = (example.replace('<skill>', skill).replace('<command>', command)
+                        .replace('<original arguments>', shlex.join(arguments))
+                        .replace('<current-command-input-json>', json.dumps(payload)))
+                    return subprocess.run(['bash', '-c', script], cwd=protocol['model_root'],
+                        capture_output=True, text=True, check=False, timeout=20)
+
+                written = documented_command('implementation-authoring', 'write',
+                    {'file_updates': {target: content}})
+                self.assertEqual(written.returncode, 0, written.stderr)
+                self.assertEqual(json.loads(written.stdout)['written_paths'], [target])
+                self.assertEqual((owner / target).read_text(), content)
+                # Reads use a non-Git projection; commands use the original Git
+                # checkout. A model-visible absolute path is not the command cwd.
+                self.assertFalse((repository / '.git').exists())
+                observed = documented_command('implementation-authoring', 'run',
+                    {'argv': ['git', '-C', '.', 'rev-parse', '--show-toplevel']})
+                self.assertEqual(observed.returncode, 0, observed.stderr)
+                process = json.loads(observed.stdout)
+                self.assertEqual(process['returncode'], 0, process['stderr'])
+                self.assertEqual(Path(process['stdout'].strip()).resolve(), owner.resolve())
+                receipts = json.loads(Path(protocol['implementation_receipts_path']).read_text())
+                self.assertEqual(json.loads(receipts[0]['request']['stdin']), {'file_updates': {target: content}})
+                trace = json.loads(Path(protocol['trace_path']).read_text())
+                events = [row for row in trace['events'] if row['kind'] == 'command']
+                self.assertEqual(len(events), len(receipts))
+            finally:
+                values[9].set()
+                values[8].join(timeout=2)
+
     def test_trace_binds_ordered_writable_versions_and_requires_initial_reads(self):
         # Real helper reads, writes, receipts and original wrapper stdout bind
         # the trace. This transport test makes no native semantic claim.
         from adapters.eval.test_native_constraint_transport import request as native_request
-        for initial_reads_complete in (True,False):
-            with self.subTest(initial_reads_complete=initial_reads_complete),tempfile.TemporaryDirectory() as temporary:
+        for initial_reads_complete,defer_owner_reads in ((True,False),(True,True),(False,False)):
+            with self.subTest(initial_reads_complete=initial_reads_complete,defer_owner_reads=defer_owner_reads),tempfile.TemporaryDirectory() as temporary:
                 request=native_request(Path(temporary),PACKAGE.name,'native-implementation-plan-premise')
-                values=native_adapter.build_context(request,'codex')
+                values=self.snapshot_transport_context(request)
                 try:
                     protocol=json.loads(values[4].read_text())
                     repository=Path(protocol['repository_projection_root'])
@@ -457,9 +589,21 @@ class ImplementationAuthoringTests(unittest.TestCase):
                         self.assertEqual(result.returncode,0,result.stderr)
                         return result.stdout
                     if not initial_reads_complete:
-                        command('implementation-authoring','inspect')
+                        command('implementation-authoring', 'run', json.dumps({
+                            'argv': [sys.executable, '-B', '-c', 'print("transport read-order probe")']}))
                     for path in [facts_path,*[repository/relative for relative in facts['required_reads']]]:
+                        if defer_owner_reads and path.is_relative_to(repository/'.trellis/guru-team/skills/packages'):
+                            continue
                         read(path)
+                    if defer_owner_reads:
+                        # The first public fact query needs the business inputs,
+                        # not every owner that a later stage might select.
+                        query=json.loads(command('implementation-authoring','run',json.dumps({
+                            'argv':[sys.executable,'-B','.trellis/scripts/delivery.py','current','--json']})))
+                        self.assertEqual(query['returncode'],0,query['stderr'])
+                        self.assertEqual(json.loads(query['stdout'])['kind'],'current')
+                        for name in ('SKILL.md','interface.json','commands.json'):
+                            read(repository/'.trellis/guru-team/skills/packages/guru-clarify-requirements'/name)
                     target=facts['planning_root']+'/prd.md'
                     seed=(repository/target).read_text()
                     versions=[seed+'\nTransport revision A.\n',seed+'\nTransport revision B.\n']
@@ -473,9 +617,27 @@ class ImplementationAuthoringTests(unittest.TestCase):
                     owner={'public_input':public,'typed_exit':'blocked',
                         'reason':'Original wrapper transport only; no native semantic result is claimed.',
                         'ai_review_gate':{'status':'blocked','summary':'Deterministic trace transport test.'}}
+                    invocation={'public_input':public,'owner_result':owner}
+                    intermediate=command('guru-clarify-requirements','invoke',json.dumps(invocation),
+                        ['--invocation','-'])
+                    self.assertEqual(json.loads(intermediate),{'exit_id':'blocked'})
+                    if initial_reads_complete:
+                        with self.assertRaisesRegex(ValueError,
+                                'implementation terminal stdout is not the final original wrapper result'):
+                            implementation_authoring.validate_trace(
+                                json.loads(Path(protocol['trace_path']).read_text()), protocol, intermediate)
                     stdout=command('guru-clarify-requirements','invoke',json.dumps({'final':True,
-                        'invocation':{'public_input':public,'owner_result':owner}}),['--invocation','-'])
+                        'invocation':invocation}),['--invocation','-'])
                     self.assertEqual(json.loads(stdout),{'exit_id':'blocked'})
+                    if initial_reads_complete and not defer_owner_reads:
+                        output_path=Path(protocol['model_root'])/'output/native-last-message.txt'
+                        # Reproduce an ordinary model-output error. The original
+                        # parser must reject it rather than trim the extra brace.
+                        output_path.write_text(stdout+'}')
+                        with self.assertRaises(json.JSONDecodeError):
+                            native_adapter.unwrap_native_output('codex', stdout, output_path)
+                        output_path.write_text(json.dumps(json.loads(stdout),ensure_ascii=False,indent=2))
+                        stdout=native_adapter.unwrap_native_output('codex', '', output_path)
                     if initial_reads_complete:
                         flags=native_adapter.validate_native_trace(Path(protocol['trace_path']),
                             protocol['request_sha256'],request,values[2],stdout,values[4])
@@ -494,7 +656,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture, source = stage_clean_installed_owner_repo(root / 'execution',
                 REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
             package = fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'}, fixture, package, source)
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'}, fixture, package, source)
             facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
             receipts = root / 'receipts.json'
             relay = implementation_authoring.ImplementationCommands(fixture, dict(os.environ), receipts)
@@ -510,18 +672,40 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 '--repository-root', str(fixture), '--sandbox-root', str(root),
                 '--request-fifo', str(request_fifo), '--response-fifo', str(response_fifo),
                 '--skill-sha256', '2' * 64, '--wrapper-sha256', '3' * 64, 'command']
-            def call(skill, command, arguments=()):
-                return subprocess.run([*argv, '--skill-id', skill, '--command=' + command, '--', *arguments],
-                    input='', capture_output=True, text=True, check=False, timeout=20)
+            preimages = {str(fixture / path):hashlib.sha256((fixture / path).read_bytes()).hexdigest()
+                         for path in facts['writable_paths'] if (fixture / path).is_file()}
+            def call(skill, command, arguments=(), *, stdin=None):
+                command_argv = [*argv, '--skill-id', skill, '--command=' + command]
+                if stdin is not None:
+                    command_argv.append('--stdin')
+                return subprocess.run([*command_argv, '--', *arguments],
+                    input=stdin or '', capture_output=True, text=True, check=False, timeout=20)
             try:
+                for relative in (implementation_authoring.FACTS, *facts['required_reads']):
+                    read = subprocess.run([*argv[:-1], 'read', '--kind', 'owner_file',
+                        '--path', str(fixture / relative)], capture_output=True, text=True, timeout=20)
+                    self.assertEqual(read.returncode, 0, read.stderr)
+                # An ordinary CLI query has no stdin or final marker. Stopping
+                # here must identify the missing terminal wrapper precisely.
+                current = call('delivery-api', 'current', ['--json'])
+                self.assertEqual(current.returncode, 0, current.stderr)
+                self.assertEqual(json.loads(current.stdout)['kind'], 'current')
+                self.assertFalse(relay.terminal)
+                with self.assertRaisesRegex(ValueError,
+                        'implementation terminal stdout is not the final original wrapper result'):
+                    implementation_authoring.validate_trace(json.loads(trace.read_text()), {
+                        'implementation_receipts_path': str(receipts),
+                        'repository_projection_root': str(fixture),
+                        'writable_preimages': preimages}, current.stdout)
                 master, slave = pty.openpty()
                 try:
+                    before_missing_stdin = len(relay.receipts)
                     missing_stdin = subprocess.run([*argv, '--skill-id', 'implementation-authoring',
                         '--command', 'run', '--stdin'], stdin=slave, capture_output=True,
                         text=True, check=False, timeout=5)
                     self.assertEqual(missing_stdin.returncode, 2)
                     self.assertIn('no request was sent', missing_stdin.stderr)
-                    self.assertEqual(relay.receipts, [])
+                    self.assertEqual(len(relay.receipts), before_missing_stdin)
                     self.assertFalse(relay.terminal)
                     top_help = subprocess.run([*argv, '--skill-id', 'delivery-api',
                         '--command=--help'], stdin=slave, capture_output=True,
@@ -530,6 +714,27 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 finally:
                     os.close(master)
                     os.close(slave)
+                final_marker = json.dumps({'final':True,'invocation':{}})
+                count = len(relay.receipts)
+                marked = call('delivery-api', '--help', stdin=final_marker)
+                self.assertEqual(marked.returncode, 2)
+                self.assertEqual(marked.stdout, '')
+                self.assertIn('only an original semantic public wrapper', marked.stderr)
+                self.assertEqual(len(relay.receipts), count + 1)
+                self.assertFalse(relay.terminal)
+                corrected_help = call('delivery-api', '--help')
+                self.assertEqual(corrected_help.returncode, 0, corrected_help.stderr)
+                self.assertIn('usage: delivery.py', corrected_help.stdout)
+                count = len(relay.receipts)
+                marked_recorder = call('guru-check-task', 'record-phase2-check', stdin=final_marker)
+                self.assertEqual(marked_recorder.returncode, 2)
+                self.assertIn('only an original semantic public wrapper', marked_recorder.stderr)
+                self.assertEqual(len(relay.receipts), count + 1)
+                marked_help = call(PACKAGE.name, 'invoke', ['--help'], stdin=final_marker)
+                self.assertEqual(marked_help.returncode, 0, marked_help.stderr)
+                self.assertIn('usage:', marked_help.stdout)
+                self.assertFalse(relay.terminal)
+                bad_index = len(relay.receipts)
                 bad = call('delivery-api', 'apply', ['apply', '--input', '{}'])
                 self.assertEqual(bad.returncode, 2)
                 self.assertIn('unrecognized arguments: apply', bad.stderr)
@@ -554,18 +759,42 @@ class ImplementationAuthoringTests(unittest.TestCase):
                 self.assertEqual(DeliveryProjection(fixture,facts['task_ref']).resolve(facts['delivery_key'])['phase'], 'planning')
                 wrapper_error = call(PACKAGE.name, 'invoke')
                 self.assertNotEqual(wrapper_error.returncode, 0)
+                self.assertFalse(relay.terminal)
+                self.assertTrue(thread.is_alive())
+                public = {'profile':'delivery_active_task_scope_change','mode':'workflow',
+                    'task_ref':facts['task_ref'],'delivery_key':facts['delivery_key'],
+                    'source_exit':'implementation_discovery','target_locator':'docs/implementation-observation.md',
+                    'resume_target':'guru-resume-implementation','continuation_id':'transport-final-probe'}
+                owner = {'public_input':public,'typed_exit':'blocked',
+                    'reason':'Mechanical transport probe only; native judgment is separate.',
+                    'ai_review_gate':{'status':'blocked','summary':'No native semantic result is asserted.'}}
+                terminal = call('guru-clarify-requirements', 'invoke', ['--invocation','-'],
+                    stdin=json.dumps({'final':True,'invocation':{'public_input':public,'owner_result':owner}}))
+                self.assertEqual(terminal.returncode, 0, terminal.stderr)
+                self.assertEqual(json.loads(terminal.stdout), {'exit_id':'blocked'})
+                self.assertTrue(relay.terminal)
+                rows = json.loads(receipts.read_text())
+                self.assertEqual(rows[bad_index]['request']['arguments'], ['apply', '--input', '{}'])
+                self.assertEqual(rows[bad_index]['response']['stderr'], bad.stderr)
+                payload = json.loads(trace.read_text())
+                payload['terminal_skill_id'] = 'guru-clarify-requirements'
+                self.assertEqual(len([event for event in payload['events'] if event['kind']=='command']), len(rows))
+                implementation_authoring.validate_trace(payload, {
+                    'implementation_receipts_path':str(receipts),'repository_projection_root':str(fixture),
+                    'writable_preimages':preimages}, terminal.stdout)
+                receipt_count = len(relay.receipts)
+                after_terminal = call('delivery-api', 'contract', ['--json'])
+                self.assertEqual(after_terminal.returncode, 2)
+                self.assertEqual(after_terminal.stdout, '')
+                self.assertIn('follows the terminal original wrapper', after_terminal.stderr)
                 self.assertTrue(relay.terminal)
                 self.assertTrue(thread.is_alive())
-                rows = json.loads(receipts.read_text())
-                self.assertEqual(rows[1]['request']['arguments'], ['apply', '--input', '{}'])
-                self.assertEqual(rows[1]['response']['stderr'], bad.stderr)
-                self.assertEqual([row['response']['returncode'] for row in rows[:6]], [0,2,2,0,0,0])
-                self.assertEqual(len(json.loads(trace.read_text())['events']), len(rows))
+                self.assertEqual(len(relay.receipts), receipt_count + 1)
                 execution_relay = implementation_authoring.ImplementationCommands(fixture, dict(os.environ), root / 'execution-error.json')
                 execution_error = execution_relay.forward({'skill_id':'delivery-api','command':'apply',
                     'arguments':['--task',facts['task_ref'],'--input','{}'],'stdin':''})
                 self.assertEqual(execution_error['returncode'], 1)
-                self.assertTrue(execution_relay.terminal)
+                self.assertFalse(execution_relay.terminal)
             finally:
                 stop.set()
                 thread.join(timeout=2)
@@ -576,7 +805,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture, source = stage_clean_installed_owner_repo(
                 execution, REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
             package = fixture / '.trellis/guru-team/skills/packages/guru-check-task'
-            implementation_authoring.stage({'case_id':'native-implementation-code-drift'}, fixture, package, source)
+            self.stage_historical_fixture({'case_id':'native-implementation-code-drift'}, fixture, package, source)
             text = (fixture / 'docs/implementation-observation.md').read_text()
             receipt = json.loads(text.split('```json\n',1)[1].split('\n```',1)[0])
             self.assertEqual(receipt['argv'][0], sys.executable)
@@ -596,7 +825,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             after = json.loads(relay.forward({'skill_id':'implementation-authoring','command':'inspect',
                 'arguments':[],'stdin':''})['stdout'])
             self.assertNotEqual(after['candidate']['content_ref'],first['candidate']['content_ref'])
-            self.assertNotEqual(after['reviewed_content_sha256'],first['reviewed_content_sha256'])
+            self.assertNotEqual(after['reviewed_content']['sha256'],first['reviewed_content']['sha256'])
             self.assertIn('interval.py',after['candidate']['paths'])
             self.assertEqual(after['candidate']['base_ref'],first['fixed_base'])
             operation={'api_version':'1.0','operation':'begin_check','key':facts['delivery_key'],
@@ -616,7 +845,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture, source = stage_clean_installed_owner_repo(
                 execution, REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
             package = fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name
-            implementation_authoring.stage({'case_id': 'native-implementation-plan-premise'}, fixture, package, source)
+            self.stage_historical_fixture({'case_id': 'native-implementation-plan-premise'}, fixture, package, source)
             facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
             self.assertTrue(all((fixture / path).is_file() for path in facts['required_reads']))
             projection = DeliveryProjection(fixture, facts['task_ref'])
@@ -652,10 +881,16 @@ class ImplementationAuthoringTests(unittest.TestCase):
             author_public=json.loads((fixture/implementation_authoring.PUBLIC_INPUT).read_text())
             author_output={'exit_id':'requirements_ready','task_ref':facts['task_ref'],
                 'delivery_key':facts['delivery_key'],'candidate':{'design_locator':facts['planning_root']+'/design.md'}}
+            author_arguments=['--input',json.dumps(author_public),'--owner-result','-']
+            invalid=relay.forward({'skill_id':'guru-author-task-plan','command':'invoke',
+                'arguments':author_arguments,'stdin':''})
+            self.assertNotEqual(invalid['returncode'],0)
+            self.assertEqual(json.loads(invalid['stdout'])['code'],'invalid_json')
+            self.assertFalse(relay.terminal)
             authored=relay.forward({'skill_id':'guru-author-task-plan','command':'invoke',
-                'arguments':['--input',json.dumps(author_public),'--owner-result',json.dumps({
+                'arguments':author_arguments,'stdin':json.dumps({
                     'public_input':author_public,'output':author_output,'ai_review_gate':{
-                        'status':'passed','summary':'Objective C5 and original wrapper transport only.'}})],'stdin':''})
+                        'status':'passed','summary':'Objective C5 and original wrapper transport only.'}})})
             self.assertEqual(authored['returncode'],0,authored['stderr'])
             self.assertEqual(json.loads(authored['stdout']),author_output)
             from adapters.eval import stage_result_authoring
@@ -714,7 +949,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
         (model/'native-context.txt').write_text('Overall implementation context.')
         private=root/'private';private.mkdir()
         worker=root/'worker.py'
-        worker.write_text(textwrap.dedent('''\
+        worker.write_text(f'#!{sys.executable}\n' + textwrap.dedent('''\
             import hashlib,json,shlex,subprocess,sys
             from pathlib import Path
             context=sys.argv[-1]
@@ -757,8 +992,10 @@ class ImplementationAuthoringTests(unittest.TestCase):
             ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         protocol={'repository_projection_root':str(repository),'model_root':str(model),
             'owner_repository':str(fixture),'private_root':str(private),'request_sha256':'a'*64}
+        worker.chmod(0o755)
         callback=native_adapter.implementation_reviewer(protocol,commands,
-            [sys.executable,str(worker),'--ephemeral','--output-last-message',str(root/'unused'),'overall'],dict(os.environ))
+            [str(worker),'exec','--output-last-message',str(root/'unused'),'overall'],dict(os.environ),
+            persisted_observation=True)
         shutil.rmtree(repository/'.trellis/tasks/implementation-evidence')
         with self.assertRaisesRegex(ValueError, 'ordered reads'):
             callback({'public_input':public})
@@ -778,6 +1015,17 @@ class ImplementationAuthoringTests(unittest.TestCase):
         self.assertEqual(json.loads(result['stdout'])['exit_id'],'baseline_current')
         self.assertEqual(result['stderr'], '')
         execution=json.loads((private/'implementation-architecture-executions.json').read_text())[0]
+        self.assertFalse(execution['fresh_ephemeral'])
+        self.assertIn('This fresh independent worker', execution['context'])
+        self.assertNotIn('fresh ephemeral', execution['context'])
+        observation = Path(execution['wrapper_observation_path'])
+        self.assertEqual(observation.parent, private)
+        captured = json.loads(observation.read_text())
+        self.assertEqual(captured['wrapper']['stdout'], execution['stdout'])
+        self.assertEqual(native_adapter.unwrap_native_output('codex',
+            captured['wrapper']['stdout'], None), result['stdout'])
+        self.assertEqual(captured['wrapper']['returncode'], 0)
+        self.assertEqual(json.loads(captured['stdin'])['public_input'], public)
         self.assertIn('native diagnostic transport only', execution['stderr'])
         trace=json.loads(Path(execution['trace_path']).read_text())
         self.assertEqual(sum(event['kind']=='invoke' for event in trace['events']),1)
@@ -795,6 +1043,72 @@ class ImplementationAuthoringTests(unittest.TestCase):
         self.assertIn('schema_mismatch',failed['stderr'])
         execution=json.loads((private/'implementation-architecture-executions.json').read_text())[-1]
         self.assertIn(execution['stdout'].strip(),failed['stderr'])
+        captured = json.loads(Path(execution['wrapper_observation_path']).read_text())
+        self.assertNotEqual(captured['wrapper']['returncode'], 0)
+        self.assertIn('schema_mismatch', captured['wrapper']['stdout'])
+
+    def test_contract_overlap_keeps_original_architecture_conflict_at_callback(self):
+        # Supply only the native-process boundary in this module test. This
+        # exercises the real callback/validator, not native judgment or a wrapper.
+        from adapters.eval.eval_constants import stdout_digest
+        from types import SimpleNamespace
+        source = SKILLS / 'packages/guru-maintain-architecture-baseline'
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            model = root / 'model'; model.mkdir()
+            repository = model / 'repository'; repository.mkdir()
+            private = root / 'private-control'; private.mkdir()
+            package = repository / '.trellis/guru-team/skills/packages' / source.name
+            shutil.copytree(source, package)
+            (model / 'native-context.txt').write_text('Original parent context.')
+            public = json.loads((package / 'examples/public-input-delivery-task-impact-sync-1.0.json').read_text())
+            public['stage'] = 'planning'
+            authorities = [public['constitution']['authority_locator'], public['baseline']['locator'],
+                public['project_contract']['change_contract_locator']]
+            overlaps = [str((package / name).relative_to(repository)) for name in (
+                'SKILL.md', 'interface.json', 'references/contract.md',
+                'schemas/public-input-delivery-task-impact-sync-3.0.schema.json')]
+            reads = [*authorities, *overlaps, 'changed-contract.patch', 'unchanged_caller.py']
+            raw = json.dumps({'exit_id': 'architecture_conflict', 'return_route': 'planning'},
+                separators=(',', ':')) + '\n'
+            early_candidate = False
+
+            def native_process(argv, output_path, context, **kwargs):
+                paths = architecture_authoring.public_contract_reads(package, public)
+                paths += [repository / path for path in authorities]
+                paths += [repository / 'changed-contract.patch', repository / 'unchanged_caller.py']
+                paths.append(repository / '.trellis/tasks/implementation-evidence' /
+                    ('architecture-facts-' + output_path.parent.name.rsplit('-', 1)[1] + '.json'))
+                events = [{'kind': 'read', 'path': str(path)} for path in paths]
+                if early_candidate:
+                    events.insert(1, {'kind': 'read', 'path': str(repository / 'changed-contract.patch')})
+                events.append({'kind': 'invoke', 'returncode': 0, 'stdout_sha256': stdout_digest(raw)})
+                (output_path.parent / 'native-trace.json').write_text(json.dumps({'events': events}))
+                output_path.write_text(raw)
+                return subprocess.CompletedProcess(argv, 0, raw, '')
+
+            protocol = {'repository_projection_root': str(repository), 'model_root': str(model),
+                'owner_repository': str(root / 'owner'), 'private_root': str(private),
+                'request_sha256': 'a' * 64}
+            # The host boundary checks the real owner wrapper's availability.
+            owner_package = Path(protocol['owner_repository']) / '.trellis/guru-team/skills/packages' / source.name
+            # The real callback reads current public assets from the owner.
+            shutil.copytree(source, owner_package)
+            owner_wrapper = owner_package / 'scripts/invoke.sh'
+            owner_wrapper.write_bytes((source / 'scripts/invoke.sh').read_bytes())
+            owner_wrapper.chmod(0o755)
+            callback = native_adapter.implementation_reviewer(protocol, SimpleNamespace(environment={}),
+                ['codex', 'exec', '--ephemeral', '--output-last-message', str(root / 'unused'), 'parent'], {})
+            with patch.object(architecture_authoring, 'execute_reviewer', side_effect=native_process):
+                response = callback({'public_input': public, 'reads': reads})
+                self.assertEqual(response, {'returncode': 0,
+                    'stdout': native_adapter.unwrap_native_output('codex', raw, None), 'stderr': ''})
+                self.assertEqual(json.loads(response['stdout'])['exit_id'], 'architecture_conflict')
+                early_candidate = True
+                rejected = callback({'public_input': public, 'reads': reads})
+                self.assertEqual(rejected['returncode'], 2)
+                self.assertIn('authority before candidate', rejected['stderr'])
+            self.assertEqual((model / 'native-context.txt').read_text(), 'Original parent context.')
 
     def rdt_terminal_protocol(self, root, fixture, facts, *, revision_code='design_revision'):
         # Only deterministic transport is tested. These owner fields never
@@ -838,7 +1152,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture,source=stage_clean_installed_owner_repo(root/'execution',
                 REPO/'.trellis/guru-team/scripts/bash/run-skill-command.sh',PACKAGE)
             fixture=fixture.resolve()
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'},fixture,
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'},fixture,
                 fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name,source)
             facts=json.loads((fixture/implementation_authoring.FACTS).read_text())
             protocol,result=self.rdt_terminal_protocol(root,fixture,facts)
@@ -875,7 +1189,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture,source=stage_clean_installed_owner_repo(root/'execution',
                 REPO/'.trellis/guru-team/scripts/bash/run-skill-command.sh',PACKAGE)
             fixture=fixture.resolve()
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'},fixture,
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'},fixture,
                 fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name,source)
             facts=json.loads((fixture/implementation_authoring.FACTS).read_text())
             request={'case_id':'native-implementation-plan-premise','skill_id':PACKAGE.name,
@@ -909,7 +1223,7 @@ class ImplementationAuthoringTests(unittest.TestCase):
             fixture,source=stage_clean_installed_owner_repo(root/'first',
                 REPO/'.trellis/guru-team/scripts/bash/run-skill-command.sh',PACKAGE)
             fixture=fixture.resolve()
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'},fixture,
+            self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'},fixture,
                 fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name,source)
             facts=json.loads((fixture/implementation_authoring.FACTS).read_text())
             first_facts=(fixture/implementation_authoring.FACTS).read_bytes()
@@ -997,54 +1311,511 @@ class ImplementationAuthoringTests(unittest.TestCase):
     def test_resume_uses_same_fixture_and_original_activation_without_changing_first_facts(self):
         # The first-segment receipt is a transport double for this unit test.
         # It is never staged for a native Agent and proves no semantic approval.
+        for approval_command in ('invoke', 'invoke-guru-approve-task-plan'):
+            with self.subTest(approval_command=approval_command), tempfile.TemporaryDirectory() as temporary:
+                root=Path(temporary)
+                fixture,source=stage_clean_installed_owner_repo(root/'execution',
+                    REPO/'.trellis/guru-team/scripts/bash/run-skill-command.sh',PACKAGE)
+                self.stage_historical_fixture({'case_id':'native-implementation-plan-premise'},fixture,
+                    fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name,source)
+                facts_path=fixture/implementation_authoring.FACTS
+                before=facts_path.read_bytes();facts=json.loads(before)
+                authority_before=(fixture/'docs/range.md').read_bytes()
+                activation_package=fixture/'.trellis/guru-team/skills/packages/guru-activate-delivery'
+                module=load_package_runtime_module(fixture/'.trellis/guru-team/scripts/bash/run-skill-command.sh',
+                    'guru-activate-delivery','invoke')
+                directory=DeliveryProjection(fixture,facts['task_ref']).planning_directory(facts['delivery_key'])
+                approved={'exit_id':'approved','task_ref':facts['task_ref'],'delivery_key':facts['delivery_key'],
+                    'planning_result_id':module.planning_identity(fixture,directory)}
+                activation=module.invoke(activation_package,fixture,
+                    {**{k:approved[k] for k in ('task_ref','delivery_key','planning_result_id')},
+                     'profile':'delivery_activation','mode':'workflow','action':'recover_activation'},
+                    {'typed_exit':'delivery_started','reason':'Objective same-fixture recovery transport test.'})
+                self.assertEqual(activation['exit_id'],'delivery_started')
+                first_request=root/'first-native-request.json';first_request.write_text(json.dumps(
+                    {'case_id':'native-implementation-plan-premise'}))
+                receipts=root/'receipts.json';receipts.write_text(json.dumps([{
+                    'request':{'skill_id':'guru-approve-task-plan','command':approval_command},
+                    'response':{'returncode':0,'stdout':json.dumps(approved)}}]))
+                protocol=root/'first-protocol.json';protocol.write_text(json.dumps({
+                    'native_request_path':str(first_request),'owner_repository':str(fixture),
+                    'implementation_receipts_path':str(receipts)}))
+                output=root/'activation-output.json';output.write_text(json.dumps(activation))
+                request={'skill_id':PACKAGE.name,'case_id':implementation_authoring.RESUME_CASE,
+                         'package_root':str(PACKAGE)}
+                with patch.dict(os.environ,{implementation_authoring.RESUME_PROTOCOL_ENV:str(protocol),
+                                            implementation_authoring.ACTIVATION_OUTPUT_ENV:str(output)}):
+                    original_receipts=receipts.read_bytes()
+                    for wrong_command in ('record-planning-approval', 'invoke-guru-check-task'):
+                        wrong_receipts=json.loads(original_receipts)
+                        wrong_receipts[-1]['request']['command']=wrong_command
+                        receipts.write_text(json.dumps(wrong_receipts))
+                        with self.assertRaisesRegex(ValueError,'actual original Approval stdout'):
+                            implementation_authoring.resume_execution(request)
+                        self.assertFalse((fixture/implementation_authoring.RESUME_FACTS).exists())
+                    receipts.write_bytes(original_receipts)
+                    package,dispatcher,environment=implementation_authoring.resume_execution(request)
+                    self.assertEqual(package,(fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name).resolve())
+                    self.assertTrue(dispatcher.is_file())
+                    self.assertEqual(facts_path.read_bytes(),before)
+                    self.assertEqual((fixture/'docs/range.md').read_bytes(),authority_before)
+                    continuation=json.loads((fixture/implementation_authoring.RESUME_FACTS).read_text())
+                    self.assertEqual(continuation['current_delivery']['phase'],'implementing')
+                    self.assertIn('docs/implementation-continuation-public.json',continuation['required_reads'])
+                    from runtime.delivery_projection.gates import rework
+                    projection=DeliveryProjection(fixture,facts['task_ref'])
+                    rework(projection,facts['delivery_key'],'implementation','planning',
+                        projection.resolve(facts['delivery_key'])['scope_ref']['authority'],
+                        ['planning','check','full_review','readiness'])
+                    with self.assertRaisesRegex(ValueError,'matching current Activation'):
+                        implementation_authoring.resume_execution(request)
+
+class R1RequestEntryTests(unittest.TestCase):
+    """Module evidence only; no native judgment or Intake readiness is supplied."""
+
+    def entry(self, root):
+        from adapters.eval.test_native_constraint_transport import request as native_request
+        request = native_request(root, PACKAGE.name, 'native-implementation-plan-premise')
+        fixture, source = stage_clean_installed_owner_repo(root / 'execution',
+            REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
+        fixture = fixture.resolve()
+        with patch.object(phase2_authoring, 'stage', side_effect=AssertionError('no Task seed')):
+            implementation_authoring.stage(request, fixture,
+                fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name, source)
+        environment = {**os.environ, **implementation_authoring.entry_environment(fixture)}
+        return request, fixture, environment
+
+    def test_public_json_errors_match_original_wrapper_through_same_fifo(self):
         with tempfile.TemporaryDirectory() as temporary:
-            root=Path(temporary)
-            fixture,source=stage_clean_installed_owner_repo(root/'execution',
-                REPO/'.trellis/guru-team/scripts/bash/run-skill-command.sh',PACKAGE)
-            implementation_authoring.stage({'case_id':'native-implementation-plan-premise'},fixture,
-                fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name,source)
-            facts_path=fixture/implementation_authoring.FACTS
-            before=facts_path.read_bytes();facts=json.loads(before)
-            authority_before=(fixture/'docs/range.md').read_bytes()
-            activation_package=fixture/'.trellis/guru-team/skills/packages/guru-activate-delivery'
-            module=load_package_runtime_module(fixture/'.trellis/guru-team/scripts/bash/run-skill-command.sh',
-                'guru-activate-delivery','invoke')
-            directory=DeliveryProjection(fixture,facts['task_ref']).planning_directory(facts['delivery_key'])
-            approved={'exit_id':'approved','task_ref':facts['task_ref'],'delivery_key':facts['delivery_key'],
-                'planning_result_id':module.planning_identity(fixture,directory)}
-            activation=module.invoke(activation_package,fixture,
-                {**{k:approved[k] for k in ('task_ref','delivery_key','planning_result_id')},
-                 'profile':'delivery_activation','mode':'workflow','action':'recover_activation'},
-                {'typed_exit':'delivery_started','reason':'Objective same-fixture recovery transport test.'})
-            self.assertEqual(activation['exit_id'],'delivery_started')
-            first_request=root/'first-native-request.json';first_request.write_text(json.dumps(
-                {'case_id':'native-implementation-plan-premise'}))
-            receipts=root/'receipts.json';receipts.write_text(json.dumps([{
-                'request':{'skill_id':'guru-approve-task-plan','command':'invoke'},
-                'response':{'returncode':0,'stdout':json.dumps(approved)}}]))
-            protocol=root/'first-protocol.json';protocol.write_text(json.dumps({
-                'native_request_path':str(first_request),'owner_repository':str(fixture),
-                'implementation_receipts_path':str(receipts)}))
-            output=root/'activation-output.json';output.write_text(json.dumps(activation))
-            request={'skill_id':PACKAGE.name,'case_id':implementation_authoring.RESUME_CASE,
-                     'package_root':str(PACKAGE)}
-            with patch.dict(os.environ,{implementation_authoring.RESUME_PROTOCOL_ENV:str(protocol),
-                                        implementation_authoring.ACTIVATION_OUTPUT_ENV:str(output)}):
-                package,dispatcher,environment=implementation_authoring.resume_execution(request)
-                self.assertEqual(package,(fixture/'.trellis/guru-team/skills/packages'/PACKAGE.name).resolve())
-                self.assertTrue(dispatcher.is_file())
-                self.assertEqual(facts_path.read_bytes(),before)
-                self.assertEqual((fixture/'docs/range.md').read_bytes(),authority_before)
-                continuation=json.loads((fixture/implementation_authoring.RESUME_FACTS).read_text())
-                self.assertEqual(continuation['current_delivery']['phase'],'implementing')
-                self.assertIn('docs/implementation-continuation-public.json',continuation['required_reads'])
-                from runtime.delivery_projection.gates import rework
-                projection=DeliveryProjection(fixture,facts['task_ref'])
-                rework(projection,facts['delivery_key'],'implementation','planning',
-                    projection.resolve(facts['delivery_key'])['scope_ref']['authority'],
-                    ['planning','check','full_review','readiness'])
-                with self.assertRaisesRegex(ValueError,'matching current Activation'):
-                    implementation_authoring.resume_execution(request)
+            root = Path(temporary).resolve()
+            _, fixture, environment = self.entry(root)
+            package = fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name
+            discovery = fixture / '.trellis/guru-team/skills/packages/guru-discover-change-context'
+            relay = implementation_authoring.ImplementationCommands(fixture, environment, root / 'receipts.json')
+            stop = threading.Event()
+            request_fifo, response_fifo = root / 'request', root / 'response'
+            thread = native_adapter.start_qualification_runtime_boundary(request_fifo, response_fifo,
+                stop, fixture, package, environment, {}, implementation_commands=relay)
+            helper = root / 'helper.py'
+            helper.write_text(qualification_trace_helper_source(allow_commands=True))
+            argv = [sys.executable, '-B', str(helper), '--trace', str(root / 'trace.json'),
+                '--request-sha256', '1' * 64, '--projection-root', str(package),
+                '--repository-root', str(fixture), '--sandbox-root', str(root),
+                '--request-fifo', str(request_fifo), '--response-fifo', str(response_fifo),
+                '--skill-sha256', '2' * 64, '--wrapper-sha256', '3' * 64,
+                'command', '--skill-id', 'guru-discover-change-context']
+
+            def forwarded(command, arguments, body):
+                return subprocess.run([*argv, '--command', command, '--stdin', '--', *arguments],
+                    input=body, capture_output=True, text=True, check=False, timeout=20)
+
+            try:
+                arguments = ['--root', '.', '--invocation', '-']
+                for body in ('\n', '{'):
+                    with self.subTest(body=body):
+                        direct = subprocess.run([str(discovery / 'scripts/check-context-discovery.sh'),
+                            *arguments], input=body, cwd=fixture, env=environment,
+                            capture_output=True, text=True, check=False, timeout=20)
+                        self.assertEqual(direct.returncode, 2)
+                        error = json.loads(direct.stdout)
+                        self.assertEqual((error['code'], error['field_path']), ('invalid_json', 'invocation'))
+                        actual = forwarded('check-context-discovery', arguments, body)
+                        self.assertEqual((actual.returncode, actual.stdout, actual.stderr),
+                                         (direct.returncode, direct.stdout, direct.stderr))
+                        self.assertEqual(relay.receipts[-1]['request']['stdin'], body)
+                        self.assertEqual(relay.receipts[-1]['response'], {
+                            'returncode': direct.returncode, 'stdout': direct.stdout, 'stderr': direct.stderr})
+                        self.assertFalse(relay.terminal)
+                        self.assertTrue(thread.is_alive())
+                # The original fact query still runs through the same service
+                # after both errors; no semantic owner result is supplied.
+                valid = forwarded('preview-change-context-history',
+                    ['--root', '.', '--query-json', json.dumps({'paths': ['interval.py']})], '')
+                self.assertEqual(valid.returncode, 0, valid.stderr)
+                self.assertFalse(json.loads(valid.stdout)['formal_exit'])
+                self.assertFalse(relay.terminal)
+            finally:
+                stop.set()
+                thread.join(timeout=2)
+
+    def planning_child_fixture(self, root):
+        # Creation and accepted scope are module preconditions, not native
+        # Intake or semantic approval evidence. Project before any Task exists.
+        from runtime.delivery_projection.adapter import authority_ref
+        _, fixture, environment = self.entry(root)
+        model = root / 'child-model'; model.mkdir()
+        repository = model / 'repository'
+        stage_repository_projection(fixture, repository)
+        self.assertFalse(list((repository / '.trellis/tasks').glob('*/task.json')))
+        (model / 'native-context.txt').write_text('Parent transport context.')
+        private = root / 'private-control'; private.mkdir()
+        relay = implementation_authoring.ImplementationCommands(fixture, environment,
+            private / 'creation-receipts.json')
+        task_id = 'r1-planning-entry'
+        task_ref = '.trellis/tasks/' + datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%m-%d-') + task_id
+        head = run_git(fixture, 'rev-parse', 'HEAD')
+        public = {'profile': 'delivery_task_creation', 'action': 'create_task',
+            'creation': {'task_id': task_id, 'task_ref': task_ref,
+                'source_profile': 'standalone_request', 'reviewed_source': {'kind': 'no_issue'},
+                'accepted_scope_identity': 'scope:module-r1',
+                'delivery_target': {'repo_ref': 'example/guru-extension', 'branch_ref': 'main'},
+                'selected_base_ref': 'main', 'reviewed_base_head': head},
+            'acquisition': {'route': 'adopt_invocation_checkout',
+                'branch_ref': 'refs/heads/codex/eval-r1-planning-entry', 'decision_head': head,
+                'transaction_id': 'module-child-acquisition', 'result_id': 'module-child-checkout',
+                'invocation_checkout': str(fixture)},
+            'task': {'title': 'R1 child transport', 'description': 'Module file visibility only.',
+                     'scope': 'R1 integer range'}}
+        created = relay.forward({'skill_id': 'guru-create-task', 'command': 'invoke',
+            'arguments': ['--input', json.dumps(public)], 'stdin': ''})
+        self.assertEqual(created['returncode'], 0, created['stdout'] or created['stderr'])
+        self.assertEqual(json.loads(created['stdout'])['exit_id'], 'created')
+        relay.forward({'skill_id': 'implementation-authoring', 'command': 'observe-entry',
+            'arguments': [], 'stdin': json.dumps({'producer_skill': 'guru-create-task',
+                                                 'producer_stdout': created['stdout']})})
+        task = fixture / task_ref
+        task.joinpath('prd.md').write_bytes((fixture / 'docs/requests/r1.md').read_bytes())
+        projection = DeliveryProjection(fixture, task_ref)
+        scope = authority_ref(task / 'prd.md', fixture)
+        projection.scope(scope)
+        public = {'profile': 'delivery_creation', 'mode': 'workflow', 'task_ref': task_ref,
+            'task_key': {'task_id': task_id, 'lifecycle_generation': 0},
+            'scope_ref': {'authority': scope, 'anchors': ['R1']},
+            'delivery_profile': 'pull_request', 'continuation_id': 'module-child-delivery', 'action': 'create'}
+        created = relay.forward({'skill_id': 'guru-create-delivery', 'command': 'invoke',
+            'arguments': ['--input', json.dumps(public), '--owner-result', json.dumps({
+                'typed_exit': 'created', 'reason': 'Module transport precondition only.'})], 'stdin': ''})
+        self.assertEqual(created['returncode'], 0, created['stdout'] or created['stderr'])
+        self.assertEqual(json.loads(created['stdout'])['exit_id'], 'created', created['stdout'])
+        relay.forward({'skill_id': 'implementation-authoring', 'command': 'observe-entry',
+            'arguments': [], 'stdin': json.dumps({'producer_skill': 'guru-create-delivery',
+                                                 'producer_stdout': created['stdout']})})
+        staged = relay.forward({'skill_id': 'implementation-authoring', 'command': 'stage-candidate',
+                                'arguments': [], 'stdin': '{}'})
+        self.assertEqual(staged['returncode'], 0, staged['stderr'])
+        facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+        self.assertFalse((repository / facts['planning_root'] / 'design.md').exists())
+        self.assertFalse((repository / 'docs/phase2-evidence/diff.patch').exists())
+        protocol = {'repository_projection_root': str(repository), 'model_root': str(model),
+            'owner_repository': str(fixture), 'private_root': str(private), 'request_sha256': 'a' * 64}
+        return fixture, repository, relay, facts, protocol
+
+    def read_planning_child(self, fixture, repository, relay, facts, protocol, purpose):
+        # Only inference is replaced. A separate Python process executes every
+        # actual child helper read; it supplies no typed exit or semantic gate.
+        package = fixture / '.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline'
+        public = json.loads((package / 'examples/public-input-candidate-assessment-3.0.json').read_text())
+        design = facts['planning_root'] + '/design.md'
+        public.update(schema_version='delivery-1.0', profile='delivery_task_impact_sync',
+            task_locator=facts['task_ref'], delivery_key=facts['delivery_key'],
+            planning_root=Path(facts['planning_root']).relative_to(facts['task_ref']).as_posix(),
+            planning_purpose=purpose, requirement_authority='docs/range.md', behavior_authority='docs/range.md',
+            freshness_identity='sha256:' + hashlib.sha256((fixture / design).read_bytes()).hexdigest())
+        public['baseline']['identity'] = 'range-v1'
+        public['constitution']['identity'] = 'range-constitution-v1'
+        public['project_contract'].update(change_contract_identity='range-contract-v1',
+                                         required_concern_set_identity='range-concerns-v1')
+        if purpose == 'candidate_assessment':
+            public['candidate'] = {'design_locator': design}
+        else:
+            public.pop('candidate')
+            public['design_locator'] = design
+        authorities = [public['constitution']['authority_locator'], public['baseline']['locator'],
+                       public['project_contract']['change_contract_locator']]
+        reads = [*authorities, design, 'docs/phase2-evidence/diff.patch',
+                 'interval.py', 'range_filter.py', 'test_interval.py', 'docs/range.md']
+        observations = []
+        traces = []
+
+        def child_process(argv, output_path, context, **kwargs):
+            probe = textwrap.dedent('''\
+                import json,shlex,subprocess,sys
+                commands=[shlex.split(line) for line in sys.stdin.read().splitlines()
+                          if line.startswith('/') and ' read --kind ' in line]
+                contents={}
+                for command in commands:
+                    result=subprocess.run(command,capture_output=True,check=False)
+                    if result.returncode:
+                        sys.stderr.buffer.write(result.stderr)
+                        raise SystemExit(result.returncode)
+                    contents[command[command.index('--path')+1]]=result.stdout.hex()
+                print(json.dumps({'contents':contents}))
+                ''')
+            actual = subprocess.run([sys.executable, '-B', '-c', probe], input=context,
+                cwd=kwargs['cwd'], env=kwargs['environment'], capture_output=True, text=True, check=False)
+            self.assertEqual(actual.returncode, 0, actual.stderr or actual.stdout)
+            observations.append(json.loads(actual.stdout)['contents'])
+            events = json.loads((output_path.parent / 'native-trace.json').read_text())['events']
+            index = output_path.parent.name.rsplit('-', 1)[1]
+            architecture_authoring.validate_reviewer_reads(events, repository,
+                [*reads, '.trellis/tasks/implementation-evidence/architecture-facts-' + index + '.json'],
+                phase2=False, contract_reads=architecture_authoring.public_contract_reads(
+                    repository / '.trellis/guru-team/skills/packages/guru-maintain-architecture-baseline', public))
+            traces.append(events)
+            output_path.write_text(actual.stdout)
+            return subprocess.CompletedProcess(argv, actual.returncode, actual.stdout,
+                'Module read probe only; no native semantic invocation was executed.')
+
+        if not hasattr(relay, 'projection_callback'):
+            relay.projection_callback = native_adapter.implementation_reviewer(protocol, relay,
+                [sys.executable, 'exec', '--ephemeral', '--output-last-message', 'unused', 'parent'], relay.environment)
+        before = repository_file_inventory(fixture)
+        with patch.object(architecture_authoring, 'execute_reviewer', side_effect=child_process):
+            response = relay.projection_callback({'public_input': public, 'reads': reads})
+        # The probe ends at reads. The real callback must retain its incomplete
+        # invocation diagnostic rather than turn these reads into Architecture pass.
+        self.assertEqual(response['returncode'], 2)
+        self.assertEqual(response['stdout'], '')
+        self.assertIn('did not return its actual original wrapper stdout', response['stderr'])
+        self.assertEqual(repository_file_inventory(fixture), before)
+        self.assertEqual(len(observations), 1)
+        for relative in reads:
+            expected = (fixture / relative).read_bytes()
+            self.assertEqual(bytes.fromhex(observations[0][str(repository / relative)]), expected)
+            self.assertEqual((repository / relative).read_bytes(), expected)
+        self.assertFalse((repository / '.git').exists())
+        self.assertFalse((repository / '.trellis/.runtime').exists())
+        self.assertFalse((repository / '.trellis/guru-team/runtime').exists())
+        self.assertFalse(any(Path(event['path']).name in {'prd.md', 'implement.md', 'task.json'}
+                             for event in traces[0]))
+        return observations[0]
+
+    def test_architecture_child_reads_new_planning_files_after_creation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture, repository, relay, facts, protocol = self.planning_child_fixture(Path(temporary).resolve())
+            self.read_planning_child(fixture, repository, relay, facts, protocol, 'candidate_assessment')
+
+    def test_architecture_child_refreshes_rewritten_design_and_diff(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture, repository, relay, facts, protocol = self.planning_child_fixture(Path(temporary).resolve())
+            first = self.read_planning_child(fixture, repository, relay, facts, protocol, 'candidate_assessment')
+            for relative in [facts['planning_root'] + '/design.md', 'docs/phase2-evidence/diff.patch']:
+                (fixture / relative).write_bytes((fixture / relative).read_bytes() + b'\nSecond authoring round.\n')
+            # A new child keeps its own first-read trace and authority order.
+            second = self.read_planning_child(fixture, repository, relay, facts, protocol, 'final_plan')
+            for relative in [facts['planning_root'] + '/design.md', 'docs/phase2-evidence/diff.patch']:
+                self.assertNotEqual(first[str(repository / relative)], second[str(repository / relative)])
+
+    def test_request_entry_exposes_original_brainstorm_method(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _, fixture, _ = self.entry(root)
+            relative = Path('.agents/skills/trellis-brainstorm/SKILL.md')
+            source = REPO / relative
+            expected_bytes = source.read_bytes()
+            expected_mode = source.stat().st_mode & 0o777
+            primary = fixture.with_name('owner-repo-primary')
+            projected = root / 'public-repository'
+            stage_repository_projection(fixture, projected)
+            for repository in (fixture, primary, projected):
+                self.assertEqual((repository / relative).read_bytes(), expected_bytes)
+                self.assertEqual((repository / relative).stat().st_mode & 0o777, expected_mode)
+            committed = subprocess.check_output(['git', 'show', 'HEAD:' + relative.as_posix()], cwd=fixture)
+            self.assertEqual(committed, expected_bytes)
+            for private in ('.git', '.trellis/.runtime', '.trellis/guru-team/runtime',
+                            '.trellis/guru-team/skills/adapters'):
+                self.assertFalse((projected / private).exists())
+
+    def test_missing_request_method_stops_before_native(self):
+        from adapters.eval.test_native_constraint_transport import request as native_request
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = native_request(root, PACKAGE.name, 'native-implementation-plan-premise')
+            fixture = root / 'empty-fixture'
+            fixture.mkdir()
+            source = root / 'incomplete-source'
+            source.mkdir()
+            with patch.object(implementation_authoring, 'run_git') as git, \
+                    patch.object(implementation_authoring, 'stage_planning_snapshot') as snapshot:
+                with self.assertRaisesRegex(ValueError, 'original trellis-brainstorm method.*matching installed source'):
+                    implementation_authoring.stage(request, fixture, PACKAGE, source)
+            git.assert_not_called()
+            snapshot.assert_not_called()
+            self.assertEqual(list(fixture.iterdir()), [])
+
+    def test_request_seed_is_clean_and_has_no_business_identity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            request, fixture, environment = self.entry(Path(temporary))
+            primary = fixture.with_name('owner-repo-primary')
+            self.assertEqual(run_git(fixture, 'status', '--porcelain'), '')
+            self.assertEqual(run_git(primary, 'status', '--porcelain'), '')
+            self.assertEqual(run_git(fixture, 'rev-parse', 'HEAD'), run_git(primary, 'rev-parse', 'HEAD'))
+            self.assertFalse(list((fixture / '.trellis/tasks').glob('*/task.json')))
+            facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+            self.assertTrue(all((fixture / path).is_file() for path in facts['required_reads']))
+            self.assertIn(implementation_authoring.FACTS, facts['writable_paths'])
+            for key in ('task_ref', 'delivery_key', 'source_selection', 'current_delivery'):
+                self.assertNotIn(key, facts)
+            self.assertIn('raise NotImplementedError', (fixture / 'interval.py').read_text())
+            self.assertIn('self.assertFalse(contains(4, 2, 4))', (fixture / 'test_interval.py').read_text())
+            observed = subprocess.run([sys.executable, '-B', '.trellis/scripts/task.py', 'current', '--json'],
+                cwd=fixture, env=environment, capture_output=True, text=True, check=False)
+            # The original current command returns 1 for a healthy no-Task state.
+            self.assertEqual(observed.returncode, 1, observed.stdout or observed.stderr)
+            current = json.loads(observed.stdout)
+            self.assertIsNone(current['current_task'])
+            self.assertFalse(current['stale'])
+            self.assertNotIn('error', current)
+            # A real local remote is fetched; the transport cannot synthesize Sync success.
+            fetch = subprocess.run(['git', 'fetch', 'origin', 'main'], cwd=primary,
+                env=environment, capture_output=True, text=True, check=False)
+            self.assertEqual(fetch.returncode, 0, fetch.stderr)
+            self.assertEqual(run_git(primary, 'rev-parse', 'origin/main'), run_git(primary, 'rev-parse', 'HEAD'))
+
+    def test_missing_request_entry_does_not_fall_back_to_a_task_snapshot(self):
+        from adapters.eval.test_native_constraint_transport import request as native_request
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = native_request(root, PACKAGE.name, 'native-implementation-plan-premise')
+            path = Path(request['workdir']) / request['files'][0]
+            body = json.loads(path.read_text()); body.pop('entry_kind')
+            path.write_text(json.dumps(body))
+            with patch.object(implementation_authoring, 'stage_planning_snapshot') as snapshot:
+                with self.assertRaisesRegex(ValueError, 'declared pre_task_r1 source request'):
+                    implementation_authoring.stage(request, root / 'not-created', PACKAGE, REPO)
+            snapshot.assert_not_called()
+            self.assertFalse((root / 'not-created').exists())
+
+    def test_observation_consumes_actual_task_creator_stdout_and_tracks_fact_versions(self):
+        # The reviewed creation input is a module precondition. This does not
+        # claim that a native Agent performed the earlier Intake reviews.
+        with tempfile.TemporaryDirectory() as temporary:
+            _, fixture, environment = self.entry(Path(temporary))
+            relay = implementation_authoring.ImplementationCommands(fixture, environment,
+                fixture.parent / 'creation-receipts.json')
+            before = (fixture / implementation_authoring.FACTS).read_bytes()
+            with self.assertRaisesRegex(ValueError, 'complete actual creator stdout'):
+                relay.observe_entry({'producer_skill': 'guru-create-task', 'producer_stdout': ''})
+            self.assertEqual((fixture / implementation_authoring.FACTS).read_bytes(), before)
+            task_id = 'r1-planning-entry'
+            task_ref = '.trellis/tasks/' + datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%m-%d-') + task_id
+            head = run_git(fixture, 'rev-parse', 'HEAD')
+            public = {'profile': 'delivery_task_creation', 'action': 'create_task',
+                'creation': {'task_id': task_id, 'task_ref': task_ref,
+                    'source_profile': 'standalone_request', 'reviewed_source': {'kind': 'no_issue'},
+                    'accepted_scope_identity': 'scope:module-r1',
+                    'delivery_target': {'repo_ref': 'example/guru-extension', 'branch_ref': 'main'},
+                    'selected_base_ref': 'main', 'reviewed_base_head': head},
+                'acquisition': {'route': 'adopt_invocation_checkout',
+                    'branch_ref': 'refs/heads/codex/eval-r1-planning-entry', 'decision_head': head,
+                    'transaction_id': 'module-r1-acquisition', 'result_id': 'module-r1-checkout',
+                    'invocation_checkout': str(fixture)},
+                'task': {'title': 'R1 module transport', 'description': 'Original creator transport only.',
+                         'scope': 'R1 integer range'}}
+            created = relay.forward({'skill_id': 'guru-create-task', 'command': 'invoke',
+                'arguments': ['--input', json.dumps(public)], 'stdin': ''})
+            self.assertEqual(created['returncode'], 0, created['stderr'] or created['stdout'])
+            self.assertEqual(json.loads(created['stdout'])['exit_id'], 'created')
+            self.assertEqual(relay.receipts[-1]['target_states_after'][implementation_authoring.FACTS],
+                             hashlib.sha256(before).hexdigest())
+            output = relay.forward({'skill_id': 'implementation-authoring', 'command': 'observe-entry',
+                'arguments': [], 'stdin': json.dumps({'producer_skill': 'guru-create-task',
+                                                     'producer_stdout': created['stdout']})})
+            self.assertEqual(output['returncode'], 0, output['stderr'])
+            facts = json.loads((fixture / implementation_authoring.FACTS).read_text())
+            self.assertEqual(facts['task_ref'], json.loads(created['stdout'])['task_ref'])
+            self.assertEqual(facts['required_reads'], json.loads(before)['required_reads'])
+            self.assertNotIn('source_selection', facts)
+            self.assertNotIn('delivery_key', facts)
+            task = json.loads((fixture / task_ref / 'task.json').read_text())
+            self.assertIsNone(task['accepted_scope'])
+            self.assertEqual(task['deliveries'], [])
+            self.assertEqual(relay.receipts[-1]['target_states_after'][implementation_authoring.FACTS],
+                             hashlib.sha256((fixture / implementation_authoring.FACTS).read_bytes()).hexdigest())
+
+    def test_candidate_setup_preserves_scope_and_uses_observed_planning_directory(self):
+        # Existing state is outside this byte-writer test's boundary. The
+        # current projection double carries that actual installed record only.
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture, source = stage_clean_installed_owner_repo(Path(temporary) / 'execution',
+                REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh', PACKAGE)
+            implementation_authoring.stage_planning_snapshot({'case_id': 'native-implementation-plan-premise'},
+                fixture, fixture / '.trellis/guru-team/skills/packages' / PACKAGE.name, source)
+            facts_path = fixture / implementation_authoring.FACTS
+            facts = json.loads(facts_path.read_text())
+            source_case = json.loads((PACKAGE / 'evals/files/native-implementation-plan-premise-input.json').read_text())
+            facts.update(entry_kind=implementation_authoring.ENTRY_KIND,
+                         candidate_seed=source_case['candidate_files'])
+            facts['writable_paths'].append(implementation_authoring.FACTS)
+            facts_path.write_text(json.dumps(facts))
+            projection = DeliveryProjection(fixture, facts['task_ref'])
+            current = {'kind': 'current', 'key': facts['delivery_key'],
+                       'delivery': projection.resolve(facts['delivery_key'])}
+            protected = {path: (fixture / path).read_bytes() for path in (
+                facts['task_ref'] + '/task.json', facts['task_ref'] + '/prd.md', 'test_interval.py')}
+            relay = implementation_authoring.ImplementationCommands(fixture, dict(os.environ),
+                fixture.parent / 'seed-receipts.json')
+            payload = {'skill_id': 'implementation-authoring', 'command': 'stage-candidate',
+                       'arguments': [], 'stdin': '{}'}
+            task = json.loads((fixture / facts['task_ref'] / 'task.json').read_text())
+            def query(script, *arguments):
+                return current if script == 'delivery.py' else {'current_task': {
+                    'dir': facts['task_ref'], 'accepted_scope': task['accepted_scope']}}
+            with patch.object(relay, 'public_query', side_effect=query):
+                result = relay.forward(payload)
+                self.assertEqual(result['returncode'], 0)
+                self.assertEqual((fixture / 'interval.py').read_text(), source_case['candidate_files']['interval.py'])
+                self.assertEqual(json.loads(result['stdout'])['validation']['returncode'], 0)
+                with self.assertRaisesRegex(ValueError, 'already written'):
+                    relay.forward(payload)
+            for path, body in protected.items():
+                self.assertEqual((fixture / path).read_bytes(), body)
+            self.assertFalse(relay.terminal)
+            self.assertNotIn('exit_id', json.loads(result['stdout']))
+
+    def test_r1_carrier_profile_preserves_and_restores_existing_config(self):
+        for ordinary_error in (False, True):
+            with self.subTest(ordinary_error=ordinary_error), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                home = root / 'home'; home.mkdir()
+                model = root / 'model-sandbox'; model.mkdir()
+                config = home / 'config.toml'
+                original = (b'default_permissions = "existing"\nmodel = "retained-model"\n'
+                            b'[permissions.existing.filesystem]\n":root" = "deny"\n":minimal" = "read"\n')
+                config.write_bytes(original); config.chmod(0o600)
+                try:
+                    with ExitStack() as lifetime:
+                        native_adapter.prepare_r1_permissions(home, model, [root / 'old-fixture'], lifetime)
+                        actual = tomllib.loads(config.read_text())
+                        self.assertEqual(actual['default_permissions'], 'existing')
+                        self.assertEqual(actual['model'], 'retained-model')
+                        profile = actual['permissions'][native_adapter.QUALIFICATION_PERMISSION_PROFILE]
+                        self.assertEqual(profile['filesystem'][':root'], 'deny')
+                        self.assertEqual(profile['filesystem'][str((root / 'old-fixture').resolve())], 'deny')
+                        self.assertEqual(profile['filesystem'][str(model.resolve())], 'write')
+                        self.assertFalse(profile['network']['enabled'])
+                        if ordinary_error:
+                            raise ValueError('ordinary launch setup failure')
+                except ValueError:
+                    if not ordinary_error:
+                        raise
+                self.assertEqual(config.read_bytes(), original)
+                self.assertEqual(config.stat().st_mode & 0o777, 0o600)
+
+    def test_initial_native_context_and_argv_stay_inside_new_sample(self):
+        from adapters.eval.test_native_constraint_transport import request as native_request
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            request = native_request(root, PACKAGE.name, 'native-implementation-plan-premise')
+            values = native_adapter.build_context(request, 'codex')
+            try:
+                protocol = json.loads(values[4].read_text())
+                self.assertIn(request['prompt'], values[0])
+                self.assertEqual(values[1].read_text(), values[0])
+                model = root / 'execution/model-sandbox'
+                self.assertEqual(Path(protocol['model_root']), model.resolve())
+                self.assertEqual(protocol['implementation_context_id'], implementation_authoring.ENTRY_CONTEXT)
+                self.assertIsNone(protocol['architecture_context'])
+                self.assertFalse(list((Path(protocol['owner_repository']) / '.trellis/tasks').glob('*/task.json')))
+                request['_model_root'] = str(model)
+                argv, _ = native_adapter.native_argv('codex', 'codex', request, values[0], values[1], values[5],
+                                                     Path(protocol['projection_root']))
+                self.assertEqual(argv[-1], values[0])
+                self.assertIn('default_permissions=' + json.dumps(native_adapter.QUALIFICATION_PERMISSION_PROFILE), argv)
+                self.assertIn('shell_environment_policy.set.TMPDIR=' + json.dumps(str(model / 'output')), argv)
+                self.assertNotIn('resume', argv)
+            finally:
+                values[9].set(); values[8].join(timeout=2)
 
 
 if __name__ == '__main__':

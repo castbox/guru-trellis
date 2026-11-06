@@ -5,7 +5,7 @@ import importlib.util
 import json
 import subprocess
 from pathlib import Path
-from runtime.io import CommandError
+from runtime.io import CommandError, read_json
 
 OWNER = "guru-publish-task-delivery"
 
@@ -146,26 +146,20 @@ def execute(package_root, public):
     return {'exit_id':'verified_legacy_history','key':public['key'],'facts':verified}
 
 def run(package_root, command, argv):
-    import sys
     parser=argparse.ArgumentParser(); parser.add_argument('--root',required=True); parser.add_argument('--input',required=True)
     args=parser.parse_args(argv)
-    public=json.load(sys.stdin) if args.input=='-' else json.loads(Path(args.input).read_text())
+    public=read_json(args.input,'input')
     if Path(args.root).resolve()!=Path(public['root']).resolve(): raise CommandError('target_mismatch','root','Use the selected target checkout.')
     from runtime.schema import validate_json
     validate_json(public,package_root/'schemas/legacy-maintenance-input-1.0.schema.json','input')
     return execute(package_root,public)
 
 
-def maybe_run(package_root, argv):
-    import io,sys
+def maybe_run(package_root, argv, public=None):
     parser=argparse.ArgumentParser(add_help=False);parser.add_argument('--root');parser.add_argument('--input')
     args,_=parser.parse_known_args(argv)
     if not args.input:return None
-    if args.input=='-':
-        content=sys.stdin.read();sys.stdin=io.StringIO(content);public=json.loads(content)
-    else:
-        from runtime.io import read_json
-        public=read_json(args.input,'input')
+    if public is None:public=read_json(args.input,'input')
     if public.get('profile') not in {'legacy_control_retirement','legacy_history_verification'}:return None
     if Path(args.root or '.').resolve()!=Path(public['root']).resolve():raise CommandError('target_mismatch','root','Use exact selected legacy target.')
     from runtime.schema import validate_json

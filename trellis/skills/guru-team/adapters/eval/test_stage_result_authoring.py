@@ -359,6 +359,39 @@ class StageResultTransportTests(unittest.TestCase):
                 relative = Path('.trellis/spec/workflow') / name
                 self.assertEqual((fixture / relative).read_bytes(), (source / relative).read_bytes())
 
+    def test_installed_delivery_contract_reaches_native_public_read(self):
+        import hashlib
+        from adapters.eval.fixture_io import stage_clean_installed_owner_repo
+        from adapters.eval.eval_support import (
+            qualification_trace_helper_source, stage_repository_projection,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture, source = stage_clean_installed_owner_repo(root / 'execution',
+                REPO / '.trellis/guru-team/scripts/bash/run-skill-command.sh',
+                REPO / '.trellis/guru-team/skills/packages/guru-author-task-plan')
+            public = root / 'public'
+            stage_repository_projection(fixture, public)
+            package = public / '.trellis/guru-team/skills/packages/guru-author-task-plan'
+            helper = root / 'native-helper.py'
+            helper.write_text(qualification_trace_helper_source())
+            sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            result = subprocess.run([
+                sys.executable, str(helper), '--trace', str(root / 'trace.json'),
+                '--request-sha256', hashlib.sha256(b'public Delivery contract read').hexdigest(),
+                '--projection-root', str(package),
+                '--skill-sha256', sha(package / 'SKILL.md'),
+                '--wrapper-sha256', sha(package / 'scripts/invoke.sh'),
+                '--repository-root', str(public), '--sandbox-root', str(root),
+                '--request-fifo', str(root / 'request'),
+                '--response-fifo', str(root / 'response'),
+                'read', '--kind', 'owner_file',
+                '--path', str(public / '.trellis/delivery-contract.md'),
+            ], text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout,
+                (source / '.trellis/delivery-contract.md').read_text())
+
     def test_raw_observations_stay_readable_outside_reviewed_business_content(self):
         from adapters.eval import stage_result_chain as chain
         from adapters.eval.eval_support import stage_repository_projection

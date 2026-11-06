@@ -19,7 +19,7 @@
           "flag": "--input",
           "required": true,
           "kind": "json",
-          "description": "Closure handoff.",
+          "description": "For closure_completed and finish_reentry, one regular JSON file; relative paths resolve against --root, then the package. Selected legacy terminal maintenance retains its original schema and inline JSON, regular UTF-8 file, or dash for stdin carriers.",
           "repeatable": false,
           "conflicts": []
         },
@@ -27,7 +27,7 @@
           "flag": "--semantic-result",
           "required": false,
           "kind": "json",
-          "description": "AI-reviewed bookkeeping route.",
+          "description": "Required for closure_completed and finish_reentry: the AI-reviewed bookkeeping route in one regular JSON file, resolved against --root, then the package. Not required by selected legacy terminal maintenance.",
           "repeatable": false,
           "conflicts": []
         },
@@ -60,9 +60,11 @@
       "stdout": "single_typed_exit",
       "errors": [
         "invalid_arguments",
+        "conflicting_arguments",
         "invalid_json",
         "schema_mismatch",
         "stale_identity",
+        "closure_result_reader_missing",
         "internal_error",
         "source_mismatch"
       ],

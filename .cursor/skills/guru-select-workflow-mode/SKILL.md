@@ -91,5 +91,11 @@ they do not waive the selector or the current Guru semantic owner.
 Read [references/contract.md](references/contract.md) for the current entry and
 public handoff contract.
 
+After the semantic selection, invoke `scripts/invoke.sh` using the
+[public invocation contract](references/contract.md#public-invocation).
+An inline or stdin `--invocation` object contains `public_input` and
+`owner_result`. The separate `--input` and `--owner-result` flags accept JSON
+file locators or stdin. Use the referenced original schemas and examples.
+
 Read `.trellis/spec/workflow/companion-scripts.md#intermediate-command-stdout-10` for receipts and `result` projection.
 Only the declared public invocation emits a formal exit; follow its consumer and positive-exit conditions.
