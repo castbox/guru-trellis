@@ -17,3 +17,17 @@ Author、实现者和审核者从当前需求、设计或已确认缺陷取得�
 ## 归属与关系
 
 不新增 Skill、阶段、公共I/O、证据账本或审批。原 Author、root qualification、实施协调、Check、Branch Review 保持自己的判断与出口；脚本仅执行和校验事实。设计 D735/CON735 位于 docs/design/current/behavior-validation-method.md；测试 T735/SC735 位于 docs/test/current/behavior-validation-method.md。现有工程事实适用性和审核充分性沿各自唯一源；本项不改生产完成语义或 #734预算范围。
+
+## JQ-R1..4 / BEH-JQ-JOURNEY：正常旅程与交接
+
+来源为 Task `user-journey-quality` generation 0 的整体 PRD JQ-R1..4；相关公开说明为 Issue #747。此增量为当前方法定义。既有 R735 条款与观察边界保持。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
+
+Clarify 从当前有效来源、真实入口及必要消费者推导正常连续操作，区分起点、适用阶段、等待期间正常再次操作，以及完成、失败或放弃后的可见结果。已有行为是调查事实，未明确的产品选择仍由原 Clarify 确认；实现细节归 Author/Architecture。场景沿原正常场景资格规则进入，不用经验扩大范围。
+
+Author 在原 PRD/design 中区分本任务实际存在的局部确认、后台任务完成、可靠保留与最终提交。对当前状态或资源交接，说明业务条件、实际 writer/reader、动作先后及失败后归属。原 Architecture/Approval 在自己的职责内判断条件是否成立，不要求产品指定事务代码，不引入通用锁、压力并发或异常 crash 协议。
+
+存在可运行入口且依赖就绪时，原 implement 验证计划优先取得一条最小完整正常旅程反馈，再扩展有独立检出价值的参数。高风险下层规则可先定向模块验证；简单函数/API-only 按足够层级验证。依赖缺失只阻塞相应声明，完整旅程通过不替代其余必要验收和回归。
+
+真实交互入口、替身与真实适配器的必要语义、实际接受输入和交付构建能力共同限定证据。直接方法测试不证明手势菜单；内存同一实例不证明反序列化恢复；地址存在不证明解码就绪；同容器单样本不证明其它编码组合。具体方法由 Test And Validation Value 单写，不把所有测试升为全链或设备门禁。
+
+关系：D-JQ-JOURNEY 位于 docs/design/current/behavior-validation-method.md；T-JQ-NATIVE 与 T-JQ-DISTRIBUTE 位于 docs/test/current/behavior-validation-method.md。本增量不宣称修复业务缺陷或证明统计改善。

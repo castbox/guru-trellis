@@ -1365,9 +1365,9 @@ upstream-owned.
 Before selecting validation, read
 `.trellis/spec/workflow/quality-guidelines.md` and apply its `Test And Validation
 Value` method and `Validation Scope Ownership` contract. Dispatchers and workers
-use that shared method for evidence reuse, additional diagnostic experiments and
-stopping; a customary fixed red/green/rollback sequence is not a dispatch
-obligation. A generic extension change never authorizes the full multi-platform
+use that shared method for journey priority, entry/substitute/input evidence,
+evidence reuse, additional diagnostic experiments and stopping; a customary fixed
+red/green/rollback sequence is not a dispatch obligation. A generic extension change never authorizes the full multi-platform
 Throwaway installer matrix.
 
 Every dispatch prompt for an official Trellis implement, check, research,

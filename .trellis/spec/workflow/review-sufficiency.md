@@ -54,6 +54,16 @@ Implementation and tests agreeing cannot establish complete requirements.
 Reading every file, complete chapter headings or filled dimension fields cannot
 replace behavior and relationship coverage.
 
+Within the original owner's read order and isolation, first derive the key
+behavior and relationship questions from its applicable authority, then compare
+those questions with the candidate and implementer's explanation. For a
+multi-stage path, consider the supported continuous actions and necessary
+handoff conditions, not only isolated final states. The dispatch must not seed
+the independent reviewer with defect answers or a passing narrative. This does
+not move Authority-first Architecture behind requirements/acceptance reading,
+create another reviewer or round, or invalidate still-applicable evidence.
+Keep only the conclusions needed in the original review or planning body.
+
 Tailor units to the actual object and complexity. No universal table, coverage
 percentage, reading quota or unsupported input enumeration is required. Necessary
 unchanged consumers are evidence within the selected review, not automatic

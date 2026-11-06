@@ -25,3 +25,13 @@ Guru 为自己的现有审核职责提供一份可加载的共同充分性规范
 ## 关系与完整定义
 
 [设计职责](../../design/current/review-sufficiency.md) 与 [测试策略](../../test/current/review-sufficiency.md) 承接本能力。共同审核行为只读取唯一 managed spec；现有检索、测试价值、因果、完整知识和专业标准保持原 owner。Architecture 的 owner/依赖决定见 `ARCH-REVIEW-SUFFICIENCY` 与 ADR-REVIEW-SUFFICIENCY。
+
+## JQ-R5..6 / BEH-JQ-INDEPENDENCE：先推导问题与最小结果
+
+适用来源为 Task `user-journey-quality` generation 0 的整体 PRD JQ-R5/6，相关公开说明为 Issue #747；此增量为当前方法定义。R717 的共同唯一源、provider 和原阶段职责继续适用。本次 JQ 定义由该 Delivery 的实际 candidate_checked 后，原 RDT owner 在 final integration 整合并读回；当前定义由包含本文件的精确 Git revision 绑定。方法实现、有限行为观察与受管采用分别判断，最终 Check、Review、Delivery 和 Completion 仍由原 owner 的实际结果建立。
+
+原审核 owner 在既有读取顺序及隔离边界内，先从适用来源或其职责 authority 推导关键行为与关系问题，再对照候选设计、实现、测试和实施论证。不预置缺陷答案或通过叙述，不增加 reviewer 或轮次。Architecture 仍保持 authority-first 的原限制；新方法不要求其它 owner 复制其读取顺序。
+
+旅程、阶段、交接条件与验证顺序写入既有 PRD/design/implement 的所属正文；只保留直接消费所需的覆盖、失败与未执行范围。已适用证据可复用，不新建覆盖台账、评分器或跨阶段证明链。既有审核完成、对象通过、修复/验收完成仍分别判断。
+
+关系：CON-JQ-INDEPENDENCE 位于 docs/design/current/review-sufficiency.md；SC-JQ-INDEPENDENCE 位于 docs/test/current/review-sufficiency.md。旅程验证职责见 BEH-JQ-JOURNEY，不在本单元重建验证标准。

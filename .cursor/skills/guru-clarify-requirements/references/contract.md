@@ -138,6 +138,26 @@ material risk; do not require an unrelated matrix or ask a quota of questions.
 Identify what changes and what must remain unchanged. A missing screen state in a
 design does not alone authorize removing its existing business behavior.
 
+For an applicable multi-stage interaction, follow the supported user or caller
+from its real entry through a continuous sequence to a visible result. Derive
+which stages actually exist, which actions remain available at each stage,
+what the caller can normally do again while work is pending, and what becomes
+visible after success, failure or abandonment. Distinguish local confirmation,
+background completion, reliable retention and final submission when the source
+uses those different meanings. Include an ordinary return, edit, exit or
+restore only when supported facts make it applicable; do not enumerate a fixed
+scenario count or Cartesian product. Non-UI work uses its actual caller and
+observable result.
+
+Use those sequences to expose real missing choices and conflicting commitments.
+Existing behavior supplies investigation facts; it does not silently decide an
+unsettled product response. Retain clear accepted conditions in the existing
+requirements body and route new candidates through this owner's qualification
+rules. Implementation ordering and resource-transfer mechanisms belong to
+Author/Architecture, not a request for the user to supply code. The
+[continuous-journey example](../../guru-author-task-plan/examples/planning-body/journey/process.md)
+illustrates these distinctions; its assumed answers are not current authority.
+
 Separate evidence-answerable facts, existing constraints/decisions, unresolved
 requirement choices and routine implementation details. Verify what a backend or
 platform actually does; the user chooses the product response, not the external

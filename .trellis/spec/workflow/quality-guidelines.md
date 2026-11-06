@@ -231,6 +231,17 @@ engineering facts when they remain applicable under the shared applicability
 rules. Fill actual coverage gaps; a stage or executor change alone does not
 require repeating an applicable experiment.
 
+When a supported runnable entry and its dependencies are available, prioritize
+feedback from one minimal complete normal journey before expanding equivalent
+parameters. The journey connects the actual entry, relevant stage handoffs and
+observable result; it need not cover every branch. A high-risk lower-layer rule
+may need targeted module validation first. If a dependency is unavailable,
+continue independent work and state which journey claim remains unverified.
+Neither a journey pass nor its priority replaces required acceptance or affected
+regressions. Simple pure-function or API-only behavior may be fully observed
+through cheap direct tests; do not turn this method into universal device/E2E
+validation or a fixed test-first/implementation-first order.
+
 Distinguish durable behavior/regression tests from temporary diagnostic
 experiments. Durable tests continue to detect contract violations. A diagnostic
 experiment answers a specific current question and stops when its result
@@ -293,6 +304,33 @@ Explain a material difference and limit the claim to the behavior actually
 exercised. Apply the shared
 [engineering-fact applicability rules](workflow-contract.md#candidate-applicability-and-coverage)
 when adopting earlier results after entry, default-path or enablement changes.
+
+For an interaction claim, inspect the path that makes the behavior reachable.
+A direct paste-method call can prove paste logic, but cannot prove that a
+long-press gesture opens its menu. A media-selection result does not prove the
+focus visible after returning to the editor. A confirmation method alone does
+not prove the page transfers its resource before disposal. Exercise the actual
+entry needed for the claim and observe the result after the relevant handoff;
+keep valid direct-method evidence at its declared layer.
+
+Compare a substitute with the real adapter on semantics needed by the current
+behavior. An in-memory adapter returning the same instance may miss a path that
+receives a newly deserialized object. Check applicable asynchronous completion,
+persisted restoration, refreshed addresses, cache state and decode readiness
+rather than assuming object identity, a present URL or cached preview proves
+usability. Do not reproduce unrelated adapter internals or build a universal
+fake platform.
+
+Choose representative inputs from the confirmed accepted range and the actual
+delivered capability. A container name does not establish its video/audio codec
+combination; an H264/AAC MOV case cannot establish HEVC/PCM support. Native
+media or platform-dependent behavior requires checking the delivered build's
+relevant components and inputs, not inferring capability from a host tool or
+one convenient sample. Unknown support stays an evidence gap for the original
+owner; do not silently promise support or narrow a confirmed requirement.
+Record only the coverage, failure, affected revalidation or unexecuted boundary
+needed by the existing validation body. Tools execute and collect facts; AI
+judges whether those facts support the current claim.
 
 Fixtures may establish state that must already exist before the declared
 boundary, and substitutes may isolate dependencies outside it. For example, a
