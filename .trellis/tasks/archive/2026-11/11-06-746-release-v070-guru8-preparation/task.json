@@ -528,12 +528,21 @@
       },
       "planning_root": "deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c",
       "profile": "pull_request",
-      "phase": "implementing",
+      "phase": "delivered",
       "plan_ref": {
         "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
         "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
       },
-      "candidate": null,
+      "candidate": {
+        "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+        "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+        "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+        "kind": "git",
+        "paths": [
+          "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+          "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+        ]
+      },
       "results": {
         "planning": {
           "result_id": "planning-accepted:2523a861-54dd-4975-9806-4062eb6ef955",
@@ -572,12 +581,184 @@
             }
           ]
         },
-        "check": null,
-        "full_review": null,
-        "readiness": null
+        "check": {
+          "result_id": "check:46c11734627ec534c11b8cc037e9b7745eb147d8a5de4b414faff6b697903f8b",
+          "owner_role": "check",
+          "owner_id": "guru-check-task",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+              "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+            },
+            "anchors": [
+              "R8",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+            "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+          },
+          "candidate": {
+            "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+            "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+            "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+            "kind": "git",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ]
+          },
+          "predecessor_result_id": "planning-accepted:2523a861-54dd-4975-9806-4062eb6ef955",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/prd.md",
+              "revision": "sha256:fcb90958015328839b435872311101c8bbbbc003fd86fef9de00f25dd1e80052"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+              "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+            },
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/implement.md",
+              "revision": "sha256:c88dffe4b702c463a1a513a07e4fc614fbe6e333ddd7dd0ec0ff2acaef4d308f"
+            }
+          ]
+        },
+        "full_review": {
+          "result_id": "full-review:ed20bba5047caf132a286cfab3255ab84d234b7571d0f7e8237d471611f96df1",
+          "owner_role": "full_review",
+          "owner_id": "guru-review-branch",
+          "outcome": "passed",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+              "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+            },
+            "anchors": [
+              "R8",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+            "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+          },
+          "candidate": {
+            "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+            "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+            "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+            "kind": "git",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ]
+          },
+          "predecessor_result_id": "check:46c11734627ec534c11b8cc037e9b7745eb147d8a5de4b414faff6b697903f8b",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/implement.md",
+              "revision": "sha256:c88dffe4b702c463a1a513a07e4fc614fbe6e333ddd7dd0ec0ff2acaef4d308f"
+            }
+          ]
+        },
+        "readiness": {
+          "result_id": "readiness:afda59fe2a352b7378a6176c919a781849e79b121fb7a39fdb233045e5889f29",
+          "owner_role": "readiness",
+          "owner_id": "guru-review-task-delivery",
+          "outcome": "ready",
+          "scope_ref": {
+            "authority": {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+              "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+            },
+            "anchors": [
+              "R8",
+              "AC6"
+            ]
+          },
+          "plan_ref": {
+            "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/design.md",
+            "revision": "sha256:10bd8a2cfec1156e1d14ca6901256739ea159fd4115bce827aa64424c937e90f"
+          },
+          "candidate": {
+            "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+            "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+            "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+            "kind": "git",
+            "paths": [
+              "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+              "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+            ]
+          },
+          "predecessor_result_id": "full-review:ed20bba5047caf132a286cfab3255ab84d234b7571d0f7e8237d471611f96df1",
+          "obligations": [],
+          "evidence": [
+            {
+              "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/deliveries/91275ecd-9ff5-44f5-8b4a-080ebaeb421c/implement.md",
+              "revision": "sha256:c88dffe4b702c463a1a513a07e4fc614fbe6e333ddd7dd0ec0ff2acaef4d308f"
+            }
+          ]
+        }
       },
-      "publication_result": null,
-      "delivery_result": null,
+      "publication_result": {
+        "result_id": "publication:c489e85c991fb9952d453f850ff95164ace2f01fd5e2df6363eff0ad85b378a1",
+        "owner_id": "guru-publish-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/750",
+            "revision": "sha256:a29afcb913ce035eb5f5f80d56c0be40bb73251b2112ca1c51a0fe5e065156c6"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+          "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+          "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+          "kind": "git",
+          "paths": [
+            "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+            "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 750,
+        "reviewed_head": "16a7ebd359add9365f82272255d0b96c189abcde",
+        "target_ref": "main",
+        "publication_ref": {
+          "locator": "https://github.com/castbox/guru-trellis/pull/750",
+          "revision": "sha256:a29afcb913ce035eb5f5f80d56c0be40bb73251b2112ca1c51a0fe5e065156c6"
+        }
+      },
+      "delivery_result": {
+        "result_id": "delivery:a20fe32c23cb16612650dec0787cd5771a48fab8",
+        "owner_id": "guru-merge-task-delivery",
+        "evidence": [
+          {
+            "locator": "https://github.com/castbox/guru-trellis/pull/750",
+            "revision": "a20fe32c23cb16612650dec0787cd5771a48fab8"
+          }
+        ],
+        "profile": "pull_request",
+        "candidate": {
+          "base_ref": "62b75465957ad0543803bdbe98e6dc222008040e",
+          "content_ref": "sha256:0f969144065fa3dd8e3092d9a279a6eed797573f880c2702b618650edbc4e942",
+          "head_ref": "16a7ebd359add9365f82272255d0b96c189abcde",
+          "kind": "git",
+          "paths": [
+            "trellis/presets/guru-team/scripts/python/test_verify_trellis_matrix_capture.py",
+            "trellis/presets/guru-team/scripts/python/verify_trellis_compatibility_matrix.py"
+          ]
+        },
+        "repo_ref": "castbox/guru-trellis",
+        "pr_number": 750,
+        "reviewed_head": "16a7ebd359add9365f82272255d0b96c189abcde",
+        "merge_commit": "a20fe32c23cb16612650dec0787cd5771a48fab8",
+        "target_ref": "main"
+      },
       "stop_result": null
     }
   ],
@@ -608,6 +789,38 @@
         "delivery:ad205e9707f7ef1eb3077419e6489baea3894e94"
       ],
       "outcome": "completed"
+    },
+    {
+      "result_id": "completion:746-preparation-gen1-16a7ebd3",
+      "owner_id": "guru-review-task-completion",
+      "evidence": [
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/748",
+          "revision": "ad205e9707f7ef1eb3077419e6489baea3894e94"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/749",
+          "revision": "62b75465957ad0543803bdbe98e6dc222008040e"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/pull/750",
+          "revision": "a20fe32c23cb16612650dec0787cd5771a48fab8"
+        },
+        {
+          "locator": "https://github.com/castbox/guru-trellis/actions/runs/42228678562",
+          "revision": "16a7ebd359add9365f82272255d0b96c189abcde"
+        }
+      ],
+      "lifecycle_generation": 1,
+      "accepted_scope": {
+        "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+        "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+      },
+      "delivery_result_ids": [
+        "delivery:ad205e9707f7ef1eb3077419e6489baea3894e94",
+        "delivery:a20fe32c23cb16612650dec0787cd5771a48fab8"
+      ],
+      "outcome": "completed"
     }
   ],
   "closure_results": [
@@ -626,6 +839,24 @@
       ],
       "lifecycle_generation": 0,
       "completion_result_id": "completion:746-preparation-bc2ce269",
+      "disposition": "no_mutation",
+      "source_result": null
+    },
+    {
+      "result_id": "closure:aca6d3f8f4ddf92abf97f0e6",
+      "owner_id": "guru-complete-task-closure",
+      "evidence": [
+        {
+          "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/prd.md",
+          "revision": "sha256:90c32c6a12686cd9ff07117cde174389e3cd51c0de4f0b78d2ba2bfacb9f434c"
+        },
+        {
+          "locator": ".trellis/tasks/11-06-746-release-v070-guru8-preparation/closeout/closure/Y2xvc3VyZTphY2E2ZDNmOGY0ZGRmOTJhYmY5N2YwZTY.json",
+          "revision": "sha256:5d9351ad8c09a2f6ab541e850b19ccb21c9a8a60fc65f29eff0d167c59d842a9"
+        }
+      ],
+      "lifecycle_generation": 1,
+      "completion_result_id": "completion:746-preparation-gen1-16a7ebd3",
       "disposition": "no_mutation",
       "source_result": null
     }
