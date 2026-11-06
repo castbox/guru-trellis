@@ -174,7 +174,11 @@ class NativeConstraintTransportTests(unittest.TestCase):
                     package=Path(protocol['projection_root'])
                     for path in module.public_reads(package):self.assertTrue((package/path).is_file(),path)
                     facts=json.loads((Path(protocol['repository_projection_root'])/module.FACTS).read_text())
-                    self.assertTrue(facts['owner_mutated_paths'])
+                    if facts.get('entry_kind') == module.ENTRY_KIND:
+                        self.assertEqual(facts['owner_mutated_paths'], [])
+                        self.assertNotIn('delivery_key', facts)
+                    else:
+                        self.assertTrue(facts['owner_mutated_paths'])
                     self.assertIn('command --skill-id',values[0])
                 finally:values[9].set();values[8].join(timeout=2)
         self.assertIn('COMMAND_FORWARDING_ALLOWED = False',qualification_trace_helper_source())

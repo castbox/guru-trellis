@@ -45,14 +45,16 @@ version number alone cannot establish the predecessor's matching build.
 
 The next repository target is `v0.7.0-guru.8`, not yet published. Its canonical
 extension and maintenance target are `0.7.0-guru.8`. The current Fork source
-lock stays at `castbox/Trellis@17015f987166f4106034f115d23212446f16d536`, tree
-`08f5fc32d766ab2ccf04226846449b87ef95c5fb`, successful main CI `40882919377`,
+lock selects `castbox/Trellis@ca0e8b931d19ccb87802d6866abd2113a6f707c0`, tree
+`7d765bd35caf840820359259703e4035fe7d0ad2`, successful main CI `42016570304`,
 with CLI/core `0.7.0-castbox.6` and `pnpm@10.32.1`. This source includes #40
 maintenance, #43 native schema-1 session compatibility, #47 Task/Delivery Git
 object reading, #50 public `GitCandidateContent`, #52 public `task_resume`,
 #53 new-process Python and argv execution, #55 formal schema1 archive
-reactivation, #56 verified sibling snapshots, and #58 custom AGENTS content
-maintenance, and #59/#60 legal stopping of retained old Delivery profiles. Source identities and CI do not prove a matching local build,
+reactivation, #56 verified sibling snapshots, #58 custom AGENTS content
+maintenance, and #59/#60 legal stopping of retained old Delivery profiles.
+It also includes #62/PR #63 parent gitlink atomic identity and #64/PR #65
+compact known_legacy formal archive successors. Source identities and CI do not prove a matching local build,
 target installation, native acceptance or Release. Historical Fork `.4`
 tarballs do not substitute for the current lock's matching build. Use the clean
 locked source workspace with its normal CLI/Core dependency layout and

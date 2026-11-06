@@ -12,7 +12,7 @@
 
 ## 3. 本批起点、前序结果、依赖与剩余责任
 
-尚无前序 Delivery。开发基线 main@338e8fdc4eee80ffa9c44c00d5030b5f240ad4cd，PR 目标 main。canonical extension .7；公开 README 仍保留 .6/.7 旧发布说明。当前 lock 为 castbox/Trellis@17015f987166f4106034f115d23212446f16d536，CLI/Core 0.7.0-castbox.6。
+尚无前序 Delivery。开发基线 main@338e8fdc4eee80ffa9c44c00d5030b5f240ad4cd，PR 目标 main。canonical extension .7；公开 README 仍保留 .6/.7 旧发布说明。当前 lock 为 castbox/Trellis@17015f987166f4106034f115d23212446f16d536，CLI/Core 0.7.0-castbox.6。该旧 lock 不包含 main 已实际采用的两项上游能力，正式安装会回退。目标修正至 ca0e8b931d19ccb87802d6866abd2113a6f707c0，版本不变。
 
 本批依赖完整当前 preset、原安装 owner、干净匹配 Fork 构建。完成后 Task 仍需原 Completion/Closure no_mutation/Finish/Cleanup；发布协调继续在 main fresh candidate 上完成 Stage 2。PR 合并不等于 Task Completion 或 Release。
 
@@ -25,10 +25,10 @@ S4：原 Check/TaskCommit/独立 Branch Review 在晋升前后分别审查完整
 
 ## 5. 完整行为、条件与约束
 
-R1：extension 和 maintenance target 统一 0.7.0-guru.8，相关 const/schema/必要测试按实际 consumer 更新；Fork 与 lock 不变，不改历史版本证据。
+R1：extension 和 maintenance target 统一 0.7.0-guru.8，相关 const/schema/必要测试按实际 consumer 更新；Fork CLI/Core 版本不变，正式 source lock 修正为 ca0e8b931d19ccb87802d6866abd2113a6f707c0（成功 CI 42016570304），保留 main 已采用 gitlink 与 compact 正式归档后继能力，不改历史版本证据。
 R2：root、workflow、preset README 和 public-docs 说明真实 .7 前驱与 .8 准备状态。发布前安装使用同一已存在 immutable tag 或实际 remote-addressable candidate SHA；不得把尚不存在 .8 tag 当可用 provider。
 R3：私有 release 合同的 source/platform Gate 按当前 Codex shared root 调整，并核实际私有 Skill 副本，不进入公共 registry/manifest/package。
-R4：真实 dogfood tools 更新必须通过原 owner；缺干净来源时采用其已提交来源路径。安装变更回原 Check/TaskCommit/完整 Review；throwaway 或历史 Task self-reapply stop 不替代真实安装。
+R4：真实 dogfood tools 更新必须通过原 owner；缺干净来源时采用其已提交来源路径。安装变更回原 Check/TaskCommit/完整 Review；throwaway 或历史 Task self-reapply stop 不替代真实安装。不手补官方脚本，不过滤合法gitlink或转换历史记录；匹配新lock安装必须保留两项已采用能力。
 R5：稳定 design/implement/Docs Plan；按规范性来源设计处置采用两次完整独立 Review、串行知识晋升和 fresh post-promotion Check。任何实质差额刷新受影响 gate。
 R6：中文 PR 仅 Refs #746，不使用关闭关键词；Completion 只覆盖准备范围，Closure no_mutation，Finish/Cleanup 保留原职责。
 R7：不生成发布状态持久化或授权记录，不把脚本当 semantic pass。保留未验证边界。
@@ -39,7 +39,7 @@ R7：不生成发布状态持久化或授权记录，不把脚本当 semantic pa
 
 AC1：读取 canonical/maintenance/schema、README 与 current public-docs，检查版本映射和真实状态；执行与版本 consumer 相关的现有验证。
 AC2：执行 source、installed、当前 Shared/Codex/Claude/Cursor 投影验证和私有 release Skill 字节比对；检查私有 Skill 不在公共 inventory。
-AC3：原 tools preview/prepare/invoke、实际 target/native-entry validation 证明真实 dogfood 与已审查来源一致；检查保留内容无损、sidecar 无未处理。
+AC3：原 tools preview/prepare/invoke、实际 target/native-entry validation 证明真实 dogfood 与已审查来源一致；检查保留内容无损、sidecar 无未处理。原双内容 API 在合法父仓 gitlink 上同身份成功；原上游集成入口完成 compact formal reactivation、Completion/Closure 后 native archive。
 AC4：晋升前后两轮原 Phase 2/TaskCommit/独立完整 Branch Review；实际晋升字节包含在后续候选中。
 AC5：Refs-only PR 与 public Delivery 正常交付，原 Completion/Closure/Finish/Cleanup 完成，main 可查终态归档，#746 保持开放。
 
